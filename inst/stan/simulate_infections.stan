@@ -51,7 +51,7 @@ generated quantities {
       params_value, params
     );
 
-    real pop = get_param(
+    vector[n] pop = get_param(
       pop_id, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
@@ -68,7 +68,7 @@ generated quantities {
 
       infections[i] = to_row_vector(generate_infections(
         to_vector(R[i]), seeding_time, gt_rev_pmf, initial_infections[i],
-        initial_growth[i], pop, use_pop, future_time, obs_scale, frac_obs[i]
+        initial_growth[i], pop[i], use_pop, future_time, obs_scale, frac_obs[i]
       ));
 
       if (delay_id) {

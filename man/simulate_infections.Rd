@@ -16,7 +16,7 @@ simulate_infections(
   CrIs = c(0.2, 0.5, 0.9),
   backend = "rstan",
   seeding_time = NULL,
-  pop = 0,
+  pop = Fixed(0),
   ...
 )
 }
@@ -74,9 +74,9 @@ R given) of \code{seeding_time} days is assumed to have followed exponential
 growth roughly in line with the growth rate implied by the first value of
 R.}
 
-\item{pop}{Integer, defaults to 0. Susceptible population initially present.
-Used to adjust Rt estimates when otherwise fixed based on the proportion of
-the population that is susceptible. When set to 0 no population adjustment
+\item{pop}{A \verb{<dist_spec>} giving the initial susceptible population size.
+Used to adjust Rt estimates based on the proportion of the population that
+is susceptible. Defaults to \code{Fixed(0)} which means no population adjustment
 is done.}
 
 \item{...}{deprecated; only included for backward compatibility}

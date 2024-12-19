@@ -69,7 +69,7 @@ simulate_infections <- function(estimates, R, initial_infections,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 backend = "rstan",
                                 seeding_time = NULL,
-                                pop = 0, ...) {
+                                pop = Fixed(0), ...) {
   ## deprecated usage
   if (!missing(estimates)) {
     deprecate_stop(
@@ -125,7 +125,7 @@ simulate_infections <- function(estimates, R, initial_infections,
     initial_infections = array(log_initial_infections, dim = c(1, 1)),
     initial_growth = array(initial_growth, dim = c(1, length(initial_growth))),
     R = array(R$R, dim = c(1, nrow(R))),
-    pop = pop
+    use_pop = as.integer(pop != Fixed(0))
   )
 
   data <- c(data, create_stan_delays(

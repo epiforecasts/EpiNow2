@@ -11,7 +11,7 @@ rt_opts(
   use_breakpoints = TRUE,
   future = "latest",
   gp_on = c("R_t-1", "R0"),
-  pop = 0
+  pop = Fixed(0)
 )
 }
 \arguments{
@@ -50,9 +50,9 @@ Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
 but the method relying on a global mean will revert to this for real time
 estimates, which may not be desirable.}
 
-\item{pop}{Integer, defaults to 0. Susceptible population initially present.
-Used to adjust Rt estimates when otherwise fixed based on the proportion of
-the population that is susceptible. When set to 0 no population adjustment
+\item{pop}{A \verb{<dist_spec>} giving the initial susceptible population size.
+Used to adjust Rt estimates based on the proportion of the population that
+is susceptible. Defaults to \code{Fixed(0)} which means no population adjustment
 is done.}
 }
 \value{
