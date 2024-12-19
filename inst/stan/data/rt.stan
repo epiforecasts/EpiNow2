@@ -5,5 +5,5 @@
   array[t - seeding_time] int breakpoints; // when do breakpoints occur
   int future_fixed;                  // is underlying future Rt assumed to be fixed
   int fixed_from;                    // Reference date for when Rt estimation should be fixed
-  int pop;                           // Initial susceptible population
+  int use_pop;                       // use population size
   int<lower = 0> gt_id;              // id of generation time
