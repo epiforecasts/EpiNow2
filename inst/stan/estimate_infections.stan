@@ -263,7 +263,7 @@ generated quantities {
       vector[ot_h] accumulated_reports =
         accumulate_reports(reports, accumulate);
       imputed_reports = report_rng(
-        accumulated_reports[imputed_time], rep_phi, model_type
+        accumulated_reports[imputed_times], rep_phi, model_type
       );
     } else {
       imputed_reports = report_rng(reports, rep_phi, model_type);

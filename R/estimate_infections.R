@@ -317,7 +317,7 @@ estimate_infections <- function(data,
     reported_inf_dates = reported_cases$date,
     reported_dates = reported_cases$date[-(1:stan_data$seeding_time)],
     imputed_dates =
-      reported_cases$date[-(1:stan_data$seeding_time)][stan_data$imputed_time]
+      reported_cases$date[-(1:stan_data$seeding_time)][stan_data$imputed_times]
   )
 
   ## Add prior infections
