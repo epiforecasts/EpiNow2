@@ -79,8 +79,8 @@ generation_time_opts(Gamma(mean = 3, sd = 2, max = 14))
 # An uncertain gamma distributed generation time
 generation_time_opts(
   Gamma(
-    mean = Normal(mean = 3, sd = 1),
-    sd = Normal(mean = 2, sd = 0.5),
+    shape = Normal(mean = 3, sd = 1),
+    rate = Normal(mean = 2, sd = 0.5),
     max = 14
   )
 )

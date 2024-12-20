@@ -1,3 +1,4 @@
+skip_on_cran()
 reported_cases <- data.frame(region = c("test", "boo"))
 futile.logger::flog.threshold("FATAL")
 

@@ -25,8 +25,13 @@ in parameters)
 dist1 <- Gamma(mean = 5, sd = 1, max = 20)
 max(dist1)
 
-# An uncertain lognormal distribution with mean 3 and sd 2
-dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
+# An uncertain lognormal distribution with meanlog and sdlog normally
+# distributed as Normal(3, 0.5) and Normal(2, 0.5) respectively
+dist2 <- LogNormal(
+  meanlog = Normal(3, 0.5),
+  sdlog = Normal(2, 0.5),
+  max = 20
+)
 max(dist2)
 
 # The max the sum of two distributions
