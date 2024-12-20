@@ -324,6 +324,13 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' Used to adjust Rt estimates based on the proportion of the population that
 #' is susceptible. Defaults to `Fixed(0)` which means no population adjustment
 #' is done.
+#' 
+#' @param pop_within_horizon Logical, defaults to `FALSE`. Should the
+#' susceptible population adjustment be applied within the time horizon of data
+#' or just beyond it. Note that if `pop_within_horizon = TRUE` the Rt estimate
+#' will be unadjusted for susceptible depletion but the resulting posterior
+#' predictions for infections and cases will be adjusted for susceptible
+#' depletion.
 #'
 #' @param gp_on Character string, defaulting to  "R_t-1". Indicates how the
 #' Gaussian process, if in use, should be applied to Rt. Currently supported
@@ -354,7 +361,8 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     use_breakpoints = TRUE,
                     future = "latest",
                     gp_on = c("R_t-1", "R0"),
-                    pop = Fixed(0)) {
+                    pop = Fixed(0),
+                    pop_within_horizon = FALSE) {
   rt <- list(
     use_rt = use_rt,
     rw = rw,
@@ -388,15 +396,22 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
   }
 
   if (is.numeric(pop)) {
-    cli_warn(
-      c(
-        "!" = "Specifying {.var pop} as a numeric value is deprecated.",
-        "i" = "Use a {.cls dist_spec} instead, e.g. Fixed({pop})."
-      )
+    lifecycle::deprecate_warn(  
+      "1.7.0",  
+      "rt_opts(pop = 'must be a `<dist_spec>`')",  
+      details = "For specifying a fixed population size, use `Fixed(pop)`"
     )
     pop <- Fixed(pop)
   }
   rt$pop <- pop
+  if (isTRUE(pop_within_horizon) && pop == Fixed(0)) {
+    cli_abort(
+      c(
+        "!" = "pop_within_horizon = TRUE but pop is fixed at 0."
+      )
+    )
+  }
+  rt$estimate_pop <- TRUE
 
   if (rt$use_rt) {
     rt$prior <- prior
