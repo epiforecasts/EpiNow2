@@ -465,19 +465,19 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' Defines a list specifying the structure of the approximate Gaussian
 #' process. Custom settings can be supplied which override the defaults.
 #'
-#' @param ls_mean Numeric, defaults to 21 days. The mean of the lognormal
-#' length scale.
+#' @param ls_mean Deprecated; use `ls` instead.
 #'
-#' @param ls_sd Numeric, defaults to 7 days. The standard deviation of the log
-#' normal length scale. If \code{ls_sd = 0}, inverse-gamma prior on Gaussian
-#' process length scale will be used with recommended parameters
-#' \code{inv_gamma(1.499007, 0.057277 * ls_max)}.
+#' @param ls_sd Deprecated; use `ls` instead.
 #'
-#' @param ls_min Numeric, defaults to 0. The minimum value of the length scale.
+#' @param ls_min Deprecated; use `ls` instead.
 #'
-#' @param ls_max Numeric, defaults to 60. The maximum value of the length
-#' scale. Updated in [create_gp_data()] to be the length of the input data if
-#' this is smaller.
+#' @param ls_max Deprecated; use `ls` instead.
+#'
+#' @param ls A `<dist_spec>` giving the prior distribution of the lengthscale
+#' parameter of the Gaussian process kernel on the scale of days. Defaults to
+#' a Lognormal distribution with mean 21 days, sd 7 days and maximum 60 days:
+#' `LogNormal(mean = 21, sd = 7, max = 60)` (a lower limit of 0 will be
+#' enforced automatically to ensure positivity)
 #'
 #' @param alpha A `<dist_spec>` giving the prior distribution of the magnitude
 #' parameter of the Gaussian process kernel. Should be approximately the
@@ -537,6 +537,7 @@ gp_opts <- function(basis_prop = 0.2,
                     ls_sd = 7,
                     ls_min = 0,
                     ls_max = 60,
+                    ls = LogNormal(mean = 21, sd = 7, max = 60),
                     alpha = Normal(mean = 0, sd = 0.01),
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
@@ -558,6 +559,34 @@ gp_opts <- function(basis_prop = 0.2,
     lifecycle::deprecate_warn(
       "1.7.0", "gp_opts(alpha_sd)", "gp_opts(alpha)"
     )
+  }
+  if (!missing(ls_mean) || !missing(ls_sd) || !missing(ls_min) ||
+      !missing(ls_max)) {
+    if (!missing(ls)) {
+      cli_abort(
+        c(
+          "!" = "Both {.var ls} and at least one legacy argument
+          ({.var ls_mean}, {.var ls_sd}, {.var ls_min}, {.var ls_max}) have been
+          specified.",
+          "i" = "Only one of the should be used."
+        )
+      )
+    }
+    cli_warn(c(
+      "!" = "Specifying lengthscale priors via the {.var ls_mean}, {.var ls_sd},
+      {.var ls_min}, and {.var ls_max} arguments is deprecated.",
+      "i" = "Use the {.var ls} argument instead."
+    ))
+    if (ls_min > 0) {
+      cli_abort(
+        c(
+          "!" = "Lower lengthscale bounds of greater than 0 are no longer
+          supported. If this is a feature you need please open an Issue on the
+          EpiNow2 GitHub repository."
+        )
+      )
+    }
+    ls <- LogNormal(mean = ls_mean, sd = ls_sd, max = ls_max)
   }
 
   if (!missing(matern_type)) {
@@ -592,10 +621,7 @@ gp_opts <- function(basis_prop = 0.2,
   gp <- list(
     basis_prop = basis_prop,
     boundary_scale = boundary_scale,
-    ls_mean = ls_mean,
-    ls_sd = ls_sd,
-    ls_min = ls_min,
-    ls_max = ls_max,
+    ls = ls,
     alpha = alpha,
     kernel = kernel,
     matern_order = matern_order,
