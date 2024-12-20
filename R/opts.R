@@ -320,10 +320,17 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' conservative estimate of break point changes (alter this by setting
 #' `gp = NULL`).
 #'
-#' @param pop Integer, defaults to 0. Susceptible population initially present.
-#' Used to adjust Rt estimates when otherwise fixed based on the proportion of
-#' the population that is susceptible. When set to 0 no population adjustment
+#' @param pop A `<dist_spec>` giving the initial susceptible population size.
+#' Used to adjust Rt estimates based on the proportion of the population that
+#' is susceptible. Defaults to `Fixed(0)` which means no population adjustment
 #' is done.
+#' 
+#' @param pop_within_horizon Logical, defaults to `FALSE`. Should the
+#' susceptible population adjustment be applied within the time horizon of data
+#' or just beyond it. Note that if `pop_within_horizon = TRUE` the Rt estimate
+#' will be unadjusted for susceptible depletion but the resulting posterior
+#' predictions for infections and cases will be adjusted for susceptible
+#' depletion.
 #'
 #' @param gp_on Character string, defaulting to  "R_t-1". Indicates how the
 #' Gaussian process, if in use, should be applied to Rt. Currently supported
@@ -354,13 +361,13 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     use_breakpoints = TRUE,
                     future = "latest",
                     gp_on = c("R_t-1", "R0"),
-                    pop = 0) {
+                    pop = Fixed(0),
+                    pop_within_horizon = FALSE) {
   rt <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
     future = future,
-    pop = pop,
     gp_on = arg_match(gp_on)
   )
 
@@ -387,6 +394,24 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     }
     prior <- LogNormal(mean = prior$mean, sd = prior$sd)
   }
+
+  if (is.numeric(pop)) {
+    lifecycle::deprecate_warn(  
+      "1.7.0",  
+      "rt_opts(pop = 'must be a `<dist_spec>`')",  
+      details = "For specifying a fixed population size, use `Fixed(pop)`"
+    )
+    pop <- Fixed(pop)
+  }
+  rt$pop <- pop
+  if (isTRUE(pop_within_horizon) && pop == Fixed(0)) {
+    cli_abort(
+      c(
+        "!" = "pop_within_horizon = TRUE but pop is fixed at 0."
+      )
+    )
+  }
+  rt$estimate_pop <- TRUE
 
   if (rt$use_rt) {
     rt$prior <- prior
@@ -724,7 +749,10 @@ obs_opts <- function(family = c("negbin", "poisson"),
     cli_abort(
       c(
         "!" = "Specifying {.var phi} as a vector of length 2 is deprecated.",
-        "i" = "Mean and SD should be given as list elements."
+        "i" = paste0(
+          "Use a {.cls dist_spec} instead, e.g. Normal(mean = {phi[1]}, ",
+          "sd = {phi[2]})."
+        )
       )
     )
   }
