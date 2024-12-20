@@ -36,12 +36,12 @@ These infections are then mapped to observations via discrete convolutions with 
 The model is initialised before the first observed data point by assuming constant exponential growth for the mean of modelled delays from infection to case report (called `seeding_time` $t_\mathrm{seed}$ in the model):
 
 \begin{align}
-  I_0  &\sim \mathrm{LogNormal}(I_\mathrm{obs}, 0.2) \\
+  I_0  &\sim \mathrm{LogNormal}(I_\mathrm{obs}, \sqrt(I_\mathrm{obs})) \\
   r &\sim \mathrm{Normal}(r_\mathrm{obs}, 0.2)\\
   I_{0 < t \leq t_\mathrm{seed}} &= I_0 \exp  \left(r t \right)
 \end{align}
 
-where $I_{t}$ is the number of latent infections on day $t$, $r$ is the estimate of the initial growth rate, and $I_\mathrm{obs}$ and $r_\mathrm{obs}$ are estimated from the first week of observed data: $I_\mathrm{obs}$ as the mean of reported cases in the first 7 days (or the mean of all cases if fewer than 7 days of data are given), divided by the prior mean reporting fraction if less than 1 (see [Delays and scaling]); and $r_\mathrm{obs}$ as the point estimate from fitting a linear regression model to the first 7 days of data (or all data if fewer than 7 days of data are given),
+where $I_{t}$ is the number of latent infections on day $t$, $r$ is the estimate of the initial growth rate, and $I_\mathrm{obs}$ and $r_\mathrm{obs}$ are estimated from the first week of observed data, respectively, as as the point estimates of intercept and slope from fitting a linear regression model to the first 7 days of data (or all data if fewer than 7 days of data are given),
 
 \begin{equation}
 log(C_t) = a + r_\mathrm{obs} t + \epsilon_t

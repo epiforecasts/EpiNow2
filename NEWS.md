@@ -20,6 +20,7 @@
 - All parameters have been changed to the new parameter interface. By @sbfnk in #871 and #890 and reviewed by @seabbs.
 - The Gaussian Process lengthscale is now scaled internally by half the length of the time series. By @sbfnk in #890 and reviewed by #seabbs.
 - A bug was fixed where `plot.dist_spec()` wasn't throwing an informative error due to an incomplete check for the max of the specified delay. By @jamesmbaazam in #858 and reviewed by @.
+- Updated the early dynamics calculation to use the full linear model if available. Also changd the prior for initial infections to be approximately Poisson. By @sbfnk in # and reviewed by
 
 ## Package changes
 
