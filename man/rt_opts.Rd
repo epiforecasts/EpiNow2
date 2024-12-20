@@ -11,7 +11,8 @@ rt_opts(
   use_breakpoints = TRUE,
   future = "latest",
   gp_on = c("R_t-1", "R0"),
-  pop = Fixed(0)
+  pop = Fixed(0),
+  pop_within_horizon = FALSE
 )
 }
 \arguments{
@@ -54,6 +55,13 @@ estimates, which may not be desirable.}
 Used to adjust Rt estimates based on the proportion of the population that
 is susceptible. Defaults to \code{Fixed(0)} which means no population adjustment
 is done.}
+
+\item{pop_within_horizon}{Logical, defaults to \code{FALSE}. Should the
+susceptible population adjustment be applied within the time horizon of data
+or just beyond it. Note that if \code{pop_within_horizon = TRUE} the Rt estimate
+will be unadjusted for susceptible depletion but the resulting posterior
+predictions for infections and cases will be adjusted for susceptible
+depletion.}
 }
 \value{
 An \verb{<rt_opts>} object with settings defining the time-varying
