@@ -1094,7 +1094,37 @@ stan_opts <- function(object = NULL,
   return(opts)
 }
 
-#' Return an _opts List per Region
+#' Forecast options
+#' @description `r lifecycle::badge("stable")`
+#' Defines a list specifying the arguments passed to underlying stan
+#' backend functions via [stan_sampling_opts()] and [stan_vb_opts()]. Custom
+#' settings can be supplied which override the defaults.
+#'
+#' @param horizon Numeric, defaults to 7. Number of days into the future to
+#' forecast.
+#' @param accumulate Integer, the number of days to accumulate in forecasts, if
+#'   any. If not given and observations are accumulated at constant frequency in
+#'   the data used for fitting then the same accumulation will be used in
+#'   forecasts unless set explicitly here.
+#' @return A `<forecast_opts>` object of forecast setting.
+#' @seealso fill_missing
+#' @export
+#' @examples
+#' forecast_opts(horizon = 28, accumulate = 7)
+forecast_opts <- function(horizon = 7, accumulate) {
+  opts <- list(
+    horizon = horizon,
+    infer_accumulate = missing(accumulate)
+  )
+  if (missing(accumulate)) {
+    accumulate <- 1
+  }
+  opts$accumulate <- accumulate
+  attr(opts, "class") <- c("forecast_opts", class(opts))
+  return(opts)
+}
+
+#' Forecast optiong
 #'
 #' @description `r lifecycle::badge("maturing")`
 #' Define a list of `_opts()` to pass to [regional_epinow()] `_opts()` accepting

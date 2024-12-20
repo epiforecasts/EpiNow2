@@ -212,12 +212,19 @@ add_horizon <- function(data, horizon, accumulate = 1L,
     ]
     ## if we accumulate add the column
     if (accumulate > 1 || "accumulate" %in% colnames(data)) {
+      initial_future_accumulate <- sum(cumsum(rev(!data$accumulate)) == 0)
       reported_cases_future[, accumulate := TRUE]
       ## set accumulation to FALSE where appropriate
-      if (horizon >= accumulate) {
+      if (horizon >= accumulate - initial_future_accumulate) {
+        reported_cases_future[,
+          counter := as.integer(
+            date - min(date) + initial_future_accumulate + 1
+          )
+        ]
         reported_cases_future[
-          as.integer(date - min(date) - 1) %% accumulate == 0,
-          accumulate := FALSE
+          counter %% future_accumulate == 0,
+          accumulate := FALSE,
+          env = list(future_accumulate = accumulate)
         ]
       }
     }

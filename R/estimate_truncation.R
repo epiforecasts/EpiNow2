@@ -158,7 +158,6 @@ estimate_truncation <- function(data,
   dirty_obs <- purrr::map(data, data.table::as.data.table)
   dirty_obs <- purrr::map(dirty_obs,
     create_clean_reported_cases,
-      horizon = 0,
       filter_leading_zeros = filter_leading_zeros,
       zero_threshold = zero_threshold,
       add_breakpoints = FALSE

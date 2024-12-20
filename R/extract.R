@@ -139,7 +139,9 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
 #'
 #' @param reported_dates A vector of dates to report estimates for.
 #'
-#' @param reported_inf_dates A vector of dates to report infection estimates
+#' @param imputed_dates A vector of dates to report imputed reports for.
+#'
+##' @param reported_inf_dates A vector of dates to report infection estimates
 #' for.
 #'
 #' @param drop_length_1 Logical; whether the first dimension should be dropped
@@ -155,7 +157,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
 #' @importFrom data.table data.table
 #' @keywords internal
 extract_parameter_samples <- function(stan_fit, data, reported_dates,
-                                      reported_inf_dates,
+                                      imputed_dates, reported_inf_dates,
                                       drop_length_1 = FALSE, merge = FALSE) {
   # extract sample from stan object
   samples <- extract_samples(stan_fit)
@@ -186,7 +188,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
   out$reported_cases <- extract_parameter(
     "imputed_reports",
     samples,
-    reported_dates
+    imputed_dates
   )
   if ("estimate_r" %in% names(data)) {
     if (data$estimate_r == 1) {
