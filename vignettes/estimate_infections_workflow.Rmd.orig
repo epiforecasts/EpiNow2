@@ -90,10 +90,10 @@ plot(fixed_gamma)
 ```
 
 If distributions are variable, the values with uncertainty are treated as [prior probability densities](https://en.wikipedia.org/wiki/Prior_probability) in the Bayesian inference framework used by _EpiNow2_, i.e. they are estimated as part of the inference.
-For example, to define a variable gamma distribution where uncertainty in the mean is given by a normal distribution with mean 3 and sd 2, and uncertainty in the standard deviation is given by a normal distribution with mean 1 and sd 0.1, with a maximum value 10, you would write
+For example, to define a variable gamma distribution where uncertainty in the shape is given by a normal distribution with mean 3 and sd 2, and uncertainty in the rate is given by a normal distribution with mean 1 and sd 0.1, with a maximum value 10, you would write
 
 ```{r}
-uncertain_gamma <- Gamma(mean = Normal(3, 2), sd = Normal(1, 0.1), max = 10)
+uncertain_gamma <- Gamma(shape = Normal(3, 2), rate = Normal(1, 0.1), max = 10)
 uncertain_gamma
 ```
 
@@ -102,10 +102,6 @@ which looks like this when plotted
 ```{r plot_uncertain_gamma}
 plot(uncertain_gamma)
 ```
-
-Note the warning about parameters.
-We used the mean and standard deviation to define this distribution with uncertain parameters, but it would be better to use the "natural" parameters of the gamma distribution, shape and rate, for example using the values estimate and reported back after calling the previous command.
-
 There are various ways the specific delay distributions mentioned below might be obtained.
 Often, they will come directly from the existing literature reviewed by the user and studies conducted elsewhere.
 Sometimes it might be possible to obtain them from existing databases, e.g. using the [epiparameter](https://github.com/epiverse-trace/epiparameter) R package.
@@ -209,7 +205,7 @@ It can be changed using the `rt_opts()` function.
 For example, if the user believes that at the very start of the data the reproduction number was 2, with uncertainty in this belief represented by a standard deviation of 1, they would use
 
 ```{r results = 'hide'}
-rt_prior <- LogNormal(mean =  2, sd = 1)
+rt_prior <- LogNormal(mean = 2, sd = 1)
 rt_opts(prior = rt_prior)
 ```
 

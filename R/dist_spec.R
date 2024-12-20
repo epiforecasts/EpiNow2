@@ -116,9 +116,12 @@ discrete_pmf <- function(distribution =
 #' )
 #' dist1 + dist1
 #'
-#' # An uncertain gamma distribution with mean 3 and sd 2
+#' # An uncertain gamma distribution with shape and rate normally distributed
+#' # as Normal(3, 0.5) and Normal(2, 0.5) respectively
 #' dist2 <- Gamma(
-#'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
+#'   shape = Normal(3, 0.5),
+#'   rate = Normal(2, 0.5),
+#'   max = 20
 #' )
 #' dist1 + dist2
 `+.dist_spec` <- function(e1, e2) {
@@ -197,9 +200,12 @@ discrete_pmf <- function(distribution =
 #' )
 #' dist1 + dist1
 #'
-#' # An uncertain gamma distribution with mean 3 and sd 2
+#' # An uncertain gamma distribution with shape and rate normally distributed
+#' # as Normal(3, 0.5) and Normal(2, 0.5) respectively
 #' dist2 <- Gamma(
-#'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
+#'   shape = Normal(3, 0.5),
+#'   rate = Normal(2, 0.5),
+#'   max = 20
 #' )
 #' c(dist1, dist2)
 c.dist_spec <- function(...) {
@@ -257,9 +263,12 @@ c.dist_spec <- function(...) {
 #' dist1 <- LogNormal(mean = 5, sd = 1, max = 20)
 #' mean(dist1)
 #'
-#' # An uncertain gamma distribution with mean 3 and sd 2
+#' # An uncertain gamma distribution with shape and rate normally distributed
+#' # as Normal(3, 0.5) and Normal(2, 0.5) respectively
 #' dist2 <- Gamma(
-#'  mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
+#'   shape = Normal(3, 0.5),
+#'   rate = Normal(2, 0.5),
+#'   max = 20
 #' )
 #' mean(dist2)
 #'
@@ -393,8 +402,13 @@ sd.default <- function(x, ...) {
 #' dist1 <- Gamma(mean = 5, sd = 1, max = 20)
 #' max(dist1)
 #'
-#' # An uncertain lognormal distribution with mean 3 and sd 2
-#' dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
+#' # An uncertain lognormal distribution with meanlog and sdlog normally
+#' # distributed as Normal(3, 0.5) and Normal(2, 0.5) respectively
+#' dist2 <- LogNormal(
+#'   meanlog = Normal(3, 0.5),
+#'   sdlog = Normal(2, 0.5),
+#'   max = 20
+#' )
 #' max(dist2)
 #'
 #' # The max the sum of two distributions
@@ -447,8 +461,13 @@ discretise <- function(x, ...) {
 #' # A fixed gamma distribution with mean 5 and sd 1.
 #' dist1 <- Gamma(mean = 5, sd = 1, max = 20)
 #'
-#' # An uncertain lognormal distribution with mean 3 and sd 2
-#' dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
+#' # An uncertain lognormal distribution with meanlog and sdlog normally
+#' # distributed as Normal(3, 0.5) and Normal(2, 0.5) respectively
+#' dist2 <- LogNormal(
+#'   meanlog = Normal(3, 0.5),
+#'   sdlog = Normal(2, 0.5),
+#'   max = 20
+#' )
 #'
 #' # The maxf the sum of two distributions
 #' discretise(dist1 + dist2, strict = FALSE)
@@ -531,11 +550,16 @@ collapse <- function(x, ...) {
 #' # A fixed gamma distribution with mean 5 and sd 1.
 #' dist1 <- Gamma(mean = 5, sd = 1, max = 20)
 #'
-#' # An uncertain lognormal distribution with mean 3 and sd 2
-#' dist2 <- LogNormal(mean = 3, sd = 2, max = 20)
+#' # An uncertain lognormal distribution with meanlog and sdlog normally
+#' # distributed as Normal(3, 0.5) and Normal(2, 0.5) respectively
+#' dist2 <- LogNormal(
+#'   meanlog = Normal(3, 0.5),
+#'   sdlog = Normal(2, 0.5),
+#'   max = 20
+#' )
 #'
 #' # The maxf the sum of two distributions
-#' collapse(discretise(dist1 + dist2))
+#' collapse(discretise(dist1 + dist2, strict = FALSE))
 collapse.dist_spec <- function(x, ...) {
   return(x)
 }
@@ -588,9 +612,10 @@ collapse.multi_dist_spec <- function(x, ...) {
 #' dist1 <- LogNormal(mean = 1.5, sd = 0.5, max = 20)
 #' print(dist1)
 #'
-#' # An uncertain gamma distribution with mean 3 and sd 2
+#' # An uncertain gamma distribution with shape and rate normally distributed
+#' # as Normal(3, 0.5) and Normal(2, 0.5) respectively
 #' dist2 <- Gamma(
-#'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
+#'   shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 20
 #' )
 #' print(dist2)
 print.dist_spec <- function(x, ...) {
@@ -680,9 +705,12 @@ print.dist_spec <- function(x, ...) {
 #' # Plot discretised distribution with 0.01 day discretisation window
 #' plot(dist1, res = 0.01, cumulative = FALSE)
 #'
-#' # An uncertain gamma distribution with mean 3 and sd 2
+#' # An uncertain gamma distribution with shape and rate normally distributed
+#' # as Normal(3, 0.5) and Normal(2, 0.5) respectively
 #' dist2 <- Gamma(
-#'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
+#'   shape = Normal(3, 0.5),
+#'   rate = Normal(2, 0.5),
+#'   max = 20
 #' )
 #' plot(dist2)
 #'
@@ -781,9 +809,12 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
 #' @examples
 #' dist1 <- LogNormal(mean = 1.6, sd = 0.5, max = 20)
 #'
-#' # An uncertain gamma distribution with mean 3 and sd 2
+#' # An uncertain gamma distribution with shape and rate normally distributed
+#' # as Normal(3, 0.5) and Normal(2, 0.5) respectively
 #' dist2 <- Gamma(
-#'   mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
+#'   shape = Normal(3, 0.5),
+#'   rate = Normal(2, 0.5),
+#'   max = 20
 #' )
 #'
 #' # Multiple distributions
@@ -828,9 +859,12 @@ fix_parameters <- function(x, ...) {
 #' @importFrom rlang arg_match
 #' @method fix_parameters dist_spec
 #' @examples
-#' # An uncertain gamma distribution with mean 3 and sd 2
-#' dist <- LogNormal(
-#'   meanlog = Normal(3, 0.5), sdlog = Normal(2, 0.5), max = 20
+#' # An uncertain gamma distribution with shape and rate normally distributed
+#' # as Normal(3, 0.5) and Normal(2, 0.5) respectively
+#' dist <- Gamma(
+#'   shape = Normal(3, 0.5),
+#'   rate = Normal(2, 0.5),
+#'   max = 20
 #' )
 #'
 #' fix_parameters(dist)
@@ -891,8 +925,13 @@ is_constrained <- function(x, ...) {
 #' # A fixed gamma distribution with mean 5 and sd 1.
 #' dist1 <- Gamma(mean = 5, sd = 1, max = 20)
 #'
-#' # An uncertain lognormal distribution with mean 3 and sd 2
-#' dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
+#' # An uncertain lognormal distribution with meanlog and sdlog normally
+#' # distributed as Normal(3, 0.5) and Normal(2, 0.5) respectively
+#' dist2 <- LogNormal(
+#'   meanlog = Normal(3, 0.5),
+#'   sdlog = Normal(2, 0.5),
+#'   max = 20
+#' )
 #'
 #' # both distributions are constrained and therefore so is the sum
 #' is_constrained(dist1 + dist2)
@@ -952,7 +991,8 @@ is_constrained.multi_dist_spec <- function(x, ...) {
 #' @examples
 #' LogNormal(mean = 4, sd = 1)
 #' LogNormal(mean = 4, sd = 1, max = 10)
-#' LogNormal(mean = Normal(4, 1), sd = 1, max = 10)
+#' # If specifying uncertain parameters, use the natural parameters
+#' LogNormal(meanlog = Normal(1.5, 0.5), sdlog = 0.25, max = 10)
 LogNormal <- function(meanlog, sdlog, mean, sd, ...) {
   params <- as.list(environment())
   return(new_dist_spec(params, "lognormal", ...))

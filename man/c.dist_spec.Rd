@@ -27,9 +27,12 @@ dist1 <- LogNormal(
 )
 dist1 + dist1
 
-# An uncertain gamma distribution with mean 3 and sd 2
+# An uncertain gamma distribution with shape and rate normally distributed
+# as Normal(3, 0.5) and Normal(2, 0.5) respectively
 dist2 <- Gamma(
-  mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20
+  shape = Normal(3, 0.5),
+  rate = Normal(2, 0.5),
+  max = 20
 )
 c(dist1, dist2)
 }

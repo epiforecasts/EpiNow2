@@ -23,8 +23,13 @@ Logical; TRUE if \code{x} is constrained
 # A fixed gamma distribution with mean 5 and sd 1.
 dist1 <- Gamma(mean = 5, sd = 1, max = 20)
 
-# An uncertain lognormal distribution with mean 3 and sd 2
-dist2 <- LogNormal(mean = Normal(3, 0.5), sd = Normal(2, 0.5), max = 20)
+# An uncertain lognormal distribution with meanlog and sdlog normally
+# distributed as Normal(3, 0.5) and Normal(2, 0.5) respectively
+dist2 <- LogNormal(
+  meanlog = Normal(3, 0.5),
+  sdlog = Normal(2, 0.5),
+  max = 20
+)
 
 # both distributions are constrained and therefore so is the sum
 is_constrained(dist1 + dist2)

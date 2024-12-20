@@ -44,7 +44,11 @@ functions.
 delay_opts()
 
 # A single delay that has uncertainty
-delay <- LogNormal(mean = Normal(1, 0.2), sd = Normal(0.5, 0.1), max = 14)
+delay <- LogNormal(
+  meanlog = Normal(1, 0.2),
+  sdlog = Normal(0.5, 0.1),
+  max = 14
+)
 delay_opts(delay)
 
 # A single delay without uncertainty
