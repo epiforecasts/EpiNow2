@@ -734,7 +734,10 @@ obs_opts <- function(family = c("negbin", "poisson"),
     cli_abort(
       c(
         "!" = "Specifying {.var phi} as a vector of length 2 is deprecated.",
-        "i" = "Use a {.cls dist_spec} instead, e.g. Normal(mean = {phi[1]}, sd = {phi[2]})."
+        "i" = paste0(
+          "Use a {.cls dist_spec} instead, e.g. Normal(mean = {phi[1]}, ",
+          "sd = {phi[2]})."
+        )
       )
     )
   }
