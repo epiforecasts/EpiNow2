@@ -1,5 +1,5 @@
 skip_on_cran()
-sreported_cases <- data.frame(region = c("test", "boo"))
+reported_cases <- data.frame(region = c("test", "boo"))
 futile.logger::flog.threshold("FATAL")
 
 test_that("setup_future runs without error", {
