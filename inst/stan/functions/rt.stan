@@ -49,13 +49,10 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
  * Calculate the log-probability of the reproduction number (Rt) priors
  *
  * @param initial_infections Array of initial infection values
- * @param initial_growth Array of initial growth rates
  * @param bp_effects Vector of breakpoint effects
  * @param bp_sd Array of breakpoint standard deviations
  * @param bp_n Number of breakpoints
- * @param seeding_time Time point at which seeding occurs
  * @param prior_infections Prior mean for initial infections
- * @param prior_growth Prior mean for initial growth rates
  */
 void rt_lp(array[] real initial_infections, vector bp_effects,
            array[] real bp_sd, int bp_n, real prior_infections) {
