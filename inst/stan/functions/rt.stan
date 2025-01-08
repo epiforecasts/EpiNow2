@@ -57,9 +57,8 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
  * @param prior_infections Prior mean for initial infections
  * @param prior_growth Prior mean for initial growth rates
  */
-void rt_lp(array[] real initial_infections, array[] real initial_growth,
-           vector bp_effects, array[] real bp_sd, int bp_n, int seeding_time,
-           real prior_infections, real prior_growth) {
+void rt_lp(array[] real initial_infections, vector bp_effects,
+           array[] real bp_sd, int bp_n, real prior_infections) {
   //breakpoint effects on Rt
   if (bp_n > 0) {
     bp_sd[1] ~ normal(0, 0.1) T[0,];
@@ -68,7 +67,4 @@ void rt_lp(array[] real initial_infections, array[] real initial_growth,
   // initial infections
   initial_infections ~ normal(prior_infections, sqrt(prior_infections));
   
-  if (seeding_time > 1) {
-    initial_growth ~ normal(prior_growth, 0.2);
-  }
 }
