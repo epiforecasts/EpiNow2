@@ -223,8 +223,8 @@ estimate_infections <- function(data,
     ))
   }
 
-  ## add forecast horizon
-  if (!is.null(forecast)) {
+  ## add forecast horizon if forecasting is required
+  if (forecast$horizon > 0) {
     reported_cases <- add_horizon(
       reported_cases, forecast$horizon, forecast$accumulate
     )
