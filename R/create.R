@@ -421,9 +421,6 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 ##' the Observation Model
 ##' @keywords internal
 create_forecast_data <- function(forecast = forecast_opts(), data) {
-  if (is.null(forecast)) {
-    forecast <- forecast_opts(horizon = 0)
-  }
   if (forecast$infer_accumulate && any(data$accumulate)) {
     accumulation_times <- which(!data$accumulate)
     gaps <- unique(diff(accumulation_times))
