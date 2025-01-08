@@ -17,3 +17,4 @@ horizon}
 \description{
 Ensure forecast is properly set up
 }
+\keyword{internal}
