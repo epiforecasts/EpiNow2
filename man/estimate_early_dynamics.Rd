@@ -13,7 +13,8 @@ estimate_early_dynamics(cases, seeding_time)
 \code{\link[=get_seeding_time]{get_seeding_time()}}.}
 }
 \value{
-A list containing \code{prior_infections} and \code{prior_growth}.
+A list containing \code{initial_infections_estimate} and
+\code{initial_growth_estimate}.
 }
 \description{
 Calculates the prior infections and growth rate based on the

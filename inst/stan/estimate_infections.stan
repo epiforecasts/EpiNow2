@@ -63,8 +63,8 @@ transformed parameters {
   array[estimate_r && seeding_time > 1 ? 1 : 0] real initial_growth; // seed growth rate
 
   if (num_elements(initial_growth) > 0) {
-    initial_growth[1] = prior_growth +
-      (prior_infections - initial_infections[1]) / seeding_time;
+    initial_growth[1] = initial_growth_estimate +
+      (initial_infections_estimate - initial_infections[1]) / seeding_time;
   }
 
   // GP in noise - spectral densities
@@ -210,7 +210,7 @@ model {
     // priors on Rt
     profile("rt lp") {
       rt_lp(
-        initial_infections, bp_effects, bp_sd, bp_n, prior_infections
+        initial_infections, bp_effects, bp_sd, bp_n, initial_infections_estimate
       );
     }
   }
