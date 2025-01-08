@@ -205,7 +205,7 @@ test_that("estimate_infections produces no forecasts when forecast = NULL and ho
     out <- estimate_infections(
       data = reported_cases,
       generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(example_incubation_period + reporting_delay),
+      delays = delay_opts(example_incubation_period),
       stan = stan_opts(method = "vb"), # vb used for speed
       forecast = NULL
     )
@@ -219,7 +219,7 @@ test_that("estimate_infections produces no forecasts when forecast_opts horizon 
     out <- estimate_infections(
       data = reported_cases,
       generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(example_incubation_period + reporting_delay),
+      delays = delay_opts(example_incubation_period),
       stan = stan_opts(method = "vb"), # vb used for speed
       forecast = forecast_opts(horizon = 0)
     )
@@ -234,7 +234,7 @@ test_that("horizon overrides forecast$horizon if both specified", {
     out <- estimate_infections(
       data = reported_cases,
       generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(example_incubation_period + reporting_delay),
+      delays = delay_opts(example_incubation_period),
       stan = stan_opts(method = "vb"), # vb used for speed
       forecast = forecast_opts(horizon = 7),
       horizon = horizon
