@@ -320,12 +320,12 @@ estimate_infections <- function(data,
       reported_cases$date[-(1:stan_data$seeding_time)][stan_data$imputed_times]
   )
 
-  ## Add prior infections
+  ## Add initial infections estimate
   if (length(delays) > 0) {
-    out$prior_infections <- shifted_cases[
+    out$initial_infections_estimate <- shifted_cases[
       ,
       .(
-        parameter = "prior_infections", time = seq_len(.N),
+        parameter = "initial_infections_estimate", time = seq_len(.N),
         date, value = confirm, sample = 1
       )
     ]

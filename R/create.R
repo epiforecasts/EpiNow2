@@ -450,34 +450,44 @@ create_forecast_data <- function(forecast = forecast_opts(), data) {
 #'
 #' @param cases Numeric vector; the case counts from the input data.
 #' @inheritParams create_stan_data
-#' @return A list containing `prior_infections` and `prior_growth`.
+#' @return A list containing `initial_infections_estimate` and
+#'   `initial_growth_estimate`.
 #' @keywords internal
 estimate_early_dynamics <- function(cases, seeding_time) {
-  first_week <- data.table::data.table(
-    confirm = cases[seq_len(min(7, length(cases)))],
-    t = seq_len(min(7, length(cases)))
+  initial_period <- data.table::data.table(
+    confirm = cases[seq_len(min(7, seeding_time, length(cases)))],
+    t = seq_len(min(7, seeding_time, length(cases))) - 1
   )[!is.na(confirm)]
 
-  # Calculate prior infections
-  prior_infections <- log(mean(first_week$confirm, na.rm = TRUE))
-  prior_infections <- ifelse(
-    is.na(prior_infections) || is.null(prior_infections),
-    0, prior_infections
-  )
-
-  # Calculate prior growth
-  if (seeding_time > 1 && nrow(first_week) > 1) {
+  # Calculate initial infections and growth estimate
+  if (seeding_time > 1 && nrow(initial_period) > 1) {
     safe_lm <- purrr::safely(stats::lm)
-    prior_growth <- safe_lm(log(confirm) ~ t, data = first_week)[[1]]
-    prior_growth <- ifelse(
-      is.null(prior_growth), 0, prior_growth$coefficients[2]
+    log_linear_estimate <- safe_lm(log(confirm) ~ t, data = initial_period)[[1]]
+    initial_infections_estimate <- ifelse(
+      is.null(log_linear_estimate), 0, log_linear_estimate$coefficients[1]
+    )
+    initial_growth_estimate <- ifelse(
+      is.null(log_linear_estimate), 0, log_linear_estimate$coefficients[2]
     )
   } else {
-    prior_growth <- 0
+    initial_infections_estimate <- 0
+    initial_growth_estimate <- 0
   }
+
+  # Calculate prior infections
+  if (initial_infections_estimate == 0) {
+    initial_infections_estimate <- log(
+      mean(initial_period$confirm, na.rm = TRUE)
+    )
+    if (is.na(initial_infections_estimate) ||
+        is.null(initial_infections_estimate)) {
+      initial_infections_estimate <- 0
+    }
+  }
+
   return(list(
-    prior_infections = prior_infections,
-    prior_growth = prior_growth
+    initial_infections_estimate = initial_infections_estimate,
+    initial_growth_estimate = initial_growth_estimate
   ))
 }
 
@@ -588,8 +598,8 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   # used
   stan_data$shifted_cases <-
     stan_data$shifted_cases / mean(obs$scale)
-  stan_data$prior_infections <- log(
-    exp(stan_data$prior_infections) / mean(obs$scale)
+  stan_data$initial_infections_estimate <- log(
+    exp(stan_data$initial_infections_estimate) / mean(obs$scale)
   )
   return(stan_data)
 }
@@ -635,10 +645,9 @@ create_initial_conditions <- function(data) {
       out$eta <- array(numeric(0))
     }
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(rnorm(1, data$prior_infections, 0.2))
-      if (data$seeding_time > 1) {
-        out$initial_growth <- array(rnorm(1, data$prior_growth, 0.02))
-      }
+      out$initial_infections <- array(
+        rnorm(1, data$initial_infections_estimate, 0.2)
+      )
     }
 
     if (data$bp_n > 0) {
