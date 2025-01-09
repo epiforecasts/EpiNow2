@@ -183,7 +183,7 @@ test_that("estimate_infections produces forecasts when forecast = NULL but horiz
     out <- estimate_infections(
       data = reported_cases,
       generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(example_incubation_period + reporting_delay),
+      delays = delay_opts(example_incubation_period),
       stan = stan_opts(method = "vb"), # vb used for speed
       forecast = NULL,
       horizon = horizon
