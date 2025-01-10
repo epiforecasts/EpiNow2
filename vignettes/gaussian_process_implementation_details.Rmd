@@ -25,19 +25,19 @@ We make use of Gaussian Processes in several places in `EpiNow2`. For example, t
 
 # Definition
 
-The single dimension Gaussian Processes ($\mathcal{GP}_t$) we use can be written as
+The one-dimensional Gaussian Processes ($\mathrm{GP}_t$) we use can be written as
 
 \begin{equation}
-\mathcal{GP}(\mu(t), k(t, t'))
+\mathrm{GP}(\mu(t), k(t, t'))
 \end{equation}
 
 where $\mu(t)$ and $k(t,t')$ are the mean and covariance functions, respectively.
 In our case as set out above, we have
 
-\begin{equation}
-\mu(t) \equiv 0 \\
-k(t,t') = k(|t - t'|) = k(\Delta t)
-\end{equation}
+\begin{align}
+\mu(t) &\equiv 0 \\
+k(t,t') &= k(|t - t'|) = k(\Delta t)
+\end{align}
 
 with the following choices available for the kernel $k$
 
@@ -140,24 +140,22 @@ with time rescaled linearly to be between -1 and 1,
 t^* = \frac{t - \frac{1}{2}t_\mathrm{GP}}{\frac{1}{2}t_\mathrm{GP}}
 \end{equation}
 
-Relevant priors are
+Relevant default priors are
 
 \begin{align}
-\alpha &\sim \mathrm{Normal}(\mu_\alpha, \sigma_{\alpha}) \\
+\alpha &\sim \mathrm{HalfNormal}(0, 0.01) \\
 \rho   &\sim \mathrm{LogNormal} (\mu_\rho, \sigma_\rho)\\
 \end{align}
 
-with $\rho$ additionally constrained to be between $\rho_\mathrm{min}$ and $\rho_\mathrm{max}$, $\mu_{\rho}$ and $\sigma_\rho$ calculated from given mean $m_{\rho}$ and standard deviation $s_\rho$, and default values (all of which can be changed by the user):
+with $\rho$ additionally constrained with an upper bound of $60$ and $\mu_{\rho}$ and $\sigma_\rho$ calculated using a mean of 21 and standard deviation of 7.
+
+Furthermore, by default we set.
 
 \begin{align}
 b &= 0.2 \\
-L &= 1.5 \\
-m_\rho &= 21 \\
-s_\rho &= 7 \\
-\rho_\mathrm{min} &= 0\\
-\rho_\mathrm{max} &= 60\\
-\mu_\alpha &= 0\\
-\sigma_\alpha &= 0.01
+L &= 1.5
 \end{align}
+
+These values as well as the prior distributions of relevant parameters can all be changed by the user.
 
 # References
