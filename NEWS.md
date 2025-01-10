@@ -33,6 +33,7 @@
 - Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862 and reviewed by @jamesmbaazam.
 - The `...` argument in `estimate_secondary()` has been removed because it was not used. By @jamesmbaazam in #894 and reviewed by @.
 - All examples now use the natural parameters of distributions rather than the mean and standard deviation when specifying uncertain distributions. This is to eliminate warnings and encourage best practice. By @jamesmbaazam in #893 and reviewed by @sbfnk.
+- Updated the methodology vignettes, By @sbfnk and reviewed by.
 
 # EpiNow2 1.6.1
 
