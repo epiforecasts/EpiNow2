@@ -324,7 +324,7 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' Used to adjust Rt estimates based on the proportion of the population that
 #' is susceptible. Defaults to `Fixed(0)` which means no population adjustment
 #' is done.
-#' 
+#'
 #' @param pop_period Character string, defaulting to "forecast". Controls when
 #' susceptible population adjustment is applied. "forecast" only applies the
 #' adjustment to forecasts while "all" applies it to both data and forecasts.
