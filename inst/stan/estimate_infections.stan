@@ -63,7 +63,7 @@ transformed parameters {
   array[estimate_r && seeding_time > 1 ? 1 : 0] real initial_growth; // seed growth rate
 
   if (num_elements(initial_growth) > 0) {
-    initial_growth[1] = initial_growth_estimate + //
+    initial_growth[1] = initial_growth_estimate +
       initial_infections_estimate - initial_infections[1];
   }
 

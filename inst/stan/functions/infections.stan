@@ -36,7 +36,7 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
     infections[1] = infections[1] / frac_obs;
   }
   if (uot > 1) {
-    real growth = initial_growth[1];
+    real growth = exp(initial_growth[1]);
     for (s in 2:uot) {
       infections[s] = infections[s - 1] * growth;
     }
