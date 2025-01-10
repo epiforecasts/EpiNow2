@@ -35,6 +35,7 @@ jobs:
       - name: Run synthetic validation
         run: |
           source("inst/dev/recover-synthetic/rt.R")
+          source("inst/dev/recover-synthetic/eval_rt.R")
         shell: Rscript {0}
 
       - name: Upload validation figures

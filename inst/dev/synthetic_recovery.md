@@ -18,3 +18,9 @@ generate the synthetic data used for model fitting.
 
 ### R(t) estimate from a monthly random walk + a stationary Gaussian process
 ![](./figs/rt_gp_rw_nuts.png)
+
+### Test of one of the infection figs
+![](./figs/inf_gp_rw_nuts.png)
+
+### Test of one of the eval figs
+![](./figs/inf_CRPS.png)
