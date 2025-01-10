@@ -60,12 +60,6 @@ transformed parameters {
   vector[ot_h] reports;                                     // estimated reported cases
   vector[ot] obs_reports;                                   // observed estimated reported cases
   vector[estimate_r * (delay_type_max[gt_id] + 1)] gt_rev_pmf;
-  array[estimate_r && seeding_time > 1 ? 1 : 0] real initial_growth; // seed growth rate
-
-  if (num_elements(initial_growth) > 0) {
-    initial_growth[1] = initial_growth_estimate +
-      initial_infections_estimate - initial_infections[1];
-  }
 
   // GP in noise - spectral densities
   profile("update gp") {
@@ -108,7 +102,7 @@ transformed parameters {
         params
       );
       infections = generate_infections(
-        R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,
+        R, seeding_time, gt_rev_pmf, initial_infections, pop,
         future_time, obs_scale, frac_obs
       );
     }
