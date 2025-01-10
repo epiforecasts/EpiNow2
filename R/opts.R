@@ -411,7 +411,6 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
       )
     )
   }
-  rt$estimate_pop <- TRUE
 
   if (rt$use_rt) {
     rt$prior <- prior
