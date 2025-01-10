@@ -7,20 +7,26 @@ specifications work as expected.
 In all figures, the black dots indicate the ground truth R(t) estimate, used to 
 generate the synthetic data used for model fitting. 
 
-### R(t) estimate from the default Gaussian Process settings using the No-U-Turn (NUTS) sampler
+### Estimate from the default Gaussian Process settings using the No-U-Turn (NUTS) sampler
 ![](./figs/rt_gp_nuts.png)
+![](./figs/inf_gp_nuts.png)
 
-### R(t) estimate from back-calculation
+### Estimate from back-calculation
 ![](./figs/rt_backcalc_nuts.png)
+![](./figs/inf_backcalc_nuts.png)
 
-### R(t) estimate from a weekly random walk, with no Gaussian process
+### Estimate from a weekly random walk, with no Gaussian process
 ![](./figs/rt_weekly_rw_nuts.png)
+![](./figs/inf_weekly_rw_nuts.png)
 
-### R(t) estimate from a monthly random walk + a stationary Gaussian process
+### Estimate from a monthly random walk + a stationary Gaussian process
 ![](./figs/rt_gp_rw_nuts.png)
-
-### Test of one of the infection figs
 ![](./figs/inf_gp_rw_nuts.png)
 
-### Test of one of the eval figs
+
+### Comparison of different model specs
+CRPS over time evaluated against known R(t)
+![](./figs/rt_CRPS.png)
+CRPS over time evaluated against infections
 ![](./figs/inf_CRPS.png)
+
