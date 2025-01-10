@@ -175,7 +175,7 @@ estimate_infections <- function(data,
   assert_class(backcalc, "backcalc_opts")
   assert_class(gp, "gp_opts", null.ok = TRUE)
   assert_class(obs, "obs_opts")
-  assert_class(forecast, "forecast_opts", null.ok = TRUE)
+  assert_class(forecast, "forecast_opts")
   assert_class(stan, "stan_opts")
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(filter_leading_zeros)
