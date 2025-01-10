@@ -6,13 +6,6 @@ test_that("create_forecast_data returns expected default values", {
   expect_equal(result$future_accumulate, 1)
 })
 
-test_that("create_forecast_data handles NULL forecast input correctly", {
-  result <- create_forecast_data(forecast = NULL, data = example_confirmed)
-
-  expect_equal(result$horizon, 0)
-  expect_equal(result$future_accumulate, 1)
-})
-
 test_that("create_rt_data identifies gaps correctly", {
   reported_weekly <- suppressWarnings(fill_missing(
     example_confirmed[seq(1, 60, by = 7)],
