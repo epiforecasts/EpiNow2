@@ -106,7 +106,7 @@ real R_to_r(real R, vector gt_rev_pmf) {
     linspaced_vector(gt_len, 0, gt_len - 1)
   );
   vector[1] r_approx = [ (R - 1) / (R * mean_gt) ]';
-  vector[1] r = solve_newton(eq, r_approx, gt_pmf, R);
+  vector[1] r = solve_powell(eq, r_approx, gt_pmf, R);
 
   return(r[1]);
 }
