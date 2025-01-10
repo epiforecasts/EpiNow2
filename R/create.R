@@ -598,9 +598,6 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   # used
   stan_data$shifted_cases <-
     stan_data$shifted_cases / mean(obs$scale)
-  stan_data$initial_infections_estimate <- log(
-    exp(stan_data$initial_infections_estimate) / mean(obs$scale)
-  )
   return(stan_data)
 }
 
