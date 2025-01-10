@@ -108,10 +108,10 @@ simulate_infections <- function(estimates, R, initial_infections,
   if (seeding_time > 1) {
     ## estimate initial growth from initial reproduction number if seeding time
     ## is greater than 1
-    initial_growth <- (R$R[1] - 1) / mean(generation_time)
+    initial_growth_estimate <- (R$R[1] - 1) / mean(generation_time)
     ## adjust initial infections for initial exponential growth
     log_initial_infections <- log(initial_infections) -
-      (seeding_time - 1) * initial_growth
+      (seeding_time - 1) * initial_growth_estimate
   } else {
     log_initial_infections <- log(initial_infections)
   }
