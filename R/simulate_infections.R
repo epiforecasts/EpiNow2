@@ -113,7 +113,6 @@ simulate_infections <- function(estimates, R, initial_infections,
     log_initial_infections <- log(initial_infections) -
       (seeding_time - 1) * initial_growth
   } else {
-    initial_growth <- numeric(0)
     log_initial_infections <- log(initial_infections)
   }
 
@@ -123,7 +122,6 @@ simulate_infections <- function(estimates, R, initial_infections,
     seeding_time = seeding_time,
     future_time = 0,
     initial_infections = array(log_initial_infections, dim = c(1, 1)),
-    initial_growth = array(initial_growth, dim = c(1, length(initial_growth))),
     R = array(R$R, dim = c(1, nrow(R))),
     pop = pop
   )
