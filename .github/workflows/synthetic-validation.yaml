@@ -51,3 +51,21 @@ jobs:
           name: fits
           retention-days: 5
           path: synthetic.rds
+
+      - name: Render synthetic recovery md
+        run: |
+          rmarkdown::render("inst/dev/synthetic_recovery.md")
+        shell: Rscript {0}
+
+      - name: Upload synthetic recovery md as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic_recovery
+          path: inst/dev/synthetic_recovery.md
+
+      - name: Post synthetic recovery markdown as a comment to a PR
+        uses: live-codes/pr-comment-from-artifact@v1
+        with:
+          message: 'Preview the results from the fit to simulated data here'
+          path: inst/dev/synthetic_recovery.md
+          
