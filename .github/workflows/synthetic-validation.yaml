@@ -39,8 +39,10 @@ jobs:
             local::.
       - name: Run synthetic validation
         run: |
+          Rscript -e '
           source("inst/dev/recover-synthetic/rt.R") 
-        shell: Rscript {0}
+          source("inst/dev/recover-synthetic/eval_rt.R") 
+          '
 
       - name: Upload validation figures
         uses: actions/upload-artifact@v4
