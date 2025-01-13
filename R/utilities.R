@@ -417,6 +417,23 @@ lapply_func <- function(..., backend = "rstan", future.opts = list()) {
   }
 }
 
+#' Ensure forecast is properly set up
+#' @inheritParams estimate_infections
+#' @keywords internal
+setup_forecast <- function(forecast, horizon = NULL) {
+  if (!is.null(horizon)) {
+    assert_numeric(horizon, lower = 0)
+    if (!is.null(forecast)) {
+      forecast$horizon <- horizon
+    } else {
+      forecast <- forecast_opts(horizon = horizon)
+    }
+  } else if (is.null(forecast)) {
+    forecast <- forecast_opts(horizon = 0)
+  }
+  return(forecast)
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
 #' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
 globalVariables(
