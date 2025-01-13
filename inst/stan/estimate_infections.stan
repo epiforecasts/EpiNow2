@@ -204,7 +204,8 @@ model {
     // priors on Rt
     profile("rt lp") {
       rt_lp(
-        initial_infections, bp_effects, bp_sd, bp_n
+        initial_infections, bp_effects, bp_sd, bp_n,
+        fmax(1, mean(head(cases, 7)))
       );
     }
   }
