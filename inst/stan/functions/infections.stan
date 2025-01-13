@@ -29,15 +29,16 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
   vector[t] infections = rep_vector(0, t);
   vector[ot] cum_infections;
   vector[ot] infectiousness;
+  real growth = R_to_r(R[1], gt_rev_pmf);
   // Initialise infections using daily growth
-  infections[1] = exp(initial_infections[1]);
+  infections[1] = exp(initial_infections[1] - growth * uot);
   if (obs_scale) {
     infections[1] = infections[1] / frac_obs;
   }
   if (uot > 1) {
-    real growth = exp(R_to_r(R[1], gt_rev_pmf));
+    real exp_growth = exp(growth);
     for (s in 2:uot) {
-      infections[s] = infections[s - 1] * growth;
+      infections[s] = infections[s - 1] * exp_growth;
     }
   }
   // calculate cumulative infections

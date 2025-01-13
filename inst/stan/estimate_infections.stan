@@ -204,7 +204,7 @@ model {
     // priors on Rt
     profile("rt lp") {
       rt_lp(
-        initial_infections, bp_effects, bp_sd, bp_n, initial_infections_estimate
+        initial_infections, bp_effects, bp_sd, bp_n
       );
     }
   }
