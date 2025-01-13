@@ -64,17 +64,13 @@ jobs:
         run: |
           rmarkdown::render("inst/dev/synthetic_recovery.md")
         shell: Rscript {0}
-
-      - name: Upload synthetic recovery md as an artifact
-        uses: actions/upload-artifact@v4
+      
+      - name: Build and generate
+        uses: live-codes/preview-in-livecodes@v1
         with:
           name: synthetic_recovery
           path: inst/dev/synthetic_recovery.md
 
-      - name: Post synthetic recovery markdown as a comment to a PR
-        uses: live-codes/pr-comment-from-artifact@v1
-        with:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          artifact: synthetic_recovery
+
 
           
