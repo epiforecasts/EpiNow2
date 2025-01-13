@@ -72,5 +72,5 @@ jobs:
         uses: live-codes/pr-comment-from-artifact@v1
         with:
           message: 'Preview the results from the fit to simulated data here'
-          path: inst/dev/synthetic_recovery.md
+          artifact: synthetic_recovery
           
