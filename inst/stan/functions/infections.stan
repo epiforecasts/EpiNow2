@@ -29,7 +29,7 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
   vector[t] infections = rep_vector(0, t);
   vector[ot] cum_infections;
   vector[ot] infectiousness;
-  real growth = R_to_r(R[1], gt_rev_pmf);
+  real growth = R_to_r_manual(R[1], gt_rev_pmf, 1e-3);
   // Initialise infections using daily growth
   infections[1] = exp(initial_infections[1] - growth * uot);
   if (obs_scale) {

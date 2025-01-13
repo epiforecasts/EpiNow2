@@ -77,6 +77,21 @@ void rt_lp(array[] real initial_infections, vector bp_effects,
     return(dot_product(pmf, exp_r));
   }
 
+/**
+ * Helper function for calculating r from R using Newton's method
+ *
+ * @param R Reproduction number
+ * @param r growth rate
+ * @param pmf generation time probability mass function (first index: 0)
+ */
+real R_to_r_newton_step(real R, real r, vector pmf) {
+  int len = num_elements(pmf);
+  vector[len] zero_series = linspaced_vector(len, 0, len - 1);
+  vector[len] exp_r = exp(-r * zero_series);
+  real ret = (R * dot_product(pmf, exp_r) - 1) /
+    (- R * dot_product(pmf .* zero_series, exp_r));
+  return(ret);
+}
 
 /**
  * Helper function used by the [R_to_r()] function to estimate r from R
@@ -90,13 +105,13 @@ vector eq(vector r, vector gt_pmf, real R) {
 }
 
 /**
- * Estiamte the growth rate r from reproduction number R. Used in the model to
- * estimate the initial growth rate
+ * Estimate the growth rate r from reproduction number R. Used in the model to
+ * estimate the initial growth rate using stan's algebraic solver
  *
  * @param R reproduction number
  * @param gt_rev_pmf reverse probability mass function of the generation time
  */
-real R_to_r(real R, vector gt_rev_pmf) {
+real R_to_r(real R, vector gt_rev_pmf, int newton_steps) {
   int gt_len = num_elements(gt_rev_pmf);
   vector[gt_len] gt_pmf = reverse(gt_rev_pmf);
   real mean_gt = dot_product(
@@ -107,4 +122,26 @@ real R_to_r(real R, vector gt_rev_pmf) {
   vector[1] r = solve_powell(eq, r_approx, gt_pmf, R);
 
   return(r[1]);
+}
+
+/**
+ * Estimate the growth rate r from reproduction number R. Used in the model to
+ * estimate the initial growth rate using Newton's method.
+ *
+ * @param R reproduction number
+ * @param gt_rev_pmf reverse probability mass function of the generation time
+ * @param abs_tol absolute tolerance of the solver
+ */
+real R_to_r_manual(real R, vector gt_rev_pmf, real abs_tol) {
+  int gt_len = num_elements(gt_rev_pmf);
+  vector[gt_len] gt_pmf = reverse(gt_rev_pmf);
+  real mean_gt = dot_product(gt_pmf, linspaced_vector(gt_len, 0, gt_len - 1));
+  real r = (R - 1) / (R * mean_gt);
+  real step = abs_tol + 1;
+  while (fabs(step) > abs_tol) {
+    step = R_to_r_newton_step(R, r, gt_pmf);
+    r -= step;
+  }
+
+  return(r);
 }
