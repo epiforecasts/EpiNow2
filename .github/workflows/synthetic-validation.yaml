@@ -71,8 +71,7 @@ jobs:
       - name: Post synthetic recovery markdown as a comment to a PR
         uses: live-codes/pr-comment-from-artifact@v1
         with:
-          message: 'Preview the results from the fit to simulated data here'
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          artifact-name: synthetic_recovery
+          artifact: synthetic_recovery
 
           
