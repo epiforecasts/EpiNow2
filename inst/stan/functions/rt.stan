@@ -61,7 +61,7 @@ void rt_lp(array[] real initial_infections, vector bp_effects,
     bp_effects ~ normal(0, bp_sd[1]);
   }
   // initial infections scaling (on the log scale)
-  initial_infections ~ std_normal();
+  initial_infections ~ normal(0, 5);
 }
 
 /**
