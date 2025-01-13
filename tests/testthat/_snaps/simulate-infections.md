@@ -12,7 +12,7 @@
      8:     infections 2023-01-08 238.87872
      9:     infections 2023-01-09 191.10298
     10:     infections 2023-01-10 152.88238
-    11:     infections 2023-01-11 122.30590
+    11:     infections 2023-01-11 122.30591
     12:     infections 2023-01-12  97.84472
     13:     infections 2023-01-13  78.27578
     14:     infections 2023-01-14  62.62062
@@ -37,18 +37,18 @@
               variable       date     value
                 <char>     <Date>     <num>
      1:     infections 2023-01-01  59.65590
-     2:     infections 2023-01-02  62.94256
+     2:     infections 2023-01-02  62.94257
      3:     infections 2023-01-03  66.29757
      4:     infections 2023-01-04  69.79834
      5:     infections 2023-01-05  73.47025
-     6:     infections 2023-01-06  77.19240
-     7:     infections 2023-01-07  81.11536
+     6:     infections 2023-01-06  77.19241
+     7:     infections 2023-01-07  81.11537
      8:     infections 2023-01-08  56.82758
      9:     infections 2023-01-09  55.14467
     10:     infections 2023-01-10  52.73257
     11:     infections 2023-01-11  50.21367
     12:     infections 2023-01-12  47.72511
-    13:     infections 2023-01-13  45.31379
+    13:     infections 2023-01-13  45.31380
     14:     infections 2023-01-14  42.99623
     15: reported_cases 2023-01-01  57.00000
     16: reported_cases 2023-01-02 128.00000
