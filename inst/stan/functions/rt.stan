@@ -54,14 +54,16 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
  * @param bp_n Number of breakpoints
  */
 void rt_lp(array[] real initial_infections, vector bp_effects,
-           array[] real bp_sd, int bp_n, real prior_infections) {
+           array[] real bp_sd, int bp_n, array[] int cases) {
   //breakpoint effects on Rt
   if (bp_n > 0) {
     bp_sd[1] ~ normal(0, 0.1) T[0,];
     bp_effects ~ normal(0, bp_sd[1]);
   }
   // initial infections scaling (on the log scale)
-  initial_infections ~ normal(log(prior_infections), 2);
+  int head_count = num_elements(cases) > 7 ? 7 : num_elements(cases);
+  real infections_guess = mean(head(cases, head_count));
+  initial_infections ~ normal(log(infections_guess), 2);
 }
 
 /**
