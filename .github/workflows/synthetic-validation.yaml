@@ -34,6 +34,8 @@ jobs:
             here
             scoringutils
             loo
+            data.table
+            rstan
             any::rmarkdown
             matrixStats
             local::.
@@ -41,6 +43,7 @@ jobs:
         run: |
           Rscript -e '
           source("inst/dev/recover-synthetic/rt.R") 
+          source("inst/dev/recover-synthetic/eval_rt.R") 
           '
 
       - name: Upload validation figures
