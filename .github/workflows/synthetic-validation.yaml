@@ -30,7 +30,7 @@ jobs:
             here
             scoringutils
             loo
-            rmarkdown
+            any::rmarkdown
             matrixStats
             local::.
       - name: Run synthetic validation
