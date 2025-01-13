@@ -138,7 +138,7 @@ real R_to_r_manual(real R, vector gt_rev_pmf, real abs_tol) {
   real mean_gt = dot_product(gt_pmf, linspaced_vector(gt_len, 0, gt_len - 1));
   real r = (R - 1) / (R * mean_gt);
   real step = abs_tol + 1;
-  while (fabs(step) > abs_tol) {
+  while (abs(step) > abs_tol) {
     step = R_to_r_newton_step(R, r, gt_pmf);
     r -= step;
   }
