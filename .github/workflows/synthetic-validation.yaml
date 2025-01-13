@@ -67,10 +67,19 @@ jobs:
         with:
           name: synthetic_recovery
           path: inst/dev/synthetic_recovery.md
+      
+      - name: Pull request artifacts
+        uses: gavv/pull-request-artifacts@v2
+        with:
+          commit: ${{ github.event.pull_request.head.sha }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-title: "🤖 Pull request artifacts"
 
       - name: Post synthetic recovery markdown as a comment to a PR
         uses: live-codes/pr-comment-from-artifact@v1
         with:
           message: 'Preview the results from the fit to simulated data here'
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           artifact: synthetic_recovery
+
           
