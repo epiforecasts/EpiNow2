@@ -65,11 +65,22 @@ jobs:
           rmarkdown::render("inst/dev/synthetic_recovery.md")
         shell: Rscript {0}
       
-      - name: Build and generate
-        uses: live-codes/preview-in-livecodes@v1
+      - name: Upload markodwn
+        uses: actions/upload-artifact@v4
         with:
           name: synthetic_recovery
+          retention-days: 5
           path: inst/dev/synthetic_recovery.md
+          
+      - name: Post the artifact
+        uses: CDCgov/cfa-actions/post-artifact@main
+        if: if: ${{ github.event_name == 'pull_request' }}
+        with:
+          artifact-name: synthetic_recovery
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+          message: 'Thank you for your contribution ${{ github.actor }} :rocket:! Your { artifact-name } markdown is ready for download :point_right: [here]({ artifact-url }) :point_left:!'
+      
+      
 
 
 
