@@ -74,7 +74,7 @@ jobs:
           commit: ${{ github.event.pull_request.head.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           comment-title: "🤖 Pull request artifacts"
-          artifact-prefix: synthetic_recovery
+          artifacts-prefix: synthetic_recovery
 
       - name: Post synthetic recovery markdown as a comment to a PR
         uses: live-codes/pr-comment-from-artifact@v1
