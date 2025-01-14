@@ -75,7 +75,7 @@ jobs:
     runs-on: macos-latest
     permissions:
       pull-requests: write
-    if: 
+    if: >
       github.event.workflow_run.event == 'pull_request'
     needs: synthetic-validation
     steps:
