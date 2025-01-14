@@ -65,12 +65,12 @@ jobs:
           rmarkdown::render("inst/dev/synthetic_recovery.md")
         shell: Rscript {0}
       
-      - name: Upload markodown
+      - name: Upload markdown
         uses: actions/upload-artifact@v4
         with:
           name: synthetic_recovery
           retention-days: 5
-          path: inst/dev/synthetic_recovery.md
+          path: inst/dev/synthetic_recovery.html
           
       - name: Post the artifact
         uses: CDCgov/cfa-actions/post-artifact@main
