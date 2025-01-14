@@ -65,7 +65,7 @@ jobs:
           rmarkdown::render("inst/dev/synthetic_recovery.md")
         shell: Rscript {0}
       
-      - name: Upload markodwn
+      - name: Upload markodown
         uses: actions/upload-artifact@v4
         with:
           name: synthetic_recovery
@@ -74,7 +74,7 @@ jobs:
           
       - name: Post the artifact
         uses: CDCgov/cfa-actions/post-artifact@main
-        if: if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' }}
         with:
           artifact-name: synthetic_recovery
           gh-token: ${{ secrets.GITHUB_TOKEN }}
