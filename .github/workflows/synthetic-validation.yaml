@@ -75,7 +75,6 @@ jobs:
     runs-on: macos-latest
     permissions:
       pull-requests: write
-    if: github.event.workflow_run.event == 'pull_request' 
     needs: synthetic-validation
     steps:
       - uses: live-codes/pr-comment-from-artifact@v1
