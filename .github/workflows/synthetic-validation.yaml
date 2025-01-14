@@ -69,7 +69,20 @@ jobs:
         uses: live-codes/preview-in-livecodes@v1
         with:
           name: synthetic_recovery
-          path: inst/dev/synthetic_recovery.md
+          path: inst/dev/synthetic_recovery.html
+  
+  comment-markdown:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    needs: synthetic-validation
+    steps:
+      - uses: live-codes/pr-comment-from-artifact@v1
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
 
 
 
