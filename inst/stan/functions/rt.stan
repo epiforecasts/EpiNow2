@@ -62,7 +62,7 @@ void rt_lp(array[] real initial_infections, vector bp_effects,
   }
   // initial infections scaling (on the log scale)
   int head_count = num_elements(cases) > 7 ? 7 : num_elements(cases);
-  real infections_guess = mean(head(cases, head_count));
+  real infections_guess = fmax(1, mean(head(cases, head_count)));
   initial_infections ~ normal(log(infections_guess), 2);
 }
 
