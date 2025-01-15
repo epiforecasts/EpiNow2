@@ -71,15 +71,6 @@ jobs:
           name: synthetic_recovery
           path: inst/dev/synthetic_recovery.html
   
-  comment-markdown:
-    runs-on: macos-latest
-    permissions:
-      pull-requests: write
-    needs: synthetic-validation
-    steps:
-      - uses: live-codes/pr-comment-from-artifact@v1
-        with:
-          GITHUB_TOKEN: ${{ github.token }}
 
 
 
