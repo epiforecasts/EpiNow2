@@ -1,17 +1,5 @@
 name: "Comment with markdown"
 on:
-  push:
-    branches:
-    - main
-    - master
-    - develop
-    - 197-synth-rec-md
-  pull_request:
-    branches:
-      - main
-      - master
-      - develop
-      - 197-synth-rec-md
   workflow_run:
     workflows: ["Synthetic validation check"] # the workflow that created the artifact
     types:
