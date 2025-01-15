@@ -11,6 +11,7 @@ on:
       - main
       - master
       - develop
+      - 197-synth-rec-md
   workflow_run:
     workflows: ["Synthetic validation check"] # the workflow that created the artifact
     types:
