@@ -17,7 +17,8 @@ save_ggplot <- function(plot, name, prefix = "") {
   ggplot2::ggsave(
     here::here("inst", "dev", "figs", paste0(prefix, name, ".png")),
     plot,
-    dpi = 300, width = 9, height = 6
+    dpi = 300, width = 9, height = 6,
+    create.dir = TRUE
   )
 }
 
