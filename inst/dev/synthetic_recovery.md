@@ -24,7 +24,7 @@ generate the synthetic data used for model fitting.
 ![](./figs/inf_gp_rw_nuts.png)
 
 
-### Comparison of different model specs
+### Comparison of different model specifications
 CRPS over time evaluated against known R(t)
 ![](./figs/rt_crps.png)
 CRPS over time evaluated against infections
