@@ -32,9 +32,9 @@ test_that("rt_opts handles custom inputs correctly", {
 })
 
 test_that("rt_opts warns when pop is passed as numeric", {
-  expect_warning(
+  lifecycle::expect_deprecated(
     rt_opts(pop = 1000),
-    "The `pop` argument of `rt_opts()` must be a `<dist_spec>` as of EpiNow2 1.7.0."
+    "The `pop` argument of `rt_opts\\(\\)` must be a `<dist_spec>` as of EpiNow2 1.7.0."
   )
 })
 
