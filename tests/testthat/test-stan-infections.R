@@ -25,35 +25,35 @@ gt_rev_pmf <- get_delay_rev_pmf(
 # test generate infections
 test_that("generate_infections works as expected", {
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 0, 0), 0),
+    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 0, 0, 1), 0),
     c(rep(1000, 10), 995, 996, rep(997, 8))
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(20), 0, 0, 0, 0), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(20), 0, 0, 0, 0, 1), 0),
     c(rep(20, 11), 22, 22, 23, 24, 24, 25, 26, 27, 28)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(100), 0, 0, 0, 0), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(100), 0, 0, 0, 0, 1), 0),
     c(rep(100, 10), 99, 110, 112, 115, 119, 122, 126, 130, 134, 138)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 0, 0), 0),
+    round(generate_infections(c(1, rep(1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 0, 0, 1), 0),
     c(rep(500, 4), 394, 418, 424, rep(425, 7))
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 0, 0), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 0, 0, 1), 0),
     c(rep(500, 4), 394, 460, 475, 489, 505, 520, 536, 553, 570, 588)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 1, gt_rev_pmf, log(40), 0, 0, 0, 0), 0),
+    round(generate_infections(c(1, rep(1, 9)), 1, gt_rev_pmf, log(40), 0, 0, 0, 0, 1), 0),
     c(40, 8, 11, 12, 12, rep(13, 6))
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 1, gt_rev_pmf, log(100), 0, 0, 0, 0), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 1, gt_rev_pmf, log(100), 0, 0, 0, 0, 1), 0),
     c(100, 20, 31, 35, 36, 37, 38, 39, 41, 42, 43)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 4, 0, 0), 0),
+    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 4, 0, 0, 1), 0),
     c(rep(1000, 10), 995, 996, rep(997, 4), 980, 965, 947, 926)
   )
 })
