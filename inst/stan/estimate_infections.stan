@@ -38,6 +38,12 @@ transformed data {
       delay_types_groups, delay_max, delay_np_pmf_groups
     );
   }
+
+  // initial infections scaling (on the log scale)
+  real initial_infections_guess = fmax(
+    1,
+    mean(head(cases, num_elements(cases) > 7 ? 7 : num_elements(cases)))
+  );
 }
 
 parameters {
@@ -205,7 +211,7 @@ model {
     profile("rt lp") {
       rt_lp(
         initial_infections, bp_effects, bp_sd, bp_n,
-        cases
+        cases, initial_infections_guess
       );
     }
   }
