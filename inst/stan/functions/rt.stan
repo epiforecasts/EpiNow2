@@ -48,20 +48,20 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
 /**
  * Calculate the log-probability of the reproduction number (Rt) priors
  *
- * @param initial_infections Array of initial infection values
+ * @param initial_infections_scale Array of initial infection values
  * @param bp_effects Vector of breakpoint effects
  * @param bp_sd Array of breakpoint standard deviations
  * @param bp_n Number of breakpoints
  */
-void rt_lp(array[] real initial_infections, vector bp_effects,
+void rt_lp(array[] real initial_infections_scale, vector bp_effects,
            array[] real bp_sd, int bp_n, array[] int cases,
-           real infections_guess) {
+           real initial_infections_guess) {
   //breakpoint effects on Rt
   if (bp_n > 0) {
     bp_sd[1] ~ normal(0, 0.1) T[0,];
     bp_effects ~ normal(0, bp_sd[1]);
   }
-  initial_infections ~ normal(log(infections_guess), 2);
+  initial_infections_scale ~ normal(initial_infections_guess, 2);
 }
 
 /**

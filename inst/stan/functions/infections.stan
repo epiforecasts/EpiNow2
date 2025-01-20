@@ -17,10 +17,11 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
   );
   return(new_inf);
 }
+
 // generate infections by using Rt = Rt-1 * sum(reversed generation time pmf * infections)
 vector generate_infections(vector R, int uot, vector gt_rev_pmf,
                            array[] real initial_infections, int pop, int ht,
-                           int obs_scale, real frac_obs) {
+                           int obs_scale, real frac_obs, int initial_as_scale) {
   // time indices and storage
   int ot = num_elements(R);
   int nht = ot - ht;
@@ -31,9 +32,13 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
   vector[ot] infectiousness;
   real growth = R_to_r_manual(R[1], gt_rev_pmf, 1e-3);
   // Initialise infections using daily growth
-  infections[1] = exp(initial_infections[1] - growth * uot);
-  if (obs_scale) {
-    infections[1] = infections[1] / frac_obs;
+  if (initial_as_scale) {
+    infections[1] = exp(initial_infections[1] - growth * uot);
+    if (obs_scale) {
+      infections[1] = infections[1] / frac_obs;
+    }
+  } else {
+    infections[1] = exp(initial_infections[1]);
   }
   if (uot > 1) {
     real exp_growth = exp(growth);

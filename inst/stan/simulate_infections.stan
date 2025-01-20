@@ -62,7 +62,7 @@ generated quantities {
 
       infections[i] = to_row_vector(generate_infections(
         to_vector(R[i]), seeding_time, gt_rev_pmf, initial_infections[i],
-        pop, future_time, obs_scale, frac_obs[i]
+        pop, future_time, obs_scale, frac_obs[i], initial_as_scale
       ));
 
       if (delay_id) {

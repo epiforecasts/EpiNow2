@@ -41,8 +41,8 @@ transformed data {
 
   // initial infections scaling (on the log scale)
   real initial_infections_guess = fmax(
-    1,
-    mean(head(cases, num_elements(cases) > 7 ? 7 : num_elements(cases)))
+    0,
+    log(mean(head(cases, num_elements(cases) > 7 ? 7 : num_elements(cases))))
   );
 }
 
@@ -109,7 +109,7 @@ transformed parameters {
       );
       infections = generate_infections(
         R, seeding_time, gt_rev_pmf, initial_infections, pop,
-        future_time, obs_scale, frac_obs
+        future_time, obs_scale, frac_obs, 1
       );
     }
   } else {
