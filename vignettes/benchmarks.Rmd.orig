@@ -542,9 +542,9 @@ timing_plot
 
 ### Estimation performance
 
-Now, we will evaluate the forecasts using the continuous ranked probability score (CRPS). The CRPS is a proper scoring rule that measures the accuracy of probabilistic forecasts. The smaller the CRPS, the better. We will use the [`crps_sample()`](https://epiforecasts.io/scoringutils/reference/crps_sample.html) function from the [`{scoringutils}`](https://epiforecasts.io/scoringutils/index.html) package.
+Now, we will evaluate the models using the continuous ranked probability score (CRPS). The CRPS is a proper scoring rule that measures the accuracy of probabilistic forecasts. The smaller the CRPS, the better. We will use the [`crps_sample()`](https://epiforecasts.io/scoringutils/reference/crps_sample.html) function from the [`{scoringutils}`](https://epiforecasts.io/scoringutils/index.html) package. Note that here, we are only evaluating the models solved with MCMC sampling. We will not evaluate the approximate sampling methods as they are not recommended for real-time analysis.
 
-We will compare the performance of each model based on forecasts with partial data and complete data.
+We will compare the performance of each model based on forecasts with complete and partial data.
 
 To calculate the CRPS for the estimated $R_t$ and infections, we will first set up a function that ensures the true data and estimates are of the same length and then calls the `crps_sample()` function from the `{scoringutils}` package using log-transformed values of the true and estimated values.
 ```{r crps-func}
