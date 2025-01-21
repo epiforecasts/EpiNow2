@@ -568,125 +568,72 @@ calc_crps <- function(estimates, truth) {
 
 Now, we will extract the $R_t$ estimates and calculate the CRPS using the `calc_crps()` function above.
 
-```{r rt_crps,class.source = 'fold-hide'}
-# Extract rt values
-rt_by_snapshot <- get_model_results(results, variable = "R")
+# Define a function to process CRPS calculations and data transformation
+process_crps <- function(results, variable, truth) {
+  # Extract values
+  by_snapshot <- get_model_results(results, variable = variable)
 
-# Apply function above to calculate CRPS for the estimated Rt
-rt_crps_by_snapshot <- lapply(
-  rt_by_snapshot,
-  function(snapshot_results) {
-    lapply(
-      snapshot_results, function(model_results) {
-        calc_crps(estimates = model_results, truth = R) # compare against true R
-      }
-    )
-  }
-)
+  # Apply function to calculate CRPS
+  crps_by_snapshot <- lapply(
+    by_snapshot,
+    function(snapshot_results) {
+      lapply(
+        snapshot_results, function(model_results) {
+          calc_crps(estimates = model_results, truth = truth)
+        }
+      )
+    }
+  )
 
-# Add dates column based on snapshot length
-rt_crps_with_dates <- lapply(
-  rt_crps_by_snapshot,
-  function(snapshot_results) {
-    lapply(
-      snapshot_results,
-      function (model_results) {
-        data.table(crps = model_results)[,
-          date:= min(reported_cases_true$date) + 0: (.N - 1)
-        ]
-      }
-    )
-  })
+  # Add dates column based on snapshot length
+  crps_with_dates <- lapply(
+    crps_by_snapshot,
+    function(snapshot_results) {
+      lapply(
+        snapshot_results,
+        function (model_results) {
+          data.table(crps = model_results)[,
+            date:= min(reported_cases_true$date) + 0: (.N - 1)
+          ]
+        }
+      )
+    })
 
-# Flatten the results into one dt
-rt_crps_flat <- lapply(
-  rt_crps_with_dates,
-  function(snapshot_results) {
-   rbindlist(snapshot_results, idcol = "model") 
-  }) |> 
-  rbindlist(idcol = "snapshot_date") 
+  # Flatten the results into one dt
+  crps_flat <- lapply(
+    crps_with_dates,
+    function(snapshot_results) {
+     rbindlist(snapshot_results, idcol = "model")
+    }) |>
+    rbindlist(idcol = "snapshot_date")
 
-# Add model configurations for facetting
-rt_crps_full <- merge.data.table(
-  rt_crps_flat,
-  model_components,
-  by = "model"
-)
+  # Add model configurations for facetting
+  crps_full <- merge.data.table(
+    crps_flat,
+    model_components,
+    by = "model"
+  )
 
-# Add model descriptions
-rt_crps_full <- merge.data.table(
-  rt_crps_full,
-  model_descriptions,
-  by = "model"
-)
-# Replace the snapshot dates with their description
-# Replace snapshot_date based on the dictionary
-rt_crps_full[, epidemic_phase := names(snapshot_date_names)[
-  match(snapshot_date, snapshot_date_names)
-]]
-```
+  # Add model descriptions
+  crps_full <- merge.data.table(
+    crps_full,
+    model_descriptions,
+    by = "model"
+  )
 
-Let's do the same for the infections.
-```{r infections_crps,class.source = 'fold-hide'}
-# Extract estimated infections
-infections_by_snapshot <- get_model_results(results, variable = "infections")
+  # Replace the snapshot dates with their description
+  crps_full[, epidemic_phase := names(snapshot_date_names)[
+    match(snapshot_date, snapshot_date_names)
+  ]]
 
-# Apply function above to calculate CRPS for the estimated infections
-infections_crps_by_snapshot <- lapply(
-  infections_by_snapshot,
-  function(snapshot_results) {
-    lapply(
-      snapshot_results, function(model_results) {
-        calc_crps(
-          estimates = model_results,
-          truth = infections_true # compare against true infections
-        )
-      }
-    )
-  }
-)
+  return(crps_full)
+}
 
-# Add dates column based on snapshot length
-infections_crps_with_dates <- lapply(
-  infections_crps_by_snapshot,
-  function(snapshot_results) {
-    lapply(
-      snapshot_results,
-      function (model_results) {
-        data.table(crps = model_results)[
-          ,
-          date:= min(reported_cases_true$date) + 0: (.N - 1)
-        ]}
-    )
-  })
+# Process CRPS for Rt
+rt_crps_full <- process_crps(results, "R", R)
 
-# Flatten the results into one dt
-infections_crps_flat <- lapply(
-  infections_crps_with_dates,
-  function(snapshot_results) {
-   rbindlist(snapshot_results, idcol = "model") 
-  }) |> 
-  rbindlist(idcol = "snapshot_date") 
-
-# Add model configurations for facetting
-infections_crps_full <- merge.data.table(
-  infections_crps_flat,
-  model_components,
-  by = "model"
-)
-
-# Add model descriptions
-infections_crps_full <- merge.data.table(
-  infections_crps_full,
-  model_descriptions,
-  by = "model"
-)
-
-# Replace the snapshot dates with their description
-# Replace snapshot_date based on the dictionary
-infections_crps_full[,epidemic_phase := names(snapshot_date_names)[
-  match(snapshot_date, snapshot_date_names)
-]]
+# Process CRPS for infections
+infections_crps_full <- process_crps(results, "infections", infections_true)
 ```
 
 We will now post-process the CRPS results to make them easier to visualise and summarise. We will add the "type" column from the output of the model to indicate which subsets of the estimates are based on complete data, partial data, or are forecasts.
