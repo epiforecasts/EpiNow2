@@ -59,11 +59,11 @@ Throughout this vignette, several argument values, including the observation mod
 ```{r share_inputs}
 # Observation model options
 obs <- obs_opts(
-  scale = list(mean = 0.1, sd = 0.025),
+  scale = Normal(0.1, 0.025),
   return_likelihood = TRUE
 )
 # Rt prior
-rt_prior_default <- list(mean = 2, sd = 0.1)
+rt_prior_default <- Normal(2, 0.1)
 # Number of cores
 options(mc.cores = 6)
 ```
@@ -77,7 +77,7 @@ estimates <- epinow(
   rt = rt_opts(prior = rt_prior_default, rw = 14),
   gp = NULL,
   obs = obs,
-  horizon = 0, # no forecasting
+  forecast = forecast_opts(horizon = 0), # no forecasting
   output = "fit"
 )
 ```
@@ -348,7 +348,7 @@ model_inputs <- list(
   generation_time = generation_time_opts(generation_time),
   delays = delay_opts(delay),
   obs = obs,
-  horizon = horizon,
+  forecast = forecast_opts(horizon = horizon),
   verbose = FALSE
 )
 ```
@@ -380,7 +380,7 @@ results <- lapply(
       model_configs,
       function(model) {
         # Use subset of the data
-        data_to_fit <- data[1:(.N - model_inputs$horizon)]
+        data_to_fit <- data[1:(.N - model_inputs$forecast$horizon)]
         model_inputs <- c(model_inputs, data = list(data_to_fit))
         do.call(
           safe_epinow,
