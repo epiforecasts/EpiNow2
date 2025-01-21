@@ -513,9 +513,15 @@ runtimes_dt_detailed <- merge(
   by = "model"
 )
 
+# Add fit type
+runtimes_dt_detailed[, fit_type := ifelse(fitting == "mcmc", "mcmc", "approximate")]
+
+# Add epidemic phase as a factor
+runtimes_dt_detailed[, epidemic_phase := factor(epidemic_phase, levels = c("growth", "peak", "decline"))]
+
 # Plot the timing
-timing_plot <- ggplot(data = runtimes_dt_detailed[, fit_type := ifelse(fitting == "mcmc", "mcmc", "approximate")]) +
-  geom_point(aes(x = factor(epidemic_phase, levels = c("growth", "peak", "decline")),
+timing_plot <- ggplot(data = runtimes_dt_detailed) +
+  geom_point(aes(x = epidemic_phase),
                y = timing,
                color = model_basename,
                shape = rt_gp_prior
@@ -526,7 +532,7 @@ timing_plot <- ggplot(data = runtimes_dt_detailed[, fit_type := ifelse(fitting =
   labs(x = "Epidemic phase",
        y = "Runtime (secs)",
        shape = "Rt model prior",
-       color = "Base model",
+       color = "Model",
        caption = "non-stationary Rt = R(t-1) * GP; stationary Rt = R0 * GP; non-mechanistic Rt = no GP prior."
        ) +
   theme_minimal() +
