@@ -42,7 +42,9 @@ In using `{EpiNow2}`, users will often be faced with two decision points that wi
 
 The aim of this vignette is to benchmarks four (4) `{EpiNow2}` model options chosen to cover a range of use cases. We will benchmark the default model, the model with the 7-day random walk prior on $R_t$, the non-mechanistic model, which has no explicit prior on $R_t$, and the non-residual $R_t$ model, which assumes a stationary prior on $R_t$.
 
-We will analyse the estimation and forecasting performance of these models when used with MCMC sampling as well as three (3) approximate sampling methods: variational bayes, pathfinder, and laplace approximation. To achieve this, we will compare the models based on the accuracy of estimates given complete and partial data at 3 time points of a simulated epidemic: (i) epidemic growth phase, (ii) epidemic peak, and (iii) epidemic decline phase.
+We will analyse the estimation and forecasting performance of these models when solved with MCMC sampling. You can also use approximate sampling methods to solve these models, but we will not emphasise their use because they are not recommended for real-time analysis. We will, however, highlight how the models perform when using approximate sampling methods and provide an overview of when they may be appropriate.
+
+For the main benchmarking exercise, we will compare the models based on the accuracy of estimates given complete and partial data at 3 time points of a simulated epidemic: (i) the growth phase, (ii) the peak, and (iii) the decline phase.
 
 ## The benchmarking data
 
