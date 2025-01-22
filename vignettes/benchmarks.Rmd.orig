@@ -101,9 +101,11 @@ R <- c(
 # Add Gaussian noise
 R_noisy <- R * rnorm(length(R), 1.1, 0.05)
 # Plot
-ggplot(data = data.frame(R = R_noisy)) +
+true_rt <- ggplot(data = data.frame(R = R_noisy)) +
   geom_line(aes(x = seq_along(R_noisy), y = R)) +
   labs(x = "Time")
+
+plot(true_rt)
 ```
 
 Let's proceed to simulate the true infections and $R_t$ data by sampling from $10$ posterior samples.
@@ -396,7 +398,7 @@ results <- lapply(
 
 ## Evaluating model performance
 
-To start with, let's set up a function, `extract_results()` that extracts the "timing", "Rt", and "infections" variables from the `epinow()` runs for a supplied model.
+To start with, let's set up a function, `extract_results()` that extracts the "timing", "Rt", and "infections" variables from the `epinow()` runs for a supplied model and `get_model_results()` which applies `extract_results()` to all the model results at once.
 ```{r extraction-funcs, class.source = 'fold-hide'}
 # Function to extract the "timing", "Rt", "infections", and "reports" variables from an 
 # epinow() run. It expects a model run, x, which contains a "results" or "error" component.
@@ -461,8 +463,31 @@ get_model_results <- function(results_by_snapshot, variable) {
 
 ### Run times (computational resources)
 
-Let's see how long each model took to run.
-```{r runtimes}
+Let's see how long each model took to run. Here, we show the run times by fitting method because they approximate methods are significantly faster. Note the difference in scale in the y-axis. To begin, we'll need two functions, one that re-categorises the fitting methods into "mcmc" and "approximate" and one that converts the columns into factors for plotting.
+```{r col-manipulation-funcs,class.source = 'fold-hide'}
+# Function to add fit_type
+add_fit_type <- function(data){
+  data[, fit_type := ifelse(fitting == "mcmc", "mcmc", "approximate")]
+  data[]
+}
+
+# Function to convert all columns to factor except the timing col (which should be DateTime)
+make_cols_factors <- function(data){
+  # Make all columns except timing a factor
+  data[
+    ,
+    (setdiff(names(data), "timing")) :=
+      lapply(.SD, as.factor),
+    .SDcols = setdiff(names(data), "timing")
+  ]
+
+  # Add epidemic phase as a factor
+  data[, epidemic_phase := factor(epidemic_phase, levels = c("growth", "peak", "decline"))]
+  data[]
+}
+```
+
+```{r process-runtimes}
 # Extract the run times and reshape to dt
 runtimes_by_snapshot <- get_model_results(results, "timing")
 
@@ -518,20 +543,27 @@ runtimes_dt_detailed[, epidemic_phase := factor(epidemic_phase, levels = c("grow
 # Plot the timing
 timing_plot <- ggplot(data = runtimes_dt_detailed) +
   geom_point(aes(x = epidemic_phase,
-               y = timing,
-               color = model_basename,
-               shape = rt_gp_prior
-               ),
-             size = 2.2
+                 y = timing,
+                 shape = model_basename,
+                 color = fitting
+                 ),
+             position = position_dodge(width = 0.4),
+             size = 3,
+             stroke = 1.2
   ) +
   labs(x = "Epidemic phase",
        y = "Runtime (secs)",
-       shape = "Rt model prior",
-       color = "Model",
-       caption = "non-stationary Rt = R(t-1) * GP; stationary Rt = R0 * GP; non-mechanistic Rt = no GP prior."
-       ) +
+       shape = "Model",
+       fill = "Fitting method"
+  ) +
   theme_minimal() +
-  facet_wrap(~fit_type, scales = "free_y", nrow = 2, strip.position = "left")
+  scale_color_brewer(palette = "Dark2") +
+  scale_shape_manual(values = c(1, 0, 6, 8)) +
+  facet_wrap(~fit_type, scales = "free_y", nrow = 2, strip.position = "top") +
+  theme(strip.text = element_text(size = 18),
+        axis.title = element_text(size = 13),
+        axis.text = element_text(size = 13)
+        )
 timing_plot
 ```
 
@@ -539,11 +571,11 @@ timing_plot
 
 Now, we will evaluate the performance of the models using the [continuous ranked probability score (CRPS)](https://en.wikipedia.org/wiki/Scoring_rule#Continuous_ranked_probability_score). The CRPS is a [proper scoring rule](https://en.wikipedia.org/wiki/Scoring_rule#Propriety_and_consistency) that measures the accuracy of probabilistic forecasts. The smaller the CRPS, the better. We will use the [`crps_sample()`](https://epiforecasts.io/scoringutils/reference/crps_sample.html) function from the [`{scoringutils}`](https://epiforecasts.io/scoringutils/index.html) package because it matches the type of forecast data returned by `epinow()`.
 
-Recall that we are only evaluating the models solved with MCMC sampling. We will not evaluate the approximate sampling methods as they are not recommended for use in analytics pipelines and for inference.
+We will mostly focus on evaluating the results of fitting with MCMC. We will also show the results for the approximate sampling methods but will not dwell on them as they are not recommended for full inference due to their poor ability to quantify uncertainty in some cases and to fail to fit without tuning. In a latter section, we will provide ideas on how the appropriate methods can be used in `{EpiNow2}` workflow.
 
-To calculate the CRPS for the estimated $R_t$ and infections, we will first set up a function that ensures the true data and estimates are of the same length and then calls the `crps_sample()` function from the `{scoringutils}` package using log-transformed values of the true and estimated values.
-```{r crps-func}
-# A function to calculate the CRPS
+To calculate the CRPS for the estimated $R_t$ and infections, we will first set up a function that calls the `crps_sample()` function from the `{scoringutils}` package using log-transformed values of the true and estimated values, and functions that process the CRPS calculations for easier visualisation downstream.
+```{r crps-calc-and-process, class.source = 'fold-hide'}
+# Function to calculate the CRPS
 calc_crps <- function(estimates, truth) {
   # if the object is not a matrix, then it's an NA (failed run)
   if (!inherits(estimates, c("matrix"))) return(rep(NA_real_, length(truth)))
@@ -559,11 +591,8 @@ calc_crps <- function(estimates, truth) {
     )
   )
 }
-```
 
-We will set up a function that processes the CRPS calculations and postprocesses the results by adding dates and model configurations and descriptions for easier visualisation downstream.
-```{r crps-processing, class.source = 'fold-hide'}
-# Define a function to process CRPS calculations and data transformation
+# Function to post-process CRPS estimates
 process_crps <- function(results, variable, truth) {
   # Extract values
   by_snapshot <- get_model_results(results, variable = variable)
@@ -625,7 +654,7 @@ process_crps <- function(results, variable, truth) {
 }
 ```
 
-Now, let's apply the `process_crps()` function to extract the $R_t$ and infections estimates and calculate the CRPS using the `calc_crps()` function above.
+Now, let's apply the `process_crps()` function to extract and process the $R_t$ and infections estimates and calculate the CRPS using the `calc_crps()` function above.
 ```{r process-crps}
 # Process CRPS for Rt
 rt_crps_full <- process_crps(results, "R", R)
@@ -634,13 +663,13 @@ rt_crps_full <- process_crps(results, "R", R)
 infections_crps_full <- process_crps(results, "infections", infections_true)
 ```
 
-In order to differentiate between the subsets of the estimates, we will add the "type" column from the output of the model to indicate which subsets of the estiamtes are based on partial and complete data. We will get the "type" column from the default model (the same across model outputs) and add it to the CRPS results.
+As part of post-processing, we will add a "type" column to the output of the estimates to indicate which subsets are based on partial and complete data. We will get the "type" column from the default model (the same across model outputs) and append them to the rest of the model results.
 ```{r estimates-types-by-date}
 # Get date and fit type from the default model (the same across model outputs)
 results_by_model <- list_transpose(results)
 
-fit_type_by_dates <- lapply(
-  results_by_model$default_mcmc,
+estimate_types <- lapply(
+  results_by_model$default_vb,
   function(results_by_snapshot) {
     results_by_snapshot$result$estimates$summarised[
       variable == "reported_cases"][
@@ -650,41 +679,47 @@ fit_type_by_dates <- lapply(
   }
 ) |>
   rbindlist(idcol = "snapshot_date")
-```
 
-Now we will add the "type" column to the CRPS results.
-```{r crps-postprocessing}
-# # Add the "type" column
-rt_crps_dt_final <- merge(
+# add the "estimate_type" column.
+rt_crps_dt <- merge(
   rt_crps_full,
-  fit_type_by_dates,
+  estimate_types,
   by = c("date", "snapshot_date")
 )
 
-# Add the "type" column
-infections_crps_dt_final <- merge(
+# Add the "estimate_type" column
+infections_crps_dt <- merge(
   infections_crps_full,
-  fit_type_by_dates,
+  estimate_types,
   by = c("date", "snapshot_date")
 )
+
+# Re-categorise fit_type column and convert to factor
+
+# Rt
+rt_crps_dt <- add_fit_type(rt_crps_dt)
+rt_crps_dt_final <- make_cols_factors(rt_crps_dt)
+
+# Infections
+infections_crps_dt <- add_fit_type(infections_crps_dt)
+infections_crps_dt_final <- make_cols_factors(infections_crps_dt)
 ```
 
 #### Model performance over time
 
-We will now set up a function to plot the CRPS over time.
+We will now plot the $R_t$ CRPS over time using the function `plot_crps_over_time()`. Let's start with the models fitted with MCMC.
 ```{r crps-plotting-functions, class.source = 'fold-hide'}
 # Define a function to plot CRPS over time
 plot_crps_over_time <- function(data, title) {
-  ggplot(data = data[!is.na(crps)], # remove failed models
-  ) +
+  ggplot(data = data[!is.na(crps)]) + # remove failed models
     geom_line(
       aes(x = date,
           y = crps,
-          linetype = rt_gp_prior,
           color = model
-          )
+          ),
+      linewidth = 1.1
     ) +
-    scale_linetype_manual(values = c(1, 5, 3)) +
+    # scale_linetype_manual(values = c(1, 5, 3)) +
     labs(
       x = "Time",
       y = "CRPS",
@@ -696,20 +731,18 @@ plot_crps_over_time <- function(data, title) {
     facet_grid(~epidemic_phase)
 }
 
-```
-
-We will now plot the CRPS over time for the $R_t$ estimates.
-```{r crps-plotting-rt}
 # Plot CRPS over time for Rt
-rt_crps_mcmc <- plot_crps_over_time(rt_crps_dt_final[fit_type == "mcmc"], "Estimating Rt")
-plot(rt_crps_mcmc)
+rt_crps_mcmc <- rt_crps_dt_final[fitting == "mcmc"]
+rt_crps_mcmc_plot <- plot_crps_over_time(rt_crps_mcmc, "Estimating Rt")
+plot(rt_crps_mcmc_plot)
 ```
 
 Let's do the same for the infections estimates.
 ```{r crps-plotting-infections}
 # Plot CRPS over time for infections
-infections_crps_mcmc <- plot_crps_over_time(infections_crps_dt_final, "Estimating and predicting infections")
-plot(infections_crps_mcmc)
+infections_crps_mcmc_dt <- infections_crps_dt_final[fitting = "mcmc"]
+infections_crps_mcmc_plot <- plot_crps_over_time(infections_crps_mcmc_dt, "Estimating and predicting infections")
+plot(infections_crps_mcmc_plot)
 ```
 
 #### Overall model performance
