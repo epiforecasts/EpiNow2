@@ -52,8 +52,7 @@ jobs:
         with:
           cache-version: 1
           extra-packages: stan-dev/cmdstanr
-          touchstone_package: 'github::sbfnk/touchstone'
-          touchstone_ref: '@dont-upgrade'
+          touchstone_ref: '@289cfc7'
           benchmarking_repo: ${{ matrix.config.benchmarking_repo }}
           benchmarking_ref: ${{ matrix.config.benchmarking_ref }}
           benchmarking_path: ${{ matrix.config.benchmarking_path }}
