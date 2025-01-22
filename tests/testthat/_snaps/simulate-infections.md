@@ -36,20 +36,20 @@
 
               variable       date    value
                 <char>     <Date>    <num>
-     1:     infections 2023-01-01 160.8333
-     2:     infections 2023-01-02 169.6942
-     3:     infections 2023-01-03 178.7393
-     4:     infections 2023-01-04 188.1775
-     5:     infections 2023-01-05 198.0770
-     6:     infections 2023-01-06 208.1120
-     7:     infections 2023-01-07 218.6883
-     8:     infections 2023-01-08 153.2081
-     9:     infections 2023-01-09 148.6709
-    10:     infections 2023-01-10 142.1679
-    11:     infections 2023-01-11 135.3769
-    12:     infections 2023-01-12 128.6677
-    13:     infections 2023-01-13 122.1667
-    14:     infections 2023-01-14 115.9185
+     1:     infections 2023-01-01 160.8325
+     2:     infections 2023-01-02 169.6934
+     3:     infections 2023-01-03 178.7385
+     4:     infections 2023-01-04 188.1766
+     5:     infections 2023-01-05 198.0760
+     6:     infections 2023-01-06 208.1110
+     7:     infections 2023-01-07 218.6873
+     8:     infections 2023-01-08 153.2073
+     9:     infections 2023-01-09 148.6702
+    10:     infections 2023-01-10 142.1672
+    11:     infections 2023-01-11 135.3762
+    12:     infections 2023-01-12 128.6671
+    13:     infections 2023-01-13 122.1661
+    14:     infections 2023-01-14 115.9180
     15: reported_cases 2023-01-01 117.0000
     16: reported_cases 2023-01-02 107.0000
     17: reported_cases 2023-01-03 119.0000
