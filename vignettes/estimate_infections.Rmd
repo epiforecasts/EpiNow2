@@ -33,21 +33,29 @@ These infections are then mapped to observations via discrete convolutions with 
 
 ### Initialisation
 
-The model is initialised before the first initerved data point by assuming constant exponential growth for the mean of modelled delays from infection to case report (called `seeding_time` $t_\mathrm{seed}$ in the model):
+The model is initialised before the first observed data point by assuming constant exponential growth for the mean of modelled delays from infection to case report (called `seeding_time` $t_\mathrm{seed}$ in the model):
 
 \begin{align}
-  I_0  &\sim \mathrm{LogNormal}(I_\mathrm{init}, \sqrt{I_\mathrm{init}}) \\
-  r &\sim r_\mathrm{init} + (I_\mathrm{init} - I_0) \\
-  I_{0 < t \leq t_\mathrm{seed}} &= I_0 \exp  \left(r t \right) \\
-  I_\mathrm{init} &= C_\mathrm{init} / \xi
+  I_{-t_\mathrm{seed}}  & \exp(\iota - r t_\mathrm{seed}) / \xi\\
+  \iota ~ \mathrm{Normal}(\iota_0, 2)\\
+  \iota_0 = \max(0, \log(C_\mathrm{init}))
 \end{align}
 
-where $I_{t}$ is the number of latent infections on day $t$, $r$ is the estimate of the initial growth rate, $\xi$ is the proportion reported (see [Delays and scaling]) and $I_\mathrm{init}$ and $r_\mathrm{init}$ are estimated, respectively, as the point estimates of intercept and slope from fitting a linear regression model to the first 7 days of data (or all data if fewer than 7 days of data are given),
+where $I_{t}$ is the number of latent infections on day $t$, $r$ is an estimate of the initial growth rate, $\xi$ is the proportion reported (see [Delays and scaling]), \iota is a scaling factor and $C_\mathrm{init}$ is the mean of the first 7 days of cases (or all cases if fewer than 7 days of data are available).
 
-\begin{equation}
-log(C_t) = \log(C_\mathrm{init}) + r_\mathrm{init} t + \epsilon_t
-\end{equation}
-where $C_{t}$ is the number of reported cases on day $t$, $C_\mathrm{init}$ an estimated intercept, and $\epsilon_{t}$ the error term.
+The initial growth rate $r$ is estimated from the first estimated value of the reproduction number $R_t$ by solving the linear system
+
+$$
+G(r) - 1 / R_0 = 0.
+$$
+
+where
+
+$$
+G(r) = \sum_{i=1}^n g_i e^{-r i}.
+$$
+
+is the negative moment generating function (MGF) of the discretised generation interval distribution (see [Infections]).
 
 ### Infections
 
