@@ -65,26 +65,9 @@ void rt_lp(array[] real initial_infections_scale, vector bp_effects,
 }
 
 /**
- * Calculate the negative moment generating function (nMGF) of a probability
- * distribution with given probability mass function.
- *
- * Function code is based on Julia code from
- * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
- * under Apache license 2.0.
- *
- * @param r function argument of the nMGF
- * @param pmf probability mass function as vector (first index: 0)
- */
-  real neg_MGF(real r, vector pmf) {
-    int len = num_elements(pmf);
-    vector[len] exp_r = exp(-r * linspaced_vector(len, 0, len - 1));
-    return(dot_product(pmf, exp_r));
-  }
-
-/**
  * Helper function for calculating r from R using Newton's method
  *
- * Function code is based on Julia code from
+ * Code is based on Julia code from
  * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
  * under Apache license 2.0.
  *
@@ -102,49 +85,10 @@ real R_to_r_newton_step(real R, real r, vector pmf) {
 }
 
 /**
- * Helper function used by the [R_to_r()] function to estimate r from R
- *
- * Function code is based on Julia code from
- * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
- * under Apache license 2.0.
- *
- * @param r A vector of length 1, the growth rate
- * @param gt_pmf probability mass function of the generation time
- * @param R reproduction number
- */
-vector eq(vector r, vector gt_pmf, real R) {
-  return([ neg_MGF(r[1], gt_pmf) - 1 / R ]');
-}
-
-/**
- * Estimate the growth rate r from reproduction number R. Used in the model to
- * estimate the initial growth rate using stan's algebraic solver
- *
- * Function code is based on Julia code from
- * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
- * under Apache license 2.0.
- *
- * @param R reproduction number
- * @param gt_rev_pmf reverse probability mass function of the generation time
- */
-real R_to_r(real R, vector gt_rev_pmf, int newton_steps) {
-  int gt_len = num_elements(gt_rev_pmf);
-  vector[gt_len] gt_pmf = reverse(gt_rev_pmf);
-  real mean_gt = dot_product(
-    gt_pmf,
-    linspaced_vector(gt_len, 0, gt_len - 1)
-  );
-  vector[1] r_approx = [ (R - 1) / (R * mean_gt) ]';
-  vector[1] r = solve_powell(eq, r_approx, gt_pmf, R);
-
-  return(r[1]);
-}
-
-/**
  * Estimate the growth rate r from reproduction number R. Used in the model to
  * estimate the initial growth rate using Newton's method.
  *
- * Function code is based on Julia code from
+ * Code is based on Julia code from
  * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
  * under Apache license 2.0.
  *
@@ -152,7 +96,7 @@ real R_to_r(real R, vector gt_rev_pmf, int newton_steps) {
  * @param gt_rev_pmf reverse probability mass function of the generation time
  * @param abs_tol absolute tolerance of the solver
  */
-real R_to_r_manual(real R, vector gt_rev_pmf, real abs_tol) {
+real R_to_r(real R, vector gt_rev_pmf, real abs_tol) {
   int gt_len = num_elements(gt_rev_pmf);
   vector[gt_len] gt_pmf = reverse(gt_rev_pmf);
   real mean_gt = dot_product(gt_pmf, linspaced_vector(gt_len, 0, gt_len - 1));
