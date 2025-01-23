@@ -48,20 +48,64 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
 /**
  * Calculate the log-probability of the reproduction number (Rt) priors
  *
- * @param initial_infections Array of initial infection values
+ * @param initial_infections_scale Array of initial infection values
  * @param bp_effects Vector of breakpoint effects
  * @param bp_sd Array of breakpoint standard deviations
  * @param bp_n Number of breakpoints
- * @param prior_infections Prior mean for initial infections
  */
-void rt_lp(array[] real initial_infections, vector bp_effects,
-           array[] real bp_sd, int bp_n, real prior_infections) {
+void rt_lp(array[] real initial_infections_scale, vector bp_effects,
+           array[] real bp_sd, int bp_n, array[] int cases,
+           real initial_infections_guess) {
   //breakpoint effects on Rt
   if (bp_n > 0) {
     bp_sd[1] ~ normal(0, 0.1) T[0,];
     bp_effects ~ normal(0, bp_sd[1]);
   }
-  // initial infections
-  initial_infections ~ normal(prior_infections, sqrt(prior_infections));
-  
+  initial_infections_scale ~ normal(initial_infections_guess, 2);
+}
+
+/**
+ * Helper function for calculating r from R using Newton's method
+ *
+ * Code is based on Julia code from
+ * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
+ * under Apache license 2.0.
+ *
+ * @param R Reproduction number
+ * @param r growth rate
+ * @param pmf generation time probability mass function (first index: 0)
+ */
+real R_to_r_newton_step(real R, real r, vector pmf) {
+  int len = num_elements(pmf);
+  vector[len] zero_series = linspaced_vector(len, 0, len - 1);
+  vector[len] exp_r = exp(-r * zero_series);
+  real ret = (R * dot_product(pmf, exp_r) - 1) /
+    (- R * dot_product(pmf .* zero_series, exp_r));
+  return(ret);
+}
+
+/**
+ * Estimate the growth rate r from reproduction number R. Used in the model to
+ * estimate the initial growth rate using Newton's method.
+ *
+ * Code is based on Julia code from
+ * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
+ * under Apache license 2.0.
+ *
+ * @param R reproduction number
+ * @param gt_rev_pmf reverse probability mass function of the generation time
+ * @param abs_tol absolute tolerance of the solver
+ */
+real R_to_r(real R, vector gt_rev_pmf, real abs_tol) {
+  int gt_len = num_elements(gt_rev_pmf);
+  vector[gt_len] gt_pmf = reverse(gt_rev_pmf);
+  real mean_gt = dot_product(gt_pmf, linspaced_vector(gt_len, 0, gt_len - 1));
+  real r = fmax((R - 1) / (R * mean_gt), -1);
+  real step = abs_tol + 1;
+  while (abs(step) > abs_tol) {
+    step = R_to_r_newton_step(R, r, gt_pmf);
+    r -= step;
+  }
+
+  return(r);
 }

@@ -440,54 +440,6 @@ create_forecast_data <- function(forecast = forecast_opts(), data) {
   return(data)
 }
 
-#' Calculate prior infections and fit early growth
-#'
-#' @description Calculates the prior infections and growth rate based on the
-#' first week's data.
-#'
-#' @param cases Numeric vector; the case counts from the input data.
-#' @inheritParams create_stan_data
-#' @return A list containing `initial_infections_estimate` and
-#'   `initial_growth_estimate`.
-#' @keywords internal
-estimate_early_dynamics <- function(cases, seeding_time) {
-  initial_period <- data.table::data.table(
-    confirm = cases[seq_len(min(7, seeding_time, length(cases)))],
-    t = seq_len(min(7, seeding_time, length(cases))) - 1
-  )[!is.na(confirm)]
-
-  # Calculate initial infections and growth estimate
-  if (seeding_time > 1 && nrow(initial_period) > 1) {
-    safe_lm <- purrr::safely(stats::lm)
-    log_linear_estimate <- safe_lm(log(confirm) ~ t, data = initial_period)[[1]]
-    initial_infections_estimate <- ifelse(
-      is.null(log_linear_estimate), 0, log_linear_estimate$coefficients[1]
-    )
-    initial_growth_estimate <- ifelse(
-      is.null(log_linear_estimate), 0, log_linear_estimate$coefficients[2]
-    )
-  } else {
-    initial_infections_estimate <- 0
-    initial_growth_estimate <- 0
-  }
-
-  # Calculate prior infections
-  if (initial_infections_estimate == 0) {
-    initial_infections_estimate <- log(
-      mean(initial_period$confirm, na.rm = TRUE)
-    )
-    if (is.na(initial_infections_estimate) ||
-        is.null(initial_infections_estimate)) {
-      initial_infections_estimate <- 0
-    }
-  }
-
-  return(list(
-    initial_infections_estimate = initial_infections_estimate,
-    initial_growth_estimate = initial_growth_estimate
-  ))
-}
-
 #' Create Stan Data Required for estimate_infections
 #'
 #' @description`r lifecycle::badge("stable")`
@@ -552,11 +504,6 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
       breakpoints = data[(stan_data$seeding_time + 1):.N]$breakpoint,
       delay = stan_data$seeding_time, horizon = stan_data$horizon
     )
-  )
-  # calculate prior infections and fit early growth
-  stan_data <- c(
-    stan_data,
-    estimate_early_dynamics(confirmed_cases, seeding_time)
   )
   # backcalculation settings
   stan_data <- c(stan_data, create_backcalc_data(backcalc))
@@ -639,9 +586,7 @@ create_initial_conditions <- function(data) {
       out$eta <- array(numeric(0))
     }
     if (data$estimate_r == 1) {
-      out$initial_infections <- array(
-        rnorm(1, data$initial_infections_estimate, 0.2)
-      )
+      out$initial_infections <- array(rnorm(1))
     }
 
     if (data$bp_n > 0) {
