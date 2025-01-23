@@ -69,13 +69,30 @@ simulate_infections <- function(estimates, R, initial_infections,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 backend = "rstan",
                                 seeding_time = NULL,
-                                pop = Fixed(0), ...) {
+                                pop = Fixed(0),
+                                pop_period = c("forecast", "all"), ...) {
   ## deprecated usage
   if (!missing(estimates)) {
     deprecate_stop(
       "1.5.0",
       "simulate_infections(estimates)",
       "forecast_infections()"
+    )
+  }
+
+  if (is.numeric(pop)) {
+    lifecycle::deprecate_warn(
+      "1.7.0", 
+      "simulate_infections(pop = 'must be a `<dist_spec>`')",
+      details = "For specifying a fixed population size, use `Fixed(pop)`"
+    )
+    pop <- Fixed(pop)
+  }
+  if (pop_period == "all" && pop == Fixed(0)) {
+    cli_abort(
+      c(
+        "!" = "pop_period = \"all\" but pop is fixed at 0."
+      )
     )
   }
 
@@ -94,6 +111,7 @@ simulate_infections <- function(estimates, R, initial_infections,
   assert_class(obs, "obs_opts")
   assert_class(generation_time, "generation_time_opts")
   assert_class(pop, "dist_spec")
+  pop_period = arg_match(pop_period)
 
   ## create R for all dates modelled
   all_dates <- data.table(date = seq.Date(min(R$date), max(R$date), by = "day"))
@@ -125,7 +143,7 @@ simulate_infections <- function(estimates, R, initial_infections,
     initial_infections = array(log_initial_infections, dim = c(1, 1)),
     initial_growth = array(initial_growth, dim = c(1, length(initial_growth))),
     R = array(R$R, dim = c(1, nrow(R))),
-    use_pop = as.integer(pop != Fixed(0))
+    use_pop =       as.integer(pop != Fixed(0)) + as.integer(pop_period == "all"),
   )
 
   data <- c(data, create_stan_delays(

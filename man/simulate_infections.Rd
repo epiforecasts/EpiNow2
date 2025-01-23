@@ -17,6 +17,7 @@ simulate_infections(
   backend = "rstan",
   seeding_time = NULL,
   pop = Fixed(0),
+  pop_period = c("forecast", "all"),
   ...
 )
 }
@@ -78,6 +79,13 @@ R.}
 Used to adjust Rt estimates based on the proportion of the population that
 is susceptible. Defaults to \code{Fixed(0)} which means no population adjustment
 is done.}
+
+\item{pop_period}{Character string, defaulting to "forecast". Controls when
+susceptible population adjustment is applied. "forecast" only applies the
+adjustment to forecasts while "all" applies it to both data and forecasts.
+Note that with "all" and "forecast", Rt estimates are unadjusted for
+susceptible depletion but posterior predictions of infections and reports are
+adjusted.}
 
 \item{...}{deprecated; only included for backward compatibility}
 }

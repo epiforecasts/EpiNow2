@@ -59,8 +59,9 @@ is done.}
 \item{pop_period}{Character string, defaulting to "forecast". Controls when
 susceptible population adjustment is applied. "forecast" only applies the
 adjustment to forecasts while "all" applies it to both data and forecasts.
-Note that with "forecast", Rt estimates are unadjusted for susceptible
-depletion but posterior predictions are adjusted.}
+Note that with "all" and "forecast", Rt estimates are unadjusted for
+susceptible depletion but posterior predictions of infections and reports are
+adjusted.}
 }
 \value{
 An \verb{<rt_opts>} object with settings defining the time-varying
