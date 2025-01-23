@@ -48,7 +48,7 @@ vector generate_infections(vector oR, int uot, vector gt_rev_pmf,
   // iteratively update infections
   for (s in 1:ot) {
     infectiousness[s] = update_infectiousness(infections, gt_rev_pmf, uot, s);
-    if (use_pop == 1 || (use_pop == 2 && s > nht)) {
+    if (use_pop == 2 || (use_pop == 1 && s > nht)) {
       exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[s]));
       exp_adj_Rt = exp_adj_Rt > 1 ? 1 : exp_adj_Rt;
       infections[s + uot] = (pop - cum_infections[s]) * (1 - exp_adj_Rt);
