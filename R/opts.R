@@ -328,8 +328,8 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' @param pop_period Character string, defaulting to "forecast". Controls when
 #' susceptible population adjustment is applied. "forecast" only applies the
 #' adjustment to forecasts while "all" applies it to both data and forecasts.
-#' Note that with "all", Rt estimates are unadjusted for susceptible
-#' depletion but posterior predictions of infections and reports are 
+#' Note that with "all" and "forecast", Rt estimates are unadjusted for
+#' susceptible depletion but posterior predictions of infections and reports are
 #' adjusted.
 #'
 #' @param gp_on Character string, defaulting to  "R_t-1". Indicates how the
