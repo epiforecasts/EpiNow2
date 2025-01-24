@@ -123,25 +123,14 @@ simulate_infections <- function(estimates, R, initial_infections,
   if (missing(seeding_time)) {
     seeding_time <- sum(max(generation_time))
   }
-  if (seeding_time > 1) {
-    ## estimate initial growth from initial reproduction number if seeding time
-    ## is greater than 1
-    initial_growth <- (R$R[1] - 1) / mean(generation_time)
-    ## adjust initial infections for initial exponential growth
-    log_initial_infections <- log(initial_infections) -
-      (seeding_time - 1) * initial_growth
-  } else {
-    initial_growth <- numeric(0)
-    log_initial_infections <- log(initial_infections)
-  }
 
   data <- list(
     n = 1,
     t = nrow(R) + seeding_time,
     seeding_time = seeding_time,
     future_time = 0,
-    initial_infections = array(log_initial_infections, dim = c(1, 1)),
-    initial_growth = array(initial_growth, dim = c(1, length(initial_growth))),
+    initial_infections = array(log(initial_infections), dim = c(1, 1)),
+    initial_as_scale = 0,
     R = array(R$R, dim = c(1, nrow(R))),
     use_pop =       as.integer(pop != Fixed(0)) + as.integer(pop_period == "all"),
   )
@@ -452,7 +441,9 @@ forecast_infections <- function(estimates,
     draws <- map(draws, ~ as.matrix(.[nstart:nend, ]))
 
     ## prepare data for stan command
-    data <- c(list(n = dim(draws$R)[1]), draws, estimates$args)
+    data <- c(
+      list(n = dim(draws$R)[1], initial_as_scale = 1), draws, estimates$args
+    )
 
     ## allocate empty parameters
     data <- allocate_empty(
