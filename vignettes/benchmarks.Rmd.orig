@@ -462,12 +462,7 @@ extract_results <- function(x, variable) {
 # Wrapper for extracting the results and making them into a data.table
 get_model_results <- function(results_by_snapshot, variable) {
   # Get model results list
-  lapply(
-    results_by_snapshot,
-    function(model_results) {
-      lapply(model_results, extract_results, variable)
-    }
-  )
+  purrr::map_depth(results_by_snapshot, 2, extract_results, variable)
 }
 # Function to categorise fitting methods into mcmc and approximate
 add_fit_type <- function(data){
@@ -517,30 +512,20 @@ process_crps <- function(results, variable, truth) {
   by_snapshot <- get_model_results(results, variable = variable)
 
   # Apply function to calculate CRPS
-  crps_by_snapshot <- lapply(
+  crps_by_snapshot <- purrr::map_depth(
     by_snapshot,
-    function(snapshot_results) {
-      lapply(
-        snapshot_results, function(model_results) {
-          calc_crps(estimates = model_results, truth = truth)
-        }
-      )
-    }
+    2,
+    ~ calc_crps(estimates = ., truth = truth)
   )
 
   # Add dates column based on snapshot length
-  crps_with_dates <- lapply(
+  crps_with_dates <- purrr::map_depth(
     crps_by_snapshot,
-    function(snapshot_results) {
-      lapply(
-        snapshot_results,
-        function (model_results) {
-          data.table(crps = model_results)[,
-            date:= min(reported_cases_true$date) + 0: (.N - 1)
-          ]
-        }
-      )
-    })
+    2,
+    ~ data.table(crps = .x)[,
+      date := min(reported_cases_true$date) + 0: (.N - 1)
+    ]
+  )
 
   # Flatten the results into one dt
   crps_flat <- lapply(
