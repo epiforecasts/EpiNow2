@@ -401,12 +401,13 @@ results <- lapply(
 We'll begin by setting up the following functions:
 
 - `extract_results()`: extract a subset of variables of interest ("timing", "Rt", and "infections") from an `epinow()` run.
-- `get_model_results()`: apply `extract_results()` the nested list of model runs per snapshot date.
+- `get_model_results()`: apply `extract_results()` to a nested list of model runs per snapshot date.
 - `add_fit_type()`: re-categorise the four(4) fitting methods into MCMC and approximate.
 - `make_cols_factors` convert all columns into factor, except the columns in the `except` column.
-- `add_factor_levels()`: add factor levels to the `epidemic_phase` column to allow for easy ordering.
+- `add_epidemic_phase_levels()`: add factor levels to the `epidemic_phase` column to allow for easy ordering.
 - `calc_crps()`: calculate the CRPS using the [scoringutils](https://epiforecasts.io/scoringutils/) R package.
-- `process_crps()`: post-process CRPS estimates for the nested list of model runs per snapshot date.
+- `process_crps()`: calculate CRPS estimates for the nested list of model runs per snapshot date and flatten into a simple list.
+- `add_model_details()`: Add the model components and descriptions to the results of `process_crps()`.
 - `calculate_total_crps()`: calculate total CRPS for each model.
 - `plot_total_crps()`: plot the total CRPS for each model.
 - `plot_crps_over_time()`: # plot CRPS over time per model.
@@ -483,13 +484,13 @@ make_cols_factors <- function(data, except){
 }
 
 # Add factor levels
-add_factor_levels <- function(data){
+add_epidemic_phase_levels <- function(data){
   # Add epidemic phase as a factor
   data[, epidemic_phase := factor(epidemic_phase, levels = c("growth", "peak", "decline"))]
   data[]
 }
 
-# Function to calculate the CRPS
+# Function to calculate the CRPS of log-transformed values
 calc_crps <- function(estimates, truth) {
   # if the object is not a matrix, then it's an NA (failed run)
   if (!inherits(estimates, c("matrix"))) return(rep(NA_real_, length(truth)))
@@ -506,14 +507,14 @@ calc_crps <- function(estimates, truth) {
   )
 }
 
-# Function to post-process CRPS estimates
+# Function to calculate CRPS estimates and flatten the nested list of model values
 process_crps <- function(results, variable, truth) {
   # Extract values
-  by_snapshot <- get_model_results(results, variable = variable)
+  results_by_snapshot <- get_model_results(results, variable = variable)
 
   # Apply function to calculate CRPS
   crps_by_snapshot <- purrr::map_depth(
-    by_snapshot,
+    results_by_snapshot,
     2,
     ~ calc_crps(estimates = ., truth = truth)
   )
@@ -535,26 +536,30 @@ process_crps <- function(results, variable, truth) {
     }) |>
     rbindlist(idcol = "snapshot_date")
 
+  # Replace the snapshot dates with their description
+  crps_flat[, epidemic_phase := names(snapshot_date_names)[
+    match(snapshot_date, snapshot_date_names)
+  ]]
+
+  return(crps_flat)
+}
+
+# Add model details (components and descriptions useful for summarising)
+add_model_details <- function(crps_by_model){
   # Add model configurations for facetting
-  crps_full <- merge.data.table(
-    crps_flat,
+  with_model_components <- merge.data.table(
+    crps_by_model,
     model_components,
     by = "model"
   )
 
   # Add model descriptions
-  crps_full <- merge.data.table(
-    crps_full,
+  crps_dt <- merge.data.table(
+    with_model_components,
     model_descriptions,
     by = "model"
   )
-
-  # Replace the snapshot dates with their description
-  crps_full[, epidemic_phase := names(snapshot_date_names)[
-    match(snapshot_date, snapshot_date_names)
-  ]]
-
-  return(crps_full)
+  crps_dt[]
 }
 
 # Define a function to calculate total CRPS
@@ -576,22 +581,19 @@ calculate_total_crps <- function(data) {
 # Define a function to plot total CRPS
 plot_total_crps <- function(data, title) {
   plot <- ggplot(data = data) +
-    geom_col(
+    geom_point(
       aes(
-        x = type,
+        x = epidemic_phase,
         y = total_crps,
-        fill = model
+        shape = model
       ),
-      position = position_dodge()
+      size = 2.5
     ) +
-    scale_fill_brewer(palette = "Dark2") +
     labs(
-      x = "Estimate type",
+      x = "Epidemic phase",
       y = "Total CRPS",
-      fill = "Model type",
       title = title
-    ) +
-    facet_grid(~epidemic_phase)
+    )
   return(plot)
 }
 
@@ -605,7 +607,6 @@ plot_crps_over_time <- function(data, title) {
           ),
       linewidth = 1.1
     ) +
-    # scale_linetype_manual(values = c(1, 5, 3)) +
     labs(
       x = "Time",
       y = "CRPS",
@@ -613,8 +614,7 @@ plot_crps_over_time <- function(data, title) {
     ) +
     ggplot2::theme_minimal() +
     guides(color = guide_legend(title = "Model type")) +
-    theme(legend.position = "bottom") +
-    facet_grid(~epidemic_phase)
+    theme(legend.position = "bottom")
   return(plot)
 }
 ```
@@ -667,7 +667,7 @@ runtimes_dt_detailed <- add_fit_type(runtimes_dt_detailed)
 runtimes_dt_detailed <- make_cols_factors(runtimes_dt_detailed, except = "timing")
 
 # Add epidemic_phase factor levels to c("growth", "peak", "decline"))
-runtimes_dt_detailed <- add_factor_levels(runtimes_dt_detailed)
+runtimes_dt_detailed <- add_epidemic_phase_levels(runtimes_dt_detailed)
 
 # Plot the timing
 timing_plot <- ggplot(data = runtimes_dt_detailed) +
@@ -698,18 +698,22 @@ timing_plot <- ggplot(data = runtimes_dt_detailed) +
 timing_plot
 ```
 
+We can see that across the board, the non-mechanistic model was the fastest and the default model was among the slowest models for all data scenarios. The non-residual model and 7-day random walk models produced mixed results.
+
 ### Evaluating model performance
 
-Now, we will evaluate the performance of the models using the [continuous ranked probability score (CRPS)](https://en.wikipedia.org/wiki/Scoring_rule#Continuous_ranked_probability_score). The CRPS is a [proper scoring rule](https://en.wikipedia.org/wiki/Scoring_rule#Propriety_and_consistency) that measures the accuracy of probabilistic forecasts. The smaller the CRPS, the better.
+Now, we will evaluate the performance of the models using the [continuous ranked probability score (CRPS)](https://en.wikipedia.org/wiki/Scoring_rule#Continuous_ranked_probability_score). The CRPS is a [proper scoring rule](https://en.wikipedia.org/wiki/Scoring_rule#Propriety_and_consistency) that measures the accuracy of probabilistic forecasts. When comparing models, the smaller the CRPS, the better.
 
-We will focus on evaluating the results of fitting with MCMC. We will also show the results for the approximate sampling methods but will not dwell on them as they are not recommended for full inference due to their poor ability to quantify uncertainty in some cases and intermittent failure to fit complex models without adapting some control parameters. In a latter section, we will provide ideas on how the approximate methods can be used in `{EpiNow2}` workflows.
+We will focus on evaluating the results of fitting with MCMC. We will also show the results for the approximate sampling methods but will not delve deeply into them as we do not recommended for full inference due to their experimental nature currently, which makes them unstable. In a latter section, we will provide ideas on how the approximate methods can be used in `{EpiNow2}` workflows.
 
 ```{r process-crps}
 # Process CRPS for Rt
-rt_crps_full <- process_crps(results, "R", R)
+rt_crps <- process_crps(results, "R", R)
+rt_crps_full <- add_model_details(rt_crps)
 
 # Process CRPS for infections
-infections_crps_full <- process_crps(results, "infections", infections_true)
+infections_crps <- process_crps(results, "infections", infections_true)
+infections_crps_full <- add_model_details(infections_crps)
 ```
 
 As part of post-processing, we will add a "type" column to the output of the estimates to indicate which subsets are based on partial and complete data. We will get the "type" column from the default model (the same values across model outputs) and append them to the rest of the model results.
@@ -748,30 +752,38 @@ infections_crps_dt <- merge(
 # Rt
 rt_crps_dt <- add_fit_type(rt_crps_dt)
 rt_crps_dt <- make_cols_factors(rt_crps_dt, except = c("date", "crps"))
-rt_crps_dt_final <- add_factor_levels(rt_crps_dt)
+rt_crps_dt <- add_epidemic_phase_levels(rt_crps_dt)
+
+# Simplify the model name for downstream use
+rt_crps_dt_final <- rt_crps_dt[, model := gsub("_[^_]*$", "", model)]
 
 # Infections
 infections_crps_dt <- add_fit_type(infections_crps_dt)
 infections_crps_dt <- make_cols_factors(infections_crps_dt, except = c("date", "crps"))
-infections_crps_dt_final <- add_factor_levels(infections_crps_dt)
+infections_crps_dt <- add_epidemic_phase_levels(infections_crps_dt)
+
+# Simplify the model name for downstream use
+infections_crps_dt_final <- infections_crps_dt[, model := gsub("_[^_]*$", "", model)]
 ```
 
 #### Model performance over time
 
 We will now plot the $R_t$ CRPS over time using the function `plot_crps_over_time()`. Let's start with the models fitted with MCMC.
-```{r crps-plotting-functions, class.source = 'fold-hide'}
+```{r plot-rt-crps-mcmc}
 # Plot CRPS over time for Rt
 rt_crps_mcmc <- rt_crps_dt_final[fitting == "mcmc"]
 rt_crps_mcmc_plot <- plot_crps_over_time(rt_crps_mcmc, "Time-varying model performance in estimating Rt (mcmc)")
-plot(rt_crps_mcmc_plot)
+rt_crps_mcmc_plot  +
+    facet_wrap(~epidemic_phase, ncol = 1)
 ```
 
 Let's do the same for the infections estimates.
-```{r crps-plotting-infections}
+```{r plot-infections-crps-mcmc}
 # Plot CRPS over time for infections
 infections_crps_mcmc_dt <- infections_crps_dt_final[fitting == "mcmc"]
 infections_crps_mcmc_plot <- plot_crps_over_time(infections_crps_mcmc_dt, "Time-varying model performance in estimating infections (mcmc)")
-plot(infections_crps_mcmc_plot)
+infections_crps_mcmc_plot +
+    facet_wrap(~epidemic_phase, ncol = 1)
 ```
 
 #### Overall model performance
@@ -780,64 +792,104 @@ We will look at the overall performance of the models by calculating and plottin
 
 Let's show the total CRPS for the $R_t$ estimates.
 ```{r crps-plotting-rt-total}
-# Calculate and plot total CRPS for Rt
+# Calculate
 rt_total_crps_mcmc <- calculate_total_crps(rt_crps_dt_final[fit_type == "mcmc"])
+
+# Process data and plot
 rt_total_crps_mcmc_plot <- plot_total_crps(rt_total_crps_mcmc, "Aggregated model performance in estimating Rt (mcmc)")
-plot(rt_total_crps_mcmc_plot)
+rt_total_crps_mcmc_plot  +
+  scale_shape_manual(values = c(0, 1, 17, 8)) +
+  facet_wrap(~type)
 ```
 
-The total CRPS for the infections estimates is shown below as well.
+The total CRPS for the infections estimates is shown below.
 ```{r crps-plotting-infections-total}
-# Calculate and plot total CRPS for infections
+# Calculate
 infections_total_crps_dt <- calculate_total_crps(infections_crps_dt_final[fit_type == "mcmc"])
-infections_total_crps_plot <- plot_total_crps(infections_total_crps_dt, "Aggregated model performance in estimating Rt (mcmc)")
-plot(infections_total_crps_plot)
+
+# Process and plot
+infections_total_crps_plot <- plot_total_crps(infections_total_crps_dt, "Aggregated model performance in estimating infections (mcmc)")
+infections_total_crps_plot +
+  scale_shape_manual(values = c(0, 1, 17, 8)) +
+    facet_wrap(~type)
 ```
 
 #### Performance of approximate methods
 
 We will briefly look at the performance of the approximate methods although we do not recommend using them in real-world inference and analytics pipelines.
 
-Here are the results for the time-varying and total CRPS for estimating $R_t$.
-```{r crps-plotting-rt-approx}
-# Plot CRPS over time for Rt with approximate methods
-rt_crps_approx <- plot_crps_over_time(rt_crps_dt_final[fit_type != "mcmc"], "Time-varying model performance in estimating Rt (approximate methods)")
-plot(rt_crps_approx)
+Let's first look at the time varying $R_t$ and infections estimates.
+```{r plot-rt-tv-crps-approx}
+# Plot CRPS over time for Rt
+rt_crps_approx <- rt_crps_dt_final[fitting != "mcmc"]
+
+# Process plot data and plot
+rt_tv_crps_plot_approx <- plot_crps_over_time(rt_crps_approx, "Time-varying model performance in estimating Rt (approximate methods)")
+rt_tv_crps_plot_approx  +
+    facet_wrap(fitting~epidemic_phase)
 ```
 
-```{r crps-plotting-rt-total-approx}
-# Calculate and plot total CRPS for Rt with approximate methods
-rt_total_crps_approx <- calculate_total_crps(rt_crps_dt_final[fit_type != "mcmc"])
+Overall, the non-mechanistic model appears to perform best near the end of the time series. The default model shows mixed results.
+```{r plot-infections-tv-crps-approx}
+# Plot CRPS over time for Rt
+infections_crps_approx <- infections_crps_dt_final[fitting != "mcmc"]
+
+# Process plot data and plot
+infections_tv_crps_plot_approx <- plot_crps_over_time(infections_crps_approx, "Time-varying model performance in estimating infections (approximate methods)")
+infections_tv_crps_plot_approx  +
+    facet_wrap(fitting~epidemic_phase, scales = "free_y") +
+  labs(caption = "Where a model is not shown, it means it failed to run")
+```
+
+Now, let's look at the total CRPS for $R_t$ and infections.
+```{r plot-rt-total-crps-approx}
+# Calculate total CRPS
+rt_crps_approx <- rt_crps_dt_final[fit_type != "mcmc"]
+rt_total_crps_approx <- calculate_total_crps(rt_crps_approx)
+
+# Process plot data and plot
 rt_total_crps_approx_plot <- plot_total_crps(rt_total_crps_approx, "Aggregated model performance in estimating Rt (approximate methods)")
-plot(rt_total_crps_approx_plot)
+rt_total_crps_approx_plot +
+  scale_shape_manual(values = c(0, 1, 17, 8)) +
+  facet_wrap(type ~ fitting) +
+  labs(caption = "Where a model is not shown, it means it failed to run")
 ```
 
-And the same results for infections.
+```{r plot-infections-total-crps-approx}
+# Calculate total CRPS
+infections_crps_approx <- infections_crps_dt_final[fit_type != "mcmc"]
+infections_total_crps_approx <- calculate_total_crps(infections_crps_approx)
 
-```{r crps-plotting-infections-approx}
-# Plot CRPS over time for Rt with approximate methods
-infections_crps_approx <- plot_crps_over_time(infections_crps_dt_final[fit_type != "mcmc"], "Time-varying model performance in estimating infections (approximate methods)")
-plot(rt_crps_approx)
-```
-
-```{r crps-plotting-infections-total-approx}
-# Calculate and plot total CRPS for Rt with approximate methods
-infections_total_crps_approx <- calculate_total_crps(infections_crps_dt_final[fit_type != "mcmc"])
+# Process plot data and plot
 infections_total_crps_approx_plot <- plot_total_crps(infections_total_crps_approx, "Aggregated model performance in estimating infections (approximate methods)")
-plot(infections_total_crps_approx_plot)
+infections_total_crps_approx_plot +
+  scale_shape_manual(values = c(0, 1, 17, 8)) +
+  facet_wrap(type ~ fitting) +
+  # coord_flip() +
+  labs(caption = "Where a model is not shown, it means it failed to run")
 ```
 
-From the results of the model run times and CRPS measures, we can see that no single model is the best for all tasks. There is often a trade-off between run times/speed and estimation/forecasting performance, here measured with the CRPS. These results show that choosing an appropriate model for a task requires carefully considering the use case and appropriate trade-offs. Below are a few considerations.
+From the results of the model run times and CRPS measures, we can see that no single model is the best for all tasks and data scenarios. There is often a trade-off between run times/speed and estimation/forecasting performance, here measured with the CRPS. These results show that choosing an appropriate model for a task requires carefully considering the use case and appropriate trade-offs. Below are a few considerations.
 
 ## Things to consider when interpreting these benchmarks
 
-### Mechanistic vs non-mechanistic models
+### Benchmarking data
 
-Estimation in `{EpiNow2}` using the mechanistic approaches (prior on $R_t$) is often much slower than the non-mechanistic approach. The mechanistic model is slower because it models aspects of the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting flexibility. The non-mechanistic model in `{EpiNow2}` is equivalent to that used in the [`{EpiEstim}`](https://mrc-ide.github.io/EpiEstim/index.html) R package as they both use a renewal equation to estimate $R_t$ from case time series and the generation interval distribution.
+We generated the data using an arbitrary `R` trajectory. This represents only one of many data scenarios that the models can be benchmarked against. The data used here represents abrupt rises and falls and could favour one model type or solver over another.
 
-### Exact vs approximate sampling methods
+### Model types (Semi-mechanistic vs non-mechanistic)
 
-The default sampling method, set through `stan_opts()`, performs [MCMC sampling](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) using [`{rstan}`](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html). The MCMC sampling method is accurate but is often slow. The Laplace, pathfinder, and variational inference methods are faster because they are approximate (See, for example, a detailed explanation for [automatic variational inference in Stan](https://arxiv.org/abs/1506.03431)). In `{EpiNow2}`, you can use varational inference with an `{rstan}` or [`{cmdstanr}`](https://mc-stan.org/cmdstanr/) backend but you must install the latter to access its functionalities. Additionally, `{EpiNow2}` supports using the [Laplace](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) and [Pathfinder](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html) approximate samplers through `{cmdstanr}` but these two methods are currently experimental in `{cmdstanr}` and have not been well tested in the wild. The approximate methods may not be as reliable as the default MCMC sampling method and we do not recommend using them in real-world inference.
+Estimation in `{EpiNow2}` using the semi-mechanistic approaches (putting a prior on $R_t$) is often much slower than the non-mechanistic approach. The mechanistic model is slower because it models aspects of the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting its flexibility.
+
+It's worth noting that the non-mechanistic model in `{EpiNow2}` is equivalent to that used in the [`{EpiEstim}`](https://mrc-ide.github.io/EpiEstim/index.html) R package as they both estimate $R_t$ from case time series and the generation interval distribution.
+
+### Fitting methods (Exact vs approximate)
+
+The default sampling method, set through `stan_opts()`, performs [MCMC sampling](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) using [`{rstan}`](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html). The MCMC sampling method is accurate but is often slow. The Laplace, pathfinder, and variational inference methods are faster because they are approximate (See, for example, a detailed explanation for [automatic variational inference in Stan](https://arxiv.org/abs/1506.03431)).
+
+In `{EpiNow2}`, you can use variational inference with an `{rstan}` or [`{cmdstanr}`](https://mc-stan.org/cmdstanr/) backend but you must install the latter to access its functionalities. Additionally, `{EpiNow2}` supports using the [Laplace](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) and [Pathfinder](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html) approximate samplers through the `{cmdstanr}` R package but these two methods are currently experimental in `{cmdstanr}` and have not been well tested. The approximate methods may not be as reliable as the default MCMC sampling method and we do not recommend using them in real-world inference. 
+
+The approximate methods can be used in various ways. First, you can initialise the MCMC sampling algorithm with the fit object returned by methods such as [pathfinder](https://mc-stan.org/docs/reference-manual/pathfinder.html#using-pathfinder-for-initializing-mcmc). More details can be found in the original [pathfinder paper](https://arxiv.org/abs/2108.03782). This approach speeds up the initialisation phase of the MCMC algorithm. Second, the approximate methods are also great for prototyping. For example, if you are testing out a pipeline setup, it might be more practical to switch to a method like variational bayes and only use MCMC when the pipeline is up and running. 
 
 ### Smoothness/granularity of estimates
 
@@ -848,5 +900,3 @@ The random walk method reduces smoothness/granularity of the estimates, compared
 The run times measured here use a crude method that compares the start and end times of each simulation. It only measures the time taken for one model run and may not be accurate. For more accurate run time measurements, we recommend using a more sophisticated approach like those provided by packages like [`{bench}`](https://cran.r-project.org/web/packages/bench/index.html) and [`{microbenchmark}`](https://cran.r-project.org/web/packages/microbenchmark/index.html).
 
 Secondly, we used `r getOption("mc.cores", 1L)` cores for the simulations and so using more or fewer cores might change the run time results. We, however, expect the relative rankings to be the same or similar. To speed up the model runs, we recommend checking the number of cores available on your machine using `parallel::detectCores()` and passing a high enough number of cores to `mc.cores` through the `options()` function. See the benchmarking data setup chunk above for an example.
-
-lastly, the `R` trajectory used to generate the data for benchmarking only represents one scenario. This could favour one model type or solver over another.
