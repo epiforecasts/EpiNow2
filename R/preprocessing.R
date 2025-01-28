@@ -94,15 +94,13 @@ fill_missing <- function(data,
     diffs <- data[, list(diff = unique(diff(date))), by = by]
     unique_diff <- unique(diffs$diff)
     if (length(unique_diff) == 1 && unique_diff > 1) {
-      cli_warn(
+      cli_inform(
         c(
           "!" =
-            "Detected fixed accumulation frequency of {unique_diff}.",
-          "i" =
-            "This will be used for initial accumulation. Use
-             {.var initial_accumulate} to change this behaviour.
-             To silence this warning,
-             set {.var initial_accumulate} to {unique_diff}."
+            "Detected fixed accumulation frequency of {unique_diff}. This will
+            be used for initial accumulation. Use {.var initial_accumulate} to
+            change this behaviour. To silence this warning, set
+            {.var initial_accumulate} to {unique_diff}."
         )
       )
       initial_accumulate <- unique_diff
