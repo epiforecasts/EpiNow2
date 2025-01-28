@@ -225,9 +225,14 @@ estimate_infections <- function(data,
 
   ## add forecast horizon if forecasting is required
   if (forecast$horizon > 0) {
-    reported_cases <- add_horizon(
-      reported_cases, forecast$horizon, forecast$accumulate
+    horizon_args <- list(
+      data = reported_cases,
+      horizon = forecast$horizon
     )
+    if (!is.null(forecast$accumulate)) {
+      horizon_args$accumulate <- forecast$accumulate
+    }
+    reported_cases <- do.call(add_horizon, horizon_args)
   }
 
   # Create clean and complete cases

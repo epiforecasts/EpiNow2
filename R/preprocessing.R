@@ -185,7 +185,8 @@ default_fill_missing_obs <- function(data, obs, obs_column) {
 ##'   [estimate_secondary()]. See the documentation there for the expected
 ##'   format.
 ##' @param accumulate The number of days to accumulate when generating posterior
-##'   prediction, e.g. 7 for weekly accumulated forecasts.
+##'   prediction, e.g. 7 for weekly accumulated forecasts. If this is not set an
+##'   attempt will be made to detect the accumulation frequency in the data.
 ##' @inheritParams fill_missing
 ##' @inheritParams estimate_infections
 ##' @importFrom data.table copy merge.data.table setDT
@@ -210,8 +211,21 @@ add_horizon <- function(data, horizon, accumulate = 1L,
       .(date = seq(max(date) + 1, max(date) + horizon, by = "days")),
       by = by
     ]
-    ## if we accumulate add the column
+    ## detect accumulation
+    if (missing(accumulate) && "accumulate" %in% colnames(data)) {
+      accumulation_times <- which(!data$accumulate)
+      gaps <- unique(diff(accumulation_times))
+      if (length(gaps) == 1 && gaps > 1) { ## all gaps are the same
+        accumulate <- gaps
+        cli_inform(c(
+          "i" = "Forecasts accumulated every {gaps} days, same as accumulation
+            used in the likelihood. To change this behaviour or silence this
+            message set {.var accumulate} explicitly in {.fn forecast_opts}."
+        ))
+      }
+    }
     if (accumulate > 1 || "accumulate" %in% colnames(data)) {
+      ## if we accumulate add the column
       initial_future_accumulate <- sum(cumsum(rev(!data$accumulate)) == 0)
       reported_cases_future[, accumulate := TRUE]
       ## set accumulation to FALSE where appropriate
