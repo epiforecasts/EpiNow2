@@ -429,7 +429,6 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @inheritParams create_obs_model
 #' @inheritParams create_rt_data
 #' @inheritParams create_backcalc_data
-#' @inheritParams create_forecast_data
 #' @importFrom stats lm
 #' @importFrom purrr safely
 #' @return A list of stan data
