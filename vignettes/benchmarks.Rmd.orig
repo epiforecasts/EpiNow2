@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
   %\VignetteIndexEntry{Model benchmarks: speed versus forecast accuracy tradeoffs}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
+editor_options:
   chunk_output_type: console
 ---
 
@@ -176,7 +176,7 @@ model_descriptions <- dplyr::tribble(
   "non_residual_pathfinder",  "non_residual",  "Stationary prior on $R_t$; fitting with pathfinder algorithm",
   "non_residual_laplace",   "non_residual", "Stationary prior on $R_t$; fitting with laplace algorithm"
 )
-  
+
 knitr::kable(model_descriptions, caption = "Model options")
 ```
 
@@ -184,8 +184,8 @@ These are the components of each model.
 ```{r model-components,echo = FALSE}
 model_components <- dplyr::tribble(
   ~model,                              ~rt_gp_prior,                       ~fitting,                 ~package,
-  "default_mcmc",                        "non_stationary",                  "mcmc",                     "rstan", 
-  "default_vb",                           "non_stationary",                 "variational_bayes",         "rstan", 
+  "default_mcmc",                        "non_stationary",                  "mcmc",                     "rstan",
+  "default_vb",                           "non_stationary",                 "variational_bayes",         "rstan",
   "default_pathfinder",                    "non_stationary",                "pathfinder",                 "cmdstanr",
   "default_laplace",                        "non_stationary",               "laplace",                    "cmdstanr",
   "non_mechanistic_mcmc",                     "none",                       "mcmc",                        "rstan",
@@ -201,7 +201,7 @@ model_components <- dplyr::tribble(
   "non_residual_pathfinder",                           "stationary",            "pathfinder",                  "rstan",
   "non_residual_laplace",                               "stationary",            "laplace",                     "cmdstanr"
   )
-  
+
 knitr::kable(model_components, caption = "Model components")
 ```
 
@@ -413,7 +413,7 @@ We'll begin by setting up the following functions:
 - `plot_total_crps()`: plot the total CRPS for each model.
 - `plot_crps_over_time()`: # plot CRPS over time per model.
 ```{r extraction-funcs, class.source = 'fold-hide'}
-# Function to extract the "timing", "Rt", "infections", and "reports" variables from an 
+# Function to extract the "timing", "Rt", "infections", and "reports" variables from an
 # epinow() run. It expects a model run, x, which contains a "results" or "error" component.
 # If all went well, "error" should be NULL.
 extract_results <- function(x, variable) {
@@ -425,14 +425,14 @@ extract_results <- function(x, variable) {
   if (!is.null(x$error)) {
     return(NA)
   }
-  
-  if(variable == "timing") {
+
+  if (variable == "timing") {
     return(round(as.duration(x$result$timing), 1))
   } else {
-    obj <- x$result$estimates$fit 
+    obj <- x$result$estimates$fit
   }
-  
-  # Extracting "Rt", "infections", and "reports" is different based on the object's class and 
+
+  # Extracting "Rt", "infections", and "reports" is different based on the object's class and
   # other settings
   if (inherits(obj, "stanfit")) {
     # Depending on rt_opts(use_rt = TRUE/FALSE), R shows up as R or gen_R
@@ -593,7 +593,8 @@ plot_total_crps <- function(data, title) {
     labs(
       x = "Epidemic phase",
       y = "Total CRPS",
-      title = title
+      title = title,
+      caption = "Where a model is not shown, it means it failed to run"
     )
   return(plot)
 }
@@ -611,7 +612,8 @@ plot_crps_over_time <- function(data, title) {
     labs(
       x = "Time",
       y = "CRPS",
-      title = title
+      title = title,
+      caption = "Where a model is not shown, it means it failed to run"
     ) +
     ggplot2::theme_minimal() +
     guides(color = guide_legend(title = "Model type")) +
@@ -640,7 +642,7 @@ runtimes_dt_long <- melt(
   variable.name = "model",      # Name for the 'model' column
   value.name = "timing"         # Name for the 'timing' column
 )
-  
+
 # Add model configurations
 runtimes_dt_detailed <- merge(
   runtimes_dt_long,
@@ -685,8 +687,8 @@ timing_plot <- ggplot(data = runtimes_dt_detailed) +
        y = "Runtime (secs)",
        shape = "Model",
        fill = "Fitting method",
-       title = "Runtimes per model and fitting method.",
-       caption = "Failed models are not shown in the graph."
+       title = "Runtimes per model and fitting method",
+       caption = "Where a model is not shown, it means it failed to run"
   ) +
   theme_minimal() +
   scale_color_brewer(palette = "Dark2") +
@@ -723,7 +725,7 @@ As part of post-processing, we will add a "type" column to the output of the est
 results_by_model <- list_transpose(results)
 
 estimate_types <- lapply(
-  results_by_model$default_vb,
+  results_by_model$default_mcmc,
   function(results_by_snapshot) {
     results_by_snapshot$result$estimates$summarised[
       variable == "reported_cases"][
@@ -868,7 +870,7 @@ infections_total_crps_approx_plot +
 
 ## Summary of results
 
-Overall, the non-mechanistic model showed the best overall speed and estimation performance. The default model was among the slowest models in most cases and showed mixed results depending on the epidemic phase. Among the default, non-residual, and 7-day random walk models, no single model was the best for all tasks and data scenarios. This suggests a trade-off between run times/speed and estimation/forecasting performance, here measured with the CRPS. These results show that choosing an appropriate model for a task requires carefully considering the use case and appropriate trade-offs. Below are a few considerations.
+Overall, the non-mechanistic model was always the fastest and had the best performance in estimating $R_t$. The default model was among the slowest models in most cases but often had the best time-varying and aggregated performance in estimating infections. The non-residual and 7-day random walk models showed mixed results. This suggests a trade-off between run times/speed and estimation/forecasting performance, here measured with the CRPS. These results show that choosing an appropriate model for a task requires carefully considering the use case and appropriate trade-offs. Below are a few considerations.
 
 ## Considerations for choosing an appropriate model
 
@@ -882,9 +884,9 @@ It's worth noting that the non-mechanistic model in `{EpiNow2}` is equivalent to
 
 The default sampling method, set through `stan_opts()`, performs [MCMC sampling](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) using [`{rstan}`](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html). The MCMC sampling method is accurate but is often slow. The Laplace, pathfinder, and variational inference methods are faster because they are approximate (See, for example, a detailed explanation for [automatic variational inference in Stan](https://arxiv.org/abs/1506.03431)).
 
-In `{EpiNow2}`, you can use variational inference with an `{rstan}` or [`{cmdstanr}`](https://mc-stan.org/cmdstanr/) backend but you must install the latter to access its functionalities. Additionally, `{EpiNow2}` supports using the [Laplace](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) and [Pathfinder](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html) approximate samplers through the `{cmdstanr}` R package but these two methods are currently experimental in `{cmdstanr}` and have not been well tested. The approximate methods may not be as reliable as the default MCMC sampling method and we do not recommend using them in real-world inference. 
+In `{EpiNow2}`, you can use variational inference with an `{rstan}` or [`{cmdstanr}`](https://mc-stan.org/cmdstanr/) backend but you must install the latter to access its functionalities. Additionally, `{EpiNow2}` supports using the [Laplace](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) and [Pathfinder](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html) approximate samplers through the `{cmdstanr}` R package but these two methods are currently experimental in `{cmdstanr}` and have not been well tested. The approximate methods may not be as reliable as the default MCMC sampling method and we do not recommend using them in real-world inference.
 
-The approximate methods can be used in various ways. First, you can initialise the MCMC sampling algorithm with the fit object returned by methods such as [pathfinder](https://mc-stan.org/docs/reference-manual/pathfinder.html#using-pathfinder-for-initializing-mcmc). More details can be found in the original [pathfinder paper](https://arxiv.org/abs/2108.03782). This approach speeds up the initialisation phase of the MCMC algorithm. Second, the approximate methods are also great for prototyping. For example, if you are testing out a pipeline setup, it might be more practical to switch to a method like variational bayes and only use MCMC when the pipeline is up and running. 
+The approximate methods can be used in various ways. First, you can initialise the MCMC sampling algorithm with the fit object returned by methods such as [pathfinder](https://mc-stan.org/docs/reference-manual/pathfinder.html#using-pathfinder-for-initializing-mcmc). More details can be found in the original [pathfinder paper](https://arxiv.org/abs/2108.03782). This approach speeds up the initialisation phase of the MCMC algorithm. Second, the approximate methods are also great for prototyping. For example, if you are testing out a pipeline setup, it might be more practical to switch to a method like variational bayes and only use MCMC when the pipeline is up and running.
 
 ### Smoothness/granularity of estimates
 
