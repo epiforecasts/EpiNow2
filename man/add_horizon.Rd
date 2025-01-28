@@ -16,7 +16,8 @@ format.}
 horizon}
 
 \item{accumulate}{The number of days to accumulate when generating posterior
-prediction, e.g. 7 for weekly accumulated forecasts.}
+prediction, e.g. 7 for weekly accumulated forecasts. If this is not set an
+attempt will be made to detect the accumulation frequency in the data.}
 
 \item{obs_column}{Character (default: "confirm"). If given, only the column
 specified here will be used for checking missingness. This is useful if
