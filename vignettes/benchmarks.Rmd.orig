@@ -18,9 +18,9 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   message = FALSE,
-  fig.height = 6.5,
-  fig.width = 6.5,
-  fig.path = "vignettes/speedup_options-"
+  fig.height = 8,
+  fig.width = 8,
+  fig.path = "benchmarks-"
 )
 set.seed(9876)
 ```
@@ -33,6 +33,7 @@ library(rstan)
 library(cmdstanr)
 library(ggplot2)
 library(dplyr)
+library(purrr)
 library(lubridate)
 library(scales)
 library(posterior)
@@ -537,8 +538,8 @@ process_crps <- function(results, variable, truth) {
     rbindlist(idcol = "snapshot_date")
 
   # Replace the snapshot dates with their description
-  crps_flat[, epidemic_phase := names(snapshot_date_names)[
-    match(snapshot_date, snapshot_date_names)
+  crps_flat[, epidemic_phase := names(snapshot_date_labels)[
+    match(snapshot_date, snapshot_date_labels)
   ]]
 
   return(crps_flat)
@@ -698,7 +699,7 @@ timing_plot <- ggplot(data = runtimes_dt_detailed) +
 timing_plot
 ```
 
-We can see that across the board, the non-mechanistic model was the fastest and the default model was among the slowest models for all data scenarios. The non-residual model and 7-day random walk models produced mixed results.
+We can see that across the board, the non-mechanistic model and non-residuals models were the fastest whereas the default model was among the slowest models for all data scenarios.
 
 ### Evaluating model performance
 
@@ -768,7 +769,7 @@ infections_crps_dt_final <- infections_crps_dt[, model := gsub("_[^_]*$", "", mo
 
 #### Model performance over time
 
-We will now plot the $R_t$ CRPS over time using the function `plot_crps_over_time()`. Let's start with the models fitted with MCMC.
+Let's see how the $R_t$ and infections CRPS changed over time using the function `plot_crps_over_time()`. We'll start with the models fitted with MCMC.
 ```{r plot-rt-crps-mcmc}
 # Plot CRPS over time for Rt
 rt_crps_mcmc <- rt_crps_dt_final[fitting == "mcmc"]
@@ -777,7 +778,6 @@ rt_crps_mcmc_plot  +
     facet_wrap(~epidemic_phase, ncol = 1)
 ```
 
-Let's do the same for the infections estimates.
 ```{r plot-infections-crps-mcmc}
 # Plot CRPS over time for infections
 infections_crps_mcmc_dt <- infections_crps_dt_final[fitting == "mcmc"]
@@ -788,9 +788,8 @@ infections_crps_mcmc_plot +
 
 #### Overall model performance
 
-We will look at the overall performance of the models by calculating and plotting the total CRPS. We'll first show the results for the mcmc fitting.
+We will look at the overall performance of the models (fitted with MCMC) using the total CRPS.
 
-Let's show the total CRPS for the $R_t$ estimates.
 ```{r crps-plotting-rt-total}
 # Calculate
 rt_total_crps_mcmc <- calculate_total_crps(rt_crps_dt_final[fit_type == "mcmc"])
@@ -802,7 +801,6 @@ rt_total_crps_mcmc_plot  +
   facet_wrap(~type)
 ```
 
-The total CRPS for the infections estimates is shown below.
 ```{r crps-plotting-infections-total}
 # Calculate
 infections_total_crps_dt <- calculate_total_crps(infections_crps_dt_final[fit_type == "mcmc"])
@@ -816,7 +814,7 @@ infections_total_crps_plot +
 
 #### Performance of approximate methods
 
-We will briefly look at the performance of the approximate methods although we do not recommend using them in real-world inference and analytics pipelines.
+We'll now show the performance of the approximate methods. Note that we do not recommend using them in real-world inference and analytics pipelines. We provide alternative use cases in the following sections.
 
 Let's first look at the time varying $R_t$ and infections estimates.
 ```{r plot-rt-tv-crps-approx}
@@ -829,7 +827,6 @@ rt_tv_crps_plot_approx  +
     facet_wrap(fitting~epidemic_phase)
 ```
 
-Overall, the non-mechanistic model appears to perform best near the end of the time series. The default model shows mixed results.
 ```{r plot-infections-tv-crps-approx}
 # Plot CRPS over time for Rt
 infections_crps_approx <- infections_crps_dt_final[fitting != "mcmc"]
@@ -869,13 +866,11 @@ infections_total_crps_approx_plot +
   labs(caption = "Where a model is not shown, it means it failed to run")
 ```
 
-From the results of the model run times and CRPS measures, we can see that no single model is the best for all tasks and data scenarios. There is often a trade-off between run times/speed and estimation/forecasting performance, here measured with the CRPS. These results show that choosing an appropriate model for a task requires carefully considering the use case and appropriate trade-offs. Below are a few considerations.
+## Summary of results
 
-## Things to consider when interpreting these benchmarks
+Overall, the non-mechanistic model showed the best overall speed and estimation performance. The default model was among the slowest models in most cases and showed mixed results depending on the epidemic phase. Among the default, non-residual, and 7-day random walk models, no single model was the best for all tasks and data scenarios. This suggests a trade-off between run times/speed and estimation/forecasting performance, here measured with the CRPS. These results show that choosing an appropriate model for a task requires carefully considering the use case and appropriate trade-offs. Below are a few considerations.
 
-### Benchmarking data
-
-We generated the data using an arbitrary `R` trajectory. This represents only one of many data scenarios that the models can be benchmarked against. The data used here represents abrupt rises and falls and could favour one model type or solver over another.
+## Considerations for choosing an appropriate model
 
 ### Model types (Semi-mechanistic vs non-mechanistic)
 
@@ -895,8 +890,10 @@ The approximate methods can be used in various ways. First, you can initialise t
 
 The random walk method reduces smoothness/granularity of the estimates, compared to the other methods.
 
-## Caveats
+## Caveats of this exercise
+
+We generated the data using an arbitrary `R` trajectory. This represents only one of many data scenarios that the models can be benchmarked against. The data used here represents abrupt rises and falls and could favour one model type or solver over another.
 
 The run times measured here use a crude method that compares the start and end times of each simulation. It only measures the time taken for one model run and may not be accurate. For more accurate run time measurements, we recommend using a more sophisticated approach like those provided by packages like [`{bench}`](https://cran.r-project.org/web/packages/bench/index.html) and [`{microbenchmark}`](https://cran.r-project.org/web/packages/microbenchmark/index.html).
 
-Secondly, we used `r getOption("mc.cores", 1L)` cores for the simulations and so using more or fewer cores might change the run time results. We, however, expect the relative rankings to be the same or similar. To speed up the model runs, we recommend checking the number of cores available on your machine using `parallel::detectCores()` and passing a high enough number of cores to `mc.cores` through the `options()` function. See the benchmarking data setup chunk above for an example.
+Lastly, we used `r getOption("mc.cores", 1L)` cores for the simulations and so using more or fewer cores might change the run time results. We, however, expect the relative rankings to be the same or similar. To speed up the model runs, we recommend checking the number of cores available on your machine using `parallel::detectCores()` and passing a high enough number of cores to `mc.cores` through the `options()` function (See the benchmarking data setup chunk above for an example of how to do this).
