@@ -30,6 +30,11 @@ test_that("fill_missing works with by columns", {
 test_that("fill_missing warns about initial data points", {
   expect_warning(
     fill_missing(cases, missing_dates = "accumulate"),
+    "Detected fixed accumulation frequency"
+  )
+  cases[1, date := date + 1]
+  expect_warning(
+    fill_missing(cases, missing_dates = "accumulate"),
     "Initial data point not marked as accumulated"
   )
 })
