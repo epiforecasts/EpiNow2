@@ -2,7 +2,7 @@
 
 ## Model changes
 
-- The models now support more complex patterns of aggregating reported cases by accumulating them over multiple time points, as well as mixtures of accumulation and missingness via the new `fill_missing()` function and a logical `accumulate` column that can be supplied with the data. By @sbfnk in #851 and reviewed by @seabbs and @jamesmbaazam..
+- The models now support more complex patterns of aggregating reported cases by accumulating them over multiple time points, as well as mixtures of accumulation and missingness via the new `fill_missing()` function and a logical `accumulate` column that can be supplied with the data. Any fixed accumulation frequencies detected when using `fill_missing()`.  By @sbfnk in #851 and # and reviewed by @seabbs and @jamesmbaazam.
 
   ```r
   # Deprecated
