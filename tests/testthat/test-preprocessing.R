@@ -28,7 +28,7 @@ test_that("fill_missing works with by columns", {
 })
 
 test_that("fill_missing warns about initial data points", {
-  expect_warning(
+  expect_message(
     fill_missing(cases, missing_dates = "accumulate"),
     "Detected fixed accumulation frequency"
   )
