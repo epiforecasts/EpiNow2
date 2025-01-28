@@ -116,11 +116,8 @@ epinow <- function(data,
     )
   }
   # Check inputs
-  ## deprecated
-  if (!missing(horizon)) {
-    assert_numeric(horizon, lower = 0)
-    forecast$horizon <- horizon
-  }
+  ## horizon is deprecated so should be setup via forecast_opts
+  forecast <- setup_forecast(forecast, if (!missing(horizon)) horizon else NULL)
   assert_logical(return_output)
   stopifnot("target_folder is not a directory" =
               !is.null(target_folder) || isDirectory(target_folder)

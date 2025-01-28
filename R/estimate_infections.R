@@ -164,6 +164,8 @@ estimate_infections <- function(data,
         override any `horizon` argument passed via `forecast_opts()`."
     )
   }
+  ## horizon is deprecated so should be setup via forecast_opts
+  forecast <- setup_forecast(forecast, if (!missing(horizon)) horizon else NULL)
   # Validate inputs
   check_reports_valid(data, model = "estimate_infections")
   assert_class(generation_time, "generation_time_opts")
@@ -173,13 +175,8 @@ estimate_infections <- function(data,
   assert_class(backcalc, "backcalc_opts")
   assert_class(gp, "gp_opts", null.ok = TRUE)
   assert_class(obs, "obs_opts")
-  assert_class(forecast, "forecast_opts", null.ok = TRUE)
+  assert_class(forecast, "forecast_opts")
   assert_class(stan, "stan_opts")
-  ## deprecated
-  if (!missing(horizon)) {
-    assert_numeric(horizon, lower = 0)
-    forecast$horizon <- horizon
-  }
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(filter_leading_zeros)
   assert_numeric(zero_threshold, lower = 0)
@@ -226,8 +223,8 @@ estimate_infections <- function(data,
     ))
   }
 
-  ## add forecast horizon
-  if (!is.null(forecast)) {
+  ## add forecast horizon if forecasting is required
+  if (forecast$horizon > 0) {
     reported_cases <- add_horizon(
       reported_cases, forecast$horizon, forecast$accumulate
     )

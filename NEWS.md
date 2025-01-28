@@ -20,13 +20,13 @@
 - All parameters have been changed to the new parameter interface. By @sbfnk in #871 and #890 and reviewed by @seabbs.
 - The Gaussian Process lengthscale is now scaled internally by half the length of the time series. By @sbfnk in #890 and reviewed by #seabbs.
 - A bug was fixed where `plot.dist_spec()` wasn't throwing an informative error due to an incomplete check for the max of the specified delay. By @jamesmbaazam in #858 and reviewed by @.
-- Updated the early dynamics calculation to use the full linear model if available. Also changed the prior for initial infections to be approximately Poisson and the initial growth rate to the point estimate of the initial growth rate scaled linearly by the estimated initial infections term. By @sbfnk in #903 and reviewed by @seabbs and @SamuelBrand1 
+- Updated the early dynamics calculation to estimate growth from the initial reproduction number instead of a separate linear model. Also changed the prior calculation for initial infections to be a scaling factor of early case numbers adjusted by the growth estimate, instead a true number of initial infections. By @sbfnk in #923 (with initial exploration in #903) and reviewed by @seabbs and @SamuelBrand1. 
 
 ## Package changes
 
 - The internal functions `create_clean_reported_cases()` has been broken up into several functions, with relevant ones `filter_leading_zeros()`, `add_breakpoints()` and `apply_zero_threshold()` exposed to the user. By @sbfnk in #884 and reviewed by @seabbs and @jamesmbaazam.
 - The step of estimating early infections and growth in the internal function `create_stan_data()` has been separated into a new internal function `estimate_early_dynamics()`. By @jamesmbaazam in #888 and reviewed by @sbfnk.
-- `estimate_infections()` and `epinow()` gain the `forecast` argument for setting the forecast horizon (`horizon`) and accumulation of forecasts. `forecast` is set with the `forecast_opts()` function similar to the other settings arguments. By @sbfnk in #901 and reviewed by @jamesmbaazam.
+- `estimate_infections()` and `epinow()` gain the `forecast` argument for setting the forecast horizon (`horizon`) and accumulation of forecasts. `forecast` is set with the `forecast_opts()` function similar to the other settings arguments. By @sbfnk in #901 and @jamesmbaazam in #912 and reviewed by each other.
 
 ## Documentation
 

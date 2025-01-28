@@ -38,6 +38,12 @@ transformed data {
       delay_types_groups, delay_max, delay_np_pmf_groups
     );
   }
+
+  // initial infections scaling (on the log scale)
+  real initial_infections_guess = fmax(
+    0,
+    log(mean(head(cases, num_elements(cases) > 7 ? 7 : num_elements(cases))))
+  );
 }
 
 parameters {
@@ -60,12 +66,6 @@ transformed parameters {
   vector[ot_h] reports;                                     // estimated reported cases
   vector[ot] obs_reports;                                   // observed estimated reported cases
   vector[estimate_r * (delay_type_max[gt_id] + 1)] gt_rev_pmf;
-  array[estimate_r && seeding_time > 1 ? 1 : 0] real initial_growth; // seed growth rate
-
-  if (num_elements(initial_growth) > 0) {
-    initial_growth[1] = initial_growth_estimate +
-      initial_infections_estimate - initial_infections[1];
-  }
 
   // GP in noise - spectral densities
   profile("update gp") {
@@ -108,8 +108,8 @@ transformed parameters {
         params
       );
       infections = generate_infections(
-        R, seeding_time, gt_rev_pmf, initial_infections, initial_growth, pop,
-        future_time, obs_scale, frac_obs
+        R, seeding_time, gt_rev_pmf, initial_infections, pop,
+        future_time, obs_scale, frac_obs, 1
       );
     }
   } else {
@@ -210,7 +210,8 @@ model {
     // priors on Rt
     profile("rt lp") {
       rt_lp(
-        initial_infections, bp_effects, bp_sd, bp_n, initial_infections_estimate
+        initial_infections, bp_effects, bp_sd, bp_n,
+        cases, initial_infections_guess
       );
     }
   }
