@@ -20,7 +20,7 @@
 #' using [progressr::handlers()] and enable it in batch by setting
 #' `R_PROGRESSR_ENABLE=TRUE` as an environment variable.
 #'
-#' @param data A `<data.frame>` of confirmed cases (confirm) by date
+#' @param data A `<data.frame>` of disease reports (confirm) by date
 #' (date), and region (`region`).
 #'
 #' @param reported_cases Deprecated; use `data` instead.

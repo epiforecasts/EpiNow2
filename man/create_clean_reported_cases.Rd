@@ -13,7 +13,7 @@ create_clean_reported_cases(
 )
 }
 \arguments{
-\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date (date).
+\item{data}{A \verb{<data.frame>} of disease reports (confirm) by date (date).
 \code{confirm} must be numeric and \code{date} must be in date format. Optionally
 this can also have a logical \code{accumulate} column which indicates whether
 data should be added to the next data point. This is useful when modelling

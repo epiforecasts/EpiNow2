@@ -318,7 +318,7 @@ plot.estimate_truncation <- function(x, ...) {
   plot <- plot +
     ggplot2::theme_bw() +
     ggplot2::labs(
-      y = "Confirmed Cases", x = "Date", col = "Type", fill = "Type"
+      y = "Reports", x = "Date", col = "Type", fill = "Type"
     ) +
     ggplot2::scale_x_date(date_breaks = "day", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +
