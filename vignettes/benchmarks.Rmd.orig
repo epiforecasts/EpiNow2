@@ -70,7 +70,7 @@ options(mc.cores = 6)
 ```
 
 Now, we can generate the `estimates` object.
-```{r estimates}
+```{r generate-estimates}
 estimates <- epinow(
   data = example_confirmed[1:60],
   generation_time = generation_time_opts(example_generation_time),
@@ -563,20 +563,9 @@ add_model_details <- function(crps_by_model){
   crps_dt[]
 }
 
-# Define a function to calculate total CRPS
-calculate_total_crps <- function(data) {
-  data[
-    ,
-    .(
-      total_crps = sum(crps),
-      rt_gp_prior = rt_gp_prior[1],
-      fitting = fitting[1],
-      package = package[1]
-    ),
-    by = .(model, epidemic_phase, type)
-  ][
-    type != "estimate"
-  ]
+# Define a function to calculate total CRPS stratified by the "by" vector
+calculate_total_crps <- function(data, by) {
+  data[, .(total_crps = sum(crps, na.rm = TRUE)), by = by]
 }
 
 # Define a function to plot total CRPS
@@ -595,7 +584,12 @@ plot_total_crps <- function(data, title) {
       y = "Total CRPS",
       title = title,
       caption = "Where a model is not shown, it means it failed to run"
-    )
+    ) +
+  theme(plot.title = element_text(size = 18),
+        strip.text = element_text(size = 13),
+        axis.title = element_text(size = 13),
+        axis.text = element_text(size = 11)
+        )
   return(plot)
 }
 
@@ -617,7 +611,12 @@ plot_crps_over_time <- function(data, title) {
     ) +
     ggplot2::theme_minimal() +
     guides(color = guide_legend(title = "Model type")) +
-    theme(legend.position = "bottom")
+    theme(legend.position = "bottom",
+          plot.title = element_text(size = 18),
+          strip.text = element_text(size = 13),
+          axis.title = element_text(size = 13),
+          axis.text = element_text(size = 11)
+    )
   return(plot)
 }
 ```
@@ -694,9 +693,10 @@ timing_plot <- ggplot(data = runtimes_dt_detailed) +
   scale_color_brewer(palette = "Dark2") +
   scale_shape_manual(values = c(1, 0, 6, 8)) +
   facet_wrap(~fit_type, scales = "free_y", nrow = 2, strip.position = "top") +
-  theme(strip.text = element_text(size = 18),
+  theme(plot.title = element_text(size = 18),
+        strip.text = element_text(size = 13),
         axis.title = element_text(size = 13),
-        axis.text = element_text(size = 13)
+        axis.text = element_text(size = 11)
         )
 timing_plot
 ```
@@ -725,7 +725,7 @@ As part of post-processing, we will add a "type" column to the output of the est
 results_by_model <- list_transpose(results)
 
 estimate_types <- lapply(
-  results_by_model$default_mcmc,
+  results_by_model$non_mechanistic_mcmc,
   function(results_by_snapshot) {
     results_by_snapshot$result$estimates$summarised[
       variable == "reported_cases"][
@@ -790,11 +790,27 @@ infections_crps_mcmc_plot +
 
 #### Overall model performance
 
-We will look at the overall performance of the models (fitted with MCMC) using the total CRPS.
+Let's calculate the overall/aggregated performance of the models in terms of the total CRPS for $R_t$ and infections for downstream visualisations.
 
+```{r calc-total-crps}
+# Rt
+rt_total_crps <- calculate_total_crps(rt_crps_dt_final, by = c("model", "epidemic_phase", "type", "fitting"))
+
+# infections
+infections_total_crps <- calculate_total_crps(infections_crps_dt_final, by = c("model", "epidemic_phase", "type", "fitting"))
+
+
+# We are not interested in the "estimates", just "estimaes based on partial data" and "forecasts"
+
+rt_total_crps <- rt_total_crps[type != "estimate"]
+infections_total_crps <- infections_total_crps[type != "estimate"]
+```
+
+
+Now, let's visualise the results for MCMC fitting.
 ```{r crps-plotting-rt-total}
 # Calculate
-rt_total_crps_mcmc <- calculate_total_crps(rt_crps_dt_final[fit_type == "mcmc"])
+rt_total_crps_mcmc <- rt_total_crps[fitting == "mcmc"]
 
 # Process data and plot
 rt_total_crps_mcmc_plot <- plot_total_crps(rt_total_crps_mcmc, "Aggregated model performance in estimating Rt (mcmc)")
@@ -805,10 +821,10 @@ rt_total_crps_mcmc_plot  +
 
 ```{r crps-plotting-infections-total}
 # Calculate
-infections_total_crps_dt <- calculate_total_crps(infections_crps_dt_final[fit_type == "mcmc"])
+infections_total_crps_mcmc <- infections_total_crps[fitting == "mcmc"]
 
 # Process and plot
-infections_total_crps_plot <- plot_total_crps(infections_total_crps_dt, "Aggregated model performance in estimating infections (mcmc)")
+infections_total_crps_plot <- plot_total_crps(infections_total_crps_mcmc, "Aggregated model performance in estimating infections (mcmc)")
 infections_total_crps_plot +
   scale_shape_manual(values = c(0, 1, 17, 8)) +
     facet_wrap(~type)
@@ -843,28 +859,25 @@ infections_tv_crps_plot_approx  +
 Now, let's look at the total CRPS for $R_t$ and infections.
 ```{r plot-rt-total-crps-approx}
 # Calculate total CRPS
-rt_crps_approx <- rt_crps_dt_final[fit_type != "mcmc"]
-rt_total_crps_approx <- calculate_total_crps(rt_crps_approx)
+rt_total_crps_approx <- rt_total_crps[fitting != "mcmc"]
 
 # Process plot data and plot
 rt_total_crps_approx_plot <- plot_total_crps(rt_total_crps_approx, "Aggregated model performance in estimating Rt (approximate methods)")
 rt_total_crps_approx_plot +
   scale_shape_manual(values = c(0, 1, 17, 8)) +
-  facet_wrap(type ~ fitting) +
+  facet_wrap(~ type + fitting) +
   labs(caption = "Where a model is not shown, it means it failed to run")
 ```
 
 ```{r plot-infections-total-crps-approx}
 # Calculate total CRPS
-infections_crps_approx <- infections_crps_dt_final[fit_type != "mcmc"]
-infections_total_crps_approx <- calculate_total_crps(infections_crps_approx)
+infections_total_crps_approx <- infections_total_crps[fitting != "mcmc"]
 
 # Process plot data and plot
 infections_total_crps_approx_plot <- plot_total_crps(infections_total_crps_approx, "Aggregated model performance in estimating infections (approximate methods)")
 infections_total_crps_approx_plot +
   scale_shape_manual(values = c(0, 1, 17, 8)) +
-  facet_wrap(type ~ fitting) +
-  # coord_flip() +
+  facet_wrap( ~ type + fitting) +
   labs(caption = "Where a model is not shown, it means it failed to run")
 ```
 
