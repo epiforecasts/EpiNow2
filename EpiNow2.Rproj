@@ -1,8 +1,9 @@
 Version: 1.0
+ProjectId: 662e174f-e51a-406c-b273-7f27f7131ca0
 
-RestoreWorkspace: No
-SaveWorkspace: No
-AlwaysSaveHistory: No
+RestoreWorkspace: Default
+SaveWorkspace: Default
+AlwaysSaveHistory: Default
 
 EnableCodeIndexing: Yes
 UseSpacesForTab: Yes
@@ -12,7 +13,9 @@ Encoding: UTF-8
 RnwWeave: Sweave
 LaTeX: pdfLaTeX
 
+AutoAppendNewline: Yes
+StripTrailingWhitespace: Yes
+
 BuildType: Package
 PackageUseDevtools: Yes
 PackageInstallArgs: --no-multiarch --with-keep.source
-PackageRoxygenize: rd,collate,namespace
