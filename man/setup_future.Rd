@@ -11,7 +11,7 @@ setup_future(
 )
 }
 \arguments{
-\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+\item{data}{A \verb{<data.frame>} of disease reports (confirm) by date
 (date), and region (\code{region}).}
 
 \item{strategies}{A vector length 1 to 2 of strategies to pass to

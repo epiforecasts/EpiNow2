@@ -17,7 +17,6 @@ forecasts unless set explicitly here.}
 }
 \value{
 A \verb{<forecast_opts>} object of forecast setting.
-rstan functions.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
