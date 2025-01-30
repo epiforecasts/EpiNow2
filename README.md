@@ -270,6 +270,7 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pitmonticone">pitmonticone</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=actions-user">actions-user</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=ellisp">ellisp</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=github-merge-queue[bot]">github-merge-queue\[bot\]</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jdmunday">jdmunday</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=kaitejohnson">kaitejohnson</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pearsonca">pearsonca</a>,
@@ -318,8 +319,7 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Alorenzwalthert">lorenzwalthert</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Anlinton">nlinton</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amartinamcm">martinamcm</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aadrian-lison">adrian-lison</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amicahwiesner67">micahwiesner67</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aadrian-lison">adrian-lison</a>
 
 ### Issue Contributors
 
