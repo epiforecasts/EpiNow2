@@ -72,7 +72,7 @@ report_summary <- function(summarised_estimates,
   summary <- data.table::data.table(
     measure = c(
       "New infections per day",
-      "Expected change in daily reports",
+      "Expected change in reports",
       "Effective reproduction no.",
       "Rate of growth",
       "Doubling/halving time (days)" # nolint
@@ -163,7 +163,7 @@ report_plots <- function(summarised_estimates, reported,
   # cases by report ---------------------------------------------------------
   reports <- plot_estimates(
     estimate = summarised_estimates[variable == "reported_cases"],
-    reported = reported, ylab = "New reports \n per day",
+    reported = reported, ylab = "Reports",
     ...
   )
 
