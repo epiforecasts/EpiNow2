@@ -751,8 +751,8 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
             c(
               "!" = "All distributions in {.var x} must have a finite
               maximum value.",
-              "i" = "You can set a finite maximum either as an
-              argument to {.fn plot} or when defining the distribution."
+              "i" = "You can set a finite maximum or CDF cutoff
+              when defining the distribution."
             )
           )
         }
