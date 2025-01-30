@@ -1007,7 +1007,6 @@ LogNormal <- function(meanlog, sdlog, mean, sd, ...) {
 #' Gamma(mean = 4, sd = 1)
 #' Gamma(shape = 16, rate = 4)
 #' Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
-#' Gamma(shape = Normal(16, 2), scale = Normal(1/4, 1))
 Gamma <- function(shape, rate, scale, mean, sd, ...) {
   params <- as.list(environment())
   return(new_dist_spec(params, "gamma", ...))

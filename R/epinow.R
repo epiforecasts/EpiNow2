@@ -106,7 +106,21 @@ epinow <- function(data,
       "epinow(data)"
     )
   }
-  if (!missing(horizon)) {
+  if (!missing(filter_leading_zeros)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "estimate_infections(filter_leading_zeros)",
+      "filter_leading_zeros()"
+    )
+  }
+  if (!missing(zero_threshold)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "estimate_infections(zero_threshold)",
+      "apply_zero_threshold()"
+    )
+  }
+   if (!missing(horizon)) {
     lifecycle::deprecate_warn(
       "1.7.0",
       "epinow(horizon)",
@@ -171,6 +185,9 @@ epinow <- function(data,
   latest_folder <- target_folders$latest
 
   # specify internal functions
+  # temporary vars while argument not deprecated
+  filter_leading_zeros_missing <- missing(filter_leading_zeros)
+  zero_threshold_missing <- missing(zero_threshold)
   epinow_internal <- function() {
     # check verbose settings and set logger to match---------------------------
     if (verbose) {
@@ -189,7 +206,9 @@ epinow <- function(data,
     horizon <- update_horizon(forecast$horizon, target_date, reported_cases)
 
     # estimate infections and Reproduction no ---------------------------------
-    estimates <- estimate_infections(
+    # use do.call until filter_leading_zeros and zero_threshold are fully
+    # deprecated
+    estimate_infection_args <- list(
       data = reported_cases,
       generation_time = generation_time,
       delays = delays,
@@ -201,11 +220,17 @@ epinow <- function(data,
       forecast = forecast,
       stan = stan,
       CrIs = CrIs,
-      filter_leading_zeros = filter_leading_zeros,
-      zero_threshold = zero_threshold,
       verbose = verbose,
       id = id
     )
+    if (!filter_leading_zeros_missing) {
+      estimate_infection_args$filter_leading_zeros <- filter_leading_zeros
+    }
+    if (!zero_threshold_missing) {
+      estimate_infection_args$zero_threshold <- zero_threshold
+    }
+
+    estimates <- do.call(estimate_infections, estimate_infection_args)
 
     if (!output["fit"]) {
       estimates$fit <- NULL
