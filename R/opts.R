@@ -527,7 +527,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' gp_opts()
 #'
 #' # add a custom length scale
-#' gp_opts(ls_mean = 4)
+#' gp_opts(ls = LogNormal(mean = 4, sd = 1, max = 20))
 #'
 #' # use linear kernel
 #' gp_opts(kernel = "periodic")

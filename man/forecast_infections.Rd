@@ -67,7 +67,8 @@ est <- estimate_infections(reported_cases,
   delays = delay_opts(example_incubation_period + example_reporting_delay),
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1), rw = 7),
   obs = obs_opts(scale = Normal(mean = 0.1, sd = 0.01)),
-  gp = NULL, horizon = 0
+  gp = NULL,
+  forecast = forecast_opts(horizon = 0)
 )
 
 # update Rt trajectory and simulate new infections using it

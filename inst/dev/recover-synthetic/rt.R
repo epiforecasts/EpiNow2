@@ -15,7 +15,8 @@ init <- estimate_infections(example_confirmed[1:100],
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + example_reporting_delay),
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1), rw = 14),
-  gp = NULL, horizon = 0,
+  gp = NULL,
+  forecast = forecast_opts(horizon = 0),
   obs = obs
 )
 
@@ -62,7 +63,7 @@ for (method in c("nuts")) {
       rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.25)),
       stan = stanopts,
       obs = obs,
-      horizon = 0
+      forecast = forecast_opts(horizon = 0)
     )
   # runtime ~ 10 minutes
   make_plots(
@@ -77,7 +78,7 @@ for (method in c("nuts")) {
       rt = NULL,
       stan = stanopts,
       obs = obs,
-      horizon = 0
+      forecast = forecast_opts(horizon = 0)
     )
   # runtime ~ 15 seconds
   make_plots(
@@ -96,7 +97,7 @@ for (method in c("nuts")) {
       gp = NULL,
       stan = stanopts,
       obs = obs,
-      horizon = 0
+      forecast = forecast_opts(horizon = 0)
     )
   # runtime ~ 5 minutes
   make_plots(
@@ -113,7 +114,7 @@ for (method in c("nuts")) {
       ),
       stan = stanopts,
       obs = obs,
-      horizon = 0
+      forecast = forecast_opts(horizon = 0)
     )
 
   # runtime ~ 10 minutes
@@ -136,7 +137,7 @@ for (method in c("nuts")) {
         gp = NULL,
         stan = stanopts,
         obs = obs,
-        horizon = 0
+        forecast = forecast_opts(horizon = 0)
       )
     # runtime ~ 10 minutes (with 40+ divergent transitions)
     make_plots(

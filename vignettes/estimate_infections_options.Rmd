@@ -528,7 +528,7 @@ non_parametric <- estimate_infections(reported_cases,
   delays = delay_opts(delay),
   rt = NULL,
   backcalc = backcalc_opts(),
-  horizon = 0
+  forecast = forecast_opts(horizon = 0)
 )
 # summarise results
 summary(non_parametric)

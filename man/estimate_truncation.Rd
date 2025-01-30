@@ -133,6 +133,7 @@ plot(est)
 # all the previous snapshots. Also, we're using the default options for
 # illustrative purposes only.
 out <- epinow(
+  generation_time = generation_time_opts(example_generation_time),
   example_truncated[[5]],
   truncation = trunc_opts(est$dist)
 )
