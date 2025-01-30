@@ -97,10 +97,10 @@ fill_missing <- function(data,
       cli_inform(
         c(
           "!" =
-            "Detected fixed accumulation frequency of {unique_patterns}. This will
-            be used for initial accumulation. Use {.var initial_accumulate} to
-            change this behaviour. To silence this warning, set
-            {.var initial_accumulate} to {unique_patterns}."
+            "Detected fixed accumulation frequency of {unique_patterns}.
+            This will be used for initial accumulation. Use
+            {.var initial_accumulate} to change this behaviour. To silence this
+            warning, set {.var initial_accumulate} to {unique_patterns}."
         )
       )
       initial_accumulate <- unique_patterns
