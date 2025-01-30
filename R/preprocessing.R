@@ -91,7 +91,7 @@ fill_missing <- function(data,
 
   if (missing(initial_accumulate)) {
     ## detect frequency of accumulation if possible
-    diffs <- data[, list(diff = unique(diff(date))), by = by]
+    missing_date_patterns <- data[, list(pattern = unique(diff(date))), by = by]
     unique_patterns <- unique(missing_date_patterns$pattern)
     if (length(unique_patterns) == 1 && unique_patterns > 1) {
       cli_inform(
