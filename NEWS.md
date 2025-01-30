@@ -34,7 +34,7 @@
 - The `...` argument in `estimate_secondary()` has been removed because it was not used. By @jamesmbaazam in #894 and reviewed by @.
 - All examples now use the natural parameters of distributions rather than the mean and standard deviation when specifying uncertain distributions. This is to eliminate warnings and encourage best practice. By @jamesmbaazam in #893 and reviewed by @sbfnk.
 - The ways that `dist_spec()` with certain/uncertain parameters can be constrained has been clarified. By @sbfnk in #940 and reviewed by @jamesmbaazam.
-- Language in plots and summaries was adapted to reflect potentially non-daily data. By @sbfnk in # and reviewed by @.
+- Language in plots and summaries was adapted to reflect potentially non-daily data. By @sbfnk in #947 and reviewed by @seabbs.
 
 # EpiNow2 1.6.1
 
