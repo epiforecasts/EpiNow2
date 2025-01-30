@@ -1,15 +1,19 @@
 name: "Synthetic validation check"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
 on:
-  push:
-    branches:
-      - main
-      - master
-      - develop
   pull_request:
-    branches:
-      - main
-      - master
-      - develop
+    paths:
+      # Directories with stan code and benchmarking code
+      - "inst/stan/**"
+      - "inst/dev/recover-synthetic/*"
+      # Benchmarking config file
+      - ".github/workflows/synthetic-validation.yaml"
+      # Manual trigger
+      - ".synthetic"
   workflow_dispatch:
 
 jobs:
