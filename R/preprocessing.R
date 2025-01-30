@@ -92,18 +92,18 @@ fill_missing <- function(data,
   if (missing(initial_accumulate)) {
     ## detect frequency of accumulation if possible
     diffs <- data[, list(diff = unique(diff(date))), by = by]
-    unique_diff <- unique(diffs$diff)
-    if (length(unique_diff) == 1 && unique_diff > 1) {
+    unique_patterns <- unique(missing_date_patterns$pattern)
+    if (length(unique_patterns) == 1 && unique_patterns > 1) {
       cli_inform(
         c(
           "!" =
-            "Detected fixed accumulation frequency of {unique_diff}. This will
+            "Detected fixed accumulation frequency of {unique_patterns}. This will
             be used for initial accumulation. Use {.var initial_accumulate} to
             change this behaviour. To silence this warning, set
-            {.var initial_accumulate} to {unique_diff}."
+            {.var initial_accumulate} to {unique_patterns}."
         )
       )
-      initial_accumulate <- unique_diff
+      initial_accumulate <- unique_patterns
     }
   } else {
     assert_integerish(initial_accumulate, lower = 1)
