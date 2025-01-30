@@ -111,9 +111,10 @@ check_stan_delay <- function(dist) {
   if (any(is.infinite(max(dist))) && !(attr(dist, "cdf_cutoff") > 0)) {
     cli_abort(
       c(
-        "i" = "All distribution passed to the model need to have a
+        "i" = "All distributions passed to the model need to have a
       {col_blue(\"finite maximum\")}, which can be achieved either by
-      setting {.var max} or non-zero {.var cdf_cutoff}."
+      setting {.var max} or, if using a distribution with fixed parameters,
+      non-zero {.var cdf_cutoff}."
       )
     )
   }
