@@ -1113,13 +1113,11 @@ stan_opts <- function(object = NULL,
 #' forecast_opts(horizon = 28, accumulate = 7)
 forecast_opts <- function(horizon = 7, accumulate) {
   opts <- list(
-    horizon = horizon,
-    infer_accumulate = missing(accumulate)
+    horizon = horizon
   )
-  if (missing(accumulate)) {
-    accumulate <- 1
+  if (!missing(accumulate)) {
+    opts$accumulate <- accumulate
   }
-  opts$accumulate <- accumulate
   attr(opts, "class") <- c("forecast_opts", class(opts))
   return(opts)
 }

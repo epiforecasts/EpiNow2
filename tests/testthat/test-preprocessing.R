@@ -40,3 +40,23 @@ test_that("add_horizon works", {
     "Initial data point not marked as accumulated"
   )
 })
+
+test_that("add_horizon identifies gaps correctly", {
+  filled <- fill_missing(cases, missing_dates = "accumulate", initial_accumulate = 7)
+  expect_message(
+    result <- add_horizon(filled, horizon = 7),
+    "Forecasts accumulated every 7 days"
+  )
+  result <- add_horizon(filled, horizon = 7, accumulate = 7)
+  expect_true(all(result[seq(.N - 6, .N - 1), accumulate]))
+  expect_false(result[.N, accumulate])
+})
+
+test_that("add_horizon doesn't try to identify non-equally spaced gaps", {
+  reported_irregular <- example_confirmed[c(seq(1, 43, by = 7), 45)]
+  filled <- suppressWarnings(
+    fill_missing(reported_irregular, missing_dates = "accumulate")
+  )
+  result <- add_horizon(filled, horizon = 7)
+  expect_false(any(result[seq(.N - 6, .N), accumulate]))
+})
