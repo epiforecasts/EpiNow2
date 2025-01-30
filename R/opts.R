@@ -1197,7 +1197,8 @@ filter_opts <- function(opts, region) {
 #' @param dist A <dist_spec>
 #' @param default_cdf_cutoff Numeric; default CDF cutoff to be used if an
 #'   unconstrained distribution is passed as `dist`. If `dist` is already
-#'   constrained by having a maximum or CDF cutoff this is ignored.
+#'   constrained by having a maximum or CDF cutoff this is ignored. Note that
+#'   this can only be done for <dist_spec> objects with fixed parameters.
 #' @param cdf_cutoff_set Logical; whether the default CDF cutoff has been set by
 #'   the user; if yes and `dist` is constrained a warning is issued
 #' @importFrom cli cli_inform cli_warn

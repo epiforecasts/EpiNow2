@@ -17,7 +17,7 @@
 #' for an example of using `estimate_infections` within the `epinow` wrapper to
 #' estimate Rt for Covid-19 in a country from the ECDC data source.
 #'
-#' @param data A `<data.frame>` of confirmed cases (confirm) by date (date).
+#' @param data A `<data.frame>` of disease reports (confirm) by date (date).
 #' `confirm` must be numeric and `date` must be in date format. Optionally
 #' this can also have a logical `accumulate` column which indicates whether
 #' data should be added to the next data point. This is useful when modelling

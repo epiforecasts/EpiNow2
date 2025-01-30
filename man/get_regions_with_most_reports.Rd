@@ -7,7 +7,7 @@
 get_regions_with_most_reports(data, time_window = 7, no_regions = 6)
 }
 \arguments{
-\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+\item{data}{A \verb{<data.frame>} of disease reports (confirm) by date
 (date), and region (\code{region}).}
 
 \item{time_window}{Numeric, number of days to include from latest date in
