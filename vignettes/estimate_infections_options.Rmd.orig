@@ -154,7 +154,7 @@ dep <- estimate_infections(reported_cases,
   delays = delay_opts(delay),
   rt = rt_opts(
     prior = rt_prior,
-    pop = 1000000, future = "latest"
+    pop = Normal(mean = 1000000, sd = 1000), future = "latest"
   )
 )
 # summarise results
