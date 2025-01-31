@@ -553,6 +553,8 @@ create_initial_conditions <- function(data) {
     }
     if (data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1))
+    } else {
+      out$initial_infections <- array(numeric(0))
     }
 
     if (data$bp_n > 0) {
