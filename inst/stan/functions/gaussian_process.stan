@@ -192,7 +192,7 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
     } else if (nu == 2.5) {
       diagSPD = diagSPD_Matern52(alpha, rho, L, M);
     } else {
-      reject("nu must be one of 1/2, 3/2 or 5/2; found nu=", nu);
+      reject("nu must be one of 1/2, 3/2 or 5/2, but found nu=", nu);
     }
   }
   return PHI * (diagSPD .* eta);
