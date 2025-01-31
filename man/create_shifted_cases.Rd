@@ -53,12 +53,13 @@ shift <- 7
 horizon <- 7
 smoothing_window <- 14
 ## add NAs for horizon
-cases <- create_clean_reported_cases(example_confirmed, horizon = horizon)
+cases <- create_clean_reported_cases(example_confirmed[1:30])
+cases <- add_horizon(cases, horizon)
 ## add zeroes initially
 cases <- data.table::rbindlist(list(
    data.table::data.table(
      date = seq(
-       min(cases$date) - smoothing_window,
+       min(cases$date) - 10,
        min(cases$date) - 1,
        by = "days"
      ),

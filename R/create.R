@@ -78,12 +78,13 @@ create_clean_reported_cases <- function(data,
 #' horizon <- 7
 #' smoothing_window <- 14
 #' ## add NAs for horizon
-#' cases <- create_clean_reported_cases(example_confirmed, horizon = horizon)
+#' cases <- create_clean_reported_cases(example_confirmed[1:30])
+#' cases <- add_horizon(cases, horizon)
 #' ## add zeroes initially
 #' cases <- data.table::rbindlist(list(
 #'    data.table::data.table(
 #'      date = seq(
-#'        min(cases$date) - smoothing_window,
+#'        min(cases$date) - 10,
 #'        min(cases$date) - 1,
 #'        by = "days"
 #'      ),
@@ -109,26 +110,18 @@ create_shifted_cases <- function(data, shift,
   ]
 
   ## Forecast trend on reported cases using the last week of data
-  final_period <- data.table::data.table(
-    confirm =
-      shifted_reported_cases[!is.na(confirm)][
-        max(1, .N - smoothing_window):.N
-      ]$confirm
-  )[,
+  final_period <- shifted_reported_cases[!is.na(confirm)][
+    max(1, .N - smoothing_window):.N
+  ][,
     t := seq_len(.N)
   ]
   lm_model <- stats::lm(log(confirm + 1) ~ t, data = final_period)
   ## Estimate unreported future infections using a log linear model
   shifted_reported_cases <- shifted_reported_cases[
-    ,
-    t := seq_len(.N)
-  ][
-    ,
-    t := t - (.N - horizon - shift - 6)
-  ][
-    ,
+    date >= min(final_period$date), t := seq_len(.N)
+  ][,
     confirm := data.table::fifelse(
-      t >= 7,
+      !is.na(t) & t >= 0,
       exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t) - 1,
       confirm
     )
@@ -136,7 +129,7 @@ create_shifted_cases <- function(data, shift,
 
   ## Drop median generation interval initial values
   shifted_reported_cases <- shifted_reported_cases[,
-   confirm := ceiling(confirm)
+    confirm := ceiling(confirm)
   ]
   shifted_reported_cases <- shifted_reported_cases[-(1:smoothing_window)]
   return(shifted_reported_cases)
