@@ -36,28 +36,40 @@ These infections are then mapped to observations via discrete convolutions with 
 The model is initialised before the first observed data point by assuming constant exponential growth for the mean of modelled delays from infection to case report (called `seeding_time` $t_\mathrm{seed}$ in the model):
 
 \begin{align}
-  I_0  &\sim \mathrm{LogNormal}(I_\mathrm{obs}, \sqrt(I_\mathrm{obs})) \\
-  r &\sim \mathrm{Normal}(r_\mathrm{obs}, 0.2)\\
-  I_{0 < t \leq t_\mathrm{seed}} &= I_0 \exp  \left(r t \right)
+  I_{-t_\mathrm{seed}}  & \exp(\iota - r t_\mathrm{seed}) / \xi\\
+  \iota ~ \mathrm{Normal}(\iota_0, 2)\\
+  \iota_0 = \max(0, \log(C_\mathrm{init}))
 \end{align}
 
-where $I_{t}$ is the number of latent infections on day $t$, $r$ is the estimate of the initial growth rate, and $I_\mathrm{obs}$ and $r_\mathrm{obs}$ are estimated from the first week of observed data, respectively, as as the point estimates of intercept and slope from fitting a linear regression model to the first 7 days of data (or all data if fewer than 7 days of data are given),
+where $I_{t}$ is the number of latent infections on day $t$, $r$ is an estimate of the initial growth rate, $\xi$ is the proportion reported (see [Delays and scaling]), \iota is a scaling factor and $C_\mathrm{init}$ is the mean of the first 7 days of cases (or all cases if fewer than 7 days of data are available).
 
-\begin{equation}
-log(C_t) = a + r_\mathrm{obs} t + \epsilon_t
-\end{equation}
-where $C_{t}$ is the number of reported cases on day $t$, $a$ an estimated intercept, and $\epsilon_{t}$ the error term.
+The initial growth rate $r$ is estimated from the first estimated value of the reproduction number $R_t$ by solving the linear system [wallinga2006how]
+
+$$
+M(-r) - 1 / R_0 = 0.
+$$
+
+where
+
+$$
+M(r) = \sum_{i=1}^n g_i e^{r i}.
+$$
+
+is the moment generating function of the discretised generation time distribution (see  [Infections]).
 
 ### Infections
 
 For the time window of the observed data and beyond infections are then modelled by weighting previous infections with the generation time and scaling by the instantaneous reproduction number:
 
 \begin{equation}
-  I_t = R_t \sum_{\tau = 1}^{g_\mathrm{max}} g(\tau | \mu_{g}, \sigma_{g}) I_{t - \tau}
+  I_t = R_t \sum_{\tau = 1}^{g_\mathrm{max}} g(\tau | \theta_g) I_{t - \tau}
 \end{equation}
 
-where $g(\tau|\mu_{g}, \sigma_{g})$ is the distribution of generation times (with discretised gamma or discretised log normal distributions available as options) with mean (or log mean in the case of lognormal distributions) $\mu_g$, standard deviation (or log standard deviation in the case of lognormal distributions) $\sigma_g$ and maximum $g_\mathrm{max}$.
-Generation times can either be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors, weighted by default by the number of observations (although this can be changed by the user) and truncated to be positive where relevant for the given distribution; or they can be specified as the parameters of a fixed distribution, or as fixed values.
+where $g_\tau = g(\tau | \theta_g)$ is the discretised distribution of generation times with parameters $\theta_g$ and maximum $g_\mathrm{max}$.
+Generation times can be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors of the distributional parameters.
+By default this prior is weighted by default by the number of observations although this can be changed by the user.
+It is truncated to be positive where relevant for the given distribution.
+Alternatively, generation times can be specified as coming from a given distribution with set parameters.
 
 The distribution of generation times $g$ here represents the probability that somebody who became infectious on day 0 and who infects someone else during their course of infection does so on day $\tau > 0$, assuming that infection cannot happen on day 0.
 If not given this defaults to a fixed generation time of 1, in which case $R_{t}$ represents the exponential of the daily growth rate of infections.
@@ -87,10 +99,11 @@ where $\div$ indicates interval-valued division (i.e. the floor of the division)
 
 The choice of prior for the time-varying reproduction number impact run-time, smoothness of the estimates and real-time behaviour and may alter the best use-case for the model.
 
-The initial reproduction number $R_{0}$ has a log-normal prior with a given log mean $\mu_{R}$ and log standard deviation $\sigma_{R}$, calculated from a given mean (default: 1) and standard deviation (default: 1).
+The prior distribution of the initial reproduction number $R_{0}$ can be set by the user.
+By default this is a log-normal distribution with mean 1 and standard deviation 1.
 
 \begin{equation}
-  R_0 \sim \mathrm{LogNormal}(\mu_R, \sigma_R)
+  R_0 \sim \mathrm{LogNormal}(-1/2 \log(2), \sqrt{\log(2)})
 \end{equation}
 
 The simplest possible process model option is to use no time-varying prior and rely on just the intial fixed reproduction number $R_0$.
@@ -128,7 +141,7 @@ For any times $t > T - t_\mathrm{seed}$  the number of infections is then estima
 ### Infections
 
 By default, a Gaussian Process prior is used for the number of infections, resulting in smoother estimates of the infection curve.
-In this case, as in the renewal equation model there are two alternative formulations available. 
+In this case, as in the renewal equation model there are two alternative formulations available.
 The default uses an approximate zero-mean GP for the differences between modelled infections and the initial estimate,
 
 \begin{equation}
@@ -143,7 +156,7 @@ Alternatively, one can use is an approximate zero-mean Gaussian Process (GP) for
 
 with $\log I_{0} - \log I_{\mathrm{est}, 0} \sim \mathrm{GP}_{0}$
 
-More details on the mathematical form of the Gaussian process approximation are given in the [Gaussian Process implementation details](gaussian_process_implementation_details.html) vignette. 
+More details on the mathematical form of the Gaussian process approximation are given in the [Gaussian Process implementation details](gaussian_process_implementation_details.html) vignette.
 
 As for the renewal equation model, the Gaussian process can be replaced by a random walk of arbitrary length $w$.
 
@@ -166,17 +179,17 @@ Beyond the end of the observation period, by default, if using a Gaussian proces
 
 # Delays and scaling
 
-If infections are observed with a delay (for example, the incubation period if based on symptomatic cases, and any delay from onset to report), they are convolved in the model to infections at the time scale of observations $D_{t}$ using delay distributions (with lognormal and gamma parameterisations available) $\xi$, scaled by an underreporting factor $\alpha$ (which is 1 if all infections are observed). This model can be defined mathematically as follows,
+If infections are observed with a delay (for example, the incubation period if based on symptomatic cases, and any delay from onset to report), they are convolved in the model to infections at the time scale of observations $D_{t}$ using delay distributions $\xi$, scaled by an underreporting factor $\xi (which is 1 if all infections are observed). This model can be defined mathematically as follows,
 
 \begin{equation}
-  D_t = \alpha \sum_{\tau = 0}^{\xi_\mathrm{max}} \xi (\tau | \mu_{\xi}, \sigma_{\xi}) I_{t-\tau}
+  D_t = \xi \sum_{\tau = 0}^{\xi_\mathrm{max}} \xi (\tau | \mu_{\xi}, \sigma_{\xi}) I_{t-\tau}
 \end{equation}
 
-where $\xi(\tau|\mu_{\xi}, \sigma_{\xi})$ is the combined discrete distribution of delays (with discretised gamma or discretised log normal distributions available as options) with mean (or log mean in the case of lognormal distributions) $\mu_\xi$, standard deviation (or log standard deviation in the case of lognormal distributions) $\sigma_\xi$ and maximum $\xi_\mathrm{max}$.
+where $\xi(\tau| \theta_\tau)$ is the combined discrete distribution of delays with parameters $\theta_\xi$ and maximum $\xi_\mathrm{max}$.
 
-Delays can either be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors, weighted by the number of observations and truncated to be positive where relevant for the given distribution; or they can be specified as the parameters of a fixed distribution, or as fixed values.
+Delays can either be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors for the distributional parameters, weighted by default by the number of observations and truncated to be positive where relevant for the given distribution; or they can be specified as coming from a distribution with given parameters, or as fixed values.
 
-The scaling factor $\alpha$ represents the proportion of cases that are ultimately reported, which by default is set to 1 (i.e. no underreporting) but can instead be set to come from a normal prior with given mean and standard deviation, truncated to be between 0 and 1.
+The scaling factor $\xi represents the proportion of cases that are ultimately reported, which by default is set to 1 (i.e. no underreporting) but can instead be estimated with a given prior distribution.
 
 
 # Observation model
@@ -202,7 +215,7 @@ This model uses the following priors for the observation model,
 The model supports counts that are right-truncated, i.e. reported with a delay leading to recent counts being subject to future upwards revision. Denoting the final truncated counts with $D^{\ast}_{t}$ they are obtained form the final modelled cases $D_{t}$ by applying a given discrete truncation distribution $\zeta(\tau | \mu_{\zeta}, \sigma_{\zeta})$ with cumulative mass function $Z(\tau | \mu_{\zeta})$:
 
 \begin{equation}
-  D^ast_t = Z(T - t | \mu_{Z}, \sigma_{Z}) D_{t}
+  D^\ast_t = Z(T - t | \mu_{Z}, \sigma_{Z}) D_{t}
 \end{equation}
 
 If truncation is applied, the modelled cases $D_{t}$ are replaced by the truncated counts before confronting them with observations $C_{t}$ as described above.

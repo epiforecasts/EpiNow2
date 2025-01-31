@@ -227,27 +227,29 @@ test_that("estimate_secondary works with filter_leading_zeros set", {
   ## testing deprecated functionality
   withr::local_options(lifecycle_verbosity = "quiet")
   modified_data <- inc_cases[1:10, secondary := 0]
+  modified_data <- filter_leading_zeros(modified_data, obs_column = "secondary")
   out <- suppressWarnings(estimate_secondary(
     modified_data,
     obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2),
     week_effect = FALSE),
-    filter_leading_zeros = TRUE,
     verbose = FALSE
   ))
   expect_s3_class(out, "estimate_secondary")
   expect_named(out, c("predictions", "posterior", "data", "fit"))
-  expect_equal(out$predictions$primary, modified_data$primary[-(1:10)])
+  expect_equal(out$predictions$primary, modified_data$primary)
 })
 
 test_that("estimate_secondary works with zero_threshold set", {
   ## testing deprecated functionality
   withr::local_options(lifecycle_verbosity = "quiet")
   modified_data <- inc_cases[sample(1:30, 10), primary := 0]
+  modified_data <- apply_zero_threshold(
+    modified_data, threshold = 10, obs_column = "secondary"
+  )
   out <- estimate_secondary(
     modified_data,
     obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2),
                    week_effect = FALSE),
-    zero_threshold = 10,
     verbose = FALSE
   )
   expect_s3_class(out, "estimate_secondary")
