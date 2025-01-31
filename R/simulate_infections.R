@@ -46,19 +46,19 @@
 #' @export
 #' @examples
 #' \donttest{
-#'   R <- data.frame(
-#'     date = seq.Date(as.Date("2023-01-01"), length.out = 14, by = "day"),
-#'     R = c(rep(1.2, 7), rep(0.8, 7))
-#'   )
-#'   sim <- simulate_infections(
-#'     R = R,
-#'     initial_infections = 100,
-#'     generation_time = generation_time_opts(
-#'       fix_parameters(example_generation_time)
-#'     ),
-#'     delays = delay_opts(fix_parameters(example_reporting_delay)),
-#'     obs = obs_opts(family = "poisson")
-#'   )
+#' R <- data.frame(
+#'   date = seq.Date(as.Date("2023-01-01"), length.out = 14, by = "day"),
+#'   R = c(rep(1.2, 7), rep(0.8, 7))
+#' )
+#' sim <- simulate_infections(
+#'   R = R,
+#'   initial_infections = 100,
+#'   generation_time = generation_time_opts(
+#'     fix_parameters(example_generation_time)
+#'   ),
+#'   delays = delay_opts(fix_parameters(example_reporting_delay)),
+#'   obs = obs_opts(family = "poisson")
+#' )
 #' }
 simulate_infections <- function(estimates, R, initial_infections,
                                 day_of_week_effect = NULL,
@@ -133,12 +133,14 @@ simulate_infections <- function(estimates, R, initial_infections,
     )
   }
   data$delay_params <- array(
-    data$delay_params_mean, dim = c(1, length(data$delay_params_mean))
+    data$delay_params_mean,
+    dim = c(1, length(data$delay_params_mean))
   )
   data$delay_params_sd <- NULL
 
   data <- c(data, create_obs_model(
-    obs, dates = R$date
+    obs,
+    dates = R$date
   ))
 
   if (get_distribution(obs$scale) != "fixed") {
@@ -180,13 +182,15 @@ simulate_infections <- function(estimates, R, initial_infections,
 
   day_of_week_effect <- day_of_week_effect / sum(day_of_week_effect)
   data$day_of_week_simplex <- array(
-    day_of_week_effect, dim = c(1, data$week_effect)
+    day_of_week_effect,
+    dim = c(1, data$week_effect)
   )
 
   # Create stan arguments
   stan <- stan_opts(backend = backend, chains = 1, samples = 1, warmup = 1)
   args <- create_stan_args(
-    stan, data = data, fixed_param = TRUE, model = "simulate_infections",
+    stan,
+    data = data, fixed_param = TRUE, model = "simulate_infections",
     verbose = FALSE
   )
 
@@ -206,7 +210,7 @@ simulate_infections <- function(estimates, R, initial_infections,
   )
 
   out <- rbindlist(out[c("infections", "reported_cases")], idcol = "variable")
-  out <- out[, c("sample", "parameter", "time") :=  NULL]
+  out <- out[, c("sample", "parameter", "time") := NULL]
 
   return(out[])
 }
@@ -292,9 +296,10 @@ simulate_infections <- function(estimates, R, initial_infections,
 #'
 #' #' # with a data.frame input of samples
 #' R_samples <- summary(est, type = "samples", param = "R")
-#' R_samples <- R_samples[,
-#'  .(date, sample, value)][sample <= 1000][date <= "2020-04-10"
-#' ]
+#' R_samples <- R_samples[
+#'   ,
+#'   .(date, sample, value)
+#' ][sample <= 1000][date <= "2020-04-10"]
 #' R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
 #' sims <- forecast_infections(est, R_samples)
 #' plot(sims)
@@ -373,7 +378,8 @@ forecast_infections <- function(estimates,
   if (posterior_sample < samples) {
     # nolint start
     posterior_samples <- sample(
-      seq_len(posterior_sample), samples, replace = TRUE
+      seq_len(posterior_sample), samples,
+      replace = TRUE
     )
     R_draws <- draws$R
     draws <- map(draws, ~ as.matrix(.[posterior_samples, ]))
@@ -434,7 +440,8 @@ forecast_infections <- function(estimates,
     )
 
     args <- create_stan_args(
-      stan, data = data, fixed_param = TRUE, model = "simulate_infections",
+      stan,
+      data = data, fixed_param = TRUE, model = "simulate_infections",
       verbose = FALSE
     )
 

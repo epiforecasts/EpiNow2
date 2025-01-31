@@ -71,7 +71,9 @@ discrete_pmf <- function(distribution =
     updist <- function(n) {
       as.integer(n > params[["value"]])
     }
-    qdist <- function(p, value) return(value)
+    qdist <- function(p, value) {
+      return(value)
+    }
   }
 
   ## apply CDF cutoff if given
@@ -143,14 +145,20 @@ discrete_pmf <- function(distribution =
 ## nolint start: cyclocomp_linter
 `==.dist_spec` <- function(e1, e2) {
   ## both must have same number of distributions
-  if (ndist(e1) != ndist(e2)) return(FALSE)
+  if (ndist(e1) != ndist(e2)) {
+    return(FALSE)
+  }
   ## loop over constituent distributions
   for (i in seq_len(ndist(e1))) {
     ## distributions need to be the same
-    if (get_distribution(e1, i) != get_distribution(e2, i)) return(FALSE)
+    if (get_distribution(e1, i) != get_distribution(e2, i)) {
+      return(FALSE)
+    }
     if (get_distribution(e1, i) == "nonparametric") {
       ## if nonparametric then PMFs need to be the same
-      if (!identical(get_pmf(e1, i), get_pmf(e2, i))) return(FALSE)
+      if (!identical(get_pmf(e1, i), get_pmf(e2, i))) {
+        return(FALSE)
+      }
     } else {
       ## if parametric then all parameters need to be the same
       params1 <- get_parameters(e1, i)
@@ -158,10 +166,12 @@ discrete_pmf <- function(distribution =
       for (param in names(params1)) {
         ## all parameters must be the same type
         if ((is(params1[[param]], "dist_spec") &&
-             is(params2[[param]], "dist_spec")) ||
-            (is.numeric(params1[[param]]) && is.numeric(params2[[param]]))) {
+          is(params2[[param]], "dist_spec")) ||
+          (is.numeric(params1[[param]]) && is.numeric(params2[[param]]))) {
           ## if parameters are the same type they need to be same value
-          if (!(params1[[param]] == params2[[param]])) return(FALSE)
+          if (!(params1[[param]] == params2[[param]])) {
+            return(FALSE)
+          }
         } else {
           return(FALSE)
         }
@@ -211,7 +221,9 @@ discrete_pmf <- function(distribution =
 c.dist_spec <- function(...) {
   ## process delay distributions
   dist_specs <- list(...)
-  if (length(dist_specs) == 1) return(dist_specs[[1]])
+  if (length(dist_specs) == 1) {
+    return(dist_specs[[1]])
+  }
   if (!(all(vapply(dist_specs, is, "dist_spec", FUN.VALUE = logical(1))))) {
     cli_abort(
       c(
@@ -220,7 +232,8 @@ c.dist_spec <- function(...) {
     )
   }
   convolutions <- vapply(
-    dist_specs, is, "multi_dist_spec", FUN.VALUE = logical(1)
+    dist_specs, is, "multi_dist_spec",
+    FUN.VALUE = logical(1)
   )
   ## can only have one `multi_dist_spec`
   if (sum(convolutions) > 0) {
@@ -485,17 +498,18 @@ discretise.dist_spec <- function(x, strict = TRUE, ...) {
     return(x)
   } else {
     if (!is.na(sd(x)) && is_constrained(x)) {
-        cdf_cutoff <- attr(x, "cdf_cutoff")
-        if (is.null(cdf_cutoff)) {
-          cdf_cutoff <- 0
-        }
-        max <- attr(x, "max")
-        if (is.null(max)) {
-          max <- Inf
-        }
+      cdf_cutoff <- attr(x, "cdf_cutoff")
+      if (is.null(cdf_cutoff)) {
+        cdf_cutoff <- 0
+      }
+      max <- attr(x, "max")
+      if (is.null(max)) {
+        max <- Inf
+      }
       y <- list(
         pmf = discrete_pmf(
-          get_distribution(x), get_parameters(x), max, cdf_cutoff, width = 1
+          get_distribution(x), get_parameters(x), max, cdf_cutoff,
+          width = 1
         )
       )
       y$distribution <- "nonparametric"
@@ -568,7 +582,8 @@ collapse.dist_spec <- function(x, ...) {
 collapse.multi_dist_spec <- function(x, ...) {
   ## get nonparametric distributions
   nonparametric <- vapply(
-    seq_along(x), get_distribution, x = x, character(1)
+    seq_along(x), get_distribution,
+    x = x, character(1)
   ) == "nonparametric"
   ## find consecutive nonparametric distributions
   consecutive <- rle(nonparametric)
@@ -584,7 +599,8 @@ collapse.multi_dist_spec <- function(x, ...) {
     ## collapse distributions
     for (next_id in next_ids[id]) {
       x[[ids[id]]]$pmf <- convolve(
-        get_pmf(x[[ids[id]]]), rev(get_pmf(x[[next_id]])), type = "open"
+        get_pmf(x[[ids[id]]]), rev(get_pmf(x[[next_id]])),
+        type = "open"
       )
     }
   }
@@ -645,7 +661,7 @@ print.dist_spec <- function(x, ...) {
       }
     } else {
       ## parametric
-      cat(indent_str, "- ",  get_distribution(x, i), " distribution", sep = "")
+      cat(indent_str, "- ", get_distribution(x, i), " distribution", sep = "")
       dist <- extract_single_dist(x, i)
       constrain_str <- character(0)
       if (!is.null(attr(dist, "max")) && is.finite(attr(dist, "max"))) {
@@ -662,7 +678,8 @@ print.dist_spec <- function(x, ...) {
       ## loop over natural parameters and print
       for (param in names(get_parameters(x, i))) {
         cat(
-          indent_str, "  ", param, ":\n", sep = ""
+          indent_str, "  ", param, ":\n",
+          sep = ""
         )
         if (is.numeric(get_parameters(x, i)[[param]])) {
           cat(
@@ -731,7 +748,9 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
     } else {
       # parametric
       uncertain <- vapply(get_parameters(x, i), function(y) {
-        if (is.numeric(y)) return(FALSE)
+        if (is.numeric(y)) {
+          return(FALSE)
+        }
         sd_dist <- sd(y)
         return(is.na(sd_dist) || sd_dist > 0)
       }, logical(1))
@@ -779,7 +798,8 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
 
   # Plot PMF and CDF as facets in the same plot
   plot <- ggplot(
-    pmf_data, mapping = aes(x = x, y = p, group = sample, color = type)
+    pmf_data,
+    mapping = aes(x = x, y = p, group = sample, color = type)
   ) +
     geom_line() +
     facet_wrap(vars(distribution)) +
@@ -788,8 +808,10 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
     theme_bw()
   if (cumulative) {
     cmf_data <- pmf_data[,
-      list(x = x, p = cumsum(p)), by = list(sample, distribution)
-    ][,
+      list(x = x, p = cumsum(p)),
+      by = list(sample, distribution)
+    ][
+      ,
       type := factor("cmf", levels = c("pmf", "cmf"))
     ]
     plot <- plot +
@@ -819,8 +841,8 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
 #'
 #' # Multiple distributions
 #' \dontrun{
-#'   dist <- dist1 + dist2
-#'   extract_single_dist(dist, 2)
+#' dist <- dist1 + dist2
+#' extract_single_dist(dist, 2)
 #' }
 extract_single_dist <- function(x, i) {
   if (i > ndist(x)) {
@@ -874,7 +896,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 
   ## if x is fixed already we don't have to do anything
   if (get_distribution(x) == "nonparametric" ||
-      all(vapply(get_parameters(x), is.numeric, logical(1)))) {
+    all(vapply(get_parameters(x), is.numeric, logical(1)))) {
     return(x)
   }
   ## apply strategy depending on choice
@@ -899,7 +921,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 #' @export
 #' @method fix_parameters multi_dist_spec
 fix_parameters.multi_dist_spec <- function(x, strategy =
-                                                c("mean", "sample"), ...) {
+                                             c("mean", "sample"), ...) {
   for (i in seq_len(ndist(x))) {
     x[[i]] <- fix_parameters(x[[i]])
   }
@@ -1224,12 +1246,14 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
       if (length(unnatural_params) > 0) {
         ## sample parameters if they are uncertain
         uncertain <- vapply(params, function(x) {
-          if (is.numeric(x)) return(FALSE)
+          if (is.numeric(x)) {
+            return(FALSE)
+          }
           sd_dist <- sd(x)
           return(is.na(sd_dist) || sd_dist > 0)
         }, logical(1))
         if (any(uncertain)) {
-          #nolint start: duplicate_argument_linter
+          # nolint start: duplicate_argument_linter
           cli_warn(
             c(
               "!" = "Uncertain {distribution} distribution specified in
@@ -1241,7 +1265,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
             distribution directly in terms of the natural parameters."
             )
           )
-          #nolint end
+          # nolint end
         }
         ## generate natural parameters
         params <- convert_to_natural(params, distribution)
@@ -1371,7 +1395,7 @@ get_element <- function(x, id = NULL, element) {
     if (is.null(id)) {
       cli_abort(
         c(
-         "!" = "{.var id} must be specified when {.var x} is a composite
+          "!" = "{.var id} must be specified when {.var x} is a composite
           distribution."
         )
       )

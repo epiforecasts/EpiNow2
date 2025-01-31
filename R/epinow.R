@@ -50,9 +50,9 @@
 #' # set an example incubation period. In practice this should use an estimate
 #' # from the literature or be estimated from data
 #' incubation_period <- LogNormal(
-#'    meanlog = Normal(1.6, 0.06),
-#'    sdlog = Normal(0.4, 0.07),
-#'    max = 14
+#'   meanlog = Normal(1.6, 0.06),
+#'   sdlog = Normal(0.4, 0.07),
+#'   max = 14
 #' )
 #' # set an example reporting delay. In practice this should use an estimate
 #' # from the literature or be estimated from data
@@ -120,7 +120,7 @@ epinow <- function(data,
       "apply_zero_threshold()"
     )
   }
-   if (!missing(horizon)) {
+  if (!missing(horizon)) {
     lifecycle::deprecate_warn(
       "1.7.0",
       "epinow(horizon)",
@@ -133,9 +133,10 @@ epinow <- function(data,
   ## horizon is deprecated so should be setup via forecast_opts
   forecast <- setup_forecast(forecast, if (!missing(horizon)) horizon else NULL)
   assert_logical(return_output)
-  stopifnot("target_folder is not a directory" =
-              !is.null(target_folder) || isDirectory(target_folder)
-            )
+  stopifnot(
+    "target_folder is not a directory" =
+      !is.null(target_folder) || isDirectory(target_folder)
+  )
   if (!missing(target_date)) {
     assert_string(target_date)
   }

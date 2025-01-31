@@ -92,12 +92,16 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
   estimated_reported_cases <- list()
   if (samples) {
     estimated_reported_cases$samples <- estimates$samples[
-      variable == "reported_cases"][,
+      variable == "reported_cases"
+    ][
+      ,
       .(date, sample, cases = value, type = "gp_rt")
     ]
   }
   estimated_reported_cases$summarised <- estimates$summarised[
-    variable == "reported_cases"][,
+    variable == "reported_cases"
+  ][
+    ,
     type := "gp_rt"
   ][, variable := NULL][, strat := NULL]
 

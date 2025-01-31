@@ -68,14 +68,15 @@ check_stan_delay <- function(dist) {
   assert_class(dist, "dist_spec")
   # Check that `dist` is lognormal or gamma or nonparametric
   distributions <- vapply(
-    seq_len(ndist(dist)), get_distribution, x = dist, FUN.VALUE = character(1)
+    seq_len(ndist(dist)), get_distribution,
+    x = dist, FUN.VALUE = character(1)
   )
   if (
     !all(distributions %in% c("lognormal", "gamma", "fixed", "nonparametric"))
   ) {
     cli_abort(
       c(
-       "!" = "Distributions passed to the model need to be
+        "!" = "Distributions passed to the model need to be
         {col_blue(\"lognormal\")}, {col_blue(\"gamma\")},
         {col_blue(\"fixed\")}, or {col_blue(\"nonparametric\")}."
       )
@@ -89,7 +90,7 @@ check_stan_delay <- function(dist) {
       vapply(params, function(x) {
         is.numeric(x) ||
           (is(x, "dist_spec") && get_distribution(x) == "normal" &&
-             is.infinite(max(x)))
+            is.infinite(max(x)))
       }, logical(1))
     }
   }))
@@ -247,23 +248,23 @@ check_na_setting_against_data <- function(data, cols_to_check, obs) {
   # implicit or explicit NA's, inform them of what's happening and alternatives
   data_is_complete <- test_data_complete(data, cols_to_check)
   if (!obs$accumulate &&
-      obs$na_as_missing_default_used &&
-      !data_is_complete) {
-    #nolint start: duplicate_argument_linter
+    obs$na_as_missing_default_used &&
+    !data_is_complete) {
+    # nolint start: duplicate_argument_linter
     cli_inform(
       c(
         "i" = "{col_red(\"As of version 1.5.0 missing dates or dates with `NA`
           cases are treated as missing. This is in contrast to previous versions
           where these were interpreted as dates with zero cases. \")}",
         "i" = "In order to treat missing or `NA` cases as zeroes, see
-        solutions in {.url https://github.com/epiforecasts/EpiNow2/issues/767#issuecomment-2348805272}", #nolint
+        solutions in {.url https://github.com/epiforecasts/EpiNow2/issues/767#issuecomment-2348805272}", # nolint
         "i" = "If the data is reported at non-daily intervals (for example
         weekly), consider using {.fn fill_missing}."
       ),
       .frequency = "regularly",
       .frequency_id = "check_na_setting_against_data"
     )
-    #nolint end
+    # nolint end
   }
   obs$na_as_missing_default_used <- NULL
   return(obs)

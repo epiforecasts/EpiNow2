@@ -83,7 +83,6 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #'
 #' map_prob_change(var)
 map_prob_change <- function(var) {
-
   var <- data.table::fcase(
     var < 0.05, "Increasing",
     var < 0.4, "Likely increasing",
@@ -110,7 +109,7 @@ map_prob_change <- function(var) {
 #' @param gamma_mean Numeric, mean of the gamma distribution
 #'
 #' @param gamma_sd Numeric, standard deviation of the gamma distribution
-#'.
+#' .
 #' @return Numeric vector of reproduction number estimates
 #' @export
 #' @examples
@@ -317,7 +316,8 @@ discretised_lognormal_pmf <- function(meanlog, sdlog, max_d, reverse = FALSE) {
 
 discretised_lognormal_pmf_conv <- function(x, meanlog, sdlog) {
   pmf <- discretised_lognormal_pmf(
-    meanlog, sdlog, length(x) - 1, reverse = TRUE
+    meanlog, sdlog, length(x) - 1,
+    reverse = TRUE
   )
   conv <- sum(x * pmf, na.rm = TRUE)
   return(conv)

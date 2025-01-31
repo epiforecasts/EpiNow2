@@ -98,9 +98,9 @@
 #' # set an example incubation period. In practice this should use an estimate
 #' # from the literature or be estimated from data
 #' incubation_period <- LogNormal(
-#'    meanlog = Normal(1.6, 0.06),
-#'    sdlog = Normal(0.4, 0.07),
-#'    max = 14
+#'   meanlog = Normal(1.6, 0.06),
+#'   sdlog = Normal(0.4, 0.07),
+#'   max = 14
 #' )
 #' # set an example reporting delay. In practice this should use an estimate
 #' # from the literature or be estimated from data
@@ -215,8 +215,8 @@ estimate_infections <- function(data,
   reported_cases <- default_fill_missing_obs(data, obs, "confirm")
   # Check initial zeros to check for deprecated filter zero functionality
   if (filter_leading_zeros &&
-      !is.na(reported_cases[date == min(date), "confirm"]) &&
-      reported_cases[date == min(date), "confirm"] == 0) {
+    !is.na(reported_cases[date == min(date), "confirm"]) &&
+    reported_cases[date == min(date), "confirm"] == 0) {
     cli_warn(c(
       "!" = "Filtering initial zero observations in the data. This
       functionality will be removed in future versions of EpiNow2. In order
@@ -301,7 +301,7 @@ estimate_infections <- function(data,
   # Initialise fitting by using a previous fit or fitting to cumulative cases
   if (!is.null(args$init_fit)) {
     if (!inherits(args$init_fit, "stanfit") &&
-          args$init_fit == "cumulative") {
+      args$init_fit == "cumulative") {
       args$init_fit <- init_cumulative_fit(args,
         warmup = 50, samples = 50,
         id = id, verbose = FALSE, stan$backend
@@ -382,7 +382,8 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
   format_out <- list()
   # bind all samples together
   format_out$samples <- data.table::rbindlist(
-    posterior_samples, fill = TRUE, idcol = "variable"
+    posterior_samples,
+    fill = TRUE, idcol = "variable"
   )
 
   if (is.null(format_out$samples$strat)) {
@@ -398,7 +399,7 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
       "estimate based on partial data",
       is.na(date), NA_character_,
       default = "estimate"
-      )
+    )
   ]
 
   # remove burn in period if specified

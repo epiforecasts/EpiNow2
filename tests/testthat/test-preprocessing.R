@@ -5,7 +5,8 @@ cases[2, confirm := NA]
 
 test_that("fill_missing works with NA and missing cases", {
   filled <- fill_missing(
-    cases, missing_dates = "accumulate", initial_accumulate = 7
+    cases,
+    missing_dates = "accumulate", initial_accumulate = 7
   )
   expect_equal(nrow(filled), nrow(cases) * 7)
   expect_true(all(filled[!is.na(confirm), accumulate] == FALSE))
@@ -20,7 +21,8 @@ test_that("fill_missing works with by columns", {
   )
   more_cases <- merge(cases, complete, by = "date")
   filled <- fill_missing(
-    more_cases, missing_obs = "accumulate", initial_accumulate = 7,
+    more_cases,
+    missing_obs = "accumulate", initial_accumulate = 7,
     by = c("country", "obs")
   )
   expect_equal(nrow(filled), nrow(more_cases) * 7)
@@ -46,7 +48,8 @@ test_that("add_horizon works", {
 
 test_that("add_horizon identifies gaps correctly", {
   filled <- fill_missing(
-    cases, missing_dates = "accumulate", initial_accumulate = 7
+    cases,
+    missing_dates = "accumulate", initial_accumulate = 7
   )
   expect_message(
     result <- add_horizon(filled, horizon = 7),

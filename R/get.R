@@ -70,7 +70,7 @@ get_raw_result <- function(file, region, date,
 #' @examples
 #' # get example multiregion estimates
 #' regional_out <- readRDS(system.file(
-#'     package = "EpiNow2", "extdata", "example_regional_epinow.rds"
+#'   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 #' ))
 #'
 #' # from output
@@ -111,7 +111,8 @@ get_regional_results <- function(regional_output,
         date = date
       )[[1]])
       summarised <- data.table::rbindlist(
-        summarised, idcol = "region", fill = TRUE
+        summarised,
+        idcol = "region", fill = TRUE
       )
       out$summarised <- summarised
       return(out)
@@ -139,7 +140,8 @@ get_regional_results <- function(regional_output,
       # get incidence values and combine
       summarised <- purrr::map(regional_output, ~ .[[data]]$summarised)
       summarised <- data.table::rbindlist(
-        summarised, idcol = "region", fill = TRUE
+        summarised,
+        idcol = "region", fill = TRUE
       )
       out$summarised <- summarised
       return(out)
@@ -178,15 +180,16 @@ get_regions_with_most_reports <- function(data,
   most_reports <- data.table::copy(data)
   most_reports <-
     most_reports[,
-      .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(time_window))
-    ],
+      .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(time_window))],
       by = "region"
     ]
   most_reports <- most_reports[,
-   .(confirm = sum(confirm, na.rm = TRUE)), by = "region"
+    .(confirm = sum(confirm, na.rm = TRUE)),
+    by = "region"
   ]
   most_reports <- data.table::setorderv(
-    most_reports, cols = "confirm", order = -1
+    most_reports,
+    cols = "confirm", order = -1
   )
   most_reports <- most_reports[1:no_regions][!is.na(region)]$region
   return(most_reports)

@@ -1,4 +1,3 @@
-
 skip_on_cran()
 
 # get example delays

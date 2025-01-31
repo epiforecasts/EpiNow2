@@ -7,7 +7,7 @@ test_that("create_clean_reported_cases filters leading zeros correctly", {
   # Modify example_confirmed to have leading zeros
   modified_data <- example_confirmed
   modified_data[1:3, "confirm"] <- 0
-  
+
   result <- create_clean_reported_cases(modified_data, 7)
   # Check if the first row with non-zero cases is retained
   expect_equal(
@@ -20,9 +20,10 @@ test_that("create_clean_reported_cases replaces zero cases correctly", {
   modified_data <- example_confirmed
   modified_data$confirm[10:16] <- 0
   threshold <- 10
-  
+
   result <- create_clean_reported_cases(
-    modified_data, 0, zero_threshold = threshold
+    modified_data, 0,
+    zero_threshold = threshold
   )
   # Check if zero cases within the threshold are replaced
   expect_equal(sum(result$confirm == 0, na.rm = TRUE), 0)

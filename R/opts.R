@@ -56,9 +56,9 @@ gt_opts <- function(dist = Fixed(1), ...,
   dot_options <- list(...)
 
   if ((length(dot_options) > 0) ||
-      !missing(disease) || !missing(source) || !missing(fixed) ||
-      !missing(max) ||
-      (!is(dist, "dist_spec"))) {
+    !missing(disease) || !missing(source) || !missing(fixed) ||
+    !missing(max) ||
+    (!is(dist, "dist_spec"))) {
     cli_abort(
       c(
         "!" = "The generation time distribution must be passed through
@@ -72,7 +72,7 @@ gt_opts <- function(dist = Fixed(1), ...,
     )
   }
   if (missing(dist)) {
-    #nolint start: duplicate_argument_linter
+    # nolint start: duplicate_argument_linter
     cli_warn(
       c(
         "!" = "No generation time distribution given.",
@@ -81,7 +81,7 @@ gt_opts <- function(dist = Fixed(1), ...,
         "i" = "If this was intended then this warning can be
         silenced by setting {.var dist = Fixed(1)}'."
       )
-      #nolint end
+      # nolint end
     )
   }
   ## apply default CDF cutoff if `dist` is unconstrained
@@ -203,7 +203,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
                        default_cdf_cutoff = 0.001, weight_prior = TRUE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec") || !missing(fixed)) { ## could be old syntax
-    #nolint start: duplicate_argument_linter
+    # nolint start: duplicate_argument_linter
     cli_abort(
       c(
         "!" = "Delay distributions must be given using a call to
@@ -215,7 +215,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
         documentation pages using {.code ?delay_opts}."
       )
     )
-    #nolint end
+    # nolint end
   } else if (length(dot_options) > 0) {
     ## can be removed once dot options are hard deprecated
     cli_abort(
@@ -270,7 +270,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
 trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
                        weight_prior = FALSE) {
   if (!is(dist, "dist_spec")) {
-    #nolint start: duplicate_argument_linter
+    # nolint start: duplicate_argument_linter
     cli_abort(
       c(
         "!" = "Truncation distributions must be given using a call to
@@ -281,7 +281,7 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
         "i" = "For examples and more information, see the relevant
         documentation pages using {.code ?trunc_opts}."
       )
-    #nolint end
+      # nolint end
     )
   }
   ## apply default CDF cutoff if `dist` is unconstrained
@@ -544,7 +544,6 @@ gp_opts <- function(basis_prop = 0.2,
                     matern_type,
                     w0 = 1.0,
                     alpha_mean, alpha_sd) {
-
   if (!missing(matern_type)) {
     lifecycle::deprecate_warn(
       "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
@@ -561,7 +560,7 @@ gp_opts <- function(basis_prop = 0.2,
     )
   }
   if (!missing(ls_mean) || !missing(ls_sd) || !missing(ls_min) ||
-      !missing(ls_max)) {
+    !missing(ls_max)) {
     if (!missing(ls)) {
       cli_abort(
         c(
@@ -608,8 +607,8 @@ gp_opts <- function(basis_prop = 0.2,
   } else if (kernel == "ou") {
     matern_order <- 1 / 2
   } else if (
-      !(is.infinite(matern_order) || matern_order %in% c(1 / 2, 3 / 2, 5 / 2))
-    ) {
+    !(is.infinite(matern_order) || matern_order %in% c(1 / 2, 3 / 2, 5 / 2))
+  ) {
     cli_warn(
       c(
         "!" = "Uncommon Matern kernel order supplied.",
@@ -692,7 +691,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
       "1.7.0",
       "obs_opts(na)",
       "fill_missing()",
-      details =  c(
+      details = c(
         paste0(
           "If NA values are not to be treated as missing use the ",
           "`fill_missing()` function instead."
@@ -700,11 +699,10 @@ obs_opts <- function(family = c("negbin", "poisson"),
         "This argument will be removed in the next release of EpiNow2."
       )
     )
-
   }
   na <- arg_match(na)
   if (na == "accumulate") {
-    #nolint start: duplicate_argument_linter
+    # nolint start: duplicate_argument_linter
     cli_inform(
       c(
         "i" = "Accumulating modelled values that correspond to NA values in the
@@ -719,7 +717,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
       .frequency_id = "obs_opts"
     )
   }
-  #nolint end
+  # nolint end
   if (length(phi) == 2 && is.numeric(phi)) {
     cli_abort(
       c(
@@ -1208,7 +1206,7 @@ filter_opts <- function(opts, region) {
 #' @keywords internal
 apply_default_cdf_cutoff <- function(dist, default_cdf_cutoff, cdf_cutoff_set) {
   if (!is_constrained(dist) && !anyNA(sd(dist))) {
-    #nolint start: duplicate_argument_linter
+    # nolint start: duplicate_argument_linter
     cli_inform(
       c(
         "i" = "Unconstrained distributon passed as a delay. ",
@@ -1217,7 +1215,7 @@ apply_default_cdf_cutoff <- function(dist, default_cdf_cutoff, cdf_cutoff_set) {
       with {.var max} or {.var default_cdf_cutoff}."
       )
     )
-    #nolint end
+    # nolint end
     attr(dist, "cdf_cutoff") <- default_cdf_cutoff
   } else if (cdf_cutoff_set) {
     cli_warn(

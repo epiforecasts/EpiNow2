@@ -21,8 +21,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
     if (index == 1) {
       plot <- plot +
         ggplot2::geom_ribbon(
-          ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]
-        ),
+          ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
           alpha = 0.2, linewidth = linewidth
         )
     } else {
@@ -82,7 +81,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' @examples
 #' # get example model results
 #' out <- readRDS(system.file(
-#'     package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+#'   package = "EpiNow2", "extdata", "example_estimate_infections.rds"
 #' ))
 #'
 #' # plot infections
@@ -116,8 +115,8 @@ plot_estimates <- function(estimate, reported, ylab, hline,
                            obs_as_col = TRUE, max_plot = 10,
                            estimate_type = c(
                              "Estimate", "Estimate based on partial data",
-                             "Forecast")
-                           ) {
+                             "Forecast"
+                           )) {
   # convert input to data.table
   estimate <- data.table::as.data.table(estimate)
   if (!missing(reported)) {
@@ -193,8 +192,8 @@ plot_estimates <- function(estimate, reported, ylab, hline,
   plot <- plot +
     ggplot2::geom_vline(
       xintercept = orig_estimate[
-        type == "Estimate based on partial data"][date == max(date)
-      ]$date,
+        type == "Estimate based on partial data"
+      ][date == max(date)]$date,
       linetype = 2
     )
 
@@ -277,8 +276,7 @@ plot_summary <- function(summary_results,
       top <- paste0("upper_", CrI)
       plot <- plot +
         ggplot2::geom_linerange(
-            ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]
-          ),
+          ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
           alpha = ifelse(index == 1, 0.4, alpha_per_CrI),
           linewidth = 4
         )
@@ -302,8 +300,9 @@ plot_summary <- function(summary_results,
   upper_CrI <- paste0("upper_", max_CrI) # nolint
   max_upper <- max(
     summary_results[
-      metric == "New infections per day"][, ..upper_CrI],
-      na.rm = TRUE
+      metric == "New infections per day"
+    ][, ..upper_CrI],
+    na.rm = TRUE
   )
   max_cases <- min(
     c(

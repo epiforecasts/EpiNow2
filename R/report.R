@@ -37,25 +37,32 @@ report_summary <- function(summarised_estimates,
   ]
 
   # extract latest R estimate
-  R_latest <- summarised_estimates[variable == "R"][,
-    variable := NULL][, purrr::map(.SD, signif, digits = 2)]
+  R_latest <- summarised_estimates[variable == "R"][
+    ,
+    variable := NULL
+  ][, purrr::map(.SD, signif, digits = 2)]
 
   # estimate probability of control
-  prob_control <- rt_samples[,
-   .(prob_control = sum(value <= 1) / .N)
+  prob_control <- rt_samples[
+    ,
+    .(prob_control = sum(value <= 1) / .N)
   ]$prob_control
   prob_control <- signif(prob_control, 2)
 
   # extract current cases
-  current_cases <- summarised_estimates[variable == "infections"][,
-    variable := NULL][,
+  current_cases <- summarised_estimates[variable == "infections"][
+    ,
+    variable := NULL
+  ][
+    ,
     purrr::map(.SD, ~ signif(as.integer(.)), 2)
   ]
 
   # get individual estimates
-  r_latest <- summarised_estimates[variable == "growth_rate"][,
-    variable := NULL][, purrr::map(.SD, signif, digits = 2)
-  ]
+  r_latest <- summarised_estimates[variable == "growth_rate"][
+    ,
+    variable := NULL
+  ][, purrr::map(.SD, signif, digits = 2)]
 
   doubling_time <- function(r) {
     signif(log(2) * 1 / r, 2)
@@ -137,7 +144,7 @@ report_summary <- function(summarised_estimates,
 #' @examples
 #' # get example output form estimate_infections
 #' out <- readRDS(system.file(
-#'     package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+#'   package = "EpiNow2", "extdata", "example_estimate_infections.rds"
 #' ))
 #'
 #' # plot infections
@@ -235,7 +242,8 @@ report_plots <- function(summarised_estimates, reported,
         summary = "summary_plot.png"
       ))
       mapply(
-        ggplot2::ggsave, filename = pths, plot = plots,
+        ggplot2::ggsave,
+        filename = pths, plot = plots,
         width = wd, height = ht, dpi = dpi
       )
     }))

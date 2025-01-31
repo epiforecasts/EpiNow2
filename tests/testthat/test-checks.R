@@ -148,7 +148,7 @@ test_that("check_sparse_pmf_tail throws a warning as expected", {
   # warning on demand for the sake of multiple runs of the test within
   # 8 hours. That's what the rlang call below does
   rlang::local_options(rlib_warning_verbosity = "verbose")
-  pmf <- c(0.4, 0.30, 0.20, 0.05,  0.049995, 4.5e-06, rep(1e-7, 5))
+  pmf <- c(0.4, 0.30, 0.20, 0.05, 0.049995, 4.5e-06, rep(1e-7, 5))
   expect_warning(
     check_sparse_pmf_tail(pmf),
     "PMF tail has"
@@ -161,7 +161,7 @@ test_that("test_data_complete detects complete and incomplete data", {
   # example_confirmed with explicit missing confirm
   ec_missing_confirm <- copy(example_confirmed)[c(1, 3), confirm := NA]
   # example_confirmed with implicit missing (missing entries)
-  ec_implicit_missing <- copy(example_confirmed)[-c(1,3,5), ]
+  ec_implicit_missing <- copy(example_confirmed)[-c(1, 3, 5), ]
   # Create a hypothetical complete example_secondary
   es <- copy(example_confirmed)[
     , primary := confirm
@@ -172,7 +172,7 @@ test_that("test_data_complete detects complete and incomplete data", {
   es_missing_primary <- copy(es)[c(1, 3), primary := NA]
   # example_secondary with explicit missing secondary
   es_missing_secondary <- copy(es)[c(1, 3), secondary := NA]
-  
+
   # cols to check
   ep_cols <- c("date", "confirm")
   es_cols <- c("date", "primary", "secondary")

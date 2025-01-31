@@ -1,6 +1,6 @@
 test_that("obs_opts returns expected default values", {
   result <- suppressWarnings(obs_opts())
-  
+
   expect_s3_class(result, "obs_opts")
   expect_equal(result$family, "negbin")
   expect_equal(result$weight, 1)
@@ -22,7 +22,7 @@ test_that("obs_opts returns expected messages", {
 })
 
 test_that("obs_opts behaves as expected for user specified na treatment", {
-# If user explicitly specifies NA as missing, then don't throw message
+  # If user explicitly specifies NA as missing, then don't throw message
   expect_false(
     suppressWarnings(obs_opts(na = "missing"))$na_as_missing_default_used
   )
