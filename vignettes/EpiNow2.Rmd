@@ -150,13 +150,13 @@ knitr::kable(summary(estimates))
 
 
 
-|measure                          |estimate                 |
-|:--------------------------------|:------------------------|
-|New infections per day           |2236 (1329 -- 4036)      |
-|Expected change in daily reports |Likely decreasing        |
-|Effective reproduction no.       |0.89 (0.71 -- 1.1)       |
-|Rate of growth                   |-0.028 (-0.094 -- 0.049) |
-|Doubling/halving time (days)     |-25 (14 -- -7.4)         |
+|measure                      |estimate                 |
+|:----------------------------|:------------------------|
+|New infections per day       |2246 (1345 -- 3712)      |
+|Expected change in reports   |Likely decreasing        |
+|Effective reproduction no.   |0.9 (0.71 -- 1.1)        |
+|Rate of growth               |-0.028 (-0.097 -- 0.037) |
+|Doubling/halving time (days) |-25 (19 -- -7.1)         |
 
 
 
@@ -167,20 +167,20 @@ Summarised parameter estimates can also easily be returned, either filtered for 
 head(summary(estimates, type = "parameters", params = "R"))
 #>          date variable  strat     type   median     mean         sd lower_90
 #>        <Date>   <char> <char>   <char>    <num>    <num>      <num>    <num>
-#> 1: 2020-02-22        R   <NA> estimate 2.283241 2.292722 0.14061810 2.075280
-#> 2: 2020-02-23        R   <NA> estimate 2.247530 2.253561 0.12673725 2.054324
-#> 3: 2020-02-24        R   <NA> estimate 2.205511 2.212174 0.11519281 2.027170
-#> 4: 2020-02-25        R   <NA> estimate 2.163334 2.168677 0.10586586 1.999294
-#> 5: 2020-02-26        R   <NA> estimate 2.119453 2.123228 0.09850283 1.968758
-#> 6: 2020-02-27        R   <NA> estimate 2.073142 2.076018 0.09275383 1.933010
+#> 1: 2020-02-22        R   <NA> estimate 2.192146 2.198985 0.11444472 2.024200
+#> 2: 2020-02-23        R   <NA> estimate 2.155321 2.161326 0.10485587 2.002736
+#> 3: 2020-02-24        R   <NA> estimate 2.116282 2.122057 0.09752376 1.973624
+#> 4: 2020-02-25        R   <NA> estimate 2.076851 2.081412 0.09208487 1.944169
+#> 5: 2020-02-26        R   <NA> estimate 2.034924 2.039632 0.08807288 1.907857
+#> 6: 2020-02-27        R   <NA> estimate 1.991849 1.996950 0.08500839 1.867559
 #>    lower_50 lower_20 upper_20 upper_50 upper_90
 #>       <num>    <num>    <num>    <num>    <num>
-#> 1: 2.194590 2.249226 2.321517 2.389094 2.535033
-#> 2: 2.165231 2.213345 2.278836 2.340448 2.469433
-#> 3: 2.130656 2.177294 2.236996 2.289223 2.408927
-#> 4: 2.093846 2.137319 2.191361 2.238409 2.350976
-#> 5: 2.054041 2.095677 2.145131 2.188372 2.288978
-#> 6: 2.010469 2.050364 2.096276 2.137579 2.233775
+#> 1: 2.117945 2.163831 2.223016 2.273580 2.398886
+#> 2: 2.086968 2.130249 2.182448 2.231471 2.342141
+#> 3: 2.053489 2.091872 2.140538 2.184986 2.295274
+#> 4: 2.015866 2.053039 2.099319 2.140357 2.242094
+#> 5: 1.976725 2.012561 2.056509 2.095363 2.195281
+#> 6: 1.936513 1.970944 2.012702 2.051563 2.153084
 ```
 
 Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation.
@@ -188,22 +188,22 @@ Reported cases are returned in a separate data frame in order to streamline the 
 
 ``` r
 head(summary(estimates, output = "estimated_reported_cases"))
-#>          date   type median     mean       sd lower_90 lower_50 lower_20
-#>        <Date> <char>  <num>    <num>    <num>    <num>    <num>    <num>
-#> 1: 2020-02-22  gp_rt     75  76.6065 21.32979    45.00       62       70
-#> 2: 2020-02-23  gp_rt     88  89.4765 23.85403    55.00       73       82
-#> 3: 2020-02-24  gp_rt     88  90.1225 24.67288    54.00       73       82
-#> 4: 2020-02-25  gp_rt     80  82.5340 22.61151    49.95       67       75
-#> 5: 2020-02-26  gp_rt     80  82.4475 22.69676    49.00       66       75
-#> 6: 2020-02-27  gp_rt    109 111.4705 28.76635    69.00       92      103
+#>          date   type median     mean        sd lower_90 lower_50 lower_20
+#>        <Date> <char>  <num>    <num>     <num>    <num>    <num>    <num>
+#> 1: 2020-02-22  gp_rt     36  36.2210  9.597511    22.00       30       33
+#> 2: 2020-02-23  gp_rt     52  53.4375 13.289635    34.00       44       50
+#> 3: 2020-02-24  gp_rt     64  65.6005 15.262941    42.00       55       61
+#> 4: 2020-02-25  gp_rt     72  73.3265 16.283718    48.95       62       68
+#> 5: 2020-02-26  gp_rt     82  83.0275 19.168972    54.00       70       77
+#> 6: 2020-02-27  gp_rt    119 121.2740 25.328851    83.00      103      113
 #>    upper_20 upper_50 upper_90
 #>       <num>    <num>    <num>
-#> 1:       80       90      114
-#> 2:       94      104      132
-#> 3:       94      105      133
-#> 4:       86       95      124
-#> 5:       86       97      123
-#> 6:      116      129      163
+#> 1:       38       42    53.00
+#> 2:       56       61    77.00
+#> 3:       68       75    92.05
+#> 4:       76       83   102.00
+#> 5:       87       94   116.05
+#> 6:      126      136   167.00
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
@@ -252,19 +252,19 @@ estimates <- regional_epinow(
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
 )
-#> INFO [2024-12-06 15:15:15] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2024-12-06 15:15:15] Reporting estimates using data up to: 2020-04-21
-#> INFO [2024-12-06 15:15:15] No target directory specified so returning output
-#> INFO [2024-12-06 15:15:15] Producing estimates for: testland, realland
-#> INFO [2024-12-06 15:15:15] Regions excluded: none
-#> INFO [2024-12-06 15:15:39] Completed estimates for: testland
-#> INFO [2024-12-06 15:16:01] Completed estimates for: realland
-#> INFO [2024-12-06 15:16:01] Completed regional estimates
-#> INFO [2024-12-06 15:16:01] Regions with estimates: 2
-#> INFO [2024-12-06 15:16:01] Regions with runtime errors: 0
-#> INFO [2024-12-06 15:16:01] Producing summary
-#> INFO [2024-12-06 15:16:01] No summary directory specified so returning summary output
-#> INFO [2024-12-06 15:16:02] No target directory specified so returning timings
+#> INFO [2025-01-31 17:34:01] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2025-01-31 17:34:01] Reporting estimates using data up to: 2020-04-21
+#> INFO [2025-01-31 17:34:01] No target directory specified so returning output
+#> INFO [2025-01-31 17:34:01] Producing estimates for: testland, realland
+#> INFO [2025-01-31 17:34:01] Regions excluded: none
+#> INFO [2025-01-31 17:34:21] Completed estimates for: testland
+#> INFO [2025-01-31 17:34:41] Completed estimates for: realland
+#> INFO [2025-01-31 17:34:41] Completed regional estimates
+#> INFO [2025-01-31 17:34:41] Regions with estimates: 2
+#> INFO [2025-01-31 17:34:41] Regions with runtime errors: 0
+#> INFO [2025-01-31 17:34:41] Producing summary
+#> INFO [2025-01-31 17:34:41] No summary directory specified so returning summary output
+#> INFO [2025-01-31 17:34:41] No target directory specified so returning timings
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.
@@ -278,10 +278,10 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 
 
-|Region   |New infections per day |Expected change in daily reports |Effective reproduction no. |Rate of growth          |Doubling/halving time (days) |
-|:--------|:----------------------|:--------------------------------|:--------------------------|:-----------------------|:----------------------------|
-|realland |2090 (1075 -- 4374)    |Likely decreasing                |0.86 (0.63 -- 1.2)         |-0.038 (-0.11 -- 0.045) |-18 (15 -- -6.3)             |
-|testland |2111 (1040 -- 4336)    |Likely decreasing                |0.86 (0.62 -- 1.2)         |-0.038 (-0.11 -- 0.043) |-18 (16 -- -6.2)             |
+|Region   |New infections per day |Expected change in reports |Effective reproduction no. |Rate of growth          |Doubling/halving time (days) |
+|:--------|:----------------------|:--------------------------|:--------------------------|:-----------------------|:----------------------------|
+|realland |2017 (1029 -- 3866)    |Likely decreasing          |0.85 (0.6 -- 1.1)          |-0.042 (-0.11 -- 0.036) |-17 (19 -- -6.1)             |
+|testland |2026 (1026 -- 4222)    |Likely decreasing          |0.86 (0.6 -- 1.2)          |-0.04 (-0.12 -- 0.042)  |-17 (17 -- -5.9)             |
 
 
 
