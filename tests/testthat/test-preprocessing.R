@@ -28,21 +28,26 @@ test_that("fill_missing works with by columns", {
 })
 
 test_that("fill_missing warns about initial data points", {
-  expect_warning(
+  expect_message(
     fill_missing(cases, missing_dates = "accumulate"),
+    "Detected fixed accumulation frequency"
+  )
+  shifted <- copy(cases)
+  shifted[1, date := date + 1]
+  expect_warning(
+    fill_missing(shifted, missing_dates = "accumulate"),
     "Initial data point not marked as accumulated"
   )
 })
 
 test_that("add_horizon works", {
-  expect_warning(
-    fill_missing(cases, missing_dates = "accumulate"),
-    "Initial data point not marked as accumulated"
-  )
+  expect_equal(nrow(add_horizon(cases, horizon = 7L)), nrow(cases) + 7L)
 })
 
 test_that("add_horizon identifies gaps correctly", {
-  filled <- fill_missing(cases, missing_dates = "accumulate", initial_accumulate = 7)
+  filled <- fill_missing(
+    cases, missing_dates = "accumulate", initial_accumulate = 7
+  )
   expect_message(
     result <- add_horizon(filled, horizon = 7),
     "Forecasts accumulated every 7 days"

@@ -36,7 +36,10 @@
 ##'   have a sufficient number of modelled observations accumulated onto the
 ##'   first data point. For modelling weekly incidence data this should be set
 ##'   to 7. If accumulating and the first data point is not NA and this is
-##'   argument is not set, then that data point will be removed with a warning.
+##'   argument is not set, then if all dates in the data have the same gap this
+##'   will be taken as initial accumulation and a warning given to inform the
+##'   user. If not all gaps are the same the first data point will be removed
+##'   with a warning.
 ##' @param obs_column Character (default: "confirm"). If given, only the column
 ##'   specified here will be used for checking missingness. This is useful if
 ##'   using a data set that has multiple columns of hwich one of them
@@ -74,9 +77,6 @@ fill_missing <- function(data,
   assert_character(missing_obs)
   assert_character(obs_column)
   assert_character(by, null.ok = TRUE)
-  if (!missing(initial_accumulate)) {
-    assert_integerish(initial_accumulate, lower = 1)
-  }
   assert_names(
     colnames(data),
     must.include = c("date", by, obs_column),
@@ -84,10 +84,30 @@ fill_missing <- function(data,
   )
   assert_date(data$date, any.missing = FALSE)
 
-  data <- as.data.table(data)
-
   missing_dates <- arg_match(missing_dates)
   missing_obs <- arg_match(missing_obs)
+
+  data <- as.data.table(data)
+
+  if (missing(initial_accumulate)) {
+    ## detect frequency of accumulation if possible
+    missing_date_patterns <- data[, list(pattern = unique(diff(date))), by = by]
+    unique_patterns <- unique(missing_date_patterns$pattern)
+    if (length(unique_patterns) == 1 && unique_patterns > 1) {
+      cli_inform(
+        c(
+          "!" =
+            "Detected fixed accumulation frequency of {unique_patterns}.
+            This will be used for initial accumulation. Use
+            {.var initial_accumulate} to change this behaviour. To silence this
+            warning, set {.var initial_accumulate} to {unique_patterns}."
+        )
+      )
+      initial_accumulate <- unique_patterns
+    }
+  } else {
+    assert_integerish(initial_accumulate, lower = 1)
+  }
 
   ## first, processing missing dates
   initial_add <- ifelse(missing(initial_accumulate), 1, initial_accumulate)
@@ -95,10 +115,8 @@ fill_missing <- function(data,
   cols <- list(
     date = seq(min(data$date) - initial_add + 1, max(data$date), by = "day")
   )
-  if (!is.null(by))  {
-    for (by_col in by) {
-      cols[[by_col]] <- unique(data[[by_col]])
-    }
+  for (by_col in by) {
+    cols[[by_col]] <- unique(data[[by_col]])
   }
 
   complete <- do.call(CJ, cols)

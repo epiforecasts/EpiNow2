@@ -44,7 +44,10 @@ then dates are added to the beginning of the data set to get be able to
 have a sufficient number of modelled observations accumulated onto the
 first data point. For modelling weekly incidence data this should be set
 to 7. If accumulating and the first data point is not NA and this is
-argument is not set, then that data point will be removed with a warning.}
+argument is not set, then if all dates in the data have the same gap this
+will be taken as initial accumulation and a warning given to inform the
+user. If not all gaps are the same the first data point will be removed
+with a warning.}
 
 \item{obs_column}{Character (default: "confirm"). If given, only the column
 specified here will be used for checking missingness. This is useful if
