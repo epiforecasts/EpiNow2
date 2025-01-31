@@ -132,7 +132,8 @@ test_that("epinow can produce partial output as specified", {
     out <- epinow(
       data = reported_cases,
       generation_time = gt_opts(
-        example_generation_time, weight_prior = FALSE
+        example_generation_time,
+        weight_prior = FALSE
       ),
       delays = delay_opts(example_incubation_period + reporting_delay),
       stan = stan_opts(

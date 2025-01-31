@@ -123,7 +123,6 @@ estimate_truncation <- function(data,
                                 verbose = TRUE,
                                 ...,
                                 obs) {
-
   if (!missing(obs)) {
     lifecycle::deprecate_stop(
       "1.5.0",
@@ -145,7 +144,7 @@ estimate_truncation <- function(data,
       "trunc_opts(weight_prior)"
     )
   }
-   # Validate inputs
+  # Validate inputs
   walk(data, check_reports_valid, model = "estimate_infections")
   assert_class(truncation, "dist_spec")
   assert_class(model, "stanfit", null.ok = TRUE)
@@ -159,9 +158,9 @@ estimate_truncation <- function(data,
   dirty_obs <- purrr::map(data, data.table::as.data.table)
   dirty_obs <- purrr::map(dirty_obs,
     create_clean_reported_cases,
-      filter_leading_zeros = filter_leading_zeros,
-      zero_threshold = zero_threshold,
-      add_breakpoints = FALSE
+    filter_leading_zeros = filter_leading_zeros,
+    zero_threshold = zero_threshold,
+    add_breakpoints = FALSE
   )
   earliest_date <- max(
     as.Date(

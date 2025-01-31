@@ -65,7 +65,8 @@ vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
 vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
   real factor = 3 * pow(sqrt(5) / rho, 5);
-  vector[M] denom = 2 * pow((sqrt(5) / rho)^2 + pow((pi() / 2 / L) * indices, 2), 3);
+  vector[M] denom =
+    2 * pow((sqrt(5) / rho)^2 + pow((pi() / 2 / L) * indices, 2), 3);
   return alpha * sqrt(factor * inv(denom));
 }
 
@@ -80,7 +81,10 @@ vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
 vector diagSPD_Periodic(real alpha, real rho, int M) {
   real a = inv_square(rho);
   vector[M] indices = linspaced_vector(M, 1, M);
-  vector[M] q = exp(log(alpha) + 0.5 * (log(2) - a + to_vector(log_modified_bessel_first_kind(indices, a))));
+  vector[M] q = exp(
+    log(alpha) + 0.5 *
+      (log(2) - a + to_vector(log_modified_bessel_first_kind(indices, a)))
+  );
   return append_row(q, q);
 }
 
@@ -94,7 +98,11 @@ vector diagSPD_Periodic(real alpha, real rho, int M) {
   * @return A matrix of basis functions
   */
 matrix PHI(int N, int M, real L, vector x) {
-  matrix[N, M] phi = sin(diag_post_multiply(rep_matrix(pi() / (2 * L) * (x + L), M), linspaced_vector(M, 1, M))) / sqrt(L);
+  matrix[N, M] phi = sin(
+    diag_post_multiply(
+      rep_matrix(pi() / (2 * L) * (x + L), M), linspaced_vector(M, 1, M)
+    )
+  ) / sqrt(L);
   return phi;
 }
 
@@ -108,7 +116,9 @@ matrix PHI(int N, int M, real L, vector x) {
   * @return A matrix of basis functions
   */
 matrix PHI_periodic(int N, int M, real w0, vector x) {
-  matrix[N, M] mw0x = diag_post_multiply(rep_matrix(w0 * x, M), linspaced_vector(M, 1, M));
+  matrix[N, M] mw0x = diag_post_multiply(
+    rep_matrix(w0 * x, M), linspaced_vector(M, 1, M)
+  );
   return append_col(cos(mw0x), sin(mw0x));
 }
 
@@ -127,7 +137,8 @@ matrix PHI_periodic(int N, int M, real w0, vector x) {
 int setup_noise(int ot_h, int t, int horizon, int estimate_r,
                 int stationary, int future_fixed, int fixed_from) {
   int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h - 1) : t;
-  int noise_terms = future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
+  int noise_terms =
+    future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
   return noise_terms;
 }
 

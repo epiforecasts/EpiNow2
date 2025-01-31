@@ -24,14 +24,14 @@
 #' @export
 #' @examples
 #' \donttest{
-#'   ## load data.table to manipulate `example_confirmed` below
-#'   library(data.table)
-#'   cases <- as.data.table(example_confirmed)[, primary := confirm]
-#'   sim <- simulate_secondary(
-#'     cases,
-#'     delays = delay_opts(fix_parameters(example_reporting_delay)),
-#'     obs = obs_opts(family = "poisson")
-#'   )
+#' ## load data.table to manipulate `example_confirmed` below
+#' library(data.table)
+#' cases <- as.data.table(example_confirmed)[, primary := confirm]
+#' sim <- simulate_secondary(
+#'   cases,
+#'   delays = delay_opts(fix_parameters(example_reporting_delay)),
+#'   obs = obs_opts(family = "poisson")
+#' )
 #' }
 simulate_secondary <- function(primary,
                                day_of_week_effect = NULL,
@@ -65,7 +65,7 @@ simulate_secondary <- function(primary,
     h = nrow(primary),
     all_dates = 0,
     obs = array(integer(0)),
-    primary = array(primary$primary, dim =  c(1, nrow(primary))),
+    primary = array(primary$primary, dim = c(1, nrow(primary))),
     seeding_time = 0L
   )
 
@@ -86,12 +86,14 @@ simulate_secondary <- function(primary,
     )
   }
   data$delay_params <- array(
-    data$delay_params_mean, dim = c(1, length(data$delay_params_mean))
+    data$delay_params_mean,
+    dim = c(1, length(data$delay_params_mean))
   )
   data$delay_params_sd <- NULL
 
   data <- c(data, create_obs_model(
-    obs, dates = primary$date
+    obs,
+    dates = primary$date
   ))
 
   if (get_distribution(obs$scale) != "fixed") {
@@ -131,13 +133,15 @@ simulate_secondary <- function(primary,
 
   day_of_week_effect <- day_of_week_effect / sum(day_of_week_effect)
   data$day_of_week_simplex <- array(
-    day_of_week_effect, dim = c(1, data$week_effect)
+    day_of_week_effect,
+    dim = c(1, data$week_effect)
   )
 
   # Create stan arguments
   stan <- stan_opts(backend = backend, chains = 1, samples = 1, warmup = 1)
   args <- create_stan_args(
-    stan, data = data, fixed_param = TRUE, model = "simulate_secondary",
+    stan,
+    data = data, fixed_param = TRUE, model = "simulate_secondary",
     verbose = FALSE
   )
 

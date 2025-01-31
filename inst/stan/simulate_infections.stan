@@ -72,7 +72,7 @@ generated quantities {
           delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
           0, 1, 0
         );
-      // convolve from latent infections to mean of observations
+        // convolve from latent infections to mean of observations
         reports[i] = to_row_vector(convolve_to_report(
           to_vector(infections[i]), delay_rev_pmf, seeding_time)
         );

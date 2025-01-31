@@ -3,7 +3,7 @@ skip_on_cran()
 cases <- as.data.table(example_confirmed)[, primary := confirm]
 test_simulate_secondary <- function(obs = obs_opts(family = "poisson"), ...) {
   sim <- simulate_secondary(
-    primary =  cases,
+    primary = cases,
     obs = obs,
     ...
   )

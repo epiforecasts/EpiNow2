@@ -44,14 +44,16 @@ setup_logging <- function(threshold = "INFO", file = NULL,
         "Writing {col_blue(name)} logs to the console and: {.file {file}}."
       )
       futile.logger::flog.appender(
-        futile.logger::appender.tee(file), name = name
+        futile.logger::appender.tee(file),
+        name = name
       )
     } else {
       cli_inform(
         "Writing {col_blue(name)} logs to: {.file {file}}."
       )
       futile.logger::flog.appender(
-        futile.logger::appender.file(file), name = name
+        futile.logger::appender.file(file),
+        name = name
       )
     }
   } else {
@@ -148,7 +150,7 @@ setup_future <- function(data,
   if (!requireNamespace("future", quietly = TRUE)) {
     futile.logger::flog.error(
       "The future package is required for parallelisation"
-                   )
+    )
     cli_abort(
       c(
         "!" = "The future package is required for parallelisation."

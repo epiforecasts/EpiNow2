@@ -134,7 +134,7 @@
 #'
 #' # forecast future secondary cases from primary
 #' prev_preds <- forecast_secondary(
-#'  prev, cases[seq(101, .N)][, value := primary]
+#'   prev, cases[seq(101, .N)][, value := primary]
 #' )
 #' plot(prev_preds, new_obs = cases, from = "2020-06-01")
 #'
@@ -147,7 +147,8 @@ estimate_secondary <- function(data,
                                    meanlog = Normal(2.5, 0.5),
                                    sdlog = Normal(0.47, 0.25),
                                    max = 30
-                                 ), weight_prior = FALSE
+                                 ),
+                                 weight_prior = FALSE
                                ),
                                truncation = trunc_opts(),
                                obs = obs_opts(),
@@ -212,8 +213,8 @@ estimate_secondary <- function(data,
   secondary_reports_dirty <-
     reports[, list(date, confirm = secondary, accumulate)]
   if (filter_leading_zeros &&
-      !is.na(secondary_reports_dirty[date == min(date), "confirm"]) &&
-      secondary_reports_dirty[date == min(date), "confirm"] == 0) {
+    !is.na(secondary_reports_dirty[date == min(date), "confirm"]) &&
+    secondary_reports_dirty[date == min(date), "confirm"] == 0) {
     cli_warn(c(
       "!" = "Filtering initial zero observations in the data. This
       functionality will be removed in future versions of EpiNow2. In order
@@ -236,7 +237,8 @@ estimate_secondary <- function(data,
 
   # Ensure that reports and secondary_reports are aligned
   reports <- merge.data.table(
-    reports, secondary_reports[, list(date)], by = "date"
+    reports, secondary_reports[, list(date)],
+    by = "date"
   )
 
   if (burn_in >= nrow(reports)) {
@@ -418,7 +420,8 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     new_obs <- new_obs[, .(date, secondary)]
     predictions <- predictions[, secondary := NULL]
     predictions <- data.table::merge.data.table(
-      predictions, new_obs, all = TRUE, by = "date"
+      predictions, new_obs,
+      all = TRUE, by = "date"
     )
   }
   if (!is.null(from)) {
@@ -644,7 +647,8 @@ forecast_secondary <- function(estimate,
       }
       primary <- primary[, .(date, sample = list(1:samples), value)]
       primary <- primary[,
-       .(sample = as.numeric(unlist(sample))), by = c("date", "value")
+        .(sample = as.numeric(unlist(sample))),
+        by = c("date", "value")
       ]
     }
     primary <- primary[, .(date, sample, value)]
@@ -674,15 +678,18 @@ forecast_secondary <- function(estimate,
   data <- estimate$data
 
   # combined primary from data and input primary
-  primary_fit <- estimate$predictions[,
-   .(date, value = primary, sample = list(unique(updated_primary$sample)))
+  primary_fit <- estimate$predictions[
+    ,
+    .(date, value = primary, sample = list(unique(updated_primary$sample)))
   ]
   primary_fit <- primary_fit[date <= min(primary$date, na.rm = TRUE)]
   primary_fit <- primary_fit[,
-   .(sample = as.numeric(unlist(sample))), by = c("date", "value")
+    .(sample = as.numeric(unlist(sample))),
+    by = c("date", "value")
   ]
   primary_fit <- data.table::rbindlist(
-    list(primary_fit, updated_primary), use.names = TRUE
+    list(primary_fit, updated_primary),
+    use.names = TRUE
   )
   data.table::setorderv(primary_fit, c("sample", "date"))
 
@@ -726,7 +733,8 @@ forecast_secondary <- function(estimate,
   samples <- as.data.table(samples)
   colnames(samples) <- c("iterations", "sample", "time", "value")
   samples <- samples[, c("iterations", "time") := NULL]
-  samples <- samples[,
+  samples <- samples[
+    ,
     date := rep(tail(dates, ifelse(all_dates, data$t, data$h)), data$n)
   ]
 
@@ -752,7 +760,8 @@ forecast_secondary <- function(estimate,
   data.table::setorderv(forecast_obs, "date")
   # add in predictions in estimate_secondary format
   out$predictions <- data.table::merge.data.table(summarised,
-    forecast_obs, by = "date", all = TRUE
+    forecast_obs,
+    by = "date", all = TRUE
   )
   data.table::setcolorder(
     out$predictions, c("date", "primary", "secondary", "mean", "sd")

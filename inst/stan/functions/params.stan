@@ -33,7 +33,9 @@ void params_lp(vector params, array[] int prior_dist,
   for (id in 1:num_params) {
     if (prior_dist[id] == 0) { // lognormal
       params[id] ~
-        lognormal(prior_dist_params[params_id], prior_dist_params[params_id + 1])
+        lognormal(
+          prior_dist_params[params_id], prior_dist_params[params_id + 1]
+        )
         T[params_lower[id], params_upper[id]];
       params_id += 2;
     } else if (prior_dist[id] == 1) {

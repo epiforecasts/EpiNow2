@@ -134,9 +134,9 @@ fill_missing <- function(data,
     }
   }
   if (missing(initial_accumulate) &&
-      isFALSE(data$accumulate[1]) &&
-      any(data$accumulate)) {
-    #nolint start: duplicate_argument_linter
+    isFALSE(data$accumulate[1]) &&
+    any(data$accumulate)) {
+    # nolint start: duplicate_argument_linter
     cli_warn(
       c(
         "!" =
@@ -150,7 +150,7 @@ fill_missing <- function(data,
             as is, i.e. as the first daily data point)."
       )
     )
-    #nolint end
+    # nolint end
     data <- data[date > min(date)]
   }
 
@@ -182,7 +182,7 @@ default_fill_missing_obs <- function(data, obs, obs_column) {
     data_rows <- nrow(data)
     data <- fill_missing(data = data, obs_column = obs_column)
     if (nrow(data) > data_rows && !obs$accumulate) {
-      #nolint start: duplicate_argument_linter
+      # nolint start: duplicate_argument_linter
       cli_warn(c(
         "!" = "Data contains missing dates.",
         "i" = "Missing dates are interpreted as truly missing data.
@@ -190,7 +190,7 @@ default_fill_missing_obs <- function(data, obs, obs_column) {
         functions will expect complete data.",
         "i" = "Complete data can be created using the `fill_missing` function."
       ))
-      #nolint end
+      # nolint end
     }
   }
   return(data)
@@ -248,7 +248,8 @@ add_horizon <- function(data, horizon, accumulate = 1L,
       reported_cases_future[, accumulate := TRUE]
       ## set accumulation to FALSE where appropriate
       if (horizon >= accumulate - initial_future_accumulate) {
-        reported_cases_future[,
+        reported_cases_future[
+          ,
           counter := as.integer(
             date - min(date) + initial_future_accumulate + 1
           )
@@ -355,9 +356,8 @@ apply_zero_threshold <- function(data, threshold = Inf,
     reported_cases[
       ,
       `:=`(average_7_day = (
-          data.table::frollsum(get(obs_column), n = 8, na.rm = TRUE)
-        ) / 7
-      )
+        data.table::frollsum(get(obs_column), n = 8, na.rm = TRUE)
+      ) / 7)
     ]
   # Check case counts preceding zero case counts and set to 7 day average if
   # average over last 7 days is greater than a threshold
