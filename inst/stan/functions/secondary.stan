@@ -1,7 +1,9 @@
 // Calculate secondary reports condition only on primary reports
-vector calculate_secondary(vector scaled_reports, vector conv_reports, array[] int obs,
-                           int cumulative, int historic, int primary_hist_additive,
-                           int current, int primary_current_additive, int predict) {
+vector calculate_secondary(
+  vector scaled_reports, vector conv_reports, array[] int obs,
+  int cumulative, int historic, int primary_hist_additive,
+  int current, int primary_current_additive, int predict
+) {
   int t = num_elements(scaled_reports);
   vector[t] secondary_reports = rep_vector(0.0, t);
   // if predicting and using a cumulative target

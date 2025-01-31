@@ -4,12 +4,14 @@
  * This function applies a day of the week effect to a vector of reports.
  *
  * @param reports Vector of reports to be adjusted.
- * @param day_of_week Array of integers representing the day of the week for each report.
+ * @param day_of_week Array of integers representing the day of the week for
+ * each report.
  * @param effect Vector of day of week effects.
  *
  * @return A vector of reports adjusted for day of the week effects.
  */
-vector day_of_week_effect(vector reports, array[] int day_of_week, vector effect) {
+vector day_of_week_effect(vector reports, array[] int day_of_week,
+                          vector effect) {
   int wl = num_elements(effect);
   vector[wl] scaled_effect = wl * effect;
   return reports .* scaled_effect[day_of_week];
@@ -35,11 +37,14 @@ vector scale_obs(vector reports, real frac_obs) {
 /**
  * Truncate observed data by a truncation distribution
  *
- * This function truncates a vector of reports based on a truncation distribution.
+ * This function truncates a vector of reports based on a truncation
+ * distribution.
  *
  * @param reports Vector of reports to be truncated.
- * @param trunc_rev_cmf Vector representing the reverse cumulative mass function of the truncation distribution.
- * @param reconstruct Integer flag indicating whether to reconstruct (1) or truncate (0) the data.
+ * @param trunc_rev_cmf Vector representing the reverse cumulative mass function
+ * of the truncation distribution.
+ * @param reconstruct Integer flag indicating whether to reconstruct (1) or
+ * truncate (0) the data.
  *
  * @return A vector of truncated reports.
  */
@@ -68,10 +73,14 @@ vector truncate_obs(vector reports, vector trunc_rev_cmf, int reconstruct) {
  *
  * @param truncation_mean Array of real values for truncation mean.
  * @param truncation_sd Array of real values for truncation standard deviation.
- * @param trunc_mean_mean Array of real values for mean of truncation mean prior.
- * @param trunc_mean_sd Array of real values for standard deviation of truncation mean prior.
- * @param trunc_sd_mean Array of real values for mean of truncation standard deviation prior.
- * @param trunc_sd_sd Array of real values for standard deviation of truncation standard deviation prior.
+ * @param trunc_mean_mean Array of real values for mean of truncation mean
+ * prior.
+ * @param trunc_mean_sd Array of real values for standard deviation of
+ * truncation mean prior.
+ * @param trunc_sd_mean Array of real values for mean of truncation standard
+ * deviation prior.
+ * @param trunc_sd_sd Array of real values for standard deviation of truncation
+ * standard deviation prior.
  */
 void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
                    array[] real trunc_mean_mean, array[] real trunc_mean_sd,
@@ -92,13 +101,15 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
 /**
  * Update log density for reported cases
  *
- * This function updates the log density for reported cases based on the specified model type.
+ * This function updates the log density for reported cases based on the
+ * specified model type.
  *
  * @param cases Array of integer observed cases.
  * @param case_times Array of integer time indices for observed cases.
  * @param reports Vector of expected reports.
  * @param rep_phi Real values for reporting overdispersion.
- * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
+ * @param model_type Integer indicating the model type (0 for Poisson, >0 for
+ * Negative Binomial).
  * @param weight Real value for weighting the log density contribution.
  * @param accumulate Array of integers indicating, for each time point, whether
  * to accumulate reports (1) or not (0).
