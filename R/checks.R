@@ -258,7 +258,7 @@ check_na_setting_against_data <- function(data, cols_to_check, obs) {
         "i" = "In order to treat missing or `NA` cases as zeroes, see
         solutions in {.url https://github.com/epiforecasts/EpiNow2/issues/767#issuecomment-2348805272}", #nolint
         "i" = "If the data is reported at non-daily intervals (for example
-        weekly), consider using `fill_missing()`.",
+        weekly), consider using {.fn fill_missing}.",
       ),
       .frequency = "regularly",
       .frequency_id = "check_na_setting_against_data"
