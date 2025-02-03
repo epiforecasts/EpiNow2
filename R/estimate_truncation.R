@@ -197,7 +197,7 @@ estimate_truncation <- function(data,
   # initial conditions
   init_fn <- function() {
     data <- c(create_delay_inits(stan_data), list(
-      phi = abs(rnorm(1, 0, 1)),
+      dispersion = abs(rnorm(1, 0, 1)),
       sigma = abs(rnorm(1, 0, 1))
     ))
     return(data)

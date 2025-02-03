@@ -153,16 +153,16 @@ simulate_infections <- function(estimates, R, initial_infections,
   }
 
   if (obs$family == "negbin") {
-    if (get_distribution(obs$phi) != "fixed") {
+    if (get_distribution(obs$dispersion) != "fixed") {
       cli_abort(
         c(
-          "!" = "Cannot simulate from uncertain overdispersion.",
-          "i" = "Use fixed overdispersion instead."
+          "!" = "Cannot simulate from uncertain dispersion.",
+          "i" = "Use fixed dispersion instead."
         )
       )
     }
   } else {
-    obs$phi <- NULL
+    obs$dispersion <- NULL
   }
 
   data <- c(data, create_stan_params(
@@ -170,7 +170,7 @@ simulate_infections <- function(estimates, R, initial_infections,
     rho = NULL,
     R0 = NULL,
     frac_obs = obs$scale,
-    rep_phi = obs$phi
+    dispersion = obs$dispersion
   ))
   ## set empty params matrix - variable parameters not supported here
   data$params <- array(dim = c(1, 0))

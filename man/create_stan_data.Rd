@@ -63,8 +63,8 @@ present.
 \examples{
 \dontrun{
 create_stan_data(
- example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
- backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
+  example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
+  backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
 )
 }
 }

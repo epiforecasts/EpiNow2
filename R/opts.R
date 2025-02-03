@@ -638,12 +638,14 @@ gp_opts <- function(basis_prop = 0.2,
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
 #'   Negative binomial ("negbin"), the default, and Poisson.
-#' @param phi A `<dist_spec>` specifying a prior on the overdispersion parameter
-#'   of the reporting process, used only if `familiy` is "negbin". Internally
-#'   parameterised such that the overdispersion is one over the square of this
-#'   prior overdispersion phi. Defaults to a half-normal distribution with mean
-#'   of 0 and standard deviation of 0.25: `Normal(mean = 0, sd = 0.25)`. A lower
-#'   limit of zero will be enforced automatically.
+#' @param dispersion A `<dist_spec>` specifying a prior on the dispersion
+#'   parameter of the reporting process, used only if `familiy` is "negbin".
+#'   Internally parameterised such that this parameter is one over the square
+#'   root of the `phi` parameter for overdispersion of the
+#'   [negative binomial distribution](https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log). # nolint
+#'   Defaults to a half-normal distribution with mean of 0 and
+#'   standard deviation of 0.25: `Normal(mean = 0, sd = 0.25)`. A lower limit of
+#'   zero will be enforced automatically.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in the
 #'   log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
@@ -660,6 +662,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' @param na Deprecated; use the [fill_missing()] function instead
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
+#' @param phi deprecated; use `dispersion` instead
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #'   be returned by the model.
 #' @importFrom rlang arg_match
@@ -676,14 +679,32 @@ gp_opts <- function(basis_prop = 0.2,
 #' # Scale reported data
 #' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
 obs_opts <- function(family = c("negbin", "poisson"),
-                     phi = Normal(mean = 0, sd = 0.25),
+                     dispersion = Normal(mean = 0, sd = 0.25),
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
                      scale = Fixed(1),
                      na = c("missing", "accumulate"),
                      likelihood = TRUE,
-                     return_likelihood = FALSE) {
+                     return_likelihood = FALSE,
+                     phi
+                     ) {
+  if (!missing(phi)) {
+    if (!missing(dispersion)) {
+      cli::cli_abort(
+        "Can't specify {.var disperion} and {.var phi}."
+      )
+    } else {
+      lifecycle::deprecate_warn(
+        "1.7.0",
+        "obs_opts(phi)",
+        "obs_opts(dispersion)",
+        details =
+          "The meaning of the `phi` and `dispersion` arguments are the same."
+      )
+      dispersion <- phi
+    }
+  }
   # NB: This has to be checked first before the na argument is touched anywhere.
   na_default_used <- missing(na)
   if (!na_default_used) {
@@ -718,17 +739,18 @@ obs_opts <- function(family = c("negbin", "poisson"),
     )
   }
   # nolint end
-  if (length(phi) == 2 && is.numeric(phi)) {
+  if (length(dispersion) == 2 && is.numeric(dispersion)) {
     cli_abort(
       c(
-        "!" = "Specifying {.var phi} as a vector of length 2 is deprecated.",
+        "!" = "Specifying {.var dispersion} as a vector of length 2 is
+               deprecated.",
         "i" = "Mean and SD should be given as list elements."
       )
     )
   }
   obs <- list(
     family = arg_match(family),
-    phi = phi,
+    dispersion = dispersion,
     weight = weight,
     week_effect = week_effect,
     week_length = week_length,
@@ -739,7 +761,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
     na_as_missing_default_used = na_default_used
   )
 
-  for (param in c("phi", "scale")) {
+  for (param in c("dispersion", "scale")) {
     if (is.numeric(obs[[param]])) {
       cli_warn(
         c(

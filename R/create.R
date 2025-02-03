@@ -490,13 +490,13 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
       rho = gp$ls,
       R0 = rt$prior,
       frac_obs = obs$scale,
-      rep_phi = obs$phi,
+      dispersion = obs$dispersion,
       lower_bounds = c(
         alpha = 0,
         rho = 0,
         R0 = 0,
         frac_obs = 0,
-        rep_phi = 0
+        dispersion = 0
       )
     )
   )

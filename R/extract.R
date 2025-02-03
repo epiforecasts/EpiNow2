@@ -248,7 +248,9 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
       ]
   }
   if (data$model_type == 1) {
-    out$reporting_overdispersion <- extract_static_parameter("rep_phi", samples)
+    out$reporting_overdispersion <- extract_static_parameter(
+      "dispersion", samples
+    )
   }
   if ("obs_scale_sd" %in% names(data) && data$obs_scale_sd > 0) {
     out$fraction_observed <- extract_static_parameter("frac_obs", samples)

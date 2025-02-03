@@ -34,8 +34,8 @@ transformed data {
 generated quantities {
   array[n, all_dates ? t : h] int sim_secondary;
   {
-    vector[n] rep_phi = get_param(
-      rep_phi_id, params_fixed_lookup, params_variable_lookup,
+    vector[n] dispersion = get_param(
+      dispersion_id, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
     vector[n] frac_obs = get_param(
@@ -91,7 +91,7 @@ generated quantities {
 
       // simulate secondary reports
       sim_secondary[i] = report_rng(
-        tail(secondary, all_dates ? t : h), rep_phi[i], model_type
+        tail(secondary, all_dates ? t : h), dispersion[i], model_type
       );
     }
   }

@@ -34,9 +34,9 @@ $\alpha$ and $\xi$ are defined as the secondary fraction and delay from primary 
 We further assume that $\xi$ follows a discretised log normal distribution described by its mean $\mu$ and standard deviation $\sigma$ on the log scale (where we take the cumulative mass function for time $t$ minus the cumulative mass function for $t-1$) normalised by the maximum allowed delay $D$ such that $\sum^D_{\tau=0}{ \xi(\tau | \mu, \sigma)}  = 1$.
 
 The above definition captures our mechanistic assumptions for the expectation of secondary notifications but does not account for potential observation noise or reporting patterns.
-Here we assume a negative binomial observation model (though our implementation also supports a Poisson observation model) in order to capture potential reporting overdispersion $\phi$ and adjust expected counts using an optional day of the week effect based on a simplex $\omega_{(t \mod 7)}$ (such that $\sum^6_{t=0}{w_t} = 7$ so the total effect over a week is balanced).
+Here we assume a negative binomial observation model (though our implementation also supports a Poisson observation model) in order to capture potential reporting overdispersion via $\varphi$ and adjust expected counts using an optional day of the week effect based on a simplex $\omega_{(t \mod 7)}$ (such that $\sum^6_{t=0}{w_t} = 7$ so the total effect over a week is balanced).
 This gives the following observation process,
 
 \begin{equation} 
-    S_{t} \sim \mathrm{NB}\left(\omega_{t \mod 7} \hat{S}_t,  \phi \right).
+    S_{t} \sim \mathrm{NB}\left(\omega_{t \mod 7} \hat{S}_t,  \varphi \right).
 \end{equation}

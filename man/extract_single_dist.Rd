@@ -30,8 +30,8 @@ dist2 <- Gamma(
 
 # Multiple distributions
 \dontrun{
-  dist <- dist1 + dist2
-  extract_single_dist(dist, 2)
+dist <- dist1 + dist2
+extract_single_dist(dist, 2)
 }
 }
 \keyword{internal}

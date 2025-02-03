@@ -113,13 +113,13 @@ model {
   }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
-    real rep_phi = get_param(
-      rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
+    real dispersion = get_param(
+      dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     report_lp(
       obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      rep_phi, model_type, 1
+      dispersion, model_type, 1
     );
   }
 }
@@ -128,16 +128,18 @@ generated quantities {
   array[t - burn_in] int sim_secondary;
   vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
   {
-    real rep_phi = get_param(
-      rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
+    real dispersion = get_param(
+      dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     // simulate secondary reports
-    sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, model_type);
+    sim_secondary = report_rng(
+      secondary[(burn_in + 1):t], dispersion, model_type
+    );
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-                               rep_phi, model_type, obs_weight);
+                               dispersion, model_type, obs_weight);
     }
   }
 }

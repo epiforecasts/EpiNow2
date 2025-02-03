@@ -203,7 +203,8 @@ By default this is assumed to follow a negative binomial distribution with overd
 
 where $\omega_{t \mod n_\omega}$ is a daily reporting effect of cyclicity $n_{\omega}$. If $n_{\omega}=7$ this corresponds to a day-of-the-week reporting effect.
 
-This model uses the following priors for the observation model,
+In the model overdispersion is characterised by a "dispersion" parameter, which is defined as one over the square root of $varphi$. 
+With this, the priors for the observation model are
 
 \begin{align}
     \frac{\omega}{n_\omega} &\sim \mathrm{Dirichlet}(1, \ldots, 1) \\
