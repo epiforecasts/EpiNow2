@@ -64,7 +64,7 @@ externally.
 \examples{
 # get example output from regional_epinow model
 regional_out <- readRDS(system.file(
-    package = "EpiNow2", "extdata", "example_regional_epinow.rds"
+  package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 ))
 
 regional_summary(

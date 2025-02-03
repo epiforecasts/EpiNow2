@@ -89,9 +89,10 @@ plot(sims)
 
 #' # with a data.frame input of samples
 R_samples <- summary(est, type = "samples", param = "R")
-R_samples <- R_samples[,
- .(date, sample, value)][sample <= 1000][date <= "2020-04-10"
-]
+R_samples <- R_samples[
+  ,
+  .(date, sample, value)
+][sample <= 1000][date <= "2020-04-10"]
 R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
 sims <- forecast_infections(est, R_samples)
 plot(sims)

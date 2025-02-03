@@ -57,16 +57,16 @@ cases <- create_clean_reported_cases(example_confirmed[1:30])
 cases <- add_horizon(cases, horizon)
 ## add zeroes initially
 cases <- data.table::rbindlist(list(
-   data.table::data.table(
-     date = seq(
-       min(cases$date) - 10,
-       min(cases$date) - 1,
-       by = "days"
-     ),
-     confirm = 0, breakpoint = 0
-   ),
-   cases
- ))
+  data.table::data.table(
+    date = seq(
+      min(cases$date) - 10,
+      min(cases$date) - 1,
+      by = "days"
+    ),
+    confirm = 0, breakpoint = 0
+  ),
+  cases
+))
 create_shifted_cases(cases, shift, smoothing_window, horizon)
 }
 }

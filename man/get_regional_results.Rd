@@ -39,7 +39,7 @@ examples for details.
 \examples{
 # get example multiregion estimates
 regional_out <- readRDS(system.file(
-    package = "EpiNow2", "extdata", "example_regional_epinow.rds"
+  package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 ))
 
 # from output

@@ -156,9 +156,9 @@ generation_time <- Gamma(
 # set an example incubation period. In practice this should use an estimate
 # from the literature or be estimated from data
 incubation_period <- LogNormal(
-   meanlog = Normal(1.6, 0.06),
-   sdlog = Normal(0.4, 0.07),
-   max = 14
+  meanlog = Normal(1.6, 0.06),
+  sdlog = Normal(0.4, 0.07),
+  max = 14
 )
 # set an example reporting delay. In practice this should use an estimate
 # from the literature or be estimated from data
