@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+This release introduces the new accumulation feature, where models can fitted to data reported at regular or irregular intervals. Moreover, all priors are now specified using the internal distribution interface.
+
+Internal changes should improve performance, reduce the number of failing fits, and pave the way for future model flexibility.
+
 ## Model changes
 
 - The models now support more complex patterns of aggregating reported cases by accumulating them over multiple time points, as well as mixtures of accumulation and missingness via the new `fill_missing()` function and a logical `accumulate` column that can be supplied with the data. If the accumulation frequency is fixed in the data this is detected when using `fill_missing()`.  By @sbfnk in #851 and #933 and reviewed by @seabbs and @jamesmbaazam.
