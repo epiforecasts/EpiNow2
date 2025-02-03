@@ -1,3 +1,15 @@
-# Submission comments
+# Test environment
 
-Patch release to fix a bug in the previous version (and a couple of other small improvements).
+GitHub actions across platforms
+
+# R CMD check results
+
+There were no ERRORs, WARNINGs or new NOTEs.
+
+# revdepcheck results
+
+There are no reverse dependencies.
+
+# Previous CRAN issues
+
+A NOTE has been fixed.
