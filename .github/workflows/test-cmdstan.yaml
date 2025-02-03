@@ -9,7 +9,7 @@ on:
 name: test-coverage
 
 jobs:
-  test-cmdstan
+  test-cmdstan:
     runs-on: macos-latest
 
     steps:
