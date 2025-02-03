@@ -106,7 +106,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     variable := sub("\\[.*$", "", variable)
   ]
   samples <- split(samples_df, by = "variable")
-  samples <- purrr::map(samples, \(df) {
+  samples <- purrr::map(samples, function(df) {
     permutation <- sample(
       seq_len(max(df$.draw)), max(df$.draw),
       replace = FALSE
