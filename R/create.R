@@ -832,7 +832,7 @@ create_stan_params <- function(..., lower_bounds = NULL) {
     params_fixed_lookup = array(params_fixed_lookup),
     params_variable_lookup = array(params_variable_lookup),
     params_value = array(vapply(
-      params[fixed], \(x) get_parameters(x)$value, numeric(1)
+      params[fixed], function(x) get_parameters(x)$value, numeric(1)
     )),
     prior_dist = array(prior_dist),
     prior_dist_params_length = sum(prior_dist_params_lengths),
