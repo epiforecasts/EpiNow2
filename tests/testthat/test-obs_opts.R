@@ -29,5 +29,5 @@ test_that("obs_opts behaves as expected for user specified na treatment", {
 })
 
 test_that("using phi in obs_opts is deprecated", {
-  expect_deprecated(obs_opts(phi = 1))
+  expect_deprecated(obs_opts(phi = Fixed(1)))
 })
