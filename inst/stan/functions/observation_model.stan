@@ -139,10 +139,12 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
 /**
  * Accumulate reports according to a binary flag at each time point
  *
- * This function accumulates reports according to a binary flag at each time point.
+ * This function accumulates reports according to a binary flag at each time
+ * point.
  *
  * @param reports Vector of expected reports.
- * @param accumulate Array of integers indicating, for each time point, whether to accumulate or not.
+ * @param accumulate Array of integers indicating, for each time point, whether
+ * to accumulate or not.
  *
  * @return A vector of accumulated reports.
  */
@@ -160,12 +162,14 @@ vector accumulate_reports(vector reports, array[] int accumulate) {
 /**
  * Calculate log likelihood for reported cases
  *
- * This function calculates the log likelihood for reported cases based on the specified model type.
+ * This function calculates the log likelihood for reported cases based on the
+ * specified model type.
  *
  * @param cases Array of integer observed cases.
  * @param reports Vector of expected reports.
  * @param dispersion Array of real values for reporting overdispersion.
- * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
+ * @param model_type Integer indicating the model type (0 for Poisson, >0 for
+ * Negative Binomial).
  * @param weight Real value for weighting the log likelihood contribution.
  *
  * @return A vector of log likelihoods for each time point.
@@ -183,7 +187,9 @@ vector report_log_lik(array[] int cases, vector reports,
   } else {
     real phi = inv_square(dispersion);
     for (i in 1:t) {
-      log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], phi) * weight;
+      log_lik[i] = neg_binomial_2_lpmf(
+        cases[i] | reports[i], dispersion
+      ) * weight;
     }
   }
   return(log_lik);
@@ -192,11 +198,13 @@ vector report_log_lik(array[] int cases, vector reports,
 /**
  * Generate random samples of reported cases
  *
- * This function generates random samples of reported cases based on the specified model type.
+ * This function generates random samples of reported cases based on the
+ * specified model type.
  *
  * @param reports Vector of expected reports.
  * @param dispersion Real value for reporting overdispersion.
- * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
+ * @param model_type Integer indicating the model type (0 for Poisson, >0 for
+ * Negative Binomial).
  *
  * @return An array of integer sampled reports.
  */

@@ -13,7 +13,7 @@ vector calculate_secondary(
     if (cumulative && i > 1) {
       if (i > predict) {
         secondary_reports[i] = secondary_reports[i - 1];
-      }else{
+      } else{
         secondary_reports[i] = obs[i - 1];
       }
     }
@@ -21,7 +21,7 @@ vector calculate_secondary(
     if (historic) {
       if (primary_hist_additive) {
         secondary_reports[i] += conv_reports[i];
-      }else{
+      } else{
         secondary_reports[i] = fmax(0, secondary_reports[i] - conv_reports[i]);
       }
     }
@@ -29,7 +29,7 @@ vector calculate_secondary(
     if (current) {
       if (primary_current_additive) {
         secondary_reports[i] += scaled_reports[i];
-      }else{
+      } else{
         secondary_reports[i] -= scaled_reports[i];
       }
     }

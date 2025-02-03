@@ -138,8 +138,10 @@ generated quantities {
     );
     // log likelihood of model
     if (return_likelihood) {
-      log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-                               dispersion, model_type, obs_weight);
+      log_lik = report_log_lik(
+        obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
+        dispersion, model_type, obs_weight
+      );
     }
   }
 }
