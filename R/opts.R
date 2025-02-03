@@ -640,11 +640,12 @@ gp_opts <- function(basis_prop = 0.2,
 #'   Negative binomial ("negbin"), the default, and Poisson.
 #' @param dispersion A `<dist_spec>` specifying a prior on the dispersion
 #'   parameter of the reporting process, used only if `familiy` is "negbin".
-#'   Internally parameterised such that the dispersion is one over the square
-#'   root of the `phi` parameter of the negative binomial distribution. Defaults
-#'   to a half-normal distribution with mean of 0 and standard deviation of
-#'   0.25: `Normal(mean = 0, sd = 0.25)`. A lower limit of zero will be enforced
-#'   automatically.
+#'   Internally parameterised such that this parameter is one over the square
+#'   root of the `phi` parameter for overdispersion of the
+#'   [negative binomial distribution](https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log). # nolint
+#'   Defaults to a half-normal distribution with mean of 0 and
+#'   standard deviation of 0.25: `Normal(mean = 0, sd = 0.25)`. A lower limit of
+#'   zero will be enforced automatically.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in the
 #'   log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
