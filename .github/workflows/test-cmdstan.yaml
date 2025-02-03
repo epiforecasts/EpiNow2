@@ -43,5 +43,5 @@ jobs:
 
       - name: Compile model
         run: |
-          EpiNow2::epinow2_cmdstan_model()
+          EpiNow2::epinow2_cmdstan_model(verbose = TRUE, quiet = FALSE)
         shell: Rscript {0}
