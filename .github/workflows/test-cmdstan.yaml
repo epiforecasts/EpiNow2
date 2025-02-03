@@ -6,7 +6,7 @@ on:
   merge_group:
   workflow_dispatch:
 
-name: test-coverage
+name: test-cmdstan
 
 jobs:
   test-cmdstan:
