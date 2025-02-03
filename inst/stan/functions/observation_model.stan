@@ -107,7 +107,7 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * @param cases Array of integer observed cases.
  * @param case_times Array of integer time indices for observed cases.
  * @param reports Vector of expected reports.
- * @param rep_phi Real values for reporting overdispersion.
+ * @param dispersion Real values for reporting overdispersion.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for
  * Negative Binomial).
  * @param weight Real value for weighting the log density contribution.
@@ -115,16 +115,16 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * to accumulate reports (1) or not (0).
  */
 void report_lp(array[] int cases, array[] int case_times, vector reports,
-               real rep_phi, int model_type, real weight) {
+               real dispersion, int model_type, real weight) {
   int n = num_elements(case_times); // number of observations
   vector[n] obs_reports = reports[case_times]; // reports at observation time
   if (model_type) {
-    real dispersion = inv_square(rep_phi);
+    real phi = inv_square(dispersion);
     if (weight == 1) {
-      cases ~ neg_binomial_2(obs_reports, dispersion);
+      cases ~ neg_binomial_2(obs_reports, phi);
     } else {
       target += neg_binomial_2_lpmf(
-        cases | obs_reports, dispersion
+        cases | obs_reports, phi
       ) * weight;
     }
   } else {
@@ -164,14 +164,14 @@ vector accumulate_reports(vector reports, array[] int accumulate) {
  *
  * @param cases Array of integer observed cases.
  * @param reports Vector of expected reports.
- * @param rep_phi Array of real values for reporting overdispersion.
+ * @param dispersion Array of real values for reporting overdispersion.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
  * @param weight Real value for weighting the log likelihood contribution.
  *
  * @return A vector of log likelihoods for each time point.
  */
 vector report_log_lik(array[] int cases, vector reports,
-                      real rep_phi, int model_type, real weight) {
+                      real dispersion, int model_type, real weight) {
   int t = num_elements(reports);
   vector[t] log_lik;
 
@@ -181,35 +181,12 @@ vector report_log_lik(array[] int cases, vector reports,
       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
     }
   } else {
-    real dispersion = inv_square(rep_phi);
+    real phi = inv_square(dispersion);
     for (i in 1:t) {
-      log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], dispersion) * weight;
+      log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], phi) * weight;
     }
   }
   return(log_lik);
-}
-
-
-/**
- * Custom safe version of the negative binomial sampler
- *
- * This function generates random samples of the negative binomial distribution
- * whilst avoiding numerical overflows.
- *
- * @param mu Real value ofr mean mu.
- * @param phi Real value for phi.
- *
- * @return A random sample from the negative binomial distribution.
- */
-int neg_binomial_2_safe_rng(real mu, real phi) {
-  if (mu < 1e-8) {
-    return(0);
-  } else if (phi > 1e4) {
-    return(poisson_rng(mu > 1e8 ? 1e8 : mu));
-  } else {
-    real gamma_rate = gamma_rng(phi, phi / mu);
-    return(poisson_rng(gamma_rate > 1e8 ? 1e8 : gamma_rate));
-  }
 }
 
 /**
@@ -218,21 +195,30 @@ int neg_binomial_2_safe_rng(real mu, real phi) {
  * This function generates random samples of reported cases based on the specified model type.
  *
  * @param reports Vector of expected reports.
- * @param rep_phi Real value for reporting overdispersion.
+ * @param dispersion Real value for reporting overdispersion.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for Negative Binomial).
  *
  * @return An array of integer sampled reports.
  */
-array[] int report_rng(vector reports, real rep_phi, int model_type) {
+array[] int report_rng(vector reports, real dispersion, int model_type) {
   int t = num_elements(reports);
   array[t] int sampled_reports;
-  real dispersion = 1e5;
+  real phi = 1e5;
   if (model_type) {
-    dispersion = inv_square(rep_phi);
+    phi = inv_square(dispersion);
   }
 
   for (s in 1:t) {
-    sampled_reports[s] = neg_binomial_2_safe_rng(reports[s], dispersion);
+    if (reports[s] < 1e-8) {
+      sampled_reports[s] = 0;
+    } else {
+      // defer to poisson if phi is large, to avoid overflow
+      if (phi > 1e4) {
+        sampled_reports[s] = poisson_rng(reports[s] > 1e8 ? 1e8 : reports[s]);
+      } else {
+        sampled_reports[s] = neg_binomial_2_rng(reports[s] > 1e8 ? 1e8 : reports[s], phi);
+      }
+    }
   }
   return(sampled_reports);
 }

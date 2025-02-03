@@ -42,7 +42,7 @@ Relevant priors are:
 \begin{align}
 \mu_\zeta &\sim \mathrm{Normal}(0, 1)\\
 \sigma_\zeta &\sim \mathrm{HalfNormal}(0, 1)\\
-\varphi &\sim \mathrm{HalfNormal}(0, 1)\\
+\frac{1}{\sqrt{\varphi}} &\sim \mathrm{HalfNormal}(0, 0.25)\\
 \sigma &\sim \mathrm{HalfNormal}(0, 1)
 \end{align}
 

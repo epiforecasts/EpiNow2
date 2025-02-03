@@ -106,7 +106,7 @@ simulate_secondary <- function(primary,
   }
 
   if (obs$family == "negbin") {
-    if (get_distribution(obs$phi) != "fixed") {
+    if (get_distribution(obs$dispersion) != "fixed") {
       cli_abort(
         c(
           "!" = "Cannot simulate from uncertain overdispersion.",
@@ -115,12 +115,12 @@ simulate_secondary <- function(primary,
       )
     }
   } else {
-    obs$phi <- NULL
+    obs$dispersion <- NULL
   }
 
   data <- c(data, create_stan_params(
     frac_obs = obs$scale,
-    rep_phi = obs$phi
+    dispersion = obs$dispersion
   ))
 
   ## set empty params matrix - variable parameters not supported here

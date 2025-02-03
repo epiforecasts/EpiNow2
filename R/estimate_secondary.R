@@ -276,10 +276,10 @@ estimate_secondary <- function(data,
 
   stan_data <- c(stan_data, create_stan_params(
     frac_obs = obs$scale,
-    rep_phi = obs$phi,
+    dispersion = obs$dispersion,
     lower_bounds = c(
       frac_obs = 0,
-      rep_phi = 0
+      dispersion = 0
     )
   ))
 
@@ -372,10 +372,10 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       data$delay_params_mean <- as.array(signif(delay_params$mean, 3))
       data$delay_params_sd <- as.array(signif(delay_params$sd, 3))
     }
-    phi <- priors[grepl("rep_phi", variable, fixed = TRUE)]
-    if (nrow(phi) > 0) {
-      data$phi_mean <- signif(phi$mean, 3)
-      data$phi_sd <- signif(phi$sd, 3)
+    dispersion <- priors[grepl("dispersion", variable, fixed = TRUE)]
+    if (nrow(dispersion) > 0) {
+      data$dispersion_mean <- signif(dispersion$mean, 3)
+      data$dispersion_sd <- signif(dispersion$sd, 3)
     }
   }
   return(data)

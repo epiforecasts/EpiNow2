@@ -20,20 +20,20 @@ test_that("create_stan_params can be used with fixed scaling", {
 
 test_that("create_stan_params can be used with a user set phi", {
   obs <- obs_opts(
-    phi = Normal(mean = 10, sd = 0.1)
+    dispersion = Normal(mean = 10, sd = 0.1)
   )
   params <- create_stan_params(
-    phi = obs$phi
+    dispersion = obs$dispersion
   )
   expect_equal(params$prior_dist, array(2L))
   expect_equal(params$prior_dist_params, array(c(10, 0.1)))
-  expect_equal(params$phi_id, 1L)
+  expect_equal(params$dispersion_id, 1L)
 })
 
-test_that("create_stan_params can be used with fixed phi", {
-  obs <- obs_opts(phi = Fixed(0.5))
+test_that("create_stan_params can be used with fixed dispersion", {
+  obs <- obs_opts(dispersion = Fixed(0.5))
   params <- create_stan_params(
-    phi = obs$phi
+    dispersion = obs$dispersion
   )
   expect_equal(params$params_value, array(0.5))
   expect_equal(length(params$prior_dist_params), 0L)

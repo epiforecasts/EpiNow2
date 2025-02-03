@@ -223,12 +223,12 @@ model {
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {
     profile("report lp") {
-      real rep_phi = get_param(
-        rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
+      real dispersion = get_param(
+        dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       report_lp(
-        cases, case_times, obs_reports, rep_phi, model_type, obs_weight
+        cases, case_times, obs_reports, dispersion, model_type, obs_weight
       );
     }
   }
@@ -241,8 +241,8 @@ generated quantities {
   vector[return_likelihood ? ot : 0] log_lik;
 
   profile("generated quantities") {
-    real rep_phi = get_param(
-      rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
+    real dispersion = get_param(
+      dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     if (!fixed) {
@@ -278,16 +278,16 @@ generated quantities {
       vector[ot_h] accumulated_reports =
         accumulate_reports(reports, accumulate);
       imputed_reports = report_rng(
-        accumulated_reports[imputed_times], rep_phi, model_type
+        accumulated_reports[imputed_times], dispersion, model_type
       );
     } else {
-      imputed_reports = report_rng(reports, rep_phi, model_type);
+      imputed_reports = report_rng(reports, dispersion, model_type);
     }
 
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
-        cases, obs_reports[case_times], rep_phi, model_type, obs_weight
+        cases, obs_reports[case_times], dispersion, model_type, obs_weight
       );
     }
   }
