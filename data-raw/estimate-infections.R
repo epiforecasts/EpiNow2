@@ -1,5 +1,4 @@
 library("EpiNow2")
-library("EpiNow2")
 library("here")
 library("purrr")
 
