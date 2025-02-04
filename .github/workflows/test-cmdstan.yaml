@@ -41,6 +41,11 @@ jobs:
           cmdstanr::cmdstan_version()
         shell: Rscript {0}
 
+      - name: Rebuild comdstan
+        if: runner.os == 'macOS'
+          cmdstanr::rebuild_cmdstan()
+        shell: Rscript {0}
+
       - name: Compile model
         run: |
           EpiNow2::epinow2_cmdstan_model(verbose = TRUE, quiet = FALSE)
