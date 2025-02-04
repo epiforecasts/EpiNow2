@@ -202,7 +202,7 @@ vector report_log_lik(array[] int cases, vector reports,
  * This function generates random samples of the negative binomial distribution
  * whilst avoiding numerical overflows.
  *
- * @param mu Real value ofr mean mu.
+ * @param mu Real value for mean mu.
  * @param phi Real value for phi.
  *
  * @return A random sample from the negative binomial distribution.
