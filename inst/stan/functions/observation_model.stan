@@ -200,12 +200,19 @@ vector report_log_lik(array[] int cases, vector reports,
  * Custom safe version of the negative binomial sampler
  *
  * This function generates random samples of the negative binomial distribution
- * whilst avoiding numerical overflows.
+ * whilst avoiding numerical overflows. In particular:
+ * - if the mu parameter is very small it always returns 0
+ * - if the phi parameter is large it returns a sample from a Poisosn
+ *   distribution
+ * - if the gamma rate of the gamma-Poisson mixture used for simulating from the
+ *   distribution is very large, it returns 1e8
+ * - in all other cases it returns a sample from the negative binomial
+ *   distribution
  *
  * @param mu Real value for mean mu.
  * @param phi Real value for phi.
  *
- * @return A random sample from the negative binomial distribution.
+ * @return A random sample
  */
 int neg_binomial_2_safe_rng(real mu, real phi) {
   if (mu < 1e-8) {
