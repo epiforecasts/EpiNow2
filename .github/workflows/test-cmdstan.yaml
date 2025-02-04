@@ -43,6 +43,7 @@ jobs:
 
       - name: Rebuild comdstan
         if: runner.os == 'macOS'
+        run: |
           cmdstanr::rebuild_cmdstan()
         shell: Rscript {0}
 
