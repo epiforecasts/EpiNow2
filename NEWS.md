@@ -24,10 +24,10 @@ Internal changes should improve performance, reduce the number of failing fits, 
 - A bug was fixed where the initial growth was never estimated (i.e. the prior mean was always zero). By @sbfnk in #853 and reviewed by @seabbs.
 - A bug was fixed where an internal function for applying a default cdf cutoff failed due to a difference a vector length issue. By @jamesmbaazam in #858 and reviewed by @sbfnk.
 - All parameters have been changed to the new parameter interface. By @sbfnk in #871 and #890 and reviewed by @seabbs.
-- The Gaussian Process lengthscale is now scaled internally by half the length of the time series. By @sbfnk in #890 and reviewed by #seabbs.
-- A bug was fixed where `plot.dist_spec()` wasn't throwing an informative error due to an incomplete check for the max of the specified delay. By @jamesmbaazam in #858 and reviewed by @.
+- The Gaussian Process lengthscale is now scaled internally by half the length of the time series. By @sbfnk in #890 and reviewed by @seabbs.
+- A bug was fixed where `plot.dist_spec()` wasn't throwing an informative error due to an incomplete check for the max of the specified delay. By @jamesmbaazam in #858.
 - Updated the early dynamics calculation to estimate growth from the initial reproduction number instead of a separate linear model. Also changed the prior calculation for initial infections to be a scaling factor of early case numbers adjusted by the growth estimate, instead a true number of initial infections. By @sbfnk in #923 (with initial exploration in #903) and reviewed by @seabbs and @SamuelBrand1. 
-- A bug was fixed in the non-mechanistic model where the final period could have discontinuities. By @sbfnk in # and reviewed by # .
+- A bug was fixed in the non-mechanistic model where the final period could have discontinuities. By @sbfnk.
 
 ## Package changes
 
@@ -38,7 +38,7 @@ Internal changes should improve performance, reduce the number of failing fits, 
 ## Documentation
 
 - Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862 and reviewed by @jamesmbaazam.
-- The `...` argument in `estimate_secondary()` has been removed because it was not used. By @jamesmbaazam in #894 and reviewed by @.
+- The `...` argument in `estimate_secondary()` has been removed because it was not used. By @jamesmbaazam in #894.
 - All examples now use the natural parameters of distributions rather than the mean and standard deviation when specifying uncertain distributions. This is to eliminate warnings and encourage best practice. By @jamesmbaazam in #893 and reviewed by @sbfnk.
 - Updated the methodology vignettes, By @sbfnk in #919 and reviewed by @seabbs and @jamesmbaazam.
 - The ways that `dist_spec()` with certain/uncertain parameters can be constrained has been clarified. By @sbfnk in #940 and reviewed by @jamesmbaazam.
