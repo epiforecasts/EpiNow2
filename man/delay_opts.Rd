@@ -4,21 +4,11 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(
-  dist = Fixed(0),
-  ...,
-  fixed = FALSE,
-  default_cdf_cutoff = 0.001,
-  weight_prior = TRUE
-)
+delay_opts(dist = Fixed(0), default_cdf_cutoff = 0.001, weight_prior = TRUE)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions. Default is
 a fixed distribution with all mass at 0, i.e. no delay.}
-
-\item{...}{deprecated; use \code{dist} instead}
-
-\item{fixed}{deprecated; use \code{dist} instead}
 
 \item{default_cdf_cutoff}{Numeric; default CDF cutoff to be used if an
 unconstrained distribution is passed as \code{dist}. If \code{dist} is already

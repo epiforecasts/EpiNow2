@@ -26,8 +26,6 @@
 #' with non-daily data. If any accumulation is done this happens after
 #' truncation as specified by the `truncation` argument.
 #'
-#' @param reported_cases Deprecated; use `data` instead.
-#'
 #' @param generation_time A call to [gt_opts()] (or its alias
 #' [generation_time_opts()]) defining the generation time distribution used.
 #' For backwards compatibility a list of summary parameters can also be passed.
@@ -71,7 +69,6 @@
 #' @inheritParams create_stan_data
 #' @inheritParams create_gp_data
 #' @inheritParams fit_model_with_nuts
-#' @inheritParams create_clean_reported_cases
 #' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table
 #' @importFrom data.table setorder rbindlist melt .N setDT
@@ -128,38 +125,29 @@ estimate_infections <- function(data,
                                 obs = obs_opts(),
                                 forecast = forecast_opts(),
                                 stan = stan_opts(),
-                                horizon,
                                 CrIs = c(0.2, 0.5, 0.9),
-                                filter_leading_zeros = TRUE,
-                                zero_threshold = Inf,
                                 weigh_delay_priors = TRUE,
                                 id = "estimate_infections",
                                 verbose = interactive(),
-                                reported_cases) {
-  # Deprecate reported_cases in favour of data
-  if (!missing(reported_cases)) {
-    lifecycle::deprecate_stop(
-      "1.5.0",
-      "estimate_infections(reported_cases)",
-      "estimate_infections(data)"
-    )
-  }
+                                filter_leading_zeros = TRUE,
+                                zero_threshold = Inf,
+                                horizon) {
   if (!missing(filter_leading_zeros)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0",
       "estimate_infections(filter_leading_zeros)",
       "filter_leading_zeros()"
     )
   }
   if (!missing(zero_threshold)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0",
       "estimate_infections(zero_threshold)",
       "apply_zero_threshold()"
     )
   }
   if (!missing(horizon)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0",
       "estimate_infections(horizon)",
       "estimate_infections(forecast)",
@@ -167,8 +155,6 @@ estimate_infections <- function(data,
         override any `horizon` argument passed via `forecast_opts()`."
     )
   }
-  ## horizon is deprecated so should be setup via forecast_opts
-  forecast <- setup_forecast(forecast, if (!missing(horizon)) horizon else NULL)
   # Validate inputs
   check_reports_valid(data, model = "estimate_infections")
   assert_class(generation_time, "generation_time_opts")
@@ -178,11 +164,12 @@ estimate_infections <- function(data,
   assert_class(backcalc, "backcalc_opts")
   assert_class(gp, "gp_opts", null.ok = TRUE)
   assert_class(obs, "obs_opts")
+  if (is.null(forecast)) {
+    forecast <- forecast_opts(horizon = 0)
+  }
   assert_class(forecast, "forecast_opts")
   assert_class(stan, "stan_opts")
   assert_numeric(CrIs, lower = 0, upper = 1)
-  assert_logical(filter_leading_zeros)
-  assert_numeric(zero_threshold, lower = 0)
   assert_logical(weigh_delay_priors)
   assert_string(id)
   assert_logical(verbose)
@@ -203,28 +190,8 @@ estimate_infections <- function(data,
     )
   }
 
-  # If the user is using the default treatment of NA's as missing and
-  # their data has implicit or explicit NA's, inform them of what's
-  # happening and provide alternatives.
-  obs <- check_na_setting_against_data(
-    obs = obs,
-    data = dirty_reported_cases,
-    cols_to_check = c("date", "confirm")
-  )
-  # Fill missing dates
+  # Fill missing dates (deprecated)
   reported_cases <- default_fill_missing_obs(data, obs, "confirm")
-  # Check initial zeros to check for deprecated filter zero functionality
-  if (filter_leading_zeros &&
-    !is.na(reported_cases[date == min(date), "confirm"]) &&
-    reported_cases[date == min(date), "confirm"] == 0) {
-    cli_warn(c(
-      "!" = "Filtering initial zero observations in the data. This
-      functionality will be removed in future versions of EpiNow2. In order
-      to retain the default behaviour and filter initial zero observations
-      use the {.fn filter_leading_zeros()} function on the data before
-      calling {.fn estimate_infections()}."
-    ))
-  }
 
   ## add forecast horizon if forecasting is required
   if (forecast$horizon > 0) {
@@ -238,12 +205,8 @@ estimate_infections <- function(data,
     reported_cases <- do.call(add_horizon, horizon_args)
   }
 
-  # Create clean and complete cases
-  reported_cases <- create_clean_reported_cases(
-    reported_cases,
-    filter_leading_zeros = filter_leading_zeros,
-    zero_threshold = zero_threshold
-  )
+  # Add breakpoints column
+  reported_cases <- add_breakpoints(reported_cases)
 
   # Record earliest date with data
   start_date <- min(reported_cases$date, na.rm = TRUE)
@@ -298,22 +261,6 @@ estimate_infections <- function(data,
     verbose = verbose
   )
 
-  # Initialise fitting by using a previous fit or fitting to cumulative cases
-  if (!is.null(args$init_fit)) {
-    if (!inherits(args$init_fit, "stanfit") &&
-      args$init_fit == "cumulative") {
-      args$init_fit <- init_cumulative_fit(args,
-        warmup = 50, samples = 50,
-        id = id, verbose = FALSE, stan$backend
-      )
-    }
-    args$init <- extract_inits(args$init_fit,
-      current_inits = args$init,
-      exclude_list = c("initial_infections", "initial_growth"),
-      samples = 50
-    )
-    args$init_fit <- NULL
-  }
   # Fit model
   fit <- fit_model(args, id = id)
 

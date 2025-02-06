@@ -10,8 +10,8 @@ stan_pathfinder_opts(backend = "cmdstanr", samples = 2000, trials = 10, ...)
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 
-\item{samples}{Numeric, default 2000. Overall number of posterior samples.
-When using multiple chains iterations per chain is samples / chains.}
+\item{samples}{Numeric, default 2000. Overall number of approximate posterior
+samples.}
 
 \item{trials}{Numeric, defaults to 10. Number of attempts to use
 rstan::vb()] before failing.}
