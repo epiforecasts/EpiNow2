@@ -915,6 +915,7 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 #' default if using the "rstan" backend, and the default model obtained using
 #' [epinow2_cmdstan_model()] if using the "cmdstanr" backend.
 #'
+#' @param samples Numeric, defaults to 2000. Number of posterior samples.
 #' @param method A character string, defaulting to sampling. Currently supports
 #' MCMC sampling ("sampling") or approximate posterior sampling via
 #' variational inference ("vb") and, as experimental features if the

@@ -40,8 +40,7 @@ simulate_secondary <- function(primary,
                                truncation = trunc_opts(),
                                obs = obs_opts(),
                                CrIs = c(0.2, 0.5, 0.9),
-                               backend = "rstan",
-                               ...) {
+                               backend = "rstan") {
   assert_data_frame(primary, any.missing = FALSE)
   assert_subset(c("date", "primary"), colnames(primary))
   assert_date(primary$date)

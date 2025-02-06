@@ -59,6 +59,14 @@
 #' Corresponds to the "DEBUG" level from `futile.logger`. See `setup_logging`
 #' for more detailed logging options.
 #'
+#' @param filter_leading_zeros Logical, defaults to TRUE. Should zeros at the
+#' start of the time series be filtered out.
+#'
+#' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults
+#' to Inf. Indicates if detected zero cases are meaningful by using a threshold
+#' number of cases based on the 7-day average. If the average is above this
+#' threshold then the zero is replaced using `fill`.
+#'
 #' @export
 #' @return A list of output including: posterior samples, summarised posterior
 #' samples, data used to fit the model, and the fit object itself.
@@ -67,7 +75,10 @@
 #' [estimate_truncation()]
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
+#' @inheritParams create_rt_data
+#' @inheritParams create_backcalc_data
 #' @inheritParams create_gp_data
+#' @inheritParams create_obs_model
 #' @inheritParams fit_model_with_nuts
 #' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table

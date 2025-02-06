@@ -18,6 +18,8 @@ stan_opts(
 default if using the "rstan" backend, and the default model obtained using
 \code{\link[=epinow2_cmdstan_model]{epinow2_cmdstan_model()}} if using the "cmdstanr" backend.}
 
+\item{samples}{Numeric, defaults to 2000. Number of posterior samples.}
+
 \item{method}{A character string, defaulting to sampling. Currently supports
 MCMC sampling ("sampling") or approximate posterior sampling via
 variational inference ("vb") and, as experimental features if the

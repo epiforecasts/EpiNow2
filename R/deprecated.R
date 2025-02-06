@@ -2,8 +2,7 @@
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #' This function acts as a skeleton for a truncated distribution defined by
-#' model type, maximum value and model parameters. It is designed to be used
-#' with the output from [get_dist()].
+#' model type, maximum value and model parameters.
 #'
 #' @param n Numeric vector, number of samples to take (or days for the
 #' probability density).

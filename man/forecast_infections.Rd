@@ -101,7 +101,7 @@ options(old_opts)
 }
 }
 \seealso{
-\code{\link[=dist_spec]{dist_spec()}} \code{\link[=generation_time_opts]{generation_time_opts()}} \code{\link[=delay_opts]{delay_opts()}} \code{\link[=rt_opts]{rt_opts()}}
+\code{\link[=generation_time_opts]{generation_time_opts()}} \code{\link[=delay_opts]{delay_opts()}} \code{\link[=rt_opts]{rt_opts()}}
 \code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=trunc_opts]{trunc_opts()}} \code{\link[=stan_opts]{stan_opts()}} \code{\link[=obs_opts]{obs_opts()}}
 \code{\link[=gp_opts]{gp_opts()}}
 }

@@ -245,7 +245,7 @@ simulate_infections <- function(R, initial_infections,
 #' @importFrom cli cli_abort
 #' @return A list of output as returned by [estimate_infections()] but based on
 #' results from the specified scenario rather than fitting.
-#' @seealso [dist_spec()] [generation_time_opts()] [delay_opts()] [rt_opts()]
+#' @seealso [generation_time_opts()] [delay_opts()] [rt_opts()]
 #' [estimate_infections()] [trunc_opts()] [stan_opts()] [obs_opts()]
 #' [gp_opts()]
 #' @export

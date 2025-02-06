@@ -50,7 +50,6 @@ A vector of samples or a probability distribution.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 This function acts as a skeleton for a truncated distribution defined by
-model type, maximum value and model parameters. It is designed to be used
-with the output from \code{\link[=get_dist]{get_dist()}}.
+model type, maximum value and model parameters.
 }
 \keyword{internal}
