@@ -92,11 +92,11 @@ summarise_results <- function(regions,
 
 
   numeric_estimates <- data.table::merge.data.table(numeric_estimates,
-    estimates[measure == "Expected change in daily reports"][
+    estimates[measure == "Expected change in reports"][
       ,
       .(region,
-       `Expected change in daily reports` = estimate,
-       prob_control = numeric_estimate
+        `Expected change in reports` = estimate,
+        prob_control = numeric_estimate
       )
     ],
     by = "region", all.x = TRUE
@@ -106,7 +106,8 @@ summarise_results <- function(regions,
     data.table::setorderv(numeric_estimates, cols = "median", order = -1)$region
   )
 
-  numeric_estimates <- numeric_estimates[,
+  numeric_estimates <- numeric_estimates[
+    ,
     region := factor(region, levels = high_inc_regions)
   ]
 
@@ -115,7 +116,7 @@ summarise_results <- function(regions,
     ,
     measure := factor(measure, levels = c(
       "New infections per day",
-      "Expected change in daily reports",
+      "Expected change in reports",
       "Effective reproduction no.",
       "Rate of growth",
       "Doubling/halving time (days)" # nolint
@@ -123,11 +124,13 @@ summarise_results <- function(regions,
   ]
 
   estimates <- data.table::dcast(
-    estimates, region ~ ..., value.var = "estimate"
+    estimates, region ~ ...,
+    value.var = "estimate"
   )
   estimates <- estimates[, (region_scale) := region][, region := NULL]
   estimates <- estimates[,
-    c(region_scale, colnames(estimates)[-ncol(estimates)]), with = FALSE
+    c(region_scale, colnames(estimates)[-ncol(estimates)]),
+    with = FALSE
   ]
 
   out <- list(estimates, numeric_estimates, high_inc_regions)
@@ -170,7 +173,7 @@ summarise_results <- function(regions,
 #' @examples
 #' # get example output from regional_epinow model
 #' regional_out <- readRDS(system.file(
-#'     package = "EpiNow2", "extdata", "example_regional_epinow.rds"
+#'   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 #' ))
 #'
 #' regional_summary(
@@ -269,8 +272,8 @@ regional_summary <- function(regional_output = NULL,
   )
 
   force_factor <- function(df) {
-    df[, `Expected change in daily reports` :=
-      factor(`Expected change in daily reports`,
+    df[, `Expected change in reports` :=
+      factor(`Expected change in reports`,
         levels = c(
           "Increasing", "Likely increasing", "Stable",
           "Likely decreasing", "Decreasing"
@@ -327,7 +330,7 @@ regional_summary <- function(regional_output = NULL,
           length(regions) > 60 & length(regions) > 120, 36,
           length(regions) > 60 & !(length(regions) > 120), 24,
           default = 12
-          )
+        )
       )
     }
     # extract regions with highest number of reported cases in the last week
@@ -490,16 +493,18 @@ summarise_key_measures <- function(regional_results = NULL,
 
   # clean and save case estimates
   out$cases_by_infection <- summarise_variable(
-    sum_est[variable == "infections"][,
-    variable := NULL
+    sum_est[variable == "infections"][
+      ,
+      variable := NULL
     ], 1
   )
   save_variable(out$cases_by_infection, "cases_by_infection")
 
   # clean and save case estimates
   out$cases_by_report <- summarise_variable(
-    sum_est[variable == "reported_cases"][,
-    variable := NULL
+    sum_est[variable == "reported_cases"][
+      ,
+      variable := NULL
     ], 1
   )
   save_variable(out$cases_by_report, "cases_by_report")
@@ -522,7 +527,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @keywords internal
 #' @examples
 #' regional_out <- readRDS(system.file(
-#'     package = "EpiNow2", "extdata", "example_regional_epinow.rds"
+#'   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 #' ))
 #' regional_runtimes(regional_output = regional_out$regional)
 regional_runtimes <- function(regional_output = NULL,

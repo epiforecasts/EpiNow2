@@ -99,6 +99,7 @@
 #' # all the previous snapshots. Also, we're using the default options for
 #' # illustrative purposes only.
 #' out <- epinow(
+#'   generation_time = generation_time_opts(example_generation_time),
 #'   example_truncated[[5]],
 #'   truncation = trunc_opts(est$dist)
 #' )
@@ -122,7 +123,6 @@ estimate_truncation <- function(data,
                                 verbose = TRUE,
                                 ...,
                                 obs) {
-
   if (!missing(obs)) {
     lifecycle::deprecate_stop(
       "1.5.0",
@@ -144,7 +144,7 @@ estimate_truncation <- function(data,
       "trunc_opts(weight_prior)"
     )
   }
-   # Validate inputs
+  # Validate inputs
   walk(data, check_reports_valid, model = "estimate_infections")
   assert_class(truncation, "dist_spec")
   assert_class(model, "stanfit", null.ok = TRUE)
@@ -158,9 +158,9 @@ estimate_truncation <- function(data,
   dirty_obs <- purrr::map(data, data.table::as.data.table)
   dirty_obs <- purrr::map(dirty_obs,
     create_clean_reported_cases,
-      filter_leading_zeros = filter_leading_zeros,
-      zero_threshold = zero_threshold,
-      add_breakpoints = FALSE
+    filter_leading_zeros = filter_leading_zeros,
+    zero_threshold = zero_threshold,
+    add_breakpoints = FALSE
   )
   earliest_date <- max(
     as.Date(
@@ -197,7 +197,7 @@ estimate_truncation <- function(data,
   # initial conditions
   init_fn <- function() {
     data <- c(create_delay_inits(stan_data), list(
-      phi = abs(rnorm(1, 0, 1)),
+      dispersion = abs(rnorm(1, 0, 1)),
       sigma = abs(rnorm(1, 0, 1))
     ))
     return(data)
@@ -318,7 +318,7 @@ plot.estimate_truncation <- function(x, ...) {
   plot <- plot +
     ggplot2::theme_bw() +
     ggplot2::labs(
-      y = "Confirmed Cases", x = "Date", col = "Type", fill = "Type"
+      y = "Reports", x = "Date", col = "Type", fill = "Type"
     ) +
     ggplot2::scale_x_date(date_breaks = "day", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +

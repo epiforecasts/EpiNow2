@@ -67,7 +67,8 @@ est <- estimate_infections(reported_cases,
   delays = delay_opts(example_incubation_period + example_reporting_delay),
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1), rw = 7),
   obs = obs_opts(scale = Normal(mean = 0.1, sd = 0.01)),
-  gp = NULL, horizon = 0
+  gp = NULL,
+  forecast = forecast_opts(horizon = 0)
 )
 
 # update Rt trajectory and simulate new infections using it
@@ -88,9 +89,10 @@ plot(sims)
 
 #' # with a data.frame input of samples
 R_samples <- summary(est, type = "samples", param = "R")
-R_samples <- R_samples[,
- .(date, sample, value)][sample <= 1000][date <= "2020-04-10"
-]
+R_samples <- R_samples[
+  ,
+  .(date, sample, value)
+][sample <= 1000][date <= "2020-04-10"]
 R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
 sims <- forecast_infections(est, R_samples)
 plot(sims)

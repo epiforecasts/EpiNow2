@@ -22,7 +22,7 @@ regional_summary(
 \item{regional_output}{A list of output as produced by \code{\link[=regional_epinow]{regional_epinow()}}
 and stored in the \code{regional} list.}
 
-\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+\item{data}{A \verb{<data.frame>} of disease reports (confirm) by date
 (date), and region (\code{region}).}
 
 \item{results_dir}{An optional character string indicating the location of
@@ -64,7 +64,7 @@ externally.
 \examples{
 # get example output from regional_epinow model
 regional_out <- readRDS(system.file(
-    package = "EpiNow2", "extdata", "example_regional_epinow.rds"
+  package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 ))
 
 regional_summary(

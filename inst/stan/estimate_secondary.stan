@@ -74,13 +74,13 @@ transformed parameters {
     );
   }
 
- // weekly reporting effect
- if (week_effect > 1) {
-   secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
- }
+  // weekly reporting effect
+  if (week_effect > 1) {
+    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
+  }
 
- // truncate near time cases to observed reports
- if (trunc_id) {
+  // truncate near time cases to observed reports
+  if (trunc_id) {
     vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(
       trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
@@ -88,14 +88,14 @@ transformed parameters {
       0, 1, 1
     );
     secondary = truncate_obs(secondary, trunc_rev_cmf, 0);
- }
+  }
 
- // accumulate reports
- if (any_accumulate) {
-   profile("accumulate") {
-     secondary = accumulate_reports(secondary, accumulate);
-   }
- }
+  // accumulate reports
+  if (any_accumulate) {
+    profile("accumulate") {
+      secondary = accumulate_reports(secondary, accumulate);
+    }
+  }
 }
 
 model {
@@ -113,13 +113,13 @@ model {
   }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
-    real rep_phi = get_param(
-      rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
+    real dispersion = get_param(
+      dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     report_lp(
       obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      rep_phi, model_type, 1
+      dispersion, model_type, 1
     );
   }
 }
@@ -128,16 +128,20 @@ generated quantities {
   array[t - burn_in] int sim_secondary;
   vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
   {
-    real rep_phi = get_param(
-      rep_phi_id, params_fixed_lookup, params_variable_lookup, params_value,
+    real dispersion = get_param(
+      dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     // simulate secondary reports
-    sim_secondary = report_rng(secondary[(burn_in + 1):t], rep_phi, model_type);
+    sim_secondary = report_rng(
+      secondary[(burn_in + 1):t], dispersion, model_type
+    );
     // log likelihood of model
     if (return_likelihood) {
-      log_lik = report_log_lik(obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-                               rep_phi, model_type, obs_weight);
+      log_lik = report_log_lik(
+        obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
+        dispersion, model_type, obs_weight
+      );
     }
   }
 }

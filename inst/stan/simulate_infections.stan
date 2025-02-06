@@ -42,8 +42,8 @@ generated quantities {
   array[n, t - seeding_time] int imputed_reports;
   matrix[n, t - seeding_time - 1] r;
   {
-    vector[n] rep_phi = get_param(
-      rep_phi_id, params_fixed_lookup, params_variable_lookup,
+    vector[n] dispersion = get_param(
+      dispersion_id, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
     vector[n] frac_obs = get_param(
@@ -78,7 +78,7 @@ generated quantities {
           delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
           0, 1, 0
         );
-      // convolve from latent infections to mean of observations
+        // convolve from latent infections to mean of observations
         reports[i] = to_row_vector(convolve_to_report(
           to_vector(infections[i]), delay_rev_pmf, seeding_time)
         );
@@ -112,7 +112,7 @@ generated quantities {
       }
       // simulate reported cases
       imputed_reports[i] = report_rng(
-        to_vector(reports[i]), rep_phi[i], model_type
+        to_vector(reports[i]), dispersion[i], model_type
       );
       r[i] = to_row_vector(
         calculate_growth(to_vector(infections[i]), seeding_time + 1)

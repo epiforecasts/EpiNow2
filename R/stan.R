@@ -19,7 +19,8 @@
 #' @export
 epinow2_cmdstan_model <- function(model = "estimate_infections",
                                   dir = system.file(
-                                    "stan", package = "EpiNow2"
+                                    "stan",
+                                    package = "EpiNow2"
                                   ),
                                   verbose = FALSE,
                                   ...) {
@@ -72,12 +73,14 @@ epinow2_rstan_model <- function(model = "estimate_infections") {
 ##' @importFrom rlang arg_match
 ##' @keywords internal
 epinow2_stan_model <- function(backend = c("rstan", "cmdstanr"),
-                               model = c("estimate_infections",
-                                         "simulate_infections",
-                                         "estimate_secondary",
-                                         "simulate_secondary",
-                                         "estimate_truncation",
-                                         "dist_fit")) {
+                               model = c(
+                                 "estimate_infections",
+                                 "simulate_infections",
+                                 "estimate_secondary",
+                                 "simulate_secondary",
+                                 "estimate_truncation",
+                                 "dist_fit"
+                               )) {
   backend <- arg_match(backend)
   model <- arg_match(model)
   if (backend == "cmdstanr") {

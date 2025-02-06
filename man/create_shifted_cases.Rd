@@ -7,7 +7,7 @@
 create_shifted_cases(data, shift, smoothing_window, horizon)
 }
 \arguments{
-\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date (date).
+\item{data}{A \verb{<data.frame>} of disease reports (confirm) by date (date).
 \code{confirm} must be numeric and \code{date} must be in date format. Optionally
 this can also have a logical \code{accumulate} column which indicates whether
 data should be added to the next data point. This is useful when modelling
@@ -53,19 +53,20 @@ shift <- 7
 horizon <- 7
 smoothing_window <- 14
 ## add NAs for horizon
-cases <- create_clean_reported_cases(example_confirmed, horizon = horizon)
+cases <- create_clean_reported_cases(example_confirmed[1:30])
+cases <- add_horizon(cases, horizon)
 ## add zeroes initially
 cases <- data.table::rbindlist(list(
-   data.table::data.table(
-     date = seq(
-       min(cases$date) - smoothing_window,
-       min(cases$date) - 1,
-       by = "days"
-     ),
-     confirm = 0, breakpoint = 0
-   ),
-   cases
- ))
+  data.table::data.table(
+    date = seq(
+      min(cases$date) - 10,
+      min(cases$date) - 1,
+      by = "days"
+    ),
+    confirm = 0, breakpoint = 0
+  ),
+  cases
+))
 create_shifted_cases(cases, shift, smoothing_window, horizon)
 }
 }

@@ -1,6 +1,7 @@
 array[] int get_delay_type_max(
   int delay_types, array[] int delay_types_p, array[] int delay_types_id,
-  array[] int delay_types_groups, array[] int delay_max, array[] int delay_np_pmf_groups
+  array[] int delay_types_groups, array[] int delay_max,
+  array[] int delay_np_pmf_groups
 ) {
   array[delay_types] int ret;
   for (i in 1:delay_types) {
@@ -28,7 +29,8 @@ vector get_delay_rev_pmf(
   vector[len] pmf = rep_vector(0, len);
   int current_len = 1;
   int new_len;
-  for (i in delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {
+  for (i in
+         delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {
     if (delay_types_p[i]) { // parametric
       int start = delay_params_groups[delay_types_id[i]];
       int end = delay_params_groups[delay_types_id[i] + 1] - 1;
@@ -90,8 +92,11 @@ void delays_lp(vector delay_params,
     for (s in start:end) {
       if (delay_params_sd[s] > 0) {
         if (weight[d] > 1) {
-          target += weight[d] * normal_lpdf(delay_params[s] | delay_params_mean[s], delay_params_sd[s]);
-        }else {
+          target += weight[d] *
+            normal_lpdf(
+              delay_params[s] | delay_params_mean[s], delay_params_sd[s]
+            );
+        } else {
           delay_params[s] ~ normal(delay_params_mean[s], delay_params_sd[s]);
         }
       }

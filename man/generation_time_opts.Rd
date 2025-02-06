@@ -45,7 +45,8 @@ passing a nonparametric distribution the first element should be zero (see
 
 \item{default_cdf_cutoff}{Numeric; default CDF cutoff to be used if an
 unconstrained distribution is passed as \code{dist}. If \code{dist} is already
-constrained by having a maximum or CDF cutoff this is ignored.}
+constrained by having a maximum or CDF cutoff this is ignored. Note that
+this can only be done for <dist_spec> objects with fixed parameters.}
 
 \item{weight_prior}{Logical; if TRUE (default), any priors given in \code{dist}
 will be weighted by the number of observation data points, in doing so

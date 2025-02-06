@@ -76,7 +76,6 @@ dist_spec <- function(distribution = c(
                       ),
                       params_mean = numeric(0), params_sd = numeric(0),
                       max = Inf, pmf = numeric(0), fixed = FALSE) {
-
   lifecycle::deprecate_stop(
     "1.5.0",
     "dist_spec()",
@@ -372,10 +371,10 @@ get_incubation_period <- function(disease, source, max_value = 14,
         "Please use distribution functions such as `Gamma()` or `Lognormal()`",
         "instead."
       ),
-     paste(
-      "To obtain the previous estimate by Ganyani et al. (2020) use",
-      "`example_incubation_period`."
-     )
+      paste(
+        "To obtain the previous estimate by Ganyani et al. (2020) use",
+        "`example_incubation_period`."
+      )
     )
   )
 }
@@ -514,7 +513,8 @@ dist_skel <- function(n, dist = FALSE, cum = TRUE, model,
   }
 
   if (discrete) {
-    cmf <- c(0, updist(1),
+    cmf <- c(
+      0, updist(1),
       updist(seq_len(max_value)) + updist(seq_len(max_value) + 1)
     ) /
       (updist(max_value) + updist(max_value + 1))

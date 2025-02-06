@@ -36,7 +36,10 @@
 ##'   have a sufficient number of modelled observations accumulated onto the
 ##'   first data point. For modelling weekly incidence data this should be set
 ##'   to 7. If accumulating and the first data point is not NA and this is
-##'   argument is not set, then that data point will be removed with a warning.
+##'   argument is not set, then if all dates in the data have the same gap this
+##'   will be taken as initial accumulation and a warning given to inform the
+##'   user. If not all gaps are the same the first data point will be removed
+##'   with a warning.
 ##' @param obs_column Character (default: "confirm"). If given, only the column
 ##'   specified here will be used for checking missingness. This is useful if
 ##'   using a data set that has multiple columns of hwich one of them
@@ -74,9 +77,6 @@ fill_missing <- function(data,
   assert_character(missing_obs)
   assert_character(obs_column)
   assert_character(by, null.ok = TRUE)
-  if (!missing(initial_accumulate)) {
-    assert_integerish(initial_accumulate, lower = 1)
-  }
   assert_names(
     colnames(data),
     must.include = c("date", by, obs_column),
@@ -84,10 +84,30 @@ fill_missing <- function(data,
   )
   assert_date(data$date, any.missing = FALSE)
 
-  data <- as.data.table(data)
-
   missing_dates <- arg_match(missing_dates)
   missing_obs <- arg_match(missing_obs)
+
+  data <- as.data.table(data)
+
+  if (missing(initial_accumulate)) {
+    ## detect frequency of accumulation if possible
+    missing_date_patterns <- data[, list(pattern = unique(diff(date))), by = by]
+    unique_patterns <- unique(missing_date_patterns$pattern)
+    if (length(unique_patterns) == 1 && unique_patterns > 1) {
+      cli_inform(
+        c(
+          "!" =
+            "Detected fixed accumulation frequency of {unique_patterns}.
+            This will be used for initial accumulation. Use
+            {.var initial_accumulate} to change this behaviour. To silence this
+            warning, set {.var initial_accumulate} to {unique_patterns}."
+        )
+      )
+      initial_accumulate <- unique_patterns
+    }
+  } else {
+    assert_integerish(initial_accumulate, lower = 1)
+  }
 
   ## first, processing missing dates
   initial_add <- ifelse(missing(initial_accumulate), 1, initial_accumulate)
@@ -95,10 +115,8 @@ fill_missing <- function(data,
   cols <- list(
     date = seq(min(data$date) - initial_add + 1, max(data$date), by = "day")
   )
-  if (!is.null(by))  {
-    for (by_col in by) {
-      cols[[by_col]] <- unique(data[[by_col]])
-    }
+  for (by_col in by) {
+    cols[[by_col]] <- unique(data[[by_col]])
   }
 
   complete <- do.call(CJ, cols)
@@ -116,9 +134,9 @@ fill_missing <- function(data,
     }
   }
   if (missing(initial_accumulate) &&
-      isFALSE(data$accumulate[1]) &&
-      any(data$accumulate)) {
-    #nolint start: duplicate_argument_linter
+    isFALSE(data$accumulate[1]) &&
+    any(data$accumulate)) {
+    # nolint start: duplicate_argument_linter
     cli_warn(
       c(
         "!" =
@@ -132,7 +150,7 @@ fill_missing <- function(data,
             as is, i.e. as the first daily data point)."
       )
     )
-    #nolint end
+    # nolint end
     data <- data[date > min(date)]
   }
 
@@ -164,7 +182,7 @@ default_fill_missing_obs <- function(data, obs, obs_column) {
     data_rows <- nrow(data)
     data <- fill_missing(data = data, obs_column = obs_column)
     if (nrow(data) > data_rows && !obs$accumulate) {
-      #nolint start: duplicate_argument_linter
+      # nolint start: duplicate_argument_linter
       cli_warn(c(
         "!" = "Data contains missing dates.",
         "i" = "Missing dates are interpreted as truly missing data.
@@ -172,7 +190,7 @@ default_fill_missing_obs <- function(data, obs, obs_column) {
         functions will expect complete data.",
         "i" = "Complete data can be created using the `fill_missing` function."
       ))
-      #nolint end
+      # nolint end
     }
   }
   return(data)
@@ -185,7 +203,8 @@ default_fill_missing_obs <- function(data, obs, obs_column) {
 ##'   [estimate_secondary()]. See the documentation there for the expected
 ##'   format.
 ##' @param accumulate The number of days to accumulate when generating posterior
-##'   prediction, e.g. 7 for weekly accumulated forecasts.
+##'   prediction, e.g. 7 for weekly accumulated forecasts. If this is not set an
+##'   attempt will be made to detect the accumulation frequency in the data.
 ##' @inheritParams fill_missing
 ##' @inheritParams estimate_infections
 ##' @importFrom data.table copy merge.data.table setDT
@@ -210,13 +229,27 @@ add_horizon <- function(data, horizon, accumulate = 1L,
       .(date = seq(max(date) + 1, max(date) + horizon, by = "days")),
       by = by
     ]
-    ## if we accumulate add the column
+    ## detect accumulation
+    if (missing(accumulate) && "accumulate" %in% colnames(data)) {
+      accumulation_times <- which(!data$accumulate)
+      gaps <- unique(diff(accumulation_times))
+      if (length(gaps) == 1 && gaps > 1) { ## all gaps are the same
+        accumulate <- gaps
+        cli_inform(c(
+          "i" = "Forecasts accumulated every {gaps} days, same as accumulation
+            used in the likelihood. To change this behaviour or silence this
+            message set {.var accumulate} explicitly in {.fn forecast_opts}."
+        ))
+      }
+    }
     if (accumulate > 1 || "accumulate" %in% colnames(data)) {
+      ## if we accumulate add the column
       initial_future_accumulate <- sum(cumsum(rev(!data$accumulate)) == 0)
       reported_cases_future[, accumulate := TRUE]
       ## set accumulation to FALSE where appropriate
       if (horizon >= accumulate - initial_future_accumulate) {
-        reported_cases_future[,
+        reported_cases_future[
+          ,
           counter := as.integer(
             date - min(date) + initial_future_accumulate + 1
           )
@@ -323,9 +356,8 @@ apply_zero_threshold <- function(data, threshold = Inf,
     reported_cases[
       ,
       `:=`(average_7_day = (
-          data.table::frollsum(get(obs_column), n = 8, na.rm = TRUE)
-        ) / 7
-      )
+        data.table::frollsum(get(obs_column), n = 8, na.rm = TRUE)
+      ) / 7)
     ]
   # Check case counts preceding zero case counts and set to 7 day average if
   # average over last 7 days is greater than a threshold

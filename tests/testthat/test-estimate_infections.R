@@ -1,3 +1,4 @@
+skip_on_cran()
 # Setup for testing -------------------------------------------------------
 
 futile.logger::flog.threshold("FATAL")
@@ -34,87 +35,79 @@ test_estimate_infections <- function(...) {
 # Test functionality ------------------------------------------------------
 
 test_that("estimate_infections successfully returns estimates using default settings", {
-  skip_on_cran()
   test_estimate_infections(reported_cases)
 })
 
 test_that("estimate_infections successfully returns estimates using a Matern 5/2 kernel", {
-  skip_on_cran()
   test_estimate_infections(
-    reported_cases, gp = gp_opts(kernel = "matern", matern_order = 5 / 2)
+    reported_cases,
+    gp = gp_opts(kernel = "matern", matern_order = 5 / 2)
   )
 })
 
 test_that("estimate_infections successfully returns estimates using a periodic kernel", {
-  skip_on_cran()
   test_estimate_infections(
-    reported_cases, gp = gp_opts(kernel = "periodic")
+    reported_cases,
+    gp = gp_opts(kernel = "periodic")
   )
 })
 
 test_that("estimate_infections successfully returns estimates when passed NA values", {
-  skip_on_cran()
   reported_cases_na <- data.table::copy(reported_cases)
   reported_cases_na[sample(1:30, 5), confirm := NA]
   test_estimate_infections(reported_cases_na)
 })
 
 test_that("estimate_infections successfully returns estimates when accumulating to weekly", {
-  skip_on_cran()
   reported_cases_weekly <- data.table::copy(reported_cases)
   reported_cases_weekly[, confirm := frollsum(confirm, 7)]
   reported_cases_weekly <-
     reported_cases_weekly[seq(7, nrow(reported_cases_weekly), 7)]
   reported_cases_weekly <- fill_missing(
-    reported_cases_weekly, missing_dates = "accumulate", initial_accumulate = 7
+    reported_cases_weekly,
+    missing_dates = "accumulate", initial_accumulate = 7
   )
   test_estimate_infections(reported_cases_weekly)
 })
 
 test_that("estimate_infections successfully returns estimates using no delays", {
-  skip_on_cran()
   test_estimate_infections(reported_cases, delay = FALSE)
 })
 test_that("estimate_infections successfully returns estimates using the poisson observation model", {
-  skip_on_cran()
   test_estimate_infections(reported_cases, obs = obs_opts(family = "poisson"))
 })
 
 test_that("estimate_infections successfully returns estimates using backcalculation", {
-  skip_on_cran()
   test_estimate_infections(reported_cases, rt = NULL)
 })
 
 test_that("estimate_infections successfully returns estimates using a fixed Rt", {
-  skip_on_cran()
   test_estimate_infections(reported_cases, gp = NULL)
 })
 
 test_that("estimate_infections successfully returns estimates using only mean shifted reported cases", {
-  skip_on_cran()
   test_estimate_infections(reported_cases, gp = NULL, rt = NULL)
 })
 
 test_that("estimate_infections successfully returns estimates using a single breakpoint", {
-  skip_on_cran()
   test_estimate_infections(data.table::copy(reported_cases)[, breakpoint := ifelse(date == "2020-03-10", 1, 0)],
     gp = NULL
   )
 })
 
 test_that("estimate_infections successfully returns estimates using a random walk", {
-  skip_on_cran()
   test_estimate_infections(reported_cases, gp = NULL, rt = rt_opts(rw = 7))
 })
 
 test_that("estimate_infections works without setting a generation time", {
-  skip_on_cran()
   df <- test_estimate_infections(reported_cases, gt = FALSE, delay = FALSE)
   ## check exp(r) == R
-  growth_rate <- df$samples[variable == "growth_rate"][,
+  growth_rate <- df$samples[variable == "growth_rate"][
+    ,
     list(date, sample, growth_rate = value)
   ]
-  R <- df$samples[variable == "R"][,
+  R <- df$samples[variable == "R"][
+    ,
     list(date, sample, R = value)
   ]
   combined <- merge(growth_rate, R, by = c("date", "sample"), all = FALSE)
@@ -122,29 +115,28 @@ test_that("estimate_infections works without setting a generation time", {
 })
 
 test_that("estimate_infections works with different kernels", {
-  skip_on_cran()
   test_estimate_infections(reported_cases, gp = gp_opts(kernel = "se"))
   test_estimate_infections(reported_cases, gp = gp_opts(kernel = "ou"))
   test_estimate_infections(reported_cases, gp = gp_opts(matern_order = 5 / 2))
 })
 
 test_that("estimate_infections fails as expected when given a very short timeout", {
-  skip_on_cran()
   expect_error(output <- capture.output(suppressMessages(
     out <- default_estimate_infections(
       reported_cases,
       add_stan = list(future = TRUE, max_execution_time = 1, samples = 2000)
-  ))), "all chains failed")
+    )
+  )), "all chains failed")
   expect_error(output <- capture.output(suppressMessages(
     out <- default_estimate_infections(
       reported_cases,
       add_stan = list(future = FALSE, max_execution_time = 1, samples = 2000)
-  ))), "timed out")
+    )
+  )), "timed out")
 })
 
 
 test_that("estimate_infections works as expected with failing chains", {
-  skip_on_cran()
   test_estimate_infections(reported_cases,
     add_stan = list(
       chains = 4,
@@ -167,13 +159,16 @@ test_that("estimate_infections works as expected with failing chains", {
 
 test_that("a warning is thrown when using deprecated functionality", {
   suppressWarnings(expect_deprecated(estimate_infections(
-    reported_cases, filter_leading_zeros = TRUE, verbose = FALSE
+    reported_cases,
+    filter_leading_zeros = TRUE, verbose = FALSE
   ), "filter_leading_zeros"))
   suppressWarnings(expect_deprecated(estimate_infections(
-    reported_cases, zero_threshold = 50, verbose = FALSE
+    reported_cases,
+    zero_threshold = 50, verbose = FALSE
   ), "zero_threshold"))
   suppressWarnings(expect_deprecated(estimate_infections(
-    reported_cases, horizon = 7, verbose = FALSE
+    reported_cases,
+    horizon = 7, verbose = FALSE
   ), "horizon"))
 })
 

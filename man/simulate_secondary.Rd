@@ -73,13 +73,13 @@ available as `convolve_and_scale()
 }
 \examples{
 \donttest{
-  ## load data.table to manipulate `example_confirmed` below
-  library(data.table)
-  cases <- as.data.table(example_confirmed)[, primary := confirm]
-  sim <- simulate_secondary(
-    cases,
-    delays = delay_opts(fix_parameters(example_reporting_delay)),
-    obs = obs_opts(family = "poisson")
-  )
+## load data.table to manipulate `example_confirmed` below
+library(data.table)
+cases <- as.data.table(example_confirmed)[, primary := confirm]
+sim <- simulate_secondary(
+  cases,
+  delays = delay_opts(fix_parameters(example_reporting_delay)),
+  obs = obs_opts(family = "poisson")
+)
 }
 }

@@ -105,18 +105,18 @@ Uncertain parameters are not allowed.
 }
 \examples{
 \donttest{
-  R <- data.frame(
-    date = seq.Date(as.Date("2023-01-01"), length.out = 14, by = "day"),
-    R = c(rep(1.2, 7), rep(0.8, 7))
-  )
-  sim <- simulate_infections(
-    R = R,
-    initial_infections = 100,
-    generation_time = generation_time_opts(
-      fix_parameters(example_generation_time)
-    ),
-    delays = delay_opts(fix_parameters(example_reporting_delay)),
-    obs = obs_opts(family = "poisson")
-  )
+R <- data.frame(
+  date = seq.Date(as.Date("2023-01-01"), length.out = 14, by = "day"),
+  R = c(rep(1.2, 7), rep(0.8, 7))
+)
+sim <- simulate_infections(
+  R = R,
+  initial_infections = 100,
+  generation_time = generation_time_opts(
+    fix_parameters(example_generation_time)
+  ),
+  delays = delay_opts(fix_parameters(example_reporting_delay)),
+  obs = obs_opts(family = "poisson")
+)
 }
 }

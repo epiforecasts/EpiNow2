@@ -6,26 +6,29 @@
 \usage{
 obs_opts(
   family = c("negbin", "poisson"),
-  phi = Normal(mean = 0, sd = 0.25),
+  dispersion = Normal(mean = 0, sd = 0.25),
   weight = 1,
   week_effect = TRUE,
   week_length = 7,
   scale = Fixed(1),
   na = c("missing", "accumulate"),
   likelihood = TRUE,
-  return_likelihood = FALSE
+  return_likelihood = FALSE,
+  phi
 )
 }
 \arguments{
 \item{family}{Character string defining the observation model. Options are
 Negative binomial ("negbin"), the default, and Poisson.}
 
-\item{phi}{A \verb{<dist_spec>} specifying a prior on the overdispersion parameter
-of the reporting process, used only if \code{familiy} is "negbin". Internally
-parameterised such that the overdispersion is one over the square of this
-prior overdispersion phi. Defaults to a half-normal distribution with mean
-of 0 and standard deviation of 0.25: \code{Normal(mean = 0, sd = 0.25)}. A lower
-limit of zero will be enforced automatically.}
+\item{dispersion}{A \verb{<dist_spec>} specifying a prior on the dispersion
+parameter of the reporting process, used only if \code{familiy} is "negbin".
+Internally parameterised such that this parameter is one over the square
+root of the \code{phi} parameter for overdispersion of the
+\href{https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log}{negative binomial distribution}. # nolint
+Defaults to a half-normal distribution with mean of 0 and
+standard deviation of 0.25: \code{Normal(mean = 0, sd = 0.25)}. A lower limit of
+zero will be enforced automatically.}
 
 \item{weight}{Numeric, defaults to 1. Weight to give the observed data in the
 log density.}
@@ -51,6 +54,8 @@ included in the model.}
 
 \item{return_likelihood}{Logical, defaults to \code{FALSE}. Should the likelihood
 be returned by the model.}
+
+\item{phi}{deprecated; use \code{dispersion} instead}
 }
 \value{
 An \verb{<obs_opts>} object of observation model settings.

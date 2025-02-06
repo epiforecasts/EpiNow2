@@ -56,9 +56,9 @@ gt_opts <- function(dist = Fixed(1), ...,
   dot_options <- list(...)
 
   if ((length(dot_options) > 0) ||
-      !missing(disease) || !missing(source) || !missing(fixed) ||
-      !missing(max) ||
-      (!is(dist, "dist_spec"))) {
+    !missing(disease) || !missing(source) || !missing(fixed) ||
+    !missing(max) ||
+    (!is(dist, "dist_spec"))) {
     cli_abort(
       c(
         "!" = "The generation time distribution must be passed through
@@ -72,7 +72,7 @@ gt_opts <- function(dist = Fixed(1), ...,
     )
   }
   if (missing(dist)) {
-    #nolint start: duplicate_argument_linter
+    # nolint start: duplicate_argument_linter
     cli_warn(
       c(
         "!" = "No generation time distribution given.",
@@ -81,7 +81,7 @@ gt_opts <- function(dist = Fixed(1), ...,
         "i" = "If this was intended then this warning can be
         silenced by setting {.var dist = Fixed(1)}'."
       )
-      #nolint end
+      # nolint end
     )
   }
   ## apply default CDF cutoff if `dist` is unconstrained
@@ -203,7 +203,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
                        default_cdf_cutoff = 0.001, weight_prior = TRUE) {
   dot_options <- list(...)
   if (!is(dist, "dist_spec") || !missing(fixed)) { ## could be old syntax
-    #nolint start: duplicate_argument_linter
+    # nolint start: duplicate_argument_linter
     cli_abort(
       c(
         "!" = "Delay distributions must be given using a call to
@@ -215,7 +215,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
         documentation pages using {.code ?delay_opts}."
       )
     )
-    #nolint end
+    # nolint end
   } else if (length(dot_options) > 0) {
     ## can be removed once dot options are hard deprecated
     cli_abort(
@@ -270,7 +270,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
 trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
                        weight_prior = FALSE) {
   if (!is(dist, "dist_spec")) {
-    #nolint start: duplicate_argument_linter
+    # nolint start: duplicate_argument_linter
     cli_abort(
       c(
         "!" = "Truncation distributions must be given using a call to
@@ -281,7 +281,7 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
         "i" = "For examples and more information, see the relevant
         documentation pages using {.code ?trunc_opts}."
       )
-    #nolint end
+      # nolint end
     )
   }
   ## apply default CDF cutoff if `dist` is unconstrained
@@ -552,7 +552,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' gp_opts()
 #'
 #' # add a custom length scale
-#' gp_opts(ls_mean = 4)
+#' gp_opts(ls = LogNormal(mean = 4, sd = 1, max = 20))
 #'
 #' # use linear kernel
 #' gp_opts(kernel = "periodic")
@@ -569,7 +569,6 @@ gp_opts <- function(basis_prop = 0.2,
                     matern_type,
                     w0 = 1.0,
                     alpha_mean, alpha_sd) {
-
   if (!missing(matern_type)) {
     lifecycle::deprecate_warn(
       "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
@@ -586,7 +585,7 @@ gp_opts <- function(basis_prop = 0.2,
     )
   }
   if (!missing(ls_mean) || !missing(ls_sd) || !missing(ls_min) ||
-      !missing(ls_max)) {
+    !missing(ls_max)) {
     if (!missing(ls)) {
       cli_abort(
         c(
@@ -633,8 +632,8 @@ gp_opts <- function(basis_prop = 0.2,
   } else if (kernel == "ou") {
     matern_order <- 1 / 2
   } else if (
-      !(is.infinite(matern_order) || matern_order %in% c(1 / 2, 3 / 2, 5 / 2))
-    ) {
+    !(is.infinite(matern_order) || matern_order %in% c(1 / 2, 3 / 2, 5 / 2))
+  ) {
     cli_warn(
       c(
         "!" = "Uncommon Matern kernel order supplied.",
@@ -664,12 +663,14 @@ gp_opts <- function(basis_prop = 0.2,
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
 #'   Negative binomial ("negbin"), the default, and Poisson.
-#' @param phi A `<dist_spec>` specifying a prior on the overdispersion parameter
-#'   of the reporting process, used only if `familiy` is "negbin". Internally
-#'   parameterised such that the overdispersion is one over the square of this
-#'   prior overdispersion phi. Defaults to a half-normal distribution with mean
-#'   of 0 and standard deviation of 0.25: `Normal(mean = 0, sd = 0.25)`. A lower
-#'   limit of zero will be enforced automatically.
+#' @param dispersion A `<dist_spec>` specifying a prior on the dispersion
+#'   parameter of the reporting process, used only if `familiy` is "negbin".
+#'   Internally parameterised such that this parameter is one over the square
+#'   root of the `phi` parameter for overdispersion of the
+#'   [negative binomial distribution](https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log). # nolint
+#'   Defaults to a half-normal distribution with mean of 0 and
+#'   standard deviation of 0.25: `Normal(mean = 0, sd = 0.25)`. A lower limit of
+#'   zero will be enforced automatically.
 #' @param weight Numeric, defaults to 1. Weight to give the observed data in the
 #'   log density.
 #' @param week_effect Logical defaulting to `TRUE`. Should a day of the week
@@ -686,6 +687,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' @param na Deprecated; use the [fill_missing()] function instead
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
+#' @param phi deprecated; use `dispersion` instead
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #'   be returned by the model.
 #' @importFrom rlang arg_match
@@ -702,14 +704,32 @@ gp_opts <- function(basis_prop = 0.2,
 #' # Scale reported data
 #' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
 obs_opts <- function(family = c("negbin", "poisson"),
-                     phi = Normal(mean = 0, sd = 0.25),
+                     dispersion = Normal(mean = 0, sd = 0.25),
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
                      scale = Fixed(1),
                      na = c("missing", "accumulate"),
                      likelihood = TRUE,
-                     return_likelihood = FALSE) {
+                     return_likelihood = FALSE,
+                     phi
+                     ) {
+  if (!missing(phi)) {
+    if (!missing(dispersion)) {
+      cli::cli_abort(
+        "Can't specify {.var disperion} and {.var phi}."
+      )
+    } else {
+      lifecycle::deprecate_warn(
+        "1.7.0",
+        "obs_opts(phi)",
+        "obs_opts(dispersion)",
+        details =
+          "The meaning of the `phi` and `dispersion` arguments are the same."
+      )
+      dispersion <- phi
+    }
+  }
   # NB: This has to be checked first before the na argument is touched anywhere.
   na_default_used <- missing(na)
   if (!na_default_used) {
@@ -717,7 +737,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
       "1.7.0",
       "obs_opts(na)",
       "fill_missing()",
-      details =  c(
+      details = c(
         paste0(
           "If NA values are not to be treated as missing use the ",
           "`fill_missing()` function instead."
@@ -725,11 +745,10 @@ obs_opts <- function(family = c("negbin", "poisson"),
         "This argument will be removed in the next release of EpiNow2."
       )
     )
-
   }
   na <- arg_match(na)
   if (na == "accumulate") {
-    #nolint start: duplicate_argument_linter
+    # nolint start: duplicate_argument_linter
     cli_inform(
       c(
         "i" = "Accumulating modelled values that correspond to NA values in the
@@ -744,21 +763,20 @@ obs_opts <- function(family = c("negbin", "poisson"),
       .frequency_id = "obs_opts"
     )
   }
-  #nolint end
-  if (length(phi) == 2 && is.numeric(phi)) {
+  # nolint end
+  if (length(dispersion) == 2 && is.numeric(dispersion)) {
     cli_abort(
       c(
-        "!" = "Specifying {.var phi} as a vector of length 2 is deprecated.",
-        "i" = paste0(
-          "Use a {.cls dist_spec} instead, e.g. Normal(mean = {phi[1]}, ",
-          "sd = {phi[2]})."
+        "!" = "Specifying {.var dispersion} as a vector of length 2 is
+               deprecated.",
+-        "i" = "Mean and SD should be given as list elements."
         )
       )
     )
   }
   obs <- list(
     family = arg_match(family),
-    phi = phi,
+    dispersion = dispersion,
     weight = weight,
     week_effect = week_effect,
     week_length = week_length,
@@ -769,7 +787,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
     na_as_missing_default_used = na_default_used
   )
 
-  for (param in c("phi", "scale")) {
+  for (param in c("dispersion", "scale")) {
     if (is.numeric(obs[[param]])) {
       cli_warn(
         c(
@@ -1141,13 +1159,11 @@ stan_opts <- function(object = NULL,
 #' forecast_opts(horizon = 28, accumulate = 7)
 forecast_opts <- function(horizon = 7, accumulate) {
   opts <- list(
-    horizon = horizon,
-    infer_accumulate = missing(accumulate)
+    horizon = horizon
   )
-  if (missing(accumulate)) {
-    accumulate <- 1
+  if (!missing(accumulate)) {
+    opts$accumulate <- accumulate
   }
-  opts$accumulate <- accumulate
   attr(opts, "class") <- c("forecast_opts", class(opts))
   return(opts)
 }
@@ -1227,7 +1243,8 @@ filter_opts <- function(opts, region) {
 #' @param dist A <dist_spec>
 #' @param default_cdf_cutoff Numeric; default CDF cutoff to be used if an
 #'   unconstrained distribution is passed as `dist`. If `dist` is already
-#'   constrained by having a maximum or CDF cutoff this is ignored.
+#'   constrained by having a maximum or CDF cutoff this is ignored. Note that
+#'   this can only be done for <dist_spec> objects with fixed parameters.
 #' @param cdf_cutoff_set Logical; whether the default CDF cutoff has been set by
 #'   the user; if yes and `dist` is constrained a warning is issued
 #' @importFrom cli cli_inform cli_warn
@@ -1237,7 +1254,7 @@ filter_opts <- function(opts, region) {
 #' @keywords internal
 apply_default_cdf_cutoff <- function(dist, default_cdf_cutoff, cdf_cutoff_set) {
   if (!is_constrained(dist) && !anyNA(sd(dist))) {
-    #nolint start: duplicate_argument_linter
+    # nolint start: duplicate_argument_linter
     cli_inform(
       c(
         "i" = "Unconstrained distributon passed as a delay. ",
@@ -1246,7 +1263,7 @@ apply_default_cdf_cutoff <- function(dist, default_cdf_cutoff, cdf_cutoff_set) {
       with {.var max} or {.var default_cdf_cutoff}."
       )
     )
-    #nolint end
+    # nolint end
     attr(dist, "cdf_cutoff") <- default_cdf_cutoff
   } else if (cdf_cutoff_set) {
     cli_warn(

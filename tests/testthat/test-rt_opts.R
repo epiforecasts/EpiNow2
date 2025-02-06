@@ -1,6 +1,6 @@
 test_that("rt_opts returns expected default values", {
   result <- rt_opts()
-  
+
   expect_s3_class(result, "rt_opts")
   expect_equal(result$prior, LogNormal(mean = 1, sd = 1))
   expect_true(result$use_rt)
@@ -21,11 +21,11 @@ test_that("rt_opts handles custom inputs correctly", {
     gp_on = "R0",
     pop = Normal(mean = 1000000, sd = 100)
   ))
-  
+
   expect_null(result$prior)
   expect_false(result$use_rt)
   expect_equal(result$rw, 7)
-  expect_true(result$use_breakpoints)  # Should be TRUE when rw > 0
+  expect_true(result$use_breakpoints) # Should be TRUE when rw > 0
   expect_equal(result$future, "project")
   expect_equal(result$pop, Normal(mean = 1000000, sd = 100))
   expect_equal(result$gp_on, "R0")

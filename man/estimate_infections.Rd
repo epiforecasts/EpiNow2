@@ -27,7 +27,7 @@ estimate_infections(
 )
 }
 \arguments{
-\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date (date).
+\item{data}{A \verb{<data.frame>} of disease reports (confirm) by date (date).
 \code{confirm} must be numeric and \code{date} must be in date format. Optionally
 this can also have a logical \code{accumulate} column which indicates whether
 data should be added to the next data point. This is useful when modelling
@@ -145,9 +145,9 @@ generation_time <- Gamma(
 # set an example incubation period. In practice this should use an estimate
 # from the literature or be estimated from data
 incubation_period <- LogNormal(
-   meanlog = Normal(1.6, 0.06),
-   sdlog = Normal(0.4, 0.07),
-   max = 14
+  meanlog = Normal(1.6, 0.06),
+  sdlog = Normal(0.4, 0.07),
+  max = 14
 )
 # set an example reporting delay. In practice this should use an estimate
 # from the literature or be estimated from data

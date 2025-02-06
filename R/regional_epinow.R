@@ -20,7 +20,7 @@
 #' using [progressr::handlers()] and enable it in batch by setting
 #' `R_PROGRESSR_ENABLE=TRUE` as an environment variable.
 #'
-#' @param data A `<data.frame>` of confirmed cases (confirm) by date
+#' @param data A `<data.frame>` of disease reports (confirm) by date
 #' (date), and region (`region`).
 #'
 #' @param reported_cases Deprecated; use `data` instead.
@@ -286,7 +286,9 @@ clean_regions <- function(data, non_zero_points) {
   reported_cases <- data.table::setDT(data)
   # check for regions more than required time points with cases
   eval_regions <- data.table::copy(reported_cases)[,
-    .(confirm = confirm > 0), by = c("region", "date")][,
+    .(confirm = confirm > 0),
+    by = c("region", "date")
+  ][,
     .(confirm = sum(confirm, na.rm = TRUE)),
     by = "region"
   ][confirm >= non_zero_points]$region
@@ -297,7 +299,7 @@ clean_regions <- function(data, non_zero_points) {
       "Producing estimates for: %s regions",
       length(eval_regions)
     )
-    #nolint start: undesirable_function_linter
+    # nolint start: undesirable_function_linter
     message <- ifelse(length(orig_regions) == 0, 0,
       length(orig_regions)
     )
@@ -305,13 +307,13 @@ clean_regions <- function(data, non_zero_points) {
       "Regions excluded: %s regions",
       message
     )
-    #nolint end
+    # nolint end
   } else {
     futile.logger::flog.info(
       "Producing estimates for: %s",
       toString(eval_regions)
     )
-    #nolint start: undesirable_function_linter
+    # nolint start: undesirable_function_linter
     message <- ifelse(length(orig_regions) == 0, "none",
       toString(orig_regions)
     )
@@ -319,7 +321,7 @@ clean_regions <- function(data, non_zero_points) {
       "Regions excluded: %s",
       message
     )
-    #nolint end
+    # nolint end
   }
   # exclude zero regions
   reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]

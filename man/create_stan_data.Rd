@@ -16,7 +16,7 @@ create_stan_data(
 )
 }
 \arguments{
-\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date (date).
+\item{data}{A \verb{<data.frame>} of disease reports (confirm) by date (date).
 \code{confirm} must be numeric and \code{date} must be in date format. Optionally
 this can also have a logical \code{accumulate} column which indicates whether
 data should be added to the next data point. This is useful when modelling
@@ -63,8 +63,8 @@ present.
 \examples{
 \dontrun{
 create_stan_data(
- example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
- backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
+  example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
+  backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
 )
 }
 }

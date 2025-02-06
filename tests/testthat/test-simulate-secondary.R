@@ -3,7 +3,7 @@ skip_on_cran()
 cases <- as.data.table(example_confirmed)[, primary := confirm]
 test_simulate_secondary <- function(obs = obs_opts(family = "poisson"), ...) {
   sim <- simulate_secondary(
-    primary =  cases,
+    primary = cases,
     obs = obs,
     ...
   )
@@ -22,7 +22,7 @@ test_that("simulate_secondary works as expected with additional parameters", {
   set.seed(123)
   sim <- test_simulate_secondary(
     delays = delay_opts(fix_parameters(example_reporting_delay)),
-    obs = obs_opts(family = "negbin", phi = Fixed(0.5))
+    obs = obs_opts(family = "negbin", dispersion = Fixed(0.5))
   )
   expect_equal(nrow(sim), nrow(cases))
   expect_snapshot_output(sim)

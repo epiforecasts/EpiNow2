@@ -19,11 +19,13 @@ apply_truncation <- function(index, data, dist) {
   cmf <- cumsum(
     dfunc(
       seq_len(max(dist) + 1),
-      rnorm(1,
+      rnorm(
+        1,
         get_parameters(get_parameters(dist)$meanlog)$mean,
         get_parameters(get_parameters(dist)$meanlog)$sd
       ),
-      rnorm(1,
+      rnorm(
+        1,
         get_parameters(get_parameters(dist)$sdlog)$mean,
         get_parameters(get_parameters(dist)$sdlog)$sd
       )

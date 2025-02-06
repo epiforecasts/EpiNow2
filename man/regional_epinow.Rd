@@ -30,7 +30,7 @@ regional_epinow(
 )
 }
 \arguments{
-\item{data}{A \verb{<data.frame>} of confirmed cases (confirm) by date
+\item{data}{A \verb{<data.frame>} of disease reports (confirm) by date
 (date), and region (\code{region}).}
 
 \item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias

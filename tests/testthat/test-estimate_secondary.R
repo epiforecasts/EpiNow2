@@ -115,10 +115,12 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
   secondary_weekly[, secondary := frollsum(secondary, 7)]
   secondary_weekly <- secondary_weekly[seq(7, nrow(secondary_weekly), by = 7)]
   cases_weekly <- merge(
-    cases[, list(date, primary)], secondary_weekly, by = "date", all.x = TRUE
+    cases[, list(date, primary)], secondary_weekly,
+    by = "date", all.x = TRUE
   )
   cases_weekly <- fill_missing(
-    cases_weekly, missing_obs = "accumulate", obs_column = "secondary"
+    cases_weekly,
+    missing_obs = "accumulate", obs_column = "secondary"
   )
   inc_weekly <- estimate_secondary(cases_weekly,
     delays = delay_opts(
@@ -152,10 +154,12 @@ test_that("estimate_secondary can recover simulated parameters", {
     tolerance = 0.1
   )
   expect_equal(
-    prev_posterior[, mean], c(1.6, 0.8, 0.3), tolerance = 0.2
+    prev_posterior[, mean], c(1.6, 0.8, 0.3),
+    tolerance = 0.2
   )
   expect_equal(
-    prev_posterior[, median], c(1.6, 0.8, 0.3), tolerance = 0.2
+    prev_posterior[, median], c(1.6, 0.8, 0.3),
+    tolerance = 0.2
   )
 })
 
@@ -203,7 +207,8 @@ test_that("forecast_secondary can return values from simulated data when using
   skip_on_os("windows")
   capture.output(suppressMessages(suppressWarnings(
     inc_preds <- forecast_secondary(
-      inc, inc_cases[seq(61, .N)][, value := primary], backend = "cmdstanr"
+      inc, inc_cases[seq(61, .N)][, value := primary],
+      backend = "cmdstanr"
     )
   )))
   expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
@@ -216,7 +221,8 @@ test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
     max = 30
   )
   inc_weigh <- estimate_secondary(
-    inc_cases[1:60], delays = delay_opts(delays),
+    inc_cases[1:60],
+    delays = delay_opts(delays),
     obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     weigh_delay_priors = TRUE, verbose = FALSE
   )
@@ -227,27 +233,34 @@ test_that("estimate_secondary works with filter_leading_zeros set", {
   ## testing deprecated functionality
   withr::local_options(lifecycle_verbosity = "quiet")
   modified_data <- inc_cases[1:10, secondary := 0]
+  modified_data <- filter_leading_zeros(modified_data, obs_column = "secondary")
   out <- suppressWarnings(estimate_secondary(
     modified_data,
-    obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2),
-    week_effect = FALSE),
-    filter_leading_zeros = TRUE,
+    obs = obs_opts(
+      scale = Normal(mean = 0.2, sd = 0.2),
+      week_effect = FALSE
+    ),
     verbose = FALSE
   ))
   expect_s3_class(out, "estimate_secondary")
   expect_named(out, c("predictions", "posterior", "data", "fit"))
-  expect_equal(out$predictions$primary, modified_data$primary[-(1:10)])
+  expect_equal(out$predictions$primary, modified_data$primary)
 })
 
 test_that("estimate_secondary works with zero_threshold set", {
   ## testing deprecated functionality
   withr::local_options(lifecycle_verbosity = "quiet")
   modified_data <- inc_cases[sample(1:30, 10), primary := 0]
+  modified_data <- apply_zero_threshold(
+    modified_data,
+    threshold = 10, obs_column = "secondary"
+  )
   out <- estimate_secondary(
     modified_data,
-    obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2),
-                   week_effect = FALSE),
-    zero_threshold = 10,
+    obs = obs_opts(
+      scale = Normal(mean = 0.2, sd = 0.2),
+      week_effect = FALSE
+    ),
     verbose = FALSE
   )
   expect_s3_class(out, "estimate_secondary")
@@ -256,9 +269,11 @@ test_that("estimate_secondary works with zero_threshold set", {
 
 test_that("a warning is thrown when using deprecated functionality", {
   suppressWarnings(expect_deprecated(estimate_secondary(
-    inc_cases, filter_leading_zeros = TRUE, verbose = FALSE
+    inc_cases,
+    filter_leading_zeros = TRUE, verbose = FALSE
   ), "filter_leading_zeros"))
   suppressWarnings(expect_deprecated(estimate_secondary(
-    inc_cases, zero_threshold = 50, verbose = FALSE
+    inc_cases,
+    zero_threshold = 50, verbose = FALSE
   ), "zero_threshold"))
 })

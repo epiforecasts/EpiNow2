@@ -17,7 +17,7 @@ test_that("diagSPD_EQ returns correct dimensions and values", {
   M <- 5
   result <- diagSPD_EQ(alpha, rho, L, M)
   expect_equal(length(result), M)
-  expect_true(all(result > 0))  # Expect spectral density to be positive
+  expect_true(all(result > 0)) # Expect spectral density to be positive
   # Check specific values for known inputs
   indices <- linspaced_vector(M, 1, M)
   expected_result <- alpha * sqrt(sqrt(2 * pi) * rho) * exp(-0.25 * (rho * pi / (2 * L))^2 * indices^2)
@@ -31,7 +31,7 @@ test_that("diagSPD_Matern functions return correct dimensions and values", {
   M <- 5
   result12 <- diagSPD_Matern12(alpha, rho, L, M)
   expect_equal(length(result12), M)
-  expect_true(all(result12 > 0))  # Expect spectral density to be positive
+  expect_true(all(result12 > 0)) # Expect spectral density to be positive
 
   # Check specific values for known inputs
   indices <- linspaced_vector(M, 1, M)
@@ -42,7 +42,7 @@ test_that("diagSPD_Matern functions return correct dimensions and values", {
 
   result32 <- diagSPD_Matern32(alpha, rho, L, M)
   expect_equal(length(result32), M)
-  expect_true(all(result32 > 0))  # Expect spectral density to be positive
+  expect_true(all(result32 > 0)) # Expect spectral density to be positive
 
   # Check specific values for known inputs
   indices <- linspaced_vector(M, 1, M)
@@ -53,7 +53,7 @@ test_that("diagSPD_Matern functions return correct dimensions and values", {
 
   result52 <- diagSPD_Matern52(alpha, rho, L, M)
   expect_equal(length(result52), M)
-  expect_true(all(result52 > 0))  # Expect spectral density to be positive
+  expect_true(all(result52 > 0)) # Expect spectral density to be positive
 
   # Check specific values for known inputs
   indices <- linspaced_vector(M, 1, M)
@@ -68,8 +68,8 @@ test_that("diagSPD_Periodic returns correct dimensions and values", {
   rho <- 2.0
   M <- 5
   result <- diagSPD_Periodic(alpha, rho, M)
-  expect_equal(length(result), 2 * M)  # Expect double the dimensions due to append_row
-  expect_true(all(result > 0))  # Expect spectral density to be positive
+  expect_equal(length(result), 2 * M) # Expect double the dimensions due to append_row
+  expect_true(all(result > 0)) # Expect spectral density to be positive
 })
 
 test_that("PHI returns correct dimensions and values", {
@@ -90,7 +90,7 @@ test_that("PHI_periodic returns correct dimensions and values", {
   w0 <- 1.0
   x <- seq(0, 1, length.out = N)
   result <- PHI_periodic(N, M, w0, x)
-  expect_equal(dim(result), c(N, 2 * M))  # Cosine and sine terms
+  expect_equal(dim(result), c(N, 2 * M)) # Cosine and sine terms
   # Check specific values for known inputs
   mw0x <- outer(w0 * x, 1:M, function(x, m) x * m)
   expected_result <- cbind(cos(mw0x), sin(mw0x))
@@ -138,7 +138,7 @@ test_that("setup_gp with periodic basis functions returns correct dimensions and
   is_periodic <- 1
   w0 <- 1.0
   result <- setup_gp(M, L, dimension, is_periodic, w0)
-  expect_equal(dim(result), c(dimension, 2 * M))  # Cosine and sine terms
+  expect_equal(dim(result), c(dimension, 2 * M)) # Cosine and sine terms
   # Compare with direct PHI_periodic call
   x <- linspaced_vector(dimension, 1, dimension)
   x <- 2 * (x - mean(x)) / (max(x) - 1)
@@ -152,11 +152,11 @@ test_that("update_gp returns correct dimensions and values", {
   alpha <- 1.0
   rho <- 2.0
   eta <- rep(1, M)
-  PHI <- matrix(runif(15), nrow = 5)  # 5 observations, 3 basis functions
+  PHI <- matrix(runif(15), nrow = 5) # 5 observations, 3 basis functions
   type <- 0
   nu <- 1.5 # Not used in SE case
   result <- update_gp(PHI, M, L, alpha, rho, eta, type, nu)
-  expect_equal(length(result), nrow(PHI))  # Should match number of observations
+  expect_equal(length(result), nrow(PHI)) # Should match number of observations
   # Check specific values for known inputs
   diagSPD <- diagSPD_EQ(alpha, rho, L, M)
   expected_result <- PHI %*% (diagSPD * eta)

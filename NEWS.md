@@ -1,8 +1,14 @@
 # EpiNow2 (development version)
 
+# EpiNow2 1.7.0
+
+This release introduces the new accumulation feature, where models can fitted to data reported at regular or irregular intervals. Moreover, all priors are now specified using the internal distribution interface.
+
+Internal changes should improve performance, reduce the number of failing fits, and pave the way for future model flexibility.
+
 ## Model changes
 
-- The models now support more complex patterns of aggregating reported cases by accumulating them over multiple time points, as well as mixtures of accumulation and missingness via the new `fill_missing()` function and a logical `accumulate` column that can be supplied with the data. By @sbfnk in #851 and reviewed by @seabbs and @jamesmbaazam..
+- The models now support more complex patterns of aggregating reported cases by accumulating them over multiple time points, as well as mixtures of accumulation and missingness via the new `fill_missing()` function and a logical `accumulate` column that can be supplied with the data. If the accumulation frequency is fixed in the data this is detected when using `fill_missing()`.  By @sbfnk in #851 and #933 and reviewed by @seabbs and @jamesmbaazam.
 
   ```r
   # Deprecated
@@ -19,9 +25,10 @@
 - A bug was fixed where the initial growth was never estimated (i.e. the prior mean was always zero). By @sbfnk in #853 and reviewed by @seabbs.
 - A bug was fixed where an internal function for applying a default cdf cutoff failed due to a difference a vector length issue. By @jamesmbaazam in #858 and reviewed by @sbfnk.
 - All parameters have been changed to the new parameter interface. By @sbfnk in #871 and #890 and reviewed by @seabbs.
-- The Gaussian Process lengthscale is now scaled internally by half the length of the time series. By @sbfnk in #890 and reviewed by #seabbs.
-- A bug was fixed where `plot.dist_spec()` wasn't throwing an informative error due to an incomplete check for the max of the specified delay. By @jamesmbaazam in #858 and reviewed by @.
+- The Gaussian Process lengthscale is now scaled internally by half the length of the time series. By @sbfnk in #890 and reviewed by @seabbs.
+- A bug was fixed where `plot.dist_spec()` wasn't throwing an informative error due to an incomplete check for the max of the specified delay. By @jamesmbaazam in #858.
 - Updated the early dynamics calculation to estimate growth from the initial reproduction number instead of a separate linear model. Also changed the prior calculation for initial infections to be a scaling factor of early case numbers adjusted by the growth estimate, instead a true number of initial infections. By @sbfnk in #923 (with initial exploration in #903) and reviewed by @seabbs and @SamuelBrand1. 
+- A bug was fixed in the non-mechanistic model where the final period could have discontinuities. By @sbfnk.
 
 ## Package changes
 
@@ -32,8 +39,11 @@
 ## Documentation
 
 - Brought the docs on `alpha_sd` up to date with the code change from prior PR #853. By @zsusswein in #862 and reviewed by @jamesmbaazam.
-- The `...` argument in `estimate_secondary()` has been removed because it was not used. By @jamesmbaazam in #894 and reviewed by @.
+- The `...` argument in `estimate_secondary()` has been removed because it was not used. By @jamesmbaazam in #894.
 - All examples now use the natural parameters of distributions rather than the mean and standard deviation when specifying uncertain distributions. This is to eliminate warnings and encourage best practice. By @jamesmbaazam in #893 and reviewed by @sbfnk.
+- Updated the methodology vignettes, By @sbfnk in #919 and reviewed by @seabbs and @jamesmbaazam.
+- The ways that `dist_spec()` with certain/uncertain parameters can be constrained has been clarified. By @sbfnk in #940 and reviewed by @jamesmbaazam.
+- Language in plots and summaries was adapted to reflect potentially non-daily data. By @sbfnk in #947 and reviewed by @seabbs.
 
 # EpiNow2 1.6.1
 
@@ -73,6 +83,7 @@ A release that introduces model improvements to the Gaussian Process models, alo
 - Switch to broadcasting the day of the week effect. By @seabbs in #746 and reviewed by @jamesmbaazam.
 - A warning is now thrown if nonparametric PMFs passed to delay options have consecutive tail values that are below a certain low threshold as these lead to loss in speed with little gain in accuracy. By @jamesmbaazam in #752 and reviewed by @seabbs, with a subsequent bug fix in #802.
 - `dist_fit()` can now accept any number of `samples` without throwing a warning when `samples` < 1000 in #751 by @jamesmbaazam and reviewed by @seabbs and @sbfnk.
+- The `phi` parameter has been renamed to `dispersion` to be in line with the use of phi in the Negative Binomial distribution in the stan documentation. By @sbfnk in #969 and reviewed by @seabbs.
 
 ## Package changes
 

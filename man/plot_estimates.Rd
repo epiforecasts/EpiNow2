@@ -51,7 +51,7 @@ functionality of the S3 plot methods.
 \examples{
 # get example model results
 out <- readRDS(system.file(
-    package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+  package = "EpiNow2", "extdata", "example_estimate_infections.rds"
 ))
 
 # plot infections

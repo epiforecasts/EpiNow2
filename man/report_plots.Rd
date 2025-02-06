@@ -33,7 +33,7 @@ releases as current S3 methods are enhanced.
 \examples{
 # get example output form estimate_infections
 out <- readRDS(system.file(
-    package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+  package = "EpiNow2", "extdata", "example_estimate_infections.rds"
 ))
 
 # plot infections
