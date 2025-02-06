@@ -769,7 +769,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
       c(
         "!" = "Specifying {.var dispersion} as a vector of length 2 is
                deprecated.",
--        "i" = "Mean and SD should be given as list elements."
+        "i" = "Mean and SD should be given as list elements."
         )
       )
     )
