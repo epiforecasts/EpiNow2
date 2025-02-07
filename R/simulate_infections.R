@@ -88,6 +88,7 @@ simulate_infections <- function(estimates, R, initial_infections,
     )
     pop <- Fixed(pop)
   }
+  pop_period <- arg_match(pop_period)
   if (pop_period == "all" && pop == Fixed(0)) {
     cli_abort(
       c(
@@ -111,7 +112,6 @@ simulate_infections <- function(estimates, R, initial_infections,
   assert_class(obs, "obs_opts")
   assert_class(generation_time, "generation_time_opts")
   assert_class(pop, "dist_spec")
-  pop_period <- arg_match(pop_period)
 
   ## create R for all dates modelled
   all_dates <- data.table(date = seq.Date(min(R$date), max(R$date), by = "day"))
