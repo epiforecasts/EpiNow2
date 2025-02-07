@@ -139,8 +139,6 @@ reference:
       - example_reporting_delay
       - example_confirmed
       - example_truncated
-      - generation_times
-      - incubation_periods
   - title: Get/Extract Data
     desc: Functions for extracting data from objects or getting data from sources
     contents:
