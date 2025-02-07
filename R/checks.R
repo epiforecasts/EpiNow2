@@ -139,7 +139,7 @@ check_generation_time <- function(dist) {
     get_distribution(dist, i) == "nonparametric" && get_pmf(dist, i)[1] > 0
   }, logical(1))
   if (all(nonzero_first_element)) {
-    deprecate_warn(
+    deprecate_stop(
       "1.6.0",
       I(
         "Specifying nonparametric generation times with nonzero first element"
@@ -179,93 +179,4 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
       .frequency_id = "sparse_pmf_tail"
     )
   }
-}
-
-#' Check if data has either explicit NA values or implicit missing dates.
-#'
-#' @param data The data to be checked
-#' @param cols_to_check A character vector of the columns to check
-#' @return `TRUE` if data is complete, else if data has implicit or explicit
-#' missingness, `FALSE`.
-#' @importFrom cli cli_abort col_blue
-#' @keywords internal
-test_data_complete <- function(data, cols_to_check) {
-  data <- setDT(data) # Convert data to data.table
-
-  if (!all(cols_to_check %in% names(data))) {
-    cli_abort(
-      c(
-        "x" = "{.var cols_to_check} must be present in the data.",
-        "i" = "{.var data} has columns: {col_blue(names(data))} but you
-        specified {.var cols_to_expect}: {col_blue(cols_to_check)}."
-      )
-    )
-  }
-  # Check for explicit missingness in the specified columns
-  data_has_explicit_na <- any(
-    vapply(data[, cols_to_check, with = FALSE], anyNA, logical(1))
-  )
-  if (data_has_explicit_na) {
-    return(FALSE)
-  }
-
-  # Check for implicit missingness by comparing the expected full date sequence
-  complete_dates <- seq(
-    min(data$date, na.rm = TRUE),
-    max(data$date, na.rm = TRUE),
-    by = "1 day"
-  )
-  data_has_implicit_na <- !all(complete_dates %in% data$date)
-  if (data_has_implicit_na) {
-    return(FALSE)
-  }
-
-  return(TRUE) # Return TRUE if no missing values or gaps in date sequence
-}
-
-#' Cross-check treatment of `NA` in obs_opts() against input data
-#'
-#' @description `r lifecycle::badge("deprecated")`
-#'
-#' This function checks the input data for implicit and/or explicit missingness
-#' and checks if the user specified `na = "missing"` in [obs_opts()].
-#' If the two are TRUE, it throws a message about how the model treats
-#' missingness and provides alternatives. It returns an unmodified [obs_opts()].
-#'
-#' This function is necessary because the data and observation model
-#' do not currently interact internally. It will be deprecated in future
-#' versions when the data specification interface is enhanced.
-#'
-#' @param obs A call to [obs_opts()]
-#' @param data The raw data
-#' @inheritParams test_data_complete
-#' @importFrom cli cli_inform col_red
-#'
-#' @return [obs_opts()]
-#' @keywords internal
-check_na_setting_against_data <- function(data, cols_to_check, obs) {
-  # If users are using the default treatment of NA's and their data has
-  # implicit or explicit NA's, inform them of what's happening and alternatives
-  data_is_complete <- test_data_complete(data, cols_to_check)
-  if (!obs$accumulate &&
-    obs$na_as_missing_default_used &&
-    !data_is_complete) {
-    # nolint start: duplicate_argument_linter
-    cli_inform(
-      c(
-        "i" = "{col_red(\"As of version 1.5.0 missing dates or dates with `NA`
-          cases are treated as missing. This is in contrast to previous versions
-          where these were interpreted as dates with zero cases. \")}",
-        "i" = "In order to treat missing or `NA` cases as zeroes, see
-        solutions in {.url https://github.com/epiforecasts/EpiNow2/issues/767#issuecomment-2348805272}", # nolint
-        "i" = "If the data is reported at non-daily intervals (for example
-        weekly), consider using {.fn fill_missing}."
-      ),
-      .frequency = "regularly",
-      .frequency_id = "check_na_setting_against_data"
-    )
-    # nolint end
-  }
-  obs$na_as_missing_default_used <- NULL
-  return(obs)
 }

@@ -11,23 +11,3 @@ test_that("obs_opts returns expected default values", {
   expect_true(result$likelihood)
   expect_false(result$return_likelihood)
 })
-
-test_that("obs_opts returns expected messages", {
-  # The option na = "accumulate" informs the user of what is
-  # going to be done once every 8 hours, so hard to test regularly.
-  # NB: We change the local setting here to throw the message on demand, rather
-  # than every 8 hours, for the sake of multiple runs of the test within
-  # 8 hours.
-  suppressMessages(expect_deprecated(obs_opts(na = "accumulate")))
-})
-
-test_that("obs_opts behaves as expected for user specified na treatment", {
-  # If user explicitly specifies NA as missing, then don't throw message
-  expect_false(
-    suppressWarnings(obs_opts(na = "missing"))$na_as_missing_default_used
-  )
-})
-
-test_that("using phi in obs_opts is deprecated", {
-  expect_deprecated(obs_opts(phi = Fixed(1)))
-})

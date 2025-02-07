@@ -23,8 +23,6 @@
 #' @param data A `<data.frame>` of disease reports (confirm) by date
 #' (date), and region (`region`).
 #'
-#' @param reported_cases Deprecated; use `data` instead.
-#'
 #' @param non_zero_points Numeric, the minimum number of time points with
 #' non-zero cases in a region required for that region to be evaluated.
 #' Defaults to 7.
@@ -109,17 +107,10 @@ regional_epinow <- function(data,
                             return_output = is.null(target_folder),
                             summary_args = list(),
                             verbose = FALSE,
-                            logs = tempdir(check = TRUE), ...,
-                            reported_cases) {
-  if (!missing(reported_cases)) {
-    lifecycle::deprecate_stop(
-      "1.5.0",
-      "regional_epinow(reported_cases)",
-      "regional_epinow(data)"
-    )
-  }
+                            logs = tempdir(check = TRUE), ...
+                            ) {
   if (!missing(horizon)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0",
       "regional_epinow(horizon)",
       "regional_epinow(forecast)",
@@ -137,11 +128,6 @@ regional_epinow <- function(data,
     ),
     logger = "EpiNow2"
   )
-  ## deprecated
-  if (!missing(horizon)) {
-    assert_numeric(horizon, lower = 0)
-    forecast$horizon <- horizon
-  }
   # make timing compulsory
   output["timing"] <- TRUE
   if (missing(target_date)) {

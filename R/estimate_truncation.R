@@ -156,12 +156,6 @@ estimate_truncation <- function(data,
 
   # combine into ordered matrix
   dirty_obs <- purrr::map(data, data.table::as.data.table)
-  dirty_obs <- purrr::map(dirty_obs,
-    create_clean_reported_cases,
-    filter_leading_zeros = filter_leading_zeros,
-    zero_threshold = zero_threshold,
-    add_breakpoints = FALSE
-  )
   earliest_date <- max(
     as.Date(
       purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])

@@ -5,7 +5,6 @@
 \title{Simulate infections using the renewal equation}
 \usage{
 simulate_infections(
-  estimates,
   R,
   initial_infections,
   day_of_week_effect = NULL,
@@ -17,13 +16,10 @@ simulate_infections(
   backend = "rstan",
   seeding_time = NULL,
   pop = Fixed(0),
-  pop_period = c("forecast", "all"),
-  ...
+  pop_period = c("forecast", "all")
 )
 }
 \arguments{
-\item{estimates}{deprecated; use \code{\link[=forecast_infections]{forecast_infections()}} instead}
-
 \item{R}{a data frame of reproduction numbers (column \code{R}) by date (column
 \code{date}). Column \code{R} must be numeric and \code{date} must be in date format. If
 not all days between the first and last day in the \code{date} are present,
@@ -86,8 +82,6 @@ adjustment to forecasts while "all" applies it to both data and forecasts.
 Note that with "all" and "forecast", Rt estimates are unadjusted for
 susceptible depletion but posterior predictions of infections and reports are
 adjusted.}
-
-\item{...}{deprecated; only included for backward compatibility}
 }
 \value{
 A data.table of simulated infections (variable \code{infections}) and

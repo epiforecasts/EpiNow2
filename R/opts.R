@@ -14,11 +14,6 @@
 #'   passing a nonparametric distribution the first element should be zero (see
 #'   *Details* section)
 #'
-#' @param ... deprecated; use `dist` instead
-#' @param disease deprecated; use `dist` instead
-#' @param source deprecated; use `dist` instead
-#' @param max deprecated; use `dist` instead
-#' @param fixed deprecated; use `dist` instead
 #' @param weight_prior Logical; if TRUE (default), any priors given in `dist`
 #'   will be weighted by the number of observation data points, in doing so
 #'   approximately placing an independent prior at each time step and usually
@@ -50,38 +45,17 @@
 #'
 #' # An example generation time
 #' gt_opts(example_generation_time)
-gt_opts <- function(dist = Fixed(1), ...,
-                    disease, source, max = 14, fixed = FALSE,
-                    default_cdf_cutoff = 0.001, weight_prior = TRUE) {
-  dot_options <- list(...)
-
-  if ((length(dot_options) > 0) ||
-    !missing(disease) || !missing(source) || !missing(fixed) ||
-    !missing(max) ||
-    (!is(dist, "dist_spec"))) {
-    cli_abort(
-      c(
-        "!" = "The generation time distribution must be passed through
-      {.fn gt_opts} or {.fn generation_time_opts}. ",
-        "i" = "This behaviour has changed from previous versions of `EpiNow2`
-      and any code using it must be updated as any other ways of
-      specifying the generation time are deprecated. {col_blue(\"For
-      examples and more information, see the relevant documentation
-      pages using ?gt_opts\")}"
-      )
-    )
-  }
+gt_opts <- function(dist = Fixed(1), default_cdf_cutoff = 0.001,
+                    weight_prior = TRUE) {
   if (missing(dist)) {
-    # nolint start: duplicate_argument_linter
     cli_warn(
       c(
-        "!" = "No generation time distribution given.",
-        "i" = "Now using a fixed generation time of 1 day, i.e. the
-        reproduction number is the same as the daily growth rate.",
+        "!" = "No generation time distribution given. Using a fixed generation
+        time of 1 day, i.e. the reproduction number is the same as the daily
+        growth rate.",
         "i" = "If this was intended then this warning can be
         silenced by setting {.var dist = Fixed(1)}'."
       )
-      # nolint end
     )
   }
   ## apply default CDF cutoff if `dist` is unconstrained
@@ -173,8 +147,6 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' functions.
 #' @param dist A delay distribution or series of delay distributions. Default is
 #'   a fixed distribution with all mass at 0, i.e. no delay.
-#' @param ... deprecated; use `dist` instead
-#' @param fixed deprecated; use `dist` instead
 #' @inheritParams generation_time_opts
 #' @importFrom cli cli_abort
 #' @return A `<delay_opts>` object summarising the input delay distributions.
@@ -199,31 +171,9 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
-                       default_cdf_cutoff = 0.001, weight_prior = TRUE) {
-  dot_options <- list(...)
-  if (!is(dist, "dist_spec") || !missing(fixed)) { ## could be old syntax
-    # nolint start: duplicate_argument_linter
-    cli_abort(
-      c(
-        "!" = "Delay distributions must be given using a call to
-        {.fn delay_opts}",
-        "i" = "This behaviour has changed from previous versions of `EpiNow2`
-      and any code using it must be updated as any other ways of specifying
-      delays are deprecated.",
-        "i" = "For examples and more information, see the relevant
-        documentation pages using {.code ?delay_opts}."
-      )
-    )
-    # nolint end
-  } else if (length(dot_options) > 0) {
-    ## can be removed once dot options are hard deprecated
-    cli_abort(
-      c(
-        "!" = "Unknown named arguments passed to {.fn delay_opts}."
-      )
-    )
-  }
+delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
+                       weight_prior = TRUE) {
+  assert_class(dist, "dist_spec")
   ## apply default CDF cutoff if `dist` is unconstrained
   dist <- apply_default_cdf_cutoff(
     dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
@@ -269,21 +219,7 @@ delay_opts <- function(dist = Fixed(0), ..., fixed = FALSE,
 #' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
 trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
                        weight_prior = FALSE) {
-  if (!is(dist, "dist_spec")) {
-    # nolint start: duplicate_argument_linter
-    cli_abort(
-      c(
-        "!" = "Truncation distributions must be given using a call to
-        {.fn trunc_opts}.",
-        "i" = "This behaviour has changed from previous versions of `EpiNow2`
-      and any code using it must be updated as any other ways of specifying
-      delays are deprecated.",
-        "i" = "For examples and more information, see the relevant
-        documentation pages using {.code ?trunc_opts}."
-      )
-      # nolint end
-    )
-  }
+  assert_class(dist, "dist_spec")
   ## apply default CDF cutoff if `dist` is unconstrained
   dist <- apply_default_cdf_cutoff(
     dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
@@ -378,22 +314,12 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
   }
 
   if (is.list(prior) && !is(prior, "dist_spec")) {
-    cli_warn(
+    cli_abort(
       c(
         "!" = "Specifying {.var prior} as a list is deprecated.",
         "i" = "Use a {.cls dist_spec} instead."
       )
     )
-    if (!("mean" %in% names(prior) && "sd" %in% names(prior))) {
-      cli_abort(
-        c(
-          "!" = "{.var prior} must have both {.var mean} and {.var sd}
-          specified.",
-          "i" = "Did you forget to specify {.var mean} and/or {.var sd}?"
-        )
-      )
-    }
-    prior <- LogNormal(mean = prior$mean, sd = prior$sd)
   }
 
   if (is.numeric(pop)) {
@@ -570,17 +496,17 @@ gp_opts <- function(basis_prop = 0.2,
                     w0 = 1.0,
                     alpha_mean, alpha_sd) {
   if (!missing(matern_type)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
     )
   }
   if (!missing(alpha_mean)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0", "gp_opts(alpha_mean)", "gp_opts(alpha)"
     )
   }
   if (!missing(alpha_sd)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0", "gp_opts(alpha_sd)", "gp_opts(alpha)"
     )
   }
@@ -596,7 +522,7 @@ gp_opts <- function(basis_prop = 0.2,
         )
       )
     }
-    cli_warn(c(
+    cli_abort(c(
       "!" = "Specifying lengthscale priors via the {.var ls_mean}, {.var ls_sd},
       {.var ls_min}, and {.var ls_max} arguments is deprecated.",
       "i" = "Use the {.var ls} argument instead."
@@ -720,7 +646,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
         "Can't specify {.var disperion} and {.var phi}."
       )
     } else {
-      lifecycle::deprecate_warn(
+      lifecycle::deprecate_stop(
         "1.7.0",
         "obs_opts(phi)",
         "obs_opts(dispersion)",
@@ -730,10 +656,9 @@ obs_opts <- function(family = c("negbin", "poisson"),
       dispersion <- phi
     }
   }
-  # NB: This has to be checked first before the na argument is touched anywhere.
   na_default_used <- missing(na)
   if (!na_default_used) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0",
       "obs_opts(na)",
       "fill_missing()",
@@ -762,16 +687,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
       .frequency = "regularly",
       .frequency_id = "obs_opts"
     )
-  }
-  # nolint end
-  if (length(dispersion) == 2 && is.numeric(dispersion)) {
-    cli_abort(
-      c(
-        "!" = "Specifying {.var dispersion} as a vector of length 2 is
-               deprecated.",
-        "i" = "Mean and SD should be given as list elements."
-      )
-    )
+    # nolint end
   }
   obs <- list(
     family = arg_match(family),
@@ -788,7 +704,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
 
   for (param in c("dispersion", "scale")) {
     if (is.numeric(obs[[param]])) {
-      cli_warn(
+      cli_abort(
         c(
           "!" = "Specifying {.var {param}} as a numeric value is deprecated.",
           "i" = "Use a {.cls dist_spec} instead using {.fn Fixed()}."
@@ -796,21 +712,12 @@ obs_opts <- function(family = c("negbin", "poisson"),
       )
       obs[[param]] <- Fixed(obs[[param]])
     } else if (is.list(obs[[param]]) && !is(obs[[param]], "dist_spec")) {
-      cli_warn(
+      cli_abort(
         c(
           "!" = "Specifying {.var {param}} as a list is deprecated.",
           "i" = "Use a {.cls dist_spec} instead."
         )
       )
-      if (!(all(c("mean", "sd") %in% names(obs[[param]])))) {
-        cli_abort(
-          c(
-            "!" = "Both a {.var mean} and {.var sd} are needed if specifying
-            {.var {param}} as list.",
-            "i" = "Did you forget to specify {.var mean} and/or {.var sd}?"
-          )
-        )
-      }
       obs[[param]] <- Normal(mean = obs[[param]]$mean, sd = obs[[param]]$sd)
     } else {
       assert_class(obs[[param]], "dist_spec")
@@ -1033,6 +940,7 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 #' default if using the "rstan" backend, and the default model obtained using
 #' [epinow2_cmdstan_model()] if using the "cmdstanr" backend.
 #'
+#' @param samples Numeric, defaults to 2000. Number of posterior samples.
 #' @param method A character string, defaulting to sampling. Currently supports
 #' MCMC sampling ("sampling") or approximate posterior sampling via
 #' variational inference ("vb") and, as experimental features if the
@@ -1041,9 +949,6 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 #'
 #' @param backend Character string indicating the backend to use for fitting
 #' stan models. Supported arguments are "rstan" (default) or "cmdstanr".
-#'
-#' @param init_fit `r lifecycle::badge("deprecated")`
-#' This argument is deprecated.
 #'
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be
 #' returned.
@@ -1056,7 +961,6 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 #' @return A `<stan_opts>` object of arguments to pass to the appropriate
 #' rstan functions.
 #' @export
-#' @inheritParams rstan_opts
 #' @seealso [stan_sampling_opts()] [stan_vb_opts()]
 #' @examples
 #' # using default of [rstan::sampling()]
@@ -1068,7 +972,6 @@ stan_opts <- function(object = NULL,
                       samples = 2000,
                       method = c("sampling", "vb", "laplace", "pathfinder"),
                       backend = c("rstan", "cmdstanr"),
-                      init_fit = NULL,
                       return_fit = TRUE,
                       ...) {
   method <- arg_match(method)
@@ -1128,12 +1031,6 @@ stan_opts <- function(object = NULL,
     )
   }
 
-  if (!is.null(init_fit)) {
-    deprecate_stop(
-      when = "1.5.0",
-      what = "stan_opts(init_fit)"
-    )
-  }
   opts <- c(opts, list(return_fit = return_fit))
   attr(opts, "class") <- c("stan_opts", class(opts))
   return(opts)

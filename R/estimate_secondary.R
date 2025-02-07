@@ -34,8 +34,6 @@
 #' accumulation is done this happens after truncation as specified by the
 #' `truncation` argument.
 #'
-#' @param reports Deprecated; use `data` instead.
-#'
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
 #'
@@ -155,30 +153,22 @@ estimate_secondary <- function(data,
                                stan = stan_opts(),
                                burn_in = 14,
                                CrIs = c(0.2, 0.5, 0.9),
-                               filter_leading_zeros = FALSE,
-                               zero_threshold = Inf,
                                priors = NULL,
                                model = NULL,
                                weigh_delay_priors = FALSE,
                                verbose = interactive(),
-                               reports) {
-  # Deprecate reported_cases in favour of data
-  if (!missing(reports)) {
-    lifecycle::deprecate_stop(
-      "1.5.0",
-      "estimate_secondary(reports)",
-      "estimate_secondary(data)"
-    )
-  }
+                               filter_leading_zeros = FALSE,
+                               zero_threshold = Inf
+                               ) {
   if (!missing(filter_leading_zeros)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0",
       "estimate_secondary(filter_leading_zeros)",
       "filter_leading_zeros()"
     )
   }
   if (!missing(zero_threshold)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0",
       "estimate_secondary(zero_threshold)",
       "apply_zero_threshold()"
@@ -192,41 +182,18 @@ estimate_secondary <- function(data,
   assert_class(obs, "obs_opts")
   assert_numeric(burn_in, lower = 0)
   assert_numeric(CrIs, lower = 0, upper = 1)
-  assert_logical(filter_leading_zeros)
-  assert_numeric(zero_threshold, lower = 0)
   assert_data_frame(priors, null.ok = TRUE)
   assert_class(model, "stanfit", null.ok = TRUE)
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
   reports <- data.table::as.data.table(data)
-  # If the user is using the default treatment of NA's as missing and
-  # their data has implicit or explicit NA's, inform them of what's
-  # happening and provide alternatives.
-  obs <- check_na_setting_against_data(
-    obs = obs,
-    data = reports,
-    cols_to_check = c("date", "primary", "secondary")
-  )
+
   reports <- default_fill_missing_obs(reports, obs, "secondary")
 
-  secondary_reports_dirty <-
+  secondary_reports <-
     reports[, list(date, confirm = secondary, accumulate)]
-  if (filter_leading_zeros &&
-    !is.na(secondary_reports_dirty[date == min(date), "confirm"]) &&
-    secondary_reports_dirty[date == min(date), "confirm"] == 0) {
-    cli_warn(c(
-      "!" = "Filtering initial zero observations in the data. This
-      functionality will be removed in future versions of EpiNow2. In order
-      to filter initial zero observations use the {.fn filter_leading_zeros}
-      function on the data before calling {.fn estimate_secondary}."
-    ))
-  }
-  secondary_reports <- create_clean_reported_cases(
-    secondary_reports_dirty,
-    filter_leading_zeros = filter_leading_zeros,
-    zero_threshold = zero_threshold
-  )
+
   ## fill in missing data (required if fitting to prevalence)
   secondary_reports[, lookup := seq_len(.N)]
   complete_secondary <- secondary_reports[!is.na(confirm)]

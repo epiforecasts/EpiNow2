@@ -266,14 +266,3 @@ test_that("estimate_secondary works with zero_threshold set", {
   expect_s3_class(out, "estimate_secondary")
   expect_named(out, c("predictions", "posterior", "data", "fit"))
 })
-
-test_that("a warning is thrown when using deprecated functionality", {
-  suppressWarnings(expect_deprecated(estimate_secondary(
-    inc_cases,
-    filter_leading_zeros = TRUE, verbose = FALSE
-  ), "filter_leading_zeros"))
-  suppressWarnings(expect_deprecated(estimate_secondary(
-    inc_cases,
-    zero_threshold = 50, verbose = FALSE
-  ), "zero_threshold"))
-})
