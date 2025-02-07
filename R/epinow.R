@@ -89,39 +89,30 @@ epinow <- function(data,
                    obs = obs_opts(),
                    forecast = forecast_opts(),
                    stan = stan_opts(),
-                   horizon,
                    CrIs = c(0.2, 0.5, 0.9),
-                   filter_leading_zeros = TRUE,
-                   zero_threshold = Inf,
                    return_output = is.null(target_folder),
                    output = c("samples", "plots", "latest", "fit", "timing"),
                    plot_args = list(),
                    target_folder = NULL, target_date,
                    logs = tempdir(), id = "epinow", verbose = interactive(),
-                   reported_cases) {
-  if (!missing(reported_cases)) {
-    lifecycle::deprecate_stop(
-      "1.5.0",
-      "epinow(reported_cases)",
-      "epinow(data)"
-    )
-  }
+                   filter_leading_zeros = TRUE, zero_threshold = Inf, horizon
+                   ) {
   if (!missing(filter_leading_zeros)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0",
       "estimate_infections(filter_leading_zeros)",
       "filter_leading_zeros()"
     )
   }
   if (!missing(zero_threshold)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0",
       "estimate_infections(zero_threshold)",
       "apply_zero_threshold()"
     )
   }
   if (!missing(horizon)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.7.0",
       "epinow(horizon)",
       "epinow(forecast)",
@@ -130,8 +121,6 @@ epinow <- function(data,
     )
   }
   # Check inputs
-  ## horizon is deprecated so should be setup via forecast_opts
-  forecast <- setup_forecast(forecast, if (!missing(horizon)) horizon else NULL)
   assert_logical(return_output)
   stopifnot(
     "target_folder is not a directory" =
@@ -149,6 +138,10 @@ epinow <- function(data,
       name = "EpiNow2.epinow"
     )
     stop("At least one credible interval must be specified")
+  }
+
+  if (is.null(forecast)) {
+    forecast <- forecast_opts(horizon = 0)
   }
 
   # check verbose settings and set logger to match---------------------------
@@ -186,9 +179,6 @@ epinow <- function(data,
   latest_folder <- target_folders$latest
 
   # specify internal functions
-  # temporary vars while argument not deprecated
-  filter_leading_zeros_missing <- missing(filter_leading_zeros)
-  zero_threshold_missing <- missing(zero_threshold)
   epinow_internal <- function() {
     # check verbose settings and set logger to match---------------------------
     if (verbose) {
@@ -206,10 +196,7 @@ epinow <- function(data,
     # make sure the horizon is as specified from the target date --------------
     horizon <- update_horizon(forecast$horizon, target_date, reported_cases)
 
-    # estimate infections and Reproduction no ---------------------------------
-    # use do.call until filter_leading_zeros and zero_threshold are fully
-    # deprecated
-    estimate_infection_args <- list(
+    estimates <- estimate_infections(
       data = reported_cases,
       generation_time = generation_time,
       delays = delays,
@@ -224,14 +211,6 @@ epinow <- function(data,
       verbose = verbose,
       id = id
     )
-    if (!filter_leading_zeros_missing) {
-      estimate_infection_args$filter_leading_zeros <- filter_leading_zeros
-    }
-    if (!zero_threshold_missing) {
-      estimate_infection_args$zero_threshold <- zero_threshold
-    }
-
-    estimates <- do.call(estimate_infections, estimate_infection_args)
 
     if (!output["fit"]) {
       estimates$fit <- NULL

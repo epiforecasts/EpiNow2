@@ -9,7 +9,6 @@ stan_opts(
   samples = 2000,
   method = c("sampling", "vb", "laplace", "pathfinder"),
   backend = c("rstan", "cmdstanr"),
-  init_fit = NULL,
   return_fit = TRUE,
   ...
 )
@@ -19,8 +18,7 @@ stan_opts(
 default if using the "rstan" backend, and the default model obtained using
 \code{\link[=epinow2_cmdstan_model]{epinow2_cmdstan_model()}} if using the "cmdstanr" backend.}
 
-\item{samples}{Numeric, default 2000. Overall number of posterior samples.
-When using multiple chains iterations per chain is samples / chains.}
+\item{samples}{Numeric, defaults to 2000. Number of posterior samples.}
 
 \item{method}{A character string, defaulting to sampling. Currently supports
 MCMC sampling ("sampling") or approximate posterior sampling via
@@ -30,9 +28,6 @@ laplace algorithm ("laplace") or pathfinder ("pathfinder").}
 
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
-
-\item{init_fit}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
-This argument is deprecated.}
 
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be
 returned.}

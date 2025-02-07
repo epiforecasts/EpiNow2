@@ -157,45 +157,7 @@ test_that("estimate_infections works as expected with failing chains", {
   ))
 })
 
-test_that("a warning is thrown when using deprecated functionality", {
-  suppressWarnings(expect_deprecated(estimate_infections(
-    reported_cases,
-    filter_leading_zeros = TRUE, verbose = FALSE
-  ), "filter_leading_zeros"))
-  suppressWarnings(expect_deprecated(estimate_infections(
-    reported_cases,
-    zero_threshold = 50, verbose = FALSE
-  ), "zero_threshold"))
-  suppressWarnings(expect_deprecated(estimate_infections(
-    reported_cases,
-    horizon = 7, verbose = FALSE
-  ), "horizon"))
-})
-
-test_that("estimate_infections produces forecasts when forecast = NULL but horizon is set", {
-  horizon <- 7
-  suppressMessages(suppressWarnings(
-    out <- estimate_infections(
-      data = reported_cases,
-      generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(example_incubation_period),
-      stan = stan_opts(method = "vb"), # vb used for speed
-      forecast = NULL,
-      horizon = horizon
-    )
-  ))
-  # extract forecasts for testing
-  forecast_dt <- out$summarised[
-    variable == "reported_cases"
-  ][
-    type == "forecast"
-  ]
-  expect_true("forecast" %in% unique(out$summarised$type))
-  expect_true(nrow(forecast_dt) == 7)
-  expect_true(out$args$horizon == 7)
-})
-
-test_that("estimate_infections produces no forecasts when forecast = NULL and horizon is not set", {
+test_that("estimate_infections produces no forecasts when forecast = NULL", {
   suppressMessages(suppressWarnings(
     out <- estimate_infections(
       data = reported_cases,
@@ -221,26 +183,4 @@ test_that("estimate_infections produces no forecasts when forecast_opts horizon 
   ))
   expect_true(!"forecast" %in% unique(out$summarised$type))
   expect_true(out$args$horizon == 0)
-})
-
-test_that("horizon overrides forecast$horizon if both specified", {
-  horizon <- 14
-  suppressMessages(suppressWarnings(
-    out <- estimate_infections(
-      data = reported_cases,
-      generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(example_incubation_period),
-      stan = stan_opts(method = "vb"), # vb used for speed
-      forecast = forecast_opts(horizon = 7),
-      horizon = horizon
-    )
-  ))
-  # extract forecasts for testing
-  forecast_dt <- out$summarised[
-    variable == "reported_cases"
-  ][
-    type == "forecast"
-  ]
-  expect_true(out$args$horizon == horizon)
-  expect_true(nrow(forecast_dt) == horizon)
 })

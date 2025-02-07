@@ -5,7 +5,6 @@
 \title{Simulate infections using the renewal equation}
 \usage{
 simulate_infections(
-  estimates,
   R,
   initial_infections,
   day_of_week_effect = NULL,
@@ -16,13 +15,10 @@ simulate_infections(
   CrIs = c(0.2, 0.5, 0.9),
   backend = "rstan",
   seeding_time = NULL,
-  pop = 0,
-  ...
+  pop = 0
 )
 }
 \arguments{
-\item{estimates}{deprecated; use \code{\link[=forecast_infections]{forecast_infections()}} instead}
-
 \item{R}{a data frame of reproduction numbers (column \code{R}) by date (column
 \code{date}). Column \code{R} must be numeric and \code{date} must be in date format. If
 not all days between the first and last day in the \code{date} are present,
@@ -78,8 +74,6 @@ R.}
 Used to adjust Rt estimates when otherwise fixed based on the proportion of
 the population that is susceptible. When set to 0 no population adjustment
 is done.}
-
-\item{...}{deprecated; only included for backward compatibility}
 }
 \value{
 A data.table of simulated infections (variable \code{infections}) and

@@ -23,19 +23,6 @@ test_that("gp_opts warns for uncommon Matern kernel orders", {
   expect_warning(gp_opts(matern_order = 2), "Uncommon Matern kernel order")
 })
 
-test_that("gp_opts handles deprecated matern_type parameter", {
-  lifecycle::expect_deprecated(gp_opts(matern_type = 5 / 2))
-  gp <- suppressWarnings(gp_opts(matern_type = 5 / 2))
-  expect_equal(gp$matern_order, 5 / 2)
-})
-
-test_that("gp_opts stops for incompatible matern_order and matern_type", {
-  expect_error(
-    suppressWarnings(gp_opts(matern_order = 3 / 2, matern_type = 5 / 2)),
-    "must be the same, if both are supplied."
-  )
-})
-
 test_that("gp_opts warns about uncommon Matern kernel orders", {
   expect_warning(gp_opts(matern_order = 2), "Uncommon Matern kernel order")
 })

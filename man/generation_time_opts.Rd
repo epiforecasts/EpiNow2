@@ -5,24 +5,10 @@
 \alias{generation_time_opts}
 \title{Generation Time Distribution Options}
 \usage{
-gt_opts(
-  dist = Fixed(1),
-  ...,
-  disease,
-  source,
-  max = 14,
-  fixed = FALSE,
-  default_cdf_cutoff = 0.001,
-  weight_prior = TRUE
-)
+gt_opts(dist = Fixed(1), default_cdf_cutoff = 0.001, weight_prior = TRUE)
 
 generation_time_opts(
   dist = Fixed(1),
-  ...,
-  disease,
-  source,
-  max = 14,
-  fixed = FALSE,
   default_cdf_cutoff = 0.001,
   weight_prior = TRUE
 )
@@ -32,16 +18,6 @@ generation_time_opts(
 distribution is given a fixed generation time of 1 will be assumed.  If
 passing a nonparametric distribution the first element should be zero (see
 \emph{Details} section)}
-
-\item{...}{deprecated; use \code{dist} instead}
-
-\item{disease}{deprecated; use \code{dist} instead}
-
-\item{source}{deprecated; use \code{dist} instead}
-
-\item{max}{deprecated; use \code{dist} instead}
-
-\item{fixed}{deprecated; use \code{dist} instead}
 
 \item{default_cdf_cutoff}{Numeric; default CDF cutoff to be used if an
 unconstrained distribution is passed as \code{dist}. If \code{dist} is already

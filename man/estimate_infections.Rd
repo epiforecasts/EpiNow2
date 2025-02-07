@@ -16,14 +16,13 @@ estimate_infections(
   obs = obs_opts(),
   forecast = forecast_opts(),
   stan = stan_opts(),
-  horizon,
   CrIs = c(0.2, 0.5, 0.9),
-  filter_leading_zeros = TRUE,
-  zero_threshold = Inf,
   weigh_delay_priors = TRUE,
   id = "estimate_infections",
   verbose = interactive(),
-  reported_cases
+  filter_leading_zeros = TRUE,
+  zero_threshold = Inf,
+  horizon
 )
 }
 \arguments{
@@ -75,18 +74,7 @@ forecasting will be done.}
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
-\item{horizon}{Deprecated; use \code{forecast} instead to specify the predictive
-horizon}
-
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
-
-\item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
-start of the time series be filtered out.}
-
-\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
-to Inf. Indicates if detected zero cases are meaningful by using a threshold
-number of cases based on the 7-day average. If the average is above this
-threshold then the zero is replaced using \code{fill}.}
 
 \item{weigh_delay_priors}{Logical. If TRUE (default), all delay distribution
 priors will be weighted by the number of observation data points, in doing so
@@ -103,7 +91,16 @@ otherwise \code{FALSE}. Should verbose debug progress messages be printed.
 Corresponds to the "DEBUG" level from \code{futile.logger}. See \code{setup_logging}
 for more detailed logging options.}
 
-\item{reported_cases}{Deprecated; use \code{data} instead.}
+\item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
+start of the time series be filtered out.}
+
+\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
+to Inf. Indicates if detected zero cases are meaningful by using a threshold
+number of cases based on the 7-day average. If the average is above this
+threshold then the zero is replaced using \code{fill}.}
+
+\item{horizon}{Deprecated; use \code{forecast} instead to specify the predictive
+horizon}
 }
 \value{
 A list of output including: posterior samples, summarised posterior

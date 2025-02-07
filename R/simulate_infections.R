@@ -21,7 +21,6 @@
 #'   (default: 7) if `week_effect` is set to TRUE. Each element of the vector
 #'   gives the weight given to reporting on this day (normalised to 1).
 #'   The default is `NULL`.
-#' @param estimates deprecated; use [forecast_infections()] instead
 #' @param seeding_time Integer; the number of days before the first time point
 #'   of `R`; default is `NULL`, in which case it is set to the maximum of the
 #'   generation time. The minimum is 1 , i.e. the first reproduction number
@@ -33,7 +32,6 @@
 #'   R given) of `seeding_time` days is assumed to have followed exponential
 #'   growth roughly in line with the growth rate implied by the first value of
 #'   R.
-#' @param ... deprecated; only included for backward compatibility
 #' @inheritParams estimate_infections
 #' @inheritParams rt_opts
 #' @inheritParams stan_opts
@@ -60,7 +58,7 @@
 #'   obs = obs_opts(family = "poisson")
 #' )
 #' }
-simulate_infections <- function(estimates, R, initial_infections,
+simulate_infections <- function(R, initial_infections,
                                 day_of_week_effect = NULL,
                                 generation_time = generation_time_opts(),
                                 delays = delay_opts(),
@@ -69,15 +67,7 @@ simulate_infections <- function(estimates, R, initial_infections,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 backend = "rstan",
                                 seeding_time = NULL,
-                                pop = 0, ...) {
-  ## deprecated usage
-  if (!missing(estimates)) {
-    deprecate_stop(
-      "1.5.0",
-      "simulate_infections(estimates)",
-      "forecast_infections()"
-    )
-  }
+                                pop = 0) {
 
   ## check inputs
   assert_data_frame(R, any.missing = FALSE)
@@ -255,7 +245,7 @@ simulate_infections <- function(estimates, R, initial_infections,
 #' @importFrom cli cli_abort
 #' @return A list of output as returned by [estimate_infections()] but based on
 #' results from the specified scenario rather than fitting.
-#' @seealso [dist_spec()] [generation_time_opts()] [delay_opts()] [rt_opts()]
+#' @seealso [generation_time_opts()] [delay_opts()] [rt_opts()]
 #' [estimate_infections()] [trunc_opts()] [stan_opts()] [obs_opts()]
 #' [gp_opts()]
 #' @export

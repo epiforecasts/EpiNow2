@@ -36,18 +36,6 @@ test_that("rt_opts sets use_breakpoints to TRUE when rw > 0", {
   expect_true(result$use_breakpoints)
 })
 
-test_that("rt_opts throws error for invalid prior", {
-  ## deprecated
-  expect_error(
-    suppressWarnings(rt_opts(prior = list(mean = 1))),
-    "must have both"
-  )
-  expect_error(
-    suppressWarnings(rt_opts(prior = list(sd = 1))),
-    "must have both"
-  )
-})
-
 test_that("rt_opts validates gp_on argument", {
   expect_error(rt_opts(gp_on = "invalid"), "must be one")
 })

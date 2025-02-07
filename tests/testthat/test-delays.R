@@ -93,13 +93,3 @@ test_that("distributions incompatible with stan models are caught", {
     Normal(2, 2, max = 10)
   ), "lognormal")
 })
-
-test_that("nonparametric PMFs with nonzero first element for the generation time are deprecated", {
-  expect_deprecated(
-    gt_opts(c(
-      NonParametric(c(0.1, 0.5, 0.4)),
-      NonParametric(c(0.2, 0.6, 0.2))
-    )),
-    "nonzero first element"
-  )
-})

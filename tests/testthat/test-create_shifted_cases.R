@@ -1,6 +1,6 @@
 horizon <- 7
-cases <- create_clean_reported_cases(example_confirmed[1:30])
-cases <- add_horizon(cases, horizon)
+cases <- add_horizon(example_confirmed[1:30], horizon)
+cases <- add_breakpoints(cases)
 ## add zeroes initially
 cases <- data.table::rbindlist(list(
   data.table::data.table(

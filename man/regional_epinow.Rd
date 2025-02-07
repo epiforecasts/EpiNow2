@@ -25,8 +25,7 @@ regional_epinow(
   summary_args = list(),
   verbose = FALSE,
   logs = tempdir(check = TRUE),
-  ...,
-  reported_cases
+  ...
 )
 }
 \arguments{
@@ -113,8 +112,6 @@ logging setup then the code for \code{\link[=setup_default_logging]{setup_defaul
 
 \item{...}{Pass additional arguments to \code{\link[=epinow]{epinow()}}. See the documentation for
 \code{\link[=epinow]{epinow()}} for details.}
-
-\item{reported_cases}{Deprecated; use \code{data} instead.}
 }
 \value{
 A list of output stratified at the top level into regional output

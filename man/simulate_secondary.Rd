@@ -12,8 +12,7 @@ simulate_secondary(
   truncation = trunc_opts(),
   obs = obs_opts(),
   CrIs = c(0.2, 0.5, 0.9),
-  backend = "rstan",
-  ...
+  backend = "rstan"
 )
 }
 \arguments{
@@ -51,8 +50,6 @@ observation model. Defaults to \code{\link[=obs_opts]{obs_opts()}}.}
 
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
-
-\item{...}{deprecated; only included for backward compatibility}
 }
 \value{
 A data.table of simulated secondary observations (column \code{secondary})
