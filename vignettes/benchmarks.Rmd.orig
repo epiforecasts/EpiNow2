@@ -225,21 +225,29 @@ We will now define the `{EpiNow2}` configurations for each model, which are modi
 model_configs <- list(
   # The default model with MCMC fitting
   default_mcmc = list(
-    rt = rt_opts()
+    rt = rt_opts(
+      prior = rt_prior_default
+    ),
   ),
   # The default model with variational bayes fitting
   default_vb = list(
-    rt = rt_opts(),
+    rt = rt_opts(
+      prior = rt_prior_default
+    ),
     stan = stan_opts(method = "vb", backend = "rstan")
   ),
   # The default model with pathfinder fitting
   default_pathfinder = list(
-    rt = rt_opts(),
+    rt = rt_opts(
+      prior = rt_prior_default
+    ),
     stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
   ),
   # The default model with laplace fitting
   default_laplace = list(
-    rt = rt_opts(),
+    rt = rt_opts(
+      prior = rt_prior_default
+    ),
     stan = stan_opts(method = "laplace", backend = "cmdstanr")
   ),
   # The non-mechanistic model with MCMC fitting
