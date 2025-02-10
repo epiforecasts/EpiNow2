@@ -49,9 +49,9 @@ For the benchmarking exercise, we will compare the models based on their runtime
 
 ## The benchmarking data
 
-We will start by setting up the "true" dataset with known trajectories of $R_t$ and infections using `{EpiNow2}`'s `forecast_infections()` function.
+We will start by setting up the "true" dataset with known trajectories of $R_t$ and infections using `{EpiNow2}`'s `forecast_infections()` function. The steps to generate the true $R_t$ trajectory below reflects the idea that by using the posterior for quantity but the $R_t$ trajectory, we will achieve a simulation that accurately reflects a real world setting while still being able to know and change the true trajectory.
 
-`forecast_infections()` requires a fitted estimates object from `epinow()` with `output` set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
+Let's proceed. The infection similution function, `forecast_infections()`, requires a fitted estimates object from `epinow()` with `output` set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
 
 To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. For the `data`, we will use the first $60$ observations of the `example_confirmed` data set. We will use the `example_generation_time` for the generation time, and the `example_incubation_period`, and `example_reporting_delay` to specify  and delays. These come with the package. For the `rt` model, we will use a 14-day random walk prior, with a mean of $2$ and standard deviation of $0.1$. As we only want to generate estimates, we will turn off forecasting by setting `horizon = 0`.
 
@@ -69,7 +69,7 @@ rt_prior_default <- Normal(2, 0.1)
 options(mc.cores = detectCores() - 1)
 ```
 
-Now, we can generate the `estimates` object.
+We'll now generate the `estimates` object from the observed data (`example_confirmed`).
 ```{r generate-estimates}
 estimates <- epinow(
   data = example_confirmed[1:60],
