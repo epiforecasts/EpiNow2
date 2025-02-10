@@ -367,8 +367,8 @@ reporting_delay <- LogNormal(
 # Combine the incubation period and reporting delay into one delay
 delay <- incubation_period + reporting_delay
 
-# 7-day forecast window
-horizon <- 7
+# 14-day forecast window
+horizon <- 14
 
 # Combine the shared model inputs into a list for use across all the models
 model_inputs <- list(
