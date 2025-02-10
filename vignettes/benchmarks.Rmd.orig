@@ -33,6 +33,7 @@ library(rstan)
 library(cmdstanr)
 library(ggplot2)
 library(dplyr)
+library(tidyr)
 library(purrr)
 library(lubridate)
 library(scales)
@@ -157,25 +158,32 @@ We will now proceed to define and run the different model options.
 
 Below we describe each model.
 ```{r model-descriptions,echo = FALSE}
-model_descriptions <- dplyr::tribble(
-  ~model,  ~model_basename, ~description,
-  "default_mcmc",   "default",   "Default model (non-stationary prior on $R_t$); fitting with mcmc",
-  "default_vb",  "default", "Default model (non-stationary prior on $R_t$); fitting with variational bayes",
-  "default_pathfinder",  "default", "Default model (non-stationary prior on $R_t$); fitting with pathfinder algorithm",
-  "default_laplace",  "default", "Default model (non-stationary prior on $R_t$); fitting with laplace approximation",
-  "non_mechanistic_mcmc", "non_mechanistic", "no mechanistic prior on $R_t$; fitting with mcmc",
-  "non_mechanistic_vb", "non_mechanistic", "no mechanistic prior on $R_t$; fitting with variational bayes",
-  "non_mechanistic_pathfinder", "non_mechanistic", "no mechanistic prior on $R_t$; fitting with pathfinder algorithm",
-  "non_mechanistic_laplace",  "non_mechanistic", "no mechanistic prior on $R_t$; fitting with laplace approximation",
-  "rw7_mcmc", "rw7", "7-day random walk prior on $R_t$; fitting with mcmc",
-  "rw7_vb", "rw7", "7-day random walk prior on $R_t$; fitting with variational bayes",
-  "rw7_pathfinder", "rw7", "7-day random walk prior on $R_t$; fitting with pathfinder algorithm",
-  "rw7_laplace",  "rw7", "7-day random walk prior on $R_t$; fitting with laplace approximation",
-  "non_residual_mcmc",  "non_residual",  "Stationary prior on $R_t$; fitting with mcmc",
-  "non_residual_vb",  "non_residual", "Stationary prior on $R_t$; fitting with variational bayes",
-  "non_residual_pathfinder",  "non_residual",  "Stationary prior on $R_t$; fitting with pathfinder algorithm",
-  "non_residual_laplace",   "non_residual", "Stationary prior on $R_t$; fitting with laplace algorithm"
+# Model descriptions
+models <- c(
+  default = "Default model (non-stationary prior on $R_t$)",
+  non_mechanistic = "no mechanistic prior on $R_t$",
+  rw7 = "7-day random walk prior on $R_t$",
+  non_residual = "Stationary prior on $R_t$"
 )
+
+# Inference methods
+inference <- c(
+  mcmc = "mcmc",
+  vb = "variational bayes",
+  pathfinder = "pathfinder algorithm",
+  laplace = "laplace approximation"
+)
+
+# Generate all combinations
+model_descriptions <- expand_grid(
+  model_basename = names(models),
+  inference_method = names(inference)
+) |>
+  unite(model, c(model_basename, inference_method), remove = FALSE) |>
+  mutate(description = paste0(
+    models[model_basename], "; fitting with", inference[inference_method])
+  ) |>
+  select(-inference_method)
 
 knitr::kable(model_descriptions, caption = "Model options")
 ```
