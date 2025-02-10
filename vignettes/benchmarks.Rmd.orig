@@ -266,7 +266,8 @@ model_configs <- list(
     rt = rt_opts(
       prior = rt_prior_default,
       rw = 7
-    )
+    ),
+    gp = NULL
   ),
   # The 7-day RW Rt model with variational bayes fitting
   rw7_vb = list(
@@ -274,6 +275,7 @@ model_configs <- list(
       prior = rt_prior_default,
       rw = 7
     ),
+    gp = NULL,
     stan = stan_opts(method = "vb", backend = "rstan")
   ),
   # The 7-day RW Rt model with pathfinder fitting
@@ -282,6 +284,7 @@ model_configs <- list(
       prior = rt_prior_default,
       rw = 7
     ),
+    gp = NULL,
     stan = stan_opts(method = "pathfinder", backend = "cmdstanr")
   ),
   # The 7-day RW Rt model with laplace fitting
@@ -290,6 +293,7 @@ model_configs <- list(
       prior = rt_prior_default,
       rw = 7
     ),
+    gp = NULL,
     stan = stan_opts(method = "laplace", backend = "cmdstanr")
   ),
   # The non_residual model with MCMC fitting
