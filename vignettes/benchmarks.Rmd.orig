@@ -55,7 +55,7 @@ We will start by setting up the "true" dataset with known trajectories of $R_t$ 
 
 To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. For the `data`, we will use the first $60$ observations of the `example_confirmed` data set. We will use the `example_generation_time` for the generation time, and the `example_incubation_period`, and `example_reporting_delay` to specify  and delays. These come with the package. For the `rt` model, we will use a 14-day random walk prior, with a mean of $2$ and standard deviation of $0.1$. As we only want to generate estimates, we will turn off forecasting by setting `horizon = 0`.
 
-Throughout this vignette, several argument values, including the observation model options, the rt model prior will be maintained, so we will define them here.
+Throughout this vignette, several argument values, including the observation model options, the rt model prior will be maintained, so we will define them here. Note that we use `r detectCores() - 1` cores out of `r detectCores()` cores and this affects the time it takes to run the models.
 
 ```{r share_inputs}
 # Observation model options
@@ -66,7 +66,7 @@ obs <- obs_opts(
 # Rt prior
 rt_prior_default <- Normal(2, 0.1)
 # Number of cores
-options(mc.cores = 6)
+options(mc.cores = detectCores() - 1)
 ```
 
 Now, we can generate the `estimates` object.
