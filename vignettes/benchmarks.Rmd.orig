@@ -100,7 +100,7 @@ R <- c(
   0.8 + 0.02 * 1:20
 )
 # Add Gaussian noise
-R_noisy <- R * rnorm(length(R), 1.1, 0.05)
+R_noisy <- R * rnorm(length(R), 1, 0.05)
 # Plot
 true_rt <- ggplot(data = data.frame(R = R_noisy)) +
   geom_line(aes(x = seq_along(R_noisy), y = R)) +
