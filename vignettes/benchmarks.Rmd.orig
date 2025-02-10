@@ -109,22 +109,22 @@ true_rt <- ggplot(data = data.frame(R = R_noisy)) +
 plot(true_rt)
 ```
 
-Let's proceed to simulate the true infections and $R_t$ data by sampling from $10$ posterior samples.
+Finally, we'll simulate the true infections and $R_t$ data by sampling from $10$ posterior samples.
 ```{r true-data}
 # Forecast infections and the trajectory of Rt
 forecast <- forecast_infections(
   estimates$estimates,
   R = R_noisy,
-  samples = 10
+  samples = 1
 )
 ```
 
-Let's now extract the true data for benchmarking:
+Let's extract the true data for benchmarking:
 - `R_true`: the median of the simulated $R_t$ values,
 - `infections_true`: the infections by date of infection, and
 - `reported_cases_true`: the reported cases by date of report.
 ```{r extract-true-data}
-R_true <- forecast$summarised[variable == "R"]$median
+R_true <- forecast$summarised[variable == "R"]$median # same as R_noisy
 
 # Get the posterior samples from which to extract the simulated infections and reported cases
 posterior_sample <- forecast$samples[sample == 1]
@@ -138,7 +138,7 @@ reported_cases_true <- posterior_sample[
 ]
 ```
 
-Let's see what the cases plot looks like
+This is what the simulated reported cases looks like
 ```{r plot-cases}
 cases_traj <- ggplot(data = reported_cases_true) +
   geom_line(aes(x = date, y = confirm)) +
