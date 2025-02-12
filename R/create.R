@@ -55,6 +55,9 @@
 create_shifted_cases <- function(data, shift,
                                  smoothing_window, horizon) {
   shifted_reported_cases <- data.table::copy(data)[
+    is.na(confirm) & accumulate,
+    confirm := 0
+  ][
     ,
     confirm := data.table::shift(confirm,
       n = shift,
