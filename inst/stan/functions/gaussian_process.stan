@@ -1,7 +1,7 @@
 /**
  * These functions implemente approximuate Gaussian processes for Stan using
  * Hilbert space methods. The functions are based on the following:
- * - https://avehtari.github.io/casestudies/Motorcycle/motorcycle_gpcourse.html#4_Heteroskedastic_GP_with_Hilbert_basis_functions
+ * - https://avehtari.github.io/casestudies/Motorcycle/motorcycle_gpcourse.html (section 4_Heteroskedastic_GP_with_Hilbert_basis_functions)
  * - https://arxiv.org/abs/2004.11408
  */
  
