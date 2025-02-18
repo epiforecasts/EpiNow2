@@ -75,8 +75,9 @@ options(mc.cores = detectCores() - 1)
 
 We'll now generate the `estimates` object from the observed data (`example_confirmed`).
 ```{r generate-estimates}
+cases <- example_confirmed[1:60]
 estimates <- epinow(
-  data = example_confirmed[1:60],
+  data = cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + example_reporting_delay),
   rt = rt_opts(prior = rt_prior_default, rw = 14),
@@ -131,12 +132,7 @@ Now, we can extract the true data for benchmarking:
 R_true <- forecast$summarised[variable == "R"]$median # same as R_noisy
 
 # Extract the simulated infections
-infections_true <- posterior_sample[variable == "infections"]$value
-
-# Extract the simulated reported cases and rename the "value" column to "confirm" (to match EpiNow2 requirements)
-reported_cases_true <- posterior_sample[
-  variable == "reported_cases", .(date, confirm = value)
-]
+infections_true <- forecast$summarised[variable == "infections", .(date, confirm = value)]
 ```
 
 This is what the true infections looks like
@@ -145,8 +141,8 @@ infections_traj <- ggplot(data = infections_true) +
   geom_line(aes(x = date, y = confirm)) +
   scale_y_continuous(label = scales::label_comma()) +
   scale_x_date(date_labels = "%b %d", date_breaks = "1 month") +
-  labs(y = "Reported cases", x = "Date")
-cases_traj
+  labs(y = "Infections", x = "Date")
+infections_traj
 ```
 
 We now have the benchmarking data.
