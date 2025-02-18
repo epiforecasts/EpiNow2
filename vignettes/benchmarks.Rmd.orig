@@ -20,7 +20,8 @@ knitr::opts_chunk$set(
   message = FALSE,
   fig.height = 8,
   fig.width = 8,
-  fig.path = "benchmarks-"
+  fig.path = "benchmarks-",
+  fig.cap=""
 )
 set.seed(9876)
 ```
