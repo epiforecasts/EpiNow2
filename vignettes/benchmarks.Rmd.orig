@@ -51,13 +51,15 @@ For the benchmarking exercise, we will compare the models based on their computa
 
 ## The benchmarking data
 
-We will start by setting up the "true" dataset with known trajectories of $R_t$ and infections using `{EpiNow2}`'s `forecast_infections()` function.
+We will start by creating the "true" $R_t$ and infections data/trajectories.
 
-The infection similution function, `forecast_infections()`, requires a fitted estimates object from `epinow()` with `output` set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
+We will use `{EpiNow2}`'s `forecast_infections()` function. This function requires a fitted "estimates"" object from `epinow()` with the `output` argument set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate.
 
-To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. For the `data`, we will use the first $60$ observations of the `example_confirmed` data set. We will use the `example_generation_time` for the generation time, and the `example_incubation_period`, and `example_reporting_delay` to specify  and delays. These come with the package. For the `rt` model, we will use a 14-day random walk prior, with a mean of $2$ and standard deviation of $0.1$. As we only want to generate estimates, we will turn off forecasting by setting `horizon = 0`.
+To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. For the `data`, we will use the first $60$ observations of the `example_confirmed` data set. We will use the `example_generation_time` for the generation time, and the sum of the incubation period (`example_incubation_period`) and reporting delay (`example_reporting_delay`) as the delay. These delays come with the package.
 
-Throughout this vignette, several argument values, including the observation model options and the $R_t$ model prior will be maintained, so we will define them here. Note that we use `r detectCores() - 1` cores out of `r detectCores()` cores and this affects the time it takes to run the models.
+For the $R_t$ model, we will use a 14-day random walk prior, with a mean of $2$ and standard deviation of $0.1$. Lastly, as we only want to generate estimates, we will turn off forecasting by setting `horizon = 0`.
+
+Throughout this vignette, several argument values, including the observation model options and the $R_t$ model prior will be reused, so we will define them here. Note that we use `r detectCores() - 1` cores out of `r detectCores()` cores and this affects the time it takes to run the models.
 
 ```{r share_inputs}
 # Observation model options
@@ -85,8 +87,8 @@ estimates <- epinow(
 )
 ```
 
-For the `R` data, we will set up an arbitrary trajectory and add some Gaussian noise.
-```{r R-data}
+That's it for the estimates object. Next, we'll set up the `R` data using an arbitrary trajectory that has some Gaussian noise added to it.
+```{r R-data, class.source = 'fold-hide'}
 # Arbitrary reproduction number trajectory
 R <- c(
   rep(1.50, 20),
@@ -103,6 +105,7 @@ R <- c(
 )
 # Add Gaussian noise
 R_noisy <- R * rnorm(length(R), 1, 0.05)
+
 # Plot
 true_rt <- ggplot(data = data.frame(R = R_noisy)) +
   geom_line(aes(x = seq_along(R_noisy), y = R)) +
@@ -121,15 +124,11 @@ forecast <- forecast_infections(
 )
 ```
 
-Let's extract the true data for benchmarking:
-- `R_true`: the median of the simulated $R_t$ values,
-- `infections_true`: the infections by date of infection, and
-- `reported_cases_true`: the reported cases by date of report.
+Now, we can extract the true data for benchmarking:
+- `R_true`: the median of the simulated $R_t$ values, and
+- `infections_true`: the infections by date of infection
 ```{r extract-true-data}
 R_true <- forecast$summarised[variable == "R"]$median # same as R_noisy
-
-# Get the posterior samples from which to extract the simulated infections and reported cases
-posterior_sample <- forecast$samples[sample == 1]
 
 # Extract the simulated infections
 infections_true <- posterior_sample[variable == "infections"]$value
@@ -140,9 +139,9 @@ reported_cases_true <- posterior_sample[
 ]
 ```
 
-This is what the simulated reported cases looks like
-```{r plot-cases}
-cases_traj <- ggplot(data = reported_cases_true) +
+This is what the true infections looks like
+```{r plot-infections}
+infections_traj <- ggplot(data = infections_true) +
   geom_line(aes(x = date, y = confirm)) +
   scale_y_continuous(label = scales::label_comma()) +
   scale_x_date(date_labels = "%b %d", date_breaks = "1 month") +
@@ -150,9 +149,9 @@ cases_traj <- ggplot(data = reported_cases_true) +
 cases_traj
 ```
 
-The steps to generate the true $R_t$ trajectory reflects the idea that by using the posterior for all quantities but the $R_t$ trajectory, we will achieve a simulation that accurately reflects a real world setting while still being able to know and change the true trajectory.
+We now have the benchmarking data.
 
-We will now proceed to define and run the different model options.
+Let us proceed to the next step where we will define the models, fit them to the true data, and evaluate their performance.
 
 ## Models
 
@@ -361,7 +360,7 @@ model_inputs <- list(
 )
 ```
 
-Additionally, from the benchmarking data, we choose the following dates to represent the periods of growth, peak, and decline.
+Additionally, from the true $R_t$ data, we choose the following dates to represent the growth, peak, and decline phase.
 ```{r snapshot_dates}
 snapshot_dates <- as.Date(c("2020-05-15", "2020-06-21", "2020-06-28"))
 ```
