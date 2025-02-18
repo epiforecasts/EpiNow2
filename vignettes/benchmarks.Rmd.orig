@@ -45,19 +45,19 @@ In using `{EpiNow2}`, users will often be faced with two decision points that wi
 
 The aim of this vignette is to show how these model customisations affect the speed and accuracy of the model. We will benchmark four (4) `{EpiNow2}` model options, including the default model and customisations in the default prior on how $R_t$ is generated and evolves over time. These models are chosen to cover a range of use cases.
 
-We will analyse the estimation and forecasting performance of these models when solved with MCMC sampling. `{EpiNow2}` also provides other approximate sampling methods to solve these models ([variational inference](https://mc-stan.org/docs/cmdstan-guide/variational_config.html), [pathfinder method](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html), and [laplace sampling](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html)). These algorithms are  unstable, however, hence not recommended for use in production pipelines, so we will not emphasise their use. We will, however, highlight how the models perform when solved with these approximate sampling methods and provide an overview of when they may be appropriate.
+We will analyse the estimation and real-time forecasting performance of these models when solved with MCMC sampling. `{EpiNow2}` also provides other approximate sampling methods to fit these models ([variational inference](https://mc-stan.org/docs/cmdstan-guide/variational_config.html), [pathfinder method](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html), and [laplace sampling](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html)). However, these algorithms are unstable hence not recommended for use in production pipelines, so we will not emphasise their use. We will, however, highlight how the models perform when fitted with the approximate sampling methods and provide an overview of how and when they may be used.
 
-For the benchmarking exercise, we will compare the models based on their runtimes and the accuracy of estimates on complete and partial data, taken at 3 time points of a simulated epidemic: (i) the growth phase, (ii) the peak, and (iii) the decline phase.
+For the benchmarking exercise, we will compare the models based on their computational speed/runtimes, estimation, and real-time forecasting performance when applied at the growth, peak, and decline phase of a simulated epidemic.
 
 ## The benchmarking data
 
-We will start by setting up the "true" dataset with known trajectories of $R_t$ and infections using `{EpiNow2}`'s `forecast_infections()` function. The steps to generate the true $R_t$ trajectory below reflects the idea that by using the posterior for quantity but the $R_t$ trajectory, we will achieve a simulation that accurately reflects a real world setting while still being able to know and change the true trajectory.
+We will start by setting up the "true" dataset with known trajectories of $R_t$ and infections using `{EpiNow2}`'s `forecast_infections()` function.
 
-Let's proceed. The infection similution function, `forecast_infections()`, requires a fitted estimates object from `epinow()` with `output` set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
+The infection similution function, `forecast_infections()`, requires a fitted estimates object from `epinow()` with `output` set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate. So, we will set these up first.
 
 To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. For the `data`, we will use the first $60$ observations of the `example_confirmed` data set. We will use the `example_generation_time` for the generation time, and the `example_incubation_period`, and `example_reporting_delay` to specify  and delays. These come with the package. For the `rt` model, we will use a 14-day random walk prior, with a mean of $2$ and standard deviation of $0.1$. As we only want to generate estimates, we will turn off forecasting by setting `horizon = 0`.
 
-Throughout this vignette, several argument values, including the observation model options, the rt model prior will be maintained, so we will define them here. Note that we use `r detectCores() - 1` cores out of `r detectCores()` cores and this affects the time it takes to run the models.
+Throughout this vignette, several argument values, including the observation model options and the $R_t$ model prior will be maintained, so we will define them here. Note that we use `r detectCores() - 1` cores out of `r detectCores()` cores and this affects the time it takes to run the models.
 
 ```{r share_inputs}
 # Observation model options
@@ -111,7 +111,7 @@ true_rt <- ggplot(data = data.frame(R = R_noisy)) +
 plot(true_rt)
 ```
 
-Finally, we'll simulate the true infections and $R_t$ data by sampling from $10$ posterior samples.
+Finally, we'll simulate the true infections and $R_t$ data by sampling from $1$ posterior sample.
 ```{r true-data}
 # Forecast infections and the trajectory of Rt
 forecast <- forecast_infections(
@@ -150,6 +150,7 @@ cases_traj <- ggplot(data = reported_cases_true) +
 cases_traj
 ```
 
+The steps to generate the true $R_t$ trajectory reflects the idea that by using the posterior for all quantities but the $R_t$ trajectory, we will achieve a simulation that accurately reflects a real world setting while still being able to know and change the true trajectory.
 
 We will now proceed to define and run the different model options.
 
