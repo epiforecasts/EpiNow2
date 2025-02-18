@@ -346,8 +346,8 @@ All the models will share the configuration for the generation time, incubation 
 # Combine the incubation period and reporting delay into one delay
 delay <- example_incubation_period + example_reporting_delay
 
-# 14-day forecast window
-horizon <- 14
+# 7-day forecast window
+horizon <- 7
 
 # Combine the shared model inputs into a list for use across all the models
 model_inputs <- list(
