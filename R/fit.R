@@ -162,6 +162,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 #' @importFrom rstan vb
 #' @importFrom rlang abort
 #' @importFrom cli cli_abort
+#' @importFrom utils capture.output
 #' @return A stan model object
 #' @keywords internal
 fit_model_approximate <- function(args, future = FALSE, id = "stan") {
