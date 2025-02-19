@@ -1,5 +1,7 @@
 # EpiNow2 (development version)
 
+This is a patch release in response to an upstream issue in `rstan`, as flagged in CRAN checks.
+
 # EpiNow2 1.7.0
 
 This release introduces the new accumulation feature, where models can fitted to data reported at regular or irregular intervals. Moreover, all priors are now specified using the internal distribution interface.
