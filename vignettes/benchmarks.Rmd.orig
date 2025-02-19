@@ -335,7 +335,7 @@ model_configs <- list(
 )
 ```
 
-## Running the models
+### Inputs
 
 All the models will share the configuration for the generation time, incubation period, reporting delay, and the forecast horizon, so we will define them once and pass them to the models.
 
@@ -356,24 +356,24 @@ model_inputs <- list(
 )
 ```
 
-Additionally, from the true $R_t$ data, we choose the following dates to represent the growth, peak, and decline phase.
+Now to the input data. As mentioned earlier, we will run the models on snapshots of the data at the growth, peak, and decline phase. For that, we choose the following dates along the true $R_t$ trajectory.
 ```{r snapshot_dates}
 snapshot_dates <- as.Date(c("2020-05-15", "2020-06-21", "2020-06-28"))
 ```
 
-Using the chosen dates, let's create the data snapshots for fitting the models.
-```{r data-snapshots}
-data_snaps <- lapply(
-  snapshot_dates,
-  function(snap_date) {
-    reported_cases_true[date <= snap_date]
-  }
-)
-names(data_snaps) <- snapshot_dates
-```
+## Running the models
 
 Now, we're ready to run the models. We will use the `epinow()` function and return useful outputs like the timing of model runs. We obtain forecasts for the data excluding the forecast horizon and then compare the forecasts to the data including the horizon in the evaluations. This is often called an out-of-sample evaluation.
 ```{r run-models, results = 'hide'}
+# create the data snapshots for fitting the models using the snapshot dates. 
+data_snaps <- lapply(
+  snapshot_dates,
+  function(snap_date) {
+    infections_true[date <= snap_date]
+  }
+)
+names(data_snaps) <- snapshot_dates
+
 # Create a version of epinow() that works like base::try() and works even if some models fail.
 safe_epinow <- purrr::safely(epinow)
 # Run the models over the different dates
@@ -400,20 +400,24 @@ results <- lapply(
 
 ## Evaluating model performance
 
-We'll begin by setting up the following functions:
-
-- `extract_results()`: extract a subset of variables of interest ("timing", "Rt", and "infections") from an `epinow()` run.
-- `get_model_results()`: apply `extract_results()` to a nested list of model runs per snapshot date.
-- `add_fit_type()`: re-categorise the four(4) fitting methods into MCMC and approximate.
-- `make_cols_factors` convert all columns into factor, except the columns in the `except` column.
-- `add_epidemic_phase_levels()`: add factor levels to the `epidemic_phase` column to allow for easy ordering.
-- `calc_crps()`: calculate the CRPS using the [scoringutils](https://epiforecasts.io/scoringutils/) R package.
-- `process_crps()`: calculate CRPS estimates for the nested list of model runs per snapshot date and flatten into a simple list.
-- `add_model_details()`: Add the model components and descriptions to the results of `process_crps()`.
-- `calculate_total_crps()`: calculate total CRPS for each model.
-- `plot_total_crps()`: plot the total CRPS for each model.
-- `plot_crps_over_time()`: # plot CRPS over time per model.
+We will now evaluate the models.
 ```{r extraction-funcs, class.source = 'fold-hide'}
+# We'll begin by setting up the following functions:
+
+# - `extract_results()`: extract a subset of variables of interest ("timing", "Rt", and "infections") from an `epinow()` run.
+# - `get_model_results()`: apply `extract_results()` to a nested list of model runs per snapshot date.
+# - `add_fit_type()`: re-categorise the four(4) fitting methods into MCMC and approximate.
+# - `make_cols_factors` convert all columns into factor, except the columns in the `except` column.
+# - `add_epidemic_phase_levels()`: add factor levels to the `epidemic_phase` column to allow for easy ordering.
+# - `calc_crps()`: calculate the CRPS using the [scoringutils](https://epiforecasts.io/scoringutils/) R package.
+# - `process_crps()`: calculate CRPS estimates for the nested list of model runs per snapshot date and flatten into a simple list.
+# - `add_model_details()`: Add the model components and descriptions to the results of `process_crps()`.
+# - `calculate_total_crps()`: calculate total CRPS for each model.
+# - `plot_total_crps()`: plot the total CRPS for each model.
+# - `plot_crps_over_time()`: # plot CRPS over time per model.
+
+# Functions needed 
+
 # Function to extract the "timing", "Rt", "infections", and "reports" variables from an
 # epinow() run. It expects a model run, x, which contains a "results" or "error" component.
 # If all went well, "error" should be NULL.
@@ -622,10 +626,9 @@ plot_crps_over_time <- function(data, title) {
 }
 ```
 
-
 ### Run times (computational resources)
 
-Let's now see how long each model took to run. Here, we show the run times by fitting method because they approximate methods are significantly faster. Note the difference in scale in the y-axis.
+Let's see how long each model took to run. Here, we show the run times by fitting method because they approximate methods are significantly faster. Note the difference in scale in the y-axis.
 ```{r process-runtimes}
 # Extract the run times and reshape to dt
 runtimes_by_snapshot <- get_model_results(results, "timing")
@@ -772,7 +775,7 @@ infections_crps_dt_final <- infections_crps_dt[, model := gsub("_[^_]*$", "", mo
 
 #### Model performance over time
 
-Let's see how the $R_t$ and infections CRPS changed over time using the function `plot_crps_over_time()`. We'll start with the models fitted with MCMC.
+Let's see how the $R_t$ and infections CRPS changed over time. We'll start with the models fitted with MCMC.
 ```{r plot-rt-crps-mcmc}
 # Plot CRPS over time for Rt
 rt_crps_mcmc <- rt_crps_dt_final[fitting == "mcmc"]
@@ -791,7 +794,7 @@ infections_crps_mcmc_plot +
 
 #### Overall model performance
 
-Let's calculate the overall/aggregated performance of the models in terms of the total CRPS for $R_t$ and infections for downstream visualisations.
+Let's compare the overall/aggregated performance of the models in terms of the total CRPS for $R_t$ and infections.
 
 ```{r calc-total-crps}
 # Rt
@@ -805,11 +808,7 @@ infections_total_crps <- calculate_total_crps(infections_crps_dt_final, by = c("
 
 rt_total_crps <- rt_total_crps[type != "estimate"]
 infections_total_crps <- infections_total_crps[type != "estimate"]
-```
 
-
-Now, let's visualise the results for MCMC fitting.
-```{r crps-plotting-rt-total}
 # Calculate
 rt_total_crps_mcmc <- rt_total_crps[fitting == "mcmc"]
 
