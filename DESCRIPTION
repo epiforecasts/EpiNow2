@@ -106,7 +106,7 @@ Depends:
 Imports:
     checkmate,
     cli,
-    data.table,
+    data.table (>= 1.15.0),
     futile.logger (>= 1.4),
     ggplot2,
     lifecycle,
