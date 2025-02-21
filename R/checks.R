@@ -180,3 +180,43 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
     )
   }
 }
+
+
+#' Check that the length of nonparametric PMFs is not longer than the data
+#'
+#' @param ... Delay distributions
+#' @inheritParams estimate_infections
+#' @importFrom cli cli_inform
+#'
+#' @returns Called for its side effects.
+#' @keywords internal
+check_pmf_length <- function(..., data) {
+  delays <- list(...)
+  if (length(delays) > 1) {
+    flat_delays <- do.call(c, delays)
+  } else {
+    flat_delays <- delays
+  }
+  # Find the non-parametric distributions
+  np_delays <- unname(vapply(
+    flat_delays, function(x) {
+      get_distribution(x) == "nonparametric"
+    }, logical(1)
+  ))
+  # Find the lengths of the non-parametric distributions
+  np_delay_lengths <- unname(vapply(flat_delays[np_delays], function(x) {
+    length(x$pmf)
+  }, numeric(1)))
+
+  # We want to inform the user that a passed nonparametric PMF is longer than
+  # the data.
+  if (any(np_delay_lengths > nrow(data))) {
+    cli::cli_inform(
+      c(
+        "i" = "You have passed a nonparametric PMF that is longer
+        than the data.",
+        "!" = "This will be trimmed to the length of the data."
+      )
+    )
+  }
+}
