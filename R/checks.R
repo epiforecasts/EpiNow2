@@ -182,41 +182,52 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 }
 
 
-#' Check that the length of nonparametric PMFs is not longer than the data
+#' Check that supplied PMFs are not longer than the data
 #'
 #' @param ... Delay distributions
 #' @inheritParams estimate_infections
-#' @importFrom cli cli_inform
+#' @importFrom cli cli_inform col_red
 #'
-#' @returns Called for its side effects.
+#' @returns Called for its side effects
 #' @keywords internal
-check_pmf_length <- function(..., data) {
+check_pmf_length_against_data <- function(..., data) {
   delays <- list(...)
-  if (length(delays) > 1) {
-    flat_delays <- do.call(c, delays)
-  } else {
-    flat_delays <- delays
-  }
+  flat_delays <- do.call(c, delays)
+  # Track which component each delay came from
+  delay_names <- rep(names(delays), vapply(delays, EpiNow2:::ndist, numeric(1)))
+  names(flat_delays) <- delay_names
   # Find the non-parametric distributions
-  np_delays <- unname(vapply(
+  np_delays <- which(unname(vapply(
     flat_delays, function(x) {
       get_distribution(x) == "nonparametric"
     }, logical(1)
-  ))
-  # Find the lengths of the non-parametric distributions
-  np_delay_lengths <- unname(vapply(flat_delays[np_delays], function(x) {
-    length(x$pmf)
-  }, numeric(1)))
+  )))
 
-  # We want to inform the user that a passed nonparametric PMF is longer than
-  # the data.
-  if (any(np_delay_lengths > nrow(data))) {
-    cli::cli_inform(
-      c(
-        "i" = "You have passed a nonparametric PMF that is longer
-        than the data.",
-        "!" = "This will be trimmed to the length of the data."
-      )
+  if (length(np_delays) == 0) return(invisible())
+
+  # Check lengths and collect info about exceeding PMFs
+  pmf_longer_than_data <- vapply(flat_delays[np_delays], function(x) {
+    length(x$pmf) > nrow(data)
+  }, logical(1))
+
+  if (any(pmf_longer_than_data)) {
+    # Get details for each long PMF
+    long_pmf_lengths <- vapply(
+      flat_delays[np_delays][pmf_longer_than_data], function(x) {
+        length(x$pmf)
+      }, numeric(1)
     )
   }
+
+    cli::cli_inform(
+      c(
+        "!" = "You have supplied PMFs that are longer than the data. ",
+        "{names(long_pmf_lengths)} {?has/have} length{?s}
+        {.val {long_pmf_lengths}} but data has
+        {.val {nrow(data)}} rows.",
+        "i" = "{cli::col_red('These will be trimmed to match the rows in the
+        data. To remove this message, make sure the PMFs have the same length
+        as the data')}"
+      )
+    )
 }
