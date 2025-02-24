@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Bug fixes
+
+- A bug was fixed where `forecast_infections` would fail with `samples = 1`. By @sbfnk in # and reviewed by @.
+
 # EpiNow2 1.7.1
 
 This is a patch release in response to an upstream issue in `rstan`, as flagged in CRAN checks.
