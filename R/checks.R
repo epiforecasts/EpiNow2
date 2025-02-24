@@ -186,7 +186,7 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 #'
 #' @param ... Delay distributions
 #' @inheritParams estimate_infections
-#' @importFrom cli cli_inform col_red
+#' @importFrom cli cli_warn col_red
 #'
 #' @returns Called for its side effects
 #' @keywords internal
@@ -219,7 +219,7 @@ check_pmf_length_against_data <- function(..., data) {
     )
   }
 
-    cli::cli_inform(
+    cli::cli_warn(
       c(
         "!" = "You have supplied PMFs that are longer than the data. ",
         "{names(long_pmf_lengths)} {?has/have} length{?s}
