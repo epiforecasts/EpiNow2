@@ -186,6 +186,13 @@ estimate_secondary <- function(data,
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
+  # Check that no PMF is longer than the data
+  check_pmf_length_against_data(
+    truncation = truncation,
+    delays = delays,
+    data = data
+  )
+
   reports <- data.table::as.data.table(data)
 
   reports <- default_fill_missing_obs(reports, obs, "secondary")
