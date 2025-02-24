@@ -30,6 +30,7 @@ jobs:
             any::lintr
             any::purrr
             progressr
+            any::cyclocomp
 
       - name: Add lintr options
         run: |
