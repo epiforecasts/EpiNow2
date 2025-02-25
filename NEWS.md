@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Package changes
+
+- The package now has a hex logo by @jamesmbaazam in #1004 and reviewed by <REVIEWER>.
+
 # EpiNow2 1.7.1
 
 This is a patch release in response to an upstream issue in `rstan`, as flagged in CRAN checks.
