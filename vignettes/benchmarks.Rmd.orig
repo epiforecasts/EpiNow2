@@ -226,7 +226,7 @@ model_configs <- list(
   default_mcmc = list(
     rt = rt_opts(
       prior = rt_prior_default
-    ),
+    )
   ),
   # The default model with variational bayes fitting
   default_vb = list(
