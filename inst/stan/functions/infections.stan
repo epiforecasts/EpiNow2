@@ -22,8 +22,9 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
 // generate infections by using
 // Rt = Rt-1 * sum(reversed generation time pmf * infections)
 vector generate_infections(vector R, int uot, vector gt_rev_pmf,
-                           array[] real initial_infections, int pop, int ht,
-                           int obs_scale, real frac_obs, int initial_as_scale) {
+                           array[] real initial_infections, real pop,
+                           int use_pop, int ht, int obs_scale, real frac_obs,
+                           int initial_as_scale) {
   // time indices and storage
   int ot = num_elements(R);
   int nht = ot - ht;
@@ -49,20 +50,19 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
     }
   }
   // calculate cumulative infections
-  if (pop) {
+  if (use_pop) {
     cum_infections[1] = sum(infections[1:uot]);
   }
   // iteratively update infections
   for (s in 1:ot) {
     infectiousness[s] = update_infectiousness(infections, gt_rev_pmf, uot, s);
-    if (pop && s > nht) {
-      exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[nht]));
-      exp_adj_Rt = exp_adj_Rt > 1 ? 1 : exp_adj_Rt;
-      infections[s + uot] = (pop - cum_infections[s]) * (1 - exp_adj_Rt);
-    } else {
+    if ((use_pop == 1 && s > nht) || use_pop == 2) {
+      exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[s]));
+      infections[s + uot] = (pop - cum_infections[s]) * fmax(0, 1 - exp_adj_Rt);
+    } else{
       infections[s + uot] = R[s] * infectiousness[s];
     }
-    if (pop && s < ot) {
+    if (use_pop && s < ot) {
       cum_infections[s + 1] = cum_infections[s] + infections[s + uot];
     }
   }

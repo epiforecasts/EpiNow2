@@ -218,8 +218,9 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     breakpoints = breakpoints,
     future_fixed = as.numeric(future_rt$fixed),
     fixed_from = future_rt$from,
-    pop = rt$pop,
-    stationary = as.numeric(rt$gp_on == "R0"),
+    use_pop =
+      as.integer(rt$pop != Fixed(0)) + as.integer(rt$pop_period == "all"),
+    stationary =  as.numeric(rt$gp_on == "R0"),
     future_time = horizon - future_rt$from
   )
   return(rt_data)
@@ -450,12 +451,14 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
       R0 = rt$prior,
       frac_obs = obs$scale,
       dispersion = obs$dispersion,
+      pop = rt$pop,
       lower_bounds = c(
         alpha = 0,
         rho = 0,
         R0 = 0,
         frac_obs = 0,
-        dispersion = 0
+        dispersion = 0,
+        pop = 0
       )
     )
   )
