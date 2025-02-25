@@ -39,6 +39,8 @@ library(purrr)
 library(lubridate)
 library(scales)
 library(posterior)
+library(parallel)
+library(patchwork)
 ```
 
 In using `{EpiNow2}`, users will often be faced with two decision points that will guide their choice of an appropriate model: (i) use case: retrospective vs real-time analysis, and (ii) limited computing resources. `{EpiNow2}` provides a range of customisations of the default model to suit these decision points.
