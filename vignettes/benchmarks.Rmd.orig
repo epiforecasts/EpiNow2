@@ -90,21 +90,18 @@ estimates <- epinow(
 )
 ```
 
-That's it for the estimates object. Next, we'll set up the `R` data using an arbitrary trajectory that has some Gaussian noise added to it.
+That's it for the estimates object. Next, we'll set up the `R` data using an arbitrary trajectory that has some Gaussian noise added to it. We'll use it to simulate the true infections data by sampling from $1$ posterior sample.
 ```{r R-data, class.source = 'fold-hide'}
 # Arbitrary reproduction number trajectory
 R <- c(
-  rep(1.50, 20),
-  rep(1.25, 10),
-  rep(1, 10),
-  rep(0.5, 10),
-  rep(1, 10),
-  1 + 0.04 * 1:20,
-  rep(1.4, 5),
-  1.4 - 0.02 * 1:20,
-  rep(1.4, 10),
-  rep(0.8, 50),
-  0.8 + 0.02 * 1:20
+    seq(1, 1.5, length.out = 15),  # Rising to peak 1
+    seq(1.5, 1, length.out = 15),  # Falling back to 1
+    seq(1, 0.5, length.out = 15),  # Dropping to valley
+    seq(0.5, 1, length.out = 15),  # Rising back to 1
+    seq(1, 1.4, length.out = 10),  # Smaller peak
+    seq(1.4, 1, length.out = 10),  # Back to 1
+    seq(1, 0.8, length.out = 10),  # Small dip
+    seq(0.8, 1, length.out = 10)   # Returning to 1
 )
 # Add Gaussian noise
 R_noisy <- R * rnorm(length(R), 1, 0.05)
