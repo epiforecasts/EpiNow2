@@ -106,16 +106,6 @@ R <- c(
 # Add Gaussian noise
 R_noisy <- R * rnorm(length(R), 1, 0.05)
 
-# Plot
-true_rt <- ggplot(data = data.frame(R = R_noisy)) +
-  geom_line(aes(x = seq_along(R_noisy), y = R)) +
-  labs(x = "Time")
-
-plot(true_rt)
-```
-
-Finally, we'll simulate the true infections and $R_t$ data by sampling from $1$ posterior sample.
-```{r true-data}
 # Forecast infections and the trajectory of Rt
 forecast <- forecast_infections(
   estimates$estimates,
@@ -124,24 +114,37 @@ forecast <- forecast_infections(
 )
 ```
 
-Now, we can extract the true data for benchmarking:
-- `R_true`: the median of the simulated $R_t$ values, and
-- `infections_true`: the infections by date of infection
+Now, we can extract and plot the true $R_t$ and infections data. These will be used for the evaluations later on.
 ```{r extract-true-data}
-R_true <- forecast$summarised[variable == "R"]$median # same as R_noisy
+R_true <- forecast$summarised[variable == "R"]$mean # same as R_noisy
 
 # Extract the simulated infections
-infections_true <- forecast$summarised[variable == "infections", .(date, confirm = value)]
-```
+infections_true <- forecast$summarised[variable == "infections", .(date, confirm = mean)]
 
-This is what the true infections looks like
-```{r plot-infections}
+# Append dates
+R_dat <- data.frame(date = infections_true$date, R = R_noisy)
+
+# Rt plot
+R_traj <- ggplot(data = R_dat) +
+  geom_line(aes(x = date, y = R)) +
+    labs(x = "Date",
+         y = "R",
+         title = "Time-varying reproduction number"
+    )
+
+# Infections plot
 infections_traj <- ggplot(data = infections_true) +
   geom_line(aes(x = date, y = confirm)) +
   scale_y_continuous(label = scales::label_comma()) +
-  scale_x_date(date_labels = "%b %d", date_breaks = "1 month") +
-  labs(y = "Infections", x = "Date")
-infections_traj
+    labs(title = "Infections",
+         y = "Infections",
+         x = "Date"
+    )
+# Compose the plots
+(R_traj/infections_traj) +
+    plot_layout(axes = "collect") &
+    scale_x_date(date_labels = "%b %d", date_breaks = "1 month") &
+    theme_minimal()
 ```
 
 We now have the benchmarking data.
