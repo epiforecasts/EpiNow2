@@ -2,7 +2,7 @@
 
 ## Package changes
 
-- The package now has a hex logo by @jamesmbaazam in #1004 and reviewed by <REVIEWER>.
+- The package now has a hex logo. By @jamesmbaazam in #1004 and reviewed by <REVIEWER>.
 
 # EpiNow2 1.7.1
 
