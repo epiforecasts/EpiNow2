@@ -1,6 +1,5 @@
 library(hexSticker)
 library(ggplot2)
-library(dplyr)
 library(parallel)
 library(magick)
 
