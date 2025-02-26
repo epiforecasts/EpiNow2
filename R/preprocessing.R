@@ -188,7 +188,7 @@ default_fill_missing_obs <- function(data, obs, obs_column) {
       ))
     }
   }
-  return(data)
+  data
 }
 
 ##' Add missing values for future dates

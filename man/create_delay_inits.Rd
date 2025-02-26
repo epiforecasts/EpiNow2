@@ -4,10 +4,7 @@
 \alias{create_delay_inits}
 \title{Create initial conditions for delays}
 \usage{
-create_delay_inits(data)
-}
-\arguments{
-\item{data}{A list of data as produced by \code{\link[=create_stan_data]{create_stan_data()}}.}
+create_delay_inits(stan_data)
 }
 \value{
 A list of initial conditions for delays

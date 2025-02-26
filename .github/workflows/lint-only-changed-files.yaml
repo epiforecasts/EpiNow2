@@ -30,7 +30,9 @@ jobs:
             any::lintr
             any::purrr
             progressr
-            any::cyclocomp
+            any::cyclocomp,
+            any::future,
+            any::future.apply
 
       - name: Add lintr options
         run: |
