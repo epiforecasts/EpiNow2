@@ -1,3 +1,4 @@
+library(EpiNow2)
 library(hexSticker)
 library(ggplot2)
 library(parallel)
@@ -45,7 +46,11 @@ hex_plot <- out$plots$infections +
   )
 
 # Make and save hexsticker
-sticker(
+
+#' Grey hex border and grey package name. Plot is large and pushed to the bottom
+# to fill the space on the bottom.
+#' See https://github.com/epiforecasts/EpiNow2/pull/1004#issuecomment-2682562866
+grey_opt1 <- sticker(
   hex_plot,
   s_x = 1,
   s_y = 0.85,
@@ -58,6 +63,93 @@ sticker(
   p_y = 1.45,
   h_fill = "#F5F5F5",
   h_color = "#646770",
+  filename = file.path("man", "figures", "logo.png"),
+  dpi = 1200,
+  white_around_sticker = TRUE
+)
+
+#' Grey hex border and black package name. Package name is placed below
+#' the plot to remove the awkwardness of the black bottom of the plot. The curves in
+#' plot complement the corners of the hexagon.
+#' See https://github.com/epiforecasts/EpiNow2/pull/1004#issuecomment-2684934918
+black_opt1 <- sticker(
+  hex_plot,
+  s_x = 0.95,
+  s_y = 1.35,
+  s_width = 1.50,
+  s_height = 0.55,
+  spotlight = TRUE,
+  package = "EpiNow2",
+  p_color = "grey20",
+  p_size = 95,
+  p_x = 1,
+  p_y = 0.75,
+  h_fill = "#F5F5F5",
+  h_color = "grey45",
+  filename = file.path("man", "figures", "logo.png"),
+  dpi = 1200,
+  white_around_sticker = TRUE
+)
+
+# Purple hex border with purple package name. Figure is large and pushed to the bottom
+# to fill the space on the bottom. Alternative to grey_opt1 above.
+# See https://github.com/epiforecasts/EpiNow2/pull/1004#issuecomment-2684782553
+purple_opt1 <- sticker(
+  hex_plot,
+  s_x = 1.0,
+  s_y = 0.55,
+  s_width = 2.3,
+  s_height = 1.1,
+  package = "EpiNow2",
+  p_color = "#6951A1",
+  p_size = 96,
+  p_x = 1,
+  p_y = 1.35,
+  h_fill = "#F5F5F5",
+  h_color = "#6951A1",
+  filename = file.path("man", "figures", "logo.png"),
+  dpi = 1200,
+  white_around_sticker = TRUE
+)
+
+#' Purple hex borders with purple package name. Smaller logo centered in the hex.
+#' See https://github.com/epiforecasts/EpiNow2/pull/1004#issuecomment-2684835329
+purple_opt2 <- sticker(
+  hex_plot,
+  s_x = 1.00,
+  s_y = 0.85,
+  s_width = 1.50,
+  s_height = 0.65,
+  package = "EpiNow2",
+  p_color = "#6951A1",  # Darker text for better readability
+  p_size = 80,  # Slightly larger font size
+  p_x = 1,
+  p_y = 1.5,  # Adjusted spacing
+  h_fill = "#F5F5F5",
+  h_color = "#6951A1",  # Darker hex border for contrast
+  filename = file.path("man", "figures", "logo.png"),
+  dpi = 1200,
+  white_around_sticker = TRUE
+)
+
+#' Purple hex border and purple package name. Package name is placed below
+#' the plot to remove the awkwardness of the black bottom of the plot. The curves in
+#' plot complement the corners of the hexagon. Alternative to black_opt1.
+#' See https://github.com/epiforecasts/EpiNow2/pull/1004#issuecomment-2684946714
+purple_opt3 <- sticker(
+  hex_plot,
+  s_x = 0.95,
+  s_y = 1.35,
+  s_width = 1.50,
+  s_height = 0.55,
+  spotlight = TRUE,
+  package = "EpiNow2",
+  p_color = "#6951A1",
+  p_size = 95,
+  p_x = 1,
+  p_y = 0.75,
+  h_fill = "#F5F5F5",
+  h_color = "#6951A1",
   filename = file.path("man", "figures", "logo.png"),
   dpi = 1200,
   white_around_sticker = TRUE
