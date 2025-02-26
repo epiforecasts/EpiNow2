@@ -1,6 +1,6 @@
-library("EpiNow2")
-library("here")
-library("purrr")
+library(EpiNow2)
+library(here)
+library(purrr)
 
 options(mc.cores = 4)
 
@@ -45,7 +45,7 @@ example_regional_epinow <- modify_tree(
     for (name in plot_names) {
       x[[name]] <- NULL
     }
-    return(x)
+    x
   }
 )
 

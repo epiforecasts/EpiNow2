@@ -217,8 +217,7 @@ setup_future <- function(data,
 #' @keywords internal
 setup_dt <- function(data) {
   suppressMessages(data.table::setDTthreads(threads = 1))
-  data <- data.table::setDT(data)
-  return(data)
+  data.table::setDT(data)
 }
 
 #' Setup Target Folder for Saving

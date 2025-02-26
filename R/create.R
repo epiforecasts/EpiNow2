@@ -100,8 +100,7 @@ create_shifted_cases <- function(data, shift,
     ,
     confirm := ceiling(confirm)
   ]
-  shifted_reported_cases <- shifted_reported_cases[-(1:smoothing_window)]
-  return(shifted_reported_cases)
+  shifted_reported_cases[-(1:smoothing_window)]
 }
 
 #' Construct the Required Future Rt assumption
@@ -127,7 +126,7 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
   out <- list(fixed = FALSE, from = 0)
   if (is.character(future)) {
     future <- arg_match(future)
-    if (!(future == "project")) {
+    if (future != "project") {
       out$fixed <- TRUE
       out$from <- ifelse(future == "latest", 0, -delay)
     }
@@ -202,7 +201,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 
     breakpoints <- seq_along(breakpoints)
     breakpoints <- floor(breakpoints / rt$rw)
-    if (!(rt$future == "project")) {
+    if (rt$future != "project") {
       max_bps <- length(breakpoints) - horizon + future_rt$from
       if (max_bps < length(breakpoints)) {
         breakpoints[(max_bps + 1):length(breakpoints)] <- breakpoints[max_bps]
@@ -245,7 +244,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' @return A list of settings defining the Gaussian process
 #' @keywords internal
 create_backcalc_data <- function(backcalc = backcalc_opts()) {
-  data <- list(
+  list(
     rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
     backcalc_prior = data.table::fcase(
       backcalc$prior == "none", 0,
@@ -254,7 +253,6 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
       default = 0
     )
   )
-  return(data)
 }
 
 #' Create Gaussian Process Data
@@ -299,16 +297,16 @@ create_gp_data <- function(gp = gp_opts(), data) {
     fixed <- FALSE
   }
 
-  time <- data$t - data$seeding_time
+  est_time <- data$t - data$seeding_time
   if (data$future_fixed > 0) {
-    time <- time + data$fixed_from - data$horizon
+    est_time <- est_time + data$fixed_from - data$horizon
   }
   if (data$stationary == 1) {
-    time <- time - 1
+    est_time <- est_time - 1
   }
 
   # basis functions
-  M <- ceiling(time * gp$basis_prop)
+  M <- ceiling(est_time * gp$basis_prop)
 
   # map settings to underlying gp stan requirements
   gp_data <- list(
@@ -360,7 +358,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
 #' create_obs_model(obs_opts(week_length = 3), dates = dates)
 #' }
 create_obs_model <- function(obs = obs_opts(), dates) {
-  data <- list(
+  opts <- list(
     model_type = as.numeric(obs$family == "negbin"),
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
@@ -369,9 +367,9 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     return_likelihood = as.numeric(obs$return_likelihood)
   )
 
-  data$day_of_week <- add_day_of_week(dates, data$week_effect)
+  opts$day_of_week <- add_day_of_week(dates, opts$week_effect)
 
-  return(data)
+  return(opts)
 }
 
 #' Create Stan Data Required for estimate_infections
@@ -471,7 +469,7 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   # used
   stan_data$shifted_cases <-
     stan_data$shifted_cases / mean(obs$scale)
-  return(stan_data)
+  stan_data
 }
 
 ##' Create initial conditions for delays
@@ -479,17 +477,17 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
 ##' @inheritParams create_initial_conditions
 ##' @return A list of initial conditions for delays
 ##' @keywords internal
-create_delay_inits <- function(data) {
+create_delay_inits <- function(stan_data) {
   out <- list()
-  if (data$delay_n_p > 0) {
+  if (stan_data$delay_n_p > 0) {
     out$delay_params <- array(truncnorm::rtruncnorm(
-      n = data$delay_params_length, a = data$delay_params_lower,
-      mean = data$delay_params_mean, sd = data$delay_params_sd * 0.1
+      n = stan_data$delay_params_length, a = stan_data$delay_params_lower,
+      mean = stan_data$delay_params_mean, sd = stan_data$delay_params_sd * 0.1
     ))
   } else {
     out$delay_params <- array(numeric(0))
   }
-  return(out)
+  out
 }
 
 #' Create Initial Conditions Generating Function
@@ -504,45 +502,44 @@ create_delay_inits <- function(data) {
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom data.table fcase
 #' @keywords internal
-create_initial_conditions <- function(data) {
-  init_fun <- function() {
-    out <- create_delay_inits(data)
+create_initial_conditions <- function(stan_data) {
+  function() {
+    out <- create_delay_inits(stan_data)
 
-    if (data$fixed == 0) {
+    if (stan_data$fixed == 0) {
       out$eta <- array(rnorm(
-        ifelse(data$gp_type == 1, data$M * 2, data$M),
+        ifelse(stan_data$gp_type == 1, stan_data$M * 2, stan_data$M),
         mean = 0, sd = 0.1
       ))
     } else {
       out$eta <- array(numeric(0))
     }
-    if (data$estimate_r == 1) {
+    if (stan_data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1))
     } else {
       out$initial_infections <- array(numeric(0))
     }
 
-    if (data$bp_n > 0) {
+    if (stan_data$bp_n > 0) {
       out$bp_sd <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
-      out$bp_effects <- array(rnorm(data$bp_n, 0, 0.1))
+      out$bp_effects <- array(rnorm(stan_data$bp_n, 0, 0.1))
     } else {
       out$bp_sd <- array(numeric(0))
       out$bp_effects <- array(numeric(0))
     }
-    if (data$week_effect > 0) {
+    if (stan_data$week_effect > 0) {
       out$day_of_week_simplex <- array(
-        rep(1 / data$week_effect, data$week_effect)
+        rep(1 / stan_data$week_effect, stan_data$week_effect)
       )
     }
     out$params <- array(truncnorm::rtruncnorm(
-      data$n_params_variable,
-      a = data$params_lower,
-      b = data$params_upper,
+      stan_data$n_params_variable,
+      a = stan_data$params_lower,
+      b = stan_data$params_upper,
       mean = 0, sd = 1
     ))
-    return(out)
+    out
   }
-  return(init_fun)
 }
 
 #' Create a List of Stan Arguments
@@ -609,14 +606,14 @@ create_stan_args <- function(stan = stan_opts(),
     init <- 2
   }
   # set up shared default arguments
-  args <- list(
+  stan_args <- list(
     data = data,
     init = init,
     refresh = ifelse(verbose, 50, 0)
   )
-  args <- modifyList(args, stan)
-  args$return_fit <- NULL
-  return(args)
+  stan_args <- modifyList(stan_args, stan)
+  stan_args$return_fit <- NULL
+  return(stan_args)
 }
 
 ##' Create delay variables for stan
@@ -649,9 +646,9 @@ create_stan_delays <- function(..., time_points = 1L) {
   } else {
     flat_delays <- delays
   }
-  parametric <- unname(vapply(
-    flat_delays, function(x) get_distribution(x) != "nonparametric", logical(1)
-  ))
+  parametric <- unname(
+    vapply(flat_delays, get_distribution, character(1)) != "nonparametric"
+  )
   param_length <- unname(vapply(flat_delays[parametric], function(x) {
     length(get_parameters(x))
   }, numeric(1)))
