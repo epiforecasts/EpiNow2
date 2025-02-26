@@ -35,7 +35,7 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
   monitor <- suppressMessages
   if (verbose) {
     monitor <- function(x) {
-      return(x)
+      x
     }
   }
   model <- monitor(cmdstanr::cmdstan_model(
