@@ -119,7 +119,7 @@ generation_time_opts <- gt_opts
 secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
   type <- arg_match(type)
   if (type == "incidence") {
-    data <- list(
+    opts <- list(
       cumulative = 0,
       historic = 1,
       primary_hist_additive = 1,
@@ -127,7 +127,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
       primary_current_additive = 0
     )
   } else if (type == "prevalence") {
-    data <- list(
+    opts <- list(
       cumulative = 1,
       historic = 1,
       primary_hist_additive = 0,
@@ -135,9 +135,9 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
       primary_current_additive = 1
     )
   }
-  data <- modifyList(data, list(...))
-  attr(data, "class") <- c("secondary_opts", class(data))
-  return(data)
+  opts <- modifyList(opts, list(...))
+  attr(opts, "class") <- c("secondary_opts", class(opts))
+  return(opts)
 }
 
 #' Delay Distribution Options
@@ -291,7 +291,7 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     future = "latest",
                     gp_on = c("R_t-1", "R0"),
                     pop = 0) {
-  rt <- list(
+  opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
@@ -301,8 +301,8 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
   )
 
   # replace default settings with those specified by user
-  if (rt$rw > 0) {
-    rt$use_breakpoints <- TRUE
+  if (opts$rw > 0) {
+    opts$use_breakpoints <- TRUE
   }
 
   if (is.list(prior) && !is(prior, "dist_spec")) {
@@ -314,20 +314,18 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     )
   }
 
-  if (rt$use_rt) {
-    rt$prior <- prior
-  } else {
-    if (!missing(prior)) {
-      cli_warn(
-        c(
-          "!" = "Rt {.var prior} is ignored if {.var use_rt} is FALSE."
-        )
+  if (opts$use_rt) {
+    opts$prior <- prior
+  } else if (!missing(prior)) {
+    cli_warn(
+      c(
+        "!" = "Rt {.var prior} is ignored if {.var use_rt} is FALSE."
       )
-    }
+    )
   }
 
-  attr(rt, "class") <- c("rt_opts", class(rt))
-  return(rt)
+  attr(opts, "class") <- c("rt_opts", class(opts))
+  return(opts)
 }
 
 #' Back Calculation Options
@@ -990,21 +988,20 @@ stan_opts <- function(object = NULL,
     object = object,
     method = method
   ))
-  if (method == "sampling") {
-    opts <- c(
+  opts <- switch(method,
+    sampling = c(
       opts, stan_sampling_opts(samples = samples, backend = backend, ...)
-    )
-  } else if (method == "vb") {
-    opts <- c(opts, stan_vb_opts(samples = samples, ...))
-  } else if (method == "laplace") {
-    opts <- c(
+    ),
+    vb = c(
+      opts, stan_vb_opts(samples = samples, ...)
+    ),
+    laplace = c(
       opts, stan_laplace_opts(backend = backend, ...)
-    )
-  } else if (method == "pathfinder") {
-    opts <- c(
+    ),
+    pathfinder = c(
       opts, stan_pathfinder_opts(samples = samples, backend = backend, ...)
     )
-  }
+  )
 
   opts <- c(opts, list(return_fit = return_fit))
   attr(opts, "class") <- c("stan_opts", class(opts))
@@ -1084,8 +1081,7 @@ opts_list <- function(opts, reported_cases, ...) {
   regions <- unique(reported_cases$region)
   default <- rep(list(opts), length(regions))
   names(default) <- regions
-  out <- modifyList(default, list(...))
-  return(out)
+  modifyList(default, list(...))
 }
 
 #' Filter Options for a Target Region
@@ -1106,7 +1102,7 @@ filter_opts <- function(opts, region) {
   } else {
     out <- opts
   }
-  return(out)
+  out
 }
 
 #' Apply default CDF cutoff to a <dist_spec> if it is unconstrained
@@ -1144,5 +1140,5 @@ apply_default_cdf_cutoff <- function(dist, default_cdf_cutoff, cdf_cutoff_set) {
       )
     )
   }
-  return(dist)
+  dist
 }

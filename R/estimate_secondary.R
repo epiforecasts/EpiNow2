@@ -260,10 +260,10 @@ estimate_secondary <- function(data,
     c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0))
   )
   # fit
-  args <- create_stan_args(
+  stan_ <- create_stan_args(
     stan = stan, data = stan_data, init = inits, model = "estimate_secondary"
   )
-  fit <- fit_model(args, id = "estimate_secondary")
+  fit <- fit_model(stan_, id = "estimate_secondary")
 
   out <- list()
   out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
@@ -320,10 +320,10 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       )
     }
     # replace scaling if present in the prior
-    scale <- priors[grepl("frac_obs", variable, fixed = TRUE)]
-    if (nrow(scale) > 0) {
-      data$obs_scale_mean <- as.array(signif(scale$mean, 3))
-      data$obs_scale_sd <- as.array(signif(scale$sd, 3))
+    frac_obs <- priors[grepl("frac_obs", variable, fixed = TRUE)]
+    if (nrow(frac_obs) > 0) {
+      data$obs_scale_mean <- as.array(signif(frac_obs$mean, 3))
+      data$obs_scale_sd <- as.array(signif(frac_obs$sd, 3))
     }
     # replace delay parameters if present
     delay_params <- priors[grepl("delay_params", variable, fixed = TRUE)]
@@ -398,14 +398,14 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     predictions <- predictions[date <= to]
   }
 
-  plot <- ggplot2::ggplot(predictions, ggplot2::aes(x = date, y = secondary)) +
+  p <- ggplot2::ggplot(predictions, ggplot2::aes(x = date, y = secondary)) +
     ggplot2::geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
     )
 
   if (primary) {
-    plot <- plot +
+    p <- p +
       ggplot2::geom_point(
         data = predictions,
         ggplot2::aes(y = primary),
@@ -416,16 +416,15 @@ plot.estimate_secondary <- function(x, primary = FALSE,
         ggplot2::aes(y = primary), alpha = 0.4
       )
   }
-  plot <- plot_CrIs(plot, extract_CrIs(predictions),
+  p <- plot_CrIs(p, extract_CrIs(predictions),
     alpha = 0.6, linewidth = 1
   )
-  plot <- plot +
+  p +
     ggplot2::theme_bw() +
     ggplot2::labs(y = "Reports per day", x = "Date") +
     ggplot2::scale_x_date(date_breaks = "week", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
-  return(plot)
 }
 
 #' Convolve and scale a time series
@@ -627,7 +626,7 @@ forecast_secondary <- function(estimate,
     primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
     primary <- primary[, .(date, sample, value)]
     if (!is.null(samples)) {
-      primary <- primary[sample(seq_len(.N), samples, replace = TRUE)]
+      primary <- primary[sample(.N, samples, replace = TRUE)]
     }
   }
   ## rename to avoid conflict with estimate
@@ -642,7 +641,7 @@ forecast_secondary <- function(estimate,
     include = FALSE
   )
   # extract data from stanfit
-  data <- estimate$data
+  stan_data <- estimate$data
 
   # combined primary from data and input primary
   primary_fit <- estimate$predictions[
@@ -661,38 +660,38 @@ forecast_secondary <- function(estimate,
   data.table::setorderv(primary_fit, c("sample", "date"))
 
   # update data with primary samples and day of week
-  data$primary <- t(
+  stan_data$primary <- t(
     matrix(primary_fit$value, ncol = length(unique(primary_fit$sample)))
   )
-  data$day_of_week <- add_day_of_week(
-    unique(primary_fit$date), data$week_effect
+  stan_data$day_of_week <- add_day_of_week(
+    unique(primary_fit$date), stan_data$week_effect
   )
-  data$n <- nrow(data$primary)
-  data$t <- ncol(data$primary)
-  data$h <- nrow(primary[sample == min(sample)])
+  stan_data$n <- nrow(stan_data$primary)
+  stan_data$t <- ncol(stan_data$primary)
+  stan_data$h <- nrow(primary[sample == min(sample)])
 
   # extract samples for posterior of estimates
-  posterior_samples <- sample(seq_len(data$n), data$n, replace = TRUE) # nolint
-  draws <- purrr::map(draws, ~ as.matrix(.[posterior_samples, ]))
+  posterior_samples <- sample(stan_data$n, stan_data$n, replace = TRUE)
+  draws <- purrr::map(draws, function(x) as.matrix(x[posterior_samples, ]))
   # combine with data
-  data <- c(data, draws)
+  stan_data <- c(stan_data, draws)
 
   # allocate empty parameters
-  data <- allocate_empty(
-    data, c("params", "delay_params"),
-    n = data$n
+  stan_data <- allocate_empty(
+    stan_data, c("params", "delay_params"),
+    n = stan_data$n
   )
-  data$all_dates <- as.integer(all_dates)
+  stan_data$all_dates <- as.integer(all_dates)
 
   ## simulate
-  args <- create_stan_args(
+  stan_args <- create_stan_args(
     stan_opts(
       model = model, backend = backend, chains = 1, samples = 1, warmup = 1
     ),
-    data = data, fixed_param = TRUE, model = "simulate_secondary"
+    data = stan_data, fixed_param = TRUE, model = "simulate_secondary"
   )
 
-  sims <- fit_model(args, id = "simulate_secondary")
+  sims <- fit_model(stan_args, id = "simulate_secondary")
 
   # extract samples and organise
   dates <- unique(primary_fit$date)
@@ -702,7 +701,10 @@ forecast_secondary <- function(estimate,
   samples <- samples[, c("iterations", "time") := NULL]
   samples <- samples[
     ,
-    date := rep(tail(dates, ifelse(all_dates, data$t, data$h)), data$n)
+    date := rep(
+      tail(dates, ifelse(all_dates, stan_data$t, stan_data$h)),
+      stan_data$n
+    )
   ]
 
   # summarise samples
