@@ -42,9 +42,9 @@ library(ggplot2)
 set.seed(6789)
 ```
 
-We then set the number of cores to use. We will want to run 4 MCMC chains in parallel so we set this to 4.
+To speed up compuation you can set the number of cores to use. We will want to run 4 MCMC chains in parallel so if this is available it would make sense to set:
 
-```{r}
+```{r cores, eval = FALSE}
 options(mc.cores = 4)
 ```
 
