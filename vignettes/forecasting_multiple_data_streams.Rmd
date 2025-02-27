@@ -139,7 +139,7 @@ est <- estimate_infections(
 
 ## Estimating secondary scaling and delay
 
-We next use our data sets of cases and admissions to estimate the delay and scaling between the two.
+We next use our data sets of cases and admissions to estimate the delay and scaling between the two (both of which assumed to be constant over time).
 This is done using the `estimate_secondary()` function.
 
 ```{r estimate_secondary, message = FALSE, warn = FALSE}
