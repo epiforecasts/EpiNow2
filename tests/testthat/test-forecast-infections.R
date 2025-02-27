@@ -59,6 +59,14 @@ test_that("forecast infections can be run with a limited number of samples", {
   expect_equal(max(sims$samples$sample), 10)
 })
 
+test_that("forecast infections can be run with one sample", {
+  R <- c(rep(NA_real_, 40), rep(1.2, 15), rep(0.8, 15))
+  sims <- forecast_infections(out, R, samples = 1)
+  expect_equal(names(sims), c("samples", "summarised", "observations"))
+  expect_equal(tail(sims$summarised[variable == "R"]$median, 30), R[41:70])
+  expect_equal(max(sims$samples$sample), 1)
+})
+
 test_that("forecast infections fails as expected", {
   expect_error(forecast_infections())
   expect_error(forecast_infections(out[-"fit"]))

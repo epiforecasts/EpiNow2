@@ -2,7 +2,8 @@
 
 ## Bug fixes
 
-- a bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings. By @sbfnk in # and reviewed by @.
+- A bug was fixed where `forecast_infections` would fail with `samples = 1`. By @sbfnk in #1000 and reviewed by @seabbs.
+- A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings. By @sbfnk in #1001 and reviewed by @seabbs.
 
 # EpiNow2 1.7.1
 
