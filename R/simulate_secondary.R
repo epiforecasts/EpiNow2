@@ -12,8 +12,7 @@
 #' available as `convolve_and_scale()
 #' @param primary a data frame of primary reports (column `primary`) by date
 #'   (column `date`). Column `primary` must be numeric and `date` must be in
-#'   date format.  it will be assumed that `primary` is zero on the missing
-#'   days.
+#'   date format.
 #' @inheritParams simulate_infections
 #' @inheritParams estimate_secondary
 #' @importFrom checkmate assert_data_frame assert_date assert_numeric
@@ -149,7 +148,7 @@ simulate_secondary <- function(primary,
   sim <- fit_model(stan_args, id = "simulate_secondary")
 
   secondary <- extract_samples(sim, "sim_secondary")$sim_secondary[1, , ]
-  out <- data.table(date = all_dates, secondary = secondary)
+  out <- data.table(date = all_dates$date, secondary = secondary)
 
   return(out[])
 }
