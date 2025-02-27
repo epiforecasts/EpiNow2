@@ -489,7 +489,7 @@ create_delay_inits <- function(stan_data) {
 #' used to sample from the prior distributions (or as close as possible) for
 #' parameters. Used in order to initialise each stan chain within a range of
 #' plausible values.
-#' @param data A list of data as produced by [create_stan_data()].
+#' @param stan_data A list of data as produced by [create_stan_data()].
 #' @return An initial condition generating function
 #' @importFrom purrr map2_dbl
 #' @importFrom truncnorm rtruncnorm

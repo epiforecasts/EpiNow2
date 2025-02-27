@@ -6,6 +6,9 @@
 \usage{
 create_delay_inits(stan_data)
 }
+\arguments{
+\item{stan_data}{A list of data as produced by \code{\link[=create_stan_data]{create_stan_data()}}.}
+}
 \value{
 A list of initial conditions for delays
 }
