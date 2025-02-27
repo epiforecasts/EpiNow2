@@ -417,7 +417,7 @@ forecast_infections <- function(estimates,
   batch_simulate <- function(estimates, draws, model,
                              shift, dates, nstart, nend) {
     # extract batch samples from draws
-    draws <- map(draws, ~ as.matrix(.[nstart:nend, ]))
+    draws <- map(draws, ~ matrix(.[nstart:nend, ], nrow = nend - nstart + 1))
 
     ## prepare data for stan command
     stan_data <- c(
