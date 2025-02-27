@@ -16,7 +16,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 6.5, 
+  fig.width = 6.5,
   fig.height = 6.5,
   fig.path = "forecasting_multiple_data_streams-"
 )
@@ -30,14 +30,15 @@ This vignette demonstrates how to do this on an example simulated data set.
 
 # Setup
 
-We first load the _EpiNow2_ package and set a seed for reproducibility.
+We first load the _EpiNow2_ package.
 We also load `data.table` and `ggplot2` which we'll use later for data manipulation and plotting.
+Lastly, we set a seed for reproducibility.
 
 ```{r packages}
 library(EpiNow2)
-set.seed(6789)
 library(data.table)
 library(ggplot2)
+set.seed(6789)
 ```
 
 We then set the number of cores to use. We will want to run 4 MCMC chains in parallel so we set this to 4.
@@ -172,13 +173,16 @@ forecasts <- rbindlist(list(case_forecast, admissions_forecast), fill = TRUE)
 ggplot(df_long, aes(x = date, colour = variable, fill = variable)) +
   geom_line(aes(y = value)) +
   geom_ribbon(
-    data = forecasts, aes(ymin = lower_20, ymax = upper_20), alpha = 0.8, colour = NA
+    data = forecasts, aes(ymin = lower_20, ymax = upper_20), alpha = 0.8,
+    colour = NA
   ) +
   geom_ribbon(
-    data = forecasts, aes(ymin = lower_50, ymax = upper_50), alpha = 0.5, colour = NA
+    data = forecasts, aes(ymin = lower_50, ymax = upper_50), alpha = 0.5,
+    colour = NA
   ) +
   geom_ribbon(
-    data = forecasts, aes(ymin = lower_90, ymax = upper_90), alpha = 0.2, colour = NA
+    data = forecasts, aes(ymin = lower_90, ymax = upper_90), alpha = 0.2,
+    colour = NA
   ) +
   xlab("Value") + ylab("Date") +
   theme_bw() +
