@@ -27,6 +27,7 @@ knitr::opts_chunk$set(
 The `EpiNow2` package contains functionality to make forecasts for multiple data streams that represent different epidemiological outcomes.
 For example, it can be used to predict both the number of future cases (with symptoms) and severe cases (hospital admissions).
 This vignette demonstrates how to do this on an example simulated data set.
+For more information on the models used and the assumptions, look at the methods vignettes for [estimate_infections](estimate_infections.html) and [estimate_secondary](estimate_secondary.html).
 
 # Setup
 
@@ -110,7 +111,7 @@ We first use one of the two data streams to estimate the number of infections an
 Usually this would be done on the outcome that is closest to infection, in our case the number of confirmed cases.
 In order to do so, we would usually specify a number generation time and any delays to the initial report.
 This should be done based on insight on the disease and reporting set up.
-Here we use some example parameters:
+Here we use some example parameters, the same as in the [workflow vignette](estimate_infections_workflow.html):
 
 ```{r parameters}
 generation_time <- Gamma(
