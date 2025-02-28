@@ -3,7 +3,7 @@
 ## Bug fixes
 
 - A bug was fixed where `forecast_infections` would fail with `samples = 1`. By @sbfnk in # and reviewed by @.
-- A bug was fixed where `opts_list()` recursed lists which it shouldn't. By @sbfnk in # and reviewed by @.
+- A bug was fixed where `opts_list()` recursed lists which it shouldn't. By @sbfnk in #1009 and reviewed by @jamesmbaazam.
 
 # EpiNow2 1.7.1
 
