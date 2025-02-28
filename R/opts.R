@@ -1053,7 +1053,7 @@ forecast_opts <- function(horizon = 7, accumulate) {
 #' @param ... Optional override for region defaults. See the examples
 #' for use case.
 #'
-#' @importFrom utils modifyList
+#' @importFrom purrr list_assign
 #'
 #' @return A named list of options per region which can be passed to the `_opt`
 #' accepting arguments of `regional_epinow`.
@@ -1081,7 +1081,7 @@ opts_list <- function(opts, reported_cases, ...) {
   regions <- unique(reported_cases$region)
   default <- rep(list(opts), length(regions))
   names(default) <- regions
-  modifyList(default, list(...))
+  list_assign(default, ...)
 }
 
 #' Filter Options for a Target Region
