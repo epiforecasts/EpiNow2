@@ -60,7 +60,7 @@ simulate_secondary <- function(primary,
   stan_data <- list(
     n = 1,
     t = nrow(primary),
-    h = nrow(primary),
+    horizon = nrow(primary),
     all_dates = 0,
     obs = array(integer(0)),
     primary = array(primary$primary, dim = c(1, nrow(primary))),

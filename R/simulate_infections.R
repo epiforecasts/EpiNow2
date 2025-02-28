@@ -380,7 +380,7 @@ forecast_infections <- function(estimates,
 
   # redefine time if Rt != data$t
   est_time <- estimates$args$t
-  horizon <- estimates$args$h
+  horizon <- estimates$args$horizon
   obs_time <- est_time - shift
 
   if (obs_time != dim(draws$R)[2]) {
