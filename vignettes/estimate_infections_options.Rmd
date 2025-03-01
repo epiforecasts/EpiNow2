@@ -194,10 +194,10 @@ summary(def)
 # elapsed time (in seconds)
 get_elapsed_time(def$fit)
 #>         warmup sample
-#> chain:1 27.360 27.048
-#> chain:2 33.805 19.095
-#> chain:3 33.064 24.555
-#> chain:4 34.182 29.239
+#> chain:1 27.318 27.293
+#> chain:2 33.723 19.092
+#> chain:3 33.000 24.637
+#> chain:4 34.012 29.278
 # summary plot
 plot(def)
 ```
@@ -228,10 +228,10 @@ summary(agp)
 # elapsed time (in seconds)
 get_elapsed_time(agp$fit)
 #>         warmup sample
-#> chain:1 17.897 28.005
-#> chain:2 19.861 28.966
-#> chain:3 17.763 28.042
-#> chain:4 20.268 17.828
+#> chain:1 17.769 27.696
+#> chain:2 19.380 29.024
+#> chain:3 17.692 27.595
+#> chain:4 19.918 17.429
 # summary plot
 plot(agp)
 ```
@@ -266,10 +266,10 @@ summary(dep)
 # elapsed time (in seconds)
 get_elapsed_time(dep$fit)
 #>         warmup sample
-#> chain:1 31.359 27.996
-#> chain:2 27.694 20.757
-#> chain:3 30.441 30.463
-#> chain:4 24.466 33.262
+#> chain:1 31.085 29.196
+#> chain:2 26.708 20.342
+#> chain:3 30.118 28.557
+#> chain:4 23.809 29.380
 # summary plot
 plot(dep)
 ```
@@ -318,10 +318,10 @@ summary(trunc)
 # elapsed time (in seconds)
 get_elapsed_time(trunc$fit)
 #>         warmup sample
-#> chain:1 30.744 21.518
-#> chain:2 30.152 25.655
-#> chain:3 29.763 21.657
-#> chain:4 32.512 24.148
+#> chain:1 29.909 21.057
+#> chain:2 29.653 24.774
+#> chain:3 29.488 20.977
+#> chain:4 31.812 23.732
 # summary plot
 plot(trunc)
 ```
@@ -358,10 +358,10 @@ summary(project_rt)
 # elapsed time (in seconds)
 get_elapsed_time(project_rt$fit)
 #>         warmup sample
-#> chain:1 36.939 33.936
-#> chain:2 36.873 31.181
-#> chain:3 33.125 31.308
-#> chain:4 38.751 32.907
+#> chain:1 36.703 32.994
+#> chain:2 36.759 32.855
+#> chain:3 33.077 31.571
+#> chain:4 38.266 33.406
 # summary plot
 plot(project_rt)
 ```
@@ -391,10 +391,10 @@ summary(fixed)
 # elapsed time (in seconds)
 get_elapsed_time(fixed$fit)
 #>         warmup sample
-#> chain:1  1.594  0.992
-#> chain:2  1.876  0.987
-#> chain:3  1.766  1.037
-#> chain:4  1.544  1.030
+#> chain:1  1.532  0.987
+#> chain:2  1.912  0.990
+#> chain:3  1.749  0.979
+#> chain:4  1.556  1.019
 # summary plot
 plot(fixed)
 ```
@@ -437,10 +437,10 @@ summary(bkp)
 # elapsed time (in seconds)
 get_elapsed_time(bkp$fit)
 #>         warmup sample
-#> chain:1  2.636  4.027
-#> chain:2  3.373  3.806
-#> chain:3  2.776  3.795
-#> chain:4  2.942  4.100
+#> chain:1  2.633  4.225
+#> chain:2  3.398  3.912
+#> chain:3  2.855  3.754
+#> chain:4  3.005  4.217
 # summary plot
 plot(bkp)
 ```
@@ -472,10 +472,10 @@ summary(rw)
 # elapsed time (in seconds)
 get_elapsed_time(rw$fit)
 #>         warmup sample
-#> chain:1  7.163 15.637
-#> chain:2  9.244 15.295
-#> chain:3  7.316 15.986
-#> chain:4  7.954 14.878
+#> chain:1  7.303 15.771
+#> chain:2  9.294 15.549
+#> chain:3  7.402 16.271
+#> chain:4  8.208 15.078
 # summary plot
 plot(rw)
 ```
@@ -504,10 +504,10 @@ summary(no_delay)
 # elapsed time (in seconds)
 get_elapsed_time(no_delay$fit)
 #>         warmup sample
-#> chain:1 31.395 30.495
-#> chain:2 38.438 31.528
-#> chain:3 30.985 36.548
-#> chain:4 33.849 31.746
+#> chain:1 32.024 30.729
+#> chain:2 38.673 33.334
+#> chain:3 31.488 36.023
+#> chain:4 33.715 31.673
 # summary plot
 plot(no_delay)
 ```
@@ -542,10 +542,10 @@ summary(non_parametric)
 # elapsed time (in seconds)
 get_elapsed_time(non_parametric$fit)
 #>         warmup sample
-#> chain:1  3.815  0.613
-#> chain:2  3.805  0.585
-#> chain:3  3.811  0.634
-#> chain:4  3.538  0.640
+#> chain:1  3.755  0.611
+#> chain:2  3.910  0.556
+#> chain:3  3.934  0.592
+#> chain:4  3.582  0.605
 # summary plot
 plot(non_parametric)
 ```
