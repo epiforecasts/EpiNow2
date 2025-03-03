@@ -668,7 +668,7 @@ forecast_secondary <- function(estimate,
   )
   stan_data$n <- nrow(stan_data$primary)
   stan_data$t <- ncol(stan_data$primary)
-  stan_data$h <- nrow(primary[sample == min(sample)])
+  stan_data$horizon <- nrow(primary[sample == min(sample)])
 
   # extract samples for posterior of estimates
   posterior_samples <- sample(stan_data$n, stan_data$n, replace = TRUE)
@@ -702,7 +702,7 @@ forecast_secondary <- function(estimate,
   samples <- samples[
     ,
     date := rep(
-      tail(dates, ifelse(all_dates, stan_data$t, stan_data$h)),
+      tail(dates, ifelse(all_dates, stan_data$t, stan_data$horizon)),
       stan_data$n
     )
   ]
