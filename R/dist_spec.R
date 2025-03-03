@@ -47,34 +47,30 @@ discrete_pmf <- function(distribution =
                          params, max_value, cdf_cutoff, width) {
   distribution <- arg_match(distribution)
   ## define unnormalised support function and cumulative density function
-  if (distribution == "exp") {
-    updist <- function(n) {
+  updist <- switch(distribution,
+    exp = function(n) {
       pexp(n, params[["rate"]])
-    }
-    qdist <- qexp
-  } else if (distribution == "gamma") {
-    updist <- function(n) {
+    },
+    gamma = function(n) {
       pgamma(n, params[["shape"]], params[["rate"]])
-    }
-    qdist <- qgamma
-  } else if (distribution == "lognormal") {
-    updist <- function(n) {
+    },
+   lognormal = function(n) {
       plnorm(n, params[["meanlog"]], params[["sdlog"]])
-    }
-    qdist <- qlnorm
-  } else if (distribution == "normal") {
-    updist <- function(n) {
+   },
+   normal = function(n) {
       pnorm(n, params[["mean"]], params[["sd"]])
-    }
-    qdist <- qnorm
-  } else if (distribution == "fixed") {
-    updist <- function(n) {
+   },
+   fixed = function(n) {
       as.integer(n > params[["value"]])
     }
-    qdist <- function(p, value) {
-      return(value)
-    }
-  }
+  )
+  qdist <- switch(distribution,
+    exp = qexp,
+    gamma = qgamma,
+    lognormal = qlnorm,
+    normal = qnorm,
+    fixed = function(p, value) value
+  )
 
   ## apply CDF cutoff if given
   if (!missing(cdf_cutoff)) {
@@ -186,7 +182,7 @@ discrete_pmf <- function(distribution =
 ##' @method != dist_spec
 ##' @export
 `!=.dist_spec` <- function(e1, e2) {
-  !(e1 == e2)
+  !(e1 == e2) # nolint: comparison_negation_linter
 }
 
 #' Combines multiple delay distributions for further processing
@@ -253,7 +249,7 @@ c.dist_spec <- function(...) {
     attr(dist_specs, "class") <- c("multi_dist_spec", "dist_spec", "list")
   }
 
-  return(dist_specs)
+  dist_specs
 }
 
 #' Returns the mean of one or more delay distribution
@@ -291,32 +287,29 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
   if (get_distribution(x) == "nonparametric") {
     ## nonparametric
     pmf <- get_pmf(x)
-    return(sum((seq_along(pmf) - 1) * pmf))
+    sum((seq_along(pmf) - 1) * pmf)
   } else {
     params <- get_parameters(x)
     if (!all(vapply(params, is.numeric, logical(1)))) {
-      if (ignore_uncertainty) {
-        params <- lapply(params, mean, ignore_uncertainty = TRUE)
-      } else {
+      if (!ignore_uncertainty) {
         return(NA_real_)
       }
+      params <- lapply(params, mean, ignore_uncertainty = TRUE)
     }
-    dist <- get_distribution(x)
-    if (dist == "lognormal") {
-      return(exp(params$meanlog + params$sdlog**2 / 2))
-    } else if (dist == "gamma") {
-      return(params$shape / params$rate)
-    } else if (dist == "normal") {
-      return(params$mean)
-    } else if (dist == "fixed") {
-      return(params$value)
-    } else {
+    ret_mean <- switch(get_distribution(x),
+      lognormal = exp(params$meanlog + params$sdlog**2 / 2),
+      gamma = params$shape / params$rate,
+      normal = params$mean,
+      fixed = params$value
+    )
+    if (is.null(ret_mean)) {
       cli_abort(
         c(
           "!" = "Don't know how to calculate mean of {dist} distribution."
         )
       )
     }
+    ret_mean
   }
 }
 
@@ -359,25 +352,23 @@ sd <- function(x, ...) {
 #' sd(dist1 + dist2)
 #' }
 sd.dist_spec <- function(x, ...) {
-  if (x$distribution == "nonparametric") {
+  if (get_distribution(x) == "nonparametric") {
     ## nonparametric
     mean_pmf <- sum((seq_along(x$pmf) - 1) * x$pmf)
-    return(sum((seq_along(x$pmf) - 1)**2 * x$pmf) - mean_pmf^2)
+    sum((seq_along(x$pmf) - 1)**2 * x$pmf) - mean_pmf^2
   } else {
     ## parametric
     if (!all(vapply(x$parameters, is.numeric, logical(1)))) {
       return(NA_real_)
     }
-    if (x$distribution == "lognormal") {
-      sqrt(exp(x$parameters$sdlog**2) - 1) *
-        exp(x$parameters$meanlog + 0.5 * x$parameters$sdlog**2)
-    } else if (x$distribution == "gamma") {
-      sqrt(x$parameters$shape / x$parameters$rate**2)
-    } else if (x$distribution == "normal") {
-      x$parameters$sd
-    } else if (x$distribution == "fixed") {
-      0
-    } else {
+    ret_sd <- switch(get_distribution(x),
+      lognormal = sqrt(exp(x$parameters$sdlog**2) - 1) *
+        exp(x$parameters$meanlog + 0.5 * x$parameters$sdlog**2),
+      gamma = sqrt(x$parameters$shape / x$parameters$rate**2),
+      normal = x$parameters$sd,
+      fixed = 0.0
+    )
+    if (is.null(ret_sd)) {
       cli_abort(
         c(
           "!" = "Don't know how to calculate standard deviation of
@@ -385,13 +376,13 @@ sd.dist_spec <- function(x, ...) {
         )
       )
     }
+    ret_sd
   }
 }
 
 #' @export
 sd.multi_dist_spec <- function(x, ...) {
-  ret <- vapply(x, sd, numeric(1))
-  return(ret)
+  vapply(x, sd, numeric(1))
 }
 #' @export
 sd.default <- function(x, ...) {
@@ -429,24 +420,16 @@ sd.default <- function(x, ...) {
 max.dist_spec <- function(x, ...) {
   ## try to discretise (which applies cdf cutoff and max)
   x <- discretise(x, strict = FALSE)
-  if (get_distribution(x) == "nonparametric") {
-    ## nonparametric
-    return(length(get_pmf(x)) - 1)
-  } else if (get_distribution(x) == "fixed") {
-    return(get_parameters(x)$value)
-  } else {
-    if (is.null(attr(x, "max"))) {
-      return(Inf)
-    } else {
-      return(attr(x, "max"))
-    }
-  }
+  switch(get_distribution(x),
+    nonparametric = length(get_pmf(x)) - 1,
+    fixed = get_parameters(x)$value,
+    ifelse(is.null(attr(x, "max")), Inf, attr(x, "max"))
+  )
 }
 
 #' @export
 max.multi_dist_spec <- function(x, ...) {
-  ret <- vapply(x, max, numeric(1))
-  return(ret)
+  vapply(x, max, numeric(1))
 }
 
 #' @export
@@ -496,39 +479,37 @@ discretise.dist_spec <- function(x, strict = TRUE, ...) {
   }
   if (get_distribution(x) == "nonparametric") {
     return(x)
-  } else {
-    if (!is.na(sd(x)) && is_constrained(x)) {
-      cdf_cutoff <- attr(x, "cdf_cutoff")
-      if (is.null(cdf_cutoff)) {
-        cdf_cutoff <- 0
-      }
-      max <- attr(x, "max")
-      if (is.null(max)) {
-        max <- Inf
-      }
-      y <- list(
-        pmf = discrete_pmf(
-          get_distribution(x), get_parameters(x), max, cdf_cutoff,
-          width = 1
-        )
-      )
-      y$distribution <- "nonparametric"
-      preserve_attributes <- setdiff(
-        names(attributes(x)), c("cdf_cutoff", "max", "names")
-      )
-      for (attribute in preserve_attributes) {
-        attributes(y)[attribute] <- attributes(x)[attribute]
-      }
-      return(y)
-    } else if (strict) {
-      cli_abort(
-        c(
-          "!" = "Cannot discretise a distribution with uncertain parameters."
-        )
-      )
-    } else {
-      return(x)
+  } else if (!is.na(sd(x)) && is_constrained(x)) {
+    cdf_cutoff <- attr(x, "cdf_cutoff")
+    if (is.null(cdf_cutoff)) {
+      cdf_cutoff <- 0
     }
+    dist_max <- attr(x, "max")
+    if (is.null(dist_max)) {
+      dist_max <- Inf
+    }
+    y <- list(
+      pmf = discrete_pmf(
+        get_distribution(x), get_parameters(x), dist_max, cdf_cutoff,
+        width = 1
+      )
+    )
+    y$distribution <- "nonparametric"
+    preserve_attributes <- setdiff(
+      names(attributes(x)), c("cdf_cutoff", "max", "names")
+    )
+    for (attribute in preserve_attributes) {
+      attributes(y)[attribute] <- attributes(x)[attribute]
+    }
+    return(y)
+  } else if (strict) {
+    cli_abort(
+      c(
+        "!" = "Cannot discretise a distribution with uncertain parameters."
+      )
+    )
+  } else {
+    return(x)
   }
 }
 #' @method discretise multi_dist_spec
@@ -575,7 +556,7 @@ collapse <- function(x, ...) {
 #' # The maxf the sum of two distributions
 #' collapse(discretise(dist1 + dist2, strict = FALSE))
 collapse.dist_spec <- function(x, ...) {
-  return(x)
+  x
 }
 #' @method collapse multi_dist_spec
 #' @export
@@ -590,7 +571,7 @@ collapse.multi_dist_spec <- function(x, ...) {
   ids <- unique(c(1, cumsum(consecutive$lengths[-length(consecutive$lengths)])))
   ## find ids of nonparametric distributions that are collapsable
   ## (i.e. have other nonparametric distributions followign them)
-  collapseable <- ids[consecutive$values & (consecutive$length > 1)]
+  collapseable <- ids[consecutive$values & (consecutive$lengths > 1)]
   ## identify ids of distributions that follow the collapseable distributions
   next_ids <- lapply(collapseable, function(id) {
     ids[id] + seq_len(consecutive$lengths[id] - 1)
@@ -608,8 +589,7 @@ collapse.multi_dist_spec <- function(x, ...) {
   x[unlist(next_ids)] <- NULL
   ## if wev have collapsed all we turn into a single dist_spec
   if ((length(x) == 1) && is(x[[1]], "dist_spec")) x <- x[[1]]
-
-  return(x)
+  x
 }
 
 #' Prints the parameters of one or more delay distributions
@@ -662,14 +642,15 @@ print.dist_spec <- function(x, ...) {
     } else {
       ## parametric
       cat(indent_str, "- ", get_distribution(x, i), " distribution", sep = "")
-      dist <- extract_single_dist(x, i)
+      single_dist <- extract_single_dist(x, i)
       constrain_str <- character(0)
-      if (!is.null(attr(dist, "max")) && is.finite(attr(dist, "max"))) {
-        constrain_str["max"] <- paste("max:", max(dist))
+      if (!is.null(attr(single_dist, "max")) &&
+            is.finite(attr(single_dist, "max"))) {
+        constrain_str["max"] <- paste("max:", max(single_dist))
       }
-      if (!is.null(attr(dist, "cdf_cutoff"))) {
+      if (!is.null(attr(single_dist, "cdf_cutoff"))) {
         constrain_str["cdf_cutoff"] <-
-          paste("cdf_cutoff:", attr(dist, "cdf_cutoff"))
+          paste("cdf_cutoff:", attr(single_dist, "cdf_cutoff"))
       }
       if (length(constrain_str) > 0) {
         cat(" (", toString(constrain_str), ")", sep = "")
@@ -752,7 +733,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
           return(FALSE)
         }
         sd_dist <- sd(y)
-        return(is.na(sd_dist) || sd_dist > 0)
+        is.na(sd_dist) || sd_dist > 0
       }, logical(1))
       if (!any(uncertain)) {
         samples <- 1 ## only need 1 sample if fixed
@@ -779,7 +760,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
           distribution = get_distribution(x, i), params = get_parameters(y),
           max_value = attr(y, "max"), cdf_cutoff = cdf_cutoff, width = res
         )
-        return(data.table(x = (seq_along(x) - 1) * res, p = x))
+        data.table(x = (seq_along(x) - 1) * res, p = x)
       })
       pmf_dt <- rbindlist(pmf_dt, idcol = "sample")
 
@@ -789,7 +770,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       )
       pmf_dt <- pmf_dt[, distribution := dist_name]
     }
-    return(pmf_dt)
+    pmf_dt
   })
   pmf_data <- rbindlist(pmf_data)[, `:=`(
     type = factor("pmf", levels = c("pmf", "cmf")),
@@ -797,7 +778,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
   )]
 
   # Plot PMF and CDF as facets in the same plot
-  plot <- ggplot(
+  p <- ggplot(
     pmf_data,
     mapping = aes(x = x, y = p, group = sample, color = type)
   ) +
@@ -814,10 +795,10 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       ,
       type := factor("cmf", levels = c("pmf", "cmf"))
     ]
-    plot <- plot +
+    p <- p +
       geom_step(data = cmf_data)
   }
-  return(plot)
+  return(p)
 }
 
 #' Extract a single element of a composite `<dist_spec>`
@@ -854,9 +835,9 @@ extract_single_dist <- function(x, i) {
     )
   }
   if (ndist(x) == 1) {
-    return(x)
+    x
   } else {
-    return(x[[i]])
+    x[[i]]
   }
 }
 
@@ -963,15 +944,15 @@ is_constrained.dist_spec <- function(x, ...) {
   }
   cdf_cutoff <- attr(x, "cdf_cutoff")
   tol_constrained <- !is.null(cdf_cutoff) && cdf_cutoff > 0
-  max <- attr(x, "max")
-  max_constrained <- !is.null(max) && is.finite(max)
-  return(tol_constrained || max_constrained)
+  max_dist <- attr(x, "max")
+  max_constrained <- !is.null(max_dist) && is.finite(max_dist)
+  tol_constrained || max_constrained
 }
 #' @method is_constrained multi_dist_spec
 #' @export
 is_constrained.multi_dist_spec <- function(x, ...) {
   constrained <- vapply(x, is_constrained, logical(1))
-  return(all(constrained))
+  all(constrained)
 }
 
 #' @details
@@ -1017,7 +998,7 @@ is_constrained.multi_dist_spec <- function(x, ...) {
 #' LogNormal(meanlog = Normal(1.5, 0.5), sdlog = 0.25, max = 10)
 LogNormal <- function(meanlog, sdlog, mean, sd, ...) {
   params <- as.list(environment())
-  return(new_dist_spec(params, "lognormal", ...))
+  new_dist_spec(params, "lognormal", ...)
 }
 
 #' @inheritParams stats::GammaDist
@@ -1031,7 +1012,7 @@ LogNormal <- function(meanlog, sdlog, mean, sd, ...) {
 #' Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
 Gamma <- function(shape, rate, scale, mean, sd, ...) {
   params <- as.list(environment())
-  return(new_dist_spec(params, "gamma", ...))
+  new_dist_spec(params, "gamma", ...)
 }
 
 #' @rdname Distributions
@@ -1042,7 +1023,7 @@ Gamma <- function(shape, rate, scale, mean, sd, ...) {
 #' Normal(mean = 4, sd = 1, max = 10)
 Normal <- function(mean, sd, ...) {
   params <- as.list(environment())
-  return(new_dist_spec(params, "normal", ...))
+  new_dist_spec(params, "normal", ...)
 }
 
 #' @rdname Distributions
@@ -1054,7 +1035,7 @@ Normal <- function(mean, sd, ...) {
 #' Fixed(value = 3.5)
 Fixed <- function(value, ...) {
   params <- as.list(environment())
-  return(new_dist_spec(params, "fixed"))
+  new_dist_spec(params, "fixed")
 }
 
 #' Generates a nonparametric distribution.
@@ -1072,7 +1053,7 @@ Fixed <- function(value, ...) {
 NonParametric <- function(pmf, ...) {
   check_sparse_pmf_tail(pmf)
   params <- list(pmf = pmf / sum(pmf))
-  return(new_dist_spec(params, "nonparametric"))
+  new_dist_spec(params, "nonparametric")
 }
 
 #' Get the names of the natural parameters of a distribution
@@ -1089,16 +1070,12 @@ NonParametric <- function(pmf, ...) {
 #' natural_params("gamma")
 #' }
 natural_params <- function(distribution) {
-  if (distribution == "gamma") {
-    ret <- c("shape", "rate")
-  } else if (distribution == "lognormal") {
-    ret <- c("meanlog", "sdlog")
-  } else if (distribution == "normal") {
-    ret <- c("mean", "sd")
-  } else if (distribution == "fixed") {
-    ret <- "value"
-  }
-  return(ret)
+  switch(distribution,
+    gamma = c("shape", "rate"),
+    lognormal = c("meanlog", "sdlog"),
+    normal = c("mean", "sd"),
+    fixed = "value"
+  )
 }
 
 #' Get the lower bounds of the parameters of a distribution
@@ -1113,16 +1090,12 @@ natural_params <- function(distribution) {
 #' lower_bounds("lognormal")
 #' }
 lower_bounds <- function(distribution) {
-  if (distribution == "gamma") {
-    ret <- c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0)
-  } else if (distribution == "lognormal") {
-    ret <- c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0)
-  } else if (distribution == "normal") {
-    ret <- c(mean = -Inf, sd = 0)
-  } else if (distribution == "fixed") {
-    ret <- c(value = 1)
-  }
-  return(ret)
+  switch(distribution,
+    gamma = c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0),
+    lognormal = c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0),
+    normal = c(mean = -Inf, sd = 0),
+    fixed = c(value = 1)
+  )
 }
 
 #' Define bounds of a `<dist_spec>`
@@ -1188,7 +1161,7 @@ extract_params <- function(params, distribution) {
       )
     )
   }
-  return(params)
+  params
 }
 
 #' Internal function for generating a `dist_spec` given parameters and a
@@ -1250,7 +1223,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
             return(FALSE)
           }
           sd_dist <- sd(x)
-          return(is.na(sd_dist) || sd_dist > 0)
+          is.na(sd_dist) || sd_dist > 0
         }, logical(1))
         if (any(uncertain)) {
           # nolint start: duplicate_argument_linter
@@ -1368,7 +1341,7 @@ convert_to_natural <- function(params, distribution) {
   } else {
     params <- x
   }
-  return(params)
+  params
 }
 
 ##' Extracts an element of a `<dist_spec>`
@@ -1497,8 +1470,8 @@ get_distribution <- function(x, id = NULL) {
 ##' @keywords internal
 ndist <- function(x) {
   if (is(x, "multi_dist_spec")) {
-    return(length(x))
+    length(x)
   } else {
-    return(1L)
+    1L
   }
 }

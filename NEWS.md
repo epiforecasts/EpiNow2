@@ -2,7 +2,13 @@
 
 ## Package changes
 
-- The package now has a hex logo. By @jamesmbaazam in #1004 and reviewed by <REVIEWER>.
+- The package now has a hex logo.
+
+## Bug fixes
+
+- A bug was fixed where `forecast_infections` would fail with `samples = 1`.
+- A bug was fixed where `opts_list()` recursed lists which it shouldn't.
+- A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
 
 # EpiNow2 1.7.1
 

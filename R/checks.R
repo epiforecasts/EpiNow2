@@ -109,7 +109,7 @@ check_stan_delay <- function(dist) {
   }
   assert_numeric(attr(dist, "cdf_cutoff"), lower = 0, upper = 1)
   # Check that `dist` has a finite maximum
-  if (any(is.infinite(max(dist))) && !(attr(dist, "cdf_cutoff") > 0)) {
+  if (any(is.infinite(max(dist))) && attr(dist, "cdf_cutoff") == 0) {
     cli_abort(
       c(
         "i" = "All distributions passed to the model need to have a
