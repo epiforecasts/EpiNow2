@@ -49,6 +49,8 @@ navbar:
         href: articles/estimate_infections_options.html
       - text: Using epinow() for running in production mode
         href: articles/epinow.html
+      - text: Forecasting multiple data streams
+        href: articles/forecasting_multiple_data_streams.html
     casestudies:
       text: Case studies
       menu:

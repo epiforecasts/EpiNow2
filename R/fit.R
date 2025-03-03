@@ -80,7 +80,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
           futile.logger::flog.error(error_text,
             name = "EpiNow2.epinow.estimate_infections.fit"
           )
-          return(NULL)
+          NULL
         }
       )
     } else {
@@ -92,9 +92,9 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 
     if ((inherits(fit, "stanfit") && fit@mode != 2L) ||
       inherits(fit, "CmdStanMCMC")) {
-      return(fit)
+      fit
     } else {
-      return(NULL)
+      NULL
     }
   }
 
@@ -213,11 +213,10 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
     fit <- do.call(sample_func, stan_args)
 
     if (length(names(fit)) == 0) {
-      return(NULL)
+      NULL
     } else {
-      return(fit)
+      fit
     }
-    return(fit)
   }
   safe_fit <- purrr::safely(fit_approximate) # nolint
   fit <- NULL

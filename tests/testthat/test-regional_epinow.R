@@ -80,11 +80,14 @@ test_that("regional_epinow produces expected output when run with region specifi
   gp <- opts_list(gp_opts(), cases)
   gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
   rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+  delays <- opts_list(
+    delay_opts(), cases, realland = delay_opts(example_reporting_delay)
+  )
   out <- suppressWarnings(
     regional_epinow(
       data = cases,
       generation_time = generation_time_opts(example_generation_time),
-      delays = delay_opts(example_reporting_delay),
+      delays = delays,
       rt = rt, gp = gp,
       stan = stan_opts(
         samples = 100, warmup = 100,

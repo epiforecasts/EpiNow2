@@ -31,11 +31,10 @@ extract_parameter <- function(param, samples, dates) {
 
   param_df <- param_df[, var := NULL][, sample := seq_len(.N), by = .(time)]
   param_df <- param_df[, date := dates, by = .(sample)]
-  param_df <- param_df[, .(
+  param_df[, .(
     parameter = param, time, date,
     sample, value
   )]
-  return(param_df)
 }
 
 
@@ -73,9 +72,9 @@ extract_static_parameter <- function(param, samples) {
 #' @importFrom rstan extract
 extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
   if (inherits(stan_fit, "stanfit")) {
-    args <- list(object = stan_fit, include = include)
-    if (!is.null(pars)) args <- c(args, list(pars = pars))
-    return(do.call(rstan::extract, args))
+    extract_args <- list(object = stan_fit, include = include)
+    if (!is.null(pars)) extract_args <- c(extract_args, list(pars = pars))
+    return(do.call(rstan::extract, extract_args))
   }
   if (!inherits(stan_fit, "CmdStanMCMC") &&
     !inherits(stan_fit, "CmdStanFit")) {
@@ -107,10 +106,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
   ]
   samples <- split(samples_df, by = "variable")
   samples <- purrr::map(samples, function(df) {
-    permutation <- sample(
-      seq_len(max(df$.draw)), max(df$.draw),
-      replace = FALSE
-    )
+    permutation <- sample(max(df$.draw), max(df$.draw), replace = FALSE)
     df <- df[, new_draw := permutation[.draw]]
     setkey(df, new_draw)
     max_indices <- strsplit(tail(df$index, 1), split = ",", fixed = TRUE)[[1]]
@@ -127,7 +123,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     dimnames(ret) <- c(
       list(iterations = NULL), rep(list(NULL), length(max_indices))
     )
-    return(ret)
+    ret
   })
 
   return(samples)
@@ -170,7 +166,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
   if (drop_length_1) {
     samples <- lapply(samples, function(x) {
       if (length(dim(x)) > 1 && dim(x)[1] == 1) dim(x) <- dim(x)[-1]
-      return(x)
+      x
     })
   }
 
@@ -299,30 +295,30 @@ extract_stan_param <- function(fit, params = NULL,
     var_names <- TRUE
   }
   if (inherits(fit, "stanfit")) { # rstan backend
-    args <- list(object = fit, probs = sym_CrIs)
-    if (!is.null(params)) args <- c(args, list(pars = params))
-    summary <- do.call(rstan::summary, args)
-    summary <- data.table::as.data.table(summary$summary,
+    summary_args <- list(object = fit, probs = sym_CrIs)
+    if (!is.null(params)) summary_args <- c(summary_args, list(pars = params))
+    param_summary <- do.call(rstan::summary, summary_args)
+    param_summary <- data.table::as.data.table(param_summary$summary,
       keep.rownames = ifelse(var_names,
         "variable",
         FALSE
       )
     )
-    summary <- summary[, c("n_eff", "Rhat") := NULL]
+    param_summary <- param_summary[, c("n_eff", "Rhat") := NULL]
   } else if (inherits(fit, "CmdStanMCMC")) { # cmdstanr backend
-    summary <- fit$summary(
+    param_summary <- fit$summary(
       variable = params,
       mean, mcse_mean, sd, ~ quantile(.x, probs = sym_CrIs)
     )
-    if (!var_names) summary$variable <- NULL
-    summary <- data.table::as.data.table(summary)
+    if (!var_names) param_summary$variable <- NULL
+    param_summary <- data.table::as.data.table(param_summary)
   }
   cols <- c("mean", "se_mean", "sd", CrIs)
   if (var_names) {
     cols <- c("variable", cols)
   }
-  colnames(summary) <- cols
-  return(summary)
+  colnames(param_summary) <- cols
+  return(param_summary)
 }
 
 #' Generate initial conditions from a Stan fit
@@ -385,7 +381,7 @@ extract_inits <- function(fit, current_inits,
     res$reports <- NULL
     res$obs_reports <- NULL
     res$imputed_reports <- NULL
-    return(res)
+    res
   }
   # extract samples
   fit_inits <- purrr::map(1:samples, init_fun) # nolint

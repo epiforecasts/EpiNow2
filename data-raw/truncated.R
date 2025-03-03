@@ -1,4 +1,4 @@
-library("EpiNow2")
+library(EpiNow2)
 
 #' Apply truncation to a data set
 #'
@@ -37,7 +37,7 @@ apply_truncation <- function(index, data, dist) {
   trunc_data[
     (.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)
   ]
-  return(trunc_data)
+  trunc_data
 }
 
 # get example case counts

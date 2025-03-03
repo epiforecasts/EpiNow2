@@ -38,16 +38,14 @@ summarise_results <- function(regions,
         )
       )
     }
-  } else {
-    if (!is.null(summaries)) {
-      cli_abort(
-        c(
-          "!" = "Cannot supply both {.var results_dir} and {.var summary}.",
-          "i" = "Only one of {.var results_dir} or {.var summary} should be
+  } else if (!is.null(summaries)) {
+    cli_abort(
+      c(
+        "!" = "Cannot supply both {.var results_dir} and {.var summary}.",
+        "i" = "Only one of {.var results_dir} or {.var summary} should be
         supplied."
-        )
       )
-    }
+    )
   }
 
   if (is.null(summaries)) {
@@ -328,7 +326,7 @@ regional_summary <- function(regional_output = NULL,
       save_ggplot(summary_plot, "summary_plot.png",
         width = data.table::fcase(
           length(regions) > 60 & length(regions) > 120, 36,
-          length(regions) > 60 & !(length(regions) > 120), 24,
+          length(regions) > 60 & length(regions) <= 120, 24,
           default = 12
         )
       )
@@ -363,7 +361,7 @@ regional_summary <- function(regional_output = NULL,
     if (all_regions) {
       plots_per_row <- data.table::fcase(
         length(regions) > 60 & length(regions) > 120, 8,
-        length(regions) > 60 & !(length(regions) > 120), 5,
+        length(regions) > 60 & length(regions) <= 120, 5,
         default = 3
       )
 
@@ -680,8 +678,7 @@ calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
 extract_CrIs <- function(summarised) {
   CrIs <- grep("lower_", colnames(summarised), value = TRUE, fixed = TRUE)
   CrIs <- gsub("lower_", "", CrIs, fixed = TRUE)
-  CrIs <- as.numeric(CrIs)
-  return(CrIs)
+  as.numeric(CrIs)
 }
 
 #' Calculate Summary Statistics

@@ -4,10 +4,10 @@
 \alias{create_initial_conditions}
 \title{Create Initial Conditions Generating Function}
 \usage{
-create_initial_conditions(data)
+create_initial_conditions(stan_data)
 }
 \arguments{
-\item{data}{A list of data as produced by \code{\link[=create_stan_data]{create_stan_data()}}.}
+\item{stan_data}{A list of data as produced by \code{\link[=create_stan_data]{create_stan_data()}}.}
 }
 \value{
 An initial condition generating function

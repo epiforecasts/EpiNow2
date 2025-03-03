@@ -54,7 +54,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
   lows <- ifelse(lows <= 0, 1e-6, lows)
   ups <- values + 1
 
-  data <- list(
+  stan_data <- list(
     N = length(values),
     low = lows,
     up = ups,
@@ -66,20 +66,23 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 
   model <- epinow2_stan_model(backend, "dist_fit")
 
-  if (dist == "exp") {
-    data$dist <- 0
-    data$lam_mean <- array(mean(values))
-  } else if (dist == "lognormal") {
-    data$dist <- 1
-    data$prior_mean <- array(log(mean(values)))
-    data$prior_sd <- array(log(sd(values)))
-  } else if (dist == "gamma") {
-    data$dist <- 2
-    data$prior_mean <- array(mean(values))
-    data$prior_sd <- array(sd(values))
-    data$par_sigma <- array(1.0)
-  }
-
+  stan_data <- modifyList(stan_data, switch(dist,
+    exp = list(
+      dist = 0,
+      lam_mean = array(mean(values))
+    ),
+    lognormal = list(
+      dist = 1,
+      prior_mean = array(log(mean(values))),
+      prior_sd = array(log(sd(values)))
+    ),
+    gamma = list(
+      dist = 2,
+      prior_mean = array(mean(values)),
+      prior_sd = array(sd(values)),
+      par_sigma = array(1.0)
+    )
+  ))
   # set adapt delta based on the sample size
   if (length(values) <= 30) {
     adapt_delta <- 0.999
@@ -88,7 +91,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
   }
 
   # fit model
-  args <- create_stan_args(
+  stan_args <- create_stan_args(
     stan = stan_opts(
       model,
       samples = samples,
@@ -97,10 +100,10 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
       chains = chains,
       cores = cores
     ),
-    data = data, verbose = verbose, model = "dist_fit"
+    data = stan_data, verbose = verbose, model = "dist_fit"
   )
 
-  fit <- fit_model(args, id = "dist_fit")
+  fit <- fit_model(stan_args, id = "dist_fit")
 
   return(fit)
 }
@@ -229,11 +232,11 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
   })
 
   if (!missing(max_value)) {
-    max <- max_value
+    dist_max <- max_value
   } else {
-    max <- max(values)
+    dist_max <- max(values)
   }
-  return(new_dist_spec(params = params, max = max, distribution = dist))
+  return(new_dist_spec(params = params, max = dist_max, distribution = dist))
 }
 
 #' Estimate a Delay Distribution
@@ -255,9 +258,8 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' estimate_delay(delays, samples = 1000, bootstraps = 10)
 #' }
 estimate_delay <- function(delays, ...) {
-  fit <- bootstrapped_dist_fit(
+  bootstrapped_dist_fit(
     values = delays,
     dist = "lognormal", ...
   )
-  return(fit)
 }

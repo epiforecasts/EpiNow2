@@ -1,5 +1,11 @@
 # EpiNow2 (development version)
 
+## Bug fixes
+
+- A bug was fixed where `forecast_infections` would fail with `samples = 1`. By @sbfnk in #1000 and reviewed by @seabbs.
+- A bug was fixed where `opts_list()` recursed lists which it shouldn't. By @sbfnk in #1009 and reviewed by @jamesmbaazam.
+- A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings. By @sbfnk in #1001 and reviewed by @seabbs.
+
 ## Documentation
 
 - If users supply PMFs that are longer than the data, they are now informed that this will be trimmed to match the length of the data. By @jamesmbaazam in # and reviewed by <REVIEWER>.

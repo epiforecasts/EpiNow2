@@ -76,7 +76,7 @@ report_summary <- function(summarised_estimates,
   ]
 
   # regional summary
-  summary <- data.table::data.table(
+  summary_estimates <- data.table::data.table(
     measure = c(
       "New infections per day",
       "Expected change in reports",
@@ -94,7 +94,7 @@ report_summary <- function(summarised_estimates,
   )
 
   if (return_numeric) {
-    summary$numeric_estimate <- list(
+    summary_estimates$numeric_estimate <- list(
       current_cases,
       prob_control,
       R_latest,
@@ -104,9 +104,9 @@ report_summary <- function(summarised_estimates,
   }
 
   if (!is.null(target_folder)) {
-    saveRDS(summary, file.path(target_folder, "summary.rds"))
+    saveRDS(summary_estimates, file.path(target_folder, "summary.rds"))
   }
-  return(summary)
+  return(summary_estimates)
 }
 
 
@@ -188,7 +188,7 @@ report_plots <- function(summarised_estimates, reported,
   )
 
   # summary plot ------------------------------------------------------------
-  summary <- suppressWarnings(
+  plot_summary <- suppressWarnings(
     suppressMessages(
       reports +
         ggplot2::theme(legend.position = "none") +
@@ -226,7 +226,7 @@ report_plots <- function(summarised_estimates, reported,
     reports = reports,
     R = R,
     growth_rate = growth_rate,
-    summary = summary
+    summary = plot_summary
   )
 
   if (!is.null(target_folder)) {

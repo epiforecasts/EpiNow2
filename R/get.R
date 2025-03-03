@@ -15,10 +15,10 @@ get_regions <- function(results_dir) {
   )
 
   # put into alphabetical order
-  regions <- regions[!(regions == "runtimes.csv")]
+  regions <- regions[regions != "runtimes.csv"]
   regions <- sort(regions)
   names(regions) <- regions
-  return(regions)
+  regions
 }
 
 #' Get a Single Raw Result
@@ -39,8 +39,7 @@ get_regions <- function(results_dir) {
 get_raw_result <- function(file, region, date,
                            result_dir) {
   file_path <- file.path(result_dir, region, date, file)
-  object <- readRDS(file_path)
-  return(object)
+  readRDS(file_path)
 }
 #' Get Combined Regional Results
 #'
@@ -115,7 +114,7 @@ get_regional_results <- function(regional_output,
         idcol = "region", fill = TRUE
       )
       out$summarised <- summarised
-      return(out)
+      out
     }
     out <- list()
     out$estimates <- get_estimates_file(
@@ -144,7 +143,7 @@ get_regional_results <- function(regional_output,
         idcol = "region", fill = TRUE
       )
       out$summarised <- summarised
-      return(out)
+      out
     }
     out <- list()
     out$estimates <- get_estimates_data("estimates")

@@ -1,6 +1,6 @@
 # simulate_secondary works as expected with standard parameters
 
-          date.date secondary
+               date secondary
              <Date>     <num>
       1: 2020-02-22        15
       2: 2020-02-23        65
@@ -16,7 +16,7 @@
 
 # simulate_secondary works as expected with additional parameters
 
-          date.date secondary
+               date secondary
              <Date>     <num>
       1: 2020-02-22         1
       2: 2020-02-23        12
