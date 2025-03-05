@@ -114,7 +114,7 @@ simulate_infections <- function(R, initial_infections,
   ))
 
   if (length(stan_data$delay_params_sd) > 0 &&
-      any(stan_data$delay_params_sd > 0)) {
+        any(stan_data$delay_params_sd > 0)) {
     cli_abort(
       c(
         "!" = "Cannot simulate from uncertain parameters.",
@@ -308,7 +308,7 @@ forecast_infections <- function(estimates,
   assert_class(estimates, "estimate_infections")
   assert_names(names(estimates), must.include = "fit")
   if (!(test_numeric(R, lower = 0, null.ok = TRUE) ||
-    test_data_frame(R, null.ok = TRUE))) {
+          test_data_frame(R, null.ok = TRUE))) {
     cli_abort(
       c(
         "!" = "R must either be a {.cls numeric} vector or
@@ -391,7 +391,8 @@ forecast_infections <- function(estimates,
     starting_day <- estimates$args$day_of_week[1]
     days <- max(estimates$args$day_of_week)
     day_of_week <- (
-      (starting_day + rep(0:(days - 1), ceiling((obs_time) / days))) %% days)
+      (starting_day + rep(0:(days - 1), ceiling((obs_time) / days))) %% days
+    )
     day_of_week <- day_of_week[1:(obs_time)]
     day_of_week <- ifelse(day_of_week == 0, days, day_of_week)
 

@@ -168,8 +168,10 @@ plot_estimates <- function(estimate, reported, ylab, hline,
     if (obs_as_col) {
       p <- p +
         ggplot2::geom_col(
-          data = reported[date >= min(estimate$date, na.rm = TRUE) &
-            date <= max(estimate$date, na.rm = TRUE)],
+          data = reported[
+            date >= min(estimate$date, na.rm = TRUE) &
+              date <= max(estimate$date, na.rm = TRUE)
+          ],
           ggplot2::aes(y = confirm), fill = "grey", col = "white",
           show.legend = FALSE, na.rm = TRUE
         )

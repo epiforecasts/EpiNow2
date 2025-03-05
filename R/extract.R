@@ -77,7 +77,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     return(do.call(rstan::extract, extract_args))
   }
   if (!inherits(stan_fit, "CmdStanMCMC") &&
-    !inherits(stan_fit, "CmdStanFit")) {
+        !inherits(stan_fit, "CmdStanFit")) {
     cli_abort(
       "{.var stan_fit} must be a {.cls stanfit}, {.cls CmdStanMCMC} or
       {.cls CmdStanFit} object."

@@ -54,13 +54,13 @@ discrete_pmf <- function(distribution =
     gamma = function(n) {
       pgamma(n, params[["shape"]], params[["rate"]])
     },
-   lognormal = function(n) {
+    lognormal = function(n) {
       plnorm(n, params[["meanlog"]], params[["sdlog"]])
-   },
-   normal = function(n) {
+    },
+    normal = function(n) {
       pnorm(n, params[["mean"]], params[["sd"]])
-   },
-   fixed = function(n) {
+    },
+    fixed = function(n) {
       as.integer(n > params[["value"]])
     }
   )
@@ -877,7 +877,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 
   ## if x is fixed already we don't have to do anything
   if (get_distribution(x) == "nonparametric" ||
-    all(vapply(get_parameters(x), is.numeric, logical(1)))) {
+        all(vapply(get_parameters(x), is.numeric, logical(1)))) {
     return(x)
   }
   ## apply strategy depending on choice

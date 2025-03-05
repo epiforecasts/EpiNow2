@@ -158,8 +158,7 @@ estimate_secondary <- function(data,
                                weigh_delay_priors = FALSE,
                                verbose = interactive(),
                                filter_leading_zeros = FALSE,
-                               zero_threshold = Inf
-                               ) {
+                               zero_threshold = Inf) {
   if (!missing(filter_leading_zeros)) {
     lifecycle::deprecate_stop(
       "1.7.0",

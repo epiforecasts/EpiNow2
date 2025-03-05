@@ -484,7 +484,7 @@ gp_opts <- function(basis_prop = 0.2,
     )
   }
   if (!missing(ls_mean) || !missing(ls_sd) || !missing(ls_min) ||
-    !missing(ls_max)) {
+        !missing(ls_max)) {
     if (!missing(ls)) {
       cli_abort(
         c(
@@ -611,8 +611,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      na = c("missing", "accumulate"),
                      likelihood = TRUE,
                      return_likelihood = FALSE,
-                     phi
-                     ) {
+                     phi) {
   if (!missing(phi)) {
     if (!missing(dispersion)) {
       cli::cli_abort(
