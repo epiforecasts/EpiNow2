@@ -75,7 +75,7 @@ simulate_secondary <- function(primary,
   ))
 
   if (length(stan_data$delay_params_sd) > 0 &&
-      any(stan_data$delay_params_sd > 0)) {
+        any(stan_data$delay_params_sd > 0)) {
     cli_abort(
       c(
         "!" = "Cannot simulate from uncertain parameters.",

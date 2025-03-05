@@ -91,7 +91,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     }
 
     if ((inherits(fit, "stanfit") && fit@mode != 2L) ||
-      inherits(fit, "CmdStanMCMC")) {
+          inherits(fit, "CmdStanMCMC")) {
       fit
     } else {
       NULL

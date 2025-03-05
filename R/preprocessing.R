@@ -133,9 +133,8 @@ fill_missing <- function(data,
       data[is.na(..present), paste(col) := 0]
     }
   }
-  if (missing(initial_accumulate) &&
-    isFALSE(data$accumulate[1]) &&
-    any(data$accumulate)) {
+  if (missing(initial_accumulate) && isFALSE(data$accumulate[1]) &&
+        any(data$accumulate)) {
     # nolint start: duplicate_argument_linter
     cli_warn(
       c(

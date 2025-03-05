@@ -369,7 +369,7 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
     )
     format_out$samples <-
       format_out$samples[is.na(date) ||
-        date >= (start_date + lubridate::days(burn_in))]
+                         date >= (start_date + lubridate::days(burn_in))]
   }
 
   # summarise samples
