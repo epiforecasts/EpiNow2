@@ -107,8 +107,8 @@ regional_epinow <- function(data,
                             return_output = is.null(target_folder),
                             summary_args = list(),
                             verbose = FALSE,
-                            logs = tempdir(check = TRUE), ...
-                            ) {
+                            logs = tempdir(check = TRUE),
+                            ...) {
   if (!missing(horizon)) {
     lifecycle::deprecate_stop(
       "1.7.0",

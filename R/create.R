@@ -602,7 +602,7 @@ create_stan_args <- function(stan = stan_opts(),
   }
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
-    inherits(stan$object, "CmdStanModel")) {
+        inherits(stan$object, "CmdStanModel")) {
     init <- 2
   }
   # set up shared default arguments
