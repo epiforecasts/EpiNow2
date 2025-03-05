@@ -180,3 +180,54 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
     )
   }
 }
+
+
+#' Check that supplied PMFs are not longer than the data
+#'
+#' @param ... Delay distributions
+#' @inheritParams estimate_infections
+#' @importFrom cli cli_warn col_red
+#'
+#' @returns Called for its side effects
+#' @keywords internal
+check_pmf_length_against_data <- function(..., data) {
+  delays <- list(...)
+  flat_delays <- do.call(c, delays)
+  # Track which component each delay came from
+  delay_names <- rep(names(delays), vapply(delays, EpiNow2:::ndist, numeric(1)))
+  names(flat_delays) <- delay_names
+  # Find the non-parametric distributions
+  np_delays <- which(unname(vapply(
+    flat_delays, function(x) {
+      get_distribution(x) == "nonparametric"
+    }, logical(1)
+  )))
+
+  if (length(np_delays) == 0) return(invisible())
+
+  # Check lengths and collect info about exceeding PMFs
+  pmf_longer_than_data <- vapply(flat_delays[np_delays], function(x) {
+    length(x$pmf) > nrow(data)
+  }, logical(1))
+
+  if (any(pmf_longer_than_data)) {
+    # Get details for each long PMF
+    long_pmf_lengths <- vapply(
+      flat_delays[np_delays][pmf_longer_than_data], function(x) {
+        length(x$pmf)
+      }, numeric(1)
+    )
+  }
+
+    cli::cli_warn(
+      c(
+        "!" = "You have supplied PMFs that are longer than the data. ",
+        "{names(long_pmf_lengths)} {?has/have} length{?s}
+        {.val {long_pmf_lengths}} but data has
+        {.val {nrow(data)}} rows.",
+        "i" = "{cli::col_red('These will be trimmed to match the rows in the
+        data. To remove this message, make sure the PMFs have the same length
+        as the data')}"
+      )
+    )
+}
