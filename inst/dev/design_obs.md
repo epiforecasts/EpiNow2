@@ -17,7 +17,7 @@ The delays need to be identified in case they are common across different observ
 
 We're assuming that delays can be equal but the observations are independent (not e.g. hospitalisation conditional on case report)
 
-This means that the current options specified in `delay_opts()`, `trunc_opts()`, `obs_opts()`, the `accumulation` argument in `forecast_opts()` are all specific to the particular observation type.
+This means that the current options specified in `delay_opts()`, `trunc_opts()`, `obs_opts()`, the `accumulation` argument in `forecast_opts()` are all specific to the particular observation type, except delays that can be shared.
 
 ## Implementation
 
