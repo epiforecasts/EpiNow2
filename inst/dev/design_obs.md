@@ -30,26 +30,58 @@ Some variables e.g. for day of the week effects will have to become 2D arrays.
 ### R
 
 The observation options mentioned above will have to be combined in a single interface.
-The proposed solution is that the current `data`, `delays`, `truncation` and `future_accumulation` become folded into a new `obs_model()` (based on `obs_opts()` and these can be passed as `...`, e.g.
+The proposed solution is that the current `data`, `delays`, `truncation` and `future_accumulation` become folded into a new `obs_model()` (based on `obs_opts()` and these can be passed as `obs`.
+
+#### Independent observations
 
 ```r
 estimate_infections(
-  cases = obs_model(
-    data = reported_cases,
-    delays = incubation_period + reporting_delay,
-    truncation = trunc_opts(Lognormal(1, 2)),
-    family = "poisson",
-    accumulation = 7
+  obs = c(
+    obs_model(
+      data = reported_cases,
+      type = "Confirmed cases",
+      delays = incubation_period + reporting_delay,
+      truncation = trunc_opts(Lognormal(1, 2)),
+      family = "poisson",
+      accumulation = 7
+    ),
+    obs_model(
+      data = admissions,
+      type = "Hospital admissions",
+      delays = incubation_period + admission_delay,
+      truncation = trunc_opts(Gamma(1, 1)),
+      family = "negbin",
+      weight = 0.5
+    )
   ),
-  hospitalisations = obs_model(
-    data = admissions,
-    delays = incubation_period + admission_delay,
-    truncation = trunc_opts(Gamma(1, 1)),
-    family = "negbin",
-    weight = 0.5
-  )
   generation_time = generation_time_opts(generation_time)
 )
 ```
 
-The main work will have to be on the interface, e.g. redefining seeding times., accessing predictions for the different observation types, merging dates, etc.
+#### Dependent observations
+
+This covers the case where only confirmed cases are ever admitted to hospital.
+
+```r
+estimate_infections(
+  obs = c(
+    obs_model(
+      data = reported_cases,
+      type = "Confirmed cases",
+      delays = incubation_period + reporting_delay,
+      truncation = trunc_opts(Lognormal(1, 2)),
+      family = "poisson",
+      accumulation = 7,
+      obs = obs_model(
+        data = admissions,
+        type = "Hospital admissions",
+        delays = admission_delay,
+        truncation = trunc_opts(Gamma(1, 1)),
+        family = "negbin",
+        weight = 0.5
+      )
+    ),
+  ),
+  generation_time = generation_time_opts(generation_time)
+)
+`
