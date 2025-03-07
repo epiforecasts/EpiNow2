@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Package changes
+
+- The package now has a hex logo.
+
 ## Bug fixes
 
 - A bug was fixed where `forecast_infections` would fail with `samples = 1`.
