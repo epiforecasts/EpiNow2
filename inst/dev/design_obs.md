@@ -37,17 +37,15 @@ The proposed solution is that the current `data`, `delays`, `truncation` and `fu
 ```r
 estimate_infections(
   obs = c(
-    obs_model(
+    "Confirmed cases" = obs_model(
       data = reported_cases,
-      type = "Confirmed cases",
       delays = incubation_period + reporting_delay,
       truncation = trunc_opts(Lognormal(1, 2)),
       family = "poisson",
       accumulation = 7
     ),
-    obs_model(
+    "Hospital admissions" = obs_model(
       data = admissions,
-      type = "Hospital admissions",
       delays = incubation_period + admission_delay,
       truncation = trunc_opts(Gamma(1, 1)),
       family = "negbin",
@@ -64,24 +62,24 @@ This covers the case where only confirmed cases are ever admitted to hospital.
 
 ```r
 estimate_infections(
-  obs = c(
-    obs_model(
+  ## "Confirmed cases" is the default name
+  obs = obs_model(
       data = reported_cases,
-      type = "Confirmed cases",
       delays = incubation_period + reporting_delay,
       truncation = trunc_opts(Lognormal(1, 2)),
       family = "poisson",
       accumulation = 7,
-      obs = obs_model(
-        data = admissions,
-        type = "Hospital admissions",
-        delays = admission_delay,
-        truncation = trunc_opts(Gamma(1, 1)),
-        family = "negbin",
-        weight = 0.5
+      obs = c(
+        "Hospital admissions" = obs_model(
+          data = admissions,
+          delays = admission_delay,
+          truncation = trunc_opts(Gamma(1, 1)),
+          family = "negbin",
+          weight = 0.5
+        )
       )
     ),
   ),
   generation_time = generation_time_opts(generation_time)
 )
-`
+```
