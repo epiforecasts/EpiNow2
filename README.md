@@ -1,5 +1,5 @@
 
-# EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters
+# EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters <a href="https://epiforecasts.io/EpiNow2/"><img src="man/figures/logo.png" align="right" height="139" alt="EpiNow2 website" /></a>
 
 [![Lifecycle:
 maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#maturing)
