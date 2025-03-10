@@ -107,8 +107,8 @@ regional_epinow <- function(data,
                             return_output = is.null(target_folder),
                             summary_args = list(),
                             verbose = FALSE,
-                            logs = tempdir(check = TRUE), ...
-                            ) {
+                            logs = tempdir(check = TRUE),
+                            ...) {
   if (!missing(horizon)) {
     lifecycle::deprecate_stop(
       "1.7.0",
@@ -310,8 +310,7 @@ clean_regions <- function(data, non_zero_points) {
     # nolint end
   }
   # exclude zero regions
-  reported_cases <- reported_cases[!is.na(region)][region %in% eval_regions]
-  return(reported_cases)
+  reported_cases[!is.na(region)][region %in% eval_regions]
 }
 
 #' Run epinow with Regional Processing Code
@@ -478,5 +477,5 @@ process_regions <- function(regional_out, regions) {
   sucessful_regional_out <- purrr::keep(
     purrr::compact(regional_out), ~ is.finite(.$timing)
   )
-  return(list(all = regional_out, successful = sucessful_regional_out))
+  list(all = regional_out, successful = sucessful_regional_out)
 }

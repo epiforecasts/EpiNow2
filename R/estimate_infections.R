@@ -265,7 +265,7 @@ estimate_infections <- function(data,
   ))
 
   # Set up default settings
-  args <- create_stan_args(
+  stan_args <- create_stan_args(
     stan = stan,
     data = stan_data,
     init = create_initial_conditions(stan_data),
@@ -273,7 +273,7 @@ estimate_infections <- function(data,
   )
 
   # Fit model
-  fit <- fit_model(args, id = id)
+  fit <- fit_model(stan_args, id = id)
 
   # Extract parameters of interest from the fit
   out <- extract_parameter_samples(fit, stan_data,
@@ -369,7 +369,7 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
     )
     format_out$samples <-
       format_out$samples[is.na(date) ||
-        date >= (start_date + lubridate::days(burn_in))]
+                         date >= (start_date + lubridate::days(burn_in))]
   }
 
   # summarise samples
@@ -378,5 +378,5 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
     order_by = c("variable", "date"),
     CrIs = CrIs
   )
-  return(format_out)
+  format_out
 }

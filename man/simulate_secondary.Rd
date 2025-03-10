@@ -18,8 +18,7 @@ simulate_secondary(
 \arguments{
 \item{primary}{a data frame of primary reports (column \code{primary}) by date
 (column \code{date}). Column \code{primary} must be numeric and \code{date} must be in
-date format.  it will be assumed that \code{primary} is zero on the missing
-days.}
+date format.}
 
 \item{day_of_week_effect}{either \code{NULL} (no day of the week effect) or a
 numerical vector of length specified in \code{\link[=obs_opts]{obs_opts()}} as \code{week_length}

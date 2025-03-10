@@ -190,18 +190,17 @@ estimate_truncation <- function(data,
 
   # initial conditions
   init_fn <- function() {
-    data <- c(create_delay_inits(stan_data), list(
+    c(create_delay_inits(stan_data), list(
       dispersion = abs(rnorm(1, 0, 1)),
       sigma = abs(rnorm(1, 0, 1))
     ))
-    return(data)
   }
 
   # fit
-  args <- create_stan_args(
+  stan_args <- create_stan_args(
     stan = stan, data = stan_data, init = init_fn, model = "estimate_truncation"
   )
-  fit <- fit_model(args, id = "estimate_truncation")
+  fit <- fit_model(stan_args, id = "estimate_truncation")
 
   out <- list()
   # Summarise fit truncation distribution for downstream usage
@@ -258,8 +257,7 @@ estimate_truncation <- function(data,
     target_obs <- data.table::merge.data.table(target_obs, estimates,
       by = "index", all.x = TRUE
     )
-    target_obs <- target_obs[order(date)][, index := NULL]
-    return(target_obs)
+    target_obs[order(date)][, index := NULL]
   }
   out$obs <- purrr::map(1:(stan_data$obs_sets), link_obs)
   out$obs <- data.table::rbindlist(out$obs)
@@ -294,7 +292,7 @@ estimate_truncation <- function(data,
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {
-  plot <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
+  p <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
@@ -305,11 +303,11 @@ plot.estimate_truncation <- function(x, ...) {
     ) +
     ggplot2::facet_wrap(~report_date, scales = "free")
 
-  plot <- plot_CrIs(plot, extract_CrIs(x$obs),
+  p <- plot_CrIs(p, extract_CrIs(x$obs),
     alpha = 0.8, linewidth = 1
   )
 
-  plot <- plot +
+  p +
     ggplot2::theme_bw() +
     ggplot2::labs(
       y = "Reports", x = "Date", col = "Type", fill = "Type"
@@ -317,5 +315,4 @@ plot.estimate_truncation <- function(x, ...) {
     ggplot2::scale_x_date(date_breaks = "day", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
-  return(plot)
 }
