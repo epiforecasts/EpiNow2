@@ -1,8 +1,11 @@
 library(EpiNow2)
+library(here)
 library(hexSticker)
 library(ggplot2)
 library(parallel)
 library(magick)
+
+set.seed(4567)
 
 # Make standard plot
 options(mc.cores = detectCores() - 2)
@@ -61,13 +64,13 @@ sticker(
   s_y = 0.51,
   h_fill = "#F5F5F5",
   h_color = "#918cc0",
-  filename = file.path("man", "figures", "logo.png"),
+  filename = here("man", "figures", "logo.png"),
   dpi = 1200,
   white_around_sticker = TRUE
 )
 
 # Make outside of hex sticker transparent
-p <- image_read(file.path("man", "figures", "logo.png"))
+p <- image_read(here("man", "figures", "logo.png"))
 fuzz <- 30
 
 pp <- p |>
@@ -96,7 +99,7 @@ pp <- p |>
     point = paste0("+", image_info(p)$width - 1, "+", image_info(p)$height - 1)
   )
 
-image_write(image = pp, path = file.path("man", "figures", "logo.png"))
+image_write(image = pp, path = here("man", "figures", "logo.png"))
 
-usethis::use_logo(file.path("man", "figures", "logo.png"))
+usethis::use_logo(here("man", "figures", "logo.png"))
 pkgdown::build_favicons(pkg = ".", overwrite = TRUE)
