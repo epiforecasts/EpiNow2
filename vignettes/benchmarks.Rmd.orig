@@ -520,19 +520,14 @@ add_epidemic_phase_levels <- function(data){
 
 # Function to calculate the CRPS of log-transformed values
 calc_crps <- function(estimates, truth) {
-  # if the object is not a matrix, then it's an NA (failed run)
-  if (!inherits(estimates, c("matrix"))) return(rep(NA_real_, length(truth)))
-  # Assumes that the estimates object is structured with the samples as rows
-  shortest_obs_length <- min(ncol(estimates), length(truth))
-  reduced_truth <- tail(truth, shortest_obs_length)
-  estimates_transposed <- t(estimates) # transpose to have samples as columns
-  reduced_estimates <- tail(estimates_transposed, shortest_obs_length)
-  return(
-    crps_sample(
-      log10(reduced_truth),
-      log10(reduced_estimates)
-    )
-  )
+    # if the object is not a matrix, then it's an NA (failed run)
+    if (!inherits(estimates, c("matrix"))) return(rep(NA_real_, length(truth)))
+    # Assumes that the estimates object is structured with the samples as rows
+    shortest_obs_length <- min(ncol(estimates), length(truth))
+    reduced_truth <- head(truth, shortest_obs_length)
+    estimates_transposed <- t(estimates) # transpose to have samples as columns
+    reduced_estimates <- head(estimates_transposed, shortest_obs_length)
+    crps_sample(reduced_truth, reduced_estimates)
 }
 
 # Function to calculate CRPS estimates and flatten the nested list of model values
