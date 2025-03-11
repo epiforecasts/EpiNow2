@@ -49,17 +49,11 @@ The aim of this vignette is to show how these model customisations affect the sp
 
 We will analyse the estimation and real-time forecasting performance of these models when solved with MCMC sampling. `{EpiNow2}` also provides other approximate sampling methods to fit these models ([variational inference](https://mc-stan.org/docs/cmdstan-guide/variational_config.html), [pathfinder method](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html), and [laplace sampling](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html)). However, these algorithms are unstable hence not recommended for use in production pipelines, so we will not emphasise their use. We will, however, highlight how the models perform when fitted with the approximate sampling methods and provide an overview of how and when they may be used.
 
-For the benchmarking exercise, we will compare the models based on their computational speed/runtimes, estimation, and real-time forecasting performance when applied at the growth, peak, and decline phase of a simulated epidemic.
+We will compare the models based on their computational speed/runtimes, estimation, and real-time forecasting performance when applied at the growth, peak, and decline phase of a simulated epidemic.
 
 ## The benchmarking data
 
-We will start by creating the "true" $R_t$ and infections data/trajectories.
-
-We will use `{EpiNow2}`'s `forecast_infections()` function. This function requires a fitted "estimates"" object from `epinow()` with the `output` argument set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate.
-
-To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. For the `data`, we will use the first $60$ observations of the `example_confirmed` data set. We will use the `example_generation_time` for the generation time, and the sum of the incubation period (`example_incubation_period`) and reporting delay (`example_reporting_delay`) as the delay. These delays come with the package.
-
-For the $R_t$ model, we will use a 14-day random walk prior, with a mean of $2$ and standard deviation of $0.1$. Lastly, as we only want to generate estimates, we will turn off forecasting by setting `horizon = 0`.
+Let's start by creating the "true" $R_t$ and infections data/trajectories. The details are shown in the dropdown arrow.
 
 Throughout this vignette, several argument values, including the observation model options and the $R_t$ model prior will be reused, so we will define them here. Note that we use `r detectCores() - 1` cores out of `r detectCores()` cores and this affects the time it takes to run the models.
 
@@ -74,6 +68,16 @@ rt_prior_default <- Normal(2, 0.1)
 # Number of cores
 options(mc.cores = detectCores() - 1)
 ```
+
+<details><summary> Simulating the benchmarking data </summary>
+
+We will use `{EpiNow2}`'s `forecast_infections()` function. This function allows us to generate a posterior that can be re-used to generate infections by changing the Rt trajectory.
+
+`forecast_infections()` requires a fitted "estimates"" object from `epinow()` with the `output` argument set to "fit", the trajectory of the reproduction number, `R`, and the number of samples to simulate.
+
+To obtain the `estimates` object, we will run the `epinow()` function using real-world observed data and delay distributions to recover realistic parameter values. For the `data`, we will use the first $60$ observations of the `example_confirmed` data set. We will use the `example_generation_time` for the generation time, and the sum of the incubation period (`example_incubation_period`) and reporting delay (`example_reporting_delay`) as the delay. These delays come with the package.
+
+For the $R_t$ prior, we will use a 14-day random walk, with a mean of $2$ and standard deviation of $0.1$. Lastly, as we only want to generate estimates, we will turn off forecasting by setting `horizon = 0`.
 
 We'll now generate the `estimates` object from the observed data (`example_confirmed`).
 ```{r generate-estimates}
@@ -90,7 +94,7 @@ estimates <- epinow(
 )
 ```
 
-That's it for the estimates object. Next, we'll set up the `R` data using an arbitrary trajectory that has some Gaussian noise added to it. We'll use it to simulate the true infections data by sampling from $1$ posterior sample.
+That's it for the estimates object. Next, we'll create the `R` data using an arbitrary trajectory that has some Gaussian noise added to it. We'll use it to simulate the true infections data by sampling from $1$ posterior sample.
 ```{r R-data, class.source = 'fold-hide'}
 # Arbitrary reproduction number trajectory
 R <- c(
@@ -123,7 +127,21 @@ infections_true <- forecast$summarised[variable == "infections", .(date, confirm
 
 # Append dates
 R_dat <- data.frame(date = infections_true$date, R = R_noisy)
+```
 
+From the Rt data, the following dates in the second wave represent epidemic growth, peak, and decline. We will use these to create data snapshots later on. We use the second wave so we have enough prior data to fit the models.
+```{r snapshot_dates}
+snapshot_dates <- c(
+    "growth" = as.Date("2020-05-02"),
+    "peak" = as.Date("2020-05-09"),
+    "decline" = as.Date("2020-05-21")
+)
+```
+
+</details>
+
+We now have the benchmarking data. The dotted lines show the growth, peak, and decline phase in infections. These also represent the scenarios that the models will be fit to.
+```{r plot-true-data}
 # Rt plot
 R_traj <- ggplot(data = R_dat) +
   geom_line(aes(x = date, y = R)) +
@@ -135,21 +153,27 @@ R_traj <- ggplot(data = R_dat) +
 # Infections plot
 infections_traj <- ggplot(data = infections_true) +
   geom_line(aes(x = date, y = confirm)) +
+  geom_vline(xintercept = snapshot_dates, linetype = "dashed") +
+  annotate("text", x = snapshot_dates["growth"], y = 7500, label = "Growth", color = "red",
+           angle = 90, vjust = -0.5) +
+  annotate("text", x = snapshot_dates["peak"], y = 7500, label = "Peak", color = "red",
+           angle = 90, vjust = -0.5) +
+  annotate("text", x = snapshot_dates["decline"], y = 7500, label = "Decline", color = "red",
+           angle = 90, vjust = -0.5) +
   scale_y_continuous(label = scales::label_comma()) +
     labs(title = "Infections",
          y = "Infections",
          x = "Date"
     )
+
 # Compose the plots
 (R_traj/infections_traj) +
     plot_layout(axes = "collect") &
-    scale_x_date(date_labels = "%b %d", date_breaks = "1 month") &
+    scale_x_date(date_labels = "%b %d", date_breaks = "1 weeks") &
     theme_minimal()
 ```
 
-We now have the benchmarking data.
-
-Let us proceed to the next step where we will define the models, fit them to the true data, and evaluate their performance.
+Let's proceed to the next step where we will define the models, fit them to the true data, and evaluate their performance.
 
 ## Models
 
@@ -187,7 +211,8 @@ model_descriptions <- expand_grid(
 knitr::kable(model_descriptions |> select(!model_basename), caption = "Model options")
 ```
 
-These are the components of each model.
+<details><summary> Model components </summary>
+
 ```{r model-components,echo = FALSE}
 # Base model names
 model_basename <- c("default", "non_mechanistic", "rw7", "non_residual")
@@ -216,6 +241,8 @@ model_components <- expand_grid(
 
 knitr::kable(model_components, caption = "Model components")
 ```
+
+</details>
 
 ### Configurations
 
@@ -358,14 +385,10 @@ model_inputs <- list(
 )
 ```
 
-Now to the input data. As mentioned earlier, we will run the models on snapshots of the data at the growth, peak, and decline phase. For that, we choose the following dates along the true $R_t$ trajectory.
-```{r snapshot_dates}
-snapshot_dates <- as.Date(c("2020-05-15", "2020-06-21", "2020-06-28"))
-```
-
 ## Running the models
 
-Now, we're ready to run the models. We will use the `epinow()` function and return useful outputs like the timing of model runs. We obtain forecasts for the data excluding the forecast horizon and then compare the forecasts to the data including the horizon in the evaluations. This is often called an out-of-sample evaluation.
+Now, we're ready to run the models.
+
 ```{r run-models, results = 'hide'}
 # create the data snapshots for fitting the models using the snapshot dates. 
 data_snaps <- lapply(
