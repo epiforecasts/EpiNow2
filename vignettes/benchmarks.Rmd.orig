@@ -518,7 +518,7 @@ add_epidemic_phase_levels <- function(data){
   data[]
 }
 
-# Function to calculate the CRPS of log-transformed values
+# Function to calculate the CRPS of predicted values. It ensures that the estimates and truth data are the same length before calculating the crps. It also returns NA if the passed estimates object is not a matrix because the extraction function above returns a matrix.
 calc_crps <- function(estimates, truth) {
     # if the object is not a matrix, then it's an NA (failed run)
     if (!inherits(estimates, c("matrix"))) return(rep(NA_real_, length(truth)))
