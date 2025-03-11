@@ -387,17 +387,16 @@ model_inputs <- list(
 
 ## Running the models
 
-Now, we're ready to run the models.
+Now, we're ready to run the models. We will use snapshots of the true infections data representing the last 10 weeks and including the growth, peak, and decline phase of the second wave.
 
 ```{r run-models, results = 'hide'}
 # create the data snapshots for fitting the models using the snapshot dates. 
 data_snaps <- lapply(
   snapshot_dates,
   function(snap_date) {
-    infections_true[date <= snap_date]
+    tail(infections_true[date <= snap_date], 70)
   }
 )
-names(data_snaps) <- snapshot_dates
 
 # Create a version of epinow() that works like base::try() and works even if some models fail.
 safe_epinow <- purrr::safely(epinow)
