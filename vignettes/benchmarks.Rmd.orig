@@ -406,12 +406,10 @@ results <- lapply(
     lapply(
       model_configs,
       function(model) {
-        # Use subset of the data
-        data_to_fit <- data[1:(.N - model_inputs$forecast$horizon)] # exclude the forecast horizon
-        model_inputs <- c(model_inputs, data = list(data_to_fit))
         do.call(
           safe_epinow,
           c(
+            data = list(data),
             model_inputs,
             model
           )
