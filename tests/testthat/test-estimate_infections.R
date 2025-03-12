@@ -184,3 +184,8 @@ test_that("estimate_infections produces no forecasts when forecast_opts horizon 
   expect_true(!"forecast" %in% unique(out$summarised$type))
   expect_true(out$args$horizon == 0)
 })
+
+test_that("estimate_infections can sample from the prior", {
+  reported_cases[, confirm := NA]
+  test_estimate_infections(reported_cases)
+})
