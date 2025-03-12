@@ -24,7 +24,7 @@ set.seed(9876)
 ```
 ## Quick start
 
-In the following section we give an overview of the simple use case of `EpiNow2` for fitting one location with `epinow()` or multiple locations with `regional_epinow()`.
+In the following section we give an overview of the simple use case for `epinow()` and `regional_epinow()`.
 
 The first step to using the package is to load it as follows.
 
@@ -74,9 +74,9 @@ example_non_parametric_delay <- NonParametric(pmf = c(0.01, 0.1, 0.5, 0.3, 0.09)
 These distributions are passed to downstream functions in the same way that the 
 parametric distributions are. 
 
-Now, to the functionalities.
+Now, to the functions.
 
-### Fitting a single location with [epinow()](https://epiforecasts.io/EpiNow2/reference/epinow.html)
+### [epinow()](https://epiforecasts.io/EpiNow2/reference/epinow.html)
 
 This function represents the core functionality of the package and includes results reporting, plotting, and optional saving. It requires a data frame of cases by date of report and the distributions defined above.
 
@@ -125,16 +125,13 @@ A range of plots are returned (with the single summary plot shown below). These 
 plot(estimates)
 ```
 
-### Fitting multiple locations with [regional_epinow()](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html)
+
+### [regional_epinow()](https://epiforecasts.io/EpiNow2/reference/regional_epinow.html)
 
 The `regional_epinow()` function runs the `epinow()` function across multiple regions in
 an efficient manner.
 
-#### When all regions have the same settings
-
-By default, all locations share the same settings. Let's look at an example.
-
-let's define cases in multiple regions delineated by the region variable.
+Define cases in multiple regions delineated by the region variable.
 
 ```{r}
 reported_cases <- data.table::rbindlist(list(
@@ -144,7 +141,7 @@ reported_cases <- data.table::rbindlist(list(
 head(reported_cases)
 ```
 
-We'll now call `regional_epinow()`, which runs the `epinow()` on each region in turn (or in parallel, if `future = TRUE` and [`future.apply`](https://cran.r-project.org/web/packages/future.apply/index.html) is installed on your computer. More details are provided below). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week.
+Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week.
 
 ```{r, message = FALSE, warning = FALSE}
 estimates <- regional_epinow(
@@ -169,52 +166,4 @@ A range of plots are again returned (with the single summary plot shown below).
 
 ```{r plot_regional_epinow_summary, message = FALSE, warning = FALSE}
 estimates$summary$summary_plot
-```
-
-#### When regions have different settings
-
-Region-specific settings can be applied with the [`opts_list()`](https://epiforecasts.io/EpiNow2/reference/opts_list.html) function.
-
-As an example, let's use `reported_cases` from the previous example and define a 7-day random walk for testland and maintain the default for realland.
-
-```{r}
-rt <- opts_list(
-  rt_opts(),
-  reported_cases,
-  testland = rt_opts(rw = 7) # Modify the default setting for testland
-)
-```
-
-Run the model
-```{r, message = FALSE, warning = FALSE}
-estimates <- regional_epinow(
-  data = reported_cases,
-  generation_time = gt_opts(example_generation_time),
-  delays = delay_opts(example_incubation_period + reporting_delay),
-  rt = rt,
-  gp = NULL,
-  stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
-)
-```
-The summary looks like this
-```{r summary_reg_epinow_opts_list_eg}
-knitr::kable(estimates$summary$summarised_results$table)
-```
-
-And the plots look like this.
-```{r plot_reg_epinow_opts_list_eg, message = FALSE, warning = FALSE}
-estimates$summary$summary_plot
-```
-
-Another way to do this is by first defining the defaults for all regions with `opts_list()` and modifying individual components
-
-```{r}
-rt <- opts_list(
-  rt_opts(),
-  reported_cases
-)
-
-rt$testland$rw <- 7 # Modify the default setting for testland
-
-rt
 ```
