@@ -194,7 +194,7 @@ check_pmf_length_against_data <- function(..., data) {
   delays <- list(...)
   flat_delays <- do.call(c, delays)
   # Track which component each delay came from
-  delay_names <- rep(names(delays), vapply(delays, EpiNow2:::ndist, numeric(1)))
+  delay_names <- rep(names(delays), vapply(delays, ndist, numeric(1)))
   names(flat_delays) <- delay_names
   # Find the non-parametric distributions
   np_delays <- which(unname(vapply(
