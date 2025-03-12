@@ -9,6 +9,7 @@
 - A bug was fixed where `forecast_infections` would fail with `samples = 1`.
 - A bug was fixed where `opts_list()` recursed lists which it shouldn't.
 - A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
+- A bug was fixed where `estimate_infection()` threw an error if there were too many consecutive `NA` observations.
 
 # EpiNow2 1.7.1
 
