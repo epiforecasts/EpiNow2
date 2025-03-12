@@ -415,6 +415,7 @@ lapply_func <- function(..., backend = "rstan", future.opts = list()) {
 
 ##' Pads reported cases with daily initial zeros
 ##'
+##' @param reported_cases A <data.frame> of reported cases.
 ##' @param n The number of days to pad the reported cases by.
 ##' @param with What to pad with
 ##' @return A data.table of reported cases.

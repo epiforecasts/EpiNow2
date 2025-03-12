@@ -7,7 +7,7 @@
 pad_reported_cases(reported_cases, n, with = NA_real_)
 }
 \arguments{
-\item{reported_cases}{A <data.frame> of reported cases}
+\item{reported_cases}{A <data.frame> of reported cases.}
 
 \item{n}{The number of days to pad the reported cases by.}
 

@@ -233,7 +233,6 @@ estimate_infections <- function(data,
     gp = gp,
     obs = obs,
     backcalc = backcalc,
-    shifted_cases = shifted_cases$confirm,
     forecast = forecast
   )
 

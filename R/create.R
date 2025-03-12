@@ -395,8 +395,6 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' construct a single list for input into stan with all data required
 #' present.
 #'
-#' @param shifted_cases A `<data.frame>` of delay shifted cases
-#'
 #' @param seeding_time Integer; seeding time, usually obtained using
 #' [get_seeding_time()].
 #'
@@ -417,7 +415,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' )
 #' }
 create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
-                             shifted_cases, forecast) {
+                             forecast) {
   cases <- data[(seeding_time + 1):.N]
   cases[, lookup := seq_len(.N)]
   case_times <- cases[!is.na(confirm), lookup]
