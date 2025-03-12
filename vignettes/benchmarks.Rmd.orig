@@ -423,26 +423,15 @@ results <- lapply(
 ## Evaluating model performance
 
 We will now evaluate the models.
+
+<details><summary> Extraction functions </summary>
+
+We'll begin by setting up the following post-processing functions:
+
 ```{r extraction-funcs, class.source = 'fold-hide'}
-# We'll begin by setting up the following functions:
-
-# - `extract_results()`: extract a subset of variables of interest ("timing", "Rt", and "infections") from an `epinow()` run.
-# - `get_model_results()`: apply `extract_results()` to a nested list of model runs per snapshot date.
-# - `add_fit_type()`: re-categorise the four(4) fitting methods into MCMC and approximate.
-# - `make_cols_factors` convert all columns into factor, except the columns in the `except` column.
-# - `add_epidemic_phase_levels()`: add factor levels to the `epidemic_phase` column to allow for easy ordering.
-# - `calc_crps()`: calculate the CRPS using the [scoringutils](https://epiforecasts.io/scoringutils/) R package.
-# - `process_crps()`: calculate CRPS estimates for the nested list of model runs per snapshot date and flatten into a simple list.
-# - `add_model_details()`: Add the model components and descriptions to the results of `process_crps()`.
-# - `calculate_total_crps()`: calculate total CRPS for each model.
-# - `plot_total_crps()`: plot the total CRPS for each model.
-# - `plot_crps_over_time()`: # plot CRPS over time per model.
-
-# Functions needed 
-
 # Function to extract the "timing", "Rt", "infections", and "reports" variables from an
 # epinow() run. It expects a model run, x, which contains a "results" or "error" component.
-# If all went well, "error" should be NULL.
+# If the model run successfully, "error" should be NULL.
 extract_results <- function(x, variable) {
   stopifnot(
     "variable must be one of c(\"timing\", \"R\", \"infections\", \"reports\")" =
@@ -466,12 +455,12 @@ extract_results <- function(x, variable) {
     if (variable == "R") {
       # The non-mechanistic model returns "gen_R" where as the others sample "R".
       if ("R[1]" %in% names(obj)) {
-        return(extract(obj, "R")$R)
+        return(rstan::extract(obj, "R")$R)
       } else {
-        return(extract(obj, "gen_R")$gen_R)
+        return(rstan::extract(obj, "gen_R")$gen_R)
       }
     } else {
-      return(extract(obj, variable)[[variable]])
+      return(rstan::extract(obj, variable)[[variable]])
     }
   } else {
     obj_mat <- as_draws_matrix(obj)
@@ -488,20 +477,20 @@ extract_results <- function(x, variable) {
     }
 }
 
-# Wrapper for extracting the results and making them into a data.table
+# Apply `extract_results()` to a nested list of model runs per snapshot date.
 get_model_results <- function(results_by_snapshot, variable) {
   # Get model results list
   purrr::map_depth(results_by_snapshot, 2, extract_results, variable)
 }
-# Function to categorise fitting methods into mcmc and approximate
+
+# Re-categorise the four(4) fitting methods into either MCMC or approximate.
 add_fit_type <- function(data){
   data[, fit_type := ifelse(fitting == "mcmc", "mcmc", "approximate")]
   data[]
 }
 
-# Function to convert all columns to factor except the specified cols in `except` (which should be DateTime)
+# Function to convert all columns to factor except the specified cols in `except`
 make_cols_factors <- function(data, except){
-  # Make all columns except timing a factor
   data[
     ,
     (setdiff(names(data), except)) :=
@@ -511,14 +500,13 @@ make_cols_factors <- function(data, except){
   data[]
 }
 
-# Add factor levels
+# Add factor levels to the `epidemic_phase` column to allow for easy ordering.
 add_epidemic_phase_levels <- function(data){
-  # Add epidemic phase as a factor
   data[, epidemic_phase := factor(epidemic_phase, levels = c("growth", "peak", "decline"))]
   data[]
 }
 
-# Function to calculate the CRPS of predicted values. It ensures that the estimates and truth data are the same length before calculating the crps. It also returns NA if the passed estimates object is not a matrix because the extraction function above returns a matrix.
+# Calculate the CRPS using the [scoringutils](https://epiforecasts.io/scoringutils/) R package. It ensures that the estimates and truth data are the same length before calculating the crps. It also returns NA if the passed estimates object is not a matrix because the extraction function above returns a matrix.
 calc_crps <- function(estimates, truth) {
     # if the object is not a matrix, then it's an NA (failed run)
     if (!inherits(estimates, c("matrix"))) return(rep(NA_real_, length(truth)))
@@ -530,7 +518,7 @@ calc_crps <- function(estimates, truth) {
     crps_sample(reduced_truth, reduced_estimates)
 }
 
-# Function to calculate CRPS estimates and flatten the nested list of model values
+# Calculate CRPS estimates for the nested list of model runs per snapshot date and flatten into a simple list.
 process_crps <- function(results, variable, truth) {
   # Extract values
   results_by_snapshot <- get_model_results(results, variable = variable)
@@ -547,7 +535,7 @@ process_crps <- function(results, variable, truth) {
     crps_by_snapshot,
     2,
     ~ data.table(crps = .x)[,
-      date := min(reported_cases_true$date) + 0: (.N - 1)
+      date := min(infections_true$date) + 0: (.N - 1)
     ]
   )
 
@@ -559,17 +547,17 @@ process_crps <- function(results, variable, truth) {
     }) |>
     rbindlist(idcol = "snapshot_date")
 
+  snapshot_date_labels <- names(snapshot_dates)
   # Replace the snapshot dates with their description
-  crps_flat[, epidemic_phase := names(snapshot_date_labels)[
+  crps_flat[, epidemic_phase := snapshot_date_labels[
     match(snapshot_date, snapshot_date_labels)
   ]]
 
   return(crps_flat)
 }
 
-# Add model details (components and descriptions useful for summarising)
+# Add the model components and descriptions to the results of `process_crps()`.
 add_model_details <- function(crps_by_model){
-  # Add model configurations for facetting
   with_model_components <- merge.data.table(
     crps_by_model,
     model_components,
@@ -585,12 +573,12 @@ add_model_details <- function(crps_by_model){
   crps_dt[]
 }
 
-# Define a function to calculate total CRPS stratified by the "by" vector
+# Calculate total CRPS stratified by the "by" vector
 calculate_total_crps <- function(data, by) {
   data[, .(total_crps = sum(crps, na.rm = TRUE)), by = by]
 }
 
-# Define a function to plot total CRPS
+# Plot total CRPS. It returns a ggplot object that can take further layers.
 plot_total_crps <- function(data, title) {
   plot <- ggplot(data = data) +
     geom_point(
@@ -615,7 +603,7 @@ plot_total_crps <- function(data, title) {
   return(plot)
 }
 
-# Define a function to plot CRPS over time
+# Plot CRPS over time. It returns a ggplot object that can take further layers.
 plot_crps_over_time <- function(data, title) {
   plot <- ggplot(data = data[!is.na(crps)]) + # remove failed models
     geom_line(
@@ -642,6 +630,7 @@ plot_crps_over_time <- function(data, title) {
   return(plot)
 }
 ```
+</details>
 
 ### Run times (computational resources)
 
