@@ -253,6 +253,7 @@ add_horizon <- function(data, horizon, accumulate = 1L,
           accumulate := FALSE,
           env = list(future_accumulate = accumulate)
         ]
+        reported_cases_future[, counter := NULL]
       }
     }
     ## fill any missing columns

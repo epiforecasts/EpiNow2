@@ -413,6 +413,36 @@ lapply_func <- function(..., backend = "rstan", future.opts = list()) {
   }
 }
 
+##' Pads reported cases with daily initial zeros
+##'
+##' @param n The number of days to pad the reported cases by.
+##' @param with What to pad with
+##' @return A data.table of reported cases.
+##' @importFrom data.table data.table rbindlist
+##' @inheritParams create_stan_data
+##' @keywords internal
+pad_reported_cases <- function(reported_cases, n, with = NA_real_) {
+  if (n > 0) {
+    pad_dt <- data.table(
+      date = seq(
+        min(reported_cases$date) - n,
+        min(reported_cases$date) - 1,
+        by = "days"
+      ),
+      confirm = with
+    )
+    if ("accumulate" %in% colnames(reported_cases)) {
+      pad_dt[, accumulate := FALSE]
+    }
+    if ("breakpoint" %in% colnames(reported_cases)) {
+      pad_dt[, breakpoint := 0]
+    }
+  } else {
+    pad_dt <- data.table()
+  }
+  rbindlist(list(pad_dt, reported_cases))
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
 #' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
 globalVariables(
