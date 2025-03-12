@@ -660,10 +660,10 @@ runtimes_dt_detailed <- merge(
 )
 
 # snapshot dates dictionary
-snapshot_date_labels <- c(growth = "2020-05-15", peak = "2020-06-21", decline = "2020-06-28")
+snapshot_date_labels <- names(snapshot_dates)
 
 # Replace snapshot_date based on the dictionary
-runtimes_dt_detailed[, epidemic_phase := names(snapshot_date_labels)[match(snapshot_date, snapshot_date_labels)]]
+runtimes_dt_detailed[, epidemic_phase := snapshot_date_labels[match(snapshot_date, snapshot_date_labels)]]
 
 # Add model descriptions
 runtimes_dt_detailed <- merge(
