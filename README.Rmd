@@ -11,7 +11,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters
+# EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters <a href="https://epiforecasts.io/EpiNow2/"><img src="man/figures/logo.png" align="right" height="139" alt="EpiNow2 website" /></a>
 
 [![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#maturing) [![R-CMD-check](https://github.com/epiforecasts/EpiNow2/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/epiforecasts/EpiNow2/actions/workflows/R-CMD-check.yaml) [![codecov](https://codecov.io/gh/epiforecasts/EpiNow2/branch/main/graph/badge.svg?token=FZWwEMdpq6)](https://app.codecov.io/gh/epiforecasts/EpiNow2) [![](https://cranlogs.r-pkg.org/badges/grand-total/EpiNow2)](https://cran.r-project.org/package=EpiNow2)
 
@@ -164,6 +164,7 @@ you can file an issue [here](https://github.com/epiforecasts/EpiNow2/issues). We
 
 
 
+
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
@@ -184,10 +185,10 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jdmunday">jdmunday</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=kaitejohnson">kaitejohnson</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pearsonca">pearsonca</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=Bisaloo">Bisaloo</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=JAllen42">JAllen42</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=adamkucharski">adamkucharski</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=andrjohns">andrjohns</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=Bisaloo">Bisaloo</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=medewitt">medewitt</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=nikosbosse">nikosbosse</a>, 
@@ -233,7 +234,7 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Anlinton">nlinton</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amartinamcm">martinamcm</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aadrian-lison">adrian-lison</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amicahwiesner67">micahwiesner67</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ajonathonmellor">jonathonmellor</a>
 
 
 
@@ -250,6 +251,7 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
 
 
 
