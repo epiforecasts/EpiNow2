@@ -123,7 +123,7 @@ Now, we can extract and plot the true $R_t$ and infections data. These will be u
 R_true <- forecast$summarised[variable == "R"]$mean # same as R_noisy
 
 # Extract the simulated infections
-infections_true <- forecast$summarised[variable == "infections", .(date, confirm = mean)]
+infections_true <- forecast$summarised[variable == "infections", .(date, confirm = ceiling(mean))]
 
 # Append dates
 R_dat <- data.frame(date = infections_true$date, R = R_noisy)
