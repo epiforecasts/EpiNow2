@@ -6,6 +6,8 @@
 \alias{EpiNow2-package}
 \title{EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 Estimates the time-varying reproduction number, rate of spread, and doubling time using a range of open-source tools (Abbott et al. (2020) \doi{10.12688/wellcomeopenres.16006.1}), and current best practices (Gostic et al. (2020) \doi{10.1101/2020.06.18.20134858}). It aims to help users avoid some of the limitations of naive implementations in a framework that is informed by community feedback and is actively supported.
 }
 \seealso{
@@ -46,6 +48,7 @@ Other contributors:
   \item Lloyd Chapman \email{lloyd.chapman1@lshtm.ac.uk} [contributor]
   \item Andrew Johnson \email{andrew.johnson@arjohnsonau.com} [contributor]
   \item Kaitlyn Johnson \email{johnsonkaitlyne9@gmail.com} (\href{https://orcid.org/0000-0001-8011-0012}{ORCID}) [contributor]
+  \item Adam Howes \email{adamthowes@gmail.com} (\href{https://orcid.org/0000-0003-2386-4031}{ORCID}) [contributor]
 }
 
 }
