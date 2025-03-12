@@ -713,7 +713,6 @@ timing_plot <- ggplot(data = runtimes_dt_detailed) +
   theme_minimal() +
   scale_color_brewer(palette = "Dark2") +
   scale_shape_manual(values = c(1, 0, 6, 8)) +
-  facet_wrap(~fit_type, scales = "free_y", nrow = 2, strip.position = "top") +
   theme(plot.title = element_text(size = 18),
         strip.text = element_text(size = 13),
         axis.title = element_text(size = 13),
