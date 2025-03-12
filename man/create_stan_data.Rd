@@ -5,7 +5,7 @@
 \title{Create Stan Data Required for estimate_infections}
 \usage{
 create_stan_data(
-  data,
+  reported_cases,
   seeding_time,
   rt,
   gp,
@@ -16,14 +16,7 @@ create_stan_data(
 )
 }
 \arguments{
-\item{data}{A \verb{<data.frame>} of disease reports (confirm) by date (date).
-\code{confirm} must be numeric and \code{date} must be in date format. Optionally
-this can also have a logical \code{accumulate} column which indicates whether
-data should be added to the next data point. This is useful when modelling
-e.g. weekly incidence data. See also the \code{\link[=fill_missing]{fill_missing()}} function which
-helps add the \code{accumulate} column with the desired properties when dealing
-with non-daily data. If any accumulation is done this happens after
-truncation as specified by the \code{truncation} argument.}
+\item{reported_cases}{A <data.frame> of reported cases}
 
 \item{seeding_time}{Integer; seeding time, usually obtained using
 \code{\link[=get_seeding_time]{get_seeding_time()}}.}
