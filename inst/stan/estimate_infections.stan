@@ -42,10 +42,15 @@ transformed data {
   }
 
   // initial infections scaling (on the log scale)
-  real initial_infections_guess = fmax(
-    0,
-    log(mean(head(cases, num_elements(cases) > 7 ? 7 : num_elements(cases))))
-  );
+  real initial_infections_guess;
+  if (num_elements(cases) > 0) {
+    initial_infections_guess = fmax(
+      0,
+      log(mean(head(cases, num_elements(cases) > 7 ? 7 : num_elements(cases))))
+    );
+  } else {
+    initial_infections_guess = 0;
+  }
 }
 
 parameters {
