@@ -158,29 +158,15 @@ test_that("estimate_infections works as expected with failing chains", {
 })
 
 test_that("estimate_infections produces no forecasts when forecast = NULL", {
-  suppressMessages(suppressWarnings(
-    out <- estimate_infections(
-      data = reported_cases,
-      generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(example_incubation_period),
-      stan = stan_opts(method = "vb"), # vb used for speed
-      forecast = NULL
-    )
-  ))
+  out <- test_estimate_infections(data = reported_cases, forecast = NULL)
   expect_true(!"forecast" %in% unique(out$summarised$type))
   expect_true(out$args$horizon == 0)
 })
 
 test_that("estimate_infections produces no forecasts when forecast_opts horizon is 0", {
-  suppressMessages(suppressWarnings(
-    out <- estimate_infections(
-      data = reported_cases,
-      generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(example_incubation_period),
-      stan = stan_opts(method = "vb"), # vb used for speed
-      forecast = forecast_opts(horizon = 0)
-    )
-  ))
-  expect_true(!"forecast" %in% unique(out$summarised$type))
+  out <- test_estimate_infections(
+    data = reported_cases, forecast = forecast_opts(horizon = 0)
+  )
+   expect_true(!"forecast" %in% unique(out$summarised$type))
   expect_true(out$args$horizon == 0)
 })
