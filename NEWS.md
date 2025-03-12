@@ -10,6 +10,10 @@
 - A bug was fixed where `opts_list()` recursed lists which it shouldn't.
 - A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
 
+## Documentation
+
+- If users supply PMFs that are longer than the data, they are now informed that this will be trimmed to match the length of the data. By @jamesmbaazam in #998 and reviewed by @seabbs.
+
 # EpiNow2 1.7.1
 
 This is a patch release in response to an upstream issue in `rstan`, as flagged in CRAN checks.
