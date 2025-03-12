@@ -294,47 +294,49 @@ estimates$summary$summary_plot
 
 ![plot of chunk plot_regional_epinow_summary](EpiNow2-plot_regional_epinow_summary-1.png)
 
-#### When regions have different settings
-
-Region-specific settings can be applied with the [`opts_list()`](https://epiforecasts.io/EpiNow2/reference/opts_list.html) function.
-
-As an example, let's use `reported_cases` from the previous example and define a 7-day random walk for testland and maintain the default for realland.
+If instead, the regions have different settings, the `opts_list()` function can be used. Here is an example where we assign testland a different ascertainment rate of 0.5, which by default is 1.
 
 
 ``` r
-rt <- opts_list(
-  rt_opts(),
+obs <- opts_list(
+  obs_opts(),
   reported_cases,
-  testland = rt_opts(rw = 7) # Modify the default setting for testland
+  testland = obs_opts(scale = Fixed(0.5))
 )
 ```
 
-Run the model
 
 ``` r
 estimates <- regional_epinow(
   data = reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
-  rt = rt,
+  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2), rw = 7),
+  obs = obs,
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
 )
-#> INFO [2025-03-10 14:52:24] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2025-03-10 14:52:24] Reporting estimates using data up to: 2020-04-21
-#> INFO [2025-03-10 14:52:24] No target directory specified so returning output
-#> INFO [2025-03-10 14:52:24] Producing estimates for: testland, realland
-#> INFO [2025-03-10 14:52:24] Regions excluded: none
-#> INFO [2025-03-10 14:52:34] Completed estimates for: testland
-#> INFO [2025-03-10 14:52:36] Completed estimates for: realland
-#> INFO [2025-03-10 14:52:36] Completed regional estimates
-#> INFO [2025-03-10 14:52:36] Regions with estimates: 2
-#> INFO [2025-03-10 14:52:36] Regions with runtime errors: 0
-#> INFO [2025-03-10 14:52:36] Producing summary
-#> INFO [2025-03-10 14:52:36] No summary directory specified so returning summary output
-#> INFO [2025-03-10 14:52:37] No target directory specified so returning timings
+#> INFO [2025-03-12 12:22:43] Producing following optional outputs: regions, summary, samples, plots, latest
+#> Logging threshold set at INFO for the name logger
+#> Writing EpiNow2 logs to the console and:
+#> '/var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpJrDcPi/regional-epinow/2020-04-21.log'.
+#> Logging threshold set at INFO for the name logger
+#> Writing EpiNow2.epinow logs to:
+#> '/var/folders/vr/dn4r1_zj417drd1zr9301trw0000gp/T//RtmpJrDcPi/epinow/2020-04-21.log'.
+#> INFO [2025-03-12 12:22:43] Reporting estimates using data up to: 2020-04-21
+#> INFO [2025-03-12 12:22:43] No target directory specified so returning output
+#> INFO [2025-03-12 12:22:43] Producing estimates for: testland, realland
+#> INFO [2025-03-12 12:22:43] Regions excluded: none
+#> INFO [2025-03-12 12:22:51] Completed estimates for: testland
+#> INFO [2025-03-12 12:23:00] Completed estimates for: realland
+#> INFO [2025-03-12 12:23:00] Completed regional estimates
+#> INFO [2025-03-12 12:23:00] Regions with estimates: 2
+#> INFO [2025-03-12 12:23:00] Regions with runtime errors: 0
+#> INFO [2025-03-12 12:23:00] Producing summary
+#> INFO [2025-03-12 12:23:00] No summary directory specified so returning summary output
+#> INFO [2025-03-12 12:23:00] No target directory specified so returning timings
 ```
-The summary looks like this
+
 
 ``` r
 knitr::kable(estimates$summary$summarised_results$table)
@@ -342,88 +344,18 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 
 
-|Region   |New infections per day |Expected change in reports |Effective reproduction no. |Rate of growth         |Doubling/halving time (days) |
-|:--------|:----------------------|:--------------------------|:--------------------------|:----------------------|:----------------------------|
-|realland |19142 (10733 -- 33387) |Increasing                 |1.2 (1.2 -- 1.3)           |0.054 (0.038 -- 0.068) |13 (10 -- 18)                |
-|testland |2019 (1034 -- 3973)    |Likely decreasing          |0.85 (0.61 -- 1.2)         |-0.04 (-0.11 -- 0.038) |-17 (18 -- -6.4)             |
+|Region   |New infections per day |Expected change in reports |Effective reproduction no. |Rate of growth          |Doubling/halving time (days) |
+|:--------|:----------------------|:--------------------------|:--------------------------|:-----------------------|:----------------------------|
+|realland |2003 (1078 -- 3899)    |Likely decreasing          |0.85 (0.63 -- 1.1)         |-0.043 (-0.11 -- 0.037) |-16 (19 -- -6.4)             |
+|testland |3963 (2019 -- 7759)    |Likely decreasing          |0.85 (0.61 -- 1.2)         |-0.042 (-0.11 -- 0.04)  |-16 (17 -- -6.1)             |
 
 
 
-And the plots look like this.
+A range of plots are again returned (with the single summary plot shown below).
+
 
 ``` r
 estimates$summary$summary_plot
 ```
 
-![plot of chunk plot_reg_epinow_opts_list_eg](EpiNow2-plot_reg_epinow_opts_list_eg-1.png)
-
-Another way to do this is by first defining the defaults for all regions with `opts_list()` and modifying individual components
-
-
-``` r
-rt <- opts_list(
-  rt_opts(),
-  reported_cases
-)
-
-rt$testland$rw <- 7 # Modify the default setting for testland
-
-rt
-#> $testland
-#> $use_rt
-#> [1] TRUE
-#> 
-#> $rw
-#> [1] 7
-#> 
-#> $use_breakpoints
-#> [1] TRUE
-#> 
-#> $future
-#> [1] "latest"
-#> 
-#> $pop
-#> [1] 0
-#> 
-#> $gp_on
-#> [1] "R_t-1"
-#> 
-#> $prior
-#> - lognormal distribution:
-#>   meanlog:
-#>     -0.35
-#>   sdlog:
-#>     0.83
-#> 
-#> attr(,"class")
-#> [1] "rt_opts" "list"   
-#> 
-#> $realland
-#> $use_rt
-#> [1] TRUE
-#> 
-#> $rw
-#> [1] 0
-#> 
-#> $use_breakpoints
-#> [1] TRUE
-#> 
-#> $future
-#> [1] "latest"
-#> 
-#> $pop
-#> [1] 0
-#> 
-#> $gp_on
-#> [1] "R_t-1"
-#> 
-#> $prior
-#> - lognormal distribution:
-#>   meanlog:
-#>     -0.35
-#>   sdlog:
-#>     0.83
-#> 
-#> attr(,"class")
-#> [1] "rt_opts" "list"
-```
+![plot of chunk plot_opts_list_eg](EpiNow2-plot_opts_list_eg-1.png)
