@@ -426,7 +426,7 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   confirmed_cases <- cases[1:(.N - forecast$horizon)]$confirm
   if (is.null(rt)) {
     shifted_cases <- create_shifted_cases(
-      reported_cases,
+      data,
       shift = seeding_time,
       smoothing_window = backcalc$prior_window,
       horizon = forecast$horizon
