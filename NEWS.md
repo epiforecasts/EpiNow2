@@ -11,6 +11,10 @@
 - A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
 - A bug was fixed where `estimate_infection()` threw an error if there were too many consecutive `NA` observations.
 
+## Documentation
+
+- Added documentation about doing prior predictive checks. By @jamesmbaazam in # and reviewed by <REVIEWER>.
+
 # EpiNow2 1.7.1
 
 This is a patch release in response to an upstream issue in `rstan`, as flagged in CRAN checks.
