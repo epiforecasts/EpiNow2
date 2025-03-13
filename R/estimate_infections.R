@@ -187,9 +187,6 @@ estimate_infections <- function(data,
 
   set_dt_single_thread()
 
-  # store dirty reported case data
-  dirty_reported_cases <- data.table::copy(data)
-
   if (!is.null(rt) && !rt$use_rt) {
     rt <- NULL
   }
@@ -222,28 +219,11 @@ estimate_infections <- function(data,
   # Record earliest date with data
   start_date <- min(reported_cases$date, na.rm = TRUE)
 
+  # Determine seeding time
   seeding_time <- get_seeding_time(delays, generation_time, rt)
 
-  # Create mean shifted reported cases as prior
-  reported_cases <- data.table::rbindlist(list(
-    data.table::data.table(
-      date = seq(
-        min(reported_cases$date) - seeding_time - backcalc$prior_window,
-        min(reported_cases$date) - 1,
-        by = "days"
-      ),
-      confirm = 0, accumulate = FALSE, breakpoint = 0
-    ),
-    reported_cases[, .(date, confirm, accumulate, breakpoint)]
-  ))
-
-  shifted_cases <- create_shifted_cases(
-    reported_cases,
-    seeding_time,
-    backcalc$prior_window,
-    forecast$horizon
-  )
-  reported_cases <- reported_cases[-(1:backcalc$prior_window)]
+  # Add initial zeroes
+  reported_cases <- pad_reported_cases(reported_cases, seeding_time)
 
   # Define stan model parameters
   stan_data <- create_stan_data(
@@ -253,7 +233,6 @@ estimate_infections <- function(data,
     gp = gp,
     obs = obs,
     backcalc = backcalc,
-    shifted_cases = shifted_cases$confirm,
     forecast = forecast
   )
 
@@ -283,16 +262,6 @@ estimate_infections <- function(data,
       reported_cases$date[-(1:stan_data$seeding_time)][stan_data$imputed_times]
   )
 
-  ## Add initial infections estimate
-  if (length(delays) > 0) {
-    out$initial_infections_estimate <- shifted_cases[
-      ,
-      .(
-        parameter = "initial_infections_estimate", time = seq_len(.N),
-        date, value = confirm, sample = 1
-      )
-    ]
-  }
   # Format output
   format_out <- format_fit(
     posterior_samples = out,
@@ -308,7 +277,7 @@ estimate_infections <- function(data,
     format_out$fit <- fit
     format_out$args <- stan_data
   }
-  format_out$observations <- dirty_reported_cases
+  format_out$observations <- reported_cases
   class(format_out) <- c("estimate_infections", class(format_out))
   return(format_out)
 }
