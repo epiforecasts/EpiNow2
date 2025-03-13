@@ -68,8 +68,10 @@
 #' threshold then the zero is replaced using `fill`.
 #'
 #' @export
-#' @return A list of output including: posterior samples, summarised posterior
-#' samples, data used to fit the model, and the fit object itself.
+#' @return An `<estimate_infections>` object which is a list of outputs
+#' including: the stan object (`fit`), arguments used to fit the model
+#' (`args`), and the observed data (`observations`). The estimates included in
+#' the fit can be accessed using the `summary()` function.
 #'
 #' @seealso [epinow()] [regional_epinow()] [forecast_infections()]
 #' [estimate_truncation()]
@@ -80,7 +82,6 @@
 #' @inheritParams create_gp_data
 #' @inheritParams create_obs_model
 #' @inheritParams fit_model_with_nuts
-#' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table
 #' @importFrom data.table setorder rbindlist melt .N setDT
 #' @importFrom lubridate days
@@ -143,7 +144,14 @@ estimate_infections <- function(data,
                                 filter_leading_zeros = TRUE,
                                 zero_threshold = Inf,
                                 horizon) {
-  if (!missing(filter_leading_zeros)) {
+  if (!missing(CrIs)) {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      "estimate_infections(CrIs)",
+      detail = "Specify credible intervals when using `summary()` or `plot()`."
+    )
+  }
+   if (!missing(filter_leading_zeros)) {
     lifecycle::deprecate_stop(
       "1.7.0",
       "estimate_infections(filter_leading_zeros)",
@@ -269,30 +277,15 @@ estimate_infections <- function(data,
   # Fit model
   fit <- fit_model(stan_args, id = id)
 
-  # Extract parameters of interest from the fit
-  out <- extract_parameter_samples(fit, stan_data,
-    reported_inf_dates = reported_cases$date,
-    reported_dates = reported_cases$date[-(1:stan_data$seeding_time)],
-    imputed_dates =
-      reported_cases$date[-(1:stan_data$seeding_time)][stan_data$imputed_times]
-  )
-
-  # Format output
-  format_out <- format_fit(
-    posterior_samples = out,
-    horizon = stan_data$horizon,
-    shift = stan_data$seeding_time,
-    CrIs = CrIs
+  ret <- list(
+    fit = fit,
+    args = stan_data,
+    observations = reported_cases
   )
 
   ## Join stan fit if required
-  if (stan$return_fit) {
-    format_out$fit <- fit
-    format_out$args <- stan_data
-  }
-  format_out$observations <- reported_cases
-  class(format_out) <- c("estimate_infections", class(format_out))
-  return(format_out)
+  class(ret) <- c("epinowfit", "estimate_infections", class(ret))
+  return(ret)
 }
 
 #' Format Posterior Samples

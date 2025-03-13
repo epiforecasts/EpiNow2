@@ -388,7 +388,7 @@ plot.estimate_infections <- function(x,
                                        "growth_rate", "all"
                                      ), ...) {
   out <- report_plots(
-    summarised_estimates = x$summarised,
+    summarised_estimates = summary(x, type = "parameters"),
     reported = x$observations, ...
   )
   type <- arg_match(type)
