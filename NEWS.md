@@ -13,7 +13,7 @@
 
 ## Documentation
 
-- Added documentation about doing prior predictive checks. By @jamesmbaazam in # and reviewed by <REVIEWER>.
+- Added documentation about doing prior predictive checks. By @jamesmbaazam in #1036 and reviewed by <REVIEWER>.
 
 # EpiNow2 1.7.1
 
