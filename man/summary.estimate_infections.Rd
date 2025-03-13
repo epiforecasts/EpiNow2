@@ -9,6 +9,7 @@
   type = c("snapshot", "parameters", "samples"),
   date = NULL,
   params = NULL,
+  CrIs = c(0.2, 0.5, 0.9),
   ...
 )
 }

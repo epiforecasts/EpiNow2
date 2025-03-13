@@ -212,11 +212,6 @@ epinow <- function(data,
       id = id
     )
 
-    if (!output["fit"]) {
-      estimates$fit <- NULL
-      estimates$args <- NULL
-    }
-
     save_estimate_infections(estimates, target_folder,
       samples = output["samples"],
       return_fit = output["fit"]
@@ -256,6 +251,10 @@ epinow <- function(data,
         summary,
         samples = output["samples"]
       )
+      if (!output["fit"]) {
+        estimates$fit <- NULL
+        estimates$args <- NULL
+      }
       return(out)
     } else {
       return(invisible(NULL))

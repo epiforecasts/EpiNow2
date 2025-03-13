@@ -831,29 +831,44 @@ summary.estimate_infections <- function(object,
                                         type = c(
                                           "snapshot", "parameters", "samples"
                                         ),
-                                        date = NULL, params = NULL, ...) {
+                                        date = NULL, params = NULL,
+                                        CrIs = c(0.2, 0.5, 0.9), ...) {
   type <- arg_match(type)
   if (is.null(date)) {
-    target_date <- unique(
-      object$summarised[type != "forecast"][date == max(date)]$date
-    )
+    target_date <- max(object$observations$date)
   } else {
     target_date <- as.Date(date)
   }
 
+  dates <- object$observations$date
+  reported_dates <- dates[-(1:object$args$seeding_time)]
+  samples <- extract_parameter_samples(object$fit, object$args,
+    reported_inf_dates = dates,
+    reported_dates = reported_dates,
+    imputed_dates = reported_dates[object$args$imputed_times]
+  )
+
+  formatted <- format_fit(
+    posterior_samples = samples,
+    horizon = object$args$horizon,
+    shift = object$args$seeding_time,
+    CrIs = CrIs
+  )
+
   if (type == "snapshot") {
     out <- report_summary(
-      summarised_estimates = object$summarised[date == target_date],
-      rt_samples = object$samples[variable == "R"][
+      summarised_estimates = formatted$summarised[date == target_date],
+      rt_samples = formatted$samples[variable == "R"][
         date == target_date, .(sample, value)
       ],
       ...
     )
   } else if (type %in% c("parameters", "samples")) {
     if (type == "parameters") {
-      type <- "summarised"
+      out <- formatted$summarised
+    } else {
+      out <- formatted$samples
     }
-    out <- object[[type]]
     if (!is.null(date)) {
       out <- out[date == target_date]
     }
@@ -861,5 +876,16 @@ summary.estimate_infections <- function(object,
       out <- out[variable %in% params]
     }
   }
-  return(out)
+  out[]
+}
+
+##' Print information about and object that has resulted from a model fit.
+##'
+##' @param x The object containing fit results.
+##' @param ... Ignored
+##' @method print epinowfit
+##' @return Invisible
+##' @export
+print.epinowfit <- function(x, ...) {
+  print(summary(x))
 }

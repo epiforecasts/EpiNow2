@@ -91,14 +91,16 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
                                      target_folder = NULL, samples = TRUE) {
   estimated_reported_cases <- list()
   if (samples) {
-    estimated_reported_cases$samples <- estimates$samples[
+    estimated_reported_cases$samples <- summary(estimates, type = "samples")[
       variable == "reported_cases"
     ][
       ,
       .(date, sample, cases = value, type = "gp_rt")
     ]
   }
-  estimated_reported_cases$summarised <- estimates$summarised[
+  estimated_reported_cases$summarised <- summary(
+    estimates, type = "parameters"
+  )[
     variable == "reported_cases"
   ][
     ,
@@ -182,9 +184,10 @@ construct_output <- function(estimates,
                              samples = TRUE) {
   out <- list()
   out$estimates <- estimates
-  if (!samples) {
-    out$estimates$samples <- NULL
+  if (samples) {
+    out$estimates$samples <- summary(out$estimates, "samples")
   }
+  out$estimates$summarised <- summary(out$estimates, "parameters")
   out$estimated_reported_cases <- estimated_reported_cases
   out$summary <- summary
 

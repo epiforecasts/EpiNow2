@@ -412,12 +412,11 @@ forecast_infections <- function(estimates,
   }
 
   # define dates of interest
-  dates <-
-    seq(
-      min(na.omit(unique(estimates$summarised[variable == "R"]$date)))
-      - days(shift),
-      by = "day", length.out = dim(draws$R)[2] + shift
-    )
+  summarised <- summary(estimates, type = "parameters")
+  dates <- seq(
+    min(na.omit(unique(summarised[variable == "R"]$date))) - days(shift),
+    by = "day", length.out = dim(draws$R)[2] + shift
+  )
 
   # Load model
   stan <- stan_opts(
@@ -511,7 +510,7 @@ forecast_infections <- function(estimates,
     posterior_samples = regional_out,
     horizon = estimates$args$horizon,
     shift = shift,
-    CrIs = extract_CrIs(estimates$summarised) / 100
+    CrIs = extract_CrIs(summarised) / 100
   )
   format_out$samples <- format_out$samples[, sample := seq_len(.N),
     by = c("variable", "time", "date", "strat")
