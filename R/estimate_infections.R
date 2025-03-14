@@ -274,8 +274,6 @@ estimate_infections <- function(data,
     posterior_samples = out,
     horizon = stan_data$horizon,
     shift = stan_data$seeding_time,
-    burn_in = 0,
-    start_date = start_date,
     CrIs = CrIs
   )
 
