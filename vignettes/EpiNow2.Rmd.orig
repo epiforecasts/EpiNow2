@@ -141,14 +141,21 @@ reported_cases <- data.table::rbindlist(list(
 head(reported_cases)
 ```
 
-Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week.
+Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week. We also assign "testland" a different ascertainment of 0.5, using the `opts_list()` function, which is used to assign region-specific settings.
 
 ```{r, message = FALSE, warning = FALSE}
+obs <- opts_list(
+  obs_opts(),
+  reported_cases,
+  testland = obs_opts(scale = Fixed(0.5))
+)
+
 estimates <- regional_epinow(
   data = reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2), rw = 7),
+  obs = obs,
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
 )
@@ -165,37 +172,5 @@ knitr::kable(estimates$summary$summarised_results$table)
 A range of plots are again returned (with the single summary plot shown below).
 
 ```{r plot_regional_epinow_summary, message = FALSE, warning = FALSE}
-estimates$summary$summary_plot
-```
-
-If instead, the regions have different settings, the `opts_list()` function can be used. Here is an example where we assign testland a different ascertainment rate of 0.5, which by default is 1.
-
-```{r opts_list_eg}
-obs <- opts_list(
-  obs_opts(),
-  reported_cases,
-  testland = obs_opts(scale = Fixed(0.5))
-)
-```
-
-```{r run_opts_list_eg}
-estimates <- regional_epinow(
-  data = reported_cases,
-  generation_time = gt_opts(example_generation_time),
-  delays = delay_opts(example_incubation_period + reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2), rw = 7),
-  obs = obs,
-  gp = NULL,
-  stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
-)
-```
-
-```{r summary_opts_list_eg}
-knitr::kable(estimates$summary$summarised_results$table)
-```
-
-A range of plots are again returned (with the single summary plot shown below).
-
-```{r plot_opts_list_eg, message = FALSE, warning = FALSE}
 estimates$summary$summary_plot
 ```
