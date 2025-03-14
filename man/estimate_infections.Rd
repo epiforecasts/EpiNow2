@@ -76,11 +76,9 @@ settings if desired.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{weigh_delay_priors}{Logical. If TRUE (default), all delay distribution
-priors will be weighted by the number of observation data points, in doing so
-approximately placing an independent prior at each time step and usually
-preventing the posteriors from shifting. If FALSE, no weight will be applied,
-i.e. delay distributions will be treated as a single parameters.}
+\item{weigh_delay_priors}{Deprecated; this is now specified at the
+distribution level in \code{generation_time_opts()}, \code{delay_opts()} and
+\code{trunc_opts()} using the \code{weight_prior} argument.}
 
 \item{id}{A character string used to assign logging information on error.
 Used by \code{\link[=regional_epinow]{regional_epinow()}} to assign errors to regions. Alter the default to

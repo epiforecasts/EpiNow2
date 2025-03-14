@@ -420,7 +420,6 @@ lapply_func <- function(..., backend = "rstan", future.opts = list()) {
 ##' @param with What to pad with
 ##' @return A data.table of reported cases.
 ##' @importFrom data.table data.table rbindlist
-##' @inheritParams create_stan_data
 ##' @keywords internal
 pad_reported_cases <- function(reported_cases, n, with = NA_real_) {
   if (n > 0) {
