@@ -51,6 +51,8 @@ navbar:
         href: articles/epinow.html
       - text: Forecasting multiple data streams
         href: articles/forecasting_multiple_data_streams.html
+      - text: Model benchmarks
+        href: articles/benchmarks.html
     casestudies:
       text: Case studies
       menu:
