@@ -501,8 +501,6 @@ forecast_infections <- function(estimates,
     posterior_samples = regional_out,
     horizon = estimates$args$horizon,
     shift = shift,
-    burn_in = 0,
-    start_date = min(estimates$observations$date),
     CrIs = extract_CrIs(estimates$summarised) / 100
   )
   format_out$samples <- format_out$samples[, sample := seq_len(.N),
