@@ -163,7 +163,7 @@ estimates <- regional_epinow(
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = `TRUE`) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the [`{future}`](https://future.futureverse.org/) package for details on nested futures.
 
-Summary measures that are returned include a table formatted for reporting (along with raw results for further processing). Futures updated will extend the S3 methods used above to smooth access to this output.
+Summary measures that are returned include a table formatted for reporting (along with raw results for further processing). Future updates will extend the S3 methods used above to smooth access to this output.
 
 ```{r}
 knitr::kable(estimates$summary$summarised_results$table)

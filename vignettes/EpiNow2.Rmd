@@ -259,24 +259,24 @@ estimates <- regional_epinow(
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
 )
-#> INFO [2025-03-14 16:45:19] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2025-03-14 16:45:19] Reporting estimates using data up to: 2020-04-21
-#> INFO [2025-03-14 16:45:19] No target directory specified so returning output
-#> INFO [2025-03-14 16:45:19] Producing estimates for: testland, realland
-#> INFO [2025-03-14 16:45:19] Regions excluded: none
-#> INFO [2025-03-14 16:45:29] Completed estimates for: testland
-#> INFO [2025-03-14 16:45:37] Completed estimates for: realland
-#> INFO [2025-03-14 16:45:37] Completed regional estimates
-#> INFO [2025-03-14 16:45:37] Regions with estimates: 2
-#> INFO [2025-03-14 16:45:37] Regions with runtime errors: 0
-#> INFO [2025-03-14 16:45:37] Producing summary
-#> INFO [2025-03-14 16:45:37] No summary directory specified so returning summary output
-#> INFO [2025-03-14 16:45:37] No target directory specified so returning timings
+#> INFO [2025-03-14 16:59:30] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2025-03-14 16:59:30] Reporting estimates using data up to: 2020-04-21
+#> INFO [2025-03-14 16:59:30] No target directory specified so returning output
+#> INFO [2025-03-14 16:59:30] Producing estimates for: testland, realland
+#> INFO [2025-03-14 16:59:30] Regions excluded: none
+#> INFO [2025-03-14 16:59:40] Completed estimates for: testland
+#> INFO [2025-03-14 16:59:47] Completed estimates for: realland
+#> INFO [2025-03-14 16:59:47] Completed regional estimates
+#> INFO [2025-03-14 16:59:47] Regions with estimates: 2
+#> INFO [2025-03-14 16:59:47] Regions with runtime errors: 0
+#> INFO [2025-03-14 16:59:47] Producing summary
+#> INFO [2025-03-14 16:59:47] No summary directory specified so returning summary output
+#> INFO [2025-03-14 16:59:47] No target directory specified so returning timings
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = `TRUE`) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the [`{future}`](https://future.futureverse.org/) package for details on nested futures.
 
-Summary measures that are returned include a table formatted for reporting (along with raw results for further processing). Futures updated will extend the S3 methods used above to smooth access to this output.
+Summary measures that are returned include a table formatted for reporting (along with raw results for further processing). Future updates will extend the S3 methods used above to smooth access to this output.
 
 
 ``` r
