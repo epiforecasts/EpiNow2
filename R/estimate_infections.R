@@ -164,7 +164,7 @@ estimate_infections <- function(data,
       `weight_prior` argument."
     )
   }
-   if (!missing(horizon)) {
+  if (!missing(horizon)) {
     lifecycle::deprecate_stop(
       "1.7.0",
       "estimate_infections(horizon)",
