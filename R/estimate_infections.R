@@ -18,8 +18,9 @@
 #' estimate Rt for Covid-19 in a country from the ECDC data source.
 #'
 #' @param data A `<data.frame>` of disease reports (confirm) by date (date).
-#' `confirm` must be numeric and `date` must be in date format. If all entries of
-#' `confirm` are missing (`NA`) the returned estimates will represent the prior distributions. Optionally, 
+#' `confirm` must be numeric and `date` must be in date format. If all entries
+#' of `confirm` are missing (`NA`) the returned estimates will represent the
+#' prior distributions. Optionally,
 #' `data` can also have a logical `accumulate` column which indicates whether
 #' data should be added to the next data point. This is useful when modelling
 #' e.g. weekly incidence data. See also the [fill_missing()] function which

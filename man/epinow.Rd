@@ -31,8 +31,9 @@ epinow(
 }
 \arguments{
 \item{data}{A \verb{<data.frame>} of disease reports (confirm) by date (date).
-\code{confirm} must be numeric and \code{date} must be in date format. \code{confirm} can
-also be set to a series of \code{NA} to do prior predictive checks. Optionally,
+\code{confirm} must be numeric and \code{date} must be in date format. If all entries
+of \code{confirm} are missing (\code{NA}) the returned estimates will represent the
+prior distributions. Optionally,
 \code{data} can also have a logical \code{accumulate} column which indicates whether
 data should be added to the next data point. This is useful when modelling
 e.g. weekly incidence data. See also the \code{\link[=fill_missing]{fill_missing()}} function which
