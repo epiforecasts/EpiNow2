@@ -223,9 +223,6 @@ estimate_infections <- function(data,
   # Add breakpoints column
   reported_cases <- add_breakpoints(reported_cases)
 
-  # Record earliest date with data
-  start_date <- min(reported_cases$date, na.rm = TRUE)
-
   # Determine seeding time
   seeding_time <- get_seeding_time(delays, generation_time, rt)
 
