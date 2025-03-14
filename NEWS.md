@@ -2,7 +2,7 @@
 
 ## Package changes
 
-- The package now has a hex logo. By @jamesmbaazam, @athowes, @sbfnk, and @seabbs in #1004 and reviewed by all involved.
+- The package now has a hex logo.
 
 ## Bug fixes
 
