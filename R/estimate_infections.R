@@ -48,11 +48,9 @@
 #' @param horizon Deprecated; use `forecast` instead to specify the predictive
 #'   horizon
 #'
-#' @param weigh_delay_priors Logical. If TRUE (default), all delay distribution
-#' priors will be weighted by the number of observation data points, in doing so
-#' approximately placing an independent prior at each time step and usually
-#' preventing the posteriors from shifting. If FALSE, no weight will be applied,
-#' i.e. delay distributions will be treated as a single parameters.
+#' @param weigh_delay_priors Deprecated; this is now specified at the
+#' distribution level in `generation_time_opts()`, `delay_opts()` and
+#' `trunc_opts()` using the `weight_prior` argument.
 #'
 #' @param verbose Logical, defaults to `TRUE` when used interactively and
 #' otherwise `FALSE`. Should verbose debug progress messages be printed.
@@ -157,6 +155,15 @@ estimate_infections <- function(data,
       "apply_zero_threshold()"
     )
   }
+  if (!missing(weigh_delay_priors)) {
+    lifecycle::deprecate_stop(
+      "1.8.0",
+      "estimate_infections(weigh_delay_priors)",
+      detail = "Weighting of priors is now done when defining them in
+      `generation_time_opts()`, `delay_opts()` or `trunc_opts()` using the
+      `weight_prior` argument."
+    )
+  }
   if (!missing(horizon)) {
     lifecycle::deprecate_stop(
       "1.7.0",
@@ -216,9 +223,6 @@ estimate_infections <- function(data,
   # Add breakpoints column
   reported_cases <- add_breakpoints(reported_cases)
 
-  # Record earliest date with data
-  start_date <- min(reported_cases$date, na.rm = TRUE)
-
   # Determine seeding time
   seeding_time <- get_seeding_time(delays, generation_time, rt)
 
@@ -267,8 +271,6 @@ estimate_infections <- function(data,
     posterior_samples = out,
     horizon = stan_data$horizon,
     shift = stan_data$seeding_time,
-    burn_in = 0,
-    start_date = start_date,
     CrIs = CrIs
   )
 
@@ -294,9 +296,9 @@ estimate_infections <- function(data,
 #'
 #' @param shift Numeric, the shift to apply to estimates.
 #'
-#' @param burn_in Numeric, number of days to discard estimates for.
+#' @param burn_in Deprecated; this functionality is no longer available.
 #'
-#' @param start_date Date, earliest date with data.
+#' @param start_date Deprecated; this functionality is no longer available.
 #'
 #' @inheritParams calc_summary_measures
 #' @importFrom data.table fcase rbindlist
@@ -306,6 +308,21 @@ estimate_infections <- function(data,
 #' @keywords internal
 format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
                        CrIs) {
+  if (!missing(burn_in)) {
+    lifecycle::deprecate_stop(
+      "1.8.0",
+      "format_fit(burn_in)",
+      detail = "This functionality is no longer available."
+    )
+
+  }
+  if (!missing(start_date)) {
+    lifecycle::deprecate_stop(
+      "1.8.0",
+      "format_fit(start_date)",
+      detail = "This functionality is no longer available."
+    )
+  }
   format_out <- list()
   # bind all samples together
   format_out$samples <- data.table::rbindlist(
@@ -328,18 +345,6 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
       default = "estimate"
     )
   ]
-
-  # remove burn in period if specified
-  if (burn_in > 0) {
-    futile.logger::flog.info(
-      "burn_in is depreciated as of EpiNow2 1.3.0 - if using this feature",
-      " please contact the developers",
-      name = "EpiNow2.epinow.estimate_infections"
-    )
-    format_out$samples <-
-      format_out$samples[is.na(date) ||
-                         date >= (start_date + lubridate::days(burn_in))]
-  }
 
   # summarise samples
   format_out$summarised <- calc_summary_measures(format_out$samples,
