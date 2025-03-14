@@ -8,15 +8,15 @@ save_input(data, target_folder)
 }
 \arguments{
 \item{data}{A \verb{<data.frame>} of disease reports (confirm) by date (date).
-\code{confirm} must be numeric and \code{date} must be in date format. If all entries
-of \code{confirm} are missing (\code{NA}) the returned estimates will represent the
-prior distributions. Optionally,
+\code{confirm} must be numeric and \code{date} must be in date format. Optionally,
 \code{data} can also have a logical \code{accumulate} column which indicates whether
 data should be added to the next data point. This is useful when modelling
 e.g. weekly incidence data. See also the \code{\link[=fill_missing]{fill_missing()}} function which
 helps add the \code{accumulate} column with the desired properties when dealing
 with non-daily data. If any accumulation is done this happens after
-truncation as specified by the \code{truncation} argument.}
+truncation as specified by the \code{truncation} argument. If all entries
+of \code{confirm} are missing (\code{NA}) the returned estimates will represent the
+prior distributions.}
 
 \item{target_folder}{Character string specifying where to save results (will
 create if not present).}
