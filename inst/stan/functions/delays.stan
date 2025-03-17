@@ -1,12 +1,33 @@
 /**
+ * Delay Distribution Functions
+ *
+ * This group of functions handles the creation, manipulation, and application
+ * of delay distributions in the model. Delay distributions represent the time
+ * between events (e.g., infection to symptom onset, symptom onset to reporting).
+ *
+ * Common delay parameters:
+ * @param delay_id Identifier for the specific delay distribution
+ * @param delay_types Number of different delay types in the model
+ * @param delay_types_p Array indicating whether each delay is parametric (1) or non-parametric (0)
+ * @param delay_types_id Array mapping delay types to their respective IDs
+ * @param delay_types_groups Array of indices defining groups of delay types
+ * @param delay_max Array of maximum delays for parametric distributions
+ * @param delay_np_pmf Vector of probability mass functions for non-parametric delays
+ * @param delay_np_pmf_groups Array of indices for accessing non-parametric PMFs
+ * @param delay_params Vector of parameters for parametric delay distributions
+ * @param delay_params_groups Array of indices for accessing delay parameters
+ * @param delay_dist Array of distribution types (0: lognormal, 1: gamma)
+ */
+
+/**
  * Get the maximum delay for each delay type
  *
  * @param delay_types Number of delay types
- * @param delay_types_p Array indicating whether each delay is parametric
- * @param delay_types_id Array of delay type IDs
- * @param delay_types_groups Array of delay type group indices
- * @param delay_max Array of maximum delays for parametric delays
- * @param delay_np_pmf_groups Array of nonparametric PMF group indices
+ * @param delay_types_p Array indicating whether each delay is parametric (1) or non-parametric (0)
+ * @param delay_types_id Array mapping delay types to their respective IDs
+ * @param delay_types_groups Array of indices defining groups of delay types
+ * @param delay_max Array of maximum delays for parametric distributions
+ * @param delay_np_pmf_groups Array of indices for accessing non-parametric PMFs
  * @return An array of maximum delays for each delay type
  */
 array[] int get_delay_type_max(
@@ -32,21 +53,21 @@ array[] int get_delay_type_max(
 /**
  * Get the reversed probability mass function for a delay
  *
- * @param delay_id Delay ID
+ * @param delay_id Identifier for the specific delay distribution
  * @param len Length of the output PMF
- * @param delay_types_p Array indicating whether each delay is parametric
- * @param delay_types_id Array of delay type IDs
- * @param delay_types_groups Array of delay type group indices
- * @param delay_max Array of maximum delays for parametric delays
- * @param delay_np_pmf Vector of nonparametric PMF values
- * @param delay_np_pmf_groups Array of nonparametric PMF group indices
- * @param delay_params Vector of delay parameters
- * @param delay_params_groups Array of delay parameter group indices
- * @param delay_dist Array of delay distribution types
- * @param left_truncate Flag indicating whether to left-truncate the PMF
- * @param reverse_pmf Flag indicating whether to reverse the PMF
- * @param cumulative Flag indicating whether to return the cumulative PMF
- * @return A vector containing the (reversed) PMF
+ * @param delay_types_p Array indicating whether each delay is parametric (1) or non-parametric (0)
+ * @param delay_types_id Array mapping delay types to their respective IDs
+ * @param delay_types_groups Array of indices defining groups of delay types
+ * @param delay_max Array of maximum delays for parametric distributions
+ * @param delay_np_pmf Vector of probability mass functions for non-parametric delays
+ * @param delay_np_pmf_groups Array of indices for accessing non-parametric PMFs
+ * @param delay_params Vector of parameters for parametric delay distributions
+ * @param delay_params_groups Array of indices for accessing delay parameters
+ * @param delay_dist Array of distribution types (0: lognormal, 1: gamma)
+ * @param left_truncate Whether to left-truncate the PMF (1) or not (0)
+ * @param reverse_pmf Whether to reverse the PMF (1) or not (0)
+ * @param cumulative Whether to return cumulative (1) or daily (0) values
+ * @return A vector containing the (reversed) PMF of length len
  */
 vector get_delay_rev_pmf(
   int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id,
@@ -110,12 +131,12 @@ vector get_delay_rev_pmf(
 /**
  * Update log density for delay distribution priors
  *
- * @param delay_params Vector of delay parameters
- * @param delay_params_mean Vector of delay parameter means
- * @param delay_params_sd Vector of delay parameter standard deviations
- * @param delay_params_groups Array of delay parameter group indices
- * @param delay_dist Array of delay distribution types
- * @param weight Array of weights for each delay
+ * @param delay_params Vector of parameters for parametric delay distributions
+ * @param delay_params_mean Vector of prior means for delay parameters
+ * @param delay_params_sd Vector of prior standard deviations for delay parameters
+ * @param delay_params_groups Array of indices for accessing delay parameters
+ * @param delay_dist Array of distribution types (0: lognormal, 1: gamma)
+ * @param weight Array of weights for each delay distribution in the log density
  */
 void delays_lp(vector delay_params,
                vector delay_params_mean, vector delay_params_sd,
@@ -149,7 +170,7 @@ void delays_lp(vector delay_params,
  * @param mu Vector of means
  * @param sigma Vector of standard deviations
  * @param lb Vector of lower bounds
- * @return A vector of random samples
+ * @return A vector of random samples from the truncated normal distribution
  */
 vector normal_lb_rng(vector mu, vector sigma, vector lb) {
   int len = num_elements(mu);

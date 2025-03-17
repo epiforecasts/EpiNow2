@@ -1,6 +1,16 @@
 /**
- * Calculate infectiousness (weighted sum of the generation time and infections)
- * for a single time point
+ * Infection Modeling Functions
+ *
+ * This group of functions handles the generation, calculation, and backcalculation
+ * of infection time series in the model. These functions implement the core
+ * epidemiological dynamics, including the renewal equation approach.
+ */
+
+/**
+ * Calculate infectiousness for a single time point
+ *
+ * This function computes the weighted sum of past infections with the generation
+ * time distribution to determine the current infectiousness.
  *
  * @param infections Vector of infection counts
  * @param gt_rev_pmf Vector of reversed generation time PMF
@@ -28,8 +38,11 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
 }
 
 /**
- * Generate infections by using a renewal equation approach
- * Rt = Rt-1 * sum(reversed generation time pmf * infections)
+ * Generate infections using a renewal equation approach
+ *
+ * This function implements the renewal equation to generate a time series of
+ * infections based on reproduction numbers and the generation time distribution.
+ * It can also account for population depletion if a population size is specified.
  *
  * @param R Vector of reproduction numbers
  * @param uot Unobserved time (seeding time)
@@ -37,9 +50,9 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
  * @param initial_infections Array of initial infection values
  * @param pop Initial susceptible population (0 for unlimited)
  * @param ht Horizon time
- * @param obs_scale Flag indicating whether to scale by fraction observed
+ * @param obs_scale Whether to scale by fraction observed (1) or not (0)
  * @param frac_obs Fraction of infections that are observed
- * @param initial_as_scale Flag indicating whether initial infections are a scaling factor
+ * @param initial_as_scale Whether initial infections are a scaling factor (1) or not (0)
  * @return A vector of infection counts
  */
 vector generate_infections(vector R, int uot, vector gt_rev_pmf,
@@ -91,11 +104,14 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
 }
 
 /**
- * Backcalculate infections using mean shifted cases and non-parametric noise
+ * Backcalculate infections from cases
+ *
+ * This function estimates infections by working backwards from observed cases,
+ * applying noise to account for uncertainty in the process.
  *
  * @param shifted_cases Vector of shifted case counts
  * @param noise Vector of noise values
- * @param fixed Flag indicating whether to use fixed (1) or variable (0) noise
+ * @param fixed Whether to use fixed (1) or variable (0) noise
  * @param prior Prior type to use (0: noise only, 1: cases * noise, 2: random walk)
  * @return A vector of infection counts
  */

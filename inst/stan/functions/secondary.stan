@@ -1,17 +1,27 @@
 /**
+ * Secondary Reports Functions
+ *
+ * This group of functions handles the calculation and manipulation of secondary
+ * reports in the model. Secondary reports are derived from primary reports through
+ * various transformations and can represent different epidemiological quantities.
+ */
+
+/**
  * Calculate secondary reports conditioned on primary reports
  *
  * This function calculates secondary reports based on primary reports,
  * considering various options for how to combine historical and current data.
+ * It supports both cumulative and non-cumulative targets, and additive or
+ * subtractive relationships between primary and secondary reports.
  *
  * @param scaled_reports Vector of scaled primary reports
  * @param conv_reports Vector of convolved primary reports
  * @param obs Array of observed secondary reports
- * @param cumulative Flag indicating whether to use cumulative target
- * @param historic Flag indicating whether to use historical primary reports
- * @param primary_hist_additive Flag indicating whether historical primary reports are additive
- * @param current Flag indicating whether to use current primary reports
- * @param primary_current_additive Flag indicating whether current primary reports are additive
+ * @param cumulative Whether to use cumulative target (1) or not (0)
+ * @param historic Whether to use historical primary reports (1) or not (0)
+ * @param primary_hist_additive Whether historical primary reports are additive (1) or subtractive (0)
+ * @param current Whether to use current primary reports (1) or not (0)
+ * @param primary_current_additive Whether current primary reports are additive (1) or subtractive (0)
  * @param predict Number of time points to predict
  * @return A vector of secondary reports
  */

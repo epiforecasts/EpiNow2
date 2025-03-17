@@ -1,4 +1,12 @@
 /**
+ * Reproduction Number (Rt) Functions
+ *
+ * This group of functions handles the calculation, updating, and conversion of
+ * reproduction numbers in the model. The reproduction number represents the average
+ * number of secondary infections caused by a single infected individual.
+ */
+
+/**
  * Update a vector of effective reproduction numbers (Rt) based on
  * an intercept, breakpoints (i.e. a random walk), and a Gaussian
  * process.
@@ -8,8 +16,7 @@
  * @param noise Vector of Gaussian process noise values
  * @param bps Array of breakpoint indices
  * @param bp_effects Vector of breakpoint effects
- * @param stationary Flag indicating whether the Gaussian process is stationary 
- * (1) or non-stationary (0)
+ * @param stationary Whether the Gaussian process is stationary (1) or non-stationary (0)
  * @return A vector of length t containing the updated Rt values
  */
 vector update_Rt(int t, real R0, vector noise, array[] int bps,
@@ -41,12 +48,15 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
     }
     logR = logR + gp;
   }
-  
+
   return exp(logR);
 }
 
 /**
  * Calculate the log-probability of the reproduction number (Rt) priors
+ *
+ * This function adds the log density contributions from priors on initial infections
+ * and breakpoint effects to the target.
  *
  * @param initial_infections_scale Array of initial infection values
  * @param bp_effects Vector of breakpoint effects
@@ -69,13 +79,16 @@ void rt_lp(array[] real initial_infections_scale, vector bp_effects,
 /**
  * Helper function for calculating r from R using Newton's method
  *
+ * This function performs a single Newton step in the iterative calculation
+ * of the growth rate r from the reproduction number R.
+ *
  * Code is based on Julia code from
  * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
  * under Apache license 2.0.
  *
  * @param R Reproduction number
- * @param r growth rate
- * @param pmf generation time probability mass function (first index: 0)
+ * @param r Current estimate of the growth rate
+ * @param pmf Generation time probability mass function (first index: 0)
  * @return The Newton step for updating r
  */
 real R_to_r_newton_step(real R, real r, vector pmf) {
@@ -88,16 +101,19 @@ real R_to_r_newton_step(real R, real r, vector pmf) {
 }
 
 /**
- * Estimate the growth rate r from reproduction number R. Used in the model to
- * estimate the initial growth rate using Newton's method.
+ * Estimate the growth rate r from reproduction number R
+ *
+ * This function uses Newton's method to solve for the growth rate r
+ * that corresponds to a given reproduction number R, using the generation
+ * time distribution.
  *
  * Code is based on Julia code from
  * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
  * under Apache license 2.0.
  *
- * @param R reproduction number
- * @param gt_rev_pmf reverse probability mass function of the generation time
- * @param abs_tol absolute tolerance of the solver
+ * @param R Reproduction number
+ * @param gt_rev_pmf Reversed probability mass function of the generation time
+ * @param abs_tol Absolute tolerance for the Newton solver
  * @return The estimated growth rate r
  */
 real R_to_r(real R, vector gt_rev_pmf, real abs_tol) {
