@@ -197,7 +197,7 @@ simulate <- function(data,
       params
     )
     report_lp(
-      cases, case_times, obs_reports, dispersion, model_type, obs_weight
+      cases, obs_times, obs_reports, dispersion, model_type, obs_weight
     )
   }
   if (!fixed) {

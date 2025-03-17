@@ -77,7 +77,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     return(do.call(rstan::extract, extract_args))
   }
   if (!inherits(stan_fit, "CmdStanMCMC") &&
-        !inherits(stan_fit, "CmdStanFit")) {
+      !inherits(stan_fit, "CmdStanFit")) {
     cli_abort(
       "{.var stan_fit} must be a {.cls stanfit}, {.cls CmdStanMCMC} or
       {.cls CmdStanFit} object."
@@ -186,7 +186,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
   )
   out$infections <- out$infections[date >= min(reported_dates)]
   out$reported_cases <- extract_parameter(
-    "imputed_reports",
+    "imputed_obs",
     samples,
     imputed_dates
   )
@@ -382,7 +382,7 @@ extract_inits <- function(fit, current_inits,
     res$infections <- NULL
     res$reports <- NULL
     res$obs_reports <- NULL
-    res$imputed_reports <- NULL
+    res$imputed_obs <- NULL
     res
   }
   # extract samples

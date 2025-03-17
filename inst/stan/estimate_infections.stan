@@ -234,14 +234,14 @@ model {
         params
       );
       report_lp(
-        cases, case_times, obs_reports, dispersion, model_type, obs_weight
+        cases, obs_times, obs_reports, dispersion, model_type, obs_weight
       );
     }
   }
 }
 
 generated quantities {
-  array[it] int imputed_reports;
+  array[it] int imputed_obs;
   vector[estimate_r > 0 ? 0 : ot_h] gen_R;
   vector[ot_h - 1] r;
   vector[return_likelihood ? ot : 0] log_lik;
@@ -292,17 +292,19 @@ generated quantities {
     if (any_accumulate) {
       vector[ot_h] accumulated_reports =
         accumulate_reports(reports, accumulate);
-      imputed_reports = report_rng(
+      imputed_obs = report_rng(
         accumulated_reports[imputed_times], dispersion, model_type
       );
     } else {
-      imputed_reports = report_rng(reports, dispersion, model_type);
+      imputed_obs = report_rng(
+        reports[imputed_times], dispersion, model_type
+      );
     }
 
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
-        cases, obs_reports[case_times], dispersion, model_type, obs_weight
+        cases, obs_reports[obs_times], dispersion, model_type, obs_weight
       );
     }
   }

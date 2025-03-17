@@ -221,7 +221,7 @@ estimate_secondary <- function(data,
     t = nrow(reports),
     primary = reports$primary,
     obs = secondary_reports$confirm,
-    obs_time = complete_secondary[lookup > burn_in]$lookup - burn_in,
+    obs_times = complete_secondary[lookup > burn_in]$lookup - burn_in,
     lt = sum(complete_secondary$lookup > burn_in),
     burn_in = burn_in,
     seeding_time = 0,
@@ -257,27 +257,19 @@ estimate_secondary <- function(data,
     c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0)), params
   )
   # fit
-  stan_ <- create_stan_args(
+  stan_args <- create_stan_args(
     stan = stan, data = stan_data, init = inits, model = "estimate_secondary"
   )
-  fit <- fit_model(stan_, id = "estimate_secondary")
+  fit <- fit_model(stan_args, id = "estimate_secondary")
 
-  out <- list()
-  out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
-  out$predictions <- out$predictions[, lapply(.SD, round, 1)]
-  out$predictions <- out$predictions[, date := reports[(burn_in + 1):.N]$date]
-  out$predictions <- data.table::merge.data.table(
-    reports, out$predictions,
-    all = TRUE, by = "date"
+  ret <- list(
+    fit = fit,
+    stan_data = stan_data,
+    observations = reports
   )
-  out$posterior <- extract_stan_param(
-    fit,
-    CrIs = CrIs
-  )
-  out$data <- stan_data
-  out$fit <- fit
-  class(out) <- c("estimate_secondary", class(out))
-  return(out)
+
+  class(ret) <- c("epinowfit", "estimate_secondary", class(ret))
+  return(ret)
 }
 
 #' Update estimate_secondary default priors

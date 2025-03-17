@@ -422,7 +422,7 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
                              forecast, params) {
   cases <- data[(seeding_time + 1):.N]
   cases[, lookup := seq_len(.N)]
-  case_times <- cases[!is.na(confirm), lookup]
+  obs_times <- cases[!is.na(confirm), lookup]
   imputed_times <- cases[!(accumulate), lookup]
   accumulate <- cases$accumulate
   confirmed_cases <- cases[1:(.N - forecast$horizon)]$confirm
@@ -442,10 +442,10 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   stan_data <- list(
     cases = confirmed_cases[!is.na(confirmed_cases)],
     any_accumulate = as.integer(any(accumulate)),
-    case_times = as.integer(case_times),
+    obs_times = as.integer(obs_times),
     imputed_times = as.integer(imputed_times),
     accumulate = as.integer(accumulate),
-    lt = length(case_times),
+    lt = length(obs_times),
     it = length(imputed_times),
     t = length(data$date),
     shifted_cases = shifted_confirmed_cases,

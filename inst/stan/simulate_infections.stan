@@ -40,7 +40,7 @@ generated quantities {
   // generated quantities
   matrix[n, t] infections; //latent infections
   matrix[n, t - seeding_time] reports; // observed cases
-  array[n, t - seeding_time] int imputed_reports;
+  array[n, t - seeding_time] int imputed_obs;
   matrix[n, t - seeding_time - 1] r;
   {
     vector[n] dispersion = get_param(
@@ -106,7 +106,7 @@ generated quantities {
         reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i]));
       }
       // simulate reported cases
-      imputed_reports[i] = report_rng(
+      imputed_obs[i] = report_rng(
         to_vector(reports[i]), dispersion[i], model_type
       );
       r[i] = to_row_vector(calculate_growth(
