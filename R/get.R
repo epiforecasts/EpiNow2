@@ -217,3 +217,22 @@ get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
   }
   return(max(round(seeding_time), 1))
 }
+
+#' .. content for \description{} (no empty lines) ..
+#'
+#' @param object
+#' @param ...
+#' @return
+#' @inheritParams calc_CrIs
+#' @method get_predictions epinowcast
+#' @examples
+get_predictions <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
+  predictions <- extract_stan_param(object, "imputed_obs", ...)
+  predictions <- predictions[,
+    date := object$observations[object$stan_args$obs_times]$date
+  ]
+  data.table::merge.data.table(
+    object$observations, predictions,
+    all = TRUE, by = "date"
+  )
+}

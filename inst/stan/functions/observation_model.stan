@@ -105,7 +105,7 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * specified model type.
  *
  * @param cases Array of integer observed cases.
- * @param case_times Array of integer time indices for observed cases.
+ * @param obs_times Array of integer time indices for observed cases.
  * @param reports Vector of expected reports.
  * @param dispersion Real values for reporting overdispersion.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for
@@ -114,10 +114,10 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * @param accumulate Array of integers indicating, for each time point, whether
  * to accumulate reports (1) or not (0).
  */
-void report_lp(array[] int cases, array[] int case_times, vector reports,
+void report_lp(array[] int cases, array[] int obs_times, vector reports,
                real dispersion, int model_type, real weight) {
-  int n = num_elements(case_times); // number of observations
-  vector[n] obs_reports = reports[case_times]; // reports at observation time
+  int n = num_elements(obs_times); // number of observations
+  vector[n] obs_reports = reports[obs_times]; // reports at observation time
   if (model_type) {
     real phi = inv_square(dispersion);
     if (weight == 1) {

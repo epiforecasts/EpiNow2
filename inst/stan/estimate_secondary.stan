@@ -11,7 +11,7 @@ data {
   int t;                             // time of observations
   int lt;                             // time of observations
   array[t] int<lower = 0> obs;             // observed secondary data
-  array[lt] int obs_time;             // observed secondary data
+  array[lt] int obs_times;             // observed secondary data
   vector[t] primary;                 // observed primary data
   int burn_in;                       // time period to not use for fitting
   int any_accumulate; // Should any missing values be accumulated?
@@ -118,14 +118,14 @@ model {
       params
     );
     report_lp(
-      obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
+      obs[(burn_in + 1):t][obs_times], obs_times, secondary[(burn_in + 1):t],
       dispersion, model_type, 1
     );
   }
 }
 
 generated quantities {
-  array[t - burn_in] int sim_secondary;
+  array[lt] int imputed_obs;
   vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
   {
     real dispersion = get_param(
@@ -133,8 +133,8 @@ generated quantities {
       params
     );
     // simulate secondary reports
-    sim_secondary = report_rng(
-      secondary[(burn_in + 1):t], dispersion, model_type
+    imputed_obs = report_rng(
+      secondary[(burn_in + 1):t][obs_times], dispersion, model_type
     );
     // log likelihood of model
     if (return_likelihood) {
