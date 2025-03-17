@@ -52,6 +52,8 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
  * @param bp_effects Vector of breakpoint effects
  * @param bp_sd Array of breakpoint standard deviations
  * @param bp_n Number of breakpoints
+ * @param cases Array of observed case counts
+ * @param initial_infections_guess Initial guess for infections based on cases
  */
 void rt_lp(array[] real initial_infections_scale, vector bp_effects,
            array[] real bp_sd, int bp_n, array[] int cases,
@@ -74,6 +76,7 @@ void rt_lp(array[] real initial_infections_scale, vector bp_effects,
  * @param R Reproduction number
  * @param r growth rate
  * @param pmf generation time probability mass function (first index: 0)
+ * @return The Newton step for updating r
  */
 real R_to_r_newton_step(real R, real r, vector pmf) {
   int len = num_elements(pmf);
@@ -95,6 +98,7 @@ real R_to_r_newton_step(real R, real r, vector pmf) {
  * @param R reproduction number
  * @param gt_rev_pmf reverse probability mass function of the generation time
  * @param abs_tol absolute tolerance of the solver
+ * @return The estimated growth rate r
  */
 real R_to_r(real R, vector gt_rev_pmf, real abs_tol) {
   int gt_len = num_elements(gt_rev_pmf);

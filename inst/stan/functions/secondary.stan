@@ -1,4 +1,20 @@
-// Calculate secondary reports condition only on primary reports
+/**
+ * Calculate secondary reports conditioned on primary reports
+ *
+ * This function calculates secondary reports based on primary reports,
+ * considering various options for how to combine historical and current data.
+ *
+ * @param scaled_reports Vector of scaled primary reports
+ * @param conv_reports Vector of convolved primary reports
+ * @param obs Array of observed secondary reports
+ * @param cumulative Flag indicating whether to use cumulative target
+ * @param historic Flag indicating whether to use historical primary reports
+ * @param primary_hist_additive Flag indicating whether historical primary reports are additive
+ * @param current Flag indicating whether to use current primary reports
+ * @param primary_current_additive Flag indicating whether current primary reports are additive
+ * @param predict Number of time points to predict
+ * @return A vector of secondary reports
+ */
 vector calculate_secondary(
   vector scaled_reports, vector conv_reports, array[] int obs,
   int cumulative, int historic, int primary_hist_additive,

@@ -1,3 +1,13 @@
+/**
+ * Get a parameter value from either fixed or variable parameters
+ *
+ * @param id Parameter ID
+ * @param params_fixed_lookup Array of fixed parameter lookup indices
+ * @param params_variable_lookup Array of variable parameter lookup indices
+ * @param params_value Vector of fixed parameter values
+ * @param params Vector of variable parameter values
+ * @return The parameter value
+ */
 real get_param(int id,
                array[] int params_fixed_lookup,
                array[] int params_variable_lookup,
@@ -11,6 +21,17 @@ real get_param(int id,
   }
 }
 
+/**
+ * Get a parameter value from either fixed or variable parameters
+ * Matrix version that returns a vector of parameter values for multiple samples
+ *
+ * @param id Parameter ID
+ * @param params_fixed_lookup Array of fixed parameter lookup indices
+ * @param params_variable_lookup Array of variable parameter lookup indices
+ * @param params_value Vector of fixed parameter values
+ * @param params Matrix of variable parameter values (rows are samples)
+ * @return A vector of parameter values
+ */
 vector get_param(int id,
                  array[] int params_fixed_lookup,
                  array[] int params_variable_lookup,
@@ -25,6 +46,15 @@ vector get_param(int id,
   }
 }
 
+/**
+ * Update log density for parameter priors
+ *
+ * @param params Vector of parameter values
+ * @param prior_dist Array of prior distribution types (0: lognormal, 1: gamma, 2: normal)
+ * @param prior_dist_params Vector of prior distribution parameters
+ * @param params_lower Vector of lower bounds for parameters
+ * @param params_upper Vector of upper bounds for parameters
+ */
 void params_lp(vector params, array[] int prior_dist,
               vector prior_dist_params, vector params_lower,
               vector params_upper) {

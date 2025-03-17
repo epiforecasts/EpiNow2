@@ -1,5 +1,13 @@
-// calculate infectiousness (weighted sum of the generation time and infections)
-// for a single time point
+/**
+ * Calculate infectiousness (weighted sum of the generation time and infections)
+ * for a single time point
+ *
+ * @param infections Vector of infection counts
+ * @param gt_rev_pmf Vector of reversed generation time PMF
+ * @param seeding_time Number of time steps used for seeding
+ * @param index Current time index (relative to seeding_time)
+ * @return The infectiousness at the specified time point
+ */
 real update_infectiousness(vector infections, vector gt_rev_pmf,
                            int seeding_time, int index){
   int gt_length = num_elements(gt_rev_pmf);
@@ -19,8 +27,21 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
   return(new_inf);
 }
 
-// generate infections by using
-// Rt = Rt-1 * sum(reversed generation time pmf * infections)
+/**
+ * Generate infections by using a renewal equation approach
+ * Rt = Rt-1 * sum(reversed generation time pmf * infections)
+ *
+ * @param R Vector of reproduction numbers
+ * @param uot Unobserved time (seeding time)
+ * @param gt_rev_pmf Vector of reversed generation time PMF
+ * @param initial_infections Array of initial infection values
+ * @param pop Initial susceptible population (0 for unlimited)
+ * @param ht Horizon time
+ * @param obs_scale Flag indicating whether to scale by fraction observed
+ * @param frac_obs Fraction of infections that are observed
+ * @param initial_as_scale Flag indicating whether initial infections are a scaling factor
+ * @return A vector of infection counts
+ */
 vector generate_infections(vector R, int uot, vector gt_rev_pmf,
                            array[] real initial_infections, int pop, int ht,
                            int obs_scale, real frac_obs, int initial_as_scale) {
@@ -68,7 +89,16 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
   }
   return(infections);
 }
-// backcalculate infections using mean shifted cases and non-parametric noise
+
+/**
+ * Backcalculate infections using mean shifted cases and non-parametric noise
+ *
+ * @param shifted_cases Vector of shifted case counts
+ * @param noise Vector of noise values
+ * @param fixed Flag indicating whether to use fixed (1) or variable (0) noise
+ * @param prior Prior type to use (0: noise only, 1: cases * noise, 2: random walk)
+ * @return A vector of infection counts
+ */
 vector deconvolve_infections(vector shifted_cases, vector noise, int fixed,
                              int prior) {
   int t = num_elements(shifted_cases);

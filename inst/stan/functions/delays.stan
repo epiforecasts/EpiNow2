@@ -1,3 +1,14 @@
+/**
+ * Get the maximum delay for each delay type
+ *
+ * @param delay_types Number of delay types
+ * @param delay_types_p Array indicating whether each delay is parametric
+ * @param delay_types_id Array of delay type IDs
+ * @param delay_types_groups Array of delay type group indices
+ * @param delay_max Array of maximum delays for parametric delays
+ * @param delay_np_pmf_groups Array of nonparametric PMF group indices
+ * @return An array of maximum delays for each delay type
+ */
 array[] int get_delay_type_max(
   int delay_types, array[] int delay_types_p, array[] int delay_types_id,
   array[] int delay_types_groups, array[] int delay_max,
@@ -18,6 +29,25 @@ array[] int get_delay_type_max(
   return ret;
 }
 
+/**
+ * Get the reversed probability mass function for a delay
+ *
+ * @param delay_id Delay ID
+ * @param len Length of the output PMF
+ * @param delay_types_p Array indicating whether each delay is parametric
+ * @param delay_types_id Array of delay type IDs
+ * @param delay_types_groups Array of delay type group indices
+ * @param delay_max Array of maximum delays for parametric delays
+ * @param delay_np_pmf Vector of nonparametric PMF values
+ * @param delay_np_pmf_groups Array of nonparametric PMF group indices
+ * @param delay_params Vector of delay parameters
+ * @param delay_params_groups Array of delay parameter group indices
+ * @param delay_dist Array of delay distribution types
+ * @param left_truncate Flag indicating whether to left-truncate the PMF
+ * @param reverse_pmf Flag indicating whether to reverse the PMF
+ * @param cumulative Flag indicating whether to return the cumulative PMF
+ * @return A vector containing the (reversed) PMF
+ */
 vector get_delay_rev_pmf(
   int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id,
   array[] int delay_types_groups, array[] int delay_max,
@@ -77,7 +107,16 @@ vector get_delay_rev_pmf(
   return pmf;
 }
 
-
+/**
+ * Update log density for delay distribution priors
+ *
+ * @param delay_params Vector of delay parameters
+ * @param delay_params_mean Vector of delay parameter means
+ * @param delay_params_sd Vector of delay parameter standard deviations
+ * @param delay_params_groups Array of delay parameter group indices
+ * @param delay_dist Array of delay distribution types
+ * @param weight Array of weights for each delay
+ */
 void delays_lp(vector delay_params,
                vector delay_params_mean, vector delay_params_sd,
                array[] int delay_params_groups,
@@ -104,6 +143,14 @@ void delays_lp(vector delay_params,
   }
 }
 
+/**
+ * Generate random samples from a normal distribution with lower bounds
+ *
+ * @param mu Vector of means
+ * @param sigma Vector of standard deviations
+ * @param lb Vector of lower bounds
+ * @return A vector of random samples
+ */
 vector normal_lb_rng(vector mu, vector sigma, vector lb) {
   int len = num_elements(mu);
   vector[len] ret;

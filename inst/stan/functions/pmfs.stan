@@ -1,7 +1,14 @@
-// Calculate the daily probability of reporting using parametric
-// distributions up to the maximum observed delay.
-// Adapted from https://github.com/epiforecasts/epinowcast
-// (MIT License, copyright: epinowcast authors)
+/**
+ * Calculate the daily probability of reporting using parametric
+ * distributions up to the maximum observed delay.
+ * Adapted from https://github.com/epiforecasts/epinowcast
+ * (MIT License, copyright: epinowcast authors)
+ *
+ * @param params Vector of distribution parameters (e.g., [mu, sigma] for lognormal)
+ * @param n Number of days to calculate PMF for
+ * @param dist Distribution type (0: lognormal, 1: gamma)
+ * @return A vector of length n containing the discretized probability mass function
+ */
 vector discretised_pmf(vector params, int n, int dist) {
   vector[n] lpmf;
   vector[n] upper_lcdf;
