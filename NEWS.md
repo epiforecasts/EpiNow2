@@ -2,7 +2,7 @@
 
 ## Package changes
 
-- The package now has a hex logo. By @jamesmbaazam, @athowes, @sbfnk, and @seabbs in #1004 and reviewed by all involved.
+- The package now has a hex logo.
 
 ## Bug fixes
 
@@ -10,6 +10,10 @@
 - A bug was fixed where `opts_list()` recursed lists which it shouldn't.
 - A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
 - A bug was fixed where `estimate_infection()` threw an error if there were too many consecutive `NA` observations.
+
+## Documentation
+
+- Added documentation about doing prior predictive checks.
 
 # EpiNow2 1.7.1
 
