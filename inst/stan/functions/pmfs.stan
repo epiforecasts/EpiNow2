@@ -7,7 +7,7 @@
  */
 
 /**
- * Calculate the daily probability of reporting using parametric distributions
+ * Discretise a continuous distribution
  *
  * This function discretizes continuous distributions (lognormal or gamma) to create
  * a probability mass function over discrete time points (days).
