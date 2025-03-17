@@ -14,6 +14,7 @@
 ## Documentation
 
 - Added documentation about doing prior predictive checks.
+- All the stan code are now documented using docstrings and can be generated using Doxygen.
 
 # EpiNow2 1.7.1
 
