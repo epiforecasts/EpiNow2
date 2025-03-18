@@ -141,7 +141,7 @@ reported_cases <- data.table::rbindlist(list(
 head(reported_cases)
 ```
 
-Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week. We also assign "testland" a different ascertainment of 0.5, using the `opts_list()` function, which is used to assign region-specific settings.
+Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week. We also assign "testland" a different ascertainment of 50%, using the `opts_list()` function, which is used to assign region-specific settings.
 
 ```{r, message = FALSE, warning = FALSE}
 obs <- opts_list(
