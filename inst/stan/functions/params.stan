@@ -1,5 +1,5 @@
 /**
- * Parameter Management Functions
+ * Parameter Handlers
  *
  * This group of functions handles parameter access, retrieval, and prior
  * specification in the model. Parameters can be either fixed (specified in advance)

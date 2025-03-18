@@ -1,14 +1,14 @@
 /**
  * convolution_functions Functions
  *
- * This file contains functions for performing discrete convolution_functionss, which are
+ * This file contains functions for performing discrete convolutions, which are
  * used throughout the model to combine time series with delay distributions.
  *
  * @ingroup convolution_functions
  */
 
 /**
- * Calculate convolution_functions indices for the case where s <= xlen
+ * Calculate convolution indices for the case where s <= xlen
  *
  * @param s Current position in the output vector
  * @param xlen Length of the x vector
@@ -27,7 +27,7 @@ array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
 }
 
 /**
- * Calculate convolution_functions indices for the case where s > xlen
+ * Calculate convolution indices for the case where s > xlen
  *
  * @param s Current position in the output vector
  * @param xlen Length of the x vector
@@ -48,13 +48,13 @@ array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
 /**
  * Convolve a vector with a reversed probability mass function.
  *
- * This function performs a discrete convolution_functions of two vectors, where the second vector
+ * This function performs a discrete convolution of two vectors, where the second vector
  * is assumed to be an already reversed probability mass function.
  *
  * @param x The input vector to be convolved.
  * @param y The already reversed probability mass function vector.
  * @param len The desired length of the output vector.
- * @return A vector of length `len` containing the convolution_functions result.
+ * @return A vector of length `len` containing the convolution result.
  * @throws If `len` is not of equal length to the sum of the lengths of `x` and `y`.
  *
  * @ingroup convolution_functions

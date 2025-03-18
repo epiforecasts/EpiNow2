@@ -110,7 +110,7 @@ real R_to_r_newton_step(real R, real r, vector pmf) {
 /**
  * Estimate the growth rate r from reproduction number R
  *
- * This function uses Newton's method to solve for the growth rate r
+ * This function uses the Newton method to solve for the growth rate r
  * that corresponds to a given reproduction number R, using the generation
  * time distribution.
  *
