@@ -5,18 +5,6 @@
  * of delay distributions in the model. Delay distributions represent the time
  * between events (e.g., infection to symptom onset, symptom onset to reporting).
  *
- * Common delay parameters:
- * @param delay_id Identifier for the specific delay distribution
- * @param delay_types Number of different delay types in the model
- * @param delay_types_p Array indicating whether each delay is parametric (1) or non-parametric (0)
- * @param delay_types_id Array mapping delay types to their respective IDs
- * @param delay_types_groups Array of indices defining groups of delay types
- * @param delay_max Array of maximum delays for parametric distributions
- * @param delay_np_pmf Vector of probability mass functions for non-parametric delays
- * @param delay_np_pmf_groups Array of indices for accessing non-parametric PMFs
- * @param delay_params Vector of parameters for parametric delay distributions
- * @param delay_params_groups Array of indices for accessing delay parameters
- * @param delay_dist Array of distribution types (0: lognormal, 1: gamma)
  */
 
 /**
