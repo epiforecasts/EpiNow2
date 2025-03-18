@@ -4,10 +4,11 @@
 # Project information
 PROJECT_NAME           = "EpiNow2 Stan Functions"
 PROJECT_NUMBER         =
-PROJECT_BRIEF          =
+PROJECT_BRIEF          = ""
 PROJECT_LOGO           = ../../../man/figures/logo.png
 OUTPUT_DIRECTORY       =
-INPUT                  = ../functions/ mainpage.md
+
+INPUT                  = ../functions common_docs.stan mainpage.md
 FILE_PATTERNS          = *.stan *.md
 RECURSIVE              = YES
 EXCLUDE                =
@@ -27,9 +28,9 @@ HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
 HTML_DYNAMIC_SECTIONS  = YES
-GENERATE_TREEVIEW      = YES
+GENERATE_TREEVIEW      = NO
 DISABLE_INDEX          = NO
-FULL_SIDEBAR           = NO
+FULL_SIDEBAR           = YES
 HTML_EXTRA_STYLESHEET  =
 LAYOUT_FILE            = DoxygenLayout.xml
 
@@ -55,7 +56,7 @@ ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = NO
 SEARCH_INCLUDES        = YES
-INCLUDE_PATH           =
+INCLUDE_PATH           = NO
 INCLUDE_FILE_PATTERNS  =
 
 # Dot tool settings
@@ -68,24 +69,24 @@ UML_LOOK               = NO
 UML_LIMIT_NUM_FIELDS   = 10
 TEMPLATE_RELATIONS     = NO
 INCLUDE_GRAPH          = YES
-INCLUDED_BY_GRAPH      = NO
+INCLUDED_BY_GRAPH      = YES
 CALL_GRAPH             = YES
 CALLER_GRAPH           = YES
 GRAPHICAL_HIERARCHY    = NO
-DIRECTORY_GRAPH        = NO
+DIRECTORY_GRAPH        = YES
 DOT_IMAGE_FORMAT       = svg
 INTERACTIVE_SVG        = YES
 
 # Source browsing
-SOURCE_BROWSER         = YES
-INLINE_SOURCES         = YES
+SOURCE_BROWSER         = NO
+INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = NO
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
 REFERENCES_LINK_SOURCE = YES
 SOURCE_TOOLTIPS        = YES
 USE_HTAGS              = NO
-VERBATIM_HEADERS       = YES
+VERBATIM_HEADERS       = NO
 
 # Alphabetical index
 ALPHABETICAL_INDEX     = YES
@@ -108,7 +109,6 @@ GENERATE_DOCSET        = NO
 GENERATE_HTMLHELP      = NO
 GENERATE_QHP           = NO
 GENERATE_ECLIPSEHELP   = NO
-GENERATE_TREEVIEW      = NO
 ENUM_VALUES_PER_LINE   = 4
 TREEVIEW_WIDTH         = 250
 EXT_LINKS_IN_WINDOW    = NO
@@ -143,7 +143,6 @@ WARN_AS_ERROR          = NO
 
 # Index and navigation
 ALPHABETICAL_INDEX     = YES
-GENERATE_TREEVIEW      = NO
 SEARCHENGINE           = YES
 SEARCH_INCLUDES        = YES
 
