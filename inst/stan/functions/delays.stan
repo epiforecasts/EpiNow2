@@ -18,7 +18,7 @@
  * @param delay_np_pmf_groups Array of indices for accessing non-parametric PMFs
  * @return An array of maximum delays for each delay type
  *
- * @ingroup delay_distributions
+ * @ingroup delay_handlers
  */
 array[] int get_delay_type_max(
   int delay_types, array[] int delay_types_p, array[] int delay_types_id,
@@ -59,7 +59,7 @@ array[] int get_delay_type_max(
  * @param cumulative Whether to return cumulative (1) or daily (0) values
  * @return A vector containing the (reversed) PMF of length len
  *
- * @ingroup delay_distributions
+ * @ingroup delay_handlers
  */
 vector get_delay_rev_pmf(
   int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id,
@@ -130,7 +130,7 @@ vector get_delay_rev_pmf(
  * @param delay_dist Array of distribution types (0: lognormal, 1: gamma)
  * @param weight Array of weights for each delay distribution in the log density
  *
- * @ingroup delay_distributions
+ * @ingroup delay_handlers
  */
 void delays_lp(vector delay_params,
                vector delay_params_mean, vector delay_params_sd,
@@ -166,7 +166,7 @@ void delays_lp(vector delay_params,
  * @param lb Vector of lower bounds
  * @return A vector of random samples from the truncated normal distribution
  *
- * @ingroup delay_distributions
+ * @ingroup delay_handlers
  */
 vector normal_lb_rng(vector mu, vector sigma, vector lb) {
   int len = num_elements(mu);

@@ -5,7 +5,7 @@
  * reports in the model. Secondary reports are derived from primary reports through
  * various transformations and can represent different epidemiological quantities.
  *
- * @ingroup secondary_reports
+ * @ingroup secondary_reports_estimation
  */
 
 /**
@@ -27,8 +27,6 @@
  * @param primary_current_additive Whether current primary reports are additive (1) or subtractive (0)
  * @param predict Number of time points to predict
  * @return A vector of secondary reports
- *
- * @ingroup secondary_reports
  */
 vector calculate_secondary(
   vector scaled_reports, vector conv_reports, array[] int obs,

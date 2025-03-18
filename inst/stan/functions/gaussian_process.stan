@@ -14,7 +14,7 @@
   * @param M Number of basis functions
   * @return A vector of spectral densities
   *
-  * @ingroup gaussian_process
+  * @ingroup estimates_smoothing
   */
 vector diagSPD_EQ(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
@@ -32,7 +32,7 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
   * @param M Number of basis functions
   * @return A vector of spectral densities
   *
-  * @ingroup gaussian_process
+  * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
@@ -50,7 +50,7 @@ vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
   * @param M Number of basis functions
   * @return A vector of spectral densities
   *
-  * @ingroup gaussian_process
+  * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
@@ -68,7 +68,7 @@ vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
   * @param M Number of basis functions
   * @return A vector of spectral densities
   *
-  * @ingroup gaussian_process
+  * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
@@ -86,7 +86,7 @@ vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
   * @param M Number of basis functions
   * @return A vector of spectral densities
   *
-  * @ingroup gaussian_process
+  * @ingroup estimates_smoothing
   */
 vector diagSPD_Periodic(real alpha, real rho, int M) {
   real a = inv_square(rho);
@@ -107,7 +107,7 @@ vector diagSPD_Periodic(real alpha, real rho, int M) {
   * @param x Vector of input data
   * @return A matrix of basis functions
   *
-  * @ingroup gaussian_process
+  * @ingroup estimates_smoothing
   */
 matrix PHI(int N, int M, real L, vector x) {
   matrix[N, M] phi = sin(
@@ -127,7 +127,7 @@ matrix PHI(int N, int M, real L, vector x) {
   * @param x Vector of input data
   * @return A matrix of basis functions
   *
-  * @ingroup gaussian_process
+  * @ingroup estimates_smoothing
   */
 matrix PHI_periodic(int N, int M, real w0, vector x) {
   matrix[N, M] mw0x = diag_post_multiply(
@@ -148,7 +148,7 @@ matrix PHI_periodic(int N, int M, real w0, vector x) {
   * @param fixed_from Fixed point from
   * @return Number of noise terms
   *
-  * @ingroup gaussian_process
+  * @ingroup estimates_smoothing
   */
 int setup_noise(int ot_h, int t, int horizon, int estimate_r,
                 int stationary, int future_fixed, int fixed_from) {
@@ -168,7 +168,7 @@ int setup_noise(int ot_h, int t, int horizon, int estimate_r,
   * @param w0 Fundamental frequency for periodic process
   * @return A matrix of basis functions
   *
-  * @ingroup gaussian_process
+  * @ingroup estimates_smoothing
   */
 matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
   vector[dimension] x = linspaced_vector(dimension, 1, dimension);
@@ -221,7 +221,7 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   *
   * @param eta Vector of noise terms
   *
-  * @ingroup gaussian_process
+  * @ingroup estimates_smoothing
   */
 void gaussian_process_lp(vector eta) {
   eta ~ std_normal();

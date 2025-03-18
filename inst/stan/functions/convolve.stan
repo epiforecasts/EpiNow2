@@ -1,21 +1,21 @@
 /**
- * Convolution Functions
+ * convolution_functions Functions
  *
- * This file contains functions for performing discrete convolutions, which are
+ * This file contains functions for performing discrete convolution_functionss, which are
  * used throughout the model to combine time series with delay distributions.
  *
- * @ingroup convolution
+ * @ingroup convolution_functions
  */
 
 /**
- * Calculate convolution indices for the case where s <= xlen
+ * Calculate convolution_functions indices for the case where s <= xlen
  *
  * @param s Current position in the output vector
  * @param xlen Length of the x vector
  * @param ylen Length of the y vector
  * @return An array of integers: {start_x, end_x, start_y, end_y}
  *
- * @ingroup convolution
+ * @ingroup convolution_functions
  */
 array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
   int s_minus_ylen = s - ylen;
@@ -27,14 +27,14 @@ array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
 }
 
 /**
- * Calculate convolution indices for the case where s > xlen
+ * Calculate convolution_functions indices for the case where s > xlen
  *
  * @param s Current position in the output vector
  * @param xlen Length of the x vector
  * @param ylen Length of the y vector
  * @return An array of integers: {start_x, end_x, start_y, end_y}
  *
- * @ingroup convolution
+ * @ingroup convolution_functions
  */
 array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
   int s_minus_ylen = s - ylen;
@@ -48,16 +48,16 @@ array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
 /**
  * Convolve a vector with a reversed probability mass function.
  *
- * This function performs a discrete convolution of two vectors, where the second vector
+ * This function performs a discrete convolution_functions of two vectors, where the second vector
  * is assumed to be an already reversed probability mass function.
  *
  * @param x The input vector to be convolved.
  * @param y The already reversed probability mass function vector.
  * @param len The desired length of the output vector.
- * @return A vector of length `len` containing the convolution result.
+ * @return A vector of length `len` containing the convolution_functions result.
  * @throws If `len` is not of equal length to the sum of the lengths of `x` and `y`.
  *
- * @ingroup convolution
+ * @ingroup convolution_functions
  */
 vector convolve_with_rev_pmf(vector x, vector y, int len) {
   int xlen = num_elements(x);
@@ -100,7 +100,7 @@ vector convolve_with_rev_pmf(vector x, vector y, int len) {
  * output.
  * @return A vector of reported cases, starting from `seeding_time + 1`.
  *
- * @ingroup convolution
+ * @ingroup convolution_functions
  */
 vector convolve_to_report(vector infections,
                           vector delay_rev_pmf,

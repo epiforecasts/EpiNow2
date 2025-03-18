@@ -21,7 +21,7 @@
  * @param dist Distribution type (0: lognormal, 1: gamma)
  * @return A vector of length n containing the discretized probability mass function
  *
- * @delay_distributions
+ * @ingroup pmf_handlers
  */
 vector discretised_pmf(vector params, int n, int dist) {
   vector[n] lpmf;
