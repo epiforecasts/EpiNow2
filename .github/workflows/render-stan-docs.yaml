@@ -28,7 +28,7 @@ jobs:
         # Path to Doxyfile
         doxyfile-path: "Doxyfile"
         # Working directory
-        working-directory: "./inst/stan/stan_docs/"
+        working-directory: "./inst/stan/stan_docs/html"
 
     - name: Archive documentation
       if: github.ref != 'refs/heads/main'
