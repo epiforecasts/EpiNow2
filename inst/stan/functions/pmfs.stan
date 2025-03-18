@@ -4,6 +4,8 @@
  * This file contains functions for creating and manipulating probability mass
  * functions, particularly for discretizing continuous distributions for use in
  * delay modeling.
+ *
+ * @ingroup pmf_handlers
  */
 
 /**
@@ -18,6 +20,8 @@
  * @param n Number of days to calculate PMF for
  * @param dist Distribution type (0: lognormal, 1: gamma)
  * @return A vector of length n containing the discretized probability mass function
+ *
+ * @delay_distributions
  */
 vector discretised_pmf(vector params, int n, int dist) {
   vector[n] lpmf;

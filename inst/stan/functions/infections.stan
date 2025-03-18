@@ -4,6 +4,8 @@
  * This group of functions handles the generation, calculation, and backcalculation
  * of infection time series in the model. These functions implement the core
  * epidemiological dynamics, including the renewal equation approach.
+ *
+ * @ingroup infections_estimation
  */
 
 /**
@@ -17,6 +19,8 @@
  * @param seeding_time Number of time steps used for seeding
  * @param index Current time index (relative to seeding_time)
  * @return The infectiousness at the specified time point
+ *
+ * @ingroup infections_estimation
  */
 real update_infectiousness(vector infections, vector gt_rev_pmf,
                            int seeding_time, int index){
@@ -38,7 +42,8 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
 }
 
 /**
- * Generate infections using a renewal equation approach
+ * @ingroup infections_estimation
+ * @brief Generate infections using a renewal equation approach
  *
  * This function implements the renewal equation to generate a time series of
  * infections based on reproduction numbers and the generation time distribution.
@@ -114,6 +119,8 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
  * @param fixed Whether to use fixed (1) or variable (0) noise
  * @param prior Prior type to use (0: noise only, 1: cases * noise, 2: random walk)
  * @return A vector of infection counts
+ *
+ * @ingroup infections_estimation
  */
 vector deconvolve_infections(vector shifted_cases, vector noise, int fixed,
                              int prior) {

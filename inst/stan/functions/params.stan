@@ -18,6 +18,8 @@
  * @param params_value Vector of fixed parameter values
  * @param params Vector of variable parameter values
  * @return The parameter value (scalar)
+ *
+ * @ingroup parameter_handlers
  */
 real get_param(int id,
                array[] int params_fixed_lookup,
@@ -44,6 +46,8 @@ real get_param(int id,
  * @param params_value Vector of fixed parameter values
  * @param params Matrix of variable parameter values (rows are samples)
  * @return A vector of parameter values across samples
+ *
+ * @ingroup parameter_handlers
  */
 vector get_param(int id,
                  array[] int params_fixed_lookup,
@@ -70,6 +74,8 @@ vector get_param(int id,
  * @param prior_dist_params Vector of prior distribution parameters
  * @param params_lower Vector of lower bounds for parameters
  * @param params_upper Vector of upper bounds for parameters
+ *
+ * @ingroup parameter_handlers
  */
 void params_lp(vector params, array[] int prior_dist,
               vector prior_dist_params, vector params_lower,
@@ -99,3 +105,4 @@ void params_lp(vector params, array[] int prior_dist,
     }
   }
 }
+

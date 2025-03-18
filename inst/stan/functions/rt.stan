@@ -4,10 +4,13 @@
  * This group of functions handles the calculation, updating, and conversion of
  * reproduction numbers in the model. The reproduction number represents the average
  * number of secondary infections caused by a single infected individual.
+ *
+ * @ingroup rt_estimation
  */
 
 /**
- * Update a vector of effective reproduction numbers (Rt) based on
+ * @ingroup rt_estimation
+ * @brief Update a vector of effective reproduction numbers (Rt) based on
  * an intercept, breakpoints (i.e. a random walk), and a Gaussian
  * process.
  *
@@ -64,6 +67,8 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
  * @param bp_n Number of breakpoints
  * @param cases Array of observed case counts
  * @param initial_infections_guess Initial guess for infections based on cases
+ *
+ * @ingroup rt_estimation
  */
 void rt_lp(array[] real initial_infections_scale, vector bp_effects,
            array[] real bp_sd, int bp_n, array[] int cases,
@@ -90,6 +95,8 @@ void rt_lp(array[] real initial_infections_scale, vector bp_effects,
  * @param r Current estimate of the growth rate
  * @param pmf Generation time probability mass function (first index: 0)
  * @return The Newton step for updating r
+ *
+ * @ingroup rt_estimation
  */
 real R_to_r_newton_step(real R, real r, vector pmf) {
   int len = num_elements(pmf);
@@ -115,6 +122,8 @@ real R_to_r_newton_step(real R, real r, vector pmf) {
  * @param gt_rev_pmf Reversed probability mass function of the generation time
  * @param abs_tol Absolute tolerance for the Newton solver
  * @return The estimated growth rate r
+ *
+ * @ingroup rt_estimation
  */
 real R_to_r(real R, vector gt_rev_pmf, real abs_tol) {
   int gt_len = num_elements(gt_rev_pmf);

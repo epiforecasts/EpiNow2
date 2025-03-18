@@ -1,10 +1,21 @@
 /**
+ * Convolution Functions
+ *
+ * This file contains functions for performing discrete convolutions, which are
+ * used throughout the model to combine time series with delay distributions.
+ *
+ * @ingroup convolution
+ */
+
+/**
  * Calculate convolution indices for the case where s <= xlen
  *
  * @param s Current position in the output vector
  * @param xlen Length of the x vector
  * @param ylen Length of the y vector
  * @return An array of integers: {start_x, end_x, start_y, end_y}
+ *
+ * @ingroup convolution
  */
 array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
   int s_minus_ylen = s - ylen;
@@ -22,6 +33,8 @@ array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
  * @param xlen Length of the x vector
  * @param ylen Length of the y vector
  * @return An array of integers: {start_x, end_x, start_y, end_y}
+ *
+ * @ingroup convolution
  */
 array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
   int s_minus_ylen = s - ylen;
@@ -43,32 +56,34 @@ array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
  * @param len The desired length of the output vector.
  * @return A vector of length `len` containing the convolution result.
  * @throws If `len` is not of equal length to the sum of the lengths of `x` and `y`.
+ *
+ * @ingroup convolution
  */
 vector convolve_with_rev_pmf(vector x, vector y, int len) {
   int xlen = num_elements(x);
   int ylen = num_elements(y);
   vector[len] z;
-  
+
   if (xlen + ylen - 1 < len) {
     reject("convolve_with_rev_pmf: len is longer than x and y convolved");
   }
-  
+
   if (xlen > len) {
     reject("convolve_with_rev_pmf: len is shorter than x");
   }
-  
+
   for (s in 1:xlen) {
     array[4] int indices = calc_conv_indices_xlen(s, xlen, ylen);
     z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
   }
-  
+
   if (len > xlen) {
     for (s in (xlen + 1):len) {
       array[4] int indices = calc_conv_indices_len(s, xlen, ylen);
       z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
     }
   }
-  
+
   return z;
 }
 
@@ -84,17 +99,20 @@ vector convolve_with_rev_pmf(vector x, vector y, int len) {
  * @param seeding_time The number of initial time steps to exclude from the
  * output.
  * @return A vector of reported cases, starting from `seeding_time + 1`.
+ *
+ * @ingroup convolution
  */
 vector convolve_to_report(vector infections,
                           vector delay_rev_pmf,
                           int seeding_time) {
   int t = num_elements(infections);
   int delays = num_elements(delay_rev_pmf);
-  
+
   if (delays == 0) {
     return infections[(seeding_time + 1):t];
   }
-  
+
   vector[t] unobs_reports = convolve_with_rev_pmf(infections, delay_rev_pmf, t);
   return unobs_reports[(seeding_time + 1):t];
 }
+

@@ -4,10 +4,13 @@
  * This group of functions handles the calculation and manipulation of secondary
  * reports in the model. Secondary reports are derived from primary reports through
  * various transformations and can represent different epidemiological quantities.
+ *
+ * @ingroup secondary_reports
  */
 
 /**
- * Calculate secondary reports conditioned on primary reports
+ * @ingroup secondary_reports_estimation
+ * @brief Calculate secondary reports from primary reports
  *
  * This function calculates secondary reports based on primary reports,
  * considering various options for how to combine historical and current data.
@@ -24,6 +27,8 @@
  * @param primary_current_additive Whether current primary reports are additive (1) or subtractive (0)
  * @param predict Number of time points to predict
  * @return A vector of secondary reports
+ *
+ * @ingroup secondary_reports
  */
 vector calculate_secondary(
   vector scaled_reports, vector conv_reports, array[] int obs,
