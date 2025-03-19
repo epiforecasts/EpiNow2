@@ -14,6 +14,7 @@
 ## Documentation
 
 - Added documentation about doing prior predictive checks.
+- The stan code is now fulled documented and can be accessed on the website under the Reference tab.
 
 # EpiNow2 1.7.1
 

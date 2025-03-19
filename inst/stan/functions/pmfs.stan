@@ -1,7 +1,28 @@
-// Calculate the daily probability of reporting using parametric
-// distributions up to the maximum observed delay.
-// Adapted from https://github.com/epiforecasts/epinowcast
-// (MIT License, copyright: epinowcast authors)
+/**
+ * Probability Mass Function (PMF) Utilities
+ *
+ * This file contains functions for creating and manipulating probability mass
+ * functions, particularly for discretizing continuous distributions for use in
+ * delay modeling.
+ *
+ * @ingroup pmf_handlers
+ */
+
+/**
+ * Discretise a continuous distribution
+ *
+ * This function discretizes continuous distributions (lognormal or gamma) to create
+ * a probability mass function over discrete time points (days).
+ * Adapted from https://github.com/epiforecasts/epinowcast
+ * (MIT License, copyright: epinowcast authors)
+ *
+ * @param params Vector of distribution parameters ([mu, sigma] for lognormal or [shape, rate] for gamma)
+ * @param n Number of days to calculate PMF for
+ * @param dist Distribution type (0: lognormal, 1: gamma)
+ * @return A vector of length n containing the discretized probability mass function
+ *
+ * @ingroup pmf_handlers
+ */
 vector discretised_pmf(vector params, int n, int dist) {
   vector[n] lpmf;
   vector[n] upper_lcdf;

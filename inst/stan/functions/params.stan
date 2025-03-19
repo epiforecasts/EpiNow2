@@ -1,3 +1,26 @@
+/**
+ * Parameter Handlers
+ *
+ * This group of functions handles parameter access, retrieval, and prior
+ * specification in the model. Parameters can be either fixed (specified in advance)
+ * or variable (estimated during inference).
+ */
+
+/**
+ * Get a parameter value from either fixed or variable parameters
+ *
+ * This function retrieves a parameter value based on its ID, checking first if it's
+ * a fixed parameter and then if it's a variable parameter.
+ *
+ * @param id Parameter ID
+ * @param params_fixed_lookup Array of fixed parameter lookup indices
+ * @param params_variable_lookup Array of variable parameter lookup indices
+ * @param params_value Vector of fixed parameter values
+ * @param params Vector of variable parameter values
+ * @return The parameter value (scalar)
+ *
+ * @ingroup parameter_handlers
+ */
 real get_param(int id,
                array[] int params_fixed_lookup,
                array[] int params_variable_lookup,
@@ -11,6 +34,21 @@ real get_param(int id,
   }
 }
 
+/**
+ * Get a parameter value from either fixed or variable parameters (matrix version)
+ *
+ * This function is an overloaded version of get_param that works with a matrix of
+ * parameter values, returning a vector of parameter values for multiple samples.
+ *
+ * @param id Parameter ID
+ * @param params_fixed_lookup Array of fixed parameter lookup indices
+ * @param params_variable_lookup Array of variable parameter lookup indices
+ * @param params_value Vector of fixed parameter values
+ * @param params Matrix of variable parameter values (rows are samples)
+ * @return A vector of parameter values across samples
+ *
+ * @ingroup parameter_handlers
+ */
 vector get_param(int id,
                  array[] int params_fixed_lookup,
                  array[] int params_variable_lookup,
@@ -25,6 +63,20 @@ vector get_param(int id,
   }
 }
 
+/**
+ * Update log density for parameter priors
+ *
+ * This function adds the log density contributions from parameter priors
+ * to the target, supporting multiple prior distribution types.
+ *
+ * @param params Vector of parameter values
+ * @param prior_dist Array of prior distribution types (0: lognormal, 1: gamma, 2: normal)
+ * @param prior_dist_params Vector of prior distribution parameters
+ * @param params_lower Vector of lower bounds for parameters
+ * @param params_upper Vector of upper bounds for parameters
+ *
+ * @ingroup parameter_handlers
+ */
 void params_lp(vector params, array[] int prior_dist,
               vector prior_dist_params, vector params_lower,
               vector params_upper) {
@@ -53,3 +105,4 @@ void params_lp(vector params, array[] int prior_dist,
     }
   }
 }
+

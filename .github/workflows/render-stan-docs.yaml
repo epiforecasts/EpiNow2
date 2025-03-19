@@ -1,0 +1,49 @@
+# Based on https://github.com/mattnotmitt/doxygen-action
+name: Render Stan documentation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'inst/stan/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'inst/stan/**'
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v4
+
+    - name: Doxygen Action
+      uses: mattnotmitt/doxygen-action@v1.12.0
+      with:
+        # Path to Doxyfile
+        doxyfile-path: "Doxyfile"
+        # Working directory to change to before running Doxygen
+        working-directory: "./inst/stan/stan_docs/"
+
+    - name: Archive documentation
+      if: github.ref != 'refs/heads/main'
+      uses: actions/upload-artifact@v4
+      with:
+        name: stan-docs
+        path: ./inst/stan/stan_docs/
+        if-no-files-found: error
+
+    - name: Deploy
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        # Default Doxyfile build documentation to html directory.
+        # Change the directory if changes in Doxyfile
+        publish_dir: ./inst/stan/stan_docs/html
+        destination_dir: stan
