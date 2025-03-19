@@ -35,7 +35,11 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: stan-docs
-        path: ./inst/stan/stan_docs/html
+        path:
+          ./inst/stan/stan_docs/html
+          !./inst/stan/stan_docs/Doxyfile
+          !./inst/stan/stan_docs/DoxygenLayout.xml
+          !./inst/stan/stan_docs/mainpage.md
         if-no-files-found: error
 
     - name: Deploy
