@@ -14,3 +14,8 @@ Each function page includes:
 - Detailed explanation of the function's behavior
 - Parameter descriptions with standardized documentation for common parameters
 - Return value information
+
+# EpiNow2 website
+
+> [!note]
+> Click [here](https://epiforecasts.github.io/EpiNow2/) to return to the main EpiNow2 website.
