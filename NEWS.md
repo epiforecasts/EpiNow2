@@ -3,6 +3,7 @@
 ## Package changes
 
 - The package now has a hex logo.
+- Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover.
 
 ## Bug fixes
 

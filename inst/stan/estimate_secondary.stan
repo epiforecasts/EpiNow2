@@ -48,7 +48,7 @@ transformed parameters {
     // scaling of primary reports by fraction observed
     if (obs_scale) {
       real frac_obs = get_param(
-        frac_obs_id, params_fixed_lookup, params_variable_lookup, params_value,
+        param_id_frac_obs, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       scaled = scale_obs(primary, frac_obs);
@@ -114,7 +114,7 @@ model {
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
     real dispersion = get_param(
-      dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
+      param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     report_lp(
@@ -129,7 +129,7 @@ generated quantities {
   vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
   {
     real dispersion = get_param(
-      dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
+      param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     // simulate secondary reports

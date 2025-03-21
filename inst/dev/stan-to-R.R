@@ -101,11 +101,11 @@ simulate <- function(data,
   )
   if (!fixed) {
     alpha <- get_param(
-      alpha_id, params_fixed_lookup, params_variable_lookup, params_value,
+      param_id_alpha, params_fixed_lookup, params_variable_lookup, params_value,
       params
     )
     rescaled_rho <- 2 * get_param(
-      rho_id, params_fixed_lookup, params_variable_lookup,
+      param_id_rho, params_fixed_lookup, params_variable_lookup,
       params_value, params
     ) / noise_terms
     noise <- update_gp(
@@ -122,13 +122,13 @@ simulate <- function(data,
       1, 1, 0
     )
     R0 <- get_param(
-      R0_id, params_fixed_lookup, params_variable_lookup, params_value, params
+      param_id_R0, params_fixed_lookup, params_variable_lookup, params_value, params
     )
     R <- update_Rt(
       ot_h, R0, noise, breakpoints, bp_effects, stationary
     )
     frac_obs <- get_param(
-      frac_obs_id, params_fixed_lookup, params_variable_lookup, params_value,
+      param_id_frac_obs, params_fixed_lookup, params_variable_lookup, params_value,
       params
     )
     pop <- get_param(
@@ -156,7 +156,7 @@ simulate <- function(data,
   }
   if (obs_scale) {
     frac_obs <- get_param(
-      frac_obs_id, params_fixed_lookup, params_variable_lookup, params_value,
+      param_id_frac_obs, params_fixed_lookup, params_variable_lookup, params_value,
       params
     )
     reports <- scale_obs(reports, frac_obs)
@@ -191,7 +191,7 @@ simulate <- function(data,
   )
   if (likelihood) {
     dispersion <- get_param(
-      dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
+      param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
       params
     )
     report_lp(
@@ -200,7 +200,7 @@ simulate <- function(data,
   }
   if (!fixed) {
     rescaled_rho <- get_param(
-      rho_id, params_fixed_lookup, params_variable_lookup,
+      param_id_rho, params_fixed_lookup, params_variable_lookup,
       params_value, params
     )
     x <- seq(1, noise_terms)
