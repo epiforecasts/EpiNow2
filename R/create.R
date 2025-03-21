@@ -825,7 +825,7 @@ create_stan_params <- function(..., lower_bounds = NULL) {
   )
   ids <- seq_along(params)
   if (length(ids) > 0) {
-    names(ids) <- paste(names(params), "id", sep = "_")
+    names(ids) <- paste("param_id", names(params), sep = "_")
   }
   ret <- c(ret, as.list(ids), as.list(null_ids))
   return(ret)
