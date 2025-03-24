@@ -1,8 +1,8 @@
 /**
- * These functions implemente approximuate Gaussian processes for Stan using
+ * These functions implement approximate Gaussian processes for Stan using
  * Hilbert space methods. The functions are based on the following:
  * - https://avehtari.github.io/casestudies/Motorcycle/motorcycle_gpcourse.html (Section 4)
- * - https://arxiv.org/abs/2004.11408
+ * - https://doi.org/10.1007/s11222-022-10167-2
  */
 
 /**
