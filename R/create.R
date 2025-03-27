@@ -756,7 +756,9 @@ create_stan_params <- function(..., lower_bounds = NULL) {
   null_params <- vapply(params, is.null, logical(1))
   null_ids <- rep(0, sum(null_params))
   if (length(null_ids) > 0) {
-    names(null_ids) <- paste(names(null_params)[null_params], "id", sep = "_")
+    names(null_ids) <- paste(
+      "param_id", names(null_params)[null_params], sep = "_"
+    )
     params <- params[!null_params]
   }
 
@@ -825,7 +827,7 @@ create_stan_params <- function(..., lower_bounds = NULL) {
   )
   ids <- seq_along(params)
   if (length(ids) > 0) {
-    names(ids) <- paste(names(params), "id", sep = "_")
+    names(ids) <- paste("param_id", names(params), sep = "_")
   }
   ret <- c(ret, as.list(ids), as.list(null_ids))
   return(ret)

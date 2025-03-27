@@ -43,11 +43,11 @@ generated quantities {
   matrix[n, t - seeding_time - 1] r;
   {
     vector[n] dispersion = get_param(
-      dispersion_id, params_fixed_lookup, params_variable_lookup,
+      param_id_dispersion, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
     vector[n] frac_obs = get_param(
-      frac_obs_id, params_fixed_lookup, params_variable_lookup,
+      param_id_frac_obs, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
     for (i in 1:n) {
