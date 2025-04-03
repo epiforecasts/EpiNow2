@@ -14,9 +14,9 @@ format_fit(posterior_samples, horizon, shift, burn_in, start_date, CrIs)
 
 \item{shift}{Numeric, the shift to apply to estimates.}
 
-\item{burn_in}{Numeric, number of days to discard estimates for.}
+\item{burn_in}{Deprecated; this functionality is no longer available.}
 
-\item{start_date}{Date, earliest date with data.}
+\item{start_date}{Deprecated; this functionality is no longer available.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 }

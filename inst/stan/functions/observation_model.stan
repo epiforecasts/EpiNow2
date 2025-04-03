@@ -9,6 +9,8 @@
  * @param effect Vector of day of week effects.
  *
  * @return A vector of reports adjusted for day of the week effects.
+ *
+ * @ingroup observation_model
  */
 vector day_of_week_effect(vector reports, array[] int day_of_week,
                           vector effect) {
@@ -26,6 +28,8 @@ vector day_of_week_effect(vector reports, array[] int day_of_week,
  * @param frac_obs Real value representing the fraction observed.
  *
  * @return A vector of scaled reports.
+ *
+ * @ingroup observation_model
  */
 vector scale_obs(vector reports, real frac_obs) {
   int t = num_elements(reports);
@@ -47,6 +51,8 @@ vector scale_obs(vector reports, real frac_obs) {
  * truncate (0) the data.
  *
  * @return A vector of truncated reports.
+ *
+ * @ingroup observation_model
  */
 vector truncate_obs(vector reports, vector trunc_rev_cmf, int reconstruct) {
   int t = num_elements(reports);
@@ -81,6 +87,8 @@ vector truncate_obs(vector reports, vector trunc_rev_cmf, int reconstruct) {
  * deviation prior.
  * @param trunc_sd_sd Array of real values for standard deviation of truncation
  * standard deviation prior.
+ *
+ * @ingroup observation_model
  */
 void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
                    array[] real trunc_mean_mean, array[] real trunc_mean_sd,
@@ -111,8 +119,8 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for
  * Negative Binomial).
  * @param weight Real value for weighting the log density contribution.
- * @param accumulate Array of integers indicating, for each time point, whether
- * to accumulate reports (1) or not (0).
+ *
+ * @ingroup observation_model
  */
 void report_lp(array[] int cases, array[] int case_times, vector reports,
                real dispersion, int model_type, real weight) {
@@ -147,6 +155,8 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
  * to accumulate or not.
  *
  * @return A vector of accumulated reports.
+ *
+ * @ingroup observation_model
  */
 vector accumulate_reports(vector reports, array[] int accumulate) {
   int ot_h = num_elements(reports); // number of reporting time points modelled
@@ -173,6 +183,8 @@ vector accumulate_reports(vector reports, array[] int accumulate) {
  * @param weight Real value for weighting the log likelihood contribution.
  *
  * @return A vector of log likelihoods for each time point.
+ *
+ * @ingroup observation_model
  */
 vector report_log_lik(array[] int cases, vector reports,
                       real dispersion, int model_type, real weight) {
@@ -213,6 +225,8 @@ vector report_log_lik(array[] int cases, vector reports,
  * @param phi Real value for phi.
  *
  * @return A random sample
+ *
+ * @ingroup handlers_and_helpers
  */
 int neg_binomial_2_safe_rng(real mu, real phi) {
   if (mu < 1e-8) {
@@ -237,6 +251,8 @@ int neg_binomial_2_safe_rng(real mu, real phi) {
  * Negative Binomial).
  *
  * @return An array of integer sampled reports.
+ *
+ * @ingroup observation_model
  */
 array[] int report_rng(vector reports, real dispersion, int model_type) {
   int t = num_elements(reports);

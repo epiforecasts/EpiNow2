@@ -141,21 +141,23 @@ plot_estimates <- function(estimate, reported, ylab, hline,
     )
     cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoint"))
 
-    if (length(cols) > 1) {
-      max_cases_to_plot <- data.table::copy(reported)[,
-        .(max = round(max(confirm, na.rm = TRUE) * max_plot, 0)),
-        by = cols
+    if (!all(is.na(reported$confirm))) {
+      if (length(cols) > 1) {
+        max_cases_to_plot <- data.table::copy(reported)[,
+          .(max = round(max(confirm, na.rm = TRUE) * max_plot, 0)),
+          by = cols
+        ]
+        estimate <- estimate[max_cases_to_plot, on = cols]
+      } else {
+        max_cases_to_plot <- round(
+          max(reported$confirm, na.rm = TRUE) * max_plot, 0
+        )
+        estimate <- estimate[, max := max_cases_to_plot]
+      }
+      estimate <- estimate[, lapply(.SD, pmin, max),
+        by = setdiff(colnames(estimate), sd_cols), .SDcols = sd_cols
       ]
-      estimate <- estimate[max_cases_to_plot, on = cols]
-    } else {
-      max_cases_to_plot <- round(
-        max(reported$confirm, na.rm = TRUE) * max_plot, 0
-      )
-      estimate <- estimate[, max := max_cases_to_plot]
     }
-    estimate <- estimate[, lapply(.SD, pmin, max),
-      by = setdiff(colnames(estimate), sd_cols), .SDcols = sd_cols
-    ]
   }
 
   # initialise plot

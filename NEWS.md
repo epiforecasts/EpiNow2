@@ -1,10 +1,22 @@
 # EpiNow2 (development version)
 
+## Package changes
+
+- The package now has a hex logo.
+- Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now have to do `param_id_[parameter_name]`, for example, `frac_obs_id` is now `param_id_frac_obs`.
+
 ## Bug fixes
 
 - A bug was fixed where `forecast_infections` would fail with `samples = 1`.
 - A bug was fixed where `opts_list()` recursed lists which it shouldn't.
 - A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
+- A bug was fixed where `estimate_infection()` threw an error if there were too many consecutive `NA` observations.
+
+## Documentation
+
+- Added documentation about doing prior predictive checks.
+- The stan code is now fulled documented and can be accessed on the website under the Reference tab.
+- Fixed an issue with the pkgdown website where the Reference tab was not appearing as a dropdown menu for the R and Stan Reference tabs.
 
 # EpiNow2 1.7.1
 

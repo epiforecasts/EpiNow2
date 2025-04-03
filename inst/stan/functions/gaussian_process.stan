@@ -1,10 +1,10 @@
 /**
- * These functions implemente approximuate Gaussian processes for Stan using
+ * These functions implement approximate Gaussian processes for Stan using
  * Hilbert space methods. The functions are based on the following:
  * - https://avehtari.github.io/casestudies/Motorcycle/motorcycle_gpcourse.html (Section 4)
- * - https://arxiv.org/abs/2004.11408
+ * - https://doi.org/10.1007/s11222-022-10167-2
  */
- 
+
 /**
   * Spectral density for Exponentiated Quadratic kernel
   *
@@ -13,6 +13,8 @@
   * @param L Length of the interval
   * @param M Number of basis functions
   * @return A vector of spectral densities
+  *
+  * @ingroup estimates_smoothing
   */
 vector diagSPD_EQ(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
@@ -29,6 +31,8 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
   * @param L Length of the interval
   * @param M Number of basis functions
   * @return A vector of spectral densities
+  *
+  * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
@@ -45,6 +49,8 @@ vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
   * @param L Length of the interval
   * @param M Number of basis functions
   * @return A vector of spectral densities
+  *
+  * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
@@ -61,6 +67,8 @@ vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
   * @param L Length of the interval
   * @param M Number of basis functions
   * @return A vector of spectral densities
+  *
+  * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
@@ -77,6 +85,8 @@ vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
   * @param rho Length scale parameter
   * @param M Number of basis functions
   * @return A vector of spectral densities
+  *
+  * @ingroup estimates_smoothing
   */
 vector diagSPD_Periodic(real alpha, real rho, int M) {
   real a = inv_square(rho);
@@ -96,6 +106,8 @@ vector diagSPD_Periodic(real alpha, real rho, int M) {
   * @param L Length of the interval
   * @param x Vector of input data
   * @return A matrix of basis functions
+  *
+  * @ingroup estimates_smoothing
   */
 matrix PHI(int N, int M, real L, vector x) {
   matrix[N, M] phi = sin(
@@ -114,6 +126,8 @@ matrix PHI(int N, int M, real L, vector x) {
   * @param w0 Fundamental frequency
   * @param x Vector of input data
   * @return A matrix of basis functions
+  *
+  * @ingroup estimates_smoothing
   */
 matrix PHI_periodic(int N, int M, real w0, vector x) {
   matrix[N, M] mw0x = diag_post_multiply(
@@ -133,6 +147,8 @@ matrix PHI_periodic(int N, int M, real w0, vector x) {
   * @param future_fixed Indicator if future is fixed
   * @param fixed_from Fixed point from
   * @return Number of noise terms
+  *
+  * @ingroup estimates_smoothing
   */
 int setup_noise(int ot_h, int t, int horizon, int estimate_r,
                 int stationary, int future_fixed, int fixed_from) {
@@ -151,6 +167,8 @@ int setup_noise(int ot_h, int t, int horizon, int estimate_r,
   * @param is_periodic Indicator if the process is periodic
   * @param w0 Fundamental frequency for periodic process
   * @return A matrix of basis functions
+  *
+  * @ingroup estimates_smoothing
   */
 matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
   vector[dimension] x = linspaced_vector(dimension, 1, dimension);
@@ -202,7 +220,10 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   * Priors for Gaussian process (excluding length scale)
   *
   * @param eta Vector of noise terms
+  *
+  * @ingroup estimates_smoothing
   */
 void gaussian_process_lp(vector eta) {
   eta ~ std_normal();
 }
+

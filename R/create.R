@@ -54,7 +54,12 @@
 #' }
 create_shifted_cases <- function(data, shift,
                                  smoothing_window, horizon) {
-  shifted_reported_cases <- data.table::copy(data)
+  shifted_reported_cases <- copy(data)
+  ## turn initial NAs into zeroes
+  shifted_reported_cases[cumsum(!is.na(confirm)) == 0L, confirm := 0.0]
+  ## pad with additional zeroes
+  shifted_reported_cases <- pad_reported_cases(data, smoothing_window, 0.0)
+
   if ("accumulate" %in% colnames(data)) {
     shifted_reported_cases[
       is.na(confirm) & accumulate,
@@ -100,7 +105,17 @@ create_shifted_cases <- function(data, shift,
     ,
     confirm := ceiling(confirm)
   ]
-  shifted_reported_cases[-(1:smoothing_window)]
+  shifted_reported_cases <- shifted_reported_cases[-(1:smoothing_window)]
+  if (anyNA(shifted_reported_cases$confirm)) {
+    cli::cli_abort(
+      c(
+        "!" = "Some values are missing after prior smoothing. Consider
+        increasing the smoothing using the {.var prior_window} argument in
+        {.fn backcalc_opts}."
+      )
+    )
+  }
+  shifted_reported_cases
 }
 
 #' Construct the Required Future Rt assumption
@@ -380,8 +395,6 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' construct a single list for input into stan with all data required
 #' present.
 #'
-#' @param shifted_cases A `<data.frame>` of delay shifted cases
-#'
 #' @param seeding_time Integer; seeding time, usually obtained using
 #' [get_seeding_time()].
 #'
@@ -402,13 +415,25 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' )
 #' }
 create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
-                             shifted_cases, forecast) {
+                             forecast) {
   cases <- data[(seeding_time + 1):.N]
   cases[, lookup := seq_len(.N)]
   case_times <- cases[!is.na(confirm), lookup]
   imputed_times <- cases[!(accumulate), lookup]
   accumulate <- cases$accumulate
   confirmed_cases <- cases[1:(.N - forecast$horizon)]$confirm
+  if (is.null(rt)) {
+    shifted_cases <- create_shifted_cases(
+      data,
+      shift = seeding_time,
+      smoothing_window = backcalc$prior_window,
+      horizon = forecast$horizon
+    )
+    shifted_confirmed_cases <- shifted_cases$confirm
+  } else {
+    shifted_confirmed_cases <- array(numeric(0))
+  }
+
 
   stan_data <- list(
     cases = confirmed_cases[!is.na(confirmed_cases)],
@@ -418,8 +443,8 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
     accumulate = as.integer(accumulate),
     lt = length(case_times),
     it = length(imputed_times),
-    shifted_cases = shifted_cases,
     t = length(data$date),
+    shifted_cases = shifted_confirmed_cases,
     burn_in = 0,
     seeding_time = seeding_time,
     horizon = forecast$horizon
@@ -428,7 +453,7 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   stan_data <- c(
     stan_data,
     create_rt_data(rt,
-      breakpoints = data[(stan_data$seeding_time + 1):.N]$breakpoint,
+      breakpoints = cases$breakpoint,
       delay = stan_data$seeding_time, horizon = stan_data$horizon
     )
   )
@@ -440,10 +465,7 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   # observation model data
   stan_data <- c(
     stan_data,
-    create_obs_model(
-      obs,
-      dates = data[(stan_data$seeding_time + 1):.N]$date
-    )
+    create_obs_model(obs, dates = cases$date)
   )
 
   # parameters
@@ -734,7 +756,9 @@ create_stan_params <- function(..., lower_bounds = NULL) {
   null_params <- vapply(params, is.null, logical(1))
   null_ids <- rep(0, sum(null_params))
   if (length(null_ids) > 0) {
-    names(null_ids) <- paste(names(null_params)[null_params], "id", sep = "_")
+    names(null_ids) <- paste(
+      "param_id", names(null_params)[null_params], sep = "_"
+    )
     params <- params[!null_params]
   }
 
@@ -803,7 +827,7 @@ create_stan_params <- function(..., lower_bounds = NULL) {
   )
   ids <- seq_along(params)
   if (length(ids) > 0) {
-    names(ids) <- paste(names(params), "id", sep = "_")
+    names(ids) <- paste("param_id", names(params), sep = "_")
   }
   ret <- c(ret, as.list(ids), as.list(null_ids))
   return(ret)

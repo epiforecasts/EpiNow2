@@ -27,13 +27,15 @@ estimate_infections(
 }
 \arguments{
 \item{data}{A \verb{<data.frame>} of disease reports (confirm) by date (date).
-\code{confirm} must be numeric and \code{date} must be in date format. Optionally
-this can also have a logical \code{accumulate} column which indicates whether
+\code{confirm} must be numeric and \code{date} must be in date format. Optionally,
+\code{data} can also have a logical \code{accumulate} column which indicates whether
 data should be added to the next data point. This is useful when modelling
 e.g. weekly incidence data. See also the \code{\link[=fill_missing]{fill_missing()}} function which
 helps add the \code{accumulate} column with the desired properties when dealing
 with non-daily data. If any accumulation is done this happens after
-truncation as specified by the \code{truncation} argument.}
+truncation as specified by the \code{truncation} argument. If all entries
+of \code{confirm} are missing (\code{NA}) the returned estimates will represent the
+prior distributions.}
 
 \item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
 \code{\link[=generation_time_opts]{generation_time_opts()}}) defining the generation time distribution used.
@@ -76,11 +78,9 @@ settings if desired.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{weigh_delay_priors}{Logical. If TRUE (default), all delay distribution
-priors will be weighted by the number of observation data points, in doing so
-approximately placing an independent prior at each time step and usually
-preventing the posteriors from shifting. If FALSE, no weight will be applied,
-i.e. delay distributions will be treated as a single parameters.}
+\item{weigh_delay_priors}{Deprecated; this is now specified at the
+distribution level in \code{generation_time_opts()}, \code{delay_opts()} and
+\code{trunc_opts()} using the \code{weight_prior} argument.}
 
 \item{id}{A character string used to assign logging information on error.
 Used by \code{\link[=regional_epinow]{regional_epinow()}} to assign errors to regions. Alter the default to
