@@ -14,7 +14,7 @@ Each function page includes:
 
 - A brief description of the function's purpose
 - Detailed explanation of the function's behavior
-- Parameter descriptions with standardized documentation for common parameters
+- Parameter descriptions
 - Return value information
 - Call and caller graphs
 - Collaboration graphs
@@ -54,7 +54,6 @@ SOFTWARE.
 
 ---
 
-# EpiNow2 website
+## EpiNow2 main website
 
-> [!note]
-> Click [here](https://epiforecasts.github.io/EpiNow2/) to return to the main EpiNow2 website.
+Click [here](https://epiforecasts.github.io/EpiNow2/) to return to the main EpiNow2 website.
