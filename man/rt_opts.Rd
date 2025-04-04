@@ -51,7 +51,7 @@ but the method relying on a global mean will revert to this for real time
 estimates, which may not be desirable.}
 
 \item{pop}{Integer, defaults to 0. Susceptible population initially present.
-Used to adjust Rt estimates when otherwise fixed based on the proportion of
+Used to adjust Rt estimates during the forecast horizon based on the proportion of
 the population that is susceptible. When set to 0 no population adjustment
 is done.}
 }
