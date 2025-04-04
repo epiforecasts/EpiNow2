@@ -819,7 +819,7 @@ infections_total_crps_plot +
 
 We'll now compare the performance of the nowcast estimates of $R_t$, i.e., the estimate of $R_t$ in `horizon = -1`.
 
-```{r plot-rt-tv-crps-approx}
+```{r plot-rt-nowcast-crps}
 rt_nowcast <- rt_crps_dt_final[, .SD[.N-(horizon + 1)], by = .(model, epidemic_phase)]
 rt_now_comparison_plot <- ggplot(data = rt_nowcast) +
     geom_point(
@@ -847,7 +847,7 @@ rt_now_comparison_plot
 
 We'll also compare the real-time performance in estimating infections.
 
-```{r plot-rt-tv-crps-approx}
+```{r plot-infections-real-time-crps}
 infections_real_time <- infections_crps_dt_final[, .SD[.N], by = .(model, epidemic_phase)]
 infections_real_time_comparison_plot <- ggplot(data = infections_real_time) +
     geom_point(
