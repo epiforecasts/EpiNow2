@@ -1,5 +1,5 @@
 ---
-title: "Model benchmarks: speed versus forecast accuracy tradeoffs"
+title: "EpiNow2 benchmarks for select models: speed versus nowcast/forecast performance"
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -7,7 +7,7 @@ output:
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{Model benchmarks: speed versus forecast accuracy tradeoffs}
+  %\VignetteIndexEntry{EpiNow2 benchmarks for select models: speed versus nowcast/forecast performance}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
   chunk_output_type: console
