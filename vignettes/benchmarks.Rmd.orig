@@ -876,7 +876,13 @@ infections_real_time_comparison_plot
 
 ## Summary of results
 
-Overall, the non-mechanistic model was always the fastest and had the best performance in estimating $R_t$. The default model was among the slowest models in most cases but often had the best time-varying and aggregated performance in estimating infections. The non-residual and 7-day random walk models showed mixed results. This suggests a trade-off between run times/speed and estimation/forecasting performance, here measured with the CRPS. These results show that choosing an appropriate model for a task requires carefully considering the use case and appropriate trade-offs. Below are a few considerations.
+In terms of run times, the mcmc-fitted models are the slowest. The default model is especially slowest, followed by the non-residual model, and the 7-day random walk model. The non-mechanistic model is almost as fast as the non-mcmc models.
+
+When we look at the overall performance, ...
+
+For $R_t$ nowcasting performance, ...
+
+Finally, for real-time infection forecast performance
 
 ## Considerations for choosing an appropriate model
 
