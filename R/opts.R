@@ -257,9 +257,9 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' `gp = NULL`).
 #'
 #' @param pop Integer, defaults to 0. Susceptible population initially present.
-#' Used to adjust Rt estimates when otherwise fixed based on the proportion of
-#' the population that is susceptible. When set to 0 no population adjustment
-#' is done.
+#' Used to adjust Rt estimates in the forecast horizon based on the
+#' proportion of the population that is susceptible. When set to 0 no
+#' population adjustment is done.
 #'
 #' @param gp_on Character string, defaulting to  "R_t-1". Indicates how the
 #' Gaussian process, if in use, should be applied to Rt. Currently supported
