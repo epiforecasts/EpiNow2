@@ -28,14 +28,14 @@ jobs:
         # Path to Doxyfile
         doxyfile-path: "Doxyfile"
         # Working directory to change to before running Doxygen
-        working-directory: "./inst/stan/stan_docs/"
+        working-directory: "./inst/stan/docs/"
 
     - name: Archive documentation
       if: github.ref != 'refs/heads/main'
       uses: actions/upload-artifact@v4
       with:
         name: stan-docs
-        path: ./inst/stan/stan_docs/
+        path: ./inst/stan/docs/
         if-no-files-found: error
 
     - name: Deploy
@@ -45,5 +45,5 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         # Default Doxyfile build documentation to html directory.
         # Change the directory if changes in Doxyfile
-        publish_dir: ./inst/stan/stan_docs/html
+        publish_dir: ./inst/stan/docs/html
         destination_dir: stan

@@ -3,8 +3,8 @@
   <!-- Navigation index tabs -->
   <navindex>
     <!-- Keep only essential navigation elements -->
-    <tab type="mainpage" visible="yes" title="Overview"/>
-    <tab type="topics" visible="yes" title="Function Groups" intro="Functions grouped by purpose:"/>
+    <tab type="mainpage" visible="yes" title="Home"/>
+    <tab type="topics" visible="yes" title="Functions" intro="Functions grouped by purpose:"/>
   </navindex>
 
   <!-- Layout definition for a file page -->
