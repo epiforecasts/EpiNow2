@@ -618,6 +618,12 @@ runtimes_dt_long <- melt(
   variable.name = "model",      # Name for the 'model' column
   value.name = "timing"         # Name for the 'timing' column
 )
+#> Warning in melt.data.table(runtimes_dt, id.vars = "snapshot_date", measure.vars
+#> = model_descriptions$model, : 'measure.vars' [default_mcmc, default_vb,
+#> default_pathfinder, default_laplace, ...] are not all of the same type. By
+#> order of hierarchy, the molten data value column will be of type 'double'. All
+#> measure variables not of type 'double' will be coerced too. Check DETAILS in
+#> ?melt.data.table for more on coercion.
 
 # Add model configurations
 runtimes_dt_detailed <- merge(
@@ -670,8 +676,8 @@ timing_plot <- ggplot(data = runtimes_dt_detailed) +
   scale_shape_manual(values = c(1, 0, 6, 8)) +
   plot_theme_custom
 timing_plot
-#> Warning: Removed 5 rows containing missing values or values outside the
-#> scale range (`geom_point()`).
+#> Warning: Removed 7 rows containing missing values or values outside the scale range
+#> (`geom_point()`).
 ```
 
 ![](benchmarks-process-runtimes-1.png)
@@ -682,7 +688,7 @@ We will use the [continuous ranked probability score (CRPS)](https://en.wikipedi
 
 We will evaluate the overall performance out-of-sample, i.e., total CRPS in the forecasting window. Additionally, for $R_t$, we'll evaluate the nowcast value, i.e., the estimate of $R_t$ before the forecast horizon, and for infections, we will compare the 7-day forecast as a measure of real-time performance.
 
-Note: For details on the time-varying performance of the models, see the section [results appendix].
+Note: For details on the time-varying performance of the models, see the section [Results appendix].
 
 
 ```{.r .fold-hide}
@@ -761,8 +767,8 @@ We'll now compare the performance of the nowcast estimates of $R_t$, i.e., the e
 
 
 ```
-#> Warning: Removed 5 rows containing missing values or values outside the
-#> scale range (`geom_point()`).
+#> Warning: Removed 7 rows containing missing values or values outside the scale range
+#> (`geom_point()`).
 ```
 
 ![](benchmarks-plot-rt-nowcast-crps-1.png)
@@ -773,8 +779,8 @@ We'll also compare the real-time performance in estimating infections.
 
 
 ```
-#> Warning: Removed 5 rows containing missing values or values outside the
-#> scale range (`geom_point()`).
+#> Warning: Removed 7 rows containing missing values or values outside the scale range
+#> (`geom_point()`).
 ```
 
 ![](benchmarks-plot-infections-real-time-crps-1.png)
