@@ -17,6 +17,8 @@
 - Added documentation about doing prior predictive checks.
 - The stan code is now fulled documented and can be accessed on the website under the Reference tab.
 - Fixed an issue with the pkgdown website where the Reference tab was not appearing as a dropdown menu for the R and Stan Reference tabs.
+- Enhanced the stan documentation with a doxygen-awesome theme and added a license badge.
+- Clarified when the population adjustment is done when `pop` is specified.
 
 # EpiNow2 1.7.1
 
