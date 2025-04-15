@@ -763,7 +763,7 @@ rt_total_crps <- add_fit_type(rt_total_crps)
 
 # Process data and plot
 rt_total_crps_plot <- plot_total_crps(
-    rt_total_crps,
+    rt_total_crps[total_crps > 0], # Don't plot failed models
     title = "Total performance in forecasting Rt"
 )
 
@@ -779,7 +779,7 @@ infections_total_crps <- calculate_total_crps(
 
 # Process and plot
 infections_total_crps_plot <- plot_total_crps(
-    infections_total_crps,
+    infections_total_crps[total_crps > 0], # Don't plot failed models
     title = "Total performance in forecasting infections"
 )
 infections_total_crps_plot +
