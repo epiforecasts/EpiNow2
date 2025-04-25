@@ -12,7 +12,7 @@ test_that("dist_spec returns correct output for fixed lognormal distribution", {
   )
 })
 
-test_that("discretise and collapse work with combined LogNormal distributions", {
+test_that("discretise and collapse work with LogNormal distributions with trailing zeroes", {
   dist1 <- LogNormal(mean = 1.77, sd = 1.08, max = 30)
   dist2 <- LogNormal(mean = 4.4, sd = 0.67, max = 30)
   combined <- dist1 + dist2
