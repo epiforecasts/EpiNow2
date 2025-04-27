@@ -544,7 +544,6 @@ collapse <- function(x, ...) {
 #' @param ... ignored
 #' @return A `<dist_spec>` where consecutive nonparametric distributions
 #' have been convolved
-#' @importFrom stats convolve
 #' @importFrom cli cli_abort
 #' @method collapse dist_spec
 #' @export
@@ -586,9 +585,8 @@ collapse.multi_dist_spec <- function(x, ...) {
   for (id in collapseable) {
     ## collapse distributions
     for (next_id in next_ids[id]) {
-      x[[ids[id]]]$pmf <- convolve(
-        get_pmf(x[[ids[id]]]), rev(get_pmf(x[[next_id]])),
-        type = "open"
+      x[[ids[id]]]$pmf <- stable_convolve(
+        get_pmf(x[[ids[id]]]), rev(get_pmf(x[[next_id]]))
       )
     }
   }
