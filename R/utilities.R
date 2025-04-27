@@ -460,7 +460,7 @@ stable_convolve <- function(a, b) {
       result[i + j - 1] <- result[i + j - 1] + a[i] * b[m - j + 1]
     }
   }
-  return(result)
+  result
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
