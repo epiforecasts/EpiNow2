@@ -241,7 +241,10 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     fixed_from = future_rt$from,
     pop = rt$pop,
     stationary = as.numeric(rt$gp_on == "R0"),
-    future_time = horizon - future_rt$from
+    future_time = horizon - future_rt$from,
+    growth_method = list(
+      "infections" = 0, "infectiousness" = 1
+      )[[rt$growth_method]]
   )
   return(rt_data)
 }
