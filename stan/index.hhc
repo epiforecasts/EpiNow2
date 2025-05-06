@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML><HEAD></HEAD><BODY>
+<OBJECT type="text/site properties">
+<param name="FrameName" value="right">
+</OBJECT>
+<UL>
+  <UL>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="Documentation structure"><param name="Local" value="index.html#autotoc_md0"><param name="ImageNumber" value="11"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="EpiNow2 main website"><param name="Local" value="index.html#autotoc_md1"><param name="ImageNumber" value="11"></OBJECT>
+  </UL>
+<LI><OBJECT type="text/sitemap"><param name="Name" value="Functions"><param name="Local" value="topics.html"><param name="ImageNumber" value="1"></OBJECT>
+  <UL>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="Infections Estimation"><param name="Local" value="group__infections__estimation.html"><param name="ImageNumber" value="1"></OBJECT>
+    <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="Estimates Smoothing"><param name="Local" value="group__estimates__smoothing.html"><param name="ImageNumber" value="1"></OBJECT>
+      <UL>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_EQ"><param name="Local" value="group__estimates__smoothing.html#ga418b9ba49bfb6a4ff8ec4331826d032d"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Matern12"><param name="Local" value="group__estimates__smoothing.html#gaba328da750fac44cab0ca4e9a0b41274"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Matern32"><param name="Local" value="group__estimates__smoothing.html#gae443d4d2b3b752c07ed835b83ecd0e86"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Matern52"><param name="Local" value="group__estimates__smoothing.html#gadd4a066ad1281db47c82a5096af8099a"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Periodic"><param name="Local" value="group__estimates__smoothing.html#ga56305a04b7b8ac024c83766cb6b6eafc"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="gaussian_process_lp"><param name="Local" value="group__estimates__smoothing.html#gaf1c10f17e51fdf6b5c74569c23922a0c"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="PHI"><param name="Local" value="group__estimates__smoothing.html#gacb839312fe55f00e52b127baf5255990"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="PHI_periodic"><param name="Local" value="group__estimates__smoothing.html#ga3d1737e856bfefe04087fd613bafc09d"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="setup_gp"><param name="Local" value="group__estimates__smoothing.html#gac7ec6c407d757e6726943fbc1153166b"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="setup_noise"><param name="Local" value="group__estimates__smoothing.html#gabcf59a4e803b4f02dbe9c96def0312da"><param name="ImageNumber" value="11"></OBJECT>
+      </UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="Observation Model"><param name="Local" value="group__observation__model.html"><param name="ImageNumber" value="1"></OBJECT>
+      <UL>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="accumulate_reports"><param name="Local" value="group__observation__model.html#gacf1205987ed9944d2df0f23989c5ff19"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="day_of_week_effect"><param name="Local" value="group__observation__model.html#gaf35e2f9a25c4f140e264dcf918b32d22"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="report_log_lik"><param name="Local" value="group__observation__model.html#gaa576ee4dbd3a2280111d16b230e3c7b6"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="report_lp"><param name="Local" value="group__observation__model.html#gaba92657c970c6168e124c0c7ebc187a4"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="report_rng"><param name="Local" value="group__observation__model.html#ga0df256e1a047a7b29c80787d30b095b7"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="scale_obs"><param name="Local" value="group__observation__model.html#gaa64a58b188ca984624c5f82d7908d518"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="truncate_obs"><param name="Local" value="group__observation__model.html#ga23d82c6b957d14fcf510e630c7b325a5"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="truncation_lp"><param name="Local" value="group__observation__model.html#ga9042f3f0009b04764b15135394ffcc84"><param name="ImageNumber" value="11"></OBJECT>
+      </UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="deconvolve_infections"><param name="Local" value="group__infections__estimation.html#gacfe00b4587ada5fd900f2ec606cbf679"><param name="ImageNumber" value="11"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="generate_infections"><param name="Local" value="group__infections__estimation.html#gad73c77fe949c016d439e0ac63ce1aa6a"><param name="ImageNumber" value="11"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="update_infectiousness"><param name="Local" value="group__infections__estimation.html#ga2b1ee9503c17947f9516f55eeeb9046c"><param name="ImageNumber" value="11"></OBJECT>
+    </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="Rt Estimation"><param name="Local" value="group__rt__estimation.html"><param name="ImageNumber" value="1"></OBJECT>
+    <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="Estimates Smoothing"><param name="Local" value="group__estimates__smoothing.html"><param name="ImageNumber" value="1"></OBJECT>
+      <UL>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_EQ"><param name="Local" value="group__estimates__smoothing.html#ga418b9ba49bfb6a4ff8ec4331826d032d"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Matern12"><param name="Local" value="group__estimates__smoothing.html#gaba328da750fac44cab0ca4e9a0b41274"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Matern32"><param name="Local" value="group__estimates__smoothing.html#gae443d4d2b3b752c07ed835b83ecd0e86"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Matern52"><param name="Local" value="group__estimates__smoothing.html#gadd4a066ad1281db47c82a5096af8099a"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Periodic"><param name="Local" value="group__estimates__smoothing.html#ga56305a04b7b8ac024c83766cb6b6eafc"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="gaussian_process_lp"><param name="Local" value="group__estimates__smoothing.html#gaf1c10f17e51fdf6b5c74569c23922a0c"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="PHI"><param name="Local" value="group__estimates__smoothing.html#gacb839312fe55f00e52b127baf5255990"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="PHI_periodic"><param name="Local" value="group__estimates__smoothing.html#ga3d1737e856bfefe04087fd613bafc09d"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="setup_gp"><param name="Local" value="group__estimates__smoothing.html#gac7ec6c407d757e6726943fbc1153166b"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="setup_noise"><param name="Local" value="group__estimates__smoothing.html#gabcf59a4e803b4f02dbe9c96def0312da"><param name="ImageNumber" value="11"></OBJECT>
+      </UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="Observation Model"><param name="Local" value="group__observation__model.html"><param name="ImageNumber" value="1"></OBJECT>
+      <UL>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="accumulate_reports"><param name="Local" value="group__observation__model.html#gacf1205987ed9944d2df0f23989c5ff19"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="day_of_week_effect"><param name="Local" value="group__observation__model.html#gaf35e2f9a25c4f140e264dcf918b32d22"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="report_log_lik"><param name="Local" value="group__observation__model.html#gaa576ee4dbd3a2280111d16b230e3c7b6"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="report_lp"><param name="Local" value="group__observation__model.html#gaba92657c970c6168e124c0c7ebc187a4"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="report_rng"><param name="Local" value="group__observation__model.html#ga0df256e1a047a7b29c80787d30b095b7"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="scale_obs"><param name="Local" value="group__observation__model.html#gaa64a58b188ca984624c5f82d7908d518"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="truncate_obs"><param name="Local" value="group__observation__model.html#ga23d82c6b957d14fcf510e630c7b325a5"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="truncation_lp"><param name="Local" value="group__observation__model.html#ga9042f3f0009b04764b15135394ffcc84"><param name="ImageNumber" value="11"></OBJECT>
+      </UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="calculate_growth"><param name="Local" value="group__rt__estimation.html#ga528a90d41e86f52d6472cd573192e181"><param name="ImageNumber" value="11"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="calculate_Rt"><param name="Local" value="group__rt__estimation.html#ga2d17e8b4b2a9d69dd576396d14b218e9"><param name="ImageNumber" value="11"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="R_to_r"><param name="Local" value="group__rt__estimation.html#gab6cc5437be69ba05ef8b5b6c10cbdf51"><param name="ImageNumber" value="11"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="R_to_r_newton_step"><param name="Local" value="group__rt__estimation.html#ga7671592e7d61d662a76adbb129110826"><param name="ImageNumber" value="11"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="rt_lp"><param name="Local" value="group__rt__estimation.html#gac96157a6248647672c6f1fa4699b7301"><param name="ImageNumber" value="11"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="update_Rt"><param name="Local" value="group__rt__estimation.html#ga52b968e94972ac512e5ee13d04d06b17"><param name="ImageNumber" value="11"></OBJECT>
+    </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="Secondary Reports Estimation"><param name="Local" value="group__secondary__reports__estimation.html"><param name="ImageNumber" value="1"></OBJECT>
+    <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="Estimates Smoothing"><param name="Local" value="group__estimates__smoothing.html"><param name="ImageNumber" value="1"></OBJECT>
+      <UL>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_EQ"><param name="Local" value="group__estimates__smoothing.html#ga418b9ba49bfb6a4ff8ec4331826d032d"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Matern12"><param name="Local" value="group__estimates__smoothing.html#gaba328da750fac44cab0ca4e9a0b41274"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Matern32"><param name="Local" value="group__estimates__smoothing.html#gae443d4d2b3b752c07ed835b83ecd0e86"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Matern52"><param name="Local" value="group__estimates__smoothing.html#gadd4a066ad1281db47c82a5096af8099a"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="diagSPD_Periodic"><param name="Local" value="group__estimates__smoothing.html#ga56305a04b7b8ac024c83766cb6b6eafc"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="gaussian_process_lp"><param name="Local" value="group__estimates__smoothing.html#gaf1c10f17e51fdf6b5c74569c23922a0c"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="PHI"><param name="Local" value="group__estimates__smoothing.html#gacb839312fe55f00e52b127baf5255990"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="PHI_periodic"><param name="Local" value="group__estimates__smoothing.html#ga3d1737e856bfefe04087fd613bafc09d"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="setup_gp"><param name="Local" value="group__estimates__smoothing.html#gac7ec6c407d757e6726943fbc1153166b"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="setup_noise"><param name="Local" value="group__estimates__smoothing.html#gabcf59a4e803b4f02dbe9c96def0312da"><param name="ImageNumber" value="11"></OBJECT>
+      </UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="Observation Model"><param name="Local" value="group__observation__model.html"><param name="ImageNumber" value="1"></OBJECT>
+      <UL>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="accumulate_reports"><param name="Local" value="group__observation__model.html#gacf1205987ed9944d2df0f23989c5ff19"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="day_of_week_effect"><param name="Local" value="group__observation__model.html#gaf35e2f9a25c4f140e264dcf918b32d22"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="report_log_lik"><param name="Local" value="group__observation__model.html#gaa576ee4dbd3a2280111d16b230e3c7b6"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="report_lp"><param name="Local" value="group__observation__model.html#gaba92657c970c6168e124c0c7ebc187a4"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="report_rng"><param name="Local" value="group__observation__model.html#ga0df256e1a047a7b29c80787d30b095b7"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="scale_obs"><param name="Local" value="group__observation__model.html#gaa64a58b188ca984624c5f82d7908d518"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="truncate_obs"><param name="Local" value="group__observation__model.html#ga23d82c6b957d14fcf510e630c7b325a5"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="truncation_lp"><param name="Local" value="group__observation__model.html#ga9042f3f0009b04764b15135394ffcc84"><param name="ImageNumber" value="11"></OBJECT>
+      </UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="calculate_secondary"><param name="Local" value="group__secondary__reports__estimation.html#gad51784e5c63b38a6962d029879ffbee7"><param name="ImageNumber" value="11"></OBJECT>
+    </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Name" value="Handlers and Helpers"><param name="Local" value="group__handlers__and__helpers.html"><param name="ImageNumber" value="1"></OBJECT>
+    <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="Convolution Functions"><param name="Local" value="group__convolution__functions.html"><param name="ImageNumber" value="1"></OBJECT>
+      <UL>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="calc_conv_indices_len"><param name="Local" value="group__convolution__functions.html#ga46716cd90141e7342af1302d46d04a6b"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="calc_conv_indices_xlen"><param name="Local" value="group__convolution__functions.html#ga61201e9eb433327cf62ba6f6c1258717"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="convolve_to_report"><param name="Local" value="group__convolution__functions.html#ga49ecbffec21a9166c69529fce8ff0f1e"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="convolve_with_rev_pmf"><param name="Local" value="group__convolution__functions.html#ga1b4de88baf4243a2a00cd7fd74c3cd17"><param name="ImageNumber" value="11"></OBJECT>
+      </UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="Parameter Handlers"><param name="Local" value="group__parameter__handlers.html"><param name="ImageNumber" value="1"></OBJECT>
+      <UL>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="get_param"><param name="Local" value="group__parameter__handlers.html#gacef7f887b3670579e00207861d503172"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="get_param"><param name="Local" value="group__parameter__handlers.html#gae5ea6aaadb1087a64480303f347b3bc1"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="params_lp"><param name="Local" value="group__parameter__handlers.html#ga448910db7389c3426cb9c6b81415f1e5"><param name="ImageNumber" value="11"></OBJECT>
+      </UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="Delay Handlers"><param name="Local" value="group__delay__handlers.html"><param name="ImageNumber" value="1"></OBJECT>
+      <UL>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="delays_lp"><param name="Local" value="group__delay__handlers.html#ga5b1160517c398bf694e3c4cc4b2ea6a9"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="get_delay_rev_pmf"><param name="Local" value="group__delay__handlers.html#gaefea9dfede01b97f9de1d617eb79916d"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="get_delay_type_max"><param name="Local" value="group__delay__handlers.html#ga1d493a146307b75e7150e63f95728074"><param name="ImageNumber" value="11"></OBJECT>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="normal_lb_rng"><param name="Local" value="group__delay__handlers.html#ga96291a4fd7b57d714ca3ef74ac2123e9"><param name="ImageNumber" value="11"></OBJECT>
+      </UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="PMF Handlers"><param name="Local" value="group__pmf__handlers.html"><param name="ImageNumber" value="1"></OBJECT>
+      <UL>
+      <LI><OBJECT type="text/sitemap"><param name="Name" value="discretised_pmf"><param name="Local" value="group__pmf__handlers.html#gac942c03301a61863395d20a4a966e54a"><param name="ImageNumber" value="11"></OBJECT>
+      </UL>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="neg_binomial_2_safe_rng"><param name="Local" value="group__handlers__and__helpers.html#ga457f8b223f165bb020afb7d8dc4cfddd"><param name="ImageNumber" value="11"></OBJECT>
+    </UL>
+  </UL>
+</UL>
+</BODY>
+</HTML>

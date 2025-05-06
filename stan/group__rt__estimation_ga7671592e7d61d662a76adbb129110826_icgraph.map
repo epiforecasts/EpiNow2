@@ -1,0 +1,7 @@
+<map id="R_to_r_newton_step" name="R_to_r_newton_step">
+<area shape="rect" id="Node000001" title=" " alt="" coords="295,5,435,31"/>
+<area shape="rect" id="Node000002" href="$group__rt__estimation.html#gab6cc5437be69ba05ef8b5b6c10cbdf51" title=" " alt="" coords="188,5,247,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="279,21,247,21,247,16,279,16"/>
+<area shape="rect" id="Node000003" href="$group__infections__estimation.html#gad73c77fe949c016d439e0ac63ce1aa6a" title="Generate infections using a renewal equation approach." alt="" coords="5,5,140,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="172,21,140,21,140,16,172,16"/>
+</map>
