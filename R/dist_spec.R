@@ -447,6 +447,9 @@ discretise <- function(x, ...) {
 #' distribution cannot be discretised (e.g., because no finite maximum has been
 #' specified or parameters are uncertain). If `FALSE` then any distribution
 #' that cannot be discretised will be returned as is.
+#' @param remove_trailing_zeros Logical; If `TRUE` (default), trailing zeroes
+#'   in the resulting PMF will be removed. If `FALSE`, trailing zeroes will be
+#'   retained.
 #' @param ... ignored
 #' @importFrom cli cli_abort
 #' @return A `<dist_spec>` where all distributions with constant parameters are
@@ -467,7 +470,8 @@ discretise <- function(x, ...) {
 #'
 #' # The maxf the sum of two distributions
 #' discretise(dist1 + dist2, strict = FALSE)
-discretise.dist_spec <- function(x, strict = TRUE, ...) {
+discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
+                                 ...) {
   ## discretise
   if (!is_constrained(x) && strict) {
     cli_abort(
@@ -500,6 +504,9 @@ discretise.dist_spec <- function(x, strict = TRUE, ...) {
     )
     for (attribute in preserve_attributes) {
       attributes(y)[attribute] <- attributes(x)[attribute]
+    }
+    if (remove_trailing_zeros) {
+      y$pmf <- y$pmf[seq_len(max(which(y$pmf != 0)))]
     }
     return(y)
   } else if (strict) {
@@ -537,7 +544,6 @@ collapse <- function(x, ...) {
 #' @param ... ignored
 #' @return A `<dist_spec>` where consecutive nonparametric distributions
 #' have been convolved
-#' @importFrom stats convolve
 #' @importFrom cli cli_abort
 #' @method collapse dist_spec
 #' @export
@@ -579,9 +585,8 @@ collapse.multi_dist_spec <- function(x, ...) {
   for (id in collapseable) {
     ## collapse distributions
     for (next_id in next_ids[id]) {
-      x[[ids[id]]]$pmf <- convolve(
-        get_pmf(x[[ids[id]]]), rev(get_pmf(x[[next_id]])),
-        type = "open"
+      x[[ids[id]]]$pmf <- stable_convolve(
+        get_pmf(x[[ids[id]]]), rev(get_pmf(x[[next_id]]))
       )
     }
   }

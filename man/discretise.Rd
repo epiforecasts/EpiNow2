@@ -6,7 +6,7 @@
 \alias{discretize}
 \title{Discretise a <dist_spec>}
 \usage{
-\method{discretise}{dist_spec}(x, strict = TRUE, ...)
+\method{discretise}{dist_spec}(x, strict = TRUE, remove_trailing_zeros = TRUE, ...)
 
 discretize(x, ...)
 }
@@ -17,6 +17,10 @@ discretize(x, ...)
 distribution cannot be discretised (e.g., because no finite maximum has been
 specified or parameters are uncertain). If \code{FALSE} then any distribution
 that cannot be discretised will be returned as is.}
+
+\item{remove_trailing_zeros}{Logical; If \code{TRUE} (default), trailing zeroes
+in the resulting PMF will be removed. If \code{FALSE}, trailing zeroes will be
+retained.}
 
 \item{...}{ignored}
 }
