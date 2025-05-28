@@ -14,7 +14,7 @@
  * an intercept, breakpoints (i.e. a random walk), and a Gaussian
  * process.
  *
- * @param t Length of the time series
+ * @param t Length of the time series (total time points)
  * @param R0 Initial reproduction number
  * @param noise Vector of Gaussian process noise values
  * @param bps Array of breakpoint indices

@@ -13,7 +13,7 @@ functions {
 data {
   // dimensions
   int n; // number of samples
-  int t; // unobserved time
+  int t; // total time (including seeding_time and future_time)
   int seeding_time; // time period used for seeding and not observed
   int future_time; // fixed future time
   // Rt
