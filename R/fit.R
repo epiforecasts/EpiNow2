@@ -31,13 +31,24 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   args$max_execution_time <- NULL
   args$future <- NULL
 
+  # Determine backend and get appropriate iteration parameters
+  if (args$backend == "cmdstanr") {
+    total_samples <- args$iter_sampling * args$chains
+    warmup_iterations <- args$iter_warmup
+  } else {
+    total_samples <- (args$iter - args$warmup) * args$chains
+    warmup_iterations <- args$warmup
+  }
+
   futile.logger::flog.debug(
     paste0(
       "%s: Running in exact mode for ",
-      ceiling(args$iter - args$warmup) * args$chains,
+      total_samples,
       " samples (across ", args$chains,
-      " chains each with a warm up of ", args$warmup, " iterations each) and ",
-      args$data$t, " time steps of which ", args$data$horizon, " are a forecast"
+      " chains each with a warm up of ", warmup_iterations,
+      " iterations each) and ",
+      args$data$t, " time steps of which ", args$data$horizon,
+      " are a forecast"
     ),
     id,
     name = "EpiNow2.epinow.estimate_infections.fit"
@@ -168,11 +179,20 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   method <- args$method
   args$method <- NULL
+  # Determine backend and get appropriate iteration parameters
+  if (args$backend == "cmdstanr") {
+    total_samples <- args$iter_sampling * args$chains
+    warmup_iterations <- args$iter_warmup
+  } else {
+    total_samples <- (args$iter - args$warmup) * args$chains
+    warmup_iterations <- args$warmup
+  }
   futile.logger::flog.debug(
     paste0(
-      "%s: Running in approximate mode for ", args$iter,
-      " iterations (with ", args$trials, " attempts). Extracting ",
-      args$output_samples, " approximate posterior samples for ",
+      "%s: Running in approximate mode for ", total_samples,
+      " samples (across ", args$chains,
+      " chains each with a warm up of ", warmup_iterations,
+      " iterations each) and ",
       args$data$t, " time steps of which ",
       args$data$horizon, " are a forecast"
     ),
