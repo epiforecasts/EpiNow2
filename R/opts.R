@@ -775,10 +775,12 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
   control_def <- modifyList(control_def, control)
   if (any(c("iter", "iter_sampling") %in% names(dot_args))) {
     cli_warn(
-      "!" = "Number of samples must be specified using the {.var samples}
+      c(
+        "!" = "Number of samples must be specified using the {.var samples}
       and {.var warmup} arguments rather than {.var iter} or
       {.var iter_sampliing}.",
-      "i" = "Supplied {.var iter} or {.var iter_sampliing} will be ignored."
+        "i" = "Supplied {.var iter} or {.var iter_sampliing} will be ignored."
+      )
     )
   }
   dot_args$iter <- NULL
