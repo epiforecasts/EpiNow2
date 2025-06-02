@@ -620,7 +620,6 @@ create_stan_args <- function(stan = stan_opts(),
   ## generate stan model
   if (is.null(stan$object)) {
     stan$object <- epinow2_stan_model(stan$backend, model)
-    stan$backend <- NULL
   }
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
