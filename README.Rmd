@@ -168,6 +168,7 @@ you can file an issue [here](https://github.com/epiforecasts/EpiNow2/issues). We
 
 
 
+
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
@@ -251,12 +252,14 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Athlytras">thlytras</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3ALizaHadley">LizaHadley</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Antorresd">ntorresd</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3ASamuelBrand1">SamuelBrand1</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3ASamuelBrand1">SamuelBrand1</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Amicahwiesner67">micahwiesner67</a>
 
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
 
 
 
