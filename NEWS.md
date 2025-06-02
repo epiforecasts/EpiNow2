@@ -12,6 +12,7 @@
 - A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
 - A bug was fixed where `estimate_infection()` threw an error if there were too many consecutive `NA` observations.
 - A bug was fixed where an error was thrown when convolving delay distributions with very small values.
+- A bug was fixed where a cli warning was broken due to bad syntax.
 
 ## Documentation
 
