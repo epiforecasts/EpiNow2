@@ -267,7 +267,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
 #' Calculate number of post-warmup iterations and samples based on the backend
 #' @keywords internal
 #' @inheritParams fit_model_with_nuts
-create_logging_sampler_values <- function(args){
+create_logging_sampler_values <- function(args) {
   if (args$backend == "cmdstanr") {
     args$total_samples <- args$iter_sampling * args$chains
     args$warmup_iterations <- args$iter_warmup
@@ -277,5 +277,4 @@ create_logging_sampler_values <- function(args){
   }
   # backend is not needed for fitting
   args$backend <- NULL
-  return(args)
 }
