@@ -32,20 +32,14 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   args$future <- NULL
 
   # Determine backend and get appropriate iteration parameters
-  if (args$backend == "cmdstanr") {
-    total_samples <- args$iter_sampling * args$chains
-    warmup_iterations <- args$iter_warmup
-  } else {
-    total_samples <- (args$iter - args$warmup) * args$chains
-    warmup_iterations <- args$warmup
-  }
+  args <- create_logging_sampler_values(args)
 
   futile.logger::flog.debug(
     paste0(
       "%s: Running in exact mode for ",
-      total_samples,
+      args$total_samples,
       " samples (across ", args$chains,
-      " chains each with a warm up of ", warmup_iterations,
+      " chains each with a warm up of ", args$warmup_iterations,
       " iterations each) and ",
       args$data$t, " time steps of which ", args$data$horizon,
       " are a forecast"
@@ -53,6 +47,10 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     id,
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
+
+  # Remove unnecessary arguments
+  args$total_samples <- NULL
+  args$warmup_iterations <- NULL
 
   if (exists("stuck_chains", args)) {
     stuck_chains <- args$stuck_chains
@@ -180,18 +178,12 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   method <- args$method
   args$method <- NULL
   # Determine backend and get appropriate iteration parameters
-  if (args$backend == "cmdstanr") {
-    total_samples <- args$iter_sampling * args$chains
-    warmup_iterations <- args$iter_warmup
-  } else {
-    total_samples <- (args$iter - args$warmup) * args$chains
-    warmup_iterations <- args$warmup
-  }
+  args <- create_logging_sampler_values(args)
   futile.logger::flog.debug(
     paste0(
-      "%s: Running in approximate mode for ", total_samples,
+      "%s: Running in approximate mode for ", args$total_samples,
       " samples (across ", args$chains,
-      " chains each with a warm up of ", warmup_iterations,
+      " chains each with a warm up of ", args$warmup_iterations,
       " iterations each) and ",
       args$data$t, " time steps of which ",
       args$data$horizon, " are a forecast"
@@ -199,6 +191,10 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
     id,
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
+
+  # Remove unnecessary arguments
+  args$total_samples <- NULL
+  args$warmup_iterations <- NULL
 
   if (exists("trials", args)) {
     trials <- args$trials
@@ -266,4 +262,20 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
     rlang::abort(paste("Approximate inference failed due to:", error))
   }
   return(fit)
+}
+
+#' Calculate number of post-warmup iterations and samples based on the backend
+#' @keywords internal
+#' @inheritParams fit_model_with_nuts
+create_logging_sampler_values <- function(args){
+  if (args$backend == "cmdstanr") {
+    args$total_samples <- args$iter_sampling * args$chains
+    args$warmup_iterations <- args$iter_warmup
+  } else {
+    args$total_samples <- (args$iter - args$warmup) * args$chains
+    args$warmup_iterations <- args$warmup
+  }
+  # backend is not needed for fitting
+  args$backend <- NULL
+  return(args)
 }
