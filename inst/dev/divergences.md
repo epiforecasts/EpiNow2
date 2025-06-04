@@ -1,0 +1,165 @@
+
+# Examining divergent transitions in EpiNow2
+
+We investigate divergent transitions by fixing parameters to their true
+values one-by-one and checking if the fits improve (suggestion 9 in
+[Taming Divergences in Stan
+Models](https://www.martinmodrak.cz/2018/02/19/taming-divergences-in-stan-models/)):
+“Move parameters to the data block and set them to their true values
+(from simulated data). Then return them one by one to paremters block.
+Which parameter introduces the problems?”
+
+## Setup
+
+We use standard packages as well as the `{stanedit}` package, which can
+be installed using
+
+``` r
+install.packages("stanedit", repos = "https://epiforecasts.r-universe.dev/")
+```
+
+We load all required packages and set a seed.
+
+``` r
+library("EpiNow2")
+library("stanedit")
+library("posterior")
+library("dplyr")
+library("purrr")
+
+set.seed(111)
+
+## use the cmdstanr version for easier recompilation later
+model <- epinow2_cmdstan_model()
+```
+
+## Initial fit
+
+We produce an initial fit, which later we will use to fix some
+parameters.
+
+``` r
+reported_cases <- example_confirmed[1:60]
+
+reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
+delay <- example_incubation_period + reporting_delay
+
+rt_prior <- list(mean = 2, sd = 0.1)
+
+def <- estimate_infections(reported_cases,
+  generation_time = gt_opts(example_generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior),
+  stan = stan_opts(
+    object = model, show_messages = FALSE, show_exceptions = FALSE,
+    diagnostics = NULL
+  ),
+  verbose = FALSE
+)
+```
+
+    ## DEBUG [2024-11-15 13:34:28] estimate_infections: Running in exact mode for  samples (across 4 chains each with a warm up of  iterations each) and 81 time steps of which 7 are a forecast
+
+    ## Warning: 21 of 2000 (1.0%) transitions ended with a divergence.
+    ## See https://mc-stan.org/misc/warnings for details.
+
+## Extract random sample and convert to data set for testing
+
+We extract a random sample that will become our simulated data set for
+testing.
+
+``` r
+## random chain
+parallel <- sample(def$fit$metadata()$id, 1)
+## random draw within the chain
+draw <- sample(def$fit$metadata()$iter_sampling, 1)
+
+## extract
+draws <- def$fit$draws() |>
+  subset_draws(chain = parallel, iteration = draw) |>
+  as_draws_rvars()
+```
+
+Next we create a data set with all parameters as data in stan format. To
+do this we first extract a vector of parameter names.
+
+``` r
+## extract parameter names from model code
+model_code <- stanedit(model)
+params <- get_vars(model_code, "parameters")
+## convert to data (list of arrays)
+data <- map(set_names(params), \(p) {
+  ret <- draws_of(draws[[p]])
+  dim(ret) <- dim(ret)[-1] ## strip off first dimension (iteration)
+  return(ret)
+})
+## filter out empty ones
+data <- data[lengths(data) > 0]
+## get simulated data set
+simulated_data <- def$args
+simulated_data$cases <-
+  draws_of(draws$imputed_reports)[1, seq_along(def$args$cases)]
+```
+
+## Fix parameters one-by-one and re-fit
+
+We now move parameters to the data block one-by-one and set them to
+their sampled value. We record runtimes and number of divergences for
+each of them.
+
+``` r
+divergents <- map_df(names(data), \(p) {
+  modified_model <- move(
+    model_code,
+    find_declaration(model_code, p),
+    at_end_of = "data"
+  )
+  temp <- tempfile(fileext = ".stan")
+  write_model(modified_model, temp)
+  mod <- suppressMessages(cmdstan_model(temp))
+
+  modified_data <- c(simulated_data, data[p])
+  ## get default args
+  args <- create_stan_args(stan_opts(backend = "cmdstanr"))
+  init <- function() {
+    ret <- create_initial_conditions(modified_data)()
+    ret[p] <- NULL
+    return(ret)
+  }
+  fit <- suppressMessages(mod$sample(
+    modified_data,
+    init = init,
+    chains = args$chains,
+    parallel_chains = args$parallel_chains,
+    iter_warmup = args$iter_warmup,
+    iter_sampling = args$iter_sampling,
+    adapt_delta = args$adapt_delta,
+    max_treedepth = args$max_treedepth,
+    show_messages = FALSE,
+    show_exceptions = FALSE,
+    diagnostics = NULL
+  ))
+  data.frame(
+    parameter = p,
+    divergent = sum(fit$diagnostic_summary(quiet = TRUE)$num_divergent),
+    time = mean(fit$time()$chains$total)
+  )
+})
+```
+
+## Results
+
+``` r
+divergents
+```
+
+    ##             parameter divergent     time
+    ## 1        rescaled_rho        25 24.13175
+    ## 2               alpha         0 14.59800
+    ## 3                 eta         0  4.53850
+    ## 4               log_R        40 23.49950
+    ## 5  initial_infections        31 24.07925
+    ## 6      initial_growth        43 23.99300
+    ## 7        delay_params        26 20.34700
+    ## 8 day_of_week_simplex         6 24.63900
+    ## 9             rep_phi        13 23.93450
