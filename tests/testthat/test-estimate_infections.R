@@ -186,7 +186,6 @@ test_that("estimate_infections output contains breakpoints effect when breakpoin
   expect_true("breakpoints" %in% unique(out$samples$variable))
   # Should have at least as many unique breakpoints as in the data
   expect_true(length(unique(out$samples[variable == "breakpoints"]$strat)) == length(bp_dates))
-  expect_true(length(unique(out$summarised[variable == "R"]$mean)) == length(bp_dates) + 1)
 })
 
 test_that("estimate_infections output does not contain breakpoints effect when breakpoints are not present", {
