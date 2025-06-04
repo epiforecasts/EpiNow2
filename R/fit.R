@@ -111,14 +111,14 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     chains <- args$chains
     args$chains <- 1
     args$cores <- 1
-    fits <- lapply_func(1:chains,
+    fits <- lapply_func(seq_len(chains),
       fit_chain,
       stan_args = args,
       max_time = max_execution_time,
       catch = TRUE
     )
     if (stuck_chains > 0) {
-      fits[1:stuck_chains] <- NULL
+      fits[seq_len(stuck_chains)] <- NULL
     }
     fit <- purrr::compact(fits)
     if (length(fit) == 0) {
