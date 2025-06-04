@@ -31,7 +31,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   args$max_execution_time <- NULL
   args$future <- NULL
 
-  # Determine backend and get appropriate iteration parameters
+  # Update some sampler parameters based on backend
   args <- create_logging_sampler_values(args)
 
   futile.logger::flog.debug(
