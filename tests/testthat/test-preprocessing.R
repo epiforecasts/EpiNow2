@@ -99,7 +99,7 @@ test_that("add_breakpoints throws error if date not in data", {
   )
 })
 
-test_that("add_breakpoints works with no dates supplied (no-op)", {
+test_that("add_breakpoints works with no dates supplied", {
   data <- data.table::data.table(
     date = as.Date("2020-01-01") + 0:2,
     confirm = 1:3
