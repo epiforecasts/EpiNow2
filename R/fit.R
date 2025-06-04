@@ -277,4 +277,5 @@ create_logging_sampler_values <- function(args) {
   }
   # backend is not needed for fitting
   args$backend <- NULL
+  return(args)
 }
