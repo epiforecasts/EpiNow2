@@ -117,3 +117,48 @@ test_that("add_breakpoints resets NA breakpoints to 0", {
   result <- add_breakpoints(data, dates = as.Date("2020-01-01"))
   expect_equal(result$breakpoint, c(1, 1, 0))
 })
+
+test_that("pad_reported_cases pads with NA by default and correct number of rows", {
+  data <- data.table::data.table(
+    date = as.Date("2020-01-01") + 0:4,
+    confirm = 1:5
+  )
+  padded <- pad_reported_cases(data, 3)
+  expect_equal(nrow(padded), nrow(data) + 3)
+  expect_true(all(is.na(padded$confirm[1:3])))
+  expect_equal(padded$date[1], as.Date("2019-12-29"))
+  expect_equal(padded$confirm[4:8], 1:5)
+})
+
+test_that("pad_reported_cases pads with custom value", {
+  data <- data.table::data.table(
+    date = as.Date("2020-01-01") + 0:2,
+    confirm = 1:3
+  )
+  padded <- pad_reported_cases(data, 2, with = 0)
+  expect_equal(padded$confirm[1:2], c(0, 0))
+  expect_equal(padded$confirm[3:5], 1:3)
+})
+
+test_that("pad_reported_cases adds accumulate and breakpoint columns if present", {
+  data <- data.table::data.table(
+    date = as.Date("2020-01-01") + 0:2,
+    confirm = 1:3,
+    accumulate = c(TRUE, FALSE, TRUE),
+    breakpoint = c(0, 1, 0)
+  )
+  padded <- pad_reported_cases(data, 2, with = 99)
+  expect_equal(padded$accumulate[1:2], c(FALSE, FALSE))
+  expect_equal(padded$breakpoint[1:2], c(0, 0))
+  expect_equal(padded$confirm[1:2], c(99, 99))
+  expect_equal(padded$confirm[3:5], 1:3)
+})
+
+test_that("pad_reported_cases does nothing if n = 0", {
+  data <- data.table::data.table(
+    date = as.Date("2020-01-01") + 0:2,
+    confirm = 1:3
+  )
+  padded <- pad_reported_cases(data, 0)
+  expect_equal(padded, data)
+})
