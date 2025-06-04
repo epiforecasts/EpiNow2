@@ -37,9 +37,9 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   futile.logger::flog.debug(
     paste0(
       "%s: Running in exact mode for ",
-      args$total_samples,
+      sampler_logging_vars$total_samples,
       " samples (across ", args$chains,
-      " chains each with a warm up of ", args$warmup_iterations,
+      " chains each with a warm up of ", sampler_logging_vars$warmup_iterations,
       " iterations each) and ",
       args$data$t, " time steps of which ", args$data$horizon,
       " are a forecast"
@@ -49,8 +49,8 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   )
 
   # Remove unnecessary arguments
-  args$total_samples <- NULL
-  args$warmup_iterations <- NULL
+  sampler_logging_vars$total_samples <- NULL
+  sampler_logging_vars$warmup_iterations <- NULL
 
   if (exists("stuck_chains", args)) {
     stuck_chains <- args$stuck_chains
@@ -178,12 +178,12 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   method <- args$method
   args$method <- NULL
   # Determine backend and get appropriate iteration parameters
-  args <- create_logging_sampler_values(args)
+  sampler_logging_vars <- create_logging_sampler_values(args)
   futile.logger::flog.debug(
     paste0(
-      "%s: Running in approximate mode for ", args$total_samples,
+      "%s: Running in approximate mode for ", sampler_logging_vars$total_samples,
       " samples (across ", args$chains,
-      " chains each with a warm up of ", args$warmup_iterations,
+      " chains each with a warm up of ", sampler_logging_vars$warmup_iterations,
       " iterations each) and ",
       args$data$t, " time steps of which ",
       args$data$horizon, " are a forecast"
@@ -193,8 +193,8 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   )
 
   # Remove unnecessary arguments
-  args$total_samples <- NULL
-  args$warmup_iterations <- NULL
+  sampler_logging_vars$total_samples <- NULL
+  sampler_logging_vars$warmup_iterations <- NULL
 
   if (exists("trials", args)) {
     trials <- args$trials
@@ -269,13 +269,13 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
 #' @inheritParams fit_model_with_nuts
 create_logging_sampler_values <- function(args) {
   if (args$backend == "cmdstanr") {
-    args$total_samples <- args$iter_sampling * args$chains
-    args$warmup_iterations <- args$iter_warmup
+    return(list(
+      total_samples = args$iter_sampling * args$chains,
+      warmup_iterations = args$iter_warmup
+    ))
   } else {
-    args$total_samples <- (args$iter - args$warmup) * args$chains
-    args$warmup_iterations <- args$warmup
+    return(list(
+      total_samples = (args$iter - args$warmup) * args$chains,
+      sampler_logging_vars$warmup_iterations <- args$warmup
   }
-  # backend is not needed for fitting
-  args$backend <- NULL
-  return(args)
 }
