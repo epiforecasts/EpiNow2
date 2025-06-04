@@ -290,14 +290,16 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     use_breakpoints = TRUE,
                     future = "latest",
                     gp_on = c("R_t-1", "R0"),
-                    pop = 0) {
+                    pop = 0,
+                    growth_method = c("infections", "infectiousness")) {
   opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
     future = future,
     pop = pop,
-    gp_on = arg_match(gp_on)
+    gp_on = arg_match(gp_on),
+    growth_method = arg_match(growth_method)
   )
 
   # replace default settings with those specified by user
