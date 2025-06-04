@@ -265,17 +265,36 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
 }
 
 #' Calculate number of post-warmup iterations and samples based on the backend
+#'
+#' @description Internal function that calculates the total number of samples and warmup iterations
+#' based on the Stan backend being used (cmdstanr or rstan).
+#'
+#' @param args List of stan arguments containing:
+#'   - backend: Character string indicating the backend ("cmdstanr" or "rstan")
+#'   - iter_sampling: Number of sampling iterations (for cmdstanr)
+#'   - iter_warmup: Number of warmup iterations (for cmdstanr)
+#'   - iter: Total number of iterations (for rstan)
+#'   - warmup: Number of warmup iterations (for rstan)
+#'   - chains: Number of chains
+#'
+#' @return A list containing:
+#'   - total_samples: Total number of post-warmup samples across all chains
+#'   - warmup_iterations: Number of warmup iterations
+#'
 #' @keywords internal
-#' @inheritParams fit_model_with_nuts
 create_logging_sampler_values <- function(args) {
-  if (args$backend == "cmdstanr") {
-    return(list(
+  # Calculate parameters based on backend
+  sampler_logging_vals <- if (args$backend == "cmdstanr") {
+    list(
       total_samples = args$iter_sampling * args$chains,
       warmup_iterations = args$iter_warmup
-    ))
+    )
   } else {
-    return(list(
+    list(
       total_samples = (args$iter - args$warmup) * args$chains,
-      sampler_logging_vars$warmup_iterations <- args$warmup
+      warmup_iterations = args$warmup
+    )
   }
+
+  return(sampler_logging_vals)
 }
