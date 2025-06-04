@@ -175,3 +175,23 @@ test_that("estimate_infections can sample from the prior", {
   reported_cases[, confirm := NA]
   test_estimate_infections(reported_cases)
 })
+
+test_that("estimate_infections output contains breakpoints effect when breakpoints are present", {
+  data <- data.table::copy(reported_cases)
+  # Add breakpoints at two dates
+  bp_dates <- as.Date(c("2020-02-25", "2020-03-05", "2020-03-15"))
+  data[, breakpoint := ifelse(date %in% bp_dates, 1, 0)]
+  out <- default_estimate_infections(data, gp = NULL)
+  # Should have a breakpoints effect in samples
+  expect_true("breakpoints" %in% unique(out$samples$variable))
+  # Should have at least as many unique breakpoints as in the data
+  expect_true(length(unique(out$samples[variable == "breakpoints"]$strat)) == length(bp_dates))
+  expect_true(length(unique(out$summarised[variable == "R"]$mean)) == length(bp_dates) + 1)
+})
+
+test_that("estimate_infections output does not contain breakpoints effect when breakpoints are not present", {
+  data <- data.table::copy(reported_cases)
+  data[, breakpoint := 0]
+  out <- default_estimate_infections(data, gp = NULL)
+  expect_false("breakpoints" %in% unique(out$samples$variable))
+})
