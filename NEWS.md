@@ -14,6 +14,7 @@
 - A bug was fixed where an error was thrown when convolving delay distributions with very small values.
 - A bug was fixed where a cli warning was broken due to bad syntax.
 - A bug was fixed where the use of `exists()` in the codebase was causing errors.
+- A bug was fixed where intermediate data was being bound together by column position instead of column name, leading to erroneous results.
 
 ## Documentation
 
