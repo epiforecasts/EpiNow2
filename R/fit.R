@@ -48,10 +48,6 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
 
-  # Remove unnecessary arguments
-  sampler_logging_vars$total_samples <- NULL
-  sampler_logging_vars$warmup_iterations <- NULL
-
   if (exists("stuck_chains", args)) {
     stuck_chains <- args$stuck_chains
     args$stuck_chains <- NULL
@@ -191,10 +187,6 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
     id,
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
-
-  # Remove unnecessary arguments
-  sampler_logging_vars$total_samples <- NULL
-  sampler_logging_vars$warmup_iterations <- NULL
 
   if (exists("trials", args)) {
     trials <- args$trials
