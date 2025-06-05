@@ -43,11 +43,11 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
 
-  if (exists("stuck_chains", args)) {
+  if (is.null(args$stuck_chains)) {
+    stuck_chains <- 0
+  } else {
     stuck_chains <- args$stuck_chains
     args$stuck_chains <- NULL
-  } else {
-    stuck_chains <- 0
   }
 
   fit_chain <- function(chain, stan_args, max_time, catch = FALSE) {
@@ -180,11 +180,11 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
 
-  if (exists("trials", args)) {
+  if (is.null(args$trials)) {
+    trials <- 1
+  } else {
     trials <- args$trials
     args$trials <- NULL
-  } else {
-    trials <- 1
   }
 
   fit_approximate <- function(stan_args) {
