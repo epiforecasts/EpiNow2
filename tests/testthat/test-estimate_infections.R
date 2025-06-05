@@ -155,6 +155,14 @@ test_that("estimate_infections works as expected with failing chains", {
       future = TRUE
     )
   ))
+  # test with stuck_chains = NULL
+   test_estimate_infections(reported_cases,
+    add_stan = list(
+      chains = 4,
+      stuck_chains = NULL,
+      future = TRUE
+    )
+  )
 })
 
 test_that("estimate_infections produces no forecasts when forecast = NULL", {
