@@ -140,6 +140,7 @@ Suggests:
     precommit,
     progressr,
     rmarkdown,
+    scoringutils,
     spelling,
     testthat,
     usethis,
