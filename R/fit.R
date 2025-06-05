@@ -278,7 +278,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
 #' @keywords internal
 create_logging_sampler_values <- function(args) {
   # Calculate parameters based on backend
-  sampler_logging_vals <- if (args$backend == "cmdstanr") {
+  if (args$backend == "cmdstanr") {
     list(
       total_samples = args$iter_sampling * args$chains,
       warmup_iterations = args$iter_warmup
@@ -289,6 +289,4 @@ create_logging_sampler_values <- function(args) {
       warmup_iterations = args$warmup
     )
   }
-
-  return(sampler_logging_vals)
 }
