@@ -7,9 +7,26 @@
 create_logging_sampler_values(args)
 }
 \arguments{
-\item{args}{List of stan arguments.}
+\item{args}{List of stan arguments containing:
+\itemize{
+\item backend: Character string indicating the backend ("cmdstanr" or "rstan")
+\item iter_sampling: Number of sampling iterations (for cmdstanr)
+\item iter_warmup: Number of warmup iterations (for cmdstanr)
+\item iter: Total number of iterations (for rstan)
+\item warmup: Number of warmup iterations (for rstan)
+\item chains: Number of chains
+}}
+}
+\value{
+A list containing:
+\itemize{
+\item total_samples: Total number of post-warmup samples across all chains
+\item warmup_iterations: Number of warmup iterations
+}
 }
 \description{
-Calculate number of post-warmup iterations and samples based on the backend
+Internal function that calculates the total number of samples
+and warmup iterations based on the Stan backend being used
+(cmdstanr or rstan).
 }
 \keyword{internal}

@@ -177,7 +177,8 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   sampler_logging_vars <- create_logging_sampler_values(args)
   futile.logger::flog.debug(
     paste0(
-      "%s: Running in approximate mode for ", sampler_logging_vars$total_samples,
+      "%s: Running in approximate mode for ",
+      sampler_logging_vars$total_samples,
       " samples (across ", args$chains,
       " chains each with a warm up of ", sampler_logging_vars$warmup_iterations,
       " iterations each) and ",
@@ -258,8 +259,9 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
 
 #' Calculate number of post-warmup iterations and samples based on the backend
 #'
-#' @description Internal function that calculates the total number of samples and warmup iterations
-#' based on the Stan backend being used (cmdstanr or rstan).
+#' @description Internal function that calculates the total number of samples
+#' and warmup iterations based on the Stan backend being used
+#' (cmdstanr or rstan).
 #'
 #' @param args List of stan arguments containing:
 #'   - backend: Character string indicating the backend ("cmdstanr" or "rstan")
