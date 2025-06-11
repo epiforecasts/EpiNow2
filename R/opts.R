@@ -24,7 +24,7 @@
 #' @importFrom cli cli_warn cli_abort col_blue
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
+#' @seealso [convert_to_logmean()], [convert_to_logsd()]
 #' [bootstrapped_dist_fit()] [Gamma()] [LogNormal()] [Fixed()]
 #' @export
 #' @examples
@@ -150,7 +150,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @inheritParams generation_time_opts
 #' @importFrom cli cli_abort
 #' @return A `<delay_opts>` object summarising the input delay distributions.
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
+#' @seealso [convert_to_logmean()], [convert_to_logsd()]
 #' [bootstrapped_dist_fit()] \code{\link{Distributions}}
 #' @export
 #' @examples
@@ -208,7 +208,7 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
+#' @seealso [convert_to_logmean()], [convert_to_logsd()]
 #' [bootstrapped_dist_fit()] \code{\link{Distributions}}
 #' @export
 #' @examples
@@ -935,7 +935,7 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 #' @return A `<stan_opts>` object of arguments to pass to the appropriate
 #' rstan functions.
 #' @export
-#' @seealso [stan_sampling_opts()] [stan_vb_opts()]
+#' @seealso [stan_sampling_opts()], [stan_vb_opts()]
 #' @examples
 #' # using default of [rstan::sampling()]
 #' stan_opts(samples = 1000)
@@ -1058,7 +1058,7 @@ forecast_opts <- function(horizon = 7, accumulate) {
 #'
 #' @return A named list of options per region which can be passed to the `_opt`
 #' accepting arguments of `regional_epinow`.
-#' @seealso [regional_epinow()] [rt_opts()]
+#' @seealso [regional_epinow()], [rt_opts()]
 #' @export
 #' @examples
 #' # uses example case vector

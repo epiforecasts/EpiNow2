@@ -71,8 +71,7 @@
 #' @return A list of output including: posterior samples, summarised posterior
 #' samples, data used to fit the model, and the fit object itself.
 #'
-#' @seealso [epinow()] [regional_epinow()] [forecast_infections()]
-#' [estimate_truncation()]
+#' @seealso [epinow()], [regional_epinow()], [forecast_infections()], [estimate_truncation()]
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
 #' @inheritParams create_rt_data

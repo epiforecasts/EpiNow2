@@ -50,8 +50,7 @@
 #' @return A list of output stratified at the top level into regional output
 #' and across region output summary output
 #' @export
-#' @seealso [epinow()] [estimate_infections()] [setup_future()]
-#' [regional_summary()]
+#' @seealso [epinow()], [estimate_infections()], [setup_future()], [regional_summary()]
 #' @importFrom data.table as.data.table setDT copy setorder
 #' @importFrom purrr safely map compact keep
 #' @importFrom futile.logger flog.info flog.warn flog.trace
