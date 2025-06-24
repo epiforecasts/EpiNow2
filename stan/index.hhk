@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML><HEAD></HEAD><BODY>
+<OBJECT type="text/site properties">
+<param name="FrameName" value="right">
+</OBJECT>
+<UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#gacf1205987ed9944d2df0f23989c5ff19"><param name="Name" value="accumulate_reports(vector reports, array[] int accumulate)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html#ga46716cd90141e7342af1302d46d04a6b"><param name="Name" value="calc_conv_indices_len(int s, int xlen, int ylen)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html#ga61201e9eb433327cf62ba6f6c1258717"><param name="Name" value="calc_conv_indices_xlen(int s, int xlen, int ylen)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#ga528a90d41e86f52d6472cd573192e181"><param name="Name" value="calculate_growth(vector infections, int seeding_time)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#ga2d17e8b4b2a9d69dd576396d14b218e9"><param name="Name" value="calculate_Rt(vector infections, int seeding_time, vector gt_rev_pmf, int smooth)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__secondary__reports__estimation.html#gad51784e5c63b38a6962d029879ffbee7"><param name="Name" value="calculate_secondary(vector scaled_reports, vector conv_reports, array[] int obs, int cumulative, int historic, int primary_hist_additive, int current, int primary_current_additive, int predict)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html"><param name="Name" value="Convolution Functions"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html"><param name="Name" value="convolution_functions"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html#ga46716cd90141e7342af1302d46d04a6b"><param name="Name" value="calc_conv_indices_len(int s, int xlen, int ylen)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html"><param name="Name" value="convolution_functions"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html#ga61201e9eb433327cf62ba6f6c1258717"><param name="Name" value="calc_conv_indices_xlen(int s, int xlen, int ylen)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html"><param name="Name" value="convolution_functions"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html#ga49ecbffec21a9166c69529fce8ff0f1e"><param name="Name" value="convolve_to_report(vector infections, vector delay_rev_pmf, int seeding_time)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html"><param name="Name" value="convolution_functions"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html#ga1b4de88baf4243a2a00cd7fd74c3cd17"><param name="Name" value="convolve_with_rev_pmf(vector x, vector y, int len)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html#ga49ecbffec21a9166c69529fce8ff0f1e"><param name="Name" value="convolve_to_report(vector infections, vector delay_rev_pmf, int seeding_time)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__convolution__functions.html#ga1b4de88baf4243a2a00cd7fd74c3cd17"><param name="Name" value="convolve_with_rev_pmf(vector x, vector y, int len)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#gaf35e2f9a25c4f140e264dcf918b32d22"><param name="Name" value="day_of_week_effect(vector reports, array[] int day_of_week, vector effect)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__infections__estimation.html#gacfe00b4587ada5fd900f2ec606cbf679"><param name="Name" value="deconvolve_infections(vector shifted_cases, vector noise, int fixed, int prior)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html"><param name="Name" value="Delay Handlers"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html"><param name="Name" value="delay_handlers"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html#ga5b1160517c398bf694e3c4cc4b2ea6a9"><param name="Name" value="delays_lp(vector delay_params, vector delay_params_mean, vector delay_params_sd, array[] int delay_params_groups, array[] int delay_dist, array[] int weight)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html"><param name="Name" value="delay_handlers"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html#gaefea9dfede01b97f9de1d617eb79916d"><param name="Name" value="get_delay_rev_pmf(int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id, array[] int delay_types_groups, array[] int delay_max, vector delay_np_pmf, array[] int delay_np_pmf_groups, vector delay_params, array[] int delay_params_groups, array[] int delay_dist, int left_truncate, int reverse_pmf, int cumulative)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html"><param name="Name" value="delay_handlers"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html#ga1d493a146307b75e7150e63f95728074"><param name="Name" value="get_delay_type_max(int delay_types, array[] int delay_types_p, array[] int delay_types_id, array[] int delay_types_groups, array[] int delay_max, array[] int delay_np_pmf_groups)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html"><param name="Name" value="delay_handlers"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html#ga96291a4fd7b57d714ca3ef74ac2123e9"><param name="Name" value="normal_lb_rng(vector mu, vector sigma, vector lb)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html#ga5b1160517c398bf694e3c4cc4b2ea6a9"><param name="Name" value="delays_lp(vector delay_params, vector delay_params_mean, vector delay_params_sd, array[] int delay_params_groups, array[] int delay_dist, array[] int weight)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#ga418b9ba49bfb6a4ff8ec4331826d032d"><param name="Name" value="diagSPD_EQ(real alpha, real rho, real L, int M)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gaba328da750fac44cab0ca4e9a0b41274"><param name="Name" value="diagSPD_Matern12(real alpha, real rho, real L, int M)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gae443d4d2b3b752c07ed835b83ecd0e86"><param name="Name" value="diagSPD_Matern32(real alpha, real rho, real L, int M)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gadd4a066ad1281db47c82a5096af8099a"><param name="Name" value="diagSPD_Matern52(real alpha, real rho, real L, int M)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#ga56305a04b7b8ac024c83766cb6b6eafc"><param name="Name" value="diagSPD_Periodic(real alpha, real rho, int M)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__pmf__handlers.html#gac942c03301a61863395d20a4a966e54a"><param name="Name" value="discretised_pmf(vector params, int n, int dist)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="index.html"><param name="Name" value="EpiNow2 Stan Functions"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="Estimates Smoothing"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="estimates_smoothing"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#ga418b9ba49bfb6a4ff8ec4331826d032d"><param name="Name" value="diagSPD_EQ(real alpha, real rho, real L, int M)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="estimates_smoothing"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gaba328da750fac44cab0ca4e9a0b41274"><param name="Name" value="diagSPD_Matern12(real alpha, real rho, real L, int M)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="estimates_smoothing"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gae443d4d2b3b752c07ed835b83ecd0e86"><param name="Name" value="diagSPD_Matern32(real alpha, real rho, real L, int M)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="estimates_smoothing"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gadd4a066ad1281db47c82a5096af8099a"><param name="Name" value="diagSPD_Matern52(real alpha, real rho, real L, int M)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="estimates_smoothing"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#ga56305a04b7b8ac024c83766cb6b6eafc"><param name="Name" value="diagSPD_Periodic(real alpha, real rho, int M)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="estimates_smoothing"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gaf1c10f17e51fdf6b5c74569c23922a0c"><param name="Name" value="gaussian_process_lp(vector eta)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="estimates_smoothing"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gacb839312fe55f00e52b127baf5255990"><param name="Name" value="PHI(int N, int M, real L, vector x)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="estimates_smoothing"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#ga3d1737e856bfefe04087fd613bafc09d"><param name="Name" value="PHI_periodic(int N, int M, real w0, vector x)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="estimates_smoothing"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gac7ec6c407d757e6726943fbc1153166b"><param name="Name" value="setup_gp(int M, real L, int dimension, int is_periodic, real w0)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html"><param name="Name" value="estimates_smoothing"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gabcf59a4e803b4f02dbe9c96def0312da"><param name="Name" value="setup_noise(int ot_h, int t, int horizon, int estimate_r, int stationary, int future_fixed, int fixed_from)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="gaussian__process_8stan.html#ad9b875c5e1cdd69a0b54e94dac84aee7"><param name="Name" value="gaussian_process.stan"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gaf1c10f17e51fdf6b5c74569c23922a0c"><param name="Name" value="gaussian_process_lp(vector eta)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__infections__estimation.html#gad73c77fe949c016d439e0ac63ce1aa6a"><param name="Name" value="generate_infections(vector R, int uot, vector gt_rev_pmf, array[] real initial_infections, int pop, int ht, int obs_scale, real frac_obs, int initial_as_scale)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html#gaefea9dfede01b97f9de1d617eb79916d"><param name="Name" value="get_delay_rev_pmf(int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id, array[] int delay_types_groups, array[] int delay_max, vector delay_np_pmf, array[] int delay_np_pmf_groups, vector delay_params, array[] int delay_params_groups, array[] int delay_dist, int left_truncate, int reverse_pmf, int cumulative)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html#ga1d493a146307b75e7150e63f95728074"><param name="Name" value="get_delay_type_max(int delay_types, array[] int delay_types_p, array[] int delay_types_id, array[] int delay_types_groups, array[] int delay_max, array[] int delay_np_pmf_groups)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__parameter__handlers.html#gacef7f887b3670579e00207861d503172"><param name="Name" value="get_param(int id, array[] int params_fixed_lookup, array[] int params_variable_lookup, vector params_value, matrix params)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__parameter__handlers.html#gae5ea6aaadb1087a64480303f347b3bc1"><param name="Name" value="get_param(int id, array[] int params_fixed_lookup, array[] int params_variable_lookup, vector params_value, vector params)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__handlers__and__helpers.html"><param name="Name" value="Handlers and Helpers"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__handlers__and__helpers.html#ga457f8b223f165bb020afb7d8dc4cfddd"><param name="Name" value="handlers_and_helpers"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__infections__estimation.html"><param name="Name" value="Infections Estimation"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__infections__estimation.html"><param name="Name" value="infections_estimation"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__infections__estimation.html#gacfe00b4587ada5fd900f2ec606cbf679"><param name="Name" value="deconvolve_infections(vector shifted_cases, vector noise, int fixed, int prior)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__infections__estimation.html"><param name="Name" value="infections_estimation"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__infections__estimation.html#gad73c77fe949c016d439e0ac63ce1aa6a"><param name="Name" value="generate_infections(vector R, int uot, vector gt_rev_pmf, array[] real initial_infections, int pop, int ht, int obs_scale, real frac_obs, int initial_as_scale)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__infections__estimation.html"><param name="Name" value="infections_estimation"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__infections__estimation.html#ga2b1ee9503c17947f9516f55eeeb9046c"><param name="Name" value="update_infectiousness(vector infections, vector gt_rev_pmf, int seeding_time, int index)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__handlers__and__helpers.html#ga457f8b223f165bb020afb7d8dc4cfddd"><param name="Name" value="neg_binomial_2_safe_rng(real mu, real phi)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__delay__handlers.html#ga96291a4fd7b57d714ca3ef74ac2123e9"><param name="Name" value="normal_lb_rng(vector mu, vector sigma, vector lb)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html"><param name="Name" value="Observation Model"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html"><param name="Name" value="observation_model"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#gacf1205987ed9944d2df0f23989c5ff19"><param name="Name" value="accumulate_reports(vector reports, array[] int accumulate)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html"><param name="Name" value="observation_model"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#gaf35e2f9a25c4f140e264dcf918b32d22"><param name="Name" value="day_of_week_effect(vector reports, array[] int day_of_week, vector effect)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html"><param name="Name" value="observation_model"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#gaa576ee4dbd3a2280111d16b230e3c7b6"><param name="Name" value="report_log_lik(array[] int cases, vector reports, real dispersion, int model_type, real weight)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html"><param name="Name" value="observation_model"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#gaba92657c970c6168e124c0c7ebc187a4"><param name="Name" value="report_lp(array[] int cases, array[] int case_times, vector reports, real dispersion, int model_type, real weight)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html"><param name="Name" value="observation_model"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#ga0df256e1a047a7b29c80787d30b095b7"><param name="Name" value="report_rng(vector reports, real dispersion, int model_type)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html"><param name="Name" value="observation_model"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#gaa64a58b188ca984624c5f82d7908d518"><param name="Name" value="scale_obs(vector reports, real frac_obs)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html"><param name="Name" value="observation_model"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#ga23d82c6b957d14fcf510e630c7b325a5"><param name="Name" value="truncate_obs(vector reports, vector trunc_rev_cmf, int reconstruct)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html"><param name="Name" value="observation_model"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#ga9042f3f0009b04764b15135394ffcc84"><param name="Name" value="truncation_lp(array[] real truncation_mean, array[] real truncation_sd, array[] real trunc_mean_mean, array[] real trunc_mean_sd, array[] real trunc_sd_mean, array[] real trunc_sd_sd)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__parameter__handlers.html"><param name="Name" value="Parameter Handlers"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__parameter__handlers.html"><param name="Name" value="parameter_handlers"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__parameter__handlers.html#gacef7f887b3670579e00207861d503172"><param name="Name" value="get_param(int id, array[] int params_fixed_lookup, array[] int params_variable_lookup, vector params_value, matrix params)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__parameter__handlers.html"><param name="Name" value="parameter_handlers"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__parameter__handlers.html#gae5ea6aaadb1087a64480303f347b3bc1"><param name="Name" value="get_param(int id, array[] int params_fixed_lookup, array[] int params_variable_lookup, vector params_value, vector params)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__parameter__handlers.html"><param name="Name" value="parameter_handlers"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__parameter__handlers.html#ga448910db7389c3426cb9c6b81415f1e5"><param name="Name" value="params_lp(vector params, array[] int prior_dist, vector prior_dist_params, vector params_lower, vector params_upper)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__parameter__handlers.html#ga448910db7389c3426cb9c6b81415f1e5"><param name="Name" value="params_lp(vector params, array[] int prior_dist, vector prior_dist_params, vector params_lower, vector params_upper)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gacb839312fe55f00e52b127baf5255990"><param name="Name" value="PHI(int N, int M, real L, vector x)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#ga3d1737e856bfefe04087fd613bafc09d"><param name="Name" value="PHI_periodic(int N, int M, real w0, vector x)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__pmf__handlers.html"><param name="Name" value="PMF Handlers"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__pmf__handlers.html#gac942c03301a61863395d20a4a966e54a"><param name="Name" value="pmf_handlers"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#gab6cc5437be69ba05ef8b5b6c10cbdf51"><param name="Name" value="R_to_r(real R, vector gt_rev_pmf, real abs_tol)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#ga7671592e7d61d662a76adbb129110826"><param name="Name" value="R_to_r_newton_step(real R, real r, vector pmf)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#gaa576ee4dbd3a2280111d16b230e3c7b6"><param name="Name" value="report_log_lik(array[] int cases, vector reports, real dispersion, int model_type, real weight)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#gaba92657c970c6168e124c0c7ebc187a4"><param name="Name" value="report_lp(array[] int cases, array[] int case_times, vector reports, real dispersion, int model_type, real weight)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#ga0df256e1a047a7b29c80787d30b095b7"><param name="Name" value="report_rng(vector reports, real dispersion, int model_type)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html"><param name="Name" value="Rt Estimation"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html"><param name="Name" value="rt_estimation"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#ga528a90d41e86f52d6472cd573192e181"><param name="Name" value="calculate_growth(vector infections, int seeding_time)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html"><param name="Name" value="rt_estimation"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#ga2d17e8b4b2a9d69dd576396d14b218e9"><param name="Name" value="calculate_Rt(vector infections, int seeding_time, vector gt_rev_pmf, int smooth)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html"><param name="Name" value="rt_estimation"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#gab6cc5437be69ba05ef8b5b6c10cbdf51"><param name="Name" value="R_to_r(real R, vector gt_rev_pmf, real abs_tol)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html"><param name="Name" value="rt_estimation"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#ga7671592e7d61d662a76adbb129110826"><param name="Name" value="R_to_r_newton_step(real R, real r, vector pmf)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html"><param name="Name" value="rt_estimation"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#gac96157a6248647672c6f1fa4699b7301"><param name="Name" value="rt_lp(array[] real initial_infections_scale, vector bp_effects, array[] real bp_sd, int bp_n, array[] int cases, real initial_infections_guess)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html"><param name="Name" value="rt_estimation"></OBJECT>
+  <UL>
+    <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#ga52b968e94972ac512e5ee13d04d06b17"><param name="Name" value="update_Rt(int t, real R0, vector noise, array[] int bps, vector bp_effects, int stationary)"></OBJECT>
+  </UL>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#gac96157a6248647672c6f1fa4699b7301"><param name="Name" value="rt_lp(array[] real initial_infections_scale, vector bp_effects, array[] real bp_sd, int bp_n, array[] int cases, real initial_infections_guess)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#gaa64a58b188ca984624c5f82d7908d518"><param name="Name" value="scale_obs(vector reports, real frac_obs)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__secondary__reports__estimation.html"><param name="Name" value="Secondary Reports Estimation"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__secondary__reports__estimation.html#gad51784e5c63b38a6962d029879ffbee7"><param name="Name" value="secondary_reports_estimation"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gac7ec6c407d757e6726943fbc1153166b"><param name="Name" value="setup_gp(int M, real L, int dimension, int is_periodic, real w0)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__estimates__smoothing.html#gabcf59a4e803b4f02dbe9c96def0312da"><param name="Name" value="setup_noise(int ot_h, int t, int horizon, int estimate_r, int stationary, int future_fixed, int fixed_from)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#ga23d82c6b957d14fcf510e630c7b325a5"><param name="Name" value="truncate_obs(vector reports, vector trunc_rev_cmf, int reconstruct)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__observation__model.html#ga9042f3f0009b04764b15135394ffcc84"><param name="Name" value="truncation_lp(array[] real truncation_mean, array[] real truncation_sd, array[] real trunc_mean_mean, array[] real trunc_mean_sd, array[] real trunc_sd_mean, array[] real trunc_sd_sd)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="gaussian__process_8stan.html#ad9b875c5e1cdd69a0b54e94dac84aee7"><param name="Name" value="update_gp(matrix PHI, int M, real L, real alpha, real rho, vector eta, int type, real nu)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__infections__estimation.html#ga2b1ee9503c17947f9516f55eeeb9046c"><param name="Name" value="update_infectiousness(vector infections, vector gt_rev_pmf, int seeding_time, int index)"></OBJECT>
+  <LI><OBJECT type="text/sitemap"><param name="Local" value="group__rt__estimation.html#ga52b968e94972ac512e5ee13d04d06b17"><param name="Name" value="update_Rt(int t, real R0, vector noise, array[] int bps, vector bp_effects, int stationary)"></OBJECT>
+</UL>
+</BODY>
+</HTML>
