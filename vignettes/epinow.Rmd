@@ -51,10 +51,10 @@ res <- epinow(reported_cases,
 )
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2 logs to the console and:
-#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> '/tmp/RtmpuUhsF4/regional-epinow/2020-04-21.log'.
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2.epinow logs to the console and:
-#> '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
+#> '/tmp/RtmpuUhsF4/epinow/2020-04-21.log'.
 res$plots$R
 ```
 
@@ -89,24 +89,24 @@ region_rt <- regional_epinow(
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
 )
-#> INFO [2025-02-04 19:51:23] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2025-07-01 00:36:28] Producing following optional outputs: regions, summary, samples, plots, latest
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2 logs to the console and:
-#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> '/tmp/RtmpuUhsF4/regional-epinow/2020-04-21.log'.
 #> Logging threshold set at INFO for the name logger
-#> Writing EpiNow2.epinow logs to: '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
-#> INFO [2025-02-04 19:51:23] Reporting estimates using data up to: 2020-04-21
-#> INFO [2025-02-04 19:51:23] No target directory specified so returning output
-#> INFO [2025-02-04 19:51:23] Producing estimates for: testland, realland
-#> INFO [2025-02-04 19:51:23] Regions excluded: none
-#> INFO [2025-02-04 19:54:18] Completed estimates for: testland
-#> INFO [2025-02-04 19:55:24] Completed estimates for: realland
-#> INFO [2025-02-04 19:55:24] Completed regional estimates
-#> INFO [2025-02-04 19:55:24] Regions with estimates: 2
-#> INFO [2025-02-04 19:55:24] Regions with runtime errors: 0
-#> INFO [2025-02-04 19:55:24] Producing summary
-#> INFO [2025-02-04 19:55:24] No summary directory specified so returning summary output
-#> INFO [2025-02-04 19:55:24] No target directory specified so returning timings
+#> Writing EpiNow2.epinow logs to: '/tmp/RtmpuUhsF4/epinow/2020-04-21.log'.
+#> INFO [2025-07-01 00:36:28] Reporting estimates using data up to: 2020-04-21
+#> INFO [2025-07-01 00:36:28] No target directory specified so returning output
+#> INFO [2025-07-01 00:36:28] Producing estimates for: testland, realland
+#> INFO [2025-07-01 00:36:28] Regions excluded: none
+#> INFO [2025-07-01 00:39:22] Completed estimates for: testland
+#> INFO [2025-07-01 00:40:28] Completed estimates for: realland
+#> INFO [2025-07-01 00:40:28] Completed regional estimates
+#> INFO [2025-07-01 00:40:28] Regions with estimates: 2
+#> INFO [2025-07-01 00:40:28] Regions with runtime errors: 0
+#> INFO [2025-07-01 00:40:28] Producing summary
+#> INFO [2025-07-01 00:40:28] No summary directory specified so returning summary output
+#> INFO [2025-07-01 00:40:28] No target directory specified so returning timings
 ## summary
 region_rt$summary$summarised_results$table
 #>      Region New infections per day Expected change in reports
@@ -140,24 +140,24 @@ region_separate_rt <- regional_epinow(
   delays = delay_opts(delay),
   rt = rt, gp = gp,
 )
-#> INFO [2025-02-04 19:55:25] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2025-07-01 00:40:29] Producing following optional outputs: regions, summary, samples, plots, latest
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2 logs to the console and:
-#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> '/tmp/RtmpuUhsF4/regional-epinow/2020-04-21.log'.
 #> Logging threshold set at INFO for the name logger
-#> Writing EpiNow2.epinow logs to: '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
-#> INFO [2025-02-04 19:55:25] Reporting estimates using data up to: 2020-04-21
-#> INFO [2025-02-04 19:55:25] No target directory specified so returning output
-#> INFO [2025-02-04 19:55:25] Producing estimates for: testland, realland
-#> INFO [2025-02-04 19:55:25] Regions excluded: none
-#> INFO [2025-02-04 19:56:30] Completed estimates for: testland
-#> INFO [2025-02-04 19:56:59] Completed estimates for: realland
-#> INFO [2025-02-04 19:56:59] Completed regional estimates
-#> INFO [2025-02-04 19:56:59] Regions with estimates: 2
-#> INFO [2025-02-04 19:56:59] Regions with runtime errors: 0
-#> INFO [2025-02-04 19:56:59] Producing summary
-#> INFO [2025-02-04 19:56:59] No summary directory specified so returning summary output
-#> INFO [2025-02-04 19:57:00] No target directory specified so returning timings
+#> Writing EpiNow2.epinow logs to: '/tmp/RtmpuUhsF4/epinow/2020-04-21.log'.
+#> INFO [2025-07-01 00:40:29] Reporting estimates using data up to: 2020-04-21
+#> INFO [2025-07-01 00:40:29] No target directory specified so returning output
+#> INFO [2025-07-01 00:40:29] Producing estimates for: testland, realland
+#> INFO [2025-07-01 00:40:29] Regions excluded: none
+#> INFO [2025-07-01 00:41:34] Completed estimates for: testland
+#> INFO [2025-07-01 00:42:04] Completed estimates for: realland
+#> INFO [2025-07-01 00:42:04] Completed regional estimates
+#> INFO [2025-07-01 00:42:04] Regions with estimates: 2
+#> INFO [2025-07-01 00:42:04] Regions with runtime errors: 0
+#> INFO [2025-07-01 00:42:04] Producing summary
+#> INFO [2025-07-01 00:42:04] No summary directory specified so returning summary output
+#> INFO [2025-07-01 00:42:04] No target directory specified so returning timings
 ## summary
 region_separate_rt$summary$summarised_results$table
 #>      Region New infections per day Expected change in reports
