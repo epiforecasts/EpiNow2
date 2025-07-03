@@ -440,7 +440,7 @@ pad_reported_cases <- function(reported_cases, n, with = NA_real_) {
   } else {
     pad_dt <- data.table()
   }
-  rbindlist(list(pad_dt, reported_cases))
+  rbindlist(list(pad_dt, reported_cases), use.names = TRUE)
 }
 
 #' Numerically stable convolution function for two pmf vectors

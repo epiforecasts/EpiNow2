@@ -49,5 +49,7 @@ jobs:
           num-cores: 2
 
       - name: Test coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: covr::codecov(quiet = FALSE)
         shell: Rscript {0}
