@@ -90,30 +90,3 @@ epinow2_stan_model <- function(backend = c("rstan", "cmdstanr"),
   }
   return(object)
 }
-
-#' Fit a model using the chosen backend.
-#'
-#' Internal function for dispatch to fitting with NUTS or VB.
-#' @inheritParams fit_model_with_nuts
-#' @importFrom cli cli_abort
-#' @keywords internal
-fit_model <- function(args, id = "stan") {
-  if (args$method == "sampling") {
-    fit <- fit_model_with_nuts(
-      args,
-      future = args$future,
-      max_execution_time = args$max_execution_time, id = id
-    )
-  } else if (args$method %in% c("vb", "laplace", "pathfinder")) {
-    fit <- fit_model_approximate(args, id = id)
-  } else {
-    cli_abort(
-      c(
-        "!" = "You supplied method {args$method}, which is unknown.",
-        "i" = "Use one of {col_blue(\"sampling\")}, {col_blue(\"vb\")},
-      {col_blue(\"laplace\")}, or {col_blue(\"pathfinder\")}."
-      )
-    )
-  }
-  return(fit)
-}
