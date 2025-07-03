@@ -57,6 +57,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 
   fit_chain <- function(chain, stan_args, max_time, catch = FALSE) {
     stan_args$chain_id <- chain
+    stan_args$backend <- NULL # should be removed as it's not a valid argument
     if (inherits(stan_args$object, "stanmodel")) {
       sample_func <- rstan::sampling
     } else if (inherits(stan_args$object, "CmdStanModel")) {
@@ -197,6 +198,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   }
 
   fit_approximate <- function(stan_args) {
+    stan_args$backend <- NULL # should be removed as it's not a valid argument
     if (inherits(stan_args$object, "stanmodel")) {
       if (method == "vb") {
         sample_func <- rstan::vb
