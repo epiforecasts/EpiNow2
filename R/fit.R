@@ -31,13 +31,18 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   args$max_execution_time <- NULL
   args$future <- NULL
 
+  # Update some sampler parameters based on backend
+  sampler_logging_vars <- create_logging_sampler_values(args)
+
   futile.logger::flog.debug(
     paste0(
       "%s: Running in exact mode for ",
-      ceiling(args$iter - args$warmup) * args$chains,
+      sampler_logging_vars$total_samples,
       " samples (across ", args$chains,
-      " chains each with a warm up of ", args$warmup, " iterations each) and ",
-      args$data$t, " time steps of which ", args$data$horizon, " are a forecast"
+      " chains each with a warm up of ", sampler_logging_vars$warmup_iterations,
+      " iterations each) and ",
+      args$data$t, " time steps of which ", args$data$horizon,
+      " are a forecast"
     ),
     id,
     name = "EpiNow2.epinow.estimate_infections.fit"
@@ -52,6 +57,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 
   fit_chain <- function(chain, stan_args, max_time, catch = FALSE) {
     stan_args$chain_id <- chain
+    stan_args$backend <- NULL # should be removed as it's not a valid argument
     if (inherits(stan_args$object, "stanmodel")) {
       sample_func <- rstan::sampling
     } else if (inherits(stan_args$object, "CmdStanModel")) {
@@ -102,14 +108,14 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     chains <- args$chains
     args$chains <- 1
     args$cores <- 1
-    fits <- lapply_func(1:chains,
+    fits <- lapply_func(seq_len(chains),
       fit_chain,
       stan_args = args,
       max_time = max_execution_time,
       catch = TRUE
     )
     if (stuck_chains > 0) {
-      fits[1:stuck_chains] <- NULL
+      fits[seq_len(stuck_chains)] <- NULL
     }
     fit <- purrr::compact(fits)
     if (length(fit) == 0) {
@@ -168,11 +174,15 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   method <- args$method
   args$method <- NULL
+  # Determine backend and get appropriate iteration parameters
+  sampler_logging_vars <- create_logging_sampler_values(args)
   futile.logger::flog.debug(
     paste0(
-      "%s: Running in approximate mode for ", args$iter,
-      " iterations (with ", args$trials, " attempts). Extracting ",
-      args$output_samples, " approximate posterior samples for ",
+      "%s: Running in approximate mode for ",
+      sampler_logging_vars$total_samples,
+      " samples (across ", args$chains,
+      " chains each with a warm up of ", sampler_logging_vars$warmup_iterations,
+      " iterations each) and ",
       args$data$t, " time steps of which ",
       args$data$horizon, " are a forecast"
     ),
@@ -188,6 +198,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   }
 
   fit_approximate <- function(stan_args) {
+    stan_args$backend <- NULL # should be removed as it's not a valid argument
     if (inherits(stan_args$object, "stanmodel")) {
       if (method == "vb") {
         sample_func <- rstan::vb
@@ -246,4 +257,65 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
     rlang::abort(paste("Approximate inference failed due to:", error))
   }
   return(fit)
+}
+
+#' Fit a model using the chosen backend.
+#'
+#' Internal function for dispatch to fitting with NUTS or VB.
+#' @inheritParams fit_model_with_nuts
+#' @importFrom cli cli_abort
+#' @keywords internal
+fit_model <- function(args, id = "stan") {
+  if (args$method == "sampling") {
+    fit <- fit_model_with_nuts(
+      args,
+      future = args$future,
+      max_execution_time = args$max_execution_time, id = id
+    )
+  } else if (args$method %in% c("vb", "laplace", "pathfinder")) {
+    fit <- fit_model_approximate(args, id = id)
+  } else {
+    cli_abort(
+      c(
+        "!" = "You supplied method {args$method}, which is unknown.",
+        "i" = "Use one of {col_blue(\"sampling\")}, {col_blue(\"vb\")},
+      {col_blue(\"laplace\")}, or {col_blue(\"pathfinder\")}."
+      )
+    )
+  }
+  return(fit)
+}
+
+#' Calculate number of post-warmup iterations and samples based on the backend
+#'
+#' @description Internal function that calculates the total number of samples
+#' and warmup iterations based on the Stan backend being used
+#' (cmdstanr or rstan).
+#'
+#' @param args List of stan arguments containing:
+#'   - backend: Character string indicating the backend ("cmdstanr" or "rstan")
+#'   - iter_sampling: Number of sampling iterations (for cmdstanr)
+#'   - iter_warmup: Number of warmup iterations (for cmdstanr)
+#'   - iter: Total number of iterations (for rstan)
+#'   - warmup: Number of warmup iterations (for rstan)
+#'   - chains: Number of chains
+#'
+#' @return A list containing:
+#'   - total_samples: Total number of post-warmup samples across all chains
+#'   - warmup_iterations: Number of warmup iterations
+#'
+#' @keywords internal
+create_logging_sampler_values <- function(args) {
+  # Calculate parameters based on backend
+  if (args$backend == "cmdstanr") {
+    list(
+      total_samples = args$iter_sampling * args$chains,
+      warmup_iterations = args$iter_warmup
+    )
+  } else {
+    list(
+      total_samples = (args$iter - args$warmup) * args$chains,
+      warmup_iterations = args$warmup
+    )
+  }
 }
