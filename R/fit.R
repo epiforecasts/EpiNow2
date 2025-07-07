@@ -31,8 +31,18 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   args$max_execution_time <- NULL
   args$future <- NULL
 
-  # Update some sampler parameters based on backend
+  # The sampler parameters depend on the backend and model.
   sampler_logging_vars <- create_logging_sampler_values(args)
+  horizon_var <- ifelse(
+    is.null(args$data$horizon),
+    NA_character_,
+    args$data$horizon
+  )
+  time_var <- ifelse(
+    is.null(args$data$t),
+    NA_character_,
+    args$data$t
+  )
 
   futile.logger::flog.debug(
     paste0(
@@ -41,7 +51,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
       " samples (across ", args$chains,
       " chains each with a warm up of ", sampler_logging_vars$warmup_iterations,
       " iterations each) and ",
-      args$data$t, " time steps of which ", args$data$horizon,
+      time_var, " time steps of which ", horizon_var,
       " are a forecast"
     ),
     id,
