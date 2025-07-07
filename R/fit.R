@@ -218,7 +218,6 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   }
 
   fit_approximate <- function(stan_args) {
-    stan_args$backend <- NULL # should be removed as it's not a valid argument
     if (inherits(stan_args$object, "stanmodel")) {
       if (method == "vb") {
         sample_func <- rstan::vb
@@ -241,6 +240,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
       }
       stan_args$object <- NULL
     }
+    stan_args$backend <- NULL # should be removed as it's not a valid argument
     fit <- do.call(sample_func, stan_args)
 
     if (length(names(fit)) == 0) {
