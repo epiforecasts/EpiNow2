@@ -971,9 +971,9 @@ stan_opts <- function(object = NULL,
       )
     }
     if (inherits(object, "stanmodel")) {
-      backend <- "rstan"
+      opts <- c(opts, backend = "rstan")
     } else if (inherits(object, "CmdStanModel")) {
-      backend <- "cmdstanr"
+      opts <- c(opts, backend = "rstan")
     } else {
       cli_abort(
         c(
@@ -991,16 +991,16 @@ stan_opts <- function(object = NULL,
   ))
   opts <- switch(method,
     sampling = c(
-      opts, stan_sampling_opts(samples = samples, backend = backend, ...)
+      opts, stan_sampling_opts(samples = samples, ...)
     ),
     vb = c(
       opts, stan_vb_opts(samples = samples, ...)
     ),
     laplace = c(
-      opts, stan_laplace_opts(backend = backend, ...)
+      opts, stan_laplace_opts(...)
     ),
     pathfinder = c(
-      opts, stan_pathfinder_opts(samples = samples, backend = backend, ...)
+      opts, stan_pathfinder_opts(samples = samples, ...)
     )
   )
 
