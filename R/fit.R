@@ -184,8 +184,18 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   method <- args$method
   args$method <- NULL
-  # Determine backend and get appropriate iteration parameters
+  ## The sampler parameters depend on the backend and model.
   sampler_logging_vars <- create_logging_sampler_values(args)
+  horizon_var <- ifelse(
+    is.null(args$data$horizon),
+    NA_character_,
+    args$data$horizon
+  )
+  time_var <- ifelse(
+    is.null(args$data$t),
+    NA_character_,
+    args$data$t
+  )
   futile.logger::flog.debug(
     paste0(
       "%s: Running in approximate mode for ",
@@ -193,8 +203,8 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
       " samples (across ", args$chains,
       " chains each with a warm up of ", sampler_logging_vars$warmup_iterations,
       " iterations each) and ",
-      args$data$t, " time steps of which ",
-      args$data$horizon, " are a forecast"
+      time_var, " time steps of which ",
+      horizon_var, " are a forecast"
     ),
     id,
     name = "EpiNow2.epinow.estimate_infections.fit"
