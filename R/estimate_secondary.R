@@ -240,14 +240,12 @@ estimate_secondary <- function(data,
   # observation model data
   stan_data <- c(stan_data, create_obs_model(obs, dates = reports$date))
 
-  stan_data <- c(stan_data, create_stan_params(
-    frac_obs = obs$scale,
-    dispersion = obs$dispersion,
-    lower_bounds = c(
-      frac_obs = 0,
-      dispersion = 0
-    )
-  ))
+  params <- list(
+    make_param("frac_obs", obs$scale, lower_bound = 0),
+    make_param("dispersion", obs$dispersion, lower_bound = 0)
+  )
+
+  stan_data <- c(stan_data, create_stan_params(params))
 
   # update data to use specified priors rather than defaults
   stan_data <- update_secondary_args(stan_data,
@@ -256,7 +254,7 @@ estimate_secondary <- function(data,
 
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
-    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0))
+    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0)), params
   )
   # fit
   stan_ <- create_stan_args(

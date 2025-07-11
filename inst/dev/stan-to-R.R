@@ -25,34 +25,35 @@ simulate <- function(data,
   seeding_time <- get_seeding_time(delays, generation_time, rt)
 
   reported_cases <- default_fill_missing_obs(data, obs, "confirm")
+
+  ## add forecast horizon if forecasting is required
   if (forecast$horizon > 0) {
-    reported_cases <- add_horizon(
-      reported_cases, forecast$horizon, forecast$accumulate
+    horizon_args <- list(
+      data = reported_cases,
+      horizon = forecast$horizon
     )
+    if (!is.null(forecast$accumulate)) {
+      horizon_args$accumulate <- forecast$accumulate
+    }
+    reported_cases <- do.call(add_horizon, horizon_args)
   }
-  reported_cases <- create_clean_reported_cases(
-    reported_cases,
-    filter_leading_zeros = TRUE,
-    zero_threshold = Inf
+
+  # Add breakpoints column
+  reported_cases <- add_breakpoints(reported_cases)
+
+  # Determine seeding time
+  seeding_time <- get_seeding_time(delays, generation_time, rt)
+
+  # Add initial zeroes
+  reported_cases <- pad_reported_cases(reported_cases, seeding_time)
+
+  params <- list(
+    make_param("alpha", gp$alpha, lower_bound = 0),
+    make_param("rho", gp$ls, lower_bound = 0),
+    make_param("R0", rt$prior, lower_bound = 0),
+    make_param("frac_obs", obs$scale, lower_bound = 0),
+    make_param("dispersion", obs$dispersion, lower_bound = 0)
   )
-  reported_cases <- data.table::rbindlist(list(
-    data.table::data.table(
-      date = seq(
-        min(reported_cases$date) - seeding_time - backcalc$prior_window,
-        min(reported_cases$date) - 1,
-        by = "days"
-      ),
-      confirm = 0, accumulate = FALSE, breakpoint = 0
-    ),
-    reported_cases[, .(date, confirm, accumulate, breakpoint)]
-  ))
-  shifted_cases <- create_shifted_cases(
-    reported_cases,
-    seeding_time,
-    backcalc$prior_window,
-    forecast$horizon
-  )
-  reported_cases <- reported_cases[-(1:backcalc$prior_window)]
 
   # Define stan model parameters
   stan_data <- create_stan_data(
@@ -62,8 +63,8 @@ simulate <- function(data,
     gp = gp,
     obs = obs,
     backcalc = backcalc,
-    shifted_cases = shifted_cases$confirm,
-    forecast = forecast
+    forecast = forecast,
+    params = params
   )
 
   stan_data <- c(stan_data, create_stan_delays(
@@ -74,7 +75,7 @@ simulate <- function(data,
   ))
 
   if (is.null(inits)) {
-    init <- create_initial_conditions(stan_data)
+    init <- create_initial_conditions(stan_data, params)
     inits <- init()
   } else {
     if (stan_data$bp_n == 0) {

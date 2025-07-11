@@ -156,13 +156,16 @@ simulate_infections <- function(R, initial_infections,
     obs$dispersion <- NULL
   }
 
-  stan_data <- c(stan_data, create_stan_params(
-    alpha = NULL,
-    rho = NULL,
-    R0 = NULL,
-    frac_obs = obs$scale,
-    dispersion = obs$dispersion
-  ))
+  params <- list(
+    make_param("alpha", NULL),
+    make_param("rho", NULL),
+    make_param("R0", NULL),
+    make_param("frac_obs", obs$scale, lower_bound = 0),
+    make_param("dispersion", obs$dispersion, lower_bound = 0)
+  )
+
+  stan_data <- c(stan_data, create_stan_params(params))
+
   ## set empty params matrix - variable parameters not supported here
   stan_data$params <- array(dim = c(1, 0))
 
