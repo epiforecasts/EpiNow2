@@ -6,7 +6,7 @@ functions {
 }
 
 data {
-  int t;
+  int t;                             // total time (length of truncation data)
   int obs_sets;
   array[t, obs_sets] int obs;
   array[obs_sets] int obs_dist;
