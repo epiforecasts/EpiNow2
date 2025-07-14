@@ -309,8 +309,8 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
   )
 
   # replace default settings with those specified by user
-  if (opts$rw > 0) {
-    opts$use_breakpoints <- TRUE
+  if (rt$rw > 0) {
+    rt$use_breakpoints <- TRUE
   }
 
   if (is.list(prior) && !is(prior, "dist_spec")) {
