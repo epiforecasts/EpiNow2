@@ -8,7 +8,7 @@ message: 'To cite package "EpiNow2" in publications use:'
 type: software
 license: MIT
 title: 'EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters'
-version: 1.7.0.9000
+version: 1.7.1.9000
 doi: 10.32614/CRAN.package.EpiNow2
 identifiers:
 - type: url
@@ -103,7 +103,7 @@ references:
   authors:
   - family-names: Csárdi
     given-names: Gábor
-    email: csardi.gabor@gmail.com
+    email: gabor@posit.co
   year: '2025'
   doi: 10.32614/CRAN.package.cli
 - type: software
@@ -134,8 +134,13 @@ references:
   - family-names: Schwendinger
     given-names: Benjamin
     orcid: https://orcid.org/0000-0003-3315-8114
+  - family-names: Krylov
+    given-names: Ivan
+    email: ikrylov@disroot.org
+    orcid: https://orcid.org/0000-0002-0172-3812
   year: '2025'
   doi: 10.32614/CRAN.package.data.table
+  version: '>= 1.15.0'
 - type: software
   title: futile.logger
   abstract: 'futile.logger: A Logging Utility for R'
@@ -272,11 +277,11 @@ references:
   authors:
   - family-names: Wickham
     given-names: Hadley
-    email: hadley@rstudio.com
+    email: hadley@posit.co
     orcid: https://orcid.org/0000-0003-4757-117X
   - family-names: Henry
     given-names: Lionel
-    email: lionel@rstudio.com
+    email: lionel@posit.co
   year: '2025'
   doi: 10.32614/CRAN.package.purrr
 - type: software

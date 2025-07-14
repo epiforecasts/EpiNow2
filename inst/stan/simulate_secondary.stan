@@ -11,10 +11,10 @@ data {
   // dimensions
   int n; // number of samples
   int t; // time
-  int h; // forecast horizon
+  int horizon; // forecast horizon
   int all_dates; // should all dates have simulations returned
   // secondary model specific data
-  array[t - h] int<lower = 0> obs;         // observed secondary data
+  array[t - horizon] int<lower = 0> obs;         // observed secondary data
   matrix[n, t] primary;              // observed primary data
 #include data/secondary.stan
 #include data/simulation_delays.stan
@@ -32,14 +32,14 @@ transformed data {
 }
 
 generated quantities {
-  array[n, all_dates ? t : h] int sim_secondary;
+  array[n, all_dates ? t : horizon] int sim_secondary;
   {
     vector[n] dispersion = get_param(
-      dispersion_id, params_fixed_lookup, params_variable_lookup,
+      param_id_dispersion, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
     vector[n] frac_obs = get_param(
-      frac_obs_id, params_fixed_lookup, params_variable_lookup,
+      param_id_frac_obs, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
     for (i in 1:n) {
@@ -68,7 +68,7 @@ generated quantities {
       // calculate secondary reports from primary
       secondary = calculate_secondary(
         scaled, convolved, obs, cumulative, historic, primary_hist_additive,
-        current, primary_current_additive, t - h + 1
+        current, primary_current_additive, t - horizon + 1
       );
 
       // weekly reporting effect
@@ -91,7 +91,7 @@ generated quantities {
 
       // simulate secondary reports
       sim_secondary[i] = report_rng(
-        tail(secondary, all_dates ? t : h), dispersion[i], model_type
+        tail(secondary, all_dates ? t : horizon), dispersion[i], model_type
       );
     }
   }

@@ -42,10 +42,15 @@ transformed data {
   }
 
   // initial infections scaling (on the log scale)
-  real initial_infections_guess = fmax(
-    0,
-    log(mean(head(cases, num_elements(cases) > 7 ? 7 : num_elements(cases))))
-  );
+  real initial_infections_guess;
+  if (num_elements(cases) > 0) {
+    initial_infections_guess = fmax(
+      0,
+      log(mean(head(cases, num_elements(cases) > 7 ? 7 : num_elements(cases))))
+    );
+  } else {
+    initial_infections_guess = 0;
+  }
 }
 
 parameters {
@@ -75,11 +80,11 @@ transformed parameters {
   profile("update gp") {
     if (!fixed) {
       real alpha = get_param(
-        alpha_id, params_fixed_lookup, params_variable_lookup, params_value,
+        param_id_alpha, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       real rescaled_rho = 2 * get_param(
-        rho_id, params_fixed_lookup, params_variable_lookup,
+        param_id_rho, params_fixed_lookup, params_variable_lookup,
         params_value, params
       ) / noise_terms;
       noise = update_gp(
@@ -100,7 +105,7 @@ transformed parameters {
     }
     profile("R0") {
       real R0 = get_param(
-        R0_id, params_fixed_lookup, params_variable_lookup, params_value, params
+        param_id_R0, params_fixed_lookup, params_variable_lookup, params_value, params
       );
       R = update_Rt(
         ot_h, R0, noise, breakpoints, bp_effects, stationary
@@ -108,7 +113,7 @@ transformed parameters {
     }
     profile("infections") {
       real frac_obs = get_param(
-        frac_obs_id, params_fixed_lookup, params_variable_lookup, params_value,
+        param_id_frac_obs, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       real pop = get_param(
@@ -158,7 +163,7 @@ transformed parameters {
   if (obs_scale) {
     profile("scale") {
       real frac_obs = get_param(
-        frac_obs_id, params_fixed_lookup, params_variable_lookup, params_value,
+        param_id_frac_obs, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       reports = scale_obs(reports, frac_obs);
@@ -228,7 +233,7 @@ model {
   if (likelihood) {
     profile("report lp") {
       real dispersion = get_param(
-        dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
+        param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       report_lp(
@@ -246,12 +251,12 @@ generated quantities {
 
   profile("generated quantities") {
     real dispersion = get_param(
-      dispersion_id, params_fixed_lookup, params_variable_lookup, params_value,
+      param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     if (!fixed) {
       real rescaled_rho = 2 * get_param(
-        rho_id, params_fixed_lookup, params_variable_lookup,
+        param_id_rho, params_fixed_lookup, params_variable_lookup,
         params_value, params
       ) / noise_terms;
       vector[noise_terms] x = linspaced_vector(noise_terms, 1, noise_terms);

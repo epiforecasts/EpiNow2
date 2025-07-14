@@ -91,11 +91,10 @@ map_prob_change <- function(var) {
     var <= 1, "Decreasing"
   )
 
-  var <- factor(var, levels = c(
+  factor(var, levels = c(
     "Increasing", "Likely increasing", "Stable",
     "Likely decreasing", "Decreasing"
   ))
-  return(var)
 }
 
 #' Convert Growth Rates to Reproduction numbers.
@@ -116,8 +115,7 @@ map_prob_change <- function(var) {
 #' growth_to_R(0.2, 4, 1)
 growth_to_R <- function(r, gamma_mean, gamma_sd) {
   k <- (gamma_sd / gamma_mean)^2
-  R <- (1 + k * r * gamma_mean)^(1 / k)
-  return(R)
+  (1 + k * r * gamma_mean)^(1 / k)
 }
 
 #' Convert Reproduction Numbers to Growth Rates
@@ -134,8 +132,7 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
 #' R_to_growth(2.18, 4, 1)
 R_to_growth <- function(R, gamma_mean, gamma_sd) {
   k <- (gamma_sd / gamma_mean)^2
-  r <- (R^k - 1) / (k * gamma_mean)
-  return(r)
+  (R^k - 1) / (k * gamma_mean)
 }
 
 
@@ -153,7 +150,7 @@ allocate_delays <- function(delay_var, no_delays) {
   } else {
     out <- numeric(0)
   }
-  return(array(out))
+  array(out)
 }
 
 #' Allocate Empty Parameters to a List
@@ -263,7 +260,7 @@ expose_stan_fns <- function(files, target_dir, ...) {
     "\n }"
   )
   rstan::expose_stan_functions(rstan::stanc(model_code = functions), ...)
-  return(invisible(NULL))
+  invisible(NULL)
 }
 
 #' Convert mean and sd to log mean for a log normal distribution
@@ -319,18 +316,17 @@ discretised_lognormal_pmf_conv <- function(x, meanlog, sdlog) {
     meanlog, sdlog, length(x) - 1,
     reverse = TRUE
   )
-  conv <- sum(x * pmf, na.rm = TRUE)
-  return(conv)
+  sum(x * pmf, na.rm = TRUE)
 }
 
 discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
                                   reverse = FALSE) {
-  alpha <- exp(2 * (log(mean) - log(sd)))
-  beta <- exp(log(mean) - 2 * log(sd))
-  pmf <- pgamma(1:(max_d + 1), shape = alpha, scale = beta) -
-    pgamma(0:max_d, shape = alpha, scale = beta)
+  alpha_param <- exp(2 * (log(mean) - log(sd)))
+  beta_param <- exp(log(mean) - 2 * log(sd))
+  pmf <- pgamma(1:(max_d + 1), shape = alpha_param, scale = beta_param) -
+    pgamma(0:max_d, shape = alpha_param, scale = beta_param)
   pmf <- as.vector(pmf) /
-    as.vector(pgamma(max_d + 1, shape = alpha, scale = beta))
+    as.vector(pgamma(max_d + 1, shape = alpha_param, scale = beta_param))
   if (zero_pad > 0) {
     pmf <- c(rep(0, zero_pad), pmf)
   }
@@ -415,6 +411,73 @@ lapply_func <- function(..., backend = "rstan", future.opts = list()) {
   } else {
     lapply(...)
   }
+}
+
+##' Pads reported cases with daily initial zeros
+##'
+##' @param reported_cases A <data.frame> of reported cases.
+##' @param n The number of days to pad the reported cases by.
+##' @param with What to pad with
+##' @return A data.table of reported cases.
+##' @importFrom data.table data.table rbindlist
+##' @keywords internal
+pad_reported_cases <- function(reported_cases, n, with = NA_real_) {
+  if (n > 0) {
+    pad_dt <- data.table(
+      date = seq(
+        min(reported_cases$date) - n,
+        min(reported_cases$date) - 1,
+        by = "days"
+      ),
+      confirm = with
+    )
+    if ("accumulate" %in% colnames(reported_cases)) {
+      pad_dt[, accumulate := FALSE]
+    }
+    if ("breakpoint" %in% colnames(reported_cases)) {
+      pad_dt[, breakpoint := 0]
+    }
+  } else {
+    pad_dt <- data.table()
+  }
+  rbindlist(list(pad_dt, reported_cases), use.names = TRUE)
+}
+
+#' Numerically stable convolution function for two pmf vectors
+#'
+#' Unlike [stats::convolve()], this function does not use the FFT algorithm,
+#' which can generate negative numbers when below machine precision.
+#'
+#' @param a Numeric vector, the first sequence.
+#' @param b Numeric vector, the second sequence.
+#' @return A numeric vector representing the convolution of `a` and `b`.
+stable_convolve <- function(a, b) {
+  n <- length(a)
+  m <- length(b)
+  result <- numeric(n + m - 1)
+  for (i in seq_along(a)) {
+    for (j in seq_along(b)) {
+      result[i + j - 1] <- result[i + j - 1] + a[i] * b[m - j + 1]
+    }
+  }
+  result
+}
+
+##' Internal function to create a parameter list
+##'
+##' @param name Character, name of the parameter
+##' @param dist `<dist_spec>`, the distribution of the parameter; default: NULL
+##' @param lower_bound Numeric, lower bound for the parameter; default: -Inf
+##' @return A list with the parameter details, classed as "EpiNow2.param"
+##' @keywords internal
+make_param <- function(name, dist = NULL, lower_bound = -Inf) {
+  params <- list(
+    name = name,
+    dist = dist,
+    lower_bound = lower_bound
+  )
+  class(params) <- c("EpiNow2.param", "list")
+  params
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp

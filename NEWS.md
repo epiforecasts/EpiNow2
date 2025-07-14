@@ -1,5 +1,36 @@
 # EpiNow2 (development version)
 
+## Package changes
+
+- The package now has a hex logo.
+- Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now have to do `param_id_[parameter_name]`, for example, `frac_obs_id` is now `param_id_frac_obs`.
+
+## Model changes
+
+- MCMC runs are now initialised with parameter values drawn from a distribution that approximates their prior distributions.
+
+## Bug fixes
+
+- A bug was fixed where `forecast_infections` would fail with `samples = 1`.
+- A bug was fixed where `opts_list()` recursed lists which it shouldn't.
+- A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
+- A bug was fixed where `estimate_infection()` threw an error if there were too many consecutive `NA` observations.
+- A bug was fixed where an error was thrown when convolving delay distributions with very small values.
+- A bug was fixed where a cli warning was broken due to bad syntax.
+- A bug was fixed where intermediate data was being bound together by column position instead of column name, leading to erroneous results.
+
+## Documentation
+
+- Added documentation about doing prior predictive checks.
+- The stan code is now fulled documented and can be accessed on the website under the Reference tab.
+- Fixed an issue with the pkgdown website where the Reference tab was not appearing as a dropdown menu for the R and Stan Reference tabs.
+- Enhanced the stan documentation with a doxygen-awesome theme and added a license badge.
+- Clarified when the population adjustment is done when `pop` is specified.
+
+# EpiNow2 1.7.1
+
+This is a patch release in response to an upstream issue in `rstan`, as flagged in CRAN checks.
+
 # EpiNow2 1.7.0
 
 This release introduces the new accumulation feature, where models can fitted to data reported at regular or irregular intervals. Moreover, all priors are now specified using the internal distribution interface.

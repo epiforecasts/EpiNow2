@@ -15,17 +15,18 @@
 plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
   index <- 1
   alpha_per_CrI <- alpha / (length(CrIs) - 1)
+  p <- plot
   for (CrI in CrIs) {
     bottom <- paste0("lower_", CrI)
     top <- paste0("upper_", CrI)
     if (index == 1) {
-      plot <- plot +
+      p <- p +
         ggplot2::geom_ribbon(
           ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
           alpha = 0.2, linewidth = linewidth
         )
     } else {
-      plot <- plot +
+      p <- p +
         ggplot2::geom_ribbon(
           ggplot2::aes(
             ymin = .data[[bottom]], ymax = .data[[top]],
@@ -36,7 +37,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
     }
     index <- index + 1
   }
-  return(plot)
+  p
 }
 
 #' Plot Estimates
@@ -140,40 +141,44 @@ plot_estimates <- function(estimate, reported, ylab, hline,
     )
     cols <- setdiff(colnames(reported), c("date", "confirm", "breakpoint"))
 
-    if (length(cols) > 1) {
-      max_cases_to_plot <- data.table::copy(reported)[,
-        .(max = round(max(confirm, na.rm = TRUE) * max_plot, 0)),
-        by = cols
+    if (!all(is.na(reported$confirm))) {
+      if (length(cols) > 1) {
+        max_cases_to_plot <- data.table::copy(reported)[,
+          .(max = round(max(confirm, na.rm = TRUE) * max_plot, 0)),
+          by = cols
+        ]
+        estimate <- estimate[max_cases_to_plot, on = cols]
+      } else {
+        max_cases_to_plot <- round(
+          max(reported$confirm, na.rm = TRUE) * max_plot, 0
+        )
+        estimate <- estimate[, max := max_cases_to_plot]
+      }
+      estimate <- estimate[, lapply(.SD, pmin, max),
+        by = setdiff(colnames(estimate), sd_cols), .SDcols = sd_cols
       ]
-      estimate <- estimate[max_cases_to_plot, on = cols]
-    } else {
-      max_cases_to_plot <- round(
-        max(reported$confirm, na.rm = TRUE) * max_plot, 0
-      )
-      estimate <- estimate[, max := max_cases_to_plot]
     }
-    estimate <- estimate[, lapply(.SD, pmin, max),
-      by = setdiff(colnames(estimate), sd_cols), .SDcols = sd_cols
-    ]
   }
 
   # initialise plot
-  plot <- ggplot2::ggplot(
+  p <- ggplot2::ggplot(
     estimate, ggplot2::aes(x = date, col = type, fill = type)
   )
 
   # add in reported data if present (either as column or as a line)
   if (!missing(reported)) {
     if (obs_as_col) {
-      plot <- plot +
+      p <- p +
         ggplot2::geom_col(
-          data = reported[date >= min(estimate$date, na.rm = TRUE) &
-            date <= max(estimate$date, na.rm = TRUE)],
+          data = reported[
+            date >= min(estimate$date, na.rm = TRUE) &
+              date <= max(estimate$date, na.rm = TRUE)
+          ],
           ggplot2::aes(y = confirm), fill = "grey", col = "white",
           show.legend = FALSE, na.rm = TRUE
         )
     } else {
-      plot <- plot +
+      p <- p +
         ggplot2::geom_line(
           data = reported,
           ggplot2::aes(y = confirm, fill = NULL),
@@ -189,7 +194,7 @@ plot_estimates <- function(estimate, reported, ylab, hline,
   }
 
   # plot estimates
-  plot <- plot +
+  p <- p +
     ggplot2::geom_vline(
       xintercept = orig_estimate[
         type == "Estimate based on partial data"
@@ -198,12 +203,12 @@ plot_estimates <- function(estimate, reported, ylab, hline,
     )
 
   # plot CrIs
-  plot <- plot_CrIs(plot, extract_CrIs(estimate),
+  p <- plot_CrIs(p, extract_CrIs(estimate),
     alpha = 0.6, linewidth = 0.05
   )
 
   # add plot theming
-  plot <- plot +
+  p <- p +
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "bottom") +
     ggplot2::scale_color_brewer(palette = "Dark2") +
@@ -216,10 +221,10 @@ plot_estimates <- function(estimate, reported, ylab, hline,
 
   # add in a horizontal line if required
   if (!missing(hline)) {
-    plot <- plot +
+    p <- p +
       ggplot2::geom_hline(yintercept = hline, linetype = 2)
   }
-  return(plot)
+  p
 }
 
 
@@ -264,7 +269,7 @@ plot_summary <- function(summary_results,
 
   # generic plotting function
   inner_plot <- function(df) {
-    plot <- ggplot2::ggplot(df, ggplot2::aes(
+    p <- ggplot2::ggplot(df, ggplot2::aes(
       x = region,
       col = `Expected change in reports`
     ))
@@ -274,7 +279,7 @@ plot_summary <- function(summary_results,
     for (CrI in CrIs) {
       bottom <- paste0("lower_", CrI)
       top <- paste0("upper_", CrI)
-      plot <- plot +
+      p <- p +
         ggplot2::geom_linerange(
           ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
           alpha = ifelse(index == 1, 0.4, alpha_per_CrI),
@@ -283,7 +288,7 @@ plot_summary <- function(summary_results,
       index <- index + 1
     }
 
-    plot <- plot +
+    p <- p +
       ggplot2::geom_hline(yintercept = 1, linetype = 2) +
       ggplot2::facet_wrap(~metric, ncol = 1, scales = "free_y") +
       ggplot2::theme_bw() +
@@ -354,8 +359,7 @@ plot_summary <- function(summary_results,
     ggplot2::coord_cartesian(ylim = c(0, min(max_rt, 4)))
 
   # join plots together
-  plot <- cases_plot + rt_plot + patchwork::plot_layout(ncol = 1)
-  return(plot)
+  cases_plot + rt_plot + patchwork::plot_layout(ncol = 1)
 }
 
 #' Plot method for estimate_infections

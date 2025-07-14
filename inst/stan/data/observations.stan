@@ -10,4 +10,3 @@ array[it] int imputed_times; // time of imputed cases
 int any_accumulate; // Should any missing values be accumulated?
 // Should missing values be accumulated (by time)
 array[t - seeding_time] int accumulate;
-vector<lower = 0>[t] shifted_cases; // prior infections (for backcalculation)

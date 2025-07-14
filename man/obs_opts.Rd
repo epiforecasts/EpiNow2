@@ -25,7 +25,7 @@ Negative binomial ("negbin"), the default, and Poisson.}
 parameter of the reporting process, used only if \code{familiy} is "negbin".
 Internally parameterised such that this parameter is one over the square
 root of the \code{phi} parameter for overdispersion of the
-\href{https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log}{negative binomial distribution}. # nolint
+\href{https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log}{negative binomial distribution}.
 Defaults to a half-normal distribution with mean of 0 and
 standard deviation of 0.25: \code{Normal(mean = 0, sd = 0.25)}. A lower limit of
 zero will be enforced automatically.}

@@ -15,7 +15,7 @@ update_horizon <- function(horizon, target_date, data) {
       as.Date(target_date) - max(data$date)
     )
   }
-  return(horizon)
+  horizon
 }
 
 #' Save Observed Data
@@ -34,7 +34,7 @@ save_input <- function(data, target_folder) {
     saveRDS(latest_date, file.path(target_folder, "latest_date.rds"))
     saveRDS(data, file.path(target_folder, "reported_cases.rds"))
   }
-  return(invisible(NULL))
+  invisible(NULL)
 }
 
 #' Save Estimated Infections

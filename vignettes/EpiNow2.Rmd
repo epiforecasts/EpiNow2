@@ -240,36 +240,43 @@ head(reported_cases)
 #> 6: 2020-02-27      78 testland
 ```
 
-Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week.
+Calling `regional_epinow()` runs the `epinow()` on each region in turn (or in parallel depending on the settings used). Here we switch to using a weekly random walk rather than the full Gaussian process model giving us piecewise constant estimates by week. We also assign "testland" a different ascertainment of 50%, using the `opts_list()` function, which is used to assign region-specific settings.
 
 
 ``` r
+obs <- opts_list(
+  obs_opts(),
+  reported_cases,
+  testland = obs_opts(scale = Fixed(0.5))
+)
+
 estimates <- regional_epinow(
   data = reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2), rw = 7),
+  obs = obs,
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
 )
-#> INFO [2025-01-31 17:34:01] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2025-01-31 17:34:01] Reporting estimates using data up to: 2020-04-21
-#> INFO [2025-01-31 17:34:01] No target directory specified so returning output
-#> INFO [2025-01-31 17:34:01] Producing estimates for: testland, realland
-#> INFO [2025-01-31 17:34:01] Regions excluded: none
-#> INFO [2025-01-31 17:34:21] Completed estimates for: testland
-#> INFO [2025-01-31 17:34:41] Completed estimates for: realland
-#> INFO [2025-01-31 17:34:41] Completed regional estimates
-#> INFO [2025-01-31 17:34:41] Regions with estimates: 2
-#> INFO [2025-01-31 17:34:41] Regions with runtime errors: 0
-#> INFO [2025-01-31 17:34:41] Producing summary
-#> INFO [2025-01-31 17:34:41] No summary directory specified so returning summary output
-#> INFO [2025-01-31 17:34:41] No target directory specified so returning timings
+#> INFO [2025-06-01 00:26:04] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2025-06-01 00:26:04] Reporting estimates using data up to: 2020-04-21
+#> INFO [2025-06-01 00:26:04] No target directory specified so returning output
+#> INFO [2025-06-01 00:26:04] Producing estimates for: testland, realland
+#> INFO [2025-06-01 00:26:04] Regions excluded: none
+#> INFO [2025-06-01 00:26:24] Completed estimates for: testland
+#> INFO [2025-06-01 00:26:44] Completed estimates for: realland
+#> INFO [2025-06-01 00:26:44] Completed regional estimates
+#> INFO [2025-06-01 00:26:44] Regions with estimates: 2
+#> INFO [2025-06-01 00:26:44] Regions with runtime errors: 0
+#> INFO [2025-06-01 00:26:44] Producing summary
+#> INFO [2025-06-01 00:26:44] No summary directory specified so returning summary output
+#> INFO [2025-06-01 00:26:45] No target directory specified so returning timings
 ```
 
-Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = TRUE) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the `{future}` package for details on nested futures.
+Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = `TRUE`) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the [`{future}`](https://future.futureverse.org/) package for details on nested futures.
 
-Summary measures that are returned include a table formatted for reporting (along with raw results for further processing). Futures updated will extend the S3 methods used above to smooth access to this output.
+Summary measures that are returned include a table formatted for reporting (along with raw results for further processing).
 
 
 ``` r
@@ -281,7 +288,7 @@ knitr::kable(estimates$summary$summarised_results$table)
 |Region   |New infections per day |Expected change in reports |Effective reproduction no. |Rate of growth          |Doubling/halving time (days) |
 |:--------|:----------------------|:--------------------------|:--------------------------|:-----------------------|:----------------------------|
 |realland |2017 (1029 -- 3866)    |Likely decreasing          |0.85 (0.6 -- 1.1)          |-0.042 (-0.11 -- 0.036) |-17 (19 -- -6.1)             |
-|testland |2026 (1026 -- 4222)    |Likely decreasing          |0.86 (0.6 -- 1.2)          |-0.04 (-0.12 -- 0.042)  |-17 (17 -- -5.9)             |
+|testland |4052 (2052 -- 8445)    |Likely decreasing          |0.86 (0.6 -- 1.2)          |-0.04 (-0.12 -- 0.042)  |-17 (17 -- -5.9)             |
 
 
 

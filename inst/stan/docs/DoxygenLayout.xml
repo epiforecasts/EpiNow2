@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doxygenlayout version="1.0">
+  <!-- Navigation index tabs -->
+  <navindex>
+    <!-- Keep only essential navigation elements -->
+    <tab type="mainpage" visible="yes" title="Home"/>
+    <tab type="topics" visible="yes" title="Functions" intro="Functions grouped by purpose:"/>
+  </navindex>
+
+  <!-- Layout definition for a file page -->
+  <file>
+    <briefdescription visible="yes"/>
+    <includes visible="yes"/>
+    <includegraph visible="yes"/>
+    <includedbygraph visible="yes"/>
+    <sourcelink visible="no"/>
+    <memberdecl>
+      <functions visible="yes" title="Functions in this File"/>
+    </memberdecl>
+    <detaileddescription title="Description"/>
+    <memberdef>
+      <functions visible="yes" title="Function Documentation"/>
+    </memberdef>
+    <authorsection visible="yes"/>
+  </file>
+
+  <!-- Layout definition for a group page -->
+  <group>
+    <briefdescription visible="yes"/>
+    <groupgraph visible="$GROUP_GRAPHS"/>
+    <memberdecl>
+      <nestedgroups visible="yes" title="Subgroups"/>
+      <functions visible="yes" title="Functions"/>
+      <variables visible="yes" title="Variables"/>
+      <membergroups visible="yes"/>
+    </memberdecl>
+    <detaileddescription title="Description"/>
+    <memberdef>
+      <functions visible="yes" title="Function Documentation"/>
+      <variables visible="yes" title="Variables"/>
+    </memberdef>
+    <authorsection visible="yes"/>
+  </group>
+
+  <!-- Layout definition for a directory page -->
+  <directory>
+    <briefdescription visible="yes"/>
+    <directorygraph visible="no"/>
+    <memberdecl>
+      <files visible="yes"/>
+    </memberdecl>
+    <detaileddescription title=""/>
+  </directory>
+</doxygenlayout>

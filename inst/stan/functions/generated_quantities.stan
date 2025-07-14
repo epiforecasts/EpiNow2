@@ -1,4 +1,23 @@
-// calculate Rt directly from inferred infections
+/**
+ * Generated Quantities Functions
+ *
+ * Functions for calculating additional quantities from model outputs.
+ */
+
+/**
+ * Calculate Rt directly from inferred infections
+ *
+ * This function estimates the reproduction number (Rt) using the Cori et al. approach,
+ * directly from a time series of infections. Optionally applies smoothing.
+ *
+ * @param infections Vector of infection counts
+ * @param seeding_time Number of time steps used for seeding
+ * @param gt_rev_pmf Vector of reversed generation time PMF
+ * @param smooth Number of time steps to use for smoothing (0 for no smoothing)
+ * @return A vector of reproduction numbers (Rt)
+ *
+ * @ingroup rt_estimation
+ */
 vector calculate_Rt(vector infections, int seeding_time,
                     vector gt_rev_pmf, int smooth) {
   int t = num_elements(infections);
@@ -29,7 +48,18 @@ vector calculate_Rt(vector infections, int seeding_time,
   return(sR);
 }
 
-// Calculate growth rate
+/**
+ * Calculate growth rate
+ *
+ * This function calculates the growth rate from a time series of infections
+ * by taking the log difference between consecutive time points.
+ *
+ * @param infections Vector of infection counts
+ * @param seeding_time Number of time steps used for seeding
+ * @return A vector of growth rates
+ *
+ * @ingroup rt_estimation
+ */
 vector calculate_growth(vector infections, int seeding_time) {
   int t = num_elements(infections);
   int ot = t - seeding_time;

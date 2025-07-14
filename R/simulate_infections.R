@@ -113,7 +113,7 @@ simulate_infections <- function(R, initial_infections,
     seeding_time <- sum(max(generation_time))
   }
 
-  data <- list(
+  stan_data <- list(
     n = 1,
     t = nrow(R) + seeding_time,
     seeding_time = seeding_time,
@@ -124,13 +124,14 @@ simulate_infections <- function(R, initial_infections,
     use_pop = as.integer(pop != Fixed(0)) + as.integer(pop_period == "all")
   )
 
-  data <- c(data, create_stan_delays(
+  stan_data <- c(stan_data, create_stan_delays(
     gt = generation_time,
     delay = delays,
     trunc = truncation
   ))
 
-  if (length(data$delay_params_sd) > 0 && any(data$delay_params_sd > 0)) {
+  if (length(stan_data$delay_params_sd) > 0 &&
+        any(stan_data$delay_params_sd > 0)) {
     cli_abort(
       c(
         "!" = "Cannot simulate from uncertain parameters.",
@@ -139,13 +140,13 @@ simulate_infections <- function(R, initial_infections,
       )
     )
   }
-  data$delay_params <- array(
-    data$delay_params_mean,
-    dim = c(1, length(data$delay_params_mean))
+  stan_data$delay_params <- array(
+    stan_data$delay_params_mean,
+    dim = c(1, length(stan_data$delay_params_mean))
   )
-  data$delay_params_sd <- NULL
+  stan_data$delay_params_sd <- NULL
 
-  data <- c(data, create_obs_model(
+  stan_data <- c(stan_data, create_obs_model(
     obs,
     dates = R$date
   ))
@@ -172,45 +173,48 @@ simulate_infections <- function(R, initial_infections,
     obs$dispersion <- NULL
   }
 
-  data <- c(data, create_stan_params(
-    alpha = NULL,
-    rho = NULL,
-    R0 = NULL,
-    frac_obs = obs$scale,
-    dispersion = obs$dispersion,
-    pop = pop
-  ))
+  params <- list(
+    make_param("alpha", NULL),
+    make_param("rho", NULL),
+    make_param("R0", NULL),
+    make_param("frac_obs", obs$scale, lower_bound = 0),
+    make_param("dispersion", obs$dispersion, lower_bound = 0),
+    make_param("pop", pop, lower_bound = 0)
+  )
+
+  stan_data <- c(stan_data, create_stan_params(params))
+
   ## set empty params matrix - variable parameters not supported here
-  data$params <- array(dim = c(1, 0))
+  stan_data$params <- array(dim = c(1, 0))
 
   ## day of week effect
   if (is.null(day_of_week_effect)) {
-    day_of_week_effect <- rep(1, data$week_effect)
+    day_of_week_effect <- rep(1, stan_data$week_effect)
   }
 
   day_of_week_effect <- day_of_week_effect / sum(day_of_week_effect)
-  data$day_of_week_simplex <- array(
+  stan_data$day_of_week_simplex <- array(
     day_of_week_effect,
-    dim = c(1, data$week_effect)
+    dim = c(1, stan_data$week_effect)
   )
 
   # Create stan arguments
   stan <- stan_opts(backend = backend, chains = 1, samples = 1, warmup = 1)
-  args <- create_stan_args(
+  stan_args <- create_stan_args(
     stan,
-    data = data, fixed_param = TRUE, model = "simulate_infections",
+    data = stan_data, fixed_param = TRUE, model = "simulate_infections",
     verbose = FALSE
   )
 
   ## simulate
-  sim <- fit_model(args, id = "simulate_infections")
+  sim <- fit_model(stan_args, id = "simulate_infections")
 
   ## join batches
   dates <- c(
     seq(min(R$date) - seeding_time, min(R$date) - 1, by = "day"),
     R$date
   )
-  out <- extract_parameter_samples(sim, data,
+  out <- extract_parameter_samples(sim, stan_data,
     reported_inf_dates = dates,
     reported_dates = dates[-(1:seeding_time)],
     imputed_dates = dates[-(1:seeding_time)],
@@ -325,7 +329,7 @@ forecast_infections <- function(estimates,
   assert_class(estimates, "estimate_infections")
   assert_names(names(estimates), must.include = "fit")
   if (!(test_numeric(R, lower = 0, null.ok = TRUE) ||
-    test_data_frame(R, null.ok = TRUE))) {
+          test_data_frame(R, null.ok = TRUE))) {
     cli_abort(
       c(
         "!" = "R must either be a {.cls numeric} vector or
@@ -396,24 +400,25 @@ forecast_infections <- function(estimates,
   }
 
   # redefine time if Rt != data$t
-  time <- estimates$args$t
-  horizon <- estimates$args$h
-  obs_time <- time - shift
+  est_time <- estimates$args$t
+  horizon <- estimates$args$horizon
+  obs_time <- est_time - shift
 
   if (obs_time != dim(draws$R)[2]) {
-    horizon <- dim(draws$R)[2] - time + horizon + shift
+    horizon <- dim(draws$R)[2] - est_time + horizon + shift
     horizon <- ifelse(horizon < 0, 0, horizon) # nolint
-    time <- dim(draws$R)[2] + shift
-    obs_time <- time - shift
+    est_time <- dim(draws$R)[2] + shift
+    obs_time <- est_time - shift
     starting_day <- estimates$args$day_of_week[1]
     days <- max(estimates$args$day_of_week)
     day_of_week <- (
-      (starting_day + rep(0:(days - 1), ceiling((obs_time) / days))) %% days)
+      (starting_day + rep(0:(days - 1), ceiling((obs_time) / days))) %% days
+    )
     day_of_week <- day_of_week[1:(obs_time)]
     day_of_week <- ifelse(day_of_week == 0, days, day_of_week)
 
     estimates$args$horizon <- horizon
-    estimates$args$t <- time
+    estimates$args$t <- est_time
     estimates$args$day_of_week <- day_of_week
   }
 
@@ -434,35 +439,34 @@ forecast_infections <- function(estimates,
   batch_simulate <- function(estimates, draws, model,
                              shift, dates, nstart, nend) {
     # extract batch samples from draws
-    draws <- map(draws, ~ as.matrix(.[nstart:nend, ]))
+    draws <- map(draws, ~ matrix(.[nstart:nend, ], nrow = nend - nstart + 1))
 
     ## prepare data for stan command
-    data <- c(
+    stan_data <- c(
       list(n = dim(draws$R)[1], initial_as_scale = 1), draws, estimates$args
     )
 
     ## allocate empty parameters
-    data <- allocate_empty(
-      data, c("delay_params", "params"),
-      n = data$n
+    stan_data <- allocate_empty(
+      stan_data, c("delay_params", "params"),
+      n = stan_data$n
     )
 
-    args <- create_stan_args(
+    stan_args <- create_stan_args(
       stan,
-      data = data, fixed_param = TRUE, model = "simulate_infections",
+      data = stan_data, fixed_param = TRUE, model = "simulate_infections",
       verbose = FALSE
     )
 
     ## simulate
-    sims <- fit_model(args, id = "simulate_infections")
+    sims <- fit_model(stan_args, id = "simulate_infections")
 
-    out <- extract_parameter_samples(sims, data,
+    extract_parameter_samples(sims, stan_data,
       reported_inf_dates = dates,
       reported_dates = dates[-(1:shift)],
       imputed_dates = dates[-(1:shift)],
       drop_length_1 = TRUE, merge = TRUE
     )
-    return(out)
   }
 
   ## set up batching
@@ -518,8 +522,6 @@ forecast_infections <- function(estimates,
     posterior_samples = regional_out,
     horizon = estimates$args$horizon,
     shift = shift,
-    burn_in = 0,
-    start_date = min(estimates$observations$date),
     CrIs = extract_CrIs(estimates$summarised) / 100
   )
   format_out$samples <- format_out$samples[, sample := seq_len(.N),

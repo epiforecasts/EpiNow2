@@ -26,9 +26,16 @@ authors:
     
 navbar:
   structure:
-    left: [intro,reference, modeldefs, usage, casestudies, news]
+    left: [intro,metareference, modeldefs, usage, casestudies, news]
     right: [search, github]
   components:
+    metareference:
+      text: Reference
+      menu:
+      - text: R Reference
+        href: reference/index.html
+      - text: Stan Reference
+        href: https://epiforecasts.io/EpiNow2/stan/
     modeldefs:
       text: Model definitions
       menu:
@@ -49,6 +56,8 @@ navbar:
         href: articles/estimate_infections_options.html
       - text: Using epinow() for running in production mode
         href: articles/epinow.html
+      - text: Forecasting multiple data streams
+        href: articles/forecasting_multiple_data_streams.html
     casestudies:
       text: Case studies
       menu:
@@ -58,112 +67,127 @@ navbar:
 figures:
   fig.width: 9
   fig.height: 9
-  
+
 reference:
-  - title: Estimation + Reporting
-    desc: Functions that faciliate end-to-end analysis including imputing cases by infection, estimating Rt and reporting results.
-    contents:
-      - contains("epinow")
-  - title: Estimate, Simulate, and Forecast Parameters
-    desc: Function to estimate, simulate and forecast parameters of interest.
-    contents:
-      - estimate_infections
-      - forecast_infections
-      - estimate_secondary
-      - forecast_secondary
-      - estimate_delay
-      - estimate_truncation
-  - title: Specify an Argument
-    desc: Functions used by estimate_infections
-    contents:
-      - contains("_opts")
-      - opts_list
-  - title: Preprocess data
-    desc: Functions used for prepropcessing data
-    contents:
-      - fill_missing
-      - add_breakpoints
-      - filter_leading_zeros
-      - apply_zero_threshold
-  - title: Summarise Across Regions
-    desc: Functions used for summarising across regions (designed for use with regional_epinow)
-    contents:
-      - regional_summary
-      - regional_runtimes
-      - get_regional_results
-  - title: Summarise results
-    desc: Functions for summarising results
-    contents:
-      - contains("summary.")
-      - contains("calc_")
-      - make_conf
-      - map_prob_change
-  - title: Plot Results
-    desc: Plot generated results
-    contents: 
-      - contains("plot")
-  - title: Report results
-    desc: Functions to report results
-    contents:
-      - report_plots
-      - report_summary  
-  - title: Define and Parameterise Distributions
-    desc: Functions to define and parameterise distributions
-    contents:
-      - Distributions
-      - contains("dist_spec")
-      - bound_dist
-      - collapse
-      - discretise
-      - fix_parameters
-      - get_parameters
-      - get_pmf
-      - get_distribution
-      - is_constrained
-  - title: Fit delay Distributions
-    desc: Functions to fit delay distributions
-    contents:
-      - bootstrapped_dist_fit
-      - dist_fit
-  - title: Simulate
-    desc: Functions to help with simulating data or mapping to reported cases
-    contents:
-      - simulate_infections
-      - simulate_secondary
-      - convolve_and_scale
-  - title: Data
-    desc: Package datasets that may be used to parameterise other functions or in examples
-    contents:
-      - example_generation_time
-      - example_incubation_period
-      - example_reporting_delay
-      - example_confirmed
-      - example_truncated
-      - generation_times
-      - incubation_periods
-  - title: Get/Extract Data
-    desc: Functions for extracting data from objects or getting data from sources
-    contents:
-      - contains("get_")
-      - contains("extract_")
-  - title: Clean Data
-    desc: Functions for cleaning data
-    contents:
-      - contains("clean")
-  - title: Setup Utilities
-    desc: Function used for setting up functionality
-    contents:
-      - contains("setup_")
-  - title: Utilities
-    desc: Utility functions
-    contents:
-      - run_region
-      - expose_stan_fns
-      - convert_to_logmean
-      - convert_to_logsd
-      - growth_to_R
-      - R_to_growth
-      - update_secondary_args
-  - title: internal
-    contents:
-      - has_keyword("internal")
+- title: Estimation + Reporting
+  desc: Functions that facilitate end-to-end analysis including imputing cases by infection, estimating Rt and reporting results.
+  contents:
+  - contains("epinow")
+
+- title: Estimate, Simulate, and Forecast Parameters
+  desc: Function to estimate, simulate and forecast parameters of interest.
+  contents:
+  - estimate_infections
+  - forecast_infections
+  - estimate_secondary
+  - forecast_secondary
+  - estimate_delay
+  - estimate_truncation
+
+- title: Specify Arguments
+  desc: Functions used by estimate_infections
+  contents:
+  - contains("_opts")
+  - opts_list
+
+- title: Preprocess Data
+  desc: Functions used for preprocessing data
+  contents:
+  - fill_missing
+  - add_breakpoints
+  - filter_leading_zeros
+  - apply_zero_threshold
+
+- title: Regional Analysis
+  desc: Functions used for summarising across regions (designed for use with regional_epinow)
+  contents:
+  - regional_summary
+  - regional_runtimes
+  - get_regional_results
+
+- title: Summarise Results
+  desc: Functions for summarising results
+  contents:
+  - contains("summary.")
+  - contains("calc_")
+  - make_conf
+  - map_prob_change
+
+- title: Plot Results
+  desc: Plot generated results
+  contents:
+  - contains("plot")
+
+- title: Report Results
+  desc: Functions to report results
+  contents:
+  - report_plots
+  - report_summary
+
+- title: Distribution Functions
+  desc: Functions to define and parameterise distributions
+  contents:
+  - Distributions
+  - contains("dist_spec")
+  - bound_dist
+  - collapse
+  - discretise
+  - fix_parameters
+  - get_parameters
+  - get_pmf
+  - get_distribution
+  - is_constrained
+
+- title: Fit Delay Distributions
+  desc: Functions to fit delay distributions
+  contents:
+  - bootstrapped_dist_fit
+  - dist_fit
+
+- title: Simulation
+  desc: Functions to help with simulating data or mapping to reported cases
+  contents:
+  - simulate_infections
+  - simulate_secondary
+  - convolve_and_scale
+
+- title: Data
+  desc: Package datasets that may be used to parameterise other functions or in examples
+  contents:
+  - example_generation_time
+  - example_incubation_period
+  - example_reporting_delay
+  - example_confirmed
+  - example_truncated
+
+- title: Data Access
+  desc: Functions for extracting data from objects or getting data from sources
+  contents:
+  - contains("get_")
+  - contains("extract_")
+
+- title: Data Cleaning
+  desc: Functions for cleaning data
+  contents:
+  - contains("clean")
+
+- title: Setup
+  desc: Functions used for setting up functionality
+  contents:
+  - contains("setup_")
+
+- title: Utilities
+  desc: Utility functions
+  contents:
+  - run_region
+  - expose_stan_fns
+  - convert_to_logmean
+  - convert_to_logsd
+  - growth_to_R
+  - R_to_growth
+  - update_secondary_args
+
+- title: Internal
+  contents:
+  - has_keyword("internal")
+

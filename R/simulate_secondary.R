@@ -12,8 +12,7 @@
 #' available as `convolve_and_scale()
 #' @param primary a data frame of primary reports (column `primary`) by date
 #'   (column `date`). Column `primary` must be numeric and `date` must be in
-#'   date format.  it will be assumed that `primary` is zero on the missing
-#'   days.
+#'   date format.
 #' @inheritParams simulate_infections
 #' @inheritParams estimate_secondary
 #' @importFrom checkmate assert_data_frame assert_date assert_numeric
@@ -58,24 +57,25 @@ simulate_secondary <- function(primary,
   primary <- merge.data.table(all_dates, primary, by = "date", all.x = TRUE)
   primary <- primary[, primary := nafill(primary, type = "const", fill = 0)]
 
-  data <- list(
+  stan_data <- list(
     n = 1,
     t = nrow(primary),
-    h = nrow(primary),
+    horizon = nrow(primary),
     all_dates = 0,
     obs = array(integer(0)),
     primary = array(primary$primary, dim = c(1, nrow(primary))),
     seeding_time = 0L
   )
 
-  data <- c(data, secondary)
+  stan_data <- c(stan_data, secondary)
 
-  data <- c(data, create_stan_delays(
+  stan_data <- c(stan_data, create_stan_delays(
     delay = delays,
     trunc = truncation
   ))
 
-  if (length(data$delay_params_sd) > 0 && any(data$delay_params_sd > 0)) {
+  if (length(stan_data$delay_params_sd) > 0 &&
+        any(stan_data$delay_params_sd > 0)) {
     cli_abort(
       c(
         "!" = "Cannot simulate from uncertain parameters.",
@@ -84,13 +84,13 @@ simulate_secondary <- function(primary,
       )
     )
   }
-  data$delay_params <- array(
-    data$delay_params_mean,
-    dim = c(1, length(data$delay_params_mean))
+  stan_data$delay_params <- array(
+    stan_data$delay_params_mean,
+    dim = c(1, length(stan_data$delay_params_mean))
   )
-  data$delay_params_sd <- NULL
+  stan_data$delay_params_sd <- NULL
 
-  data <- c(data, create_obs_model(
+  stan_data <- c(stan_data, create_obs_model(
     obs,
     dates = primary$date
   ))
@@ -117,38 +117,40 @@ simulate_secondary <- function(primary,
     obs$dispersion <- NULL
   }
 
-  data <- c(data, create_stan_params(
-    frac_obs = obs$scale,
-    dispersion = obs$dispersion
-  ))
+  params <- list(
+    make_param("frac_obs", obs$scale, lower_bound = 0),
+    make_param("dispersion", obs$dispersion, lower_bound = 0)
+  )
+
+  stan_data <- c(stan_data, create_stan_params(params))
 
   ## set empty params matrix - variable parameters not supported here
-  data$params <- array(dim = c(1, 0))
+  stan_data$params <- array(dim = c(1, 0))
 
   ## day of week effect
   if (is.null(day_of_week_effect)) {
-    day_of_week_effect <- rep(1, data$week_effect)
+    day_of_week_effect <- rep(1, stan_data$week_effect)
   }
 
   day_of_week_effect <- day_of_week_effect / sum(day_of_week_effect)
-  data$day_of_week_simplex <- array(
+  stan_data$day_of_week_simplex <- array(
     day_of_week_effect,
-    dim = c(1, data$week_effect)
+    dim = c(1, stan_data$week_effect)
   )
 
   # Create stan arguments
   stan <- stan_opts(backend = backend, chains = 1, samples = 1, warmup = 1)
-  args <- create_stan_args(
+  stan_args <- create_stan_args(
     stan,
-    data = data, fixed_param = TRUE, model = "simulate_secondary",
+    data = stan_data, fixed_param = TRUE, model = "simulate_secondary",
     verbose = FALSE
   )
 
   ## simulate
-  sim <- fit_model(args, id = "simulate_secondary")
+  sim <- fit_model(stan_args, id = "simulate_secondary")
 
   secondary <- extract_samples(sim, "sim_secondary")$sim_secondary[1, , ]
-  out <- data.table(date = all_dates, secondary = secondary)
+  out <- data.table(date = all_dates$date, secondary = secondary)
 
   return(out[])
 }
