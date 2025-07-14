@@ -342,12 +342,11 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
   if (opts$use_rt) {
     opts$prior <- prior
   } else if (!missing(prior)) {
-      cli_warn(
-        c(
-          "!" = "Rt {.var prior} is ignored if {.var use_rt} is FALSE."
-        )
+    cli_warn(
+      c(
+        "!" = "Rt {.var prior} is ignored if {.var use_rt} is FALSE."
       )
-    }
+    )
   }
 
   attr(opts, "class") <- c("rt_opts", class(opts))
