@@ -52,7 +52,7 @@ generated quantities {
     );
 
     vector[n] pop = get_param(
-      pop_id, params_fixed_lookup, params_variable_lookup,
+      param_id_pop, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
 

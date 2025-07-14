@@ -117,7 +117,7 @@ transformed parameters {
         params
       );
       real pop = get_param(
-        pop_id, params_fixed_lookup, params_variable_lookup, params_value,
+        param_id_pop, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       infections = generate_infections(
