@@ -348,7 +348,7 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
           "!" = "Rt {.var prior} is ignored if {.var use_rt} is FALSE."
         )
       )
-    )
+    }
   }
 
   attr(rt, "class") <- c("rt_opts", class(rt))
