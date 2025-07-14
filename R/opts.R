@@ -299,7 +299,7 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     gp_on = c("R_t-1", "R0"),
                     pop = Fixed(0),
                     pop_period = c("forecast", "all")) {
-  rt <- list(
+  opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
@@ -309,8 +309,8 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
   )
 
   # replace default settings with those specified by user
-  if (rt$rw > 0) {
-    rt$use_breakpoints <- TRUE
+  if (opts$rw > 0) {
+    opts$use_breakpoints <- TRUE
   }
 
   if (is.list(prior) && !is(prior, "dist_spec")) {
@@ -330,8 +330,8 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     )
     pop <- Fixed(pop)
   }
-  rt$pop <- pop
-  if (rt$pop_period == "all" && pop == Fixed(0)) {
+  opts$pop <- pop
+  if (opts$pop_period == "all" && pop == Fixed(0)) {
     cli_abort(
       c(
         "!" = "pop_period = \"all\" but pop is fixed at 0."
@@ -339,10 +339,9 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     )
   }
 
-  if (rt$use_rt) {
-    rt$prior <- prior
-  } else {
-    if (!missing(prior)) {
+  if (opts$use_rt) {
+    opts$prior <- prior
+  } else if (!missing(prior)) {
       cli_warn(
         c(
           "!" = "Rt {.var prior} is ignored if {.var use_rt} is FALSE."
@@ -351,8 +350,8 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     }
   }
 
-  attr(rt, "class") <- c("rt_opts", class(rt))
-  return(rt)
+  attr(opts, "class") <- c("rt_opts", class(opts))
+  return(opts)
 }
 
 #' Back Calculation Options
