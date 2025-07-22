@@ -423,11 +423,11 @@ process_crps <- function(results, variable, truth) {
 }
 
 # Add the model descriptions to the results of `process_crps()`.
-add_model_details <- function(crps_by_model){
+add_model_details <- function(crps_by_model_dt, model_descriptions_dt){
   # Add model descriptions
   crps_dt <- merge.data.table(
-    crps_by_model,
-    model_descriptions,
+    crps_by_model_dt,
+    model_descriptions_dt,
     by = "model"
   )
   crps_dt[]
@@ -459,11 +459,19 @@ runtimes_dt <- lapply(runtimes_by_snapshot, function(x) as.data.table(x)) |>
 snapshot_date_labels <- names(snapshot_dates)
 
 # Replace snapshot_date based on the dictionary
-runtimes_dt_detailed[, epidemic_phase := snapshot_date_labels[match(snapshot_date, snapshot_date_labels)]]
+runtimes_dt[, epidemic_phase := snapshot_date_labels[match(snapshot_date, snapshot_date_labels)]]
 
 # Add model descriptions
+runtimes_dt_long <- melt(
+  runtimes_dt,
+  id.vars = "epidemic_phase",    # Column to keep as an identifier
+  measure.vars = model_descriptions$model,  # Dynamically select model columns by pattern
+  variable.name = "model",      # Name for the 'model' column
+  value.name = "timing"         # Name for the 'timing' column
+)
+
 runtimes_dt_detailed <- merge(
-  runtimes_dt_detailed,
+  runtimes_dt_long,
   model_descriptions,
   by = "model"
 )
@@ -484,7 +492,7 @@ timing_plot <- ggplot(data = runtimes_dt_detailed) +
   ) +
   labs(x = "Epidemic phase",
        y = "Runtime (secs)",
-       color = "Model",
+       fill = "Model",
        title = "Model runtimes (MCMC)"
   ) +
   scale_color_brewer(palette = "Dark2") +
@@ -621,7 +629,7 @@ rt_now_comparison_plot
 
 #### Real-time infection forecast
 
-Let's also compare the real-time performance of the models in estimating infections by epidemic phase. 
+Let's also compare the real-time performance of the models in estimating infections by epidemic phase.
 ```{r plot-infections-real-time-crps,echo=FALSE}
 infections_real_time <- infections_crps_dt_final[, .SD[.N], by = .(model, epidemic_phase)]
 infections_real_time_comparison_plot <- ggplot(data = infections_real_time) +
