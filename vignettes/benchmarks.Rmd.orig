@@ -96,7 +96,7 @@ estimates <- epinow(
 ```
 
 That's it for the estimates object. Next, we'll create the `R` data using an arbitrary trajectory that has some Gaussian noise added to it. We'll use it to simulate the true infections data by sampling from $1$ posterior sample.
-```{r R-data, class.source = 'fold-hide'}
+```{r R-data}
 # Arbitrary reproduction number trajectory
 R <- c(
     seq(1, 1.5, length.out = 15),  # Rising to peak 1
@@ -132,7 +132,7 @@ R_true <- data.frame(date = infections_true$date, R = R_noisy)
 
 Below is the simulated data with dotted lines showing the chosen growth, peak, and decline phase in infections. We use the second wave because we want to have enough data to fit/train the models. The chosen dates also represent the scenarios that the models will be fit to and evaluated.
 
-```{r plot-true-data, class.source = 'fold-hide'}
+```{r plot-true-data}
 snapshot_dates <- c(
     "growth" = as.Date("2020-05-02"),
     "peak" = as.Date("2020-05-09"),
@@ -172,14 +172,16 @@ Let's proceed to define the models, fit them to the true data, and evaluate thei
 Below we describe each model.
 ```{r model-descriptions,echo = FALSE}
 # Model descriptions
-models <- c(
-  default = "Default model (non-stationary prior on $R_t$)",
-  non_mechanistic = "No mechanistic prior on $R_t$",
-  rw7 = "7-day random walk prior on $R_t$",
-  non_residual = "Stationary prior on $R_t$"
-)
+model_descriptions <- data.table(
+  model = c("default", "non_mechanistic", "rw7", "non_residual"),
+  description = c(
+  "Default model (non-stationary prior on Rt)",
+  "No mechanistic prior on Rt",
+  "7-day random walk prior on Rt",
+  "Stationary prior on Rt"
+  ))
 
-knitr::kable(data.frame(models), caption = "Model descriptions")
+knitr::kable(model_descriptions, caption = "Model descriptions")
 ```
 
 ### Configurations
@@ -187,26 +189,26 @@ knitr::kable(data.frame(models), caption = "Model descriptions")
 We will now define the `{EpiNow2}` configurations for each model, which are modifications of the default model.
 ```{r model-configs, results = 'hide', class.source = 'fold-hide'}
 model_configs <- list(
-  # The default model with MCMC fitting
-  default_mcmc = list(
+  # The default model
+  default = list(
     rt = rt_opts(
       prior = rt_prior_default
     )
   ),
-  # The non-mechanistic model with MCMC fitting
-  non_mechanistic_mcmc = list(
+  # The non-mechanistic model
+  non_mechanistic = list(
     rt = NULL
   ),
-  # The 7-day RW Rt model with MCMC fitting
-  rw7_mcmc = list(
+  # The 7-day Random Walk Rt model
+  rw7 = list(
     rt = rt_opts(
       prior = rt_prior_default,
       rw = 7
     ),
     gp = NULL
   ),
-  # The non_residual model with MCMC fitting
-  non_residual_mcmc = list(
+  # The non_residual model
+  non_residual = list(
     rt = rt_opts(
       prior = rt_prior_default,
       gp_on = "R0"
@@ -422,17 +424,6 @@ process_crps <- function(results, variable, truth) {
     return(crps_flat[])
 }
 
-# Add the model descriptions to the results of `process_crps()`.
-add_model_details <- function(crps_by_model_dt, model_descriptions_dt){
-  # Add model descriptions
-  crps_dt <- merge.data.table(
-    crps_by_model_dt,
-    model_descriptions_dt,
-    by = "model"
-  )
-  crps_dt[]
-}
-
 # Shared plot settings
 plot_caption_custom <- "Where a model is not shown, it means it failed to run"
 plot_theme_custom <- theme_minimal() +
@@ -486,14 +477,14 @@ runtimes_dt_detailed <- add_epidemic_phase_levels(runtimes_dt_detailed)
 timing_plot <- ggplot(data = runtimes_dt_detailed) +
   geom_col(aes(x = epidemic_phase,
                  y = timing,
-                 fill = model_basename
+                 fill = model
                  ),
            position = position_dodge2()
   ) +
   labs(x = "Epidemic phase",
        y = "Runtime (secs)",
        fill = "Model",
-       title = "Model runtimes (MCMC)"
+       title = "Model runtimes"
   ) +
   scale_color_brewer(palette = "Dark2") +
   scale_y_continuous(breaks = seq(0, max(runtimes_dt_detailed$timing) + 20, 25)) +
@@ -501,16 +492,22 @@ timing_plot <- ggplot(data = runtimes_dt_detailed) +
 timing_plot
 ```
 
+We can observe that the default model is the slowest in all data scenarios. On the other hand, the non-mechanistic model is the fastest, followed by the 7-day random walk model, and the non-residual model.
+
 ### Evaluating model performance
 
 We will use the [continuous ranked probability score (CRPS)](https://en.wikipedia.org/wiki/Scoring_rule#Continuous_ranked_probability_score). CRPS is a [proper scoring rule](https://en.wikipedia.org/wiki/Scoring_rule#Propriety_and_consistency) that measures the accuracy of probabilistic forecasts. When comparing models, the smaller the CRPS, the better.
 
-We will evaluate the overall performance out-of-sample, i.e., total CRPS in the forecasting window. Additionally, for $R_t$, we'll evaluate the nowcast value, i.e., the estimate of $R_t$ before the forecast horizon, and for infections, we will compare the `r horizon`-day forecast as a measure of real-time performance. If interested in the time-varying performance of the models, see the appendix section at the end of this vignette.
+We will evaluate the overall performance out-of-sample, i.e., total CRPS for $R_t$ and infections in the forecasting window. Additionally, for $R_t$, we'll evaluate the nowcast value, i.e., the estimate of $R_t$ before the forecast horizon, and for infections, we will compare the `r horizon`-day forecast as a measure of real-time performance. If interested in the time-varying performance of the models, see the appendix section at the end of this vignette.
 
 ```{r process-crps, class.source = 'fold-hide'}
 # Process CRPS for Rt
 rt_crps <- process_crps(results, "R", R_true$R)
-rt_crps_full <- add_model_details(rt_crps)
+rt_crps_full <- merge.data.table(
+    rt_crps,
+    model_descriptions,
+    by = "model"
+  )
 
 # Re-categorise fit_type column and convert to factor
 rt_crps_dt <- make_cols_factors(rt_crps_full, except = c("date", "crps"))
@@ -518,7 +515,11 @@ rt_crps_dt_final <- add_epidemic_phase_levels(rt_crps_dt)
 
 # Process CRPS for infections
 infections_crps <- process_crps(results, "infections", infections_true$confirm)
-infections_crps_full <- add_model_details(infections_crps)
+infections_crps_full <- merge.data.table(
+  infections_crps,
+  model_descriptions,
+  by = "model"
+)
 
 infections_crps_dt <- make_cols_factors(infections_crps_full, except = c("date", "crps"))
 infections_crps_dt_final <- add_epidemic_phase_levels(infections_crps_dt)
@@ -543,7 +544,7 @@ plot_total_crps <- function(data, title) {
       aes(
         x = epidemic_phase,
         y = total_crps,
-        color = model_basename
+        color = model
       ),
       position = position_dodge(width = 0.4),
       size = 5,
@@ -571,16 +572,16 @@ In the figure below, we show the total performance in forecasting $R_t$, grouped
 # Calculate
 rt_total_crps <- calculate_total_crps(
     rt_crps_dt_final,
-    by = c("model_basename", "epidemic_phase")
+    by = c("model", "epidemic_phase")
 )
 
 # Process data and plot
-rt_total_crps_plot_mcmc <- plot_total_crps(
+rt_total_crps_plot <- plot_total_crps(
     rt_total_crps,
     title = "Total performance in forecasting Rt"
 )
 
-rt_total_crps_plot_mcmc
+rt_total_crps_plot
 ```
 
 Below, we show the total performance in forecasting infections, grouped by the three epidemic phases.
@@ -588,15 +589,15 @@ Below, we show the total performance in forecasting infections, grouped by the t
 # Calculate
 infections_total_crps <- calculate_total_crps(
     infections_crps_dt_final,
-    by = c("model_basename", "epidemic_phase")
+    by = c("model", "epidemic_phase")
 )
 
 # Process and plot
-infections_total_crps_plot_mcmc <- plot_total_crps(
+infections_total_crps_plot <- plot_total_crps(
     infections_total_crps,
     title = "Total performance in forecasting infections"
 )
-infections_total_crps_plot_mcmc +
+infections_total_crps_plot +
   scale_y_continuous(labels = scales::label_comma())
 ```
 
@@ -609,13 +610,14 @@ rt_now_comparison_plot <- ggplot(data = rt_nowcast) +
     geom_point(
         aes(x = epidemic_phase,
             y = crps,
-            color = model_basename
+            color = model
         ),
       position = position_dodge(width = 0.4),
       size = 5,
-      stroke = 2.2
+      stroke = 2.2,
+      shape = 1
     ) +
-    labs(title = "Rt nowcasting performance (MCMC)",
+    labs(title = "Rt nowcasting performance",
          x = "Epidemic phase",
          y = "CRPS",
          color = "Model"
@@ -636,14 +638,14 @@ infections_real_time_comparison_plot <- ggplot(data = infections_real_time) +
     geom_point(
         aes(x = epidemic_phase,
         y = crps,
-        color = model_basename
+        color = model
         ),
       position = position_dodge(width = 0.4),
       shape = 1,
       size = 5,
       stroke = 2.2
     ) +
-    labs(title = "Real-time forecasting of infections (MCMC)",
+    labs(title = "Real-time forecasting of infections",
          x = "Epidemic phase",
          y = "CRPS",
          color = "Model"
@@ -691,7 +693,7 @@ plot_crps_over_time <- function(data, title) {
         geom_line(
             aes(x = date,
                 y = crps,
-                color = model_basename
+                color = model
             )
         ) +
         labs(
@@ -725,7 +727,7 @@ infections_crps_plot <- plot_crps_over_time(infections_crps_dt_final, "Time-vary
 infections_crps_plot +
     facet_wrap(~epidemic_phase, ncol = 1) +
     theme(legend.position = "right") +
-    labs(y = "log CRPS") +
+    labs(y = "CRPS") +
     plot_theme_custom
 ```
 
