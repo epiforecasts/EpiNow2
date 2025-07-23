@@ -33,7 +33,6 @@ library(data.table)
 library(rstan)
 library(ggplot2)
 library(dplyr)
-library(tidyr)
 library(purrr)
 library(lubridate)
 library(scales)
@@ -43,9 +42,9 @@ library(patchwork)
 set.seed(9876)
 ```
 
-In using `{EpiNow2}`, users will often need to balance between achieving fast model runs and good forecast performance. `{EpiNow2}` provides a range of customisations of the default model to suit these decision points.
+In using `{EpiNow2}`, users will often need to balance between achieving fast model runs and good forecast and nowcast performance. `{EpiNow2}` provides a range of customisations of the default model to suit these decision points.
 
-The aim of this vignette is to show the trade-offs between select model customisations and model speed/run times and nowcasting and real-time forecasting. We will explore four (4) `{EpiNow2}` model options, including the default model. The models, chosen to cover typical use cases, are customisations of the default prior on how $R_t$ is generated over time.
+The aim of this vignette is to show the trade-offs between select model customisations in terms of model speed/run times and nowcasting and real-time forecasting. We will explore four (4) `{EpiNow2}` model options, including the default model. The models, chosen to cover typical use cases, are customisations of the default prior on how $R_t$ is generated over time.
 
 We will evaluate how well the models perform when fitted with the [MCMC sampling algorithm](https://mc-stan.org/docs/reference-manual/mcmc.html) in stan because MCMC is the state-of-the-art algorithm for fitting these kinds of models.
 
@@ -430,7 +429,8 @@ plot_theme_custom <- theme_minimal() +
     theme(plot.title = element_text(size = 18),
           strip.text = element_text(size = 13),
           axis.title = element_text(size = 13),
-          axis.text = element_text(size = 11)
+          axis.text = element_text(size = 11),
+          panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5)
     )
 ```
 </details>
@@ -492,13 +492,15 @@ timing_plot <- ggplot(data = runtimes_dt_detailed) +
 timing_plot
 ```
 
-We can observe that the default model is the slowest in all data scenarios. On the other hand, the non-mechanistic model is the fastest, followed by the 7-day random walk model, and the non-residual model.
+We can see that the default model is the slowest in all data scenarios. On the other hand, the non-mechanistic model is the fastest, followed by the 7-day random walk model, and the non-residual model. Let's see how the model run times compare with forecasting and nowcasting performance.
 
 ### Evaluating model performance
 
 We will use the [continuous ranked probability score (CRPS)](https://en.wikipedia.org/wiki/Scoring_rule#Continuous_ranked_probability_score). CRPS is a [proper scoring rule](https://en.wikipedia.org/wiki/Scoring_rule#Propriety_and_consistency) that measures the accuracy of probabilistic forecasts. When comparing models, the smaller the CRPS, the better.
 
-We will evaluate the overall performance out-of-sample, i.e., total CRPS for $R_t$ and infections in the forecasting window. Additionally, for $R_t$, we'll evaluate the nowcast value, i.e., the estimate of $R_t$ before the forecast horizon, and for infections, we will compare the `r horizon`-day forecast as a measure of real-time performance. If interested in the time-varying performance of the models, see the appendix section at the end of this vignette.
+We will evaluate model runtimes versus overall performance out-of-sample, i.e., total CRPS for $R_t$ and infections in the forecasting window. Additionally, for $R_t$, we'll evaluate the nowcast value, i.e., the estimate of $R_t$ before the forecast horizon, and for infections, we will compare the `r horizon`-day forecast as a measure of real-time performance.
+
+If you are interested in the time-varying performance of the models, see the appendix section at the end of this vignette.
 
 ```{r process-crps, class.source = 'fold-hide'}
 # Process CRPS for Rt
@@ -527,7 +529,7 @@ infections_crps_dt_final <- add_epidemic_phase_levels(infections_crps_dt)
 
 #### Overall model performance
 
-Let's compare the overall/aggregated out-of-sample (forecast horizon) performance of the models in terms of the total CRPS for $R_t$ and infections.
+Let's compare the overall/aggregated out-of-sample (forecast horizon) performance of the models in terms of the total CRPS for $R_t$ and infections compared with model run times.
 
 <details><summary> Summary and plotting functions </summary>
 
@@ -538,27 +540,23 @@ calculate_total_crps <- function(data, by) {
     evaluation_data[, .(total_crps = sum(crps, na.rm = TRUE)), by = by]
 }
 # Plot total CRPS. It returns a ggplot object that can take further layers.
-plot_total_crps <- function(data, title) {
-  plot <- ggplot(data = data) +
+plot_performance_vs_timing <- function(performance_dt, performance_col, title) {
+  plot <- ggplot(data = performance_dt) +
     geom_point(
       aes(
-        x = epidemic_phase,
-        y = total_crps,
+        x = timing,
+        y = .data[[performance_col]],
         color = model
       ),
-      position = position_dodge(width = 0.4),
       size = 5,
       stroke = 2.2,
       shape = 1
     ) +
+    facet_wrap(~ epidemic_phase) +
     guides(
       color = guide_legend(title = "Model")
     ) +
-    labs(
-      x = "Epidemic phase",
-      y = "Total CRPS",
-      title = title
-    ) +
+    labs(title = title) +
     plot_theme_custom +
     scale_color_brewer(palette = "Dark2")
   return(plot)
@@ -567,7 +565,8 @@ plot_total_crps <- function(data, title) {
 
 </details>
 
-In the figure below, we show the total performance in forecasting $R_t$, grouped by the three epidemic phases.
+In the figure below, we show the model runtimes compared to the total performance in forecasting $R_t$, grouped by the three epidemic phases. Ideal models would be in the bottom left corner, i.e., fast and with low CRPS.
+
 ```{r calc-total-crps,echo=FALSE}
 # Calculate
 rt_total_crps <- calculate_total_crps(
@@ -575,16 +574,29 @@ rt_total_crps <- calculate_total_crps(
     by = c("model", "epidemic_phase")
 )
 
-# Process data and plot
-rt_total_crps_plot <- plot_total_crps(
+# Merge with model run times
+rt_total_performance <- merge(
     rt_total_crps,
-    title = "Total performance in forecasting Rt"
+    runtimes_dt_detailed,
+    by = c("model", "epidemic_phase")
 )
 
-rt_total_crps_plot
+
+# Process data and plot
+rt_total_crps_plot <- plot_performance_vs_timing(
+    rt_total_performance,
+    performance_col = "total_crps",
+    title = "Model speed versus out-of-sample total \nperformance in forecasting Rt"
+)
+
+rt_total_crps_plot + labs(
+    x = "Runtime (secs)",
+    y = "Total CRPS"
+)
 ```
 
-Below, we show the total performance in forecasting infections, grouped by the three epidemic phases.
+Below, we show the model run times versus total performance in forecasting infections, grouped by the three epidemic phases. Ideal models would be in the bottom left corner, i.e., fast and with low CRPS.
+
 ```{r crps-plotting-infections-total,echo=FALSE}
 # Calculate
 infections_total_crps <- calculate_total_crps(
@@ -592,85 +604,165 @@ infections_total_crps <- calculate_total_crps(
     by = c("model", "epidemic_phase")
 )
 
-# Process and plot
-infections_total_crps_plot <- plot_total_crps(
+# Merge with model run times
+infections_total_performance <- merge(
     infections_total_crps,
-    title = "Total performance in forecasting infections"
+    runtimes_dt_detailed,
+    by = c("model", "epidemic_phase")
+)
+
+# Process and plot
+infections_total_crps_plot <- plot_performance_vs_timing(
+    infections_total_performance,
+    performance_col = "total_crps",
+    title = "Model speed versus out-of-sample total \nperformance in forecasting infections"
 )
 infections_total_crps_plot +
-  scale_y_continuous(labels = scales::label_comma())
+  scale_y_continuous(labels = scales::label_comma()) +
+  labs(
+    x = "Runtime (secs)",
+    y = "Total CRPS"
+  )
 ```
 
 #### Nowcast $R_t$ estimates
 
-Let's now compare the performance of the models in terms of nowcast estimates of $R_t$, i.e., the estimate of $R_t$ in `horizon = -1` by epidemic phase.
-```{r plot-rt-nowcast-crps,echo=FALSE}
-rt_nowcast <- rt_crps_dt_final[, .SD[.N-(horizon + 1)], by = .(model, epidemic_phase)]
-rt_now_comparison_plot <- ggplot(data = rt_nowcast) +
-    geom_point(
-        aes(x = epidemic_phase,
-            y = crps,
-            color = model
-        ),
-      position = position_dodge(width = 0.4),
-      size = 5,
-      stroke = 2.2,
-      shape = 1
-    ) +
-    labs(title = "Rt nowcasting performance",
-         x = "Epidemic phase",
-         y = "CRPS",
-         color = "Model"
-         ) +
-    plot_theme_custom +
-    scale_color_brewer(palette = "Dark2") +
-    scale_shape_manual(values = c(1, 0, 6, 8))
+Let's now compare the performance of the models in terms of nowcast estimates of $R_t$, i.e., the estimate of $R_t$ in `horizon = -1` by epidemic phase. Ideal models would be in the bottom left corner, i.e., fast and with low CRPS.
 
-rt_now_comparison_plot
+```{r plot-rt-nowcast-crps,echo=FALSE}
+# Calculate the CRPS for the nowcast Rt estimates
+rt_nowcast <- rt_crps_dt_final[, .SD[.N-(horizon + 1)], by = .(model, epidemic_phase)][
+  , snapshot_date := NULL
+]
+
+# Merge with model run times
+rt_nowcast_performance <- merge(
+    rt_nowcast,
+    runtimes_dt_detailed,
+    by = c("model", "epidemic_phase", "description")
+)
+
+# Plot
+rt_now_comparison_plot <- plot_performance_vs_timing(
+    rt_nowcast_performance,
+    performance_col = "crps",
+    title = "Model speed versus nowcast performance in \nestimating Rt"
+)
+
+rt_now_comparison_plot +
+    labs(
+        x = "Runtime (secs)",
+        y = "CRPS"
+    )
 ```
 
 #### Real-time infection forecast
 
-Let's also compare the real-time performance of the models in estimating infections by epidemic phase.
-```{r plot-infections-real-time-crps,echo=FALSE}
-infections_real_time <- infections_crps_dt_final[, .SD[.N], by = .(model, epidemic_phase)]
-infections_real_time_comparison_plot <- ggplot(data = infections_real_time) +
-    geom_point(
-        aes(x = epidemic_phase,
-        y = crps,
-        color = model
-        ),
-      position = position_dodge(width = 0.4),
-      shape = 1,
-      size = 5,
-      stroke = 2.2
-    ) +
-    labs(title = "Real-time forecasting of infections",
-         x = "Epidemic phase",
-         y = "CRPS",
-         color = "Model"
-         ) +
-    plot_theme_custom +
-    scale_color_brewer(palette = "Dark2")
+Let's also see the real-time performance of the models in estimating infections by epidemic phase compared with model run times. Ideal models would be in the bottom left corner, i.e., fast and with low CRPS.
 
-infections_real_time_comparison_plot
+```{r plot-infections-real-time-crps,echo=FALSE}
+infections_real_time <- infections_crps_dt_final[, .SD[.N], by = .(model, epidemic_phase)][
+  , snapshot_date := NULL
+]
+
+# Merge with model run times
+infections_real_time_performance <- merge(
+    infections_real_time,
+    runtimes_dt_detailed,
+    by = c("model", "epidemic_phase", "description")
+)
+
+infections_real_time_comparison_plot <-  plot_performance_vs_timing(
+    infections_real_time_performance,
+    performance_col = "crps",
+    title = "Model speed versus real-time performance in \nforecasting infections"
+)
+
+infections_real_time_comparison_plot +
+    scale_y_continuous(labels = scales::label_comma()) +
+    labs(
+        x = "Runtime (secs)",
+        y = "CRPS"
+    )
 ```
 
-## Considerations for choosing an appropriate model
+## Summary of results
 
-### Model types (Semi-mechanistic vs non-mechanistic)
+Below is a summary of overall/total out-of-sample performance of each model.
 
-Estimation in `{EpiNow2}` using the semi-mechanistic approaches (putting a prior on $R_t$) is often much slower than the non-mechanistic approach. The mechanistic model is slower because it models aspects of the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting its flexibility.
+```{r overall-benchmark-summary, echo=FALSE}
+benchmark_summary <- data.frame(
+  Model = c("default", "non_mechanistic", "non_residual", "rw7"),
+  Summary = c(
+    "Slowest run time with mixed performance for forecasting Rt and infections",
+    "Fastest and best for forecasting Rt, but weakest for real-time infections forecasting",
+    "Slow runtime with mixed performance for forecasting Rt and infections",
+    "Moderate run time with good infections forecasting performance"
+  )
+)
 
-### Fitting algorithms (Exact vs non-mcmc)
+knitr::kable(benchmark_summary, caption = "Summary of overall performance out-of-sample by model")
+```
 
-The default sampling method, set through `stan_opts()`, performs [MCMC sampling](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) using [`{rstan}`](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html). The MCMC sampling method is accurate but is often slow. `{EpiNow2}` also provides the option to run three (3) other algorithms that approximate MCMC: [Automatic Differentiation Variational Inference](https://mc-stan.org/docs/cmdstan-guide/variational_config.html), [Pathfinder method](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html), and [Laplace sampling](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html). These methods are much faster because they are approximate (See, for example, a detailed explanation for [automatic variational inference in Stan](https://arxiv.org/abs/1506.03431)). They are, however, currently experimental and unstable, and more research is needed to understand under what conditions they excel and fail. We, therefore, only recommend users to use the MCMC sampler. In `{EpiNow2}`, you can use variational inference with an `{rstan}` or [`{cmdstanr}`](https://mc-stan.org/cmdstanr/) backend but you must install the latter to access its functionalities. Additionally, `{EpiNow2}` supports using the [Laplace](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) and [Pathfinder](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html) approximate samplers through the `{cmdstanr}` R package.
+The next table shows a summary of model performance in nowcasting Rt.
+
+```{r nowcast-benchmark-summary, echo=FALSE}
+nowcast_benchmark_summary <- data.frame(
+  Model = c("default", "non_mechanistic", "non_residual", "rw7"),
+   Summary = c(
+    "Slowest across all phases with poor accuracy",
+    "Fastest model; better performance relative to default model",
+    "Slow run time but with consistently best CRPS across all phases",
+    "Moderate run time but with good performance in growth and decline phase"
+  )
+)
+knitr::kable(nowcast_benchmark_summary, caption = "Summary of model performance (nowcasting Rt)")
+```
+
+Lastly, we show a summary of model performance in real-time forecasting of infections.
+
+```{r forecast-benchmark-summary, echo=FALSE}
+forecast_benchmark_summary <- data.frame(
+  Model = c("default", "non_mechanistic", "non_residual", "rw7"),
+   Summary = c(
+    "Slowest across all phases with mixed performance",
+    "Fastest run time but with worst performance overall",
+    "Slower run time with good performance across all phases",
+    "moderate run time with mixed performance across all phases"
+  )
+)
+knitr::kable(forecast_benchmark_summary, caption = "Summary of model performance (real-time infections forecasting)")
+```
+
+As can be seen in the summaries above, each model has its strengths and weaknessess and a balance needs to be struck.
+
+We will now discuss the considerations and recommendations for choosing an appropriate model based on the results of these benchmarks and experience with using the models in practice.
+
+## Considerations and recommendations for choosing an appropriate model
+
+### Changing default stan controls
+
+Users can consider changing the default stan options set in `stan_opts()`. Exercise caution here and observe the number of [divergences](https://mc-stan.org/docs/reference-manual/mcmc.html#divergent-transitions), [effective sample size (ESS)](https://mc-stan.org/docs/reference-manual/analysis.html#estimation-of-effective-sample-size), and [Rhat](https://mc-stan.org/posterior/reference/rhat.html) to ensure that the model is converging well. The following are some options for changing stan controls:
+
+- Improve between-chain parallelisation by setting the number of cores using `stan_opts(cores = parallel::detectCores())`, which by default is set to 1. You can also set it in the `options(mc.cores = parallel::detectCores())` function to set it globally.
+- Increase the step size by decreasing adapt_delta, e.g. from 0.99 to 0.8 (set `stan_opts(control = list(adapt_delta = 0.8))`).
+- Reduce max_treedepth: e.g. from 12 to 10 or 8 (set `stan_opts(control = list(max_treedepth = 10))`).
+
+### Non-mechanistic versus mechanistic models
+
+Estimation in `{EpiNow2}` using the semi-mechanistic approaches (putting a prior on $R_t$) is often much slower than the non-mechanistic approach (seeting `rt = NULL``). The mechanistic model is slower because it models aspects of the processes and mechanisms that drive $R_t$ estimates using the renewal equation. The non-mechanistic model, on the other hand, runs much faster but does not use the renewal equation to generate infections. Because of this none of the options defining the behaviour of the reproduction number are available in this case, limiting its flexibility.
+
+### Faster fitting non-MCMC algorithms but experimental and unstable
+
+The default sampling method, set through `stan_opts()`, performs [MCMC sampling](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) using [`{rstan}`](https://cran.r-project.org/web/packages/rstan/vignettes/rstan.html). The MCMC sampling method is accurate but is often slow. `{EpiNow2}` also provides the option to run three (3) other algorithms that approximate MCMC: [Automatic Differentiation Variational Inference](https://mc-stan.org/docs/cmdstan-guide/variational_config.html), [Pathfinder method](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html), and [Laplace sampling](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) (set using `stan_opts(method = "laplace", backend = "cmdstanr)`). These methods are much faster because they are approximate (See, for example, a detailed explanation for [automatic variational inference in Stan](https://arxiv.org/abs/1506.03431)). They are, however, currently experimental and unstable, and more research is needed to understand under what conditions they excel and fail. We, therefore, only recommend users to use the MCMC sampler.
+
+In `{EpiNow2}`, you can use variational inference with the `{rstan}` or [`{cmdstanr}`](https://mc-stan.org/cmdstanr/) backend but you must [install `{cmdstanr}`](https://mc-stan.org/cmdstanr/index.html#installation) to access its functionalities. You can set `stan_opts(method = "vb")`, which will use the `{rstan}` backend or `stan_opts(method = "vb", backend = "cmdstanr")`. Additionally, `{EpiNow2}` supports using the [Laplace algorithm](https://mc-stan.org/docs/cmdstan-guide/laplace_sample_config.html) (which you can set using `stan_opts(method = "laplace", backend = "cmdstanr")`), and [Pathfinder algorithm](https://mc-stan.org/docs/cmdstan-guide/pathfinder_config.html) (which you can set using `stan_opts(method = "pathfinder", backend = "cmdstanr")`) through the `{cmdstanr}` R package.
 
 The non-mcmc methods can be used in various ways. First, you can initialise the MCMC sampling algorithm with the fit object returned by methods such as [pathfinder](https://mc-stan.org/docs/reference-manual/pathfinder.html#using-pathfinder-for-initializing-mcmc). More details can be found in the original [pathfinder paper](https://arxiv.org/abs/2108.03782). This approach speeds up the initialisation phase of the MCMC algorithm. Second, the non-mcmc methods are also great for prototyping. For example, if you are testing out a pipeline setup, it might be more practical to switch to a method like variational bayes and only use MCMC when the pipeline is up and running.
 
-### Smoothness/granularity of estimates
+### Faster competitive models at cost of smoothness/granularity of estimates
 
-The random walk method reduces smoothness/granularity of the estimates, compared to the other methods.
+The random walk model is much faster than the default model and is competitive in all tasks and data scenarios. However, choosing it comes at a cost of reduced smoothness/granularity of the estimates, compared to the other methods.
 
 ## Caveats of this exercise
 
@@ -678,7 +770,7 @@ We generated the data using an arbitrary `R` trajectory. The models were also on
 
 The run times measured here use a crude method that compares the start and end times of each simulation. It only measures the time taken for one model run and may not be accurate. For more accurate run time measurements, we recommend using a more sophisticated approach like those provided by packages like [`{bench}`](https://cran.r-project.org/web/packages/bench/index.html) and [`{microbenchmark}`](https://cran.r-project.org/web/packages/microbenchmark/index.html).
 
-Lastly, we used `r getOption("mc.cores", 1L)` cores for between-chain parallelisation, and so using more or fewer cores might change the run time results. To speed up the model runs, we recommend checking the number of cores available on your machine using `parallel::detectCores()` and passing a high enough number of cores to `mc.cores` through the `options()` function (See [data] for an example of how to do this).
+Lastly, we used `r getOption("mc.cores", 1L)` cores for between-chain parallelisation, and so using more or fewer cores might change the run time results.
 
 ## Results appendix {#results-appendix}
 
