@@ -5,6 +5,10 @@
 - The package now has a hex logo.
 - Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now have to do `param_id_[parameter_name]`, for example, `frac_obs_id` is now `param_id_frac_obs`.
 
+## Model changes
+
+- MCMC runs are now initialised with parameter values drawn from a distribution that approximates their prior distributions.
+
 ## Bug fixes
 
 - A bug was fixed where `forecast_infections` would fail with `samples = 1`.
