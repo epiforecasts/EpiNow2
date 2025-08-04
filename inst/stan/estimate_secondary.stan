@@ -8,7 +8,7 @@ functions {
 }
 
 data {
-  int t;                             // total time (length of input data)
+  int t;                             // total modelled time
   int lt;                            // number of likelihood timepoints
   array[t] int<lower = 0> obs;             // observed secondary data
   array[lt] int obs_time;             // observed secondary data

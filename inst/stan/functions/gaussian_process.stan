@@ -139,8 +139,8 @@ matrix PHI_periodic(int N, int M, real w0, vector x) {
 /**
   * Setup Gaussian process noise dimensions
   *
-  * @param ot_h Observation time + horizon (observed time + forecast horizon)
-  * @param t Total time points (including seeding time and horizon)
+  * @param ot_h observed time + forecast horizon
+  * @param t total modelled time (including seeding time and horizon)
   * @param horizon Forecast horizon
   * @param estimate_r Indicator if estimating r
   * @param stationary Indicator if stationary
