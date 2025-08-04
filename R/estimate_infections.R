@@ -231,6 +231,14 @@ estimate_infections <- function(data,
   # Add initial zeroes
   reported_cases <- pad_reported_cases(reported_cases, seeding_time)
 
+  params <- list(
+    make_param("alpha", gp$alpha, lower_bound = 0),
+    make_param("rho", gp$ls, lower_bound = 0),
+    make_param("R0", rt$prior, lower_bound = 0),
+    make_param("frac_obs", obs$scale, lower_bound = 0),
+    make_param("dispersion", obs$dispersion, lower_bound = 0)
+  )
+
   # Define stan model parameters
   stan_data <- create_stan_data(
     reported_cases,
@@ -239,7 +247,8 @@ estimate_infections <- function(data,
     gp = gp,
     obs = obs,
     backcalc = backcalc,
-    forecast = forecast
+    forecast = forecast,
+    params = params
   )
 
   stan_data <- c(stan_data, create_stan_delays(
@@ -253,7 +262,7 @@ estimate_infections <- function(data,
   stan_args <- create_stan_args(
     stan = stan,
     data = stan_data,
-    init = create_initial_conditions(stan_data),
+    init = create_initial_conditions(stan_data, params),
     verbose = verbose
   )
 

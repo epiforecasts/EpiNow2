@@ -117,10 +117,12 @@ simulate_secondary <- function(primary,
     obs$dispersion <- NULL
   }
 
-  stan_data <- c(stan_data, create_stan_params(
-    frac_obs = obs$scale,
-    dispersion = obs$dispersion
-  ))
+  params <- list(
+    make_param("frac_obs", obs$scale, lower_bound = 0),
+    make_param("dispersion", obs$dispersion, lower_bound = 0)
+  )
+
+  stan_data <- c(stan_data, create_stan_params(params))
 
   ## set empty params matrix - variable parameters not supported here
   stan_data$params <- array(dim = c(1, 0))

@@ -555,6 +555,7 @@ gp_opts <- function(basis_prop = 0.2,
   return(gp)
 }
 
+# nolint start
 #' Observation Model Options
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -566,7 +567,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'   parameter of the reporting process, used only if `familiy` is "negbin".
 #'   Internally parameterised such that this parameter is one over the square
 #'   root of the `phi` parameter for overdispersion of the
-#'   [negative binomial distribution](https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log). # nolint
+#'   [negative binomial distribution](https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log).
 #'   Defaults to a half-normal distribution with mean of 0 and
 #'   standard deviation of 0.25: `Normal(mean = 0, sd = 0.25)`. A lower limit of
 #'   zero will be enforced automatically.
@@ -602,6 +603,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'
 #' # Scale reported data
 #' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
+# nolint end
 obs_opts <- function(family = c("negbin", "poisson"),
                      dispersion = Normal(mean = 0, sd = 0.25),
                      weight = 1,
@@ -775,10 +777,12 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
   control_def <- modifyList(control_def, control)
   if (any(c("iter", "iter_sampling") %in% names(dot_args))) {
     cli_warn(
-      "!" = "Number of samples must be specified using the {.var samples}
+      c(
+        "!" = "Number of samples must be specified using the {.var samples}
       and {.var warmup} arguments rather than {.var iter} or
       {.var iter_sampliing}.",
-      "i" = "Supplied {.var iter} or {.var iter_sampliing} will be ignored."
+        "i" = "Supplied {.var iter} or {.var iter_sampliing} will be ignored."
+      )
     )
   }
   dot_args$iter <- NULL
