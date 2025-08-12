@@ -27,7 +27,7 @@ jobs:
       NOT_CRAN: false
       
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         
       - uses: r-lib/actions/setup-pandoc@v2
 
