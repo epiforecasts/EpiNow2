@@ -7,7 +7,7 @@ test_that("create_rt_data returns expected default values", {
   expect_equal(result$breakpoints, numeric(0))
   expect_equal(result$future_fixed, 1)
   expect_equal(result$fixed_from, 0)
-  expect_equal(result$pop, 0)
+  expect_equal(result$use_pop, 0)
   expect_equal(result$stationary, 0)
   expect_equal(result$future_time, 0)
 })
@@ -27,13 +27,13 @@ test_that("create_rt_data handles custom rt_opts correctly", {
     use_breakpoints = FALSE,
     future = "project",
     gp_on = "R0",
-    pop = 1000000
+    pop = Normal(mean = 1000000, sd = 100)
   )
 
   result <- create_rt_data(rt = custom_rt, horizon = 7)
 
   expect_equal(result$estimate_r, 0)
-  expect_equal(result$pop, 1000000)
+  expect_equal(result$use_pop, 1)
   expect_equal(result$stationary, 1)
   expect_equal(result$future_time, 7)
 })
