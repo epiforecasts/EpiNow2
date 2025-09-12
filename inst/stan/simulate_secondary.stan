@@ -10,7 +10,7 @@ functions {
 data {
   // dimensions
   int n; // number of samples
-  int t; // time
+  int t; // total time (including horizon)
   int horizon; // forecast horizon
   int all_dates; // should all dates have simulations returned
   // secondary model specific data
