@@ -182,7 +182,8 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 }
 
 
-#' Check that supplied PMFs are not longer than the data
+#' Check and warn if individual non-parametric PMFs are longer than the input
+#' data
 #'
 #' @param ... Delay distributions
 #' @inheritParams estimate_infections
