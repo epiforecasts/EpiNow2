@@ -215,6 +215,7 @@ check_single_np_pmf_lengths <- function(..., data) {
   }, logical(1))
 
   if (any(pmf_longer_than_data)) {
+    # nolint start: object_usage_linter
     # Get details for each long PMF
     long_pmf_lengths <- vapply(
       flat_delays[np_delays][pmf_longer_than_data], function(x) {
