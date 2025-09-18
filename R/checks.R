@@ -223,21 +223,21 @@ check_single_np_pmf_lengths <- function(..., data) {
         length(x$pmf)
       }, numeric(1)
     )
-  }
-
-  cli::cli_warn(
-    c(
-      "!" = "{cli::col_red('You have supplied PMFs that are longer than
-      the data.')} ",
-      "{.var {names(long_pmf_lengths)}} {?has/have} length{?s}
-      {.val {long_pmf_lengths}} but data has
-      {.val {nrow(data)}} rows.",
-      "i" = "{cli::col_red('These will be trimmed to match the length of the
-      data. To remove this message, make sure the PMFs have the same length
-      as the data.')}"
+    
+    cli::cli_warn(
+      c(
+        "!" = "{cli::col_red('You have supplied PMFs that are longer than
+        the data.')} ",
+        "{.var {names(long_pmf_lengths)}} {?has/have} length{?s}
+        {.val {long_pmf_lengths}} but data has
+        {.val {nrow(data)}} rows.",
+        "i" = "{cli::col_red('These will be trimmed to match the length of the
+        data. To remove this message, make sure the PMFs have the same length
+        as the data.')}"
+      )
     )
-  )
-  # nolint end
+    # nolint end
+  }
 }
 
 #' Check and warn if combined non-parametric delay distributions are longer
