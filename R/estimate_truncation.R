@@ -175,6 +175,11 @@ estimate_truncation <- function(data,
   obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
   obs_data <- as.matrix(obs_data[obs_start:.N])
 
+  # Check that no PMF is longer than the data
+  check_single_np_pmf_lengths(
+    truncation = truncation,
+    data = obs_data
+  )
   # convert to stan list
   stan_data <- list(
     obs = obs_data,

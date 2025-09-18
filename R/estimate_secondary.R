@@ -187,7 +187,7 @@ estimate_secondary <- function(data,
   assert_logical(verbose)
 
   # Check that no PMF is longer than the data
-  check_pmf_length_against_data(
+  check_single_np_pmf_lengths(
     truncation = truncation,
     delays = delays,
     data = data

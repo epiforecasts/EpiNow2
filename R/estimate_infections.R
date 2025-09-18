@@ -200,7 +200,7 @@ estimate_infections <- function(data,
   dirty_reported_cases <- data.table::copy(data)
 
   # Check that no PMF is longer than the data
-  check_pmf_length_against_data(
+  check_single_np_pmf_lengths(
     generation_time = generation_time,
     truncation = truncation,
     delays = delays,
