@@ -267,6 +267,10 @@ estimate_secondary <- function(data,
   stan_ <- create_stan_args(
     stan = stan, data = stan_data, init = inits, model = "estimate_secondary"
   )
+
+  # Warn if combined non-parametric delays is longer than data
+  check_combined_np_pmf_lengths(stan_)
+
   fit <- fit_model(stan_, id = "estimate_secondary")
 
   out <- list()

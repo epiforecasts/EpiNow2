@@ -200,11 +200,13 @@ estimate_truncation <- function(data,
       sigma = abs(rnorm(1, 0, 1))
     ))
   }
-
-  # fit
   stan_args <- create_stan_args(
     stan = stan, data = stan_data, init = init_fn, model = "estimate_truncation"
   )
+
+  # Warn if combined non-parametric delays is longer than data
+  check_combined_np_pmf_lengths(stan_args)
+  # fit
   fit <- fit_model(stan_args, id = "estimate_truncation")
 
   out <- list()

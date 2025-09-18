@@ -230,4 +230,30 @@ check_pmf_length_against_data <- function(..., data) {
         as the data')}"
       )
     )
+#' Check and warn if combined non-parametric delay distributions are longer
+#' than the input data
+#'
+#' @param stan_args List of stan argument data
+#' @importFrom cli cli_warn col_red
+#' @return Called for its side effects
+#' @keywords internal
+check_combined_np_pmf_lengths <- function(stan_args) {
+  delay_np_pmf_length <- stan_args$data$delay_np_pmf_length
+  data_length <- stan_args$data$t
+  # Combined non-parametric delay must not be longer than the data
+  if (delay_np_pmf_length > data_length) {
+    # nolint start: duplicate_argument_linter
+    cli::cli_warn(
+      c(
+        "!" = "{cli::col_red('The combined non-parametric delays PMFs is
+        longer than the data.')} ",
+        "i" = "This happens when some individual delays are longer than the
+        input data. You should have received a warning about this already.",
+        "i" = "{cli::col_red('The combined delays will be trimmed to match
+        the number of rows in the data. To remove this message, make sure the
+        combined PMFs have the same length as the data')}"
+      )
+    )
+    # nolint end
+  }
 }

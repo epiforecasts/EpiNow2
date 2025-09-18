@@ -277,6 +277,9 @@ estimate_infections <- function(data,
     verbose = verbose
   )
 
+  # Warn if combined non-parametric delays is longer than data
+  check_combined_np_pmf_lengths(stan_args)
+
   # Fit model
   fit <- fit_model(stan_args, id = id)
 
