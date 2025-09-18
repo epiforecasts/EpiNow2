@@ -159,7 +159,7 @@ Encoding: UTF-8
 Language: en-GB
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2.9000
+RoxygenNote: 7.3.3
 NeedsCompilation: yes
 SystemRequirements: GNU make
        C++17
