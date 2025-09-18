@@ -251,7 +251,7 @@ check_combined_np_pmf_lengths <- function(stan_args) {
   delay_np_pmf_length <- stan_args$data$delay_np_pmf_length
   data_length <- stan_args$data$t
   # Combined non-parametric delay must not be longer than the data
-  if (delay_np_pmf_length > data_length) {
+  if (!is.null(delay_np_pmf_length) && delay_np_pmf_length > data_length) {
     # nolint start: duplicate_argument_linter
     cli::cli_warn(
       c(
