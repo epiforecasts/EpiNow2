@@ -190,9 +190,13 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 #'
 #' @returns Called for its side effects
 #' @keywords internal
-check_pmf_length_against_data <- function(..., data) {
+check_single_np_pmf_lengths <- function(..., data) {
   delays <- list(...)
-  flat_delays <- do.call(c, delays)
+  flat_delays <- if (length(delays) > 1) {
+    do.call(c, delays)
+  } else {
+    delays
+  }
   # Track which component each delay came from
   delay_names <- rep(names(delays), vapply(delays, ndist, numeric(1)))
   names(flat_delays) <- delay_names
