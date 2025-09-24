@@ -154,3 +154,210 @@ test_that("check_sparse_pmf_tail throws a warning as expected", {
     "PMF tail has"
   )
 })
+
+# Test data for PMF length checks --------------------------------------------
+
+# Create nonparametric distributions of various lengths
+# Note: For generation time, first element must be 0
+short_pmf <- NonParametric(c(0, 0.3, 0.4, 0.2, 0.1))  # length 5
+medium_pmf <- NonParametric(c(0, 0.2, 0.3, 0.2, 0.1, 0.05, 0.05, 0.1))  # length 8
+long_pmf <- NonParametric(c(0, rep(0.1/14, 14)))  # length 15, first element 0
+very_long_pmf <- NonParametric(c(0, rep(0.05/24, 24)))  # length 25, first element 0
+
+# Create parametric distributions for comparison
+gamma_dist <- Gamma(shape = 2, rate = 1, max = 10)
+lognormal_dist <- LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
+
+# Test check_single_np_pmf_lengths -----------------------------------------
+
+test_that("check_single_np_pmf_lengths returns invisibly when no nonparametric distributions", {
+  # Test with only parametric distributions
+  expect_invisible(
+    check_single_np_pmf_lengths(
+      generation_time = gamma_dist,
+      delays = delay_opts(dist = lognormal_dist),
+      data = est_inf
+    )
+  )
+})
+
+test_that("check_single_np_pmf_lengths returns invisibly when PMFs are shorter than data", {
+  # Test with short PMF and large data
+  expect_invisible(
+    check_single_np_pmf_lengths(
+      generation_time = short_pmf,
+      delays = delay_opts(dist = short_pmf),
+      data = est_inf
+    )
+  )
+})
+
+test_that("check_single_np_pmf_lengths returns invisibly when PMFs equal data length", {
+  # Test with PMF length equal to data length
+  expect_invisible(
+    check_single_np_pmf_lengths(
+      generation_time = short_pmf,
+      data = est_inf[1:5, ]  # 5 rows to match PMF length
+    )
+  )
+})
+
+test_that("check_single_np_pmf_lengths warns when PMF is longer than data", {
+  # Test with long PMF and short data
+  expect_warning(
+    check_single_np_pmf_lengths(
+      generation_time = long_pmf,
+      data = est_inf
+    ),
+    "You have supplied PMFs that are longer than the data"
+  )
+})
+
+test_that("check_single_np_pmf_lengths warns with correct PMF length information", {
+  # Test that warning includes correct PMF length
+  expect_warning(
+    check_single_np_pmf_lengths(
+      generation_time = long_pmf,
+      data = est_inf
+    ),
+    "You have supplied PMFs that are longer than the data"
+  )
+})
+
+test_that("check_single_np_pmf_lengths handles multiple long PMFs", {
+  # Test with multiple long PMFs
+  expect_warning(
+    check_single_np_pmf_lengths(
+      generation_time = long_pmf,
+      delays = delay_opts(dist = very_long_pmf),
+      data = est_inf
+    ),
+    "You have supplied PMFs that are longer than the data"
+  )
+})
+
+test_that("check_single_np_pmf_lengths handles mixed parametric and nonparametric distributions", {
+  # Test with mix of parametric and nonparametric
+  expect_warning(
+    check_single_np_pmf_lengths(
+      generation_time = gamma_dist,  # parametric
+      delays = delay_opts(dist = long_pmf),  # nonparametric
+      data = est_inf
+    ),
+    "You have supplied PMFs that are longer than the data"
+  )
+})
+
+test_that("check_single_np_pmf_lengths works with single distribution", {
+  # Test with single distribution
+  expect_warning(
+    check_single_np_pmf_lengths(
+      generation_time = long_pmf,
+      data = est_inf
+    ),
+    "You have supplied PMFs that are longer than the data"
+  )
+})
+
+# Test check_combined_np_pmf_lengths ---------------------------------------
+
+test_that("check_combined_np_pmf_lengths returns invisibly when delay_np_pmf_length <= data_length", {
+  # Test with equal lengths
+  stan_args_equal <- list(
+    data = list(
+      delay_np_pmf_length = 10,
+      t = 10
+    )
+  )
+  expect_invisible(check_combined_np_pmf_lengths(stan_args_equal))
+  
+  # Test with shorter PMF length
+  stan_args_shorter <- list(
+    data = list(
+      delay_np_pmf_length = 5,
+      t = 10
+    )
+  )
+  expect_invisible(check_combined_np_pmf_lengths(stan_args_shorter))
+})
+
+test_that("check_combined_np_pmf_lengths warns when delay_np_pmf_length > data_length", {
+  # Test with longer PMF length
+  stan_args_longer <- list(
+    data = list(
+      delay_np_pmf_length = 15,
+      t = 10
+    )
+  )
+  expect_warning(
+    check_combined_np_pmf_lengths(stan_args_longer),
+    "The combined non-parametric delays PMFs is longer than the data"
+  )
+})
+
+test_that("check_combined_np_pmf_lengths warns with correct length information", {
+  # Test that warning includes correct length information
+  stan_args_longer <- list(
+    data = list(
+      delay_np_pmf_length = 20,
+      t = 10
+    )
+  )
+  expect_warning(
+    check_combined_np_pmf_lengths(stan_args_longer),
+    "The combined non-parametric delays PMFs is longer than the data"
+  )
+})
+
+# Edge cases and error handling --------------------------------------------
+
+test_that("check_single_np_pmf_lengths handles empty data gracefully", {
+  empty_data <- data.frame(date = as.Date(character()), confirm = numeric())
+  
+  # Should warn with empty data and longer PMF
+  expect_warning(
+    check_single_np_pmf_lengths(
+      generation_time = short_pmf,
+      data = empty_data
+    ),
+    "You have supplied PMFs that are longer than the data"
+  )
+})
+
+test_that("check_single_np_pmf_lengths handles single row data", {
+  single_row_data <- data.frame(
+    date = as.Date("2020-01-01"),
+    confirm = 10
+  )
+  
+  # Should warn with single row data and longer PMF
+  expect_warning(
+    check_single_np_pmf_lengths(
+      generation_time = medium_pmf,
+      data = single_row_data
+    ),
+    "You have supplied PMFs that are longer than the data"
+  )
+})
+
+test_that("check_combined_np_pmf_lengths handles missing delay_np_pmf_length", {
+  # Test with missing delay_np_pmf_length (should not error)
+  stan_args_missing <- list(
+    data = list(t = 10)
+  )
+  
+  # Should not error with missing delay_np_pmf_length
+  expect_no_error(check_combined_np_pmf_lengths(stan_args_missing))
+})
+
+test_that("check_combined_np_pmf_lengths handles zero delay_np_pmf_length", {
+  # Test with zero delay_np_pmf_length
+  stan_args_zero <- list(
+    data = list(
+      delay_np_pmf_length = 0,
+      t = 10
+    )
+  )
+  
+  expect_invisible(check_combined_np_pmf_lengths(stan_args_zero))
+})
