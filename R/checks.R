@@ -234,7 +234,9 @@ check_single_np_pmf_lengths <- function(..., data) {
         "i" = "{cli::col_red('These will be trimmed to match the length of the
         data. To remove this message, make sure the PMFs have the same length
         as the data.')}"
-      )
+      ),
+      .frequency = "once",
+      .frequency_id = "pmf_individual_longer_than_data"
     )
     # nolint end
   }
@@ -262,7 +264,9 @@ check_combined_np_pmf_lengths <- function(stan_args) {
         "i" = "{cli::col_red('The combined delays will be trimmed to match
         the number of rows in the data. To remove this message, make sure the
         combined PMFs have the same length as the data')}"
-      )
+      ),
+      .frequency = "once",
+      .frequency_id = "pmf_combined_longer_than_data"
     )
     # nolint end
   }
