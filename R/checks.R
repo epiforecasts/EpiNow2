@@ -212,7 +212,7 @@ check_single_np_pmf_lengths <- function(..., data) {
 
   # Check lengths and collect info about exceeding PMFs
   pmf_longer_than_data <- vapply(flat_delays[np_delays], function(x) {
-    length(x$pmf) > nrow(data)
+    length(get_pmf(x)) > nrow(data)
   }, logical(1))
 
   if (any(pmf_longer_than_data)) {
@@ -220,7 +220,7 @@ check_single_np_pmf_lengths <- function(..., data) {
     # Get details for each long PMF
     long_pmf_lengths <- vapply(
       flat_delays[np_delays][pmf_longer_than_data], function(x) {
-        length(x$pmf)
+        length(get_pmf(x))
       }, numeric(1)
     )
     
