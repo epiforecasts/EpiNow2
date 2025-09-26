@@ -196,9 +196,6 @@ estimate_infections <- function(data,
 
   set_dt_single_thread()
 
-  # store dirty reported case data
-  dirty_reported_cases <- data.table::copy(data)
-
   # Check that no PMF is longer than the data
   check_single_np_pmf_lengths(
     generation_time = generation_time,
