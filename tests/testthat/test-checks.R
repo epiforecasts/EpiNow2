@@ -171,6 +171,7 @@ lognormal_dist <- LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
 # Test check_single_np_pmf_lengths -----------------------------------------
 
 test_that("check_single_np_pmf_lengths returns invisibly when no nonparametric distributions", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with only parametric distributions
   expect_invisible(
     check_single_np_pmf_lengths(
@@ -182,6 +183,7 @@ test_that("check_single_np_pmf_lengths returns invisibly when no nonparametric d
 })
 
 test_that("check_single_np_pmf_lengths returns invisibly when PMFs are shorter than data", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with short PMF and large data
   expect_invisible(
     check_single_np_pmf_lengths(
@@ -193,6 +195,7 @@ test_that("check_single_np_pmf_lengths returns invisibly when PMFs are shorter t
 })
 
 test_that("check_single_np_pmf_lengths returns invisibly when PMFs equal data length", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with PMF length equal to data length
   expect_invisible(
     check_single_np_pmf_lengths(
@@ -203,6 +206,7 @@ test_that("check_single_np_pmf_lengths returns invisibly when PMFs equal data le
 })
 
 test_that("check_single_np_pmf_lengths warns when PMF is longer than data", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with long PMF and short data
   expect_warning(
     check_single_np_pmf_lengths(
@@ -214,6 +218,7 @@ test_that("check_single_np_pmf_lengths warns when PMF is longer than data", {
 })
 
 test_that("check_single_np_pmf_lengths warns with correct PMF length information", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test that warning includes correct PMF length
   expect_warning(
     check_single_np_pmf_lengths(
@@ -225,6 +230,7 @@ test_that("check_single_np_pmf_lengths warns with correct PMF length information
 })
 
 test_that("check_single_np_pmf_lengths handles multiple long PMFs", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with multiple long PMFs
   expect_warning(
     check_single_np_pmf_lengths(
@@ -237,6 +243,7 @@ test_that("check_single_np_pmf_lengths handles multiple long PMFs", {
 })
 
 test_that("check_single_np_pmf_lengths handles mixed parametric and nonparametric distributions", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with mix of parametric and nonparametric
   expect_warning(
     check_single_np_pmf_lengths(
@@ -249,6 +256,7 @@ test_that("check_single_np_pmf_lengths handles mixed parametric and nonparametri
 })
 
 test_that("check_single_np_pmf_lengths works with single distribution", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with single distribution
   expect_warning(
     check_single_np_pmf_lengths(
@@ -262,6 +270,7 @@ test_that("check_single_np_pmf_lengths works with single distribution", {
 # Test check_combined_np_pmf_lengths ---------------------------------------
 
 test_that("check_combined_np_pmf_lengths returns invisibly when delay_np_pmf_length <= data_length", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with equal lengths
   stan_args_equal <- list(
     data = list(
@@ -282,6 +291,7 @@ test_that("check_combined_np_pmf_lengths returns invisibly when delay_np_pmf_len
 })
 
 test_that("check_combined_np_pmf_lengths warns when delay_np_pmf_length > data_length", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with longer PMF length
   stan_args_longer <- list(
     data = list(
@@ -296,6 +306,7 @@ test_that("check_combined_np_pmf_lengths warns when delay_np_pmf_length > data_l
 })
 
 test_that("check_combined_np_pmf_lengths warns with correct length information", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test that warning includes correct length information
   stan_args_longer <- list(
     data = list(
@@ -312,6 +323,7 @@ test_that("check_combined_np_pmf_lengths warns with correct length information",
 # Edge cases and error handling --------------------------------------------
 
 test_that("check_single_np_pmf_lengths handles empty data gracefully", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   empty_data <- data.frame(date = as.Date(character()), confirm = numeric())
   
   # Should warn with empty data and longer PMF
@@ -325,6 +337,7 @@ test_that("check_single_np_pmf_lengths handles empty data gracefully", {
 })
 
 test_that("check_single_np_pmf_lengths handles single row data", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   single_row_data <- data.frame(
     date = as.Date("2020-01-01"),
     confirm = 10
@@ -341,6 +354,7 @@ test_that("check_single_np_pmf_lengths handles single row data", {
 })
 
 test_that("check_combined_np_pmf_lengths handles missing delay_np_pmf_length", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with missing delay_np_pmf_length (should not error)
   stan_args_missing <- list(
     data = list(t = 10)
@@ -351,6 +365,7 @@ test_that("check_combined_np_pmf_lengths handles missing delay_np_pmf_length", {
 })
 
 test_that("check_combined_np_pmf_lengths handles zero delay_np_pmf_length", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with zero delay_np_pmf_length
   stan_args_zero <- list(
     data = list(
