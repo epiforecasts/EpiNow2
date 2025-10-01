@@ -283,13 +283,9 @@ generated quantities {
       }
   
       // estimate growth from infections
-      if (growth_method == 0) {
-        r = calculate_growth_infections(infections, seeding_time + 1);
-      } else if (growth_method == 1) {
-        r = calculate_growth_infectiousness(
-          infections, seeding_time, gt_rev_pmf_for_growth
-          );
-      }
+      r = calculate_growth(
+        infections, seeding_time, gt_rev_pmf_for_growth, growth_method
+        );
     }
     
     // simulate reported cases

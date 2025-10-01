@@ -56,6 +56,34 @@ vector calculate_Rt(vector infections, int seeding_time,
  *
  * @param infections Vector of infection counts
  * @param seeding_time Number of time steps used for seeding
+ * @param gt_rev_pmf Vector of reversed generation time PMF
+ * @param growth_method Either 0 (log derivative of new infections) or 1 (log 
+ * derivative of infectiousness, see Parag et al. 2022)
+ *
+ * @return A vector of growth rates
+ *
+ * @ingroup rt_estimation
+ */
+vector calculate_growth(vector infections, int seeding_time, 
+                        vector gt_rev_pmf, int growth_method) {
+  if (growth_method == 0) {
+    return(calculate_growth_infections(infections, seeding_time + 1));
+  } else if (growth_method == 1) {
+    return(calculate_growth_infness(infections, seeding_time, gt_rev_pmf));
+  } else {
+    reject("growth_method must be 0 (infections) or 1 (infectiousness).");
+  }
+}
+
+/**
+ * Calculate growth rate
+ *
+ * This function calculates the growth rate from a time series of infections
+ * by taking the log difference between consecutive time points.
+ *
+ * @param infections Vector of infection counts
+ * @param seeding_time Number of time steps used for seeding
+ *
  * @return A vector of growth rates
  *
  * @ingroup rt_estimation
@@ -85,7 +113,7 @@ vector calculate_growth_infections(vector infections, int seeding_time) {
  *
  * @ingroup rt_estimation
  */
-vector calculate_growth_infectiousness(vector infections, int seeding_time, 
+vector calculate_growth_infness(vector infections, int seeding_time, 
                                        vector gt_rev_pmf) {
   int t = num_elements(infections);
   int ot = t - seeding_time;
