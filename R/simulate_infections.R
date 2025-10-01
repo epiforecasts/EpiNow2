@@ -110,7 +110,7 @@ simulate_infections <- function(R, initial_infections,
     pop = pop,
     growth_method = list(
       "infections" = 0, "infectiousness" = 1
-    )[[rt$growth_method]]
+    )[[growth_method]]
   )
 
   stan_data <- c(stan_data, create_stan_delays(
