@@ -237,8 +237,8 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' reproduction number. Custom settings can be supplied which override the
 #' defaults.
 #'
-#' @param prior A `<dist_spec>` giving the prior of the initial reproduciton
-#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distributin
+#' @param prior A `<dist_spec>` giving the prior of the initial reproduction
+#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distribution
 #' with mean of 1 and standard deviation of 1: `LogNormal(mean = 1, sd = 1)`.
 #' A lower limit of 0 will be enforced automatically.
 #'
@@ -261,13 +261,27 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' proportion of the population that is susceptible. When set to 0 no
 #' population adjustment is done.
 #'
-#' @param gp_on Character string, defaulting to  "R_t-1". Indicates how the
+#' @param gp_on Character string, defaulting to "R_t-1". Indicates how the
 #' Gaussian process, if in use, should be applied to Rt. Currently supported
 #' options are applying the Gaussian process to the last estimated Rt (i.e
 #' Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
 #' = R0 * GP). Both should produced comparable results when data is not sparse
 #' but the method relying on a global mean will revert to this for real time
 #' estimates, which may not be desirable.
+#' 
+#' @param growth_method Method used to compute growth rates from Rt. Options
+#' are "infections" (default) and "infectiousness". The option "infections" 
+#' uses the classical approach, i.e. computing the log derivative on the number 
+#' of new infections. The option "infectiousness" uses an alternative approach
+#' by Parag et al., which computes the log derivative of the infectiousness 
+#' (i.e. the convolution of past infections with the generation time) and 
+#' shifts it by the mean generation time. This can provide better stability
+#' and temporal matching with Rt.
+#' 
+#' @references Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic 
+#' growth rates more informative than reproduction numbers? Journal of the 
+#' Royal Statistical Society: Series A (Statistics in Society) 185, S5–S15 
+#' (2022).
 #'
 #' @return An `<rt_opts>` object with settings defining the time-varying
 #' reproduction number.
