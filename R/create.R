@@ -406,6 +406,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' @inheritParams create_obs_model
 #' @inheritParams create_rt_data
 #' @inheritParams create_backcalc_data
+#' @inheritParams create_stan_params
 #' @importFrom stats lm
 #' @importFrom purrr safely
 #' @return A list of stan data
@@ -418,7 +419,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' )
 #' }
 create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
-                             forecast) {
+                             forecast, params) {
   cases <- data[(seeding_time + 1):.N]
   cases[, lookup := seq_len(.N)]
   case_times <- cases[!is.na(confirm), lookup]
@@ -474,20 +475,7 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   # parameters
   stan_data <- c(
     stan_data,
-    create_stan_params(
-      alpha = gp$alpha,
-      rho = gp$ls,
-      R0 = rt$prior,
-      frac_obs = obs$scale,
-      dispersion = obs$dispersion,
-      lower_bounds = c(
-        alpha = 0,
-        rho = 0,
-        R0 = 0,
-        frac_obs = 0,
-        dispersion = 0
-      )
-    )
+    create_stan_params(params)
   )
 
   # rescale mean shifted prior for back calculation if observation scaling is
@@ -522,12 +510,13 @@ create_delay_inits <- function(stan_data) {
 #' parameters. Used in order to initialise each stan chain within a range of
 #' plausible values.
 #' @param stan_data A list of data as produced by [create_stan_data()].
+#' @inheritParams create_stan_params
 #' @return An initial condition generating function
-#' @importFrom purrr map2_dbl
+#' @importFrom purrr map2_dbl transpose
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom data.table fcase
 #' @keywords internal
-create_initial_conditions <- function(stan_data) {
+create_initial_conditions <- function(stan_data, params) {
   function() {
     out <- create_delay_inits(stan_data)
 
@@ -557,11 +546,28 @@ create_initial_conditions <- function(stan_data) {
         rep(1 / stan_data$week_effect, stan_data$week_effect)
       )
     }
+    tparams <- transpose(params)
+    null <- vapply(tparams$dist, is.null, logical(1))
+    fixed <- vapply(
+      tparams$dist[!null], get_distribution, character(1)
+    ) == "fixed"
+    param_means <- vapply(
+      tparams$dist[!null][!fixed],
+      mean,
+      ignore_uncertainty = FALSE,
+      FUN.VALUE = numeric(1)
+    )
+    param_sds <- vapply(
+      tparams$dist[!null][!fixed],
+      sd,
+      ignore_uncertainty = FALSE,
+      FUN.VALUE = numeric(1)
+    )
     out$params <- array(truncnorm::rtruncnorm(
       stan_data$n_params_variable,
       a = stan_data$params_lower,
       b = stan_data$params_upper,
-      mean = 0, sd = 1
+      mean = param_means, sd = param_sds
     ))
     out
   }
@@ -745,24 +751,23 @@ create_stan_delays <- function(..., time_points = 1L) {
 
 ##' Create parameters for stan
 ##'
-##' @param ... Named delay distributions. The names are assigned to IDs
-##' @param lower_bounds Named vector of lower bounds for any delay(s). The names
-##' have to correspond to the names given to the delay distributions passed.
-##' If `NULL` (default) no parameters are given a lower bound.
+##' @param params A list of `<EpiNow2.params>` as created by [make_param()]
+##'
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom data.table fcase
+##' @importFrom purrr transpose
 ##' @keywords internal
-create_stan_params <- function(..., lower_bounds = NULL) {
-  params <- list(...)
-
+create_stan_params <- function(params) {
+  tparams <- transpose(params)
   ## set IDs of any parameters that is NULL to 0 and remove
-  null_params <- vapply(params, is.null, logical(1))
+  null_params <- vapply(tparams$dist, is.null, logical(1))
   null_ids <- rep(0, sum(null_params))
   if (length(null_ids) > 0) {
     names(null_ids) <- paste(
-      "param_id", names(null_params)[null_params], sep = "_"
+      "param_id", tparams$name[null_params], sep = "_"
     )
     params <- params[!null_params]
+    tparams <- transpose(params)
   }
 
   ## initialise variables
@@ -770,28 +775,32 @@ create_stan_params <- function(..., lower_bounds = NULL) {
   params_variable_lookup <- rep(0L, length(params))
 
   ## identify fixed/variable parameters
-  fixed <- vapply(params, get_distribution, character(1)) == "fixed"
+  fixed <- vapply(tparams$dist, get_distribution, character(1)) == "fixed"
   params_fixed_lookup[fixed] <- seq_along(which(fixed))
   params_variable_lookup[!fixed] <- seq_along(which(!fixed))
 
   ## lower bounds
-  params_lower <- rep(-Inf, length(params[!fixed]))
-  names(params_lower) <- names(params[!fixed])
-  lower_bounds <- lower_bounds[names(params_lower)]
-  params_lower[names(lower_bounds)] <- lower_bounds
+  lower_bounds <- unlist(tparams$lower_bound[!fixed])
+  if (is.null(lower_bounds)) {
+    params_lower <- array(numeric(0))
+  } else {
+    params_lower <- lower_bounds
+  }
 
   ## upper bounds
-  params_upper <- vapply(params[!fixed], max, numeric(1))
+  params_upper <- vapply(tparams$dist[!fixed], max, numeric(1))
 
   ## prior distributions
-  prior_dist_name <- vapply(params[!fixed], get_distribution, character(1))
+  prior_dist_name <- vapply(
+    tparams$dist[!fixed], get_distribution, character(1)
+  )
   prior_dist <- fcase(
     prior_dist_name == "lognormal", 0L,
     prior_dist_name == "gamma", 1L,
     prior_dist_name == "normal", 2L
   )
   ## parameters
-  prior_dist_params <- lapply(params[!fixed], get_parameters)
+  prior_dist_params <- lapply(tparams$dist[!fixed], get_parameters)
   prior_dist_params_lengths <- lengths(prior_dist_params)
 
   ## check none of the parameters are uncertain
@@ -799,7 +808,7 @@ create_stan_params <- function(..., lower_bounds = NULL) {
     !all(vapply(x, is.numeric, logical(1)))
   }, logical(1))
   if (any(prior_uncertain)) {
-    uncertain_priors <- names(params[!fixed])[prior_uncertain] # nolint: object_usage_linter
+    uncertain_priors <- tparams$name[!fixed][prior_uncertain] # nolint: object_usage_linter
     cli_abort(
       c(
         "!" = "Parameter prior distribution{?s} for {.var {uncertain_priors}}
@@ -822,7 +831,7 @@ create_stan_params <- function(..., lower_bounds = NULL) {
     params_fixed_lookup = array(params_fixed_lookup),
     params_variable_lookup = array(params_variable_lookup),
     params_value = array(vapply(
-      params[fixed], function(x) get_parameters(x)$value, numeric(1)
+      tparams$dist[fixed], function(x) get_parameters(x)$value, numeric(1)
     )),
     prior_dist = array(prior_dist),
     prior_dist_params_length = sum(prior_dist_params_lengths),
@@ -830,8 +839,7 @@ create_stan_params <- function(..., lower_bounds = NULL) {
   )
   ids <- seq_along(params)
   if (length(ids) > 0) {
-    names(ids) <- paste("param_id", names(params), sep = "_")
+    names(ids) <- paste("param_id", tparams$name, sep = "_")
   }
-  ret <- c(ret, as.list(ids), as.list(null_ids))
-  return(ret)
+  c(ret, as.list(ids), as.list(null_ids))
 }

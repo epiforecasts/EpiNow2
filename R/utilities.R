@@ -440,7 +440,44 @@ pad_reported_cases <- function(reported_cases, n, with = NA_real_) {
   } else {
     pad_dt <- data.table()
   }
-  rbindlist(list(pad_dt, reported_cases))
+  rbindlist(list(pad_dt, reported_cases), use.names = TRUE)
+}
+
+#' Numerically stable convolution function for two pmf vectors
+#'
+#' Unlike [stats::convolve()], this function does not use the FFT algorithm,
+#' which can generate negative numbers when below machine precision.
+#'
+#' @param a Numeric vector, the first sequence.
+#' @param b Numeric vector, the second sequence.
+#' @return A numeric vector representing the convolution of `a` and `b`.
+stable_convolve <- function(a, b) {
+  n <- length(a)
+  m <- length(b)
+  result <- numeric(n + m - 1)
+  for (i in seq_along(a)) {
+    for (j in seq_along(b)) {
+      result[i + j - 1] <- result[i + j - 1] + a[i] * b[m - j + 1]
+    }
+  }
+  result
+}
+
+##' Internal function to create a parameter list
+##'
+##' @param name Character, name of the parameter
+##' @param dist `<dist_spec>`, the distribution of the parameter; default: NULL
+##' @param lower_bound Numeric, lower bound for the parameter; default: -Inf
+##' @return A list with the parameter details, classed as "EpiNow2.param"
+##' @keywords internal
+make_param <- function(name, dist = NULL, lower_bound = -Inf) {
+  params <- list(
+    name = name,
+    dist = dist,
+    lower_bound = lower_bound
+  )
+  class(params) <- c("EpiNow2.param", "list")
+  params
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp

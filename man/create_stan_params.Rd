@@ -4,14 +4,10 @@
 \alias{create_stan_params}
 \title{Create parameters for stan}
 \usage{
-create_stan_params(..., lower_bounds = NULL)
+create_stan_params(params)
 }
 \arguments{
-\item{...}{Named delay distributions. The names are assigned to IDs}
-
-\item{lower_bounds}{Named vector of lower bounds for any delay(s). The names
-have to correspond to the names given to the delay distributions passed.
-If \code{NULL} (default) no parameters are given a lower bound.}
+\item{params}{A list of \verb{<EpiNow2.params>} as created by \code{\link[=make_param]{make_param()}}}
 }
 \value{
 A list of variables as expected by the stan model

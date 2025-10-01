@@ -5,12 +5,19 @@
 - The package now has a hex logo.
 - Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now have to do `param_id_[parameter_name]`, for example, `frac_obs_id` is now `param_id_frac_obs`.
 
+## Model changes
+
+- MCMC runs are now initialised with parameter values drawn from a distribution that approximates their prior distributions.
+
 ## Bug fixes
 
 - A bug was fixed where `forecast_infections` would fail with `samples = 1`.
 - A bug was fixed where `opts_list()` recursed lists which it shouldn't.
 - A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
 - A bug was fixed where `estimate_infection()` threw an error if there were too many consecutive `NA` observations.
+- A bug was fixed where an error was thrown when convolving delay distributions with very small values.
+- A bug was fixed where a cli warning was broken due to bad syntax.
+- A bug was fixed where intermediate data was being bound together by column position instead of column name, leading to erroneous results.
 
 ## Documentation
 
