@@ -104,6 +104,7 @@ vector calculate_growth_infectiousness(vector infections, int seeding_time,
   growth[1:(ot-mean_gen)] = (
     infness_log[(1+mean_gen):ot] - infness_log[mean_gen:(ot - 1)]
     );
-  //growth[(ot-mean_gen+1):ot] = rep_vector(-negative_infinity(), mean_gen); // remains undefined due to shift
+  // most recent growth rates remain undefined due to shift:
+  growth[(ot-mean_gen+1):ot] = rep_vector(not_a_number(), mean_gen);
   return(growth);
 }
