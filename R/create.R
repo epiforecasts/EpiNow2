@@ -244,7 +244,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     future_time = horizon - future_rt$from,
     growth_method = list(
       "infections" = 0, "infectiousness" = 1
-      )[[rt$growth_method]]
+    )[[rt$growth_method]]
   )
   return(rt_data)
 }

@@ -268,19 +268,19 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' = R0 * GP). Both should produced comparable results when data is not sparse
 #' but the method relying on a global mean will revert to this for real time
 #' estimates, which may not be desirable.
-#' 
+#'
 #' @param growth_method Method used to compute growth rates from Rt. Options
-#' are "infections" (default) and "infectiousness". The option "infections" 
-#' uses the classical approach, i.e. computing the log derivative on the number 
+#' are "infections" (default) and "infectiousness". The option "infections"
+#' uses the classical approach, i.e. computing the log derivative on the number
 #' of new infections. The option "infectiousness" uses an alternative approach
-#' by Parag et al., which computes the log derivative of the infectiousness 
-#' (i.e. the convolution of past infections with the generation time) and 
+#' by Parag et al., which computes the log derivative of the infectiousness
+#' (i.e. the convolution of past infections with the generation time) and
 #' shifts it by the mean generation time. This can provide better stability
 #' and temporal matching with Rt.
-#' 
-#' @references Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic 
-#' growth rates more informative than reproduction numbers? Journal of the 
-#' Royal Statistical Society: Series A (Statistics in Society) 185, S5–S15 
+#'
+#' @references Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic
+#' growth rates more informative than reproduction numbers? Journal of the
+#' Royal Statistical Society: Series A (Statistics in Society) 185, S5–S15
 #' (2022).
 #'
 #' @return An `<rt_opts>` object with settings defining the time-varying

@@ -58,7 +58,8 @@
 #'   obs = obs_opts(family = "poisson")
 #' )
 #' }
-simulate_infections <- function(R, initial_infections,
+simulate_infections <- function(R,
+                                initial_infections,
                                 day_of_week_effect = NULL,
                                 generation_time = generation_time_opts(),
                                 delays = delay_opts(),
@@ -68,8 +69,8 @@ simulate_infections <- function(R, initial_infections,
                                 backend = "rstan",
                                 seeding_time = NULL,
                                 pop = 0,
-                                growth_method = c("infections", "infectiousness")
-                                ) {
+                                growth_method = c("infections",
+                                                  "infectiousness")) {
 
   ## check inputs
   assert_data_frame(R, any.missing = FALSE)
