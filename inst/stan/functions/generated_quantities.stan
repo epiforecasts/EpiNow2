@@ -67,7 +67,7 @@ vector calculate_Rt(vector infections, int seeding_time,
 vector calculate_growth(vector infections, int seeding_time, 
                         vector gt_rev_pmf, int growth_method) {
   if (growth_method == 0) {
-    return(calculate_growth_infections(infections, seeding_time + 1));
+    return(calculate_growth_infections(infections, seeding_time));
   } else if (growth_method == 1) {
     return(calculate_growth_infness(infections, seeding_time, gt_rev_pmf));
   } else {
@@ -91,9 +91,9 @@ vector calculate_growth(vector infections, int seeding_time,
 vector calculate_growth_infections(vector infections, int seeding_time) {
   int t = num_elements(infections);
   int ot = t - seeding_time;
+  int start = 1 + seeding_time;
   vector[t] log_inf = log(infections);
-  vector[ot] growth =
-    log_inf[(seeding_time + 1):t] - log_inf[seeding_time:(t - 1)];
+  vector[ot - 1] growth = log_inf[(1+start):t] - log_inf[start:(t - 1)];
   return(growth);
 }
 
