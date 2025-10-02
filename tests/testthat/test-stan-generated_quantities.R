@@ -27,27 +27,35 @@ test_that("calculate_growth_infness works as expected", {
   mean_gt <- round(sum(gt_rev_pmf * seq_along(gt_rev_pmf)))
   
   expect_equal(
-    calculate_growth_infness(rep(1, 7), 1, gt_rev_pmf),
+    calculate_growth_infness(rep(1, 7), 0, gt_rev_pmf),
     c(rep(0, 6 - mean_gt), rep(NaN, mean_gt))
     )
   
-  seeding <- 2
+  seeding <- 1
   infness <- stable_convolve(1:7, gt_rev_pmf)
-  growth <- diff(log(infness))[(mean_gt+seeding):(length(infness)-1-mean_gt)]
+  growth <- diff(log(infness))[(1+mean_gt+seeding):(length(infness)-1-mean_gt)]
   expect_equal(
     round(calculate_growth_infness(1:7, seeding, gt_rev_pmf), 2),
     c(round(growth, 2), rep(NaN, mean_gt))
   )
   
-  seeding <- 3
+  seeding <- 2
   infness <- stable_convolve(exp(0.4 * 1:7), gt_rev_pmf)
-  growth <- diff(log(infness))[(mean_gt+seeding):(length(infness)-1-mean_gt)]
+  growth <- diff(log(infness))[(1+mean_gt+seeding):(length(infness)-1-mean_gt)]
   expect_equal(
     round(calculate_growth_infness(exp(0.4 * 1:7), seeding, gt_rev_pmf), 2),
     c(round(growth, 2), rep(NaN, mean_gt))
   )
   
-  expect_error(calculate_growth_infness(1:5, 6, gt_rev_pmf))
+  expect_no_error(calculate_growth_infness(1:7, 0, gt_rev_pmf))
+  expect_no_error(calculate_growth_infness(1:7, 1, gt_rev_pmf))
+  expect_no_error(calculate_growth_infness(1:7, 2, gt_rev_pmf))
+  expect_no_error(calculate_growth_infness(1:7, 3, gt_rev_pmf))
+  # from here on there are not enough data points (less than 2 + mean_gt)
+  expect_error(calculate_growth_infness(1:7, 4, gt_rev_pmf))
+  expect_error(calculate_growth_infness(1:7, 5, gt_rev_pmf))
+  expect_error(calculate_growth_infness(1:7, 6, gt_rev_pmf))
+  expect_error(calculate_growth_infness(1:7, 7, gt_rev_pmf))
 })
 
 test_that("calculate_growth selects the right method", {
@@ -58,7 +66,7 @@ test_that("calculate_growth selects the right method", {
   
   seeding <- 2
   infness <- stable_convolve(1:7, gt_rev_pmf)
-  growth <- diff(log(infness))[(mean_gt+seeding):(length(infness)-1-mean_gt)]
+  growth <- diff(log(infness))[(1+mean_gt+seeding):(length(infness)-1-mean_gt)]
   
   expect_equal(
     round(calculate_growth(1:7, seeding, gt_rev_pmf, 0), 2),

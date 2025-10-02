@@ -117,22 +117,26 @@ vector calculate_growth_infness(vector infections, int seeding_time,
                                        vector gt_rev_pmf) {
   int t = num_elements(infections);
   int ot = t - seeding_time;
+  int start = 1 + seeding_time;
+  if (ot <= 1) {
+    reject("seeding_time must >1 time step shorter than infections vector.");
+    }
+  // infectiousness
   vector[ot] infness_log = rep_vector(1e-5, ot);
   for (s in 1:ot) {
     infness_log[s] += log(update_infectiousness(
       infections, gt_rev_pmf, seeding_time, s
     ));
   }
-  vector[ot] growth = rep_vector(1e-5, ot);
-  int gt_length = num_elements(gt_rev_pmf);
   // mean generation time, will always be >= 1
+  int gt_length = num_elements(gt_rev_pmf);
   int mean_gen = to_next_int_index( // round weighted mean to next int
     dot_product(reverse(linspaced_vector(gt_length, 1, gt_length)), gt_rev_pmf)
     );
-  growth[1:(ot-mean_gen)] = (
-    infness_log[(1+mean_gen):ot] - infness_log[mean_gen:(ot - 1)]
-    );
-  // most recent growth rates remain undefined due to shift:
-  growth[(ot-mean_gen+1):ot] = rep_vector(not_a_number(), mean_gen);
+  // growth rate
+  vector[ot - 1] growth = infness_log[2:ot] - infness_log[1:(ot - 1)];  
+  // shift by mean_gen (most recent growth rates remain undefined)
+  growth[1:(ot - 1 - mean_gen)] = growth[(1 + mean_gen):(ot - 1)];
+  growth[(ot - mean_gen):(ot - 1)] = rep_vector(not_a_number(), mean_gen);
   return(growth);
 }
