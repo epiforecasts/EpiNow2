@@ -33,6 +33,7 @@ Authors:
   \item Hamada S. Badr \email{badr@jhu.edu} (\href{https://orcid.org/0000-0002-9808-2344}{ORCID})
   \item Michael DeWitt \email{me.dewitt.jr@gmail.com} (\href{https://orcid.org/0000-0001-8940-1967}{ORCID})
   \item James M. Azam \email{james.azam@lshtm.ac.uk} (\href{https://orcid.org/0000-0001-5782-7330}{ORCID})
+  \item Adrian Lison \email{adrian.lison@bsse.ethz.ch} (\href{https://orcid.org/0000-0002-6822-8437}{ORCID})
   \item EpiForecasts
 }
 

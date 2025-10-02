@@ -83,7 +83,9 @@ of new infections. The option "infectiousness" uses an alternative approach
 by Parag et al., which computes the log derivative of the infectiousness
 (i.e. the convolution of past infections with the generation time) and
 shifts it by the mean generation time. This can provide better stability
-and temporal matching with Rt.}
+and temporal matching with Rt. Note that, due to the temporal shift the
+"infectiousness" method results in undefined (NaN) growth rates for the most
+recent time points (equal to the mean generation time).}
 }
 \value{
 A data.table of simulated infections (variable \code{infections}) and
