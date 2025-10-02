@@ -38,6 +38,13 @@ test_that("estimate_infections successfully returns estimates using default sett
   test_estimate_infections(reported_cases)
 })
 
+test_that("estimate_infections successfully returns estimates using the infectiousness growth rate estimator", {
+  test_estimate_infections(
+    reported_cases,
+    rt = rt_opts(growth_method = "infectiousness")
+  )
+})
+
 test_that("estimate_infections successfully returns estimates using a Matern 5/2 kernel", {
   test_estimate_infections(
     reported_cases,
