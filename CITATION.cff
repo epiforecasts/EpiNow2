@@ -48,6 +48,10 @@ authors:
   given-names: James M.
   email: james.azam@lshtm.ac.uk
   orcid: https://orcid.org/0000-0001-5782-7330
+- family-names: Lison
+  given-names: Adrian
+  email: adrian.lison@bsse.ethz.ch
+  orcid: https://orcid.org/0000-0002-6822-8437
 - name: EpiForecasts
 - family-names: Funk
   given-names: Sebastian
