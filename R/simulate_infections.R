@@ -58,7 +58,8 @@
 #'   obs = obs_opts(family = "poisson")
 #' )
 #' }
-simulate_infections <- function(R, initial_infections,
+simulate_infections <- function(R,
+                                initial_infections,
                                 day_of_week_effect = NULL,
                                 generation_time = generation_time_opts(),
                                 delays = delay_opts(),
@@ -67,7 +68,9 @@ simulate_infections <- function(R, initial_infections,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 backend = "rstan",
                                 seeding_time = NULL,
-                                pop = 0) {
+                                pop = 0,
+                                growth_method = c("infections",
+                                                  "infectiousness")) {
 
   ## check inputs
   assert_data_frame(R, any.missing = FALSE)
@@ -84,6 +87,7 @@ simulate_infections <- function(R, initial_infections,
   assert_class(truncation, "trunc_opts")
   assert_class(obs, "obs_opts")
   assert_class(generation_time, "generation_time_opts")
+  growth_method <- arg_match(growth_method)
 
   ## create R for all dates modelled
   all_dates <- data.table(date = seq.Date(min(R$date), max(R$date), by = "day"))
@@ -104,7 +108,10 @@ simulate_infections <- function(R, initial_infections,
     initial_infections = array(log(initial_infections), dim = c(1, 1)),
     initial_as_scale = 0,
     R = array(R$R, dim = c(1, nrow(R))),
-    pop = pop
+    pop = pop,
+    growth_method = list(
+      "infections" = 0, "infectiousness" = 1
+    )[[growth_method]]
   )
 
   stan_data <- c(stan_data, create_stan_delays(

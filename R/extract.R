@@ -221,6 +221,8 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
     samples,
     reported_dates[-1]
   )
+  incomplete_dates <- unique(out$growth_rate[is.na(value), ][["date"]])
+  out$growth_rate[date %in% incomplete_dates, value := NA]
   if (data$week_effect > 1) {
     out$day_of_week <- extract_parameter(
       "day_of_week_simplex",
