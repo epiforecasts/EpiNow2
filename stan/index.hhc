@@ -66,7 +66,9 @@
       <LI><OBJECT type="text/sitemap"><param name="Name" value="truncate_obs"><param name="Local" value="group__observation__model.html#ga23d82c6b957d14fcf510e630c7b325a5"><param name="ImageNumber" value="11"></OBJECT>
       <LI><OBJECT type="text/sitemap"><param name="Name" value="truncation_lp"><param name="Local" value="group__observation__model.html#ga9042f3f0009b04764b15135394ffcc84"><param name="ImageNumber" value="11"></OBJECT>
       </UL>
-    <LI><OBJECT type="text/sitemap"><param name="Name" value="calculate_growth"><param name="Local" value="group__rt__estimation.html#ga528a90d41e86f52d6472cd573192e181"><param name="ImageNumber" value="11"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="calculate_growth"><param name="Local" value="group__rt__estimation.html#gaa4c10a0c2f7a164d5b6bf137dd7d2f7a"><param name="ImageNumber" value="11"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="calculate_growth_infections"><param name="Local" value="group__rt__estimation.html#ga53dc66f0a449ff36b7aed7401fdf8574"><param name="ImageNumber" value="11"></OBJECT>
+    <LI><OBJECT type="text/sitemap"><param name="Name" value="calculate_growth_infness"><param name="Local" value="group__rt__estimation.html#gad5dfeda95f3acce7e217c7c47f13d0ee"><param name="ImageNumber" value="11"></OBJECT>
     <LI><OBJECT type="text/sitemap"><param name="Name" value="calculate_Rt"><param name="Local" value="group__rt__estimation.html#ga2d17e8b4b2a9d69dd576396d14b218e9"><param name="ImageNumber" value="11"></OBJECT>
     <LI><OBJECT type="text/sitemap"><param name="Name" value="R_to_r"><param name="Local" value="group__rt__estimation.html#gab6cc5437be69ba05ef8b5b6c10cbdf51"><param name="ImageNumber" value="11"></OBJECT>
     <LI><OBJECT type="text/sitemap"><param name="Name" value="R_to_r_newton_step"><param name="Local" value="group__rt__estimation.html#ga7671592e7d61d662a76adbb129110826"><param name="ImageNumber" value="11"></OBJECT>

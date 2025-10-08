@@ -84,8 +84,12 @@ Subgroups</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:ga2d17e8b4b2a9d69dd576396d14b218e9" id="r_ga2d17e8b4b2a9d69dd576396d14b218e9"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga2d17e8b4b2a9d69dd576396d14b218e9">calculate_Rt</a> (vector infections, int seeding_time, vector gt_rev_pmf, int smooth)</td></tr>
 <tr class="separator:ga2d17e8b4b2a9d69dd576396d14b218e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga528a90d41e86f52d6472cd573192e181" id="r_ga528a90d41e86f52d6472cd573192e181"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga528a90d41e86f52d6472cd573192e181">calculate_growth</a> (vector infections, int seeding_time)</td></tr>
-<tr class="separator:ga528a90d41e86f52d6472cd573192e181"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa4c10a0c2f7a164d5b6bf137dd7d2f7a" id="r_gaa4c10a0c2f7a164d5b6bf137dd7d2f7a"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaa4c10a0c2f7a164d5b6bf137dd7d2f7a">calculate_growth</a> (vector infections, int seeding_time, vector gt_rev_pmf, int growth_method)</td></tr>
+<tr class="separator:gaa4c10a0c2f7a164d5b6bf137dd7d2f7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga53dc66f0a449ff36b7aed7401fdf8574" id="r_ga53dc66f0a449ff36b7aed7401fdf8574"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga53dc66f0a449ff36b7aed7401fdf8574">calculate_growth_infections</a> (vector infections, int seeding_time)</td></tr>
+<tr class="separator:ga53dc66f0a449ff36b7aed7401fdf8574"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad5dfeda95f3acce7e217c7c47f13d0ee" id="r_gad5dfeda95f3acce7e217c7c47f13d0ee"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gad5dfeda95f3acce7e217c7c47f13d0ee">calculate_growth_infness</a> (vector infections, int seeding_time, vector gt_rev_pmf)</td></tr>
+<tr class="separator:gad5dfeda95f3acce7e217c7c47f13d0ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga52b968e94972ac512e5ee13d04d06b17" id="r_ga52b968e94972ac512e5ee13d04d06b17"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga52b968e94972ac512e5ee13d04d06b17">update_Rt</a> (int t, real R0, vector noise, array[] int bps, vector bp_effects, int stationary)</td></tr>
 <tr class="memdesc:ga52b968e94972ac512e5ee13d04d06b17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update a vector of effective reproduction numbers (Rt) based on an intercept, breakpoints (i.e. a random walk), and a Gaussian process.  <br /></td></tr>
 <tr class="separator:ga52b968e94972ac512e5ee13d04d06b17"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -100,14 +104,77 @@ Functions</h2></td></tr>
 <p>Functions for estimating reproduction numbers. </p>
 <p>This group contains functions for estimating and processing reproduction numbers (Rt), including updating Rt values, calculating growth rates, and converting between reproduction numbers and growth rates. Includes functions from <a class="el" href="rt_8stan.html">rt.stan</a> and related generated quantities. </p>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ga528a90d41e86f52d6472cd573192e181" name="ga528a90d41e86f52d6472cd573192e181"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga528a90d41e86f52d6472cd573192e181">&#9670;&#160;</a></span>calculate_growth()</h2>
+<a id="gaa4c10a0c2f7a164d5b6bf137dd7d2f7a" name="gaa4c10a0c2f7a164d5b6bf137dd7d2f7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa4c10a0c2f7a164d5b6bf137dd7d2f7a">&#9670;&#160;</a></span>calculate_growth()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">vector calculate_growth </td>
+          <td>(</td>
+          <td class="paramtype">vector</td>          <td class="paramname"><span class="paramname"><em>infections</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>seeding_time</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">vector</td>          <td class="paramname"><span class="paramname"><em>gt_rev_pmf</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>growth_method</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Calculate growth rate</p>
+<p>This function calculates the growth rate from a time series of infections by taking the log difference between consecutive time points.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">infections</td><td>Vector of infection counts </td></tr>
+    <tr><td class="paramname">seeding_time</td><td>Number of time steps used for seeding </td></tr>
+    <tr><td class="paramname">gt_rev_pmf</td><td>Vector of reversed generation time PMF </td></tr>
+    <tr><td class="paramname">growth_method</td><td>Either 0 (log derivative of new infections) or 1 (log derivative of infectiousness, see Parag et al. 2022)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A vector of growth rates </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="generated__quantities_8stan_source.html#l00067">67</a> of file <a class="el" href="generated__quantities_8stan_source.html">generated_quantities.stan</a>.</p>
+
+<p class="reference">References <a class="el" href="generated__quantities_8stan_source.html#l00091">calculate_growth_infections()</a>, and <a class="el" href="generated__quantities_8stan_source.html#l00116">calculate_growth_infness()</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__rt__estimation_gaa4c10a0c2f7a164d5b6bf137dd7d2f7a_cgraph.png" border="0" usemap="#agroup__rt__estimation_gaa4c10a0c2f7a164d5b6bf137dd7d2f7a_cgraph" alt=""/></div>
+<map name="agroup__rt__estimation_gaa4c10a0c2f7a164d5b6bf137dd7d2f7a_cgraph" id="agroup__rt__estimation_gaa4c10a0c2f7a164d5b6bf137dd7d2f7a_cgraph">
+<area shape="rect" title=" " alt="" coords="5,31,125,56"/>
+<area shape="rect" href="group__rt__estimation.html#ga53dc66f0a449ff36b7aed7401fdf8574" title=" " alt="" coords="173,5,355,31"/>
+<area shape="poly" title=" " alt="" coords="125,33,157,29,157,34,126,39"/>
+<area shape="rect" href="group__rt__estimation.html#gad5dfeda95f3acce7e217c7c47f13d0ee" title=" " alt="" coords="180,55,348,80"/>
+<area shape="poly" title=" " alt="" coords="126,48,164,53,164,58,125,53"/>
+<area shape="rect" href="helpers_8stan.html#afa477a8216c6eb77642d20640ca868cf" title=" " alt="" coords="418,29,539,55"/>
+<area shape="poly" title=" " alt="" coords="348,55,403,48,403,54,349,60"/>
+<area shape="rect" href="group__infections__estimation.html#ga2b1ee9503c17947f9516f55eeeb9046c" title=" " alt="" coords="403,79,554,104"/>
+<area shape="poly" title=" " alt="" coords="349,74,388,79,387,84,348,80"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="ga53dc66f0a449ff36b7aed7401fdf8574" name="ga53dc66f0a449ff36b7aed7401fdf8574"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga53dc66f0a449ff36b7aed7401fdf8574">&#9670;&#160;</a></span>calculate_growth_infections()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">vector calculate_growth_infections </td>
           <td>(</td>
           <td class="paramtype">vector</td>          <td class="paramname"><span class="paramname"><em>infections</em></span>, </td>
         </tr>
@@ -123,13 +190,90 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">infections</td><td>Vector of infection counts </td></tr>
-    <tr><td class="paramname">seeding_time</td><td>Number of time steps used for seeding </td></tr>
+    <tr><td class="paramname">seeding_time</td><td>Number of time steps used for seeding</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A vector of growth rates </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="generated__quantities_8stan_source.html#l00063">63</a> of file <a class="el" href="generated__quantities_8stan_source.html">generated_quantities.stan</a>.</p>
+<p class="definition">Definition at line <a class="el" href="generated__quantities_8stan_source.html#l00091">91</a> of file <a class="el" href="generated__quantities_8stan_source.html">generated_quantities.stan</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="generated__quantities_8stan_source.html#l00067">calculate_growth()</a>.</p>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__rt__estimation_ga53dc66f0a449ff36b7aed7401fdf8574_icgraph.png" border="0" usemap="#agroup__rt__estimation_ga53dc66f0a449ff36b7aed7401fdf8574_icgraph" alt=""/></div>
+<map name="agroup__rt__estimation_ga53dc66f0a449ff36b7aed7401fdf8574_icgraph" id="agroup__rt__estimation_ga53dc66f0a449ff36b7aed7401fdf8574_icgraph">
+<area shape="rect" title=" " alt="" coords="173,5,355,31"/>
+<area shape="rect" href="group__rt__estimation.html#gaa4c10a0c2f7a164d5b6bf137dd7d2f7a" title=" " alt="" coords="5,5,125,31"/>
+<area shape="poly" title=" " alt="" coords="157,21,125,21,125,16,157,16"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="gad5dfeda95f3acce7e217c7c47f13d0ee" name="gad5dfeda95f3acce7e217c7c47f13d0ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad5dfeda95f3acce7e217c7c47f13d0ee">&#9670;&#160;</a></span>calculate_growth_infness()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">vector calculate_growth_infness </td>
+          <td>(</td>
+          <td class="paramtype">vector</td>          <td class="paramname"><span class="paramname"><em>infections</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>seeding_time</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">vector</td>          <td class="paramname"><span class="paramname"><em>gt_rev_pmf</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Calculate growth rate using approach by Parag et al. 2022 (<a href="https://doi.org/10.1111/rssa.12867">https://doi.org/10.1111/rssa.12867</a>)</p>
+<p>This function calculates the growth rate from a time series of infections by taking the log derivative on the infectiousness and shifting it by the mean generation time.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">infections</td><td>Vector of infection counts </td></tr>
+    <tr><td class="paramname">seeding_time</td><td>Number of time steps used for seeding </td></tr>
+    <tr><td class="paramname">gt_rev_pmf</td><td>Vector of reversed generation time PMF</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A vector of growth rates </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="generated__quantities_8stan_source.html#l00116">116</a> of file <a class="el" href="generated__quantities_8stan_source.html">generated_quantities.stan</a>.</p>
+
+<p class="reference">References <a class="el" href="helpers_8stan_source.html#l00001">to_next_int_index()</a>, and <a class="el" href="infections_8stan_source.html#l00025">update_infectiousness()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="generated__quantities_8stan_source.html#l00067">calculate_growth()</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__rt__estimation_gad5dfeda95f3acce7e217c7c47f13d0ee_cgraph.png" border="0" usemap="#agroup__rt__estimation_gad5dfeda95f3acce7e217c7c47f13d0ee_cgraph" alt=""/></div>
+<map name="agroup__rt__estimation_gad5dfeda95f3acce7e217c7c47f13d0ee_cgraph" id="agroup__rt__estimation_gad5dfeda95f3acce7e217c7c47f13d0ee_cgraph">
+<area shape="rect" title=" " alt="" coords="5,31,174,56"/>
+<area shape="rect" href="helpers_8stan.html#afa477a8216c6eb77642d20640ca868cf" title=" " alt="" coords="237,5,358,31"/>
+<area shape="poly" title=" " alt="" coords="174,31,221,25,222,30,175,36"/>
+<area shape="rect" href="group__infections__estimation.html#ga2b1ee9503c17947f9516f55eeeb9046c" title=" " alt="" coords="222,55,373,80"/>
+<area shape="poly" title=" " alt="" coords="175,51,206,54,206,60,174,56"/>
+</map>
+</div>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__rt__estimation_gad5dfeda95f3acce7e217c7c47f13d0ee_icgraph.png" border="0" usemap="#agroup__rt__estimation_gad5dfeda95f3acce7e217c7c47f13d0ee_icgraph" alt=""/></div>
+<map name="agroup__rt__estimation_gad5dfeda95f3acce7e217c7c47f13d0ee_icgraph" id="agroup__rt__estimation_gad5dfeda95f3acce7e217c7c47f13d0ee_icgraph">
+<area shape="rect" title=" " alt="" coords="173,5,341,31"/>
+<area shape="rect" href="group__rt__estimation.html#gaa4c10a0c2f7a164d5b6bf137dd7d2f7a" title=" " alt="" coords="5,5,125,31"/>
+<area shape="poly" title=" " alt="" coords="157,21,125,21,125,16,157,16"/>
+</map>
+</div>
 
 </div>
 </div>

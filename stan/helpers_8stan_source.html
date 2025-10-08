@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.12.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>EpiNow2 Stan Functions: /github/workspace/inst/stan/functions/generated_quantities.stan File Reference</title>
+<title>EpiNow2 Stan Functions: /github/workspace/inst/stan/functions/helpers.stan Source File</title>
 <link rel="icon" href="logo.png" type="image/x-icon" />
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
@@ -55,24 +55,25 @@ $(function(){ initResizable(false); });
 </div><!-- top -->
 <div id="doc-content">
 <div class="header">
-  <div class="summary">
-<a href="#func-members">Functions in this File</a>  </div>
-  <div class="headertitle"><div class="title">generated_quantities.stan File Reference</div></div>
+  <div class="headertitle"><div class="title">helpers.stan</div></div>
 </div><!--header-->
 <div class="contents">
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
-Functions in this File</h2></td></tr>
-<tr class="memitem:ga2d17e8b4b2a9d69dd576396d14b218e9" id="r_ga2d17e8b4b2a9d69dd576396d14b218e9"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__rt__estimation.html#ga2d17e8b4b2a9d69dd576396d14b218e9">calculate_Rt</a> (vector infections, int seeding_time, vector gt_rev_pmf, int smooth)</td></tr>
-<tr class="separator:ga2d17e8b4b2a9d69dd576396d14b218e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaa4c10a0c2f7a164d5b6bf137dd7d2f7a" id="r_gaa4c10a0c2f7a164d5b6bf137dd7d2f7a"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__rt__estimation.html#gaa4c10a0c2f7a164d5b6bf137dd7d2f7a">calculate_growth</a> (vector infections, int seeding_time, vector gt_rev_pmf, int growth_method)</td></tr>
-<tr class="separator:gaa4c10a0c2f7a164d5b6bf137dd7d2f7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga53dc66f0a449ff36b7aed7401fdf8574" id="r_ga53dc66f0a449ff36b7aed7401fdf8574"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__rt__estimation.html#ga53dc66f0a449ff36b7aed7401fdf8574">calculate_growth_infections</a> (vector infections, int seeding_time)</td></tr>
-<tr class="separator:ga53dc66f0a449ff36b7aed7401fdf8574"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad5dfeda95f3acce7e217c7c47f13d0ee" id="r_gad5dfeda95f3acce7e217c7c47f13d0ee"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__rt__estimation.html#gad5dfeda95f3acce7e217c7c47f13d0ee">calculate_growth_infness</a> (vector infections, int seeding_time, vector gt_rev_pmf)</td></tr>
-<tr class="separator:gad5dfeda95f3acce7e217c7c47f13d0ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table>
-</div><!-- contents -->
+<a href="helpers_8stan.html">Go to the documentation of this file.</a><div class="fragment"><div class="foldopen" id="foldopen00001" data-start="{" data-end="}">
+<div class="line"><a id="l00001" name="l00001"></a><span class="lineno"><a class="line" href="helpers_8stan.html#afa477a8216c6eb77642d20640ca868cf">    1</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="helpers_8stan.html#afa477a8216c6eb77642d20640ca868cf">to_next_int_index</a>(real x) {</div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span>  <span class="keywordflow">if</span> (x&lt;0) {</div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span>    reject(<span class="stringliteral">&quot;to_next_int_index: x must be non-negative&quot;</span>);</div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span>  }</div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span>  real x_rounded = round(x);</div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span>  <span class="keywordtype">int</span> i = 1;</div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span>  <span class="keywordflow">while</span> (x_rounded &gt; 1) {</div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>    x_rounded -= 1;</div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>    i += 1;</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>  }</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>  <span class="keywordflow">return</span>(i);</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>}</div>
+</div>
+<div class="ttc" id="ahelpers_8stan_html_afa477a8216c6eb77642d20640ca868cf"><div class="ttname"><a href="helpers_8stan.html#afa477a8216c6eb77642d20640ca868cf">to_next_int_index</a></div><div class="ttdeci">int to_next_int_index(real x)</div><div class="ttdef"><b>Definition</b> <a href="#l00001">helpers.stan:1</a></div></div>
+</div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0

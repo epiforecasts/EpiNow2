@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.12.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>EpiNow2 Stan Functions: /github/workspace/inst/stan/functions/generated_quantities.stan File Reference</title>
+<title>EpiNow2 Stan Functions: /github/workspace/inst/stan/functions/helpers.stan File Reference</title>
 <link rel="icon" href="logo.png" type="image/x-icon" />
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
@@ -57,21 +57,49 @@ $(function(){ initResizable(false); });
 <div class="header">
   <div class="summary">
 <a href="#func-members">Functions in this File</a>  </div>
-  <div class="headertitle"><div class="title">generated_quantities.stan File Reference</div></div>
+  <div class="headertitle"><div class="title">helpers.stan File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions in this File</h2></td></tr>
-<tr class="memitem:ga2d17e8b4b2a9d69dd576396d14b218e9" id="r_ga2d17e8b4b2a9d69dd576396d14b218e9"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__rt__estimation.html#ga2d17e8b4b2a9d69dd576396d14b218e9">calculate_Rt</a> (vector infections, int seeding_time, vector gt_rev_pmf, int smooth)</td></tr>
-<tr class="separator:ga2d17e8b4b2a9d69dd576396d14b218e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaa4c10a0c2f7a164d5b6bf137dd7d2f7a" id="r_gaa4c10a0c2f7a164d5b6bf137dd7d2f7a"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__rt__estimation.html#gaa4c10a0c2f7a164d5b6bf137dd7d2f7a">calculate_growth</a> (vector infections, int seeding_time, vector gt_rev_pmf, int growth_method)</td></tr>
-<tr class="separator:gaa4c10a0c2f7a164d5b6bf137dd7d2f7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga53dc66f0a449ff36b7aed7401fdf8574" id="r_ga53dc66f0a449ff36b7aed7401fdf8574"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__rt__estimation.html#ga53dc66f0a449ff36b7aed7401fdf8574">calculate_growth_infections</a> (vector infections, int seeding_time)</td></tr>
-<tr class="separator:ga53dc66f0a449ff36b7aed7401fdf8574"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad5dfeda95f3acce7e217c7c47f13d0ee" id="r_gad5dfeda95f3acce7e217c7c47f13d0ee"><td class="memItemLeft" align="right" valign="top">vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__rt__estimation.html#gad5dfeda95f3acce7e217c7c47f13d0ee">calculate_growth_infness</a> (vector infections, int seeding_time, vector gt_rev_pmf)</td></tr>
-<tr class="separator:gad5dfeda95f3acce7e217c7c47f13d0ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa477a8216c6eb77642d20640ca868cf" id="r_afa477a8216c6eb77642d20640ca868cf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa477a8216c6eb77642d20640ca868cf">to_next_int_index</a> (real x)</td></tr>
+<tr class="separator:afa477a8216c6eb77642d20640ca868cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="afa477a8216c6eb77642d20640ca868cf" name="afa477a8216c6eb77642d20640ca868cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa477a8216c6eb77642d20640ca868cf">&#9670;&#160;</a></span>to_next_int_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int to_next_int_index </td>
+          <td>(</td>
+          <td class="paramtype">real</td>          <td class="paramname"><span class="paramname"><em>x</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="helpers_8stan_source.html#l00001">1</a> of file <a class="el" href="helpers_8stan_source.html">helpers.stan</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="generated__quantities_8stan_source.html#l00116">calculate_growth_infness()</a>.</p>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="helpers_8stan_afa477a8216c6eb77642d20640ca868cf_icgraph.png" border="0" usemap="#ahelpers_8stan_afa477a8216c6eb77642d20640ca868cf_icgraph" alt=""/></div>
+<map name="ahelpers_8stan_afa477a8216c6eb77642d20640ca868cf_icgraph" id="ahelpers_8stan_afa477a8216c6eb77642d20640ca868cf_icgraph">
+<area shape="rect" title=" " alt="" coords="389,5,510,31"/>
+<area shape="rect" href="group__rt__estimation.html#gad5dfeda95f3acce7e217c7c47f13d0ee" title=" " alt="" coords="173,5,341,31"/>
+<area shape="poly" title=" " alt="" coords="374,21,342,21,342,16,374,16"/>
+<area shape="rect" href="group__rt__estimation.html#gaa4c10a0c2f7a164d5b6bf137dd7d2f7a" title=" " alt="" coords="5,5,125,31"/>
+<area shape="poly" title=" " alt="" coords="157,21,125,21,125,16,157,16"/>
+</map>
+</div>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
