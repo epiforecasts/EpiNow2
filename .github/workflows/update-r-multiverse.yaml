@@ -25,6 +25,10 @@ jobs:
         id: current
         run: |
           CURRENT_DATE=$(grep -oE 'production\.r-multiverse\.org/[0-9]{4}-[0-9]{2}-[0-9]{2}' DESCRIPTION | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+          if [ -z "$CURRENT_DATE" ]; then
+            echo "::error::Failed to extract current snapshot date from DESCRIPTION"
+            exit 1
+          fi
           echo "date=$CURRENT_DATE" >> $GITHUB_OUTPUT
           echo "Current snapshot: $CURRENT_DATE"
 
@@ -39,6 +43,7 @@ jobs:
 
           if [ -z "$LATEST_DATE" ]; then
             echo "::error::Failed to discover latest production snapshot date"
+            echo "::error::Check https://r-multiverse.org/production.html"
             exit 1
           fi
 
