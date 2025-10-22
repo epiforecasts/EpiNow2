@@ -196,6 +196,14 @@ estimate_infections <- function(data,
 
   set_dt_single_thread()
 
+  # Check that no PMF is longer than the data
+  check_single_np_pmf_lengths(
+    generation_time = generation_time,
+    truncation = truncation,
+    delays = delays,
+    data = data
+  )
+
   if (!is.null(rt) && !rt$use_rt) {
     rt <- NULL
   }
@@ -265,6 +273,9 @@ estimate_infections <- function(data,
     init = create_initial_conditions(stan_data, params),
     verbose = verbose
   )
+
+  # Warn if combined non-parametric delays is longer than data
+  check_combined_np_pmf_lengths(stan_args)
 
   # Fit model
   fit <- fit_model(stan_args, id = id)
