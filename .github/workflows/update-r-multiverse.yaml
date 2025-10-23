@@ -1,0 +1,140 @@
+name: Update R-multiverse Production Snapshot
+
+on:
+  schedule:
+    - cron: '0 10 1 * *' # 1st of each month
+  workflow_dispatch:
+
+jobs:
+  check-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+
+      - name: Get current snapshot date from DESCRIPTION
+        id: current
+        run: |
+          CURRENT_DATE=$(grep -oE 'production\.r-multiverse\.org/[0-9]{4}-[0-9]{2}-[0-9]{2}' DESCRIPTION | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+          if [ -z "$CURRENT_DATE" ]; then
+            echo "::error::Failed to extract current snapshot date from DESCRIPTION"
+            exit 1
+          fi
+          echo "date=$CURRENT_DATE" >> $GITHUB_OUTPUT
+          echo "Current snapshot: $CURRENT_DATE"
+
+      - name: Discover latest production snapshot
+        id: latest
+        run: |
+          # Fetch the production page and extract the current snapshot date
+          LATEST_DATE=$(curl -s https://r-multiverse.org/production.html | \
+            grep "deployed on" | \
+            grep -oE '20[0-9]{2}-[0-9]{2}-[0-9]{2}' | \
+            head -1)
+
+          if [ -z "$LATEST_DATE" ]; then
+            echo "::error::Failed to discover latest production snapshot date"
+            echo "::error::Check https://r-multiverse.org/production.html"
+            exit 1
+          fi
+
+          echo "date=$LATEST_DATE" >> $GITHUB_OUTPUT
+          echo "Latest production snapshot: $LATEST_DATE"
+
+      - name: Compare dates
+        id: compare
+        run: |
+          CURRENT="${{ steps.current.outputs.date }}"
+          LATEST="${{ steps.latest.outputs.date }}"
+
+          if [ "$CURRENT" != "$LATEST" ]; then
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+            echo "Update needed: $CURRENT -> $LATEST"
+          else
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+            echo "Already up to date: $CURRENT"
+          fi
+
+      - name: Verify cmdstanr availability in new snapshot
+        if: steps.compare.outputs.needs_update == 'true'
+        id: verify
+        run: |
+          LATEST="${{ steps.latest.outputs.date }}"
+          REPO_URL="https://production.r-multiverse.org/$LATEST"
+
+          # Check if cmdstanr is available in the new snapshot
+          if Rscript -e "
+            tryCatch({
+              pkgs <- available.packages(repos = '$REPO_URL')
+              if ('cmdstanr' %in% pkgs[, 'Package']) {
+                cat('cmdstanr found\n')
+                quit(status = 0)
+              } else {
+                cat('cmdstanr not found\n')
+                quit(status = 1)
+              }
+            }, error = function(e) {
+              cat('Error checking snapshot:', conditionMessage(e), '\n')
+              quit(status = 1)
+            })
+          "; then
+            echo "available=true" >> $GITHUB_OUTPUT
+            VERSION=$(Rscript -e "cat(available.packages(repos = '$REPO_URL')['cmdstanr', 'Version'])")
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "cmdstanr $VERSION is available in $LATEST snapshot"
+          else
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "::warning::cmdstanr is not available in $LATEST snapshot yet"
+            exit 1
+          fi
+
+      - name: Update DESCRIPTION file
+        if: steps.compare.outputs.needs_update == 'true' && steps.verify.outputs.available == 'true'
+        run: |
+          CURRENT="${{ steps.current.outputs.date }}"
+          LATEST="${{ steps.latest.outputs.date }}"
+
+          sed -i "s|production\.r-multiverse\.org/$CURRENT|production.r-multiverse.org/$LATEST|g" DESCRIPTION
+
+          echo "Updated DESCRIPTION file"
+          git diff DESCRIPTION
+
+      - name: Create Pull Request
+        if: steps.compare.outputs.needs_update == 'true' && steps.verify.outputs.available == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update R-multiverse production snapshot to ${{ steps.latest.outputs.date }}"
+          branch: update-r-multiverse-${{ steps.latest.outputs.date }}
+          delete-branch: true
+          title: "Update R-multiverse production snapshot to ${{ steps.latest.outputs.date }}"
+          body: |
+            This automated PR updates the R-multiverse production snapshot reference in `DESCRIPTION`.
+
+            **Changes:**
+            - Update from `${{ steps.current.outputs.date }}` to `${{ steps.latest.outputs.date }}`
+            - Verified cmdstanr ${{ steps.verify.outputs.version }} is available in the new snapshot
+
+            **About R-multiverse production snapshots:**
+            - Released approximately quarterly
+            - Old snapshots remain available for 1 year
+            - All packages tested for quality, security, and mutual compatibility
+
+            **Note:** There's no urgency to merge immediately since old snapshots remain available for 1 year.
+
+            Please review and merge when convenient. Consider running full package checks before merging.
+
+            ---
+            *This PR was created automatically by the [update-r-multiverse workflow](.github/workflows/update-r-multiverse.yaml)*
+          labels: |
+            dependencies
+            automated-pr
