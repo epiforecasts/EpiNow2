@@ -160,7 +160,6 @@ Language: en-GB
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2.9000
-NeedsCompilation: yes
 SystemRequirements: GNU make
        C++17
 VignetteBuilder: knitr
