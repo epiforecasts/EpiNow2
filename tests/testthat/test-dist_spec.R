@@ -1,13 +1,13 @@
 test_that("dist_spec returns correct output for fixed lognormal distribution", {
   result <- discretise(LogNormal(meanlog = 5, sdlog = 1, max = 19))
   expect_equal(get_distribution(result), "nonparametric")
-  expect_equal(max(result), 19)
+  expect_equal(max(result), 18)
   expect_equal(
     as.vector(round(get_pmf(result), 2)),
     c(
       0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03,
-      0.03, 0.04, 0.05, 0.06, 0.07, 0.07, 0.08, 0.09,
-      0.10, 0.11, 0.11, 0.12
+      0.04, 0.05, 0.06, 0.07, 0.08, 0.08, 0.09, 0.10,
+      0.11, 0.12, 0.13
     )
   )
 })
@@ -125,7 +125,7 @@ test_that("summary functions return correct output for fixed lognormal distribut
   dist <- discretise(LogNormal(mean = 3, sd = 1, max = 19))
   expect_equal(mean(dist), 3.0, tolerance = 0.01)
   expect_equal(EpiNow2:::sd(dist), 1.17, tolerance = 0.01)
-  expect_equal(max(dist), 19L)
+  expect_equal(max(dist), 18L)
 })
 
 test_that("summary functions return correct output for uncertain gamma distribution", {
@@ -141,7 +141,7 @@ test_that("mean returns correct output for sum of two distributions", {
   expect_equal(mean(dist), c(4.48, 3), tolerance = 0.001)
   expect_equal(EpiNow2:::sd(dist), c(5.87, 2), tolerance = 0.001)
   ## shortened due to tolerance level
-  expect_equal(max(dist), c(19L, 19L))
+  expect_equal(max(dist), c(18L, 18L))
 })
 
 test_that("mean returns NA when applied to uncertain distributions", {
@@ -157,7 +157,7 @@ test_that("sd returns NA when applied to uncertain distributions", {
 test_that("print.dist_spec correctly prints the parameters of the fixed lognormal", {
   dist <- discretise(LogNormal(meanlog = 1.5, sdlog = 0.5, max = 19))
 
-  expect_output(print(dist), "- nonparametric distribution\\n  PMF: \\[0\\.00017 0\\.019 0\\.11 0\\.19 0\\.19 0\\.16 0\\.11 0\\.078 0\\.052 0\\.034 0\\.022 0\\.015 0\\.0097 0\\.0065 0\\.0043 0\\.0029 0\\.002 0\\.0014 0\\.00094 0\\.00066\\]")
+  expect_output(print(dist), "- nonparametric distribution\\n  PMF: \\[0\\.00017 0\\.019 0\\.11 0\\.19 0\\.19 0\\.16 0\\.11 0\\.078 0\\.052 0\\.034 0\\.022 0\\.015 0\\.0097 0\\.0065 0\\.0043 0\\.0029 0\\.002 0\\.0014 0\\.00094\\]")
 })
 
 test_that("print.dist_spec correctly prints the parameters of the uncertain gamma", {
@@ -180,7 +180,7 @@ test_that("print.dist_spec correctly prints the parameters of a combination of d
   dist1 <- LogNormal(meanlog = 1.5, sdlog = 0.5, max = 19)
   dist2 <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
   combined <- dist1 + dist2
-  expect_output(print(combined), "Composite distribution:\\n- lognormal distribution \\(max: 19\\):\\n  meanlog:\\n    1\\.5\\n  sdlog:\\n    0\\.5\\n- gamma distribution \\(max: 19\\):\\n  shape:\\n    - normal distribution:\\n      mean:\\n        3\\n      sd:\\n        0\\.5\\n  rate:\\n    - normal distribution:\\n      mean:\\n        2\\n      sd:\\n        0\\.5")
+  expect_output(print(combined), "Composite distribution:\\n- lognormal distribution \\(max: 18\\):\\n  meanlog:\\n    1\\.5\\n  sdlog:\\n    0\\.5\\n- gamma distribution \\(max: 19\\):\\n  shape:\\n    - normal distribution:\\n      mean:\\n        3\\n      sd:\\n        0\\.5\\n  rate:\\n    - normal distribution:\\n      mean:\\n        2\\n      sd:\\n        0\\.5")
 })
 
 test_that("plot.dist_spec returns a ggplot object", {
@@ -250,13 +250,13 @@ test_that("delay distributions can be specified in different ways", {
   )
   expect_equal(
     round(get_pmf(discretise(LogNormal(mean = 4, sd = 1, max = 10))), 2),
-    c(0.00, 0.00, 0.05, 0.29, 0.38, 0.20, 0.06, 0.02, 0.00, 0.00, 0.00)
+    c(0.00, 0.00, 0.05, 0.29, 0.38, 0.20, 0.06, 0.02, 0.00, 0.00)
   )
   expect_equal(
     round(
       get_pmf(discretise(LogNormal(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2
     ),
-    c(0.00, 0.00, 0.05, 0.30, 0.38, 0.20, 0.07)
+    c(0.00, 0.00, 0.05, 0.32, 0.41, 0.22)
   )
   expect_equal(
     unname(as.numeric(get_parameters(Gamma(mean = 4, sd = 1)))),
@@ -265,11 +265,11 @@ test_that("delay distributions can be specified in different ways", {
   )
   expect_equal(
     round(get_pmf(discretise(Gamma(mean = 4, sd = 1, max = 7))), 2),
-    c(0.00, 0.00, 0.06, 0.28, 0.37, 0.21, 0.07, 0.01)
+    c(0.00, 0.00, 0.06, 0.28, 0.38, 0.22, 0.07)
   )
   expect_equal(
     round(get_pmf(discretise(Gamma(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2),
-    c(0.00, 0.00, 0.06, 0.28, 0.38, 0.22, 0.07)
+    c(0.00, 0.00, 0.06, 0.30, 0.40, 0.23)
   )
   expect_equal(
     unname(as.numeric(
@@ -301,11 +301,11 @@ test_that("delay distributions can be specified in different ways", {
   )
   expect_equal(
     round(get_pmf(discretise(Normal(mean = 4, sd = 1, max = 5))), 2),
-    c(0.00, 0.01, 0.07, 0.26, 0.40, 0.26)
+    c(0.00, 0.01, 0.10, 0.35, 0.54)
   )
   expect_equal(
     round(get_pmf(discretise(Normal(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2),
-    c(0.00, 0.01, 0.07, 0.24, 0.37, 0.24, 0.07)
+    c(0.00, 0.01, 0.07, 0.26, 0.40, 0.26)
   )
   expect_equal(get_pmf(discretise(Fixed(value = 3))), c(0, 0, 0, 1))
   expect_equal(get_parameters(Fixed(value = 3.5))$value, 3.5)
