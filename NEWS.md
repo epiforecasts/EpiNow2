@@ -1,5 +1,12 @@
 # EpiNow2 (development version)
 
+## Breaking changes
+
+- The `discretise()` function now uses the `primarycensored` package for numerically solved double censored PMF calculations, replacing the previous CDF difference approximation.
+This provides more accurate discretisation but will change the exact numerical values returned.
+Code that depends on the specific numerical output of `discretise()` may produce different results, though the differences should be small and represent improvements in accuracy.
+The function interface remains unchanged.
+
 ## Package changes
 
 - The package now has a hex logo.
