@@ -38,14 +38,7 @@ in most cases, we pre-compile the vignettes before merging. Please follow this g
 on [how to precompute vignettes or pkgdown articles](https://ropensci.org/blog/2019/12/08/precompute-vignettes/).
 Here is [an example where new pre-compiled vignettes](https://github.com/epiforecasts/EpiNow2/pull/458) were submitted.
 
-### Pull request process
-
-*   Fork the package and clone onto your computer. If you haven't done this before, we recommend using `usethis::create_from_github("epiforecasts/EpiNow2", fork = TRUE)`.
-
-*   Install all development dependencies as described in the "Developer dependencies" section below, and then make sure the package passes R CMD check by running `devtools::check()`.
-    If R CMD check doesn't pass cleanly, it's a good idea to ask for help before continuing.
-
-### Developer dependencies
+## Developer dependencies
 
 Some packages are required only for package development tasks
 (e.g., test coverage, pre-commit hooks, creating the hex sticker).
@@ -69,6 +62,14 @@ remotes::install_deps(dependencies = TRUE)
 Note: `devtools::install_dev_deps()` does not currently support
 Config/Needs fields, so use pak or remotes instead if you need the
 additional developer tools.
+
+## Pull request process
+
+*   Fork the package and clone onto your computer. If you haven't done this before, we recommend using `usethis::create_from_github("epiforecasts/EpiNow2", fork = TRUE)`.
+
+*   Install all development dependencies as described in the "Developer dependencies" section above, and then make sure the package passes R CMD check by running `devtools::check()`.
+    If R CMD check doesn't pass cleanly, it's a good idea to ask for help before continuing.
+
 *   Create a Git branch for your pull request (PR). We recommend using `usethis::pr_init("brief-description-of-change")`.
 
 * We use `pre-commit` to check our changes match our package standards. This is optional but can be enabled using the following steps.
