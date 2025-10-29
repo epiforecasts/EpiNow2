@@ -328,7 +328,6 @@ Thanks to @sbfnk, @pearsonca, and @nicholasdavies for regression testing this re
 
 ## Model changes
 
-* Added support for varying the length of the day of the week effect (see `obs_opts()`). This allows, for example, fitting to data with cases only reported every 3 days.
 * Minor optimisations in the observation model by only using the `target` likelihood definition approach when required and in the use of `fmax` and `fmin` over using if statements.  By @seabbs.
 * Added support for users setting the overdispersion (parameterised as one over the square root of phi) of the reporting process. This is accessible via the `phi` argument of `obs_opts` with the default of a normal distribution with mean 0 and standard deviation of 1 truncated at 0 remaining unchanged.  By @seabbs.
 * Added additive noise term to the `estimate_truncation` model to deal with zeroes. By @sbfnk.
