@@ -414,7 +414,6 @@ plot.estimate_infections <- function(x,
 #' @param x A list of output as produced by [epinow()].
 #' @inheritParams plot.estimate_infections
 #' @seealso [plot.estimate_infections()] [report_plots()]
-#' [estimate_infections()]
 #' @method plot epinow
 #' @return List of plots as produced by [report_plots()]
 #' @export
