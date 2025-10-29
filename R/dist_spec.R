@@ -8,9 +8,9 @@
 #' # Methodological details
 #'
 #' The probability mass function is computed using the primarycensored package,
-#' which provides numerically solved double censored PMF calculations. This
-#' correctly represents the probability mass function of a double censored
-#' distribution arising from the difference of two censored events.
+#' which provides double censored PMF calculations. This correctly represents
+#' the probability mass function of a double censored distribution arising from
+#' the difference of two censored events.
 #'
 #' The first entry corresponds to the (0, 1] interval (probability of integer
 #' 0), the second entry to (1, 2] (probability of integer 1), etc.
