@@ -59,7 +59,7 @@ packages, use one of:
 pak::pak(".", dependencies = TRUE, upgrade = FALSE)
 
 # Or install just the dev dependencies
-pak::pak(".", dependencies = c("all", "Config/Needs/dev"),
+pak::pak(".", dependencies = c("Config/Needs/dev"),
   upgrade = FALSE)
 
 # Using remotes
