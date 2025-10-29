@@ -101,11 +101,11 @@ discrete_pmf <- function(distribution =
     primarycensored::dprimarycensored,
     c(
       list(
-        x = 0:max_value,
+        x = seq(0, max_value - width, by = width),
         pdist = pdist,
         pwindow = width,
         swindow = width,
-        D = max_value + width
+        D = max_value
       ),
       params
     )
