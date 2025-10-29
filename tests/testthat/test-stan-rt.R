@@ -66,7 +66,6 @@ neg_MGF <- function(r, pmf) {
   sum(pmf * exp(-r * (0:(n - 1))))
 }
 
-# Test R_to_r_newton_step
 test_that("R_to_r_newton_step calculates correct Newton step", {
   pmf <- discretised_pmf(c(4, 2), 10, 1)
   step <- R_to_r_newton_step(1.5, 0.1, pmf)
@@ -75,7 +74,6 @@ test_that("R_to_r_newton_step calculates correct Newton step", {
   expect_true(is.finite(step))
 })
 
-# Test R_to_r basic correctness
 test_that("R_to_r correctly handles R = 1", {
   pmf <- discretised_pmf(c(4, 2), 10, 1)
   gt_rev_pmf <- rev(pmf)
@@ -97,19 +95,23 @@ test_that("R_to_r gives negative r for R < 1", {
   expect_lt(r, 0)
 })
 
-# Test round trip consistency
 test_that("R_to_r round trip is consistent", {
-  pmf <- discretised_pmf(c(4, 2), 10, 1)
-  gt_rev_pmf <- rev(pmf)
   test_Rs <- c(0.5, 0.8, 1.0, 1.2, 1.5, 2.0)
-  for (R_test in test_Rs) {
-    r <- R_to_r(R_test, gt_rev_pmf, 1e-6)
-    R_recovered <- 1 / neg_MGF(r, pmf)
-    expect_equal(R_recovered, R_test, tolerance = 1e-5)
+  test_pmfs <- list(
+    short = discretised_pmf(c(2, 1), 8, 1),
+    medium = discretised_pmf(c(4, 2), 10, 1),
+    long = discretised_pmf(c(6, 3), 15, 1)
+  )
+  for (pmf in test_pmfs) {
+    gt_rev_pmf <- rev(pmf)
+    for (R_test in test_Rs) {
+      r <- R_to_r(R_test, gt_rev_pmf, 1e-6)
+      R_recovered <- 1 / neg_MGF(r, pmf)
+      expect_equal(R_recovered, R_test, tolerance = 1e-5)
+    }
   }
 })
 
-# Test with different generation time distributions
 test_that("R_to_r works with different generation time distributions", {
   pmf_short <- discretised_pmf(c(2, 1), 8, 1)
   gt_rev_pmf_short <- rev(pmf_short)
@@ -122,11 +124,15 @@ test_that("R_to_r works with different generation time distributions", {
   expect_gt(r_short, r_long)
 })
 
-# Test tolerance parameter
 test_that("R_to_r respects tolerance parameter", {
   pmf <- discretised_pmf(c(4, 2), 10, 1)
   gt_rev_pmf <- rev(pmf)
-  r_tight <- R_to_r(1.5, gt_rev_pmf, 1e-8)
-  r_loose <- R_to_r(1.5, gt_rev_pmf, 1e-4)
-  expect_equal(r_tight, r_loose, tolerance = 1e-3)
+  R_true <- 1.5
+  r_tight <- R_to_r(R_true, gt_rev_pmf, 1e-8)
+  r_loose <- R_to_r(R_true, gt_rev_pmf, 1e-4)
+  R_recovered_tight <- 1 / neg_MGF(r_tight, pmf)
+  R_recovered_loose <- 1 / neg_MGF(r_loose, pmf)
+  error_tight <- abs(R_recovered_tight - R_true)
+  error_loose <- abs(R_recovered_loose - R_true)
+  expect_lt(error_tight, error_loose)
 })
