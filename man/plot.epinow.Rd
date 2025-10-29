@@ -25,5 +25,4 @@ List of plots as produced by \code{\link[=report_plots]{report_plots()}}
 }
 \seealso{
 \code{\link[=plot.estimate_infections]{plot.estimate_infections()}} \code{\link[=report_plots]{report_plots()}}
-\code{\link[=estimate_infections]{estimate_infections()}}
 }
