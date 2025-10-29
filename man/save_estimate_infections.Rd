@@ -30,6 +30,6 @@ No return value, called for side effects
 Saves output from \code{estimate_infections} to a target directory.
 }
 \seealso{
-estimate_infections
+\code{\link[=estimate_infections]{estimate_infections()}}
 }
 \keyword{internal}

@@ -39,6 +39,6 @@ Produces summarised \verb{<data.frame>}s of output across regions.
 Used internally by \code{regional_summary}.
 }
 \seealso{
-regional_summary
+\code{\link[=regional_summary]{regional_summary()}}
 }
 \keyword{internal}

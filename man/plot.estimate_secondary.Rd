@@ -30,5 +30,5 @@ A \code{ggplot} object.
 \code{plot} method for class "estimate_secondary".
 }
 \seealso{
-plot estimate_secondary
+\code{\link[=plot.estimate_secondary]{plot.estimate_secondary()}} \code{\link[=estimate_secondary]{estimate_secondary()}}
 }

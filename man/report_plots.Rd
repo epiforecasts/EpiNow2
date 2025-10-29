@@ -44,7 +44,8 @@ plots <- report_plots(
 plots
 }
 \seealso{
-\code{\link[=plot_estimates]{plot_estimates()}} of
+\code{\link[=plot_estimates]{plot_estimates()}}
+
 \code{summarised_estimates[variable == "infections"]},
 \code{summarised_estimates[variable == "reported_cases"]},
 \code{summarised_estimates[variable == "R"]}, and

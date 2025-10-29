@@ -73,5 +73,5 @@ regional_summary(
 )
 }
 \seealso{
-regional_epinow
+\code{\link[=regional_epinow]{regional_epinow()}}
 }
