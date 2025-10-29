@@ -26,6 +26,8 @@
 #' Abbott S., et al., "primarycensored: Primary Event Censored Distributions",
 #'   2025. \doi{10.5281/zenodo.13632839}
 #'
+#' @importFrom primarycensored dprimarycensored
+#'
 #' @param distribution A character string representing the distribution to be
 #'   used (one of "exp", "gamma", "lognormal", "normal" or "fixed")
 #'
@@ -91,16 +93,15 @@ discrete_pmf <- function(distribution =
   max_value <- ceiling(max_value)
 
   ## compute double censored PMF using primarycensored
-  ## D must be at least max(x) + swindow for primarycensored
   pmf <- do.call(
     primarycensored::dprimarycensored,
     c(
       list(
-        x = 0:max_value,
+        x = seq(0, max_value, by = width),
         pdist = pdist,
         pwindow = width,
         swindow = width,
-        D = max_value + width
+        D = max_value
       ),
       params
     )
