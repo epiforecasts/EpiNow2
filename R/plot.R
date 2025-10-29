@@ -378,7 +378,6 @@ plot_summary <- function(summary_results,
 #' @importFrom rlang arg_match
 #'
 #' @seealso [plot.estimate_infections()] [report_plots()]
-#' [estimate_infections()]
 #' @aliases plot
 #' @method plot estimate_infections
 #' @return List of plots as produced by [report_plots()]
