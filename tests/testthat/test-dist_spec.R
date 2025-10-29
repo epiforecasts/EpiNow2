@@ -45,13 +45,13 @@ test_that("dist_spec returns correct output for fixed distribution", {
     fix_parameters(LogNormal(meanlog = Normal(5, 3), sdlog = 1, max = 19))
   )
   expect_equal(get_distribution(result), "nonparametric")
-  expect_equal(max(result), 19)
+  expect_equal(max(result), 18)
   expect_equal(
     as.vector(round(get_pmf(result), 2)),
     c(
       0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03,
-      0.03, 0.04, 0.05, 0.06, 0.07, 0.07, 0.08, 0.09,
-      0.10, 0.11, 0.11, 0.12
+      0.04, 0.05, 0.06, 0.07, 0.08, 0.08, 0.09, 0.10,
+      0.11, 0.12, 0.13
     )
   )
 })

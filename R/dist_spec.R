@@ -58,11 +58,11 @@ discrete_pmf <- function(distribution =
   if (distribution == "fixed") {
     value <- params[["value"]]
     if (missing(max_value) || is.infinite(max_value)) {
-      max_value <- value
+      max_value <- value + 1
     }
     max_value <- ceiling(max_value)
-    pmf <- rep(0, max_value + 1)
-    if (value <= max_value) {
+    pmf <- rep(0, max_value)
+    if (value < max_value) {
       pmf[value + 1] <- 1
     }
     return(pmf)
