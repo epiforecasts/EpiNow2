@@ -377,7 +377,7 @@ plot_summary <- function(summary_results,
 #' @param ... Pass additional arguments to report_plots
 #' @importFrom rlang arg_match
 #'
-#' @seealso plot report_plots estimate_infections
+#' @seealso [report_plots()]
 #' @aliases plot
 #' @method plot estimate_infections
 #' @return List of plots as produced by [report_plots()]
@@ -413,7 +413,7 @@ plot.estimate_infections <- function(x,
 #' `plot` method for class `<epinow>`.
 #' @param x A list of output as produced by [epinow()].
 #' @inheritParams plot.estimate_infections
-#' @seealso plot plot.estimate_infections report_plots estimate_infections
+#' @seealso [plot.estimate_infections()] [report_plots()]
 #' @method plot epinow
 #' @return List of plots as produced by [report_plots()]
 #' @export

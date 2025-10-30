@@ -154,7 +154,7 @@ summarise_results <- function(regions,
 #' @param ... Additional arguments passed to `report_plots`.
 #' @return A list of summary measures and plots
 #' @export
-#' @seealso regional_epinow
+#' @seealso [regional_epinow()]
 #' @inheritParams summarise_results
 #' @inheritParams plot_summary
 #' @inheritParams plot_estimates
@@ -437,7 +437,7 @@ regional_summary <- function(regional_output = NULL,
 #'
 #' @inheritParams get_regional_results
 #' @importFrom cli cli_abort
-#' @seealso regional_summary
+#' @seealso [regional_summary()]
 #' @return A list of summarised Rt, cases by date of infection and cases by
 #' date of report
 #' @keywords internal
@@ -514,7 +514,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @description `r lifecycle::badge("maturing")`
 #' Used internally by `regional_epinow` to summarise region run times.
 #'
-#' @seealso regional_summary regional_epinow
+#' @seealso [regional_summary()] [regional_epinow()]
 #' @inheritParams regional_summary
 #' @inheritParams epinow
 #' @return A data.table of region run times
@@ -772,7 +772,7 @@ calc_summary_measures <- function(samples,
 #'
 #' @param ... Pass additional summary arguments to lower level methods
 #'
-#' @seealso summary.estimate_infections epinow
+#' @seealso [summary.estimate_infections()] [epinow()]
 #' @aliases summary
 #' @method summary epinow
 #' @return Returns a `<data.frame>` of summary output
@@ -823,7 +823,7 @@ summary.epinow <- function(object,
 #'
 #' @param ... Pass additional arguments to `report_summary`
 #' @importFrom rlang arg_match
-#' @seealso summary estimate_infections report_summary
+#' @seealso [summary.epinow()] [estimate_infections()] [report_summary()]
 #' @method summary estimate_infections
 #' @return Returns a `<data.frame>` of summary output
 #' @export
