@@ -44,6 +44,6 @@ create_rt_data(rt_opts(rw = 7), breakpoints = rep(1, 10))
 }
 }
 \seealso{
-rt_settings
+\code{\link[=rt_opts]{rt_opts()}}
 }
 \keyword{internal}

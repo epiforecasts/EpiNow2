@@ -37,5 +37,5 @@ Returns a \verb{<data.frame>} of summary output
 \code{summary} method for class "estimate_infections".
 }
 \seealso{
-summary estimate_infections report_summary
+\code{\link[=summary.epinow]{summary.epinow()}} \code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=report_summary]{report_summary()}}
 }
