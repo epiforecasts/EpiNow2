@@ -880,7 +880,7 @@ summary.estimate_infections <- function(object,
   out[]
 }
 
-##' Print information about and object that has resulted from a model fit.
+##' Print information about an object that has resulted from a model fit.
 ##'
 ##' @param x The object containing fit results.
 ##' @param ... Ignored

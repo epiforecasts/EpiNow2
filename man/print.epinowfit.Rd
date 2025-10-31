@@ -2,7 +2,7 @@
 % Please edit documentation in R/summarise.R
 \name{print.epinowfit}
 \alias{print.epinowfit}
-\title{Print information about and object that has resulted from a model fit.}
+\title{Print information about an object that has resulted from a model fit.}
 \usage{
 \method{print}{epinowfit}(x, ...)
 }
@@ -15,5 +15,5 @@
 Invisible
 }
 \description{
-Print information about and object that has resulted from a model fit.
+Print information about an object that has resulted from a model fit.
 }
