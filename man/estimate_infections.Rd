@@ -76,6 +76,8 @@ forecasting will be done.}
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
+
 \item{weigh_delay_priors}{Deprecated; this is now specified at the
 distribution level in \code{generation_time_opts()}, \code{delay_opts()} and
 \code{trunc_opts()} using the \code{weight_prior} argument.}

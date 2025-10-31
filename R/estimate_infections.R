@@ -82,6 +82,7 @@
 #' @inheritParams create_gp_data
 #' @inheritParams create_obs_model
 #' @inheritParams fit_model_with_nuts
+#' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table
 #' @importFrom data.table setorder rbindlist melt .N setDT
 #' @importFrom lubridate days
