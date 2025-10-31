@@ -47,8 +47,9 @@
 #' @return A vector representing a probability distribution.
 #' @keywords internal
 #' @inheritParams bound_dist
-#' @importFrom stats pexp pgamma plnorm pnorm qexp qgamma qlnorm qnorm
+#' @importFrom stats pexp pgamma plnorm pnorm
 #' @importFrom rlang arg_match
+#' @importFrom primarycensored qprimarycensored
 discrete_pmf <- function(distribution =
                            c("exp", "gamma", "lognormal", "normal", "fixed"),
                          params, max_value, cdf_cutoff, width) {
@@ -76,19 +77,22 @@ discrete_pmf <- function(distribution =
     normal = pnorm
   )
 
-  ## quantile function for CDF cutoff
-  qdist <- switch(distribution,
-    exp = qexp,
-    gamma = qgamma,
-    lognormal = qlnorm,
-    normal = qnorm
-  )
-
   ## apply CDF cutoff if given
   if (!missing(cdf_cutoff)) {
-    ## max from CDF cutoff
-    cdf_cutoff_max <- do.call(qdist, c(list(p = 1 - cdf_cutoff), params))
-    if (missing(max_value) || cdf_cutoff_max < max_value) {
+    ## max from CDF cutoff using primarycensored quantile function
+    cdf_cutoff_max <- do.call(
+      primarycensored::qprimarycensored,
+      c(
+        list(
+          p = 1 - cdf_cutoff,
+          pdist = pdist,
+          pwindow = width
+        ),
+        params
+      )
+    )
+    if (!is.na(cdf_cutoff_max) &&
+        (missing(max_value) || cdf_cutoff_max < max_value)) {
       max_value <- cdf_cutoff_max
     }
   }
