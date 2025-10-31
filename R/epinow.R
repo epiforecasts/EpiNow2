@@ -225,7 +225,7 @@ epinow <- function(data,
     )
 
     # report estimates --------------------------------------------------------
-    summary <- summary.estimate_infections(estimates,
+    summary <- summary(estimates,
       return_numeric = TRUE,
       target_folder = target_folder
     )
@@ -255,6 +255,7 @@ epinow <- function(data,
         out$estimates$fit <- estimates$fit
         out$estimates$args <- estimates$args
       }
+      out$estimates$observations <- estimates$observations
       return(out)
     } else {
       return(invisible(NULL))

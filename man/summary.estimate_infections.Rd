@@ -28,6 +28,8 @@ samples.}
 
 \item{params}{A character vector of parameters to filter for.}
 
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
+
 \item{...}{Pass additional arguments to \code{report_summary}}
 }
 \value{

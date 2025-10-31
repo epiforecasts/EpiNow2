@@ -785,12 +785,13 @@ summary.epinow <- function(object,
                            ...) {
   output <- arg_match(output)
   if (output == "estimates") {
-    out <- summary(object$estimates,
-      date = date,
-      params = params, ...
-    )
+    out <- object$summary
   } else {
-    out <- object[[output]]$summarised
+    if (output == "forecast") {
+      out <- object$estimates$summarised
+    } else {
+      out <- object$estimated_reported_cases
+    }
     if (!is.null(date)) {
       target_date <- as.Date(date)
       out <- out[date == target_date]
@@ -823,6 +824,7 @@ summary.epinow <- function(object,
 #'
 #' @param ... Pass additional arguments to `report_summary`
 #' @importFrom rlang arg_match
+#' @inheritParams calc_summary_measures
 #' @seealso [summary.epinow()] [estimate_infections()] [report_summary()]
 #' @method summary estimate_infections
 #' @return Returns a `<data.frame>` of summary output
