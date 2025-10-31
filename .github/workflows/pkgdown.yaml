@@ -4,6 +4,9 @@ on:
   push:
     branches: [main, master, develop]
     tags: ['*']
+  pull_request:
+  release:
+    types: [published]
   workflow_dispatch:
   
 name: pkgdown
