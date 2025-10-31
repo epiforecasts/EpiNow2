@@ -18,3 +18,4 @@ A numeric vector representing the convolution of \code{a} and \code{b}.
 Unlike \code{\link[stats:convolve]{stats::convolve()}}, this function does not use the FFT algorithm,
 which can generate negative numbers when below machine precision.
 }
+\keyword{internal}
