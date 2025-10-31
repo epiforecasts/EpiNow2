@@ -28,5 +28,5 @@ settings can be supplied which override the defaults.
 forecast_opts(horizon = 28, accumulate = 7)
 }
 \seealso{
-fill_missing
+\code{\link[=fill_missing]{fill_missing()}}
 }

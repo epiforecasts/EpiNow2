@@ -1042,7 +1042,7 @@ stan_opts <- function(object = NULL,
 #'   the data used for fitting then the same accumulation will be used in
 #'   forecasts unless set explicitly here.
 #' @return A `<forecast_opts>` object of forecast setting.
-#' @seealso fill_missing
+#' @seealso [fill_missing()]
 #' @export
 #' @examples
 #' forecast_opts(horizon = 28, accumulate = 7)

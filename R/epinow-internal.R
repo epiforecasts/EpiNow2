@@ -48,7 +48,7 @@ save_input <- function(data, target_folder) {
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan object
 #' be returned.
 #'
-#' @seealso estimate_infections
+#' @seealso [estimate_infections()]
 #' @inheritParams setup_target_folder
 #' @inheritParams  estimate_infections
 #' @return No return value, called for side effects
