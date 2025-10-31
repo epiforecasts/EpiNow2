@@ -251,9 +251,9 @@ epinow <- function(data,
         summary,
         samples = output["samples"]
       )
-      if (!output["fit"]) {
-        estimates$fit <- NULL
-        estimates$args <- NULL
+      if (output["fit"]) {
+        out$estimates$fit <- estimates$fit
+        out$estimates$args <- estimates$args
       }
       return(out)
     } else {

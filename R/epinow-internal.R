@@ -183,11 +183,11 @@ construct_output <- function(estimates,
                              summary = NULL,
                              samples = TRUE) {
   out <- list()
-  out$estimates <- estimates
+  out$estimates <- list()
   if (samples) {
-    out$estimates$samples <- get_samples(out$estimates)
+    out$estimates$samples <- get_samples(estimates)
   }
-  out$estimates$summarised <- summary(out$estimates, "parameters")
+  out$estimates$summarised <- summary(estimates, "parameters")
   out$estimated_reported_cases <- estimated_reported_cases
   out$summary <- summary
 
