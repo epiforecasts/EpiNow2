@@ -61,7 +61,7 @@ test_that("delay parameters can be specified in different ways", {
       )),
       params = delay_params
     ), digits = 2), n = -2),
-    c(0.03, 0.38, 0.37, 0.14, 0.05, 0.02, 0.01, 0.00, 1.00)
+    c(0.03, 0.38, 0.37, 0.14, 0.05, 0.02, 0.01, 0.00, 0.00, 1.00)
   )
   expect_equal(
     test_stan_delays(
