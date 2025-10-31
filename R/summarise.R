@@ -828,47 +828,48 @@ summary.epinow <- function(object,
 #' @return Returns a `<data.frame>` of summary output
 #' @export
 summary.estimate_infections <- function(object,
-                                        type = c(
-                                          "snapshot", "parameters", "samples"
-                                        ),
+                                        type = c("snapshot", "parameters"),
                                         date = NULL, params = NULL,
                                         CrIs = c(0.2, 0.5, 0.9), ...) {
+  # Handle deprecated type = "samples" before arg_match
+  if (length(type) == 1 && type == "samples") {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      "summary.estimate_infections(type = 'samples')",
+      "get_samples()"
+    )
+    return(get_samples(object))
+  }
+
   type <- arg_match(type)
+
   if (is.null(date)) {
     target_date <- max(object$observations$date)
   } else {
     target_date <- as.Date(date)
   }
 
-  dates <- object$observations$date
-  reported_dates <- dates[-(1:object$args$seeding_time)]
-  samples <- extract_parameter_samples(object$fit, object$args,
-    reported_inf_dates = dates,
-    reported_dates = reported_dates,
-    imputed_dates = reported_dates[object$args$imputed_times]
-  )
+  # Get posterior samples
+  samples <- get_samples(object)
 
-  formatted <- format_fit(
-    posterior_samples = samples,
-    horizon = object$args$horizon,
-    shift = object$args$seeding_time,
+  # Calculate summary measures
+  summarised <- calc_summary_measures(
+    samples,
+    summarise_by = c("date", "variable", "strat", "type"),
+    order_by = c("variable", "date"),
     CrIs = CrIs
   )
 
   if (type == "snapshot") {
     out <- report_summary(
-      summarised_estimates = formatted$summarised[date == target_date],
-      rt_samples = formatted$samples[variable == "R"][
+      summarised_estimates = summarised[date == target_date],
+      rt_samples = samples[variable == "R"][
         date == target_date, .(sample, value)
       ],
       ...
     )
-  } else if (type %in% c("parameters", "samples")) {
-    if (type == "parameters") {
-      out <- formatted$summarised
-    } else {
-      out <- formatted$samples
-    }
+  } else if (type == "parameters") {
+    out <- summarised
     if (!is.null(date)) {
       out <- out[date == target_date]
     }

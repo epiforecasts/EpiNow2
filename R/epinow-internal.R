@@ -58,11 +58,11 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
   if (!is.null(target_folder)) {
     if (samples) {
       saveRDS(
-        estimates$samples, file.path(target_folder, "estimate_samples.rds")
+        get_samples(estimates), file.path(target_folder, "estimate_samples.rds")
       )
     }
     saveRDS(
-      estimates$summarised,
+      summary(estimates, type = "parameters"),
       file.path(target_folder, "summarised_estimates.rds")
     )
     if (return_fit) {
@@ -91,7 +91,7 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
                                      target_folder = NULL, samples = TRUE) {
   estimated_reported_cases <- list()
   if (samples) {
-    estimated_reported_cases$samples <- summary(estimates, type = "samples")[
+    estimated_reported_cases$samples <- get_samples(estimates)[
       variable == "reported_cases"
     ][
       ,
@@ -185,7 +185,7 @@ construct_output <- function(estimates,
   out <- list()
   out$estimates <- estimates
   if (samples) {
-    out$estimates$samples <- summary(out$estimates, "samples")
+    out$estimates$samples <- get_samples(out$estimates)
   }
   out$estimates$summarised <- summary(out$estimates, "parameters")
   out$estimated_reported_cases <- estimated_reported_cases

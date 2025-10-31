@@ -203,7 +203,7 @@ simulate_infections <- function(R,
     seq(min(R$date) - seeding_time, min(R$date) - 1, by = "day"),
     R$date
   )
-  out <- extract_parameter_samples(sim, stan_data,
+  out <- format_simulation_output(sim, stan_data,
     reported_inf_dates = dates,
     reported_dates = dates[-(1:seeding_time)],
     imputed_dates = dates[-(1:seeding_time)],
@@ -296,7 +296,7 @@ simulate_infections <- function(R,
 #' plot(sims)
 #'
 #' #' # with a data.frame input of samples
-#' R_samples <- summary(est, type = "samples", param = "R")
+#' R_samples <- get_samples(est)[variable == "R"]
 #' R_samples <- R_samples[
 #'   ,
 #'   .(date, sample, value)
@@ -449,7 +449,7 @@ forecast_infections <- function(estimates,
     ## simulate
     sims <- fit_model(stan_args, id = "simulate_infections")
 
-    extract_parameter_samples(sims, stan_data,
+    format_simulation_output(sims, stan_data,
       reported_inf_dates = dates,
       reported_dates = dates[-(1:shift)],
       imputed_dates = dates[-(1:shift)],

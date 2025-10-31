@@ -6,7 +6,7 @@
 \usage{
 \method{summary}{estimate_infections}(
   object,
-  type = c("snapshot", "parameters", "samples"),
+  type = c("snapshot", "parameters"),
   date = NULL,
   params = NULL,
   CrIs = c(0.2, 0.5, 0.9),

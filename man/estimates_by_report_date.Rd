@@ -14,8 +14,6 @@ estimates_by_report_date(
 \arguments{
 \item{estimates}{List of data frames as output by \code{estimate_infections}}
 
-\item{CrIs}{Numeric vector of credible intervals to calculate.}
-
 \item{target_folder}{Character string specifying where to save results (will
 create if not present).}
 
