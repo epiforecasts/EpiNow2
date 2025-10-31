@@ -152,7 +152,7 @@ estimate_infections <- function(data,
       detail = "Specify credible intervals when using `summary()` or `plot()`."
     )
   }
-   if (!missing(filter_leading_zeros)) {
+  if (!missing(filter_leading_zeros)) {
     lifecycle::deprecate_stop(
       "1.7.0",
       "estimate_infections(filter_leading_zeros)",
