@@ -57,8 +57,8 @@ test_that("diagSPD_Matern functions return correct dimensions and values", {
 
   # Check specific values for known inputs
   indices <- linspaced_vector(M, 1, M)
-  factor52 <- 3 * (sqrt(5) / rho)^5
-  denom52 <- 2 * ((sqrt(5) / rho)^2 + (pi / 2 / L * indices)^2)^3
+  factor52 <- 16 * (sqrt(5) / rho)^5
+  denom52 <- 3 * ((sqrt(5) / rho)^2 + (pi / 2 / L * indices)^2)^3
   expected_result52 <- alpha * sqrt(factor52 / denom52)
   expect_equal(result52, expected_result52, tolerance = 1e-8)
 })
