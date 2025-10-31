@@ -142,6 +142,7 @@ Suggests:
     knitr,
     progressr,
     rmarkdown,
+    scoringutils,
     spelling,
     testthat,
     withr
