@@ -80,7 +80,7 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
 })
 
 test_that("forecast_infections works to simulate a passed in estimate_infections object with samples of Rt in a data frame", {
-  R_samples <- summary(out, type = "samples", param = "R")
+  R_samples <- get_samples(out)[variable == "R"]
   R_samples <- R_samples[, .(date, sample, value)][sample <= 1000]
   R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
   sims_sample <- forecast_infections(out, R_samples)

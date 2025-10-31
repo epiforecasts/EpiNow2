@@ -617,9 +617,8 @@ forecast_secondary <- function(estimate,
     primary <- primary[, .(date, sample, value)]
   }
   if (inherits(primary, "estimate_infections")) {
-    primary <- data.table::as.data.table(
-      primary$samples[variable == primary_variable]
-    )
+    primary_samples <- get_samples(primary)
+    primary <- primary_samples[variable == primary_variable]
     primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
     primary <- primary[, .(date, sample, value)]
     if (!is.null(samples)) {

@@ -88,7 +88,7 @@ sims <- forecast_infections(est, R_dt)
 plot(sims)
 
 #' # with a data.frame input of samples
-R_samples <- summary(est, type = "samples", param = "R")
+R_samples <- get_samples(est)[variable == "R"]
 R_samples <- R_samples[
   ,
   .(date, sample, value)

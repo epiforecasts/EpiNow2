@@ -163,7 +163,7 @@ forecast <- forecast_secondary(
 We can now combine all our forecasts into one plot:
 
 ```{r combined plot}
-case_forecast <- est$summarised[
+case_forecast <- summary(est, type = "parameters")[
   variable == "reported_cases" & type == "forecast"
 ][, variable := "cases"]
 admissions_forecast <- forecast$predictions[

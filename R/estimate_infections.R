@@ -68,8 +68,10 @@
 #' threshold then the zero is replaced using `fill`.
 #'
 #' @export
-#' @return A list of output including: posterior samples, summarised posterior
-#' samples, data used to fit the model, and the fit object itself.
+#' @return An `<estimate_infections>` object which is a list of outputs
+#' including: the stan object (`fit`), arguments used to fit the model
+#' (`args`), and the observed data (`observations`). The estimates included in
+#' the fit can be accessed using the `summary()` function.
 #'
 #' @seealso [epinow()] [regional_epinow()] [forecast_infections()]
 #' [estimate_truncation()]
@@ -143,6 +145,13 @@ estimate_infections <- function(data,
                                 filter_leading_zeros = TRUE,
                                 zero_threshold = Inf,
                                 horizon) {
+  if (!missing(CrIs)) {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      "estimate_infections(CrIs)",
+      detail = "Specify credible intervals when using `summary()` or `plot()`."
+    )
+  }
   if (!missing(filter_leading_zeros)) {
     lifecycle::deprecate_stop(
       "1.7.0",
@@ -269,99 +278,13 @@ estimate_infections <- function(data,
   # Fit model
   fit <- fit_model(stan_args, id = id)
 
-  # Extract parameters of interest from the fit
-  out <- extract_parameter_samples(fit, stan_data,
-    reported_inf_dates = reported_cases$date,
-    reported_dates = reported_cases$date[-(1:stan_data$seeding_time)],
-    imputed_dates =
-      reported_cases$date[-(1:stan_data$seeding_time)][stan_data$imputed_times]
-  )
-
-  # Format output
-  format_out <- format_fit(
-    posterior_samples = out,
-    horizon = stan_data$horizon,
-    shift = stan_data$seeding_time,
-    CrIs = CrIs
+  ret <- list(
+    fit = fit,
+    args = stan_data,
+    observations = reported_cases
   )
 
   ## Join stan fit if required
-  if (stan$return_fit) {
-    format_out$fit <- fit
-    format_out$args <- stan_data
-  }
-  format_out$observations <- reported_cases
-  class(format_out) <- c("estimate_infections", class(format_out))
-  return(format_out)
-}
-
-#' Format Posterior Samples
-#'
-#' @description `r lifecycle::badge("stable")`
-#' Summaries posterior samples and adds additional custom variables.
-#'
-#' @param posterior_samples A list of posterior samples as returned by
-#' [extract_parameter_samples()].
-#'
-#' @param horizon Numeric, forecast horizon.
-#'
-#' @param shift Numeric, the shift to apply to estimates.
-#'
-#' @param burn_in Deprecated; this functionality is no longer available.
-#'
-#' @param start_date Deprecated; this functionality is no longer available.
-#'
-#' @inheritParams calc_summary_measures
-#' @importFrom data.table fcase rbindlist
-#' @importFrom lubridate days
-#' @importFrom futile.logger flog.info
-#' @return A list of samples and summarised posterior parameter estimates.
-#' @keywords internal
-format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
-                       CrIs) {
-  if (!missing(burn_in)) {
-    lifecycle::deprecate_stop(
-      "1.8.0",
-      "format_fit(burn_in)",
-      detail = "This functionality is no longer available."
-    )
-
-  }
-  if (!missing(start_date)) {
-    lifecycle::deprecate_stop(
-      "1.8.0",
-      "format_fit(start_date)",
-      detail = "This functionality is no longer available."
-    )
-  }
-  format_out <- list()
-  # bind all samples together
-  format_out$samples <- data.table::rbindlist(
-    posterior_samples,
-    fill = TRUE, idcol = "variable"
-  )
-
-  if (is.null(format_out$samples$strat)) {
-    format_out$samples <- format_out$samples[, strat := NA]
-  }
-  # add type based on horizon
-  format_out$samples <- format_out$samples[
-    ,
-    type := data.table::fcase(
-      date > (max(date, na.rm = TRUE) - horizon),
-      "forecast",
-      date > (max(date, na.rm = TRUE) - horizon - shift),
-      "estimate based on partial data",
-      is.na(date), NA_character_,
-      default = "estimate"
-    )
-  ]
-
-  # summarise samples
-  format_out$summarised <- calc_summary_measures(format_out$samples,
-    summarise_by = c("date", "variable", "strat", "type"),
-    order_by = c("variable", "date"),
-    CrIs = CrIs
-  )
-  format_out
+  class(ret) <- c("epinowfit", "estimate_infections", class(ret))
+  return(ret)
 }

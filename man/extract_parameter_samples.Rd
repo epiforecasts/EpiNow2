@@ -18,7 +18,7 @@ extract_parameter_samples(
 \item{stan_fit}{A \verb{<stanfit>} or \verb{<CmdStanMCMC>} object as returned by
 \code{\link[=fit_model]{fit_model()}}.}
 
-\item{data}{A list of the data supplied to the \code{\link[=fit_model]{fit_model()}} call.}
+\item{data}{A list of the data supplied to the simulation.}
 
 \item{reported_dates}{A vector of dates to report estimates for.}
 
@@ -27,19 +27,19 @@ extract_parameter_samples(
 \item{reported_inf_dates}{A vector of dates to report infection estimates
 for.}
 
-\item{drop_length_1}{Logical; whether the first dimension should be dropped
-if it is off length 1; this is necessary when processing simulation results.}
+\item{drop_length_1}{Logical; drop dimensions of length 1 in arrays extracted
+from the stan fit. Used in simulations where there's only 1 realization.}
 
-\item{merge}{if TRUE, merge samples and data so that parameters can be
-extracted from data.}
+\item{merge}{if TRUE, merge samples into a single data.table using
+rbindlist. If FALSE returns a list of samples by parameter.}
 }
 \value{
 A list of \verb{<data.frame>}'s each containing the posterior of a
 parameter
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Extracts a custom set of parameters from a stan object and adds
-stratification and dates where appropriate.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+This function has been deprecated. Use \code{\link[=format_simulation_output]{format_simulation_output()}} for
+simulation outputs or \code{\link[=get_samples]{get_samples()}} for estimation outputs instead.
 }
 \keyword{internal}

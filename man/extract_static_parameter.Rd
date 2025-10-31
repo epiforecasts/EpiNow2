@@ -13,7 +13,7 @@ extract_static_parameter(param, samples)
 }
 \value{
 A \verb{<data.frame>} containing the parameter name, sample id and sample
-value
+value, or NULL if the parameter doesn't exist in the samples
 }
 \description{
 Extract Samples from a Parameter with a Single Dimension
