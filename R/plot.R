@@ -417,9 +417,9 @@ plot.epinow <- function(x, type = "summary", ...) {
 #' @return Selected plots by type
 #' @keywords internal
 select_plots <- function(plots, type = c(
-                                  "summary", "infections", "reports", "R",
-                                  "growth_rate", "all"
-                                )) {
+  "summary", "infections", "reports", "R",
+  "growth_rate", "all"
+)) {
   type <- arg_match(type)
   if (type == "all") {
     type <- c("summary", "infections", "reports", "R", "growth_rate")
