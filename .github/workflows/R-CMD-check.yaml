@@ -55,11 +55,7 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
-
-      - name: Set Additional Repositories
-        run: |
-          REPOS=$(Rscript -e "cat(read.dcf('DESCRIPTION')[,'Additional_repositories'])")
-          echo "PKG_EXTRA_REPOS=$REPOS" >> $GITHUB_ENV
+          extra-repositories: https://production.r-multiverse.org/2025-09-15
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
