@@ -418,20 +418,23 @@ forecast_infections <- function(estimates,
     by = "day", length.out = dim(draws$R)[2] + shift
   )
 
+  # Extract args for passing to parallel workers
+  estimates_args <- estimates$args
+
   # Load model
   stan <- stan_opts(
     model = model, backend = backend, chains = 1, samples = 1, warmup = 1
   )
 
   ## set up batch simulation
-  batch_simulate <- function(estimates, draws, model,
+  batch_simulate <- function(estimates_args, draws, model,
                              shift, dates, nstart, nend) {
     # extract batch samples from draws
     draws <- map(draws, ~ matrix(.[nstart:nend, ], nrow = nend - nstart + 1))
 
     ## prepare data for stan command
     stan_data <- c(
-      list(n = dim(draws$R)[1], initial_as_scale = 1), draws, estimates$args
+      list(n = dim(draws$R)[1], initial_as_scale = 1), draws, estimates_args
     )
 
     ## allocate empty parameters
@@ -478,7 +481,7 @@ forecast_infections <- function(estimates,
           p()
         }
         safe_batch(
-          estimates, draws, model,
+          estimates_args, draws, model,
           shift, dates, batch[[1]],
           batch[[2]]
         )[[1]]
