@@ -4,7 +4,7 @@ test_that("Seeding times are correctly calculated", {
   delay1 <- LogNormal(mean = 5, sd = 1, max = 9)
   delay2 <- LogNormal(mean = 7, sd = 3, max = 14)
   expect_equal(
-    EpiNow2:::get_seeding_time(delay1, gt1 + gt2), 21L ## 8 + 13 (max reduced by 1 each due to discretisation)
+    EpiNow2:::get_seeding_time(delay1, gt1 + gt2), 21L ## 8 + 13
   )
   expect_equal(
     EpiNow2:::get_seeding_time(delay1 + delay2, gt1), 12L ## 5 + 7
