@@ -427,7 +427,7 @@ forecast_infections <- function(estimates,
   )
 
   ## set up batch simulation
-  batch_simulate <- function(estimates_args, draws, model,
+  batch_simulate <- function(estimates_args, draws, model, stan,
                              shift, dates, nstart, nend) {
     # extract batch samples from draws
     draws <- map(draws, ~ matrix(.[nstart:nend, ], nrow = nend - nstart + 1))
@@ -481,7 +481,7 @@ forecast_infections <- function(estimates,
           p()
         }
         safe_batch(
-          estimates_args, draws, model,
+          estimates_args, draws, model, stan,
           shift, dates, batch[[1]],
           batch[[2]]
         )[[1]]
@@ -511,7 +511,7 @@ forecast_infections <- function(estimates,
   ## format output
   format_out <- format_fit(
     posterior_samples = regional_out,
-    horizon = estimates$args$horizon,
+    horizon = estimates_args$horizon,
     shift = shift,
     CrIs = extract_CrIs(summarised) / 100
   )
