@@ -10,7 +10,7 @@ default_estimate_infections <- function(..., add_stan = list(), gt = TRUE,
   futile.logger::flog.threshold("FATAL")
 
   def_stan <- list(
-    chains = 2, warmup = 50, samples = 50,
+    cores = 1, chains = 2, warmup = 50, samples = 50,
     control = list(adapt_delta = 0.8)
   )
   def_stan <- modifyList(def_stan, add_stan)

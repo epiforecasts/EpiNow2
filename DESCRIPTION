@@ -161,6 +161,7 @@ Additional_repositories:
     https://production.r-multiverse.org/2025-09-15
 Biarch: true
 Config/testthat/edition: 3
+Config/testthat/parallel: true
 Encoding: UTF-8
 Language: en-GB
 LazyData: true

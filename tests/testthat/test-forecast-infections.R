@@ -8,7 +8,7 @@ out <- suppressWarnings(estimate_infections(reported_cases,
   delays = delay_opts(example_reporting_delay),
   gp = NULL, rt = rt_opts(rw = 14),
   stan = stan_opts(
-    chains = 2, warmup = 100, samples = 100,
+    cores = 1, chains = 2, warmup = 100, samples = 100,
     control = list(adapt_delta = 0.9)
   ),
   verbose = FALSE
