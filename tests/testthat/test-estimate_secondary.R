@@ -26,6 +26,7 @@ inc <- estimate_secondary(inc_cases[1:60],
   obs = obs_opts(
     scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
   ),
+  stan = stan_opts(cores = 1),
   verbose = FALSE
 )
 
@@ -40,6 +41,7 @@ inc_posterior <- inc$posterior[variable %in% params]
 # fit model to example data with a fixed delay
 inc_fixed <- estimate_secondary(inc_cases[1:60],
   delays = delay_opts(Gamma(mean = 15, sd = 5, max = 30)),
+  stan = stan_opts(cores = 1),
   verbose = FALSE
 )
 
@@ -62,6 +64,7 @@ prev <- estimate_secondary(prev_cases[1:100],
     week_effect = FALSE,
     scale = Normal(mean = 0.4, sd = 0.1)
   ),
+  stan = stan_opts(cores = 1),
   verbose = FALSE
 )
 
