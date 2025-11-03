@@ -48,16 +48,10 @@ jobs:
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v5
-
-      - name: Set Additional Repositories
-        run: |
-          REPOS=$(Rscript -e "cat(read.dcf('DESCRIPTION')[,'Additional_repositories'])")
-          echo "PKG_EXTRA_REPOS=$REPOS" >> $GITHUB_ENV
-
       - uses: lorenzwalthert/touchstone/actions/receive@main
         with:
           cache-version: 1
+          extra-packages: stan-dev/cmdstanr
           touchstone_ref: '@289cfc7'
           benchmarking_repo: ${{ matrix.config.benchmarking_repo }}
           benchmarking_ref: ${{ matrix.config.benchmarking_ref }}

@@ -25,17 +25,13 @@ jobs:
         with:
           use-public-rspm: true
 
-      - name: Set Additional Repositories
-        run: |
-          REPOS=$(Rscript -e "cat(read.dcf('DESCRIPTION')[,'Additional_repositories'])")
-          echo "PKG_EXTRA_REPOS=$REPOS" >> $GITHUB_ENV
-
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           packages: |
             local::.
             here
             purrr
+            stan-dev/cmdstanr
 
       - name: Install cmdstan
         uses: epinowcast/actions/install-cmdstan@v1
