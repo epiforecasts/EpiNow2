@@ -487,7 +487,11 @@ forecast_infections <- function(estimates,
         )[[1]]
       },
       future.opts = list(
-        future.seed = TRUE
+        future.seed = TRUE,
+        future.globals = c(
+          "estimates_args", "draws", "model", "stan", "shift", "dates",
+          "safe_batch"
+        )
       ),
       backend = backend
     )
