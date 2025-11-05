@@ -24,6 +24,7 @@
 #'   summarising results and reporting errors if they have occurred.
 #' @export
 #' @seealso [estimate_infections()] [forecast_infections()] [regional_epinow()]
+#' @inheritParams calc_CrIs
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
 #' @inheritParams setup_default_logging
@@ -207,7 +208,6 @@ epinow <- function(data,
       obs = obs,
       forecast = forecast,
       stan = stan,
-      CrIs = CrIs,
       verbose = verbose,
       id = id
     )
@@ -232,7 +232,8 @@ epinow <- function(data,
     # report estimates --------------------------------------------------------
     summary <- summary.estimate_infections(estimates,
       return_numeric = TRUE,
-      target_folder = target_folder
+      target_folder = target_folder,
+      CrIs = CrIs
     )
 
     # plot --------------------------------------------------------------------
