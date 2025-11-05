@@ -206,7 +206,6 @@ epinow <- function(data,
       obs = obs,
       forecast = forecast,
       stan = stan,
-      CrIs = CrIs,
       verbose = verbose,
       id = id
     )
@@ -226,7 +225,8 @@ epinow <- function(data,
     # report estimates --------------------------------------------------------
     summary <- summary(estimates,
       return_numeric = TRUE,
-      target_folder = target_folder
+      target_folder = target_folder,
+      CrIs = CrIs
     )
 
     # plot --------------------------------------------------------------------
