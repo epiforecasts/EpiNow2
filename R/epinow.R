@@ -97,13 +97,6 @@ epinow <- function(data,
                    logs = tempdir(), id = "epinow", verbose = interactive(),
                    filter_leading_zeros = TRUE, zero_threshold = Inf, horizon
                    ) {
-  if (!missing(CrIs)) {
-    lifecycle::deprecate_stop(
-      "1.8.0",
-      "estimate_infections(CrIs)",
-      detail = "Specify credible intervals when using `summary()` or `plot()`."
-    )
-  }
   if (!missing(filter_leading_zeros)) {
     lifecycle::deprecate_stop(
       "1.7.0",
