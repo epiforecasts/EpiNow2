@@ -61,7 +61,8 @@ settings if desired.}
 use for estimation but not to fit to at the beginning of the time series.
 This must be less than the number of observations.}
 
-\item{CrIs}{Numeric vector of credible intervals to calculate.}
+\item{CrIs}{Deprecated; specify credible intervals when using \code{\link[=summary]{summary()}} or
+\code{\link[=plot]{plot()}}}
 
 \item{priors}{A \verb{<data.frame>} of named priors to be used in model fitting
 rather than the defaults supplied from other arguments. This is typically

@@ -97,6 +97,13 @@ epinow <- function(data,
                    logs = tempdir(), id = "epinow", verbose = interactive(),
                    filter_leading_zeros = TRUE, zero_threshold = Inf, horizon
                    ) {
+  if (!missing(CrIs)) {
+    lifecycle::deprecate_stop(
+      "1.8.0",
+      "estimate_infections(CrIs)",
+      detail = "Specify credible intervals when using `summary()` or `plot()`."
+    )
+  }
   if (!missing(filter_leading_zeros)) {
     lifecycle::deprecate_stop(
       "1.7.0",
@@ -131,14 +138,6 @@ epinow <- function(data,
   }
   assert_string(id)
   assert_logical(verbose)
-
-  if (is.null(CrIs) || length(CrIs) == 0 || !is.numeric(CrIs)) {
-    futile.logger::flog.fatal(
-      "At least one credible interval must be specified",
-      name = "EpiNow2.epinow"
-    )
-    stop("At least one credible interval must be specified")
-  }
 
   if (is.null(forecast)) {
     forecast <- forecast_opts(horizon = 0)

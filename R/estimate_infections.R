@@ -47,6 +47,9 @@
 #' the forecast opitions. Defaults to [forecast_opts()]. If NULL then no
 #' forecasting will be done.
 #'
+#' @param CrIs Deprecated; specify credible intervals when using [summary()] or
+#' [plot()]
+#'
 #' @param horizon Deprecated; use `forecast` instead to specify the predictive
 #'   horizon
 #'
@@ -82,7 +85,6 @@
 #' @inheritParams create_gp_data
 #' @inheritParams create_obs_model
 #' @inheritParams fit_model_with_nuts
-#' @inheritParams calc_CrIs
 #' @importFrom data.table data.table copy merge.data.table as.data.table
 #' @importFrom data.table setorder rbindlist melt .N setDT
 #' @importFrom lubridate days
