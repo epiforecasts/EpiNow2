@@ -80,7 +80,8 @@ forecasting will be done.}
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
-\item{CrIs}{Numeric vector of credible intervals to calculate.}
+\item{CrIs}{Deprecated; specify credible intervals when using \code{\link[=summary]{summary()}} or
+\code{\link[=plot]{plot()}}}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned,
 this automatically updates to TRUE if no directory for saving is specified.}

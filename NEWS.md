@@ -8,6 +8,12 @@
   Fixes #1067.
 - The package now has a hex logo.
 - Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now have to do `param_id_[parameter_name]`, for example, `frac_obs_id` is now `param_id_frac_obs`.
+- `estimate_infections()` now returns an S3 object of class `c("epinowfit", "estimate_infections", "list")` with elements `fit`, `args`, and `observations`.
+  - Use `get_samples(object)` to extract formatted posterior samples (replaces `summary(object, type = "samples")`).
+  - Use `summary(object)` to get summarised estimates (same as before, but `type = "samples"` is now deprecated).
+  - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
+  - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
+  - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
 
 ## Model changes
 

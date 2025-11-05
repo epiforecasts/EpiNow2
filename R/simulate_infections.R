@@ -203,7 +203,7 @@ simulate_infections <- function(R,
     seq(min(R$date) - seeding_time, min(R$date) - 1, by = "day"),
     R$date
   )
-  out <- extract_parameter_samples(sim, stan_data,
+  out <- format_simulation_output(sim, stan_data,
     reported_inf_dates = dates,
     reported_dates = dates[-(1:seeding_time)],
     imputed_dates = dates[-(1:seeding_time)],
@@ -296,7 +296,7 @@ simulate_infections <- function(R,
 #' plot(sims)
 #'
 #' #' # with a data.frame input of samples
-#' R_samples <- summary(est, type = "samples", param = "R")
+#' R_samples <- get_samples(est)[variable == "R"]
 #' R_samples <- R_samples[
 #'   ,
 #'   .(date, sample, value)
@@ -412,12 +412,14 @@ forecast_infections <- function(estimates,
   }
 
   # define dates of interest
-  dates <-
-    seq(
-      min(na.omit(unique(estimates$summarised[variable == "R"]$date)))
-      - days(shift),
-      by = "day", length.out = dim(draws$R)[2] + shift
-    )
+  summarised <- summary(estimates, type = "parameters")
+  dates <- seq(
+    min(na.omit(unique(summarised[variable == "R"]$date))) - days(shift),
+    by = "day", length.out = dim(draws$R)[2] + shift
+  )
+
+  # Extract args for passing to parallel workers
+  estimates_args <- estimates$args
 
   # Load model
   stan <- stan_opts(
@@ -425,14 +427,14 @@ forecast_infections <- function(estimates,
   )
 
   ## set up batch simulation
-  batch_simulate <- function(estimates, draws, model,
+  batch_simulate <- function(estimates_args, draws, model, stan,
                              shift, dates, nstart, nend) {
     # extract batch samples from draws
     draws <- map(draws, ~ matrix(.[nstart:nend, ], nrow = nend - nstart + 1))
 
     ## prepare data for stan command
     stan_data <- c(
-      list(n = dim(draws$R)[1], initial_as_scale = 1), draws, estimates$args
+      list(n = dim(draws$R)[1], initial_as_scale = 1), draws, estimates_args
     )
 
     ## allocate empty parameters
@@ -450,7 +452,7 @@ forecast_infections <- function(estimates,
     ## simulate
     sims <- fit_model(stan_args, id = "simulate_infections")
 
-    extract_parameter_samples(sims, stan_data,
+    format_simulation_output(sims, stan_data,
       reported_inf_dates = dates,
       reported_dates = dates[-(1:shift)],
       imputed_dates = dates[-(1:shift)],
@@ -479,13 +481,17 @@ forecast_infections <- function(estimates,
           p()
         }
         safe_batch(
-          estimates, draws, model,
+          estimates_args, draws, model, stan,
           shift, dates, batch[[1]],
           batch[[2]]
         )[[1]]
       },
       future.opts = list(
-        future.seed = TRUE
+        future.seed = TRUE,
+        future.globals = c(
+          "estimates_args", "draws", "model", "stan", "shift", "dates",
+          "safe_batch"
+        )
       ),
       backend = backend
     )
@@ -509,9 +515,9 @@ forecast_infections <- function(estimates,
   ## format output
   format_out <- format_fit(
     posterior_samples = regional_out,
-    horizon = estimates$args$horizon,
+    horizon = estimates_args$horizon,
     shift = shift,
-    CrIs = extract_CrIs(estimates$summarised) / 100
+    CrIs = extract_CrIs(summarised) / 100
   )
   format_out$samples <- format_out$samples[, sample := seq_len(.N),
     by = c("variable", "time", "date", "strat")
