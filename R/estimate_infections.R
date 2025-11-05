@@ -146,7 +146,7 @@ estimate_infections <- function(data,
                                 zero_threshold = Inf,
                                 horizon) {
   if (!missing(CrIs)) {
-    lifecycle::deprecate_warn(
+    lifecycle::deprecate_stop(
       "1.8.0",
       "estimate_infections(CrIs)",
       detail = "Specify credible intervals when using `summary()` or `plot()`."
