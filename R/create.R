@@ -843,3 +843,82 @@ create_stan_params <- function(params) {
   }
   c(ret, as.list(ids), as.list(null_ids))
 }
+
+#' Create Summary Output from Infection Estimation Objects
+#'
+#' @description `r lifecycle::badge("stable")`
+#'
+#' This function creates summary output from infection estimation objects
+#' (either `estimate_infections` or `forecast_infections`). It is used
+#' internally by [summary.estimate_infections()] and
+#' [summary.forecast_infections()] to provide a consistent summary interface.
+#'
+#' @param object An infection estimation object (either from
+#'   [estimate_infections()] or [forecast_infections()]).
+#'
+#' @param type A character vector of data types to return. Defaults to
+#'   "snapshot" but also supports "parameters". "snapshot" returns
+#'   a summary at a given date (by default the latest date informed by data).
+#'   "parameters" returns summarised parameter estimates that can be further
+#'   filtered using `params` to show just the parameters of interest and date.
+#'
+#' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.
+#'   Defaults to the latest date with data.
+#'
+#' @param params A character vector of parameters to filter for.
+#'
+#' @param CrIs Numeric vector of credible intervals to calculate. Defaults
+#'   to c(0.2, 0.5, 0.9).
+#'
+#' @param ... Additional arguments passed to [report_summary()].
+#'
+#' @return A `<data.frame>` of summary output, either a snapshot summary
+#'   (via [report_summary()]) or parameter summaries (via
+#'   [calc_summary_measures()]).
+#'
+#' @importFrom rlang arg_match
+#' @seealso [summary.estimate_infections()] [summary.forecast_infections()]
+#'   [report_summary()] [calc_summary_measures()]
+#' @keywords internal
+create_infection_summary <- function(object,
+                                     type = c("snapshot", "parameters"),
+                                     date = NULL, params = NULL,
+                                     CrIs = c(0.2, 0.5, 0.9), ...) {
+  type <- arg_match(type)
+
+  if (is.null(date)) {
+    target_date <- max(object$observations$date)
+  } else {
+    target_date <- as.Date(date)
+  }
+
+  # Get posterior samples (dispatched to appropriate method)
+  samples <- get_samples(object)
+
+  # Calculate summary measures
+  summarised <- calc_summary_measures(
+    samples,
+    summarise_by = c("date", "variable", "strat", "type"),
+    order_by = c("variable", "date"),
+    CrIs = CrIs
+  )
+
+  if (type == "snapshot") {
+    out <- report_summary(
+      summarised_estimates = summarised[date == target_date],
+      rt_samples = samples[variable == "R"][
+        date == target_date, .(sample, value)
+      ],
+      ...
+    )
+  } else if (type == "parameters") {
+    out <- summarised
+    if (!is.null(date)) {
+      out <- out[date == target_date]
+    }
+    if (!is.null(params)) {
+      out <- out[variable %in% params]
+    }
+  }
+  out[]
+}
