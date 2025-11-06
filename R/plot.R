@@ -388,6 +388,32 @@ plot.estimate_infections <- function(x,
   select_plots(out, type)
 }
 
+#' Plot method for forecast_infections
+#'
+#' @description `r lifecycle::badge("maturing")`
+#' `plot` method for class `<forecast_infections>`.
+#'
+#' @param x A list of output as produced by `forecast_infections`
+#'
+#' @param ... Pass additional arguments to report_plots
+#' @importFrom rlang arg_match
+#' @inheritParams select_plots
+#'
+#' @seealso [report_plots()] [forecast_infections()]
+#' @aliases plot
+#' @method plot forecast_infections
+#' @return List of plots as produced by [report_plots()]
+#' @export
+plot.forecast_infections <- function(x,
+                                     type = "summary",
+                                     ...) {
+  out <- report_plots(
+    summarised_estimates = summary(x, type = "parameters"),
+    reported = x$observations, ...
+  )
+  select_plots(out, type)
+}
+
 #' Plot method for epinow
 #'
 #' @description `r lifecycle::badge("maturing")`

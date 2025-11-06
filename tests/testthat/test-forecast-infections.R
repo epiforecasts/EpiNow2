@@ -20,6 +20,18 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
   expect_equal(names(sims), c("samples", "summarised", "observations"))
 })
 
+test_that("forecast_infections returns an object with the correct class structure", {
+  sims <- forecast_infections(out)
+  expect_s3_class(sims, "forecast_infections")
+  expect_s3_class(sims, "estimate_infections")
+  expect_true(inherits(sims, c("forecast_infections", "estimate_infections")))
+})
+
+test_that("plot.forecast_infections method works", {
+  sims <- forecast_infections(out)
+  expect_error(plot(sims), NA)
+})
+
 test_that("forecast_infections works to simulate a passed in estimate_infections
            object when using the cmdstanr backend", {
   skip_on_os("windows")
