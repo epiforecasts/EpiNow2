@@ -267,5 +267,5 @@ get_samples.estimate_infections <- function(object, ...) {
 #' @export
 get_samples.forecast_infections <- function(object, ...) {
   # forecast_infections objects already have pre-formatted samples
-  return(object$samples)
+  object$samples
 }

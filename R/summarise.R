@@ -866,7 +866,8 @@ summary.estimate_infections <- function(object,
 #' @param ... Pass additional arguments to `report_summary`
 #' @importFrom rlang arg_match
 #' @inheritParams calc_summary_measures
-#' @seealso [summary.estimate_infections()] [forecast_infections()] [report_summary()]
+#' @seealso [summary.estimate_infections()] [forecast_infections()]
+#'   [report_summary()]
 #' @method summary forecast_infections
 #' @return Returns a `<data.frame>` of summary output
 #' @export
