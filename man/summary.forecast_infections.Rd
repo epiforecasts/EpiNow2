@@ -28,7 +28,8 @@ filtered using \code{params} to show just the parameters of interest and date.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{...}{Pass additional arguments to \code{report_summary}}
+\item{...}{Pass additional arguments to \code{report_summary} when
+\code{type = "snapshot"}.}
 }
 \value{
 Returns a \verb{<data.frame>} of summary output
