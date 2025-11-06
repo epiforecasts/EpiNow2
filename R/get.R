@@ -245,12 +245,7 @@ get_samples <- function(object, ...) {
 #' @rdname get_samples
 #' @export
 get_samples.estimate_infections <- function(object, ...) {
-  # If object already has samples (e.g., from forecast_infections), return them
-  if (!is.null(object$samples)) {
-    return(object$samples)
-  }
-
-  # Otherwise extract from fit
+  # Extract from fit
   raw_samples <- extract_samples(object$fit)
 
   # Add model arguments to samples list
@@ -266,4 +261,11 @@ get_samples.estimate_infections <- function(object, ...) {
     args = object$args,
     observations = object$observations
   )
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.forecast_infections <- function(object, ...) {
+  # forecast_infections objects already have pre-formatted samples
+  return(object$samples)
 }

@@ -23,13 +23,21 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
 test_that("forecast_infections returns an object with the correct class structure", {
   sims <- forecast_infections(out)
   expect_s3_class(sims, "forecast_infections")
-  expect_s3_class(sims, "estimate_infections")
-  expect_true(inherits(sims, c("forecast_infections", "estimate_infections")))
+  expect_false(inherits(sims, "estimate_infections"))
+  expect_true(inherits(sims, "forecast_infections"))
 })
 
-test_that("plot.forecast_infections method works", {
+test_that("forecast_infections methods work correctly", {
   sims <- forecast_infections(out)
+  # Test plot method
   expect_error(plot(sims), NA)
+  # Test summary method
+  expect_error(summary(sims), NA)
+  expect_error(summary(sims, type = "parameters"), NA)
+  # Test get_samples method
+  samples <- get_samples(sims)
+  expect_s3_class(samples, "data.table")
+  expect_true("variable" %in% names(samples))
 })
 
 test_that("forecast_infections works to simulate a passed in estimate_infections
