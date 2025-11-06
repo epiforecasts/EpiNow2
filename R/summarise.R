@@ -803,12 +803,12 @@ summary.epinow <- function(object,
   return(out)
 }
 
-# Internal helper function for summarising infection results
-# Used by both summary.estimate_infections and summary.forecast_infections
-.summary_infection_results_internal <- function(object,
-                                                type = c("snapshot", "parameters"),
-                                                date = NULL, params = NULL,
-                                                CrIs = c(0.2, 0.5, 0.9), ...) {
+# Create summary output from infection estimation objects
+# Shared by summary.estimate_infections and summary.forecast_infections
+create_infection_summary <- function(object,
+                                     type = c("snapshot", "parameters"),
+                                     date = NULL, params = NULL,
+                                     CrIs = c(0.2, 0.5, 0.9), ...) {
   type <- arg_match(type)
 
   if (is.null(date)) {
@@ -888,7 +888,7 @@ summary.estimate_infections <- function(object,
     return(get_samples(object))
   }
 
-  .summary_infection_results_internal(object, type, date, params, CrIs, ...)
+  create_infection_summary(object, type, date, params, CrIs, ...)
 }
 
 #' Summary output from forecast_infections
@@ -919,7 +919,7 @@ summary.forecast_infections <- function(object,
                                         type = c("snapshot", "parameters"),
                                         date = NULL, params = NULL,
                                         CrIs = c(0.2, 0.5, 0.9), ...) {
-  .summary_infection_results_internal(object, type, date, params, CrIs, ...)
+  create_infection_summary(object, type, date, params, CrIs, ...)
 }
 
 ##' Print information about an object that has resulted from a model fit.
