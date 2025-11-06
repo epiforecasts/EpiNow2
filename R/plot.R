@@ -369,11 +369,10 @@ plot_summary <- function(summary_results,
 #'
 #' @param x A list of output as produced by `estimate_infections`
 #'
-#' @param CrIs Numeric vector of credible intervals to calculate.
-#'
 #' @param ... Pass additional arguments to report_plots
 #' @importFrom rlang arg_match
 #' @inheritParams select_plots
+#' @inheritParams calc_summary_measures
 #'
 #' @seealso [report_plots()]
 #' @aliases plot
@@ -398,11 +397,10 @@ plot.estimate_infections <- function(x,
 #'
 #' @param x A list of output as produced by `forecast_infections`
 #'
-#' @param CrIs Numeric vector of credible intervals to calculate.
-#'
 #' @param ... Pass additional arguments to report_plots
 #' @importFrom rlang arg_match
 #' @inheritParams select_plots
+#' @inheritParams calc_summary_measures
 #'
 #' @seealso [report_plots()] [forecast_infections()]
 #' @aliases plot
