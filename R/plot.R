@@ -375,7 +375,6 @@ plot_summary <- function(summary_results,
 #' @inheritParams calc_summary_measures
 #'
 #' @seealso [report_plots()]
-#' @aliases plot
 #' @method plot estimate_infections
 #' @return List of plots as produced by [report_plots()]
 #' @export
@@ -403,7 +402,6 @@ plot.estimate_infections <- function(x,
 #' @inheritParams calc_summary_measures
 #'
 #' @seealso [report_plots()] [forecast_infections()]
-#' @aliases plot
 #' @method plot forecast_infections
 #' @return List of plots as produced by [report_plots()]
 #' @export
