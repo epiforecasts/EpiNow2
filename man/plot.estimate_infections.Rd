@@ -2,7 +2,6 @@
 % Please edit documentation in R/plot.R
 \name{plot.estimate_infections}
 \alias{plot.estimate_infections}
-\alias{plot}
 \title{Plot method for estimate_infections}
 \usage{
 \method{plot}{estimate_infections}(x, type = "summary", CrIs = c(0.2, 0.5, 0.9), ...)
