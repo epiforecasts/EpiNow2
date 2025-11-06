@@ -822,7 +822,8 @@ summary.epinow <- function(object,
 #'
 #' @param params A character vector of parameters to filter for.
 #'
-#' @param ... Pass additional arguments to `report_summary`
+#' @param ... Pass additional arguments to `report_summary` when
+#'   `type = "snapshot"`.
 #' @importFrom rlang arg_match
 #' @inheritParams calc_summary_measures
 #' @seealso [summary.epinow()] [estimate_infections()] [report_summary()]
@@ -863,7 +864,8 @@ summary.estimate_infections <- function(object,
 #'
 #' @param params A character vector of parameters to filter for.
 #'
-#' @param ... Pass additional arguments to `report_summary`
+#' @param ... Pass additional arguments to `report_summary` when
+#'   `type = "snapshot"`.
 #' @importFrom rlang arg_match
 #' @inheritParams calc_summary_measures
 #' @seealso [summary.estimate_infections()] [forecast_infections()]

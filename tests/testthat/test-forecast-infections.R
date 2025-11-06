@@ -22,15 +22,24 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
 
 test_that("forecast_infections methods work correctly", {
   sims <- forecast_infections(out)
-  # Test plot method
-  expect_error(plot(sims), NA)
-  # Test summary method
-  expect_error(summary(sims), NA)
-  expect_error(summary(sims, type = "parameters"), NA)
+
+  # Test plot method returns expected object types
+  p <- plot(sims)
+  expect_s3_class(p, "patchwork")
+
+  # Test summary method returns data.table with expected structure
+  sum_snapshot <- summary(sims)
+  expect_s3_class(sum_snapshot, "data.frame")
+  expect_true(all(c("measure", "estimate") %in% names(sum_snapshot)))
+
+  sum_params <- summary(sims, type = "parameters")
+  expect_s3_class(sum_params, "data.table")
+  expect_true(all(c("date", "variable", "median", "mean") %in% names(sum_params)))
+
   # Test get_samples method
   samples <- get_samples(sims)
   expect_s3_class(samples, "data.table")
-  expect_true("variable" %in% names(samples))
+  expect_true(all(c("variable", "date", "sample", "value") %in% names(samples)))
 })
 
 test_that("forecast_infections methods respect CrIs argument", {
