@@ -803,6 +803,51 @@ summary.epinow <- function(object,
   return(out)
 }
 
+# Internal helper function for summarising infection results
+# Used by both summary.estimate_infections and summary.forecast_infections
+.summary_infection_results_internal <- function(object,
+                                                type = c("snapshot", "parameters"),
+                                                date = NULL, params = NULL,
+                                                CrIs = c(0.2, 0.5, 0.9), ...) {
+  type <- arg_match(type)
+
+  if (is.null(date)) {
+    target_date <- max(object$observations$date)
+  } else {
+    target_date <- as.Date(date)
+  }
+
+  # Get posterior samples (dispatched to appropriate method)
+  samples <- get_samples(object)
+
+  # Calculate summary measures
+  summarised <- calc_summary_measures(
+    samples,
+    summarise_by = c("date", "variable", "strat", "type"),
+    order_by = c("variable", "date"),
+    CrIs = CrIs
+  )
+
+  if (type == "snapshot") {
+    out <- report_summary(
+      summarised_estimates = summarised[date == target_date],
+      rt_samples = samples[variable == "R"][
+        date == target_date, .(sample, value)
+      ],
+      ...
+    )
+  } else if (type == "parameters") {
+    out <- summarised
+    if (!is.null(date)) {
+      out <- out[date == target_date]
+    }
+    if (!is.null(params)) {
+      out <- out[variable %in% params]
+    }
+  }
+  out[]
+}
+
 #' Summary output from estimate_infections
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -843,43 +888,7 @@ summary.estimate_infections <- function(object,
     return(get_samples(object))
   }
 
-  type <- arg_match(type)
-
-  if (is.null(date)) {
-    target_date <- max(object$observations$date)
-  } else {
-    target_date <- as.Date(date)
-  }
-
-  # Get posterior samples
-  samples <- get_samples(object)
-
-  # Calculate summary measures
-  summarised <- calc_summary_measures(
-    samples,
-    summarise_by = c("date", "variable", "strat", "type"),
-    order_by = c("variable", "date"),
-    CrIs = CrIs
-  )
-
-  if (type == "snapshot") {
-    out <- report_summary(
-      summarised_estimates = summarised[date == target_date],
-      rt_samples = samples[variable == "R"][
-        date == target_date, .(sample, value)
-      ],
-      ...
-    )
-  } else if (type == "parameters") {
-    out <- summarised
-    if (!is.null(date)) {
-      out <- out[date == target_date]
-    }
-    if (!is.null(params)) {
-      out <- out[variable %in% params]
-    }
-  }
-  out[]
+  .summary_infection_results_internal(object, type, date, params, CrIs, ...)
 }
 
 #' Summary output from forecast_infections
@@ -910,43 +919,7 @@ summary.forecast_infections <- function(object,
                                         type = c("snapshot", "parameters"),
                                         date = NULL, params = NULL,
                                         CrIs = c(0.2, 0.5, 0.9), ...) {
-  type <- arg_match(type)
-
-  if (is.null(date)) {
-    target_date <- max(object$observations$date)
-  } else {
-    target_date <- as.Date(date)
-  }
-
-  # Get posterior samples
-  samples <- get_samples(object)
-
-  # Calculate summary measures
-  summarised <- calc_summary_measures(
-    samples,
-    summarise_by = c("date", "variable", "strat", "type"),
-    order_by = c("variable", "date"),
-    CrIs = CrIs
-  )
-
-  if (type == "snapshot") {
-    out <- report_summary(
-      summarised_estimates = summarised[date == target_date],
-      rt_samples = samples[variable == "R"][
-        date == target_date, .(sample, value)
-      ],
-      ...
-    )
-  } else if (type == "parameters") {
-    out <- summarised
-    if (!is.null(date)) {
-      out <- out[date == target_date]
-    }
-    if (!is.null(params)) {
-      out <- out[variable %in% params]
-    }
-  }
-  out[]
+  .summary_infection_results_internal(object, type, date, params, CrIs, ...)
 }
 
 ##' Print information about an object that has resulted from a model fit.

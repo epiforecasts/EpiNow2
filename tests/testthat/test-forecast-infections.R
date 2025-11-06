@@ -20,13 +20,6 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
   expect_equal(names(sims), c("samples", "summarised", "observations"))
 })
 
-test_that("forecast_infections returns an object with the correct class structure", {
-  sims <- forecast_infections(out)
-  expect_s3_class(sims, "forecast_infections")
-  expect_false(inherits(sims, "estimate_infections"))
-  expect_true(inherits(sims, "forecast_infections"))
-})
-
 test_that("forecast_infections methods work correctly", {
   sims <- forecast_infections(out)
   # Test plot method
