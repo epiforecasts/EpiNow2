@@ -68,8 +68,7 @@ settings if desired.}
 \item{horizon}{Deprecated; use \code{forecast} instead to specify the predictive
 horizon}
 
-\item{CrIs}{Deprecated; specify credible intervals when using \code{\link[=summary]{summary()}} or
-\code{\link[=plot]{plot()}}}
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{data}{A \verb{<data.frame>} of disease reports (confirm) by date
 (date), and region (\code{region}).}
