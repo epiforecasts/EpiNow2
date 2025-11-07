@@ -7,7 +7,7 @@
 \method{summary}{estimate_infections}(
   object,
   type = c("snapshot", "parameters"),
-  date = NULL,
+  target_date = NULL,
   params = NULL,
   CrIs = c(0.2, 0.5, 0.9),
   ...
@@ -24,7 +24,8 @@ filtered using \code{params} to show just the parameters of interest and date.
 "samples" similarly returns posterior
 samples.}
 
-\item{date}{A date in the form "yyyy-mm-dd" to inspect estimates for.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 
 \item{params}{A character vector of parameters to filter for.}
 

@@ -2,12 +2,12 @@
 % Please edit documentation in R/create.R
 \name{create_infection_summary}
 \alias{create_infection_summary}
-\title{Create Summary Output from Infection Estimation Objects}
+\title{Create summary output from infection estimation objects}
 \usage{
 create_infection_summary(
   object,
   type = c("snapshot", "parameters"),
-  date = NULL,
+  target_date = NULL,
   params = NULL,
   CrIs = c(0.2, 0.5, 0.9),
   ...
@@ -23,8 +23,8 @@ a summary at a given date (by default the latest date informed by data).
 "parameters" returns summarised parameter estimates that can be further
 filtered using \code{params} to show just the parameters of interest and date.}
 
-\item{date}{A date in the form "yyyy-mm-dd" to inspect estimates for.
-Defaults to the latest date with data.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 
 \item{params}{A character vector of parameters to filter for.}
 
