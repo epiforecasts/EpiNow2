@@ -50,8 +50,8 @@ save_input <- function(data, target_folder) {
 #'
 #' @seealso [estimate_infections()]
 #' @inheritParams setup_target_folder
-#' @inheritParams  estimate_infections
 #' @inheritParams calc_CrIs
+#' @inheritParams estimate_infections
 #' @return No return value, called for side effects
 #' @keywords internal
 save_estimate_infections <- function(estimates, target_folder = NULL,
