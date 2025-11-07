@@ -27,6 +27,7 @@ test_that("epinow produces expected output when run with default settings", {
         cores = 1, chains = 2,
         control = list(adapt_delta = 0.8)
       ),
+      CrIs = c(0.95),
       logs = NULL, verbose = FALSE
     )
   )))
@@ -38,6 +39,10 @@ test_that("epinow produces expected output when run with default settings", {
   df_non_zero(out$estimated_reported_cases$summarised)
   df_non_zero(out$summary)
   expect_equal(names(out$plots), c("summary", "infections", "reports", "R", "growth_rate"))
+
+  # Regression test: custom CrIs should be respected in output
+  expect_equal(extract_CrIs(out$estimates$summarised), 0.95)
+  expect_equal(extract_CrIs(out$estimated_reported_cases$summarised), 0.95)
 })
 
 test_that("epinow produces expected output when run with the
