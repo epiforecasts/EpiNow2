@@ -41,8 +41,8 @@ test_that("epinow produces expected output when run with default settings", {
   expect_equal(names(out$plots), c("summary", "infections", "reports", "R", "growth_rate"))
 
   # Regression test: custom CrIs should be respected in output
-  expect_equal(extract_CrIs(out$estimates$summarised), 0.95)
-  expect_equal(extract_CrIs(out$estimated_reported_cases$summarised), 0.95)
+  expect_equal(extract_CrIs(out$estimates$summarised), 95)
+  expect_equal(extract_CrIs(out$estimated_reported_cases$summarised), 95)
 })
 
 test_that("epinow produces expected output when run with the
