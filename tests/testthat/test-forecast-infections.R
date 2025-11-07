@@ -20,7 +20,7 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
   expect_equal(names(sims), c("samples", "summarised", "observations"))
 })
 
-test_that("forecast_infections methods work correctly", {
+test_that("forecast_infections methods return expected output structure", {
   sims <- forecast_infections(out)
 
   # Test plot method returns expected object types

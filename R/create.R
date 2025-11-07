@@ -844,7 +844,7 @@ create_stan_params <- function(params) {
   c(ret, as.list(ids), as.list(null_ids))
 }
 
-#' Create Summary Output from Infection Estimation Objects
+#' Create summary output from infection estimation objects
 #'
 #' @description `r lifecycle::badge("stable")`
 #'
@@ -862,10 +862,7 @@ create_stan_params <- function(params) {
 #'   "parameters" returns summarised parameter estimates that can be further
 #'   filtered using `params` to show just the parameters of interest and date.
 #'
-#' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.
-#'   Defaults to the latest date with data.
-#'
-#' @param params A character vector of parameters to filter for.
+#' @inheritParams summary.estimate_infections
 #'
 #' @param CrIs Numeric vector of credible intervals to calculate. Defaults
 #'   to c(0.2, 0.5, 0.9).
@@ -892,10 +889,8 @@ create_infection_summary <- function(object,
     target_date <- as.Date(date)
   }
 
-  # Get posterior samples (dispatched to appropriate method)
   samples <- get_samples(object)
 
-  # Calculate summary measures
   summarised <- calc_summary_measures(
     samples,
     summarise_by = c("date", "variable", "strat", "type"),

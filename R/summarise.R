@@ -818,7 +818,8 @@ summary.epinow <- function(object,
 #' "samples" similarly returns posterior
 #' samples.
 #'
-#' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.
+#' @param date A date (Date object or character string in "yyyy-mm-dd"
+#'   format) to inspect estimates for.
 #'
 #' @param params A character vector of parameters to filter for.
 #'
@@ -860,12 +861,7 @@ summary.estimate_infections <- function(object,
 #' "parameters" returns summarised parameter estimates that can be further
 #' filtered using `params` to show just the parameters of interest and date.
 #'
-#' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.
-#'
-#' @param params A character vector of parameters to filter for.
-#'
-#' @param ... Pass additional arguments to `report_summary` when
-#'   `type = "snapshot"`.
+#' @inheritParams summary.estimate_infections
 #' @importFrom rlang arg_match
 #' @inheritParams calc_summary_measures
 #' @seealso [summary.estimate_infections()] [forecast_infections()]
