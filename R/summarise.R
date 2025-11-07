@@ -781,7 +781,7 @@ summary.epinow <- function(object,
                            output = c(
                              "estimates", "forecast", "estimated_reported_cases"
                            ),
-                           date = NULL, params = NULL,
+                           target_date = NULL, params = NULL,
                            ...) {
   output <- arg_match(output)
   if (output == "estimates") {
@@ -792,8 +792,8 @@ summary.epinow <- function(object,
     } else {
       out <- object$estimated_reported_cases
     }
-    if (!is.null(date)) {
-      target_date <- as.Date(date)
+    if (!is.null(target_date)) {
+      target_date <- as.Date(target_date)
       out <- out[date == target_date]
     }
     if (!is.null(params)) {
@@ -818,8 +818,7 @@ summary.epinow <- function(object,
 #' "samples" similarly returns posterior
 #' samples.
 #'
-#' @param date A date (Date object or character string in "yyyy-mm-dd"
-#'   format) to inspect estimates for.
+#' @inheritParams setup_target_folder
 #'
 #' @param params A character vector of parameters to filter for.
 #'
@@ -833,7 +832,7 @@ summary.epinow <- function(object,
 #' @export
 summary.estimate_infections <- function(object,
                                         type = c("snapshot", "parameters"),
-                                        date = NULL, params = NULL,
+                                        target_date = NULL, params = NULL,
                                         CrIs = c(0.2, 0.5, 0.9), ...) {
   # Handle deprecated type = "samples" before arg_match
   if (length(type) == 1 && type == "samples") {
@@ -845,7 +844,7 @@ summary.estimate_infections <- function(object,
     return(get_samples(object))
   }
 
-  create_infection_summary(object, type, date, params, CrIs, ...)
+  create_infection_summary(object, type, target_date, params, CrIs, ...)
 }
 
 #' Summary output from forecast_infections
@@ -871,9 +870,9 @@ summary.estimate_infections <- function(object,
 #' @export
 summary.forecast_infections <- function(object,
                                         type = c("snapshot", "parameters"),
-                                        date = NULL, params = NULL,
+                                        target_date = NULL, params = NULL,
                                         CrIs = c(0.2, 0.5, 0.9), ...) {
-  create_infection_summary(object, type, date, params, CrIs, ...)
+  create_infection_summary(object, type, target_date, params, CrIs, ...)
 }
 
 ##' Print information about an object that has resulted from a model fit.

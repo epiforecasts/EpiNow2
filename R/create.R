@@ -879,14 +879,14 @@ create_stan_params <- function(params) {
 #' @keywords internal
 create_infection_summary <- function(object,
                                      type = c("snapshot", "parameters"),
-                                     date = NULL, params = NULL,
+                                     target_date = NULL, params = NULL,
                                      CrIs = c(0.2, 0.5, 0.9), ...) {
   type <- arg_match(type)
 
-  if (is.null(date)) {
+  if (is.null(target_date)) {
     target_date <- max(object$observations$date)
   } else {
-    target_date <- as.Date(date)
+    target_date <- as.Date(target_date)
   }
 
   samples <- get_samples(object)
@@ -908,7 +908,7 @@ create_infection_summary <- function(object,
     )
   } else if (type == "parameters") {
     out <- summarised
-    if (!is.null(date)) {
+    if (!is.null(target_date)) {
       out <- out[date == target_date]
     }
     if (!is.null(params)) {
