@@ -51,10 +51,12 @@ save_input <- function(data, target_folder) {
 #' @seealso [estimate_infections()]
 #' @inheritParams setup_target_folder
 #' @inheritParams  estimate_infections
+#' @inheritParams calc_CrIs
 #' @return No return value, called for side effects
 #' @keywords internal
 save_estimate_infections <- function(estimates, target_folder = NULL,
-                                     samples = TRUE, return_fit = TRUE) {
+                                     samples = TRUE, return_fit = TRUE,
+                                     CrIs = c(0.2, 0.5, 0.9)) {
   if (!is.null(target_folder)) {
     if (samples) {
       saveRDS(
@@ -62,7 +64,7 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
       )
     }
     saveRDS(
-      summary(estimates, type = "parameters"),
+      summary(estimates, type = "parameters", CrIs = CrIs),
       file.path(target_folder, "summarised_estimates.rds")
     )
     if (return_fit) {
@@ -99,7 +101,7 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
     ]
   }
   estimated_reported_cases$summarised <- summary(
-    estimates, type = "parameters"
+    estimates, type = "parameters", CrIs = CrIs
   )[
     variable == "reported_cases"
   ][
@@ -181,13 +183,14 @@ construct_output <- function(estimates,
                              estimated_reported_cases,
                              plots = NULL,
                              summary = NULL,
-                             samples = TRUE) {
+                             samples = TRUE,
+                             CrIs = c(0.2, 0.5, 0.9)) {
   out <- list()
   out$estimates <- list()
   if (samples) {
     out$estimates$samples <- get_samples(estimates)
   }
-  out$estimates$summarised <- summary(estimates, "parameters")
+  out$estimates$summarised <- summary(estimates, "parameters", CrIs = CrIs)
   out$estimated_reported_cases <- estimated_reported_cases
   out$summary <- summary
 
