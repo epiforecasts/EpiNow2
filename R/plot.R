@@ -409,11 +409,7 @@ plot.forecast_infections <- function(x,
                                      type = "summary",
                                      CrIs = c(0.2, 0.5, 0.9),
                                      ...) {
-  out <- report_plots(
-    summarised_estimates = summary(x, type = "parameters", CrIs = CrIs),
-    reported = x$observations, ...
-  )
-  select_plots(out, type)
+  plot.estimate_infections(x, type = type, CrIs = CrIs, ...)
 }
 
 #' Plot method for epinow
