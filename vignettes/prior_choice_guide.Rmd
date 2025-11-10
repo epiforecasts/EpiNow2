@@ -18,6 +18,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   eval = FALSE
 )
+library(distributional)
+library(posterior)
 ```
 
 # Introduction
@@ -598,7 +600,6 @@ It is good practice to check if your priors generate reasonable trajectories bef
 
 ```{r}
 # You can examine prior choices using the distributional package
-library(distributional)
 prior_r0 <- dist_lognormal(log(2), 0.5)
 quantile(prior_r0, c(0.025, 0.5, 0.975))
 # Check if this range is sensible for your application
@@ -612,8 +613,6 @@ After modifying priors, always check that the model has converged properly. Poor
 
 ```{r}
 # Check convergence diagnostics
-library(posterior)
-
 # Extract the Stan fit object
 fit <- estimates_r0$fit
 
