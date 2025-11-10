@@ -105,8 +105,8 @@ This section explains what effects you can expect from modifying each prior, and
 
 **What it controls:** The prior distribution for the reproduction number. Its role depends on the Gaussian Process specification:
 
-- **Differenced GP** (default, `gp_on = "R_t-1"`): This is the prior for R₀ at the start of the time series. When there's no data (e.g., due to delays), Rt stays constant at its last estimated value.
-- **Stationary GP** (`gp_on = "R0"`): This is the prior mean that Rt reverts to throughout the time series when there's no data. Useful when you want estimates to return to a baseline value in the absence of information.
+- **Differenced GP** (default, `gp_on = "R_t-1"`): This is the prior for $R_0$ at the start of the time series. When there is no data (e.g., early in the time series before the seeding period ends, or when doing real-time estimates of delayed quantities), $R_t$ reverts to the last estimated value but with expanding uncertainty as the zero-centered GP of differences continues.
+- **Stationary GP** (`gp_on = "R0"`): This is the prior mean that $R_t$ reverts to throughout the time series when there is no data. Useful when you want estimates of $R_t$ to return to a baseline value in the absence of information.
 
 **Default:** `LogNormal(mean = 1, sd = 1)`
 
@@ -114,16 +114,16 @@ This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probabi
 
 **Expected impact of changes:**
 
-- **Tighter prior (smaller `sd`)**: Speeds up MCMC convergence if your prior is accurate, but may bias estimates if wrong. Use when you have strong prior knowledge about R₀ for your pathogen.
-- **Higher mean**: Shifts initial estimates upward (differenced) or provides a higher reversion point (stationary). Use for fast-spreading pathogens when you observe rapid initial growth.
-- **Wider prior (larger `sd`)**: More flexible but slower convergence. Use when very uncertain about initial dynamics.
+- **Tighter prior (smaller `sd`)**: Speeds up MCMC convergence if your prior is accurate, but may bias estimates if wrong. Use when you have strong prior knowledge about $R_0$ for your pathogen.
+- **Higher mean**: Shifts the initial $R_0$ estimate upward (differenced) or provides a higher reversion point (stationary). Use for fast-spreading pathogens when you observe rapid initial growth.
+- **Wider prior (larger `sd`)**: More flexible but may lead to slower convergence and/or identifiability problems. Use when very uncertain about initial dynamics.
 
 **When to modify:**
 
 - You have reliable estimates from similar outbreaks
-- Your data shows clear initial growth/decay inconsistent with R≈1
-- You're analyzing a well-characterized pathogen (e.g., measles with R₀ typically 12-18)
-- Using stationary GP and want a specific baseline for Rt to revert to
+- Your data shows clear initial growth/decay inconsistent with $R \approx 1$
+- You're analyzing a well-characterized pathogen (e.g., measles with $R_0$ typically 12-18)
+- Using stationary GP and want a specific baseline for $R_t$ to revert to
 
 **Example:**
 
@@ -136,7 +136,7 @@ rt_opts(prior = LogNormal(mean = 15, sd = 2))
 # For uncertain but likely growing outbreak
 rt_opts(prior = LogNormal(mean = 2, sd = 1))
 
-# Stationary GP reverting to R=2 when no data
+# Stationary GP reverting to R_t = 2 when no data
 rt_opts(
   prior = LogNormal(mean = 2, sd = 0.5),
   gp_on = "R0"
@@ -153,8 +153,8 @@ This corresponds to a median of 21 days (range 9 to 36 days at 95% prior probabi
 
 **Expected impact of changes:**
 
-- **Shorter length scale (smaller `mean`)**: Allows Rt to change more rapidly day-to-day. Results in less smooth Rt estimates that can track sudden changes (e.g., lockdowns) more quickly. May overfit to noise if too short.
-- **Longer length scale (larger `mean`)**: Forces smoother Rt changes over time. More stable estimates but may miss rapid shifts in transmission. Can undersmooth if too long.
+- **Shorter length scale (smaller `mean`)**: Allows $R_t$ to change more rapidly day-to-day. Results in less smooth $R_t$ estimates that can track sudden changes (e.g., lockdowns) more quickly. May overfit to noise if too short.
+- **Longer length scale (larger `mean`)**: Forces smoother $R_t$ changes over time. More stable estimates but may miss rapid shifts in transmission. Can undersmooth if too long.
 - **Wider uncertainty (larger `sd`)**: Lets the data determine the smoothness. More flexible but computationally expensive.
 
 **When to modify:**
@@ -174,16 +174,16 @@ gp_opts(ls = LogNormal(mean = 28, sd = 10, max = 90))
 
 ## Gaussian Process magnitude
 
-**What it controls:** The amplitude of variations in log(Rt). This is the prior standard deviation of log(Rt) around its trend.
+**What it controls:** The amplitude of variations in $\log(R_t)$. This is the prior standard deviation of $\log(R_t)$ around its trend.
 
 **Default:** `Normal(mean = 0, sd = 0.01)`
 
-This corresponds to a half-normal (since negative values are truncated) with 95% of prior mass below 0.02, reflecting small changes in log(Rt).
+This corresponds to a half-normal (since negative values are truncated) with 95% of prior mass below 0.02, reflecting small changes in $\log(R_t)$.
 
 **Expected impact of changes:**
 
-- **Larger `sd` (e.g., 0.05-0.1)**: Allows bigger jumps in Rt over time. Useful for outbreaks with large, real variations in transmission (e.g., due to major interventions). May overfit if too large.
-- **Smaller `sd` (e.g., 0.005)**: Constrains Rt to change very gradually. Good for stable situations or very noisy data. May underfit real changes if too small.
+- **Larger `sd` (e.g., 0.05-0.1)**: Allows bigger jumps in $R_t$ over time. Useful for outbreaks with large, real variations in transmission (e.g., due to major interventions). May overfit if too large.
+- **Smaller `sd` (e.g., 0.005)**: Constrains $R_t$ to change very gradually. Good for stable situations or very noisy data. May underfit real changes if too small.
 
 **When to modify:**
 
@@ -200,16 +200,16 @@ gp_opts(alpha = Normal(mean = 0, sd = 0.05))
 gp_opts(alpha = Normal(mean = 0, sd = 0.005))
 ```
 
-## Random walk for Rt (alternative to GP)
+## Random walk for $R_t$ (alternative to GP)
 
-**What it controls:** Step-wise changes in Rt at fixed intervals instead of smooth GP changes.
+**What it controls:** Step-wise changes in $R_t$ at fixed intervals instead of smooth GP changes.
 
 **Default:** Not used (GP is default). When enabled via `rt_opts(rw = 7)`, the prior SD is `HalfNormal(0, 0.1)`.
 
 **Expected impact of changes:**
 
-- **Shorter steps (e.g., `rw = 1`)**: Rt can change daily. Very flexible, like a short GP length scale. Fast to compute but may overfit.
-- **Longer steps (e.g., `rw = 7` or `rw = 14`)**: Rt constant within each week/fortnight. Appropriate when transmission changes are discrete (policy changes) rather than continuous.
+- **Shorter steps (e.g., `rw = 1`)**: $R_t$ can change daily. Very flexible, like a short GP length scale. Fast to compute but may overfit.
+- **Longer steps (e.g., `rw = 7` or `rw = 14`)**: $R_t$ constant within each week/fortnight. Appropriate when transmission changes are discrete (policy changes) rather than continuous.
 
 **When to modify:**
 
@@ -245,7 +245,7 @@ With truncation at 0, this half-normal has 95% prior mass below 0.5, correspondi
 
 - **More dispersed**: Weekend effects, variable testing capacity, small outbreak counts, or low-resource settings
 - **Less dispersed**: Large outbreaks with stable reporting infrastructure
-- **Switch to Poisson**: Very large counts (>1000s daily) from stable reporting systems
+- **Switch to Poisson**: Very large counts (>1000s daily) from stable reporting systems and when confident in model specification. Note that negative binomial overdispersion can absorb model misspecification, so switching to Poisson requires both high-quality data and confidence that the model structure is appropriate.
 
 **Example:**
 ```{r}
@@ -265,7 +265,7 @@ obs_opts(family = "poisson")  # No dispersion parameter needed
 **Expected impact of changes:**
 
 - **Estimate scaling (e.g., `Normal(mean=0.3, sd=0.1)`)**: Allows model to estimate underreporting. Reported cases = scaling × latent infections × delay convolution. Useful when you know reporting is incomplete but don't know the rate.
-- **Fixed lower value (e.g., `Fixed(0.5)`)**: Assumes you know 50% are reported. Changes interpretation of infections but not Rt.
+- **Fixed lower value (e.g., `Fixed(0.5)`)**: Assumes you know 50% are reported. Changes interpretation of infections but not $R_t$.
 
 **When to modify:**
 
@@ -291,8 +291,8 @@ obs_opts(scale = Fixed(0.3))
 **Expected impact of changes:**
 
 - **Uncertain vs fixed**: Specifying parameters with uncertainty (e.g., `Gamma(shape = Normal(3, 1), rate = Normal(2, 0.5))`) lets the model learn from data but may be slow or poorly identified with short time series.
-- **Different distribution shape**: Affects how past infections contribute to current transmission. Longer generation times smooth the infection curve and affect Rt dynamics.
-- **`weight_prior` option**: Default `TRUE` weights the prior by data length, keeping parameters near their priors. Set `FALSE` to allow more learning from data, though this has not been successfully tested to our knowledge.
+- **Different distribution shape**: Affects how past infections contribute to current transmission. Longer generation times smooth the infection curve and affect $R_t$ dynamics.
+- **`weight_prior` option**: Default `TRUE` weights the prior by data length, keeping parameters near their priors. Set `FALSE` to allow more learning from data, though this may not always be identifiable so may lead to fitting and/or interpretation issues.
 
 **When to modify:**
 
@@ -327,7 +327,7 @@ gt_opts(Gamma(shape = 2.5, rate = 1.5, max = 10))
 
 **Expected impact of changes:**
 
-- **Adding delays shifts Rt back in time**: If there's a 7-day delay, Rt estimates reflect transmission 7 days earlier. Critical for real-time inference.
+- **Adding delays shifts $R_t$ back in time**: If there is a 7-day delay, $R_t$ estimates reflect transmission 7 days earlier. Critical for real-time inference.
 - **Uncertain vs fixed delays**: Uncertain parameters increase computation time and may be poorly identified. Use fixed delays from literature when possible.
 - **`weight_prior` option**: Default `TRUE`. Works like generation time weighting.
 
@@ -395,16 +395,17 @@ trunc_opts(truncation_estimate$dist)
 **Renewal equation model** (default, `rt != NULL`):
 
 - Models infections via renewal equation using reproduction number
-- **Requires**: Rt prior, generation time, GP or random walk for Rt dynamics
-- **Use when**: You want explicit epidemiological interpretation via Rt
+- **Requires**: $R_t$ prior, generation time, GP or random walk for $R_t$ dynamics
+- **Use when**: You want explicit epidemiological interpretation via $R_t$
 - **Best for**: Most epidemic modeling scenarios
 
 **Non-mechanistic model** (`rt = NULL`):
 
-- Models infections directly with GP, no explicit Rt in model
+- Models infections directly with GP, no explicit $R_t$ in model
 - **Requires**: Back-calculation prior, no generation time needed
-- **Use when**: Faster computation needed, or Rt interpretation less important
+- **Use when**: Faster computation needed, or $R_t$ interpretation less important
 - **Best for**: Quick analyses, forecasting without mechanistic detail
+- **Warning**: This is a less epidemiologically informed model than the renewal equation model and may lead to undesired behavior, particularly when extrapolating or forecasting
 
 **Example:**
 ```{r}
@@ -565,8 +566,8 @@ estimates <- estimate_infections(
 
 Ask these questions:
 
-1. **Do I have strong domain knowledge about R₀?** → Consider modifying `rt_opts(prior = ...)`
-2. **Does Rt change rapidly or gradually in my setting?** → Consider modifying `gp_opts(ls = ...)`
+1. **Do I have strong domain knowledge about $R_0$?** → Consider modifying `rt_opts(prior = ...)`
+2. **Does $R_t$ change rapidly or gradually in my setting?** → Consider modifying `gp_opts(ls = ...)`
 3. **Is reporting highly variable or stable?** → Consider modifying `obs_opts(dispersion = ...)` or `obs_opts(family = ...)`
 4. **Are there sudden policy changes?** → Consider using `rt_opts(rw = ...)` instead of GP
 5. **Is recent data truncated?** → Consider adding `trunc_opts(...)`
@@ -589,9 +590,9 @@ plot(estimates)
 plot(estimates_r0)
 ```
 
-## Step 4: Check prior predictive distributions (optional)
+## Step 4: Check prior predictive distributions
 
-For critical applications, check if your priors generate reasonable trajectories before seeing data:
+It is good practice to check if your priors generate reasonable trajectories before seeing data:
 
 ```{r, eval=FALSE}
 # This is a conceptual example - actual prior predictive checks require
@@ -626,7 +627,7 @@ quantile(prior_r0, c(0.025, 0.5, 0.975))
 
 ## Pitfall 4: Wrong time scale for length scale
 
-**Problem:** Setting GP length scale to 1-2 days, expecting very flexible Rt.
+**Problem:** Setting GP length scale to 1-2 days, expecting very flexible $R_t$.
 
 **Solution:** If you want daily flexibility, use a random walk (`rt_opts(rw = 1)`) rather than GP with very short length scale. GPs with length scale <7 days often struggle.
 
@@ -645,8 +646,7 @@ quantile(prior_r0, c(0.025, 0.5, 0.975))
 
 ## Key papers
 
-For background on priors in renewal equation models, see:
+For background on renewal equation models:
 
-- Cori et al. (2013) on time-varying reproduction numbers
-- Riutort-Mayol et al. (2020) on approximate Gaussian processes
-- Bhatt et al. on semi-mechanistic models
+- Cori et al. (2013) on time-varying reproduction numbers: [doi:10.1093/aje/kwt133](https://doi.org/10.1093/aje/kwt133)
+- Riutort-Mayol et al. (2020) on approximate Gaussian processes in Stan: [arXiv:2004.11408](https://arxiv.org/abs/2004.11408)
