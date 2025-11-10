@@ -46,6 +46,8 @@ This guide covers priors for the three main modelling functions:
 
 **Key principle:** All defaults in `{EpiNow2}` are intentionally weakly informative to work across a range of pathogens and settings. For a specific application with domain knowledge, you may benefit from more informative priors.
 
+> **Important default:** The default generation time is `Fixed(1)`, meaning all transmission occurs after 1 day. With this default, $R_t$ represents the daily exponential growth rate rather than the traditional reproduction number. For epidemiologically meaningful $R_t$ estimates, you should always specify a realistic generation time distribution from the literature (see [Generation time distribution](#generation-time-distribution)).
+
 # Overview of all priors
 
 The following tables list all priors available in `{EpiNow2}`, organised by modelling function.
@@ -594,16 +596,48 @@ plot(estimates_r0)
 
 It is good practice to check if your priors generate reasonable trajectories before seeing data:
 
-```{r, eval=FALSE}
-# This is a conceptual example - actual prior predictive checks require
-# additional Stan code not currently exposed in EpiNow2
-# You can examine prior choices using:
-
+```{r}
+# You can examine prior choices using the distributional package
 library(distributional)
 prior_r0 <- dist_lognormal(log(2), 0.5)
 quantile(prior_r0, c(0.025, 0.5, 0.975))
 # Check if this range is sensible for your application
 ```
+
+Note: Full prior predictive checks (simulating complete epidemic trajectories) require additional Stan code not currently exposed in `{EpiNow2}`, but checking individual prior distributions as shown above is a useful first step.
+
+## Step 5: Check model convergence
+
+After modifying priors, always check that the model has converged properly. Poor prior choices can lead to convergence problems.
+
+```{r}
+# Check convergence diagnostics
+library(posterior)
+
+# Extract the Stan fit object
+fit <- estimates_r0$fit
+
+# Check Rhat (should be < 1.01)
+summarise_draws(fit, "rhat")
+
+# Check effective sample size (should be > 400 for reliable inference)
+summarise_draws(fit, "ess_bulk", "ess_tail")
+
+# You can also use the summary method which includes these diagnostics
+summary(estimates_r0)
+```
+
+Key diagnostics to check:
+
+- **Rhat**: Should be < 1.01 for all parameters. Values > 1.01 indicate chains have not converged.
+- **Effective sample size (ESS)**: Bulk ESS and tail ESS should both be > 400. Low ESS means high autocorrelation and unreliable estimates.
+- **Divergent transitions**: Check for warnings about divergences, which indicate problems with the posterior geometry.
+
+If you encounter convergence problems after changing priors, consider:
+
+- Making priors less informative (wider)
+- Checking that prior ranges are sensible (e.g., not excluding plausible parameter values)
+- Increasing the number of warmup iterations or sampling iterations
 
 # Common pitfalls and recommendations
 
