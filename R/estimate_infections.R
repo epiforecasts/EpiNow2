@@ -73,8 +73,9 @@
 #' @export
 #' @return An `<estimate_infections>` object which is a list of outputs
 #' including: the stan object (`fit`), arguments used to fit the model
-#' (`args`), and the observed data (`observations`). The estimates included in
-#' the fit can be accessed using the `summary()` function.
+#' (`args`), and the observed data (`observations`). Use `summary()` to access
+#' estimates, `get_samples()` to extract posterior samples, and
+#' `get_predictions()` to access predicted reported cases.
 #'
 #' @seealso [epinow()] [regional_epinow()] [forecast_infections()]
 #' [estimate_truncation()]

@@ -273,18 +273,20 @@ get_samples.estimate_secondary <- function(object, ...) {
   extract_stan_param(object$fit, CrIs = c(0.2, 0.5, 0.9))
 }
 
-#' Get predictions from a fitted secondary model
+#' Get predictions from a fitted model
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extracts predictions from a fitted secondary model, combining observations
-#' with model estimates.
+#' Extracts predictions from a fitted model, combining observations with model
+#' estimates. For `estimate_infections()` returns predicted reported cases, for
+#' `estimate_secondary()` returns predicted secondary observations.
 #'
-#' @param object A fitted model object from `estimate_secondary()`
+#' @param object A fitted model object (e.g., from `estimate_infections()` or
+#'   `estimate_secondary()`)
 #' @param CrIs Numeric vector of credible intervals to return. Defaults to
 #'   c(0.2, 0.5, 0.9).
 #' @param ... Additional arguments (currently unused)
 #'
-#' @return A `data.table` with columns: date, primary, secondary, and summary
+#' @return A `data.table` with columns including date, observations, and summary
 #'   statistics (mean, sd, credible intervals) for the model predictions.
 #'
 #' @export
@@ -295,6 +297,32 @@ get_samples.estimate_secondary <- function(object, ...) {
 #' }
 get_predictions <- function(object, ...) {
   UseMethod("get_predictions")
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.estimate_infections <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
+  # Get samples for reported cases
+  samples <- get_samples(object)
+  reported_samples <- samples[variable == "reported_cases"]
+
+  # Calculate summary measures
+  predictions <- calc_summary_measures(
+    reported_samples,
+    summarise_by = "date",
+    order_by = "date",
+    CrIs = CrIs
+  )
+
+  # Merge with observations
+  predictions <- data.table::merge.data.table(
+    object$observations[, .(date, confirm)],
+    predictions,
+    by = "date",
+    all = TRUE
+  )
+
+  return(predictions)
 }
 
 #' @rdname get_predictions
