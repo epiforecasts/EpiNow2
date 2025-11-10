@@ -206,7 +206,8 @@ epinow <- function(data,
 
     save_estimate_infections(estimates, target_folder,
       samples = output["samples"],
-      return_fit = output["fit"]
+      return_fit = output["fit"],
+      CrIs = CrIs
     )
 
     # report forecasts ---------------------------------------------------------
@@ -242,7 +243,8 @@ epinow <- function(data,
         estimated_reported_cases,
         plots = plots,
         summary,
-        samples = output["samples"]
+        samples = output["samples"],
+        CrIs = CrIs
       )
       if (output["fit"]) {
         out$estimates$fit <- estimates$fit

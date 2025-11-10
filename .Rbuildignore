@@ -26,3 +26,4 @@
 ^touchstone$
 ^\.benchmark$
 ^CITATION\.cff$
+^CLAUDE\.md$
