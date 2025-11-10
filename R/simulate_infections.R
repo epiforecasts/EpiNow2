@@ -70,6 +70,7 @@ simulate_infections <- function(R,
                                 seeding_time = NULL,
                                 pop = Fixed(0),
                                 pop_period = c("forecast", "all"),
+                                pop_floor = 1.0,
                                 growth_method = c("infections",
                                                   "infectiousness")) {
   if (is.numeric(pop)) {
@@ -126,6 +127,7 @@ simulate_infections <- function(R,
     initial_as_scale = 0,
     R = array(R$R, dim = c(1, nrow(R))),
     use_pop = as.integer(pop != Fixed(0)) + as.integer(pop_period == "all"),
+    pop_floor = pop_floor,
     growth_method = list(
       "infections" = 0, "infectiousness" = 1
     )[[growth_method]]

@@ -54,6 +54,8 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
  * @param gt_rev_pmf Vector of reversed generation time PMF
  * @param initial_infections Array of initial infection values
  * @param pop Initial susceptible population (0 for unlimited)
+ * @param use_pop Population adjustment mode (0=none, 1=forecast only, 2=all)
+ * @param pop_floor Minimum susceptible population (floor to prevent instability)
  * @param ht Horizon time
  * @param obs_scale Whether to scale by fraction observed (1) or not (0)
  * @param frac_obs Fraction of infections that are observed
@@ -62,7 +64,7 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
  */
 vector generate_infections(vector R, int uot, vector gt_rev_pmf,
                            array[] real initial_infections, real pop,
-                           int use_pop, int ht, int obs_scale, real frac_obs,
+                           int use_pop, real pop_floor, int ht, int obs_scale, real frac_obs,
                            int initial_as_scale) {
   // time indices and storage
   int ot = num_elements(R);
@@ -96,8 +98,9 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
   for (s in 1:ot) {
     infectiousness[s] = update_infectiousness(infections, gt_rev_pmf, uot, s);
     if ((use_pop == 1 && s > nht) || use_pop == 2) {
-      exp_adj_Rt = exp(-R[s] * infectiousness[s] / (pop - cum_infections[s]));
-      infections[s + uot] = (pop - cum_infections[s]) * fmax(0, 1 - exp_adj_Rt);
+      real susceptible = fmax(pop_floor, pop - cum_infections[s]);
+      exp_adj_Rt = exp(-R[s] * infectiousness[s] / susceptible);
+      infections[s + uot] = susceptible * fmax(0, 1 - exp_adj_Rt);
     } else{
       infections[s + uot] = R[s] * infectiousness[s];
     }
