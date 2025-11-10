@@ -42,7 +42,7 @@ This guide covers priors for the three main modeling functions:
 
 - Mathematical derivations (see [Model definition](estimate_infections.html))
 - Technical implementation details (see [Gaussian Process implementation details](gaussian_process_implementation_details.html))
-- General Bayesian prior elicitation theory
+- General Bayesian prior elicitation theory (see the [Stan Prior Choice Recommendations](https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations))
 
 **Key principle:** All defaults in `{EpiNow2}` are intentionally weakly informative to work across a range of pathogens and settings. For a specific application with domain knowledge, you may benefit from more informative priors.
 
