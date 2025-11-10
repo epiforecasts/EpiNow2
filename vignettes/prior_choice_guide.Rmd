@@ -22,17 +22,18 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-This vignette provides practical guidance on specifying and choosing priors for EpiNow2 models.
+This vignette provides practical guidance on specifying and choosing priors for `{EpiNow2}` models.
 While the package provides sensible defaults for all priors, understanding when and how to modify them can improve model performance for your specific application.
 
 This guide covers priors for the three main modeling functions:
+
 - `estimate_infections()` (renewal equation and non-mechanistic models)
 - `estimate_secondary()` (secondary observations like deaths or hospitalizations)
 - `estimate_truncation()` (truncation distribution estimation)
 
 **What this guide covers:**
 
-- A comprehensive table of all priors in EpiNow2
+- A comprehensive table of all priors in `{EpiNow2}`
 - The expected impact of different prior choices
 - Guidance on when to change defaults
 - Practical examples of prior specification
@@ -43,56 +44,54 @@ This guide covers priors for the three main modeling functions:
 - Technical implementation details (see [Gaussian Process implementation details](gaussian_process_implementation_details.html))
 - General Bayesian prior elicitation theory
 
-**Key principle:** All defaults in EpiNow2 are intentionally weakly informative to work across a range of pathogens and settings. For a specific application with domain knowledge, you may benefit from more informative priors.
+**Key principle:** All defaults in `{EpiNow2}` are intentionally weakly informative to work across a range of pathogens and settings. For a specific application with domain knowledge, you may benefit from more informative priors.
 
 # Overview of all priors
 
-The following tables list all priors available in EpiNow2, organized by modeling function.
+The following tables list all priors available in `{EpiNow2}`, organized by modeling function.
 
 ## estimate_infections() priors
 
 `estimate_infections()` supports two models: renewal equation (default) and non-mechanistic/deconvolution.
 
-| Component | Model | Function | Parameter | Default | Syntax Example |
-|-----------|-------|----------|-----------|---------|----------------|
+| Component | Model | Function | Parameter | Default | Notes |
+|-----------|-------|----------|-----------|---------|-------|
 | **Reproduction number (Rt)** |
-| Initial R₀ | Renewal only | `rt_opts()` | `prior` | `LogNormal(mean=1, sd=1)` | `rt_opts(prior = LogNormal(mean=2, sd=0.5))` |
-| Random walk SD | Renewal only | `rt_opts()` | (auto) | `HalfNormal(0, 0.1)` | Set via `rw` option: `rt_opts(rw=7)` |
+| Initial R₀ | Renewal only | `rt_opts()` | `prior` | `LogNormal(mean = 1, sd = 1)` | With stationary GP, reverts to this when no data |
+| Random walk SD | Renewal only | `rt_opts()` | `rw` | `HalfNormal(0, 0.1)` | Set step size via `rw` argument |
 | **Gaussian Process** |
-| Length scale | Both | `gp_opts()` | `ls` | `LogNormal(mean=21, sd=7, max=60)` | `gp_opts(ls = LogNormal(mean=14, sd=5, max=30))` |
-| Magnitude | Both | `gp_opts()` | `alpha` | `Normal(mean=0, sd=0.01)` | `gp_opts(alpha = Normal(mean=0, sd=0.05))` |
+| Length scale | Both | `gp_opts()` | `ls` | `LogNormal(mean = 21, sd = 7, max = 60)` | Controls smoothness over time |
+| Magnitude | Both | `gp_opts()` | `alpha` | `Normal(mean = 0, sd = 0.01)` | Controls amplitude of variations |
 | **Back-calculation** |
-| Prior source | Non-mechanistic only | `backcalc_opts()` | `prior` | `"reports"` | `backcalc_opts(prior = "infections")` |
+| Prior source | Non-mechanistic only | `backcalc_opts()` | `prior` | `"reports"` | Options: "reports", "infections", "none" |
 | **Observation model** |
-| Overdispersion | Both | `obs_opts()` | `dispersion` | `Normal(mean=0, sd=0.25)` | `obs_opts(dispersion = Normal(mean=0, sd=0.5))` |
-| Scaling | Both | `obs_opts()` | `scale` | `Fixed(1)` | `obs_opts(scale = Normal(mean=0.5, sd=0.1))` |
-| Day of week | Both | `obs_opts()` | (auto) | `Dirichlet(1,...,1)` | Turn off via `week_effect=FALSE` |
+| Overdispersion | Both | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterization |
+| Scaling | Both | `obs_opts()` | `scale` | `Fixed(1)` | Ascertainment rate |
+| Day of week | Both | (internal) | (auto) | `Dirichlet(1, ..., 1)` | Turn off via `week_effect = FALSE` |
 | **Generation time** |
-| Parameters | Renewal only | `gt_opts()` | `dist` | Fixed at 1 day | `gt_opts(Gamma(shape=Normal(3,1), rate=Normal(2,0.5)))` |
+| Parameters | Renewal only | `gt_opts()` | `dist` | `Fixed(1)` | Default: daily exponential growth rate |
 | **Delays** |
-| Parameters | Both | `delay_opts()` | `dist` | Fixed at 0 days | `delay_opts(LogNormal(mean=5, sd=2, max=14))` |
+| Parameters | Both | `delay_opts()` | `dist` | `Fixed(0)` | No delay by default |
 | **Truncation** |
-| Distribution | Both | `trunc_opts()` | `dist` | Fixed at 0 days | `trunc_opts(LogNormal(mean=0.5, sd=0.5, max=3))` |
-| **Initialization** |
-| Initial infections | Both | (internal) | `iota` | `Normal(log(C_init), 2)` | Not user-adjustable |
+| Distribution | Both | `trunc_opts()` | `dist` | `Fixed(0)` | No truncation by default |
 
 ## estimate_secondary() priors
 
-| Component | Function | Parameter | Default | Syntax Example |
-|-----------|----------|-----------|---------|----------------|
+| Component | Function | Parameter | Default | Notes |
+|-----------|----------|-----------|---------|-------|
 | **Delays (primary to secondary)** |
-| Parameters | `delay_opts()` | `dist` | `LogNormal(meanlog=Normal(2.5,0.5), sdlog=Normal(0.47,0.25), max=30)` | `delay_opts(LogNormal(mean=3, sd=2, max=20))` |
+| Parameters | `delay_opts()` | `dist` | `LogNormal(meanlog = Normal(2.5, 0.5), sdlog = Normal(0.47, 0.25), max = 30)` | Time from primary to secondary event |
 | **Observation model** |
-| Scaling | `obs_opts()` | `scale` | Required, no default | `obs_opts(scale = Normal(mean=0.4, sd=0.1))` |
-| Overdispersion | `obs_opts()` | `dispersion` | `Normal(mean=0, sd=0.25)` | `obs_opts(dispersion = Normal(mean=0, sd=0.5))` |
-| Day of week | `obs_opts()` | (auto) | `Dirichlet(1,...,1)` | Turn off via `week_effect=FALSE` |
+| Scaling | `obs_opts()` | `scale` | Required, no default | Fraction of primary events leading to secondary |
+| Overdispersion | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterization |
+| Day of week | (internal) | (auto) | `Dirichlet(1, ..., 1)` | Turn off via `week_effect = FALSE` |
 
 ## estimate_truncation() priors
 
-| Component | Function | Parameter | Default | Syntax Example |
-|-----------|----------|-----------|---------|----------------|
+| Component | Function | Parameter | Default | Notes |
+|-----------|----------|-----------|---------|-------|
 | **Truncation distribution** |
-| Parameters | `trunc_opts()` | `dist` | `LogNormal(meanlog=Normal(0,1), sdlog=Normal(1,1), max=10)` | `trunc_opts(LogNormal(meanlog=Normal(0.5,0.5), sdlog=Normal(0.5,0.5), max=7))` |
+| Parameters | `trunc_opts()` | `dist` | `LogNormal(meanlog = Normal(0, 1), sdlog = Normal(1, 1), max = 10)` | Describes reporting delays |
 | **Observation model** |
 | Overdispersion | (internal) | (auto) | `HalfNormal(0, 1)` | Not directly adjustable |
 | Noise term | (internal) | (auto) | `HalfNormal(0, 1)` | Not directly adjustable |
@@ -103,7 +102,10 @@ This section explains what effects you can expect from modifying each prior, and
 
 ## Initial reproduction number (R₀)
 
-**What it controls:** The starting value of the time-varying reproduction number at the beginning of your observation period.
+**What it controls:** The prior distribution for the reproduction number. Its role depends on the Gaussian Process specification:
+
+- **Differenced GP** (default, `gp_on = "R_t-1"`): This is the prior for R₀ at the start of the time series. When there's no data (e.g., due to delays), Rt stays constant at its last estimated value.
+- **Stationary GP** (`gp_on = "R0"`): This is the prior mean that Rt reverts to when there's no data. Useful when you want estimates to return to a baseline value in the absence of information.
 
 **Default:** `LogNormal(mean = 1, sd = 1)`
 
@@ -112,7 +114,7 @@ This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probabi
 **Expected impact of changes:**
 
 - **Tighter prior (smaller `sd`)**: Speeds up MCMC convergence if your prior is accurate, but may bias estimates if wrong. Use when you have strong prior knowledge about R₀ for your pathogen.
-- **Higher mean**: Shifts initial estimates upward. Use for fast-spreading pathogens when you observe rapid initial growth.
+- **Higher mean**: Shifts initial estimates upward (differenced) or provides a higher reversion point (stationary). Use for fast-spreading pathogens when you observe rapid initial growth.
 - **Wider prior (larger `sd`)**: More flexible but slower convergence. Use when very uncertain about initial dynamics.
 
 **When to modify:**
@@ -120,8 +122,10 @@ This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probabi
 - You have reliable estimates from similar outbreaks
 - Your data shows clear initial growth/decay inconsistent with R≈1
 - You're analyzing a well-characterized pathogen (e.g., measles with R₀ typically 12-18)
+- Using stationary GP and want a specific baseline for Rt to revert to
 
 **Example:**
+
 ```{r}
 library(EpiNow2)
 
@@ -130,6 +134,12 @@ rt_opts(prior = LogNormal(mean = 15, sd = 2))
 
 # For uncertain but likely growing outbreak
 rt_opts(prior = LogNormal(mean = 2, sd = 1))
+
+# Stationary GP reverting to R=2 when no data
+rt_opts(
+  prior = LogNormal(mean = 2, sd = 0.5),
+  gp_on = "R0"
+)
 ```
 
 ## Gaussian Process length scale
