@@ -1,0 +1,451 @@
+---
+title: "Prior choice and specification guide"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Prior choice and specification guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+# Introduction
+
+This vignette provides practical guidance on specifying and choosing priors for EpiNow2 models.
+While the package provides sensible defaults for all priors, understanding when and how to modify them can improve model performance for your specific application.
+
+**What this guide covers:**
+
+- A comprehensive table of all priors in EpiNow2
+- The expected impact of different prior choices
+- Guidance on when to change defaults
+- Practical examples of prior specification
+
+**What this guide does NOT cover:**
+
+- Mathematical derivations (see [Model definition](estimate_infections.html))
+- Technical implementation details (see [Gaussian Process implementation details](gaussian_process_implementation_details.html))
+- General Bayesian prior elicitation theory
+
+**Key principle:** All defaults in EpiNow2 are intentionally weakly informative to work across a range of pathogens and settings. For a specific application with domain knowledge, you may benefit from more informative priors.
+
+# Overview of all priors
+
+The following table lists all priors available in EpiNow2, organized by model component.
+
+| Component | Function | Parameter | Default | Syntax Example |
+|-----------|----------|-----------|---------|----------------|
+| **Reproduction number (Rt)** |
+| Initial R₀ | `rt_opts()` | `prior` | `LogNormal(mean=1, sd=1)` | `rt_opts(prior = LogNormal(mean=2, sd=0.5))` |
+| Random walk SD | `rt_opts()` | (auto) | `HalfNormal(0, 0.1)` | Set via `rw` option: `rt_opts(rw=7)` |
+| **Gaussian Process** |
+| Length scale | `gp_opts()` | `ls` | `LogNormal(mean=21, sd=7, max=60)` | `gp_opts(ls = LogNormal(mean=14, sd=5, max=30))` |
+| Magnitude | `gp_opts()` | `alpha` | `Normal(mean=0, sd=0.01)` | `gp_opts(alpha = Normal(mean=0, sd=0.05))` |
+| **Observation model** |
+| Overdispersion | `obs_opts()` | `dispersion` | `Normal(mean=0, sd=0.25)` | `obs_opts(dispersion = Normal(mean=0, sd=0.5))` |
+| Scaling | `obs_opts()` | `scale` | `Fixed(1)` | `obs_opts(scale = Normal(mean=0.5, sd=0.1))` |
+| Day of week | `obs_opts()` | (auto) | `Dirichlet(1,...,1)` | Turn off via `week_effect=FALSE` |
+| **Generation time** |
+| Parameters | `gt_opts()` | `dist` | Fixed at 1 day | `gt_opts(Gamma(shape=Normal(3,1), rate=Normal(2,0.5)))` |
+| **Delays** |
+| Parameters | `delay_opts()` | `dist` | Fixed at 0 days | `delay_opts(LogNormal(mean=5, sd=2, max=14))` |
+| **Truncation** |
+| Distribution | `trunc_opts()` | `dist` | Fixed at 0 days | `trunc_opts(LogNormal(mean=0.5, sd=0.5, max=3))` |
+| **Initialization** |
+| Initial infections | (internal) | `iota` | `Normal(log(C_init), 2)` | Not user-adjustable |
+
+# Prior impacts and choice guidance
+
+This section explains what effects you can expect from modifying each prior, and when you might want to do so.
+
+## Initial reproduction number (R₀)
+
+**What it controls:** The starting value of the time-varying reproduction number at the beginning of your observation period.
+
+**Default:** `LogNormal(mean = 1, sd = 1)`
+
+This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probability), centered on the epidemic threshold.
+
+**Expected impact of changes:**
+
+- **Tighter prior (smaller `sd`)**: Speeds up MCMC convergence if your prior is accurate, but may bias estimates if wrong. Use when you have strong prior knowledge about R₀ for your pathogen.
+- **Higher mean**: Shifts initial estimates upward. Use for fast-spreading pathogens when you observe rapid initial growth.
+- **Wider prior (larger `sd`)**: More flexible but slower convergence. Use when very uncertain about initial dynamics.
+
+**When to modify:**
+
+- You have reliable estimates from similar outbreaks
+- Your data shows clear initial growth/decay inconsistent with R≈1
+- You're analyzing a well-characterized pathogen (e.g., measles with R₀ typically 12-18)
+
+**Example:**
+```{r}
+library(EpiNow2)
+
+# For a measles outbreak with strong prior knowledge
+rt_opts(prior = LogNormal(mean = 15, sd = 2))
+
+# For uncertain but likely growing outbreak
+rt_opts(prior = LogNormal(mean = 2, sd = 1))
+```
+
+## Gaussian Process length scale
+
+**What it controls:** The smoothness of changes in the reproduction number over time, measured in days. Larger values = smoother changes; smaller values = more rapid fluctuations.
+
+**Default:** `LogNormal(mean = 21, sd = 7, max = 60)`
+
+This corresponds to a median of 21 days (range 9 to 36 days at 95% prior probability), reflecting gradual changes typical of epidemics with interventions happening over weeks.
+
+**Expected impact of changes:**
+
+- **Shorter length scale (smaller `mean`)**: Allows Rt to change more rapidly day-to-day. Results in less smooth Rt estimates that can track sudden changes (e.g., lockdowns) more quickly. May overfit to noise if too short.
+- **Longer length scale (larger `mean`)**: Forces smoother Rt changes over time. More stable estimates but may miss rapid shifts in transmission. Can undersmooth if too long.
+- **Wider uncertainty (larger `sd`)**: Lets the data determine the smoothness. More flexible but computationally expensive.
+
+**When to modify:**
+
+- **Shorter (mean ~7-14 days)**: When expecting rapid policy changes, modeling short outbreaks, or seeing sudden shifts in data
+- **Longer (mean ~28+ days)**: When transmission changes gradually, in stable endemic settings, or with noisy data
+- **Maximum adjustment**: Set `max` lower if working with short time series (e.g., `max=30` for 60-day outbreak)
+
+**Example:**
+```{r}
+# For outbreak with weekly policy changes
+gp_opts(ls = LogNormal(mean = 7, sd = 3, max = 30))
+
+# For gradually evolving endemic disease
+gp_opts(ls = LogNormal(mean = 28, sd = 10, max = 90))
+```
+
+## Gaussian Process magnitude
+
+**What it controls:** The amplitude of variations in log(Rt). This is the prior standard deviation of log(Rt) around its trend.
+
+**Default:** `Normal(mean = 0, sd = 0.01)`
+
+This corresponds to a half-normal (since negative values are truncated) with 95% of prior mass below 0.02, reflecting small changes in log(Rt).
+
+**Expected impact of changes:**
+
+- **Larger `sd` (e.g., 0.05-0.1)**: Allows bigger jumps in Rt over time. Useful for outbreaks with large, real variations in transmission (e.g., due to major interventions). May overfit if too large.
+- **Smaller `sd` (e.g., 0.005)**: Constrains Rt to change very gradually. Good for stable situations or very noisy data. May underfit real changes if too small.
+
+**When to modify:**
+
+- **Larger**: Modeling outbreaks with major interventions (lockdowns, vaccination campaigns) or high real variation
+- **Smaller**: Modeling stable endemic transmission or when data is very noisy relative to sample size
+- **Rarely modified** in practice: The default works well in most scenarios
+
+**Example:**
+```{r}
+# For outbreak with major interventions
+gp_opts(alpha = Normal(mean = 0, sd = 0.05))
+
+# For very stable transmission
+gp_opts(alpha = Normal(mean = 0, sd = 0.005))
+```
+
+## Random walk for Rt (alternative to GP)
+
+**What it controls:** Step-wise changes in Rt at fixed intervals instead of smooth GP changes.
+
+**Default:** Not used (GP is default). When enabled via `rt_opts(rw = 7)`, the prior SD is `HalfNormal(0, 0.1)`.
+
+**Expected impact of changes:**
+
+- **Shorter steps (e.g., `rw = 1`)**: Rt can change daily. Very flexible, like a short GP length scale. Fast to compute but may overfit.
+- **Longer steps (e.g., `rw = 7` or `rw = 14`)**: Rt constant within each week/fortnight. Appropriate when transmission changes are discrete (policy changes) rather than continuous.
+
+**When to modify:**
+
+- Use random walk instead of GP when you believe transmission changes are discrete rather than smooth
+- Use weekly (`rw = 7`) when policies change weekly
+- Use daily (`rw = 1`) for maximum flexibility with fast computation (but risk overfitting)
+
+**Example:**
+```{r}
+# Weekly step changes
+estimate_infections(
+  reported_cases,
+  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.5), rw = 7),
+  gp = NULL  # Disable GP when using random walk
+)
+```
+
+## Observation model: overdispersion
+
+**What it controls:** How much extra variability exists in reported cases beyond Poisson variation. The parameter is 1/√φ where φ is the negative binomial overdispersion.
+
+**Default:** `Normal(mean = 0, sd = 0.25)`
+
+With truncation at 0, this half-normal has 95% prior mass below 0.5, corresponding to moderate overdispersion.
+
+**Expected impact of changes:**
+
+- **Larger `sd` (e.g., 0.5-1.0)**: Allows for more overdispersion, meaning reported counts can be much more variable than a Poisson model. Use with highly variable reporting systems.
+- **Smaller `sd` (e.g., 0.1)**: Tighter around Poisson variance. Use for high-quality surveillance with consistent reporting.
+- **Change to Poisson**: Set `family = "poisson"` in `obs_opts()`. Appropriate for large, stable counts with minimal extra variation.
+
+**When to modify:**
+
+- **More dispersed**: Weekend effects, variable testing capacity, small outbreak counts, or low-resource settings
+- **Less dispersed**: Large outbreaks with stable reporting infrastructure
+- **Switch to Poisson**: Very large counts (>1000s daily) from stable reporting systems
+
+**Example:**
+```{r}
+# For highly variable reporting
+obs_opts(dispersion = Normal(mean = 0, sd = 0.5))
+
+# For stable, high-quality surveillance
+obs_opts(family = "poisson")  # No dispersion parameter needed
+```
+
+## Observation model: scaling
+
+**What it controls:** The proportion of infections that are ultimately reported (ascertainment rate).
+
+**Default:** `Fixed(1)` (assumes all infections are reported)
+
+**Expected impact of changes:**
+
+- **Estimate scaling (e.g., `Normal(mean=0.3, sd=0.1)`)**: Allows model to estimate underreporting. Reported cases = scaling × latent infections × delay convolution. Useful when you know reporting is incomplete but don't know the rate.
+- **Fixed lower value (e.g., `Fixed(0.5)`)**: Assumes you know 50% are reported. Changes interpretation of infections but not Rt.
+
+**When to modify:**
+
+- **Nearly always keep at `Fixed(1)`** and interpret "infections" as "reported infections"
+- **Estimate only if**: You have external data to anchor scale (seroprevalence, death rates) AND can set an informative prior on the ascertainment rate
+- **Identifiability warning**: Scaling and initial infections are weakly identified; estimating scale can cause convergence issues without strong external information
+
+**Example:**
+```{r}
+# Estimating with informative prior based on serology study
+obs_opts(scale = Normal(mean = 0.2, sd = 0.05, max = 1))
+
+# Fixed known ascertainment (rarely used)
+obs_opts(scale = Fixed(0.3))
+```
+
+## Generation time distribution
+
+**What it controls:** The distribution of times from infection of a primary case to infection of secondary cases. Fundamental to the renewal equation.
+
+**Default:** `Fixed(1)` (all transmission after 1 day - leads to Rt = exponential growth rate)
+
+**Expected impact of changes:**
+
+- **Uncertain vs fixed**: Specifying parameters with uncertainty (e.g., `Gamma(shape = Normal(3, 1), rate = Normal(2, 0.5))`) lets the model learn from data but may be slow or poorly identified with short time series.
+- **Different distribution shape**: Affects how past infections contribute to current transmission. Longer generation times smooth the infection curve and affect Rt dynamics.
+- **`weight_prior` option**: Default `TRUE` weights the prior by data length, keeping parameters near their priors. Set `FALSE` for short time series where you want the model to update the generation time.
+
+**When to modify:**
+
+- **Always specify from literature** unless you have only 1-day generation time
+- **Use uncertain parameters** when generation time estimates are themselves uncertain and you have long time series (>60 days)
+- **Use fixed parameters** when generation time is well-established or time series is short
+- **Set `weight_prior = FALSE`** only for short time series with very uncertain generation time
+
+**Example:**
+```{r}
+# Well-established generation time (COVID-19 example)
+gt_opts(example_generation_time)  # Uses package data
+
+# Custom uncertain generation time
+gt_opts(
+  Gamma(
+    shape = Normal(mean = 3, sd = 0.5),
+    rate = Normal(mean = 2, sd = 0.3),
+    max = 14
+  )
+)
+
+# Custom fixed generation time
+gt_opts(Gamma(shape = 2.5, rate = 1.5, max = 10))
+```
+
+## Delays (incubation and reporting)
+
+**What it controls:** The time from infection to observation (e.g., symptom onset + reporting delay).
+
+**Default:** `Fixed(0)` (no delay, observe infections immediately)
+
+**Expected impact of changes:**
+
+- **Adding delays shifts Rt back in time**: If there's a 7-day delay, Rt estimates reflect transmission 7 days earlier. Critical for real-time inference.
+- **Uncertain vs fixed delays**: Uncertain parameters increase computation time and may be poorly identified. Use fixed delays from literature when possible.
+- **`weight_prior` option**: Default `TRUE`. Works like generation time weighting.
+
+**When to modify:**
+
+- **Always add delays** matching your data (incubation period for symptom onset dates, plus reporting delay)
+- **Use uncertain parameters** when delays themselves are uncertain AND you have long time series
+- **Use fixed parameters** (recommended) when delays are known from external studies
+
+**Example:**
+```{r}
+# Simple fixed delay
+delay_opts(LogNormal(meanlog = 1.6, sdlog = 0.5, max = 10))
+
+# Combined incubation + reporting delay (additive)
+incubation <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 10)
+reporting <- LogNormal(meanlog = 0.5, sdlog = 0.5, max = 5)
+delay_opts(incubation + reporting)
+
+# Uncertain delay (advanced)
+delay_opts(
+  LogNormal(
+    meanlog = Normal(1.6, 0.1),
+    sdlog = Normal(0.5, 0.1),
+    max = 10
+  )
+)
+```
+
+## Truncation
+
+**What it controls:** Right-truncation of recent data due to reporting delays (recent counts will be revised upward).
+
+**Default:** No truncation (`Fixed(0)`)
+
+**Expected impact of changes:**
+
+- **Adding truncation adjusts recent estimates upward**: Recent case counts are deflated by the probability they're observed by time T.
+- **`weight_prior` option**: Default `FALSE` (unlike generation time and delays). Truncation typically doesn't need data-length weighting.
+
+**When to modify:**
+
+- **Add truncation** when your data is subject to reporting delays that cause recent counts to be systematically low
+- **Estimate truncation** separately using `estimate_truncation()` on data with known revision history
+- **Use informed prior** from data with known revisions if available
+
+**Example:**
+```{r}
+# Known truncation from external analysis
+trunc_opts(LogNormal(mean = 0.5, sd = 0.5, max = 3))
+
+# Estimated truncation (run separately first)
+truncation_estimate <- estimate_truncation(
+  data_with_revisions,
+  truncation = trunc_opts(LogNormal(mean = 0.5, sd = 0.5, max = 10))
+)
+# Then use in estimate_infections
+trunc_opts(truncation_estimate$dist)
+```
+
+# Practical workflow for prior specification
+
+## Step 1: Start with defaults
+
+Always begin with default priors to check the model runs and produces reasonable results.
+
+```{r}
+# Minimal specification
+estimates <- estimate_infections(
+  reported_cases,
+  generation_time = gt_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + reporting_delay)
+)
+```
+
+## Step 2: Identify candidates for modification
+
+Ask these questions:
+
+1. **Do I have strong domain knowledge about R₀?** → Consider modifying `rt_opts(prior = ...)`
+2. **Does Rt change rapidly or gradually in my setting?** → Consider modifying `gp_opts(ls = ...)`
+3. **Is reporting highly variable or stable?** → Consider modifying `obs_opts(dispersion = ...)` or `obs_opts(family = ...)`
+4. **Are there sudden policy changes?** → Consider using `rt_opts(rw = ...)` instead of GP
+5. **Is recent data truncated?** → Consider adding `trunc_opts(...)`
+
+## Step 3: Modify one prior at a time
+
+Make incremental changes and check sensitivity:
+
+```{r}
+# Modify R0 prior based on literature
+estimates_r0 <- estimate_infections(
+  reported_cases,
+  generation_time = gt_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + reporting_delay),
+  rt = rt_opts(prior = LogNormal(mean = 2.5, sd = 0.5))
+)
+
+# Compare results
+plot(estimates)
+plot(estimates_r0)
+```
+
+## Step 4: Check prior predictive distributions (optional)
+
+For critical applications, check if your priors generate reasonable trajectories before seeing data:
+
+```{r, eval=FALSE}
+# This is a conceptual example - actual prior predictive checks require
+# additional Stan code not currently exposed in EpiNow2
+# You can examine prior choices using:
+
+library(distributional)
+prior_r0 <- dist_lognormal(log(2), 0.5)
+quantile(prior_r0, c(0.025, 0.5, 0.975))
+# Check if this range is sensible for your application
+```
+
+# Common pitfalls and recommendations
+
+## Pitfall 1: Over-informative priors without justification
+
+**Problem:** Setting very tight priors (small SD) without strong external evidence.
+
+**Solution:** Use weakly informative priors unless you have literature or prior data supporting tight priors. When in doubt, make priors wider rather than tighter.
+
+## Pitfall 2: Ignoring generation time and delays
+
+**Problem:** Using default `gt_opts()` and `delay_opts()`, which assume 1-day generation time and no delays.
+
+**Solution:** Always specify generation time and delays from literature for your pathogen and data type.
+
+## Pitfall 3: Estimating too many uncertain parameters
+
+**Problem:** Making generation time, delays, and scaling all uncertain in a short time series.
+
+**Solution:** Prioritize fixed parameters from literature. Only estimate parameters that are truly unknown and have sufficient data (usually >60 days) to identify them.
+
+## Pitfall 4: Wrong time scale for length scale
+
+**Problem:** Setting GP length scale to 1-2 days, expecting very flexible Rt.
+
+**Solution:** If you want daily flexibility, use a random walk (`rt_opts(rw = 1)`) rather than GP with very short length scale. GPs with length scale <7 days often struggle.
+
+## Pitfall 5: Forgetting the max parameter
+
+**Problem:** Not setting `max` on distributions, leading to very long tails and slow computation.
+
+**Solution:** Always set sensible `max` values for generation time and delays (e.g., `max = 14` or `max = 20` for most respiratory diseases).
+
+# References and further reading
+
+- **Mathematical details**: See [Model definition](estimate_infections.html) vignette for full equations and mathematical notation
+- **Gaussian Process details**: See [Gaussian Process implementation details](gaussian_process_implementation_details.html) for GP mathematics
+- **Practical examples**: See [Examples: estimate_infections()](estimate_infections_options.html) for code examples of different model configurations
+- **Distribution interface**: Run `?EpiNow2::Distributions` for syntax of specifying distributions
+
+## Key papers
+
+For background on priors in renewal equation models, see:
+
+- Cori et al. (2013) on time-varying reproduction numbers
+- Riutort-Mayol et al. (2020) on approximate Gaussian processes
+- Bhatt et al. on semi-mechanistic models
