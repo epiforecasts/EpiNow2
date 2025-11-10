@@ -265,3 +265,55 @@ get_samples.estimate_infections <- function(object, ...) {
 get_samples.forecast_infections <- function(object, ...) {
   object$samples
 }
+
+#' @rdname get_samples
+#' @export
+get_samples.estimate_secondary <- function(object, ...) {
+  # Extract posterior samples from the fit
+  extract_stan_param(object$fit, CrIs = c(0.2, 0.5, 0.9))
+}
+
+#' Get predictions from a fitted secondary model
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Extracts predictions from a fitted secondary model, combining observations
+#' with model estimates.
+#'
+#' @param object A fitted model object from `estimate_secondary()`
+#' @param CrIs Numeric vector of credible intervals to return. Defaults to
+#'   c(0.2, 0.5, 0.9).
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A `data.table` with columns: date, primary, secondary, and summary
+#'   statistics (mean, sd, credible intervals) for the model predictions.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # After fitting a model
+#' predictions <- get_predictions(fit)
+#' }
+get_predictions <- function(object, ...) {
+  UseMethod("get_predictions")
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.estimate_secondary <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
+  # Extract predictions from the fit
+  predictions <- extract_stan_param(object$fit, "sim_secondary", CrIs = CrIs)
+  predictions <- predictions[, lapply(.SD, round, 1)]
+
+  # Add dates based on burn_in
+  burn_in <- object$args$burn_in
+  predictions <- predictions[, date := object$observations[(burn_in + 1):.N]$date]
+
+  # Merge with observations
+  predictions <- data.table::merge.data.table(
+    object$observations, predictions,
+    all = TRUE, by = "date"
+  )
+
+  return(predictions)
+>>>>>>> 84e3c31e (Standardise S3 interface for estimate_secondary (#1142))
+}

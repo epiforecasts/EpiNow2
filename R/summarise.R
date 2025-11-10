@@ -885,3 +885,20 @@ summary.forecast_infections <- function(object,
 print.epinowfit <- function(x, ...) {
   print(summary(x))
 }
+
+#' Summarise results from estimate_secondary
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Returns a summary of the fitted secondary model including posterior
+#' parameter estimates.
+#'
+#' @param object A fitted model object from `estimate_secondary()`
+#' @param CrIs Numeric vector of credible intervals to return. Defaults to
+#'   c(0.2, 0.5, 0.9).
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A `<data.frame>` of summary output
+#' @export
+summary.estimate_secondary <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
+  get_samples(object)
+}
