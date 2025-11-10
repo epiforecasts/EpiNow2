@@ -57,8 +57,9 @@ The following tables list all priors available in `{EpiNow2}`, organized by mode
 | Component | Model | Function | Parameter | Default | Notes |
 |-----------|-------|----------|-----------|---------|-------|
 | **Reproduction number (Rt)** |
-| Initial R₀ | Renewal only | `rt_opts()` | `prior` | `LogNormal(mean = 1, sd = 1)` | With stationary GP, reverts to this when no data |
-| Random walk SD | Renewal only | `rt_opts()` | `rw` | `HalfNormal(0, 0.1)` | Set step size via `rw` argument |
+| Initial R₀ / mean Rt | Renewal only | `rt_opts()` | `prior` | `LogNormal(mean = 1, sd = 1)` | When choosing `gp_on = "R0"`, reverts to this when no data |
+| **Random walk** |
+| Step size SD | Renewal only | `rt_opts()` | `rw` | `HalfNormal(0, 0.1)` | Set step size via `rw` argument |
 | **Gaussian Process** |
 | Length scale | Both | `gp_opts()` | `ls` | `LogNormal(mean = 21, sd = 7, max = 60)` | Controls smoothness over time |
 | Magnitude | Both | `gp_opts()` | `alpha` | `Normal(mean = 0, sd = 0.01)` | Controls amplitude of variations |
@@ -69,7 +70,7 @@ The following tables list all priors available in `{EpiNow2}`, organized by mode
 | Scaling | Both | `obs_opts()` | `scale` | `Fixed(1)` | Ascertainment rate |
 | Day of week | Both | (internal) | (auto) | `Dirichlet(1, ..., 1)` | Turn off via `week_effect = FALSE` |
 | **Generation time** |
-| Parameters | Renewal only | `gt_opts()` | `dist` | `Fixed(1)` | Default: daily exponential growth rate |
+| Parameters | Renewal only | `gt_opts()` | `dist` | `Fixed(1)` | Default: Rt is daily exponential growth rate |
 | **Delays** |
 | Parameters | Both | `delay_opts()` | `dist` | `Fixed(0)` | No delay by default |
 | **Truncation** |
@@ -100,12 +101,12 @@ The following tables list all priors available in `{EpiNow2}`, organized by mode
 
 This section explains what effects you can expect from modifying each prior, and when you might want to do so.
 
-## Initial reproduction number (R₀)
+## Reproduction number
 
 **What it controls:** The prior distribution for the reproduction number. Its role depends on the Gaussian Process specification:
 
 - **Differenced GP** (default, `gp_on = "R_t-1"`): This is the prior for R₀ at the start of the time series. When there's no data (e.g., due to delays), Rt stays constant at its last estimated value.
-- **Stationary GP** (`gp_on = "R0"`): This is the prior mean that Rt reverts to when there's no data. Useful when you want estimates to return to a baseline value in the absence of information.
+- **Stationary GP** (`gp_on = "R0"`): This is the prior mean that Rt reverts to throughout the time series when there's no data. Useful when you want estimates to return to a baseline value in the absence of information.
 
 **Default:** `LogNormal(mean = 1, sd = 1)`
 
@@ -291,14 +292,14 @@ obs_opts(scale = Fixed(0.3))
 
 - **Uncertain vs fixed**: Specifying parameters with uncertainty (e.g., `Gamma(shape = Normal(3, 1), rate = Normal(2, 0.5))`) lets the model learn from data but may be slow or poorly identified with short time series.
 - **Different distribution shape**: Affects how past infections contribute to current transmission. Longer generation times smooth the infection curve and affect Rt dynamics.
-- **`weight_prior` option**: Default `TRUE` weights the prior by data length, keeping parameters near their priors. Set `FALSE` for short time series where you want the model to update the generation time.
+- **`weight_prior` option**: Default `TRUE` weights the prior by data length, keeping parameters near their priors. Set `FALSE` to allow more learning from data, though in practice this often doesn't work well.
 
 **When to modify:**
 
 - **Always specify from literature** unless you have only 1-day generation time
 - **Use uncertain parameters** when generation time estimates are themselves uncertain and you have long time series (>60 days)
 - **Use fixed parameters** when generation time is well-established or time series is short
-- **Set `weight_prior = FALSE`** only for short time series with very uncertain generation time
+- **`weight_prior = FALSE`** can be tried if you believe the generation time should be learned from data, though this is rarely successful in practice
 
 **Example:**
 ```{r}
@@ -392,12 +393,14 @@ trunc_opts(truncation_estimate$dist)
 `estimate_infections()` supports two models, each with different prior requirements:
 
 **Renewal equation model** (default, `rt != NULL`):
+
 - Models infections via renewal equation using reproduction number
 - **Requires**: Rt prior, generation time, GP or random walk for Rt dynamics
 - **Use when**: You want explicit epidemiological interpretation via Rt
 - **Best for**: Most epidemic modeling scenarios
 
 **Non-mechanistic model** (`rt = NULL`):
+
 - Models infections directly with GP, no explicit Rt in model
 - **Requires**: Back-calculation prior, no generation time needed
 - **Use when**: Faster computation needed, or Rt interpretation less important
@@ -436,13 +439,13 @@ from primary observations (cases, admissions) with a delay and scaling.
 **Default:** `LogNormal(meanlog = Normal(2.5, 0.5), sdlog = Normal(0.47, 0.25), max = 30)`
 
 **Expected impact:**
-- **Uncertain parameters**: Allow model to learn delay from data, but require
-longer time series (>30 days)
+
+- **Uncertain parameters**: Allow model to learn delay from data, but require longer time series (>30 days)
 - **Fixed parameters**: Faster, more stable with short time series
 
 **When to modify:**
-- Use literature estimates when available (e.g., case-to-death ~14-21 days
-for COVID-19)
+
+- Use literature estimates when available (e.g., case-to-death ~14-21 days for COVID-19)
 - Make uncertain only with long time series and uncertain external estimates
 
 **Example:**
@@ -474,10 +477,12 @@ estimate_secondary(
 **Default:** None - must be specified by user.
 
 **Expected impact:**
+
 - **Tight prior**: Constrains estimates near prior, faster convergence
 - **Wide prior**: Flexible but may be poorly identified without long time series
 
 **When to modify:**
+
 - Always specify based on domain knowledge
 - Use tighter priors with external estimates (e.g., IFR from serology studies)
 
@@ -505,11 +510,12 @@ cause recent data to be revised upward over time.
 **Default:** `LogNormal(meanlog = Normal(0, 1), sdlog = Normal(1, 1), max = 10)`
 
 **Expected impact:**
-- **Tighter priors**: Faster convergence if you have prior knowledge of
-typical delays
+
+- **Tighter priors**: Faster convergence if you have prior knowledge of typical delays
 - **Wider priors**: More flexible but may be poorly identified
 
 **When to modify:**
+
 - Use informative priors if you have data on typical reporting delays
 - Common reporting delays: 1-3 days (test results), 7-14 days (death reporting)
 
