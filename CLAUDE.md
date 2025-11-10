@@ -9,9 +9,8 @@
 - Break work into small atomic commits when possible
 
 ### Example
-```
+
 "Add prior choice guide vignette"
-```
 
 ## Pull Requests
 
