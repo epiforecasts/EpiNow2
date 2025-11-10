@@ -893,14 +893,41 @@ print.epinowfit <- function(x, ...) {
 #' parameter estimates with credible intervals.
 #'
 #' @param object A fitted model object from `estimate_secondary()`
+#' @param type Character string indicating the type of summary to return.
+#'   Options are "snapshot" (default, key parameters only) or "parameters"
+#'   (all parameters).
+#' @param params Character vector of parameter names to include. Only used
+#'   when `type = "parameters"`. If NULL (default), returns all parameters.
 #' @param CrIs Numeric vector of credible intervals to return. Defaults to
 #'   c(0.2, 0.5, 0.9).
 #' @param ... Additional arguments (currently unused)
 #'
 #' @return A `<data.table>` with summary statistics (mean, sd, median,
-#'   credible intervals) for all model parameters
+#'   credible intervals) for model parameters. When `type = "snapshot"`,
+#'   returns only key parameters (delays, scaling). When `type = "parameters"`,
+#'   returns all or filtered parameters.
+#' @importFrom rlang arg_match
 #' @export
-summary.estimate_secondary <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
+summary.estimate_secondary <- function(object,
+                                       type = c("snapshot", "parameters"),
+                                       params = NULL,
+                                       CrIs = c(0.2, 0.5, 0.9), ...) {
+  type <- arg_match(type)
+
   # Extract all parameters with summary statistics
-  extract_stan_param(object$fit, CrIs = CrIs)
+  out <- extract_stan_param(object$fit, CrIs = CrIs)
+
+  if (type == "snapshot") {
+    # Return only key parameters for a concise summary
+    # Typical parameters: delay_params (distribution parameters), params (scaling, etc.)
+    key_vars <- c("delay_params", "params", "frac_obs")
+    out <- out[grepl(paste(key_vars, collapse = "|"), variable)]
+  } else if (type == "parameters") {
+    # Optional filtering by parameter name
+    if (!is.null(params)) {
+      out <- out[variable %in% params]
+    }
+  }
+
+  return(out[])
 }
