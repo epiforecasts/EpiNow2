@@ -33,6 +33,7 @@
 
 ## Documentation
 
+- Added a comprehensive prior choice and specification guide vignette covering all three main modeling functions with practical guidance on when and how to modify priors.
 - Fixed broken `@seealso` links in roxygen2 documentation by converting plain text function references to proper link syntax.
 - Added documentation about doing prior predictive checks.
 - The stan code is now fulled documented and can be accessed on the website under the Reference tab.
