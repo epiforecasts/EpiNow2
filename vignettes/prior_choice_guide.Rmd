@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 This vignette provides practical guidance on specifying and choosing priors for `{EpiNow2}` models.
 While the package provides sensible defaults for all priors, understanding when and how to modify them can improve model performance for your specific application.
 
-This guide covers priors for the three main modeling functions:
+This guide covers priors for the three main modelling functions:
 
 - `estimate_infections()` (renewal equation and non-mechanistic models)
 - `estimate_secondary()` (secondary observations like deaths or hospitalizations)
@@ -48,7 +48,7 @@ This guide covers priors for the three main modeling functions:
 
 # Overview of all priors
 
-The following tables list all priors available in `{EpiNow2}`, organized by modeling function.
+The following tables list all priors available in `{EpiNow2}`, organised by modelling function.
 
 ## estimate_infections() priors
 
@@ -66,7 +66,7 @@ The following tables list all priors available in `{EpiNow2}`, organized by mode
 | **Back-calculation** |
 | Prior source | Non-mechanistic only | `backcalc_opts()` | `prior` | `"reports"` | Options: "reports", "infections", "none" |
 | **Observation model** |
-| Overdispersion | Both | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterization |
+| Overdispersion | Both | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterisation |
 | Scaling | Both | `obs_opts()` | `scale` | `Fixed(1)` | Ascertainment rate |
 | Day of week | Both | (internal) | (auto) | `Dirichlet(1, ..., 1)` | Turn off via `week_effect = FALSE` |
 | **Generation time** |
@@ -84,7 +84,7 @@ The following tables list all priors available in `{EpiNow2}`, organized by mode
 | Parameters | `delay_opts()` | `dist` | `LogNormal(meanlog = Normal(2.5, 0.5), sdlog = Normal(0.47, 0.25), max = 30)` | Time from primary to secondary event |
 | **Observation model** |
 | Scaling | `obs_opts()` | `scale` | Required, no default | Fraction of primary events leading to secondary |
-| Overdispersion | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterization |
+| Overdispersion | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterisation |
 | Day of week | (internal) | (auto) | `Dirichlet(1, ..., 1)` | Turn off via `week_effect = FALSE` |
 
 ## estimate_truncation() priors
@@ -110,7 +110,7 @@ This section explains what effects you can expect from modifying each prior, and
 
 **Default:** `LogNormal(mean = 1, sd = 1)`
 
-This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probability), centered on the epidemic threshold.
+This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probability), centred on the epidemic threshold.
 
 **Expected impact of changes:**
 
@@ -122,7 +122,7 @@ This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probabi
 
 - You have reliable estimates from similar outbreaks
 - Your data shows clear initial growth/decay inconsistent with $R \approx 1$
-- You're analyzing a well-characterized pathogen (e.g., measles with $R_0$ typically 12-18)
+- You're analysing a well-characterised pathogen (e.g., measles with $R_0$ typically 12-18)
 - Using stationary GP and want a specific baseline for $R_t$ to revert to
 
 **Example:**
@@ -159,7 +159,7 @@ This corresponds to a median of 21 days (range 9 to 36 days at 95% prior probabi
 
 **When to modify:**
 
-- **Shorter (mean ~7-14 days)**: When expecting rapid policy changes, modeling short outbreaks, or seeing sudden shifts in data
+- **Shorter (mean ~7-14 days)**: When expecting rapid policy changes, modelling short outbreaks, or seeing sudden shifts in data
 - **Longer (mean ~28+ days)**: When transmission changes gradually, in stable endemic settings, or with noisy data
 - **Maximum adjustment**: Set `max` lower if working with short time series (e.g., `max=30` for 60-day outbreak)
 
@@ -187,8 +187,8 @@ This corresponds to a half-normal (since negative values are truncated) with 95%
 
 **When to modify:**
 
-- **Larger**: Modeling outbreaks with major interventions (lockdowns, vaccination campaigns) or high real variation
-- **Smaller**: Modeling stable endemic transmission or when data is very noisy relative to sample size
+- **Larger**: Modelling outbreaks with major interventions (lockdowns, vaccination campaigns) or high real variation
+- **Smaller**: Modelling stable endemic transmission or when data is very noisy relative to sample size
 - **Rarely modified** in practice: The default works well in most scenarios
 
 **Example:**
@@ -397,7 +397,7 @@ trunc_opts(truncation_estimate$dist)
 - Models infections via renewal equation using reproduction number
 - **Requires**: $R_t$ prior, generation time, GP or random walk for $R_t$ dynamics
 - **Use when**: You want explicit epidemiological interpretation via $R_t$
-- **Best for**: Most epidemic modeling scenarios
+- **Best for**: Most epidemic modelling scenarios
 
 **Non-mechanistic model** (`rt = NULL`):
 
@@ -405,7 +405,7 @@ trunc_opts(truncation_estimate$dist)
 - **Requires**: Back-calculation prior, no generation time needed
 - **Use when**: Faster computation needed, or $R_t$ interpretation less important
 - **Best for**: Quick analyses, forecasting without mechanistic detail
-- **Warning**: This is a less epidemiologically informed model than the renewal equation model and may lead to undesired behavior, particularly when extrapolating or forecasting
+- **Warning**: This is a less epidemiologically informed model than the renewal equation model and may lead to undesired behaviour, particularly when extrapolating or forecasting
 
 **Example:**
 ```{r}
