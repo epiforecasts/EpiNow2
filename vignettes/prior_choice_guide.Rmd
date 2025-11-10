@@ -25,6 +25,11 @@ knitr::opts_chunk$set(
 This vignette provides practical guidance on specifying and choosing priors for EpiNow2 models.
 While the package provides sensible defaults for all priors, understanding when and how to modify them can improve model performance for your specific application.
 
+This guide covers priors for the three main modeling functions:
+- `estimate_infections()` (renewal equation and non-mechanistic models)
+- `estimate_secondary()` (secondary observations like deaths or hospitalizations)
+- `estimate_truncation()` (truncation distribution estimation)
+
 **What this guide covers:**
 
 - A comprehensive table of all priors in EpiNow2
@@ -42,28 +47,55 @@ While the package provides sensible defaults for all priors, understanding when 
 
 # Overview of all priors
 
-The following table lists all priors available in EpiNow2, organized by model component.
+The following tables list all priors available in EpiNow2, organized by modeling function.
+
+## estimate_infections() priors
+
+`estimate_infections()` supports two models: renewal equation (default) and non-mechanistic/deconvolution.
+
+| Component | Model | Function | Parameter | Default | Syntax Example |
+|-----------|-------|----------|-----------|---------|----------------|
+| **Reproduction number (Rt)** |
+| Initial R₀ | Renewal only | `rt_opts()` | `prior` | `LogNormal(mean=1, sd=1)` | `rt_opts(prior = LogNormal(mean=2, sd=0.5))` |
+| Random walk SD | Renewal only | `rt_opts()` | (auto) | `HalfNormal(0, 0.1)` | Set via `rw` option: `rt_opts(rw=7)` |
+| **Gaussian Process** |
+| Length scale | Both | `gp_opts()` | `ls` | `LogNormal(mean=21, sd=7, max=60)` | `gp_opts(ls = LogNormal(mean=14, sd=5, max=30))` |
+| Magnitude | Both | `gp_opts()` | `alpha` | `Normal(mean=0, sd=0.01)` | `gp_opts(alpha = Normal(mean=0, sd=0.05))` |
+| **Back-calculation** |
+| Prior source | Non-mechanistic only | `backcalc_opts()` | `prior` | `"reports"` | `backcalc_opts(prior = "infections")` |
+| **Observation model** |
+| Overdispersion | Both | `obs_opts()` | `dispersion` | `Normal(mean=0, sd=0.25)` | `obs_opts(dispersion = Normal(mean=0, sd=0.5))` |
+| Scaling | Both | `obs_opts()` | `scale` | `Fixed(1)` | `obs_opts(scale = Normal(mean=0.5, sd=0.1))` |
+| Day of week | Both | `obs_opts()` | (auto) | `Dirichlet(1,...,1)` | Turn off via `week_effect=FALSE` |
+| **Generation time** |
+| Parameters | Renewal only | `gt_opts()` | `dist` | Fixed at 1 day | `gt_opts(Gamma(shape=Normal(3,1), rate=Normal(2,0.5)))` |
+| **Delays** |
+| Parameters | Both | `delay_opts()` | `dist` | Fixed at 0 days | `delay_opts(LogNormal(mean=5, sd=2, max=14))` |
+| **Truncation** |
+| Distribution | Both | `trunc_opts()` | `dist` | Fixed at 0 days | `trunc_opts(LogNormal(mean=0.5, sd=0.5, max=3))` |
+| **Initialization** |
+| Initial infections | Both | (internal) | `iota` | `Normal(log(C_init), 2)` | Not user-adjustable |
+
+## estimate_secondary() priors
 
 | Component | Function | Parameter | Default | Syntax Example |
 |-----------|----------|-----------|---------|----------------|
-| **Reproduction number (Rt)** |
-| Initial R₀ | `rt_opts()` | `prior` | `LogNormal(mean=1, sd=1)` | `rt_opts(prior = LogNormal(mean=2, sd=0.5))` |
-| Random walk SD | `rt_opts()` | (auto) | `HalfNormal(0, 0.1)` | Set via `rw` option: `rt_opts(rw=7)` |
-| **Gaussian Process** |
-| Length scale | `gp_opts()` | `ls` | `LogNormal(mean=21, sd=7, max=60)` | `gp_opts(ls = LogNormal(mean=14, sd=5, max=30))` |
-| Magnitude | `gp_opts()` | `alpha` | `Normal(mean=0, sd=0.01)` | `gp_opts(alpha = Normal(mean=0, sd=0.05))` |
+| **Delays (primary to secondary)** |
+| Parameters | `delay_opts()` | `dist` | `LogNormal(meanlog=Normal(2.5,0.5), sdlog=Normal(0.47,0.25), max=30)` | `delay_opts(LogNormal(mean=3, sd=2, max=20))` |
 | **Observation model** |
+| Scaling | `obs_opts()` | `scale` | Required, no default | `obs_opts(scale = Normal(mean=0.4, sd=0.1))` |
 | Overdispersion | `obs_opts()` | `dispersion` | `Normal(mean=0, sd=0.25)` | `obs_opts(dispersion = Normal(mean=0, sd=0.5))` |
-| Scaling | `obs_opts()` | `scale` | `Fixed(1)` | `obs_opts(scale = Normal(mean=0.5, sd=0.1))` |
 | Day of week | `obs_opts()` | (auto) | `Dirichlet(1,...,1)` | Turn off via `week_effect=FALSE` |
-| **Generation time** |
-| Parameters | `gt_opts()` | `dist` | Fixed at 1 day | `gt_opts(Gamma(shape=Normal(3,1), rate=Normal(2,0.5)))` |
-| **Delays** |
-| Parameters | `delay_opts()` | `dist` | Fixed at 0 days | `delay_opts(LogNormal(mean=5, sd=2, max=14))` |
-| **Truncation** |
-| Distribution | `trunc_opts()` | `dist` | Fixed at 0 days | `trunc_opts(LogNormal(mean=0.5, sd=0.5, max=3))` |
-| **Initialization** |
-| Initial infections | (internal) | `iota` | `Normal(log(C_init), 2)` | Not user-adjustable |
+
+## estimate_truncation() priors
+
+| Component | Function | Parameter | Default | Syntax Example |
+|-----------|----------|-----------|---------|----------------|
+| **Truncation distribution** |
+| Parameters | `trunc_opts()` | `dist` | `LogNormal(meanlog=Normal(0,1), sdlog=Normal(1,1), max=10)` | `trunc_opts(LogNormal(meanlog=Normal(0.5,0.5), sdlog=Normal(0.5,0.5), max=7))` |
+| **Observation model** |
+| Overdispersion | (internal) | (auto) | `HalfNormal(0, 1)` | Not directly adjustable |
+| Noise term | (internal) | (auto) | `HalfNormal(0, 1)` | Not directly adjustable |
 
 # Prior impacts and choice guidance
 
@@ -343,6 +375,159 @@ truncation_estimate <- estimate_truncation(
 )
 # Then use in estimate_infections
 trunc_opts(truncation_estimate$dist)
+```
+
+## Model choice in estimate_infections()
+
+`estimate_infections()` supports two models, each with different prior requirements:
+
+**Renewal equation model** (default, `rt != NULL`):
+- Models infections via renewal equation using reproduction number
+- **Requires**: Rt prior, generation time, GP or random walk for Rt dynamics
+- **Use when**: You want explicit epidemiological interpretation via Rt
+- **Best for**: Most epidemic modeling scenarios
+
+**Non-mechanistic model** (`rt = NULL`):
+- Models infections directly with GP, no explicit Rt in model
+- **Requires**: Back-calculation prior, no generation time needed
+- **Use when**: Faster computation needed, or Rt interpretation less important
+- **Best for**: Quick analyses, forecasting without mechanistic detail
+
+**Example:**
+```{r}
+# Renewal equation model (default)
+estimate_infections(
+  reported_cases,
+  generation_time = gt_opts(example_generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.5))
+)
+
+# Non-mechanistic model
+estimate_infections(
+  reported_cases,
+  delays = delay_opts(delay),
+  rt = NULL,  # No Rt estimation
+  backcalc = backcalc_opts(prior = "reports")
+)
+```
+
+## Priors for estimate_secondary()
+
+`estimate_secondary()` models secondary observations (deaths, hospitalizations)
+from primary observations (cases, admissions) with a delay and scaling.
+
+**Key priors:**
+
+### Delay between primary and secondary
+
+**What it controls:** Time from primary event to secondary event (e.g., case to death).
+
+**Default:** `LogNormal(meanlog = Normal(2.5, 0.5), sdlog = Normal(0.47, 0.25), max = 30)`
+
+**Expected impact:**
+- **Uncertain parameters**: Allow model to learn delay from data, but require
+longer time series (>30 days)
+- **Fixed parameters**: Faster, more stable with short time series
+
+**When to modify:**
+- Use literature estimates when available (e.g., case-to-death ~14-21 days
+for COVID-19)
+- Make uncertain only with long time series and uncertain external estimates
+
+**Example:**
+```{r}
+# Fixed delay from literature
+estimate_secondary(
+  data,
+  delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30))
+)
+
+# Uncertain delay (long time series)
+estimate_secondary(
+  data,
+  delays = delay_opts(
+    LogNormal(
+      meanlog = Normal(2, 0.3),
+      sdlog = Normal(0.5, 0.2),
+      max = 30
+    )
+  )
+)
+```
+
+### Scaling (fraction reported)
+
+**What it controls:** Proportion of primary events leading to secondary events
+(e.g., case fatality rate).
+
+**Default:** None - must be specified by user.
+
+**Expected impact:**
+- **Tight prior**: Constrains estimates near prior, faster convergence
+- **Wide prior**: Flexible but may be poorly identified without long time series
+
+**When to modify:**
+- Always specify based on domain knowledge
+- Use tighter priors with external estimates (e.g., IFR from serology studies)
+
+**Example:**
+```{r}
+# Case fatality rate ~1% with uncertainty
+estimate_secondary(
+  data,
+  delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30)),
+  obs = obs_opts(scale = Normal(mean = 0.01, sd = 0.005, max = 1))
+)
+```
+
+## Priors for estimate_truncation()
+
+`estimate_truncation()` estimates the distribution of reporting delays that
+cause recent data to be revised upward over time.
+
+**Key priors:**
+
+### Truncation distribution parameters
+
+**What it controls:** The lognormal distribution describing reporting delays.
+
+**Default:** `LogNormal(meanlog = Normal(0, 1), sdlog = Normal(1, 1), max = 10)`
+
+**Expected impact:**
+- **Tighter priors**: Faster convergence if you have prior knowledge of
+typical delays
+- **Wider priors**: More flexible but may be poorly identified
+
+**When to modify:**
+- Use informative priors if you have data on typical reporting delays
+- Common reporting delays: 1-3 days (test results), 7-14 days (death reporting)
+
+**Example:**
+```{r}
+# Quick turnaround testing (1-3 days typical delay)
+estimate_truncation(
+  data_snapshots,
+  truncation = trunc_opts(
+    LogNormal(
+      meanlog = Normal(0.5, 0.3),  # ~1.6 day median delay
+      sdlog = Normal(0.5, 0.2),
+      max = 7
+    )
+  )
+)
+
+# Slower reporting (e.g., deaths, 7-14 days)
+estimate_truncation(
+  data_snapshots,
+  truncation = trunc_opts(
+    LogNormal(
+      meanlog = Normal(2, 0.5),  # ~7 day median delay
+      sdlog = Normal(0.5, 0.2),
+      max = 21
+    )
+  )
+)
 ```
 
 # Practical workflow for prior specification
