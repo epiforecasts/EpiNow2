@@ -292,14 +292,14 @@ obs_opts(scale = Fixed(0.3))
 
 - **Uncertain vs fixed**: Specifying parameters with uncertainty (e.g., `Gamma(shape = Normal(3, 1), rate = Normal(2, 0.5))`) lets the model learn from data but may be slow or poorly identified with short time series.
 - **Different distribution shape**: Affects how past infections contribute to current transmission. Longer generation times smooth the infection curve and affect Rt dynamics.
-- **`weight_prior` option**: Default `TRUE` weights the prior by data length, keeping parameters near their priors. Set `FALSE` to allow more learning from data, though in practice this often doesn't work well.
+- **`weight_prior` option**: Default `TRUE` weights the prior by data length, keeping parameters near their priors. Set `FALSE` to allow more learning from data, though this has not been successfully tested to our knowledge.
 
 **When to modify:**
 
 - **Always specify from literature** unless you have only 1-day generation time
 - **Use uncertain parameters** when generation time estimates are themselves uncertain and you have long time series (>60 days)
 - **Use fixed parameters** when generation time is well-established or time series is short
-- **`weight_prior = FALSE`** can be tried if you believe the generation time should be learned from data, though this is rarely successful in practice
+- **`weight_prior = FALSE`** can be tried if you believe the generation time should be learned from data, though results may vary
 
 **Example:**
 ```{r}
