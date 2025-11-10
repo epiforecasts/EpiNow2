@@ -369,42 +369,23 @@ plot_summary <- function(summary_results,
 #'
 #' @param x A list of output as produced by `estimate_infections`
 #'
-#' @param type A character vector indicating the name of the plot to return.
-#' Defaults to  "summary" with supported options being "infections", "reports",
-#' "R", "growth_rate", "summary", "all". If "all" is supplied all plots are
-#' generated.
-#'
 #' @param ... Pass additional arguments to report_plots
 #' @importFrom rlang arg_match
+#' @inheritParams select_plots
 #'
-#' @seealso plot report_plots estimate_infections
+#' @seealso [report_plots()]
 #' @aliases plot
 #' @method plot estimate_infections
 #' @return List of plots as produced by [report_plots()]
 #' @export
 plot.estimate_infections <- function(x,
-                                     type = c(
-                                       "summary", "infections", "reports", "R",
-                                       "growth_rate", "all"
-                                     ), ...) {
+                                     type = "summary",
+                                     ...) {
   out <- report_plots(
-    summarised_estimates = x$summarised,
+    summarised_estimates = summary(x, type = "parameters"),
     reported = x$observations, ...
   )
-  type <- arg_match(type)
-  if (type == "all") {
-    type <- c("summary", "infections", "reports", "R", "growth_rate")
-  }
-
-  if (!is.null(out)) {
-    out <- out[type]
-    if (length(type) == 1) {
-      out <- out[[1]]
-    }
-    return(out)
-  } else {
-    return(invisible(NULL))
-  }
+  select_plots(out, type)
 }
 
 #' Plot method for epinow
@@ -413,10 +394,44 @@ plot.estimate_infections <- function(x,
 #' `plot` method for class `<epinow>`.
 #' @param x A list of output as produced by [epinow()].
 #' @inheritParams plot.estimate_infections
-#' @seealso plot plot.estimate_infections report_plots estimate_infections
+#' @seealso [plot.estimate_infections()] [report_plots()]
 #' @method plot epinow
 #' @return List of plots as produced by [report_plots()]
 #' @export
 plot.epinow <- function(x, type = "summary", ...) {
-  plot.estimate_infections(x$estimates, type = type, ...)
+  out <- report_plots(
+    summarised_estimates = x$estimates$summarised,
+    reported = x$estimates$observations, ...
+  )
+  select_plots(out, type)
+}
+
+#' Internal helper function to select plots from those created by
+#' [report_plots()]
+#'
+#' @param plots A list of plots as produced by [report_plots()].
+#' @param type A character vector indicating the name of the plot to return.
+#' Defaults to  "summary" with supported options being "infections", "reports",
+#' "R", "growth_rate", "summary", "all". If "all" is supplied all plots are
+#' generated.
+#' @return Selected plots by type
+#' @keywords internal
+select_plots <- function(plots, type = c(
+  "summary", "infections", "reports", "R",
+  "growth_rate", "all"
+)) {
+  type <- arg_match(type)
+  if (type == "all") {
+    type <- c("summary", "infections", "reports", "R", "growth_rate")
+  }
+
+  if (!is.null(plots)) {
+    plots <- plots[type]
+    if (length(type) == 1) {
+      plots <- plots[[1]]
+    }
+    return(plots)
+  } else {
+    return(invisible(NULL))
+  }
 }

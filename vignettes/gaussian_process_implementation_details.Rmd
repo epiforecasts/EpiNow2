@@ -119,7 +119,7 @@ and for $\nu = 5 / 2$ it is
 
 \begin{equation}
 S_k(\omega) =
-    \alpha^2 \frac{3 \left(\sqrt{5} / \rho \right)^5}{2 \left(\left(\sqrt{5} / \rho\right)^2 + \omega^2\right)^3}
+    \alpha^2 \frac{16 \left(\sqrt{5} / \rho \right)^5}{3 \left(\left(\sqrt{5} / \rho\right)^2 + \omega^2\right)^3}
 \end{equation}
 
 In the case of a squared exponential the spectral kernel density is given by

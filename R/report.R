@@ -135,7 +135,8 @@ report_summary <- function(summarised_estimates,
 #' growth_rate, summary)`, which correspond to a summary combination (last
 #' item) and for the leading items.
 #'
-#' @seealso [plot_estimates()] of
+#' @seealso [plot_estimates()]
+#'
 #' `summarised_estimates[variable == "infections"]`,
 #' `summarised_estimates[variable == "reported_cases"]`,
 #' `summarised_estimates[variable == "R"]`, and

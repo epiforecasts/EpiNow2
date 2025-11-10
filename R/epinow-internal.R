@@ -48,7 +48,7 @@ save_input <- function(data, target_folder) {
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan object
 #' be returned.
 #'
-#' @seealso estimate_infections
+#' @seealso [estimate_infections()]
 #' @inheritParams setup_target_folder
 #' @inheritParams  estimate_infections
 #' @return No return value, called for side effects
@@ -58,11 +58,11 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
   if (!is.null(target_folder)) {
     if (samples) {
       saveRDS(
-        estimates$samples, file.path(target_folder, "estimate_samples.rds")
+        get_samples(estimates), file.path(target_folder, "estimate_samples.rds")
       )
     }
     saveRDS(
-      estimates$summarised,
+      summary(estimates, type = "parameters"),
       file.path(target_folder, "summarised_estimates.rds")
     )
     if (return_fit) {
@@ -91,14 +91,16 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
                                      target_folder = NULL, samples = TRUE) {
   estimated_reported_cases <- list()
   if (samples) {
-    estimated_reported_cases$samples <- estimates$samples[
+    estimated_reported_cases$samples <- get_samples(estimates)[
       variable == "reported_cases"
     ][
       ,
       .(date, sample, cases = value, type = "gp_rt")
     ]
   }
-  estimated_reported_cases$summarised <- estimates$summarised[
+  estimated_reported_cases$summarised <- summary(
+    estimates, type = "parameters"
+  )[
     variable == "reported_cases"
   ][
     ,
@@ -181,10 +183,11 @@ construct_output <- function(estimates,
                              summary = NULL,
                              samples = TRUE) {
   out <- list()
-  out$estimates <- estimates
-  if (!samples) {
-    out$estimates$samples <- NULL
+  out$estimates <- list()
+  if (samples) {
+    out$estimates$samples <- get_samples(estimates)
   }
+  out$estimates$summarised <- summary(estimates, "parameters")
   out$estimated_reported_cases <- estimated_reported_cases
   out$summary <- summary
 

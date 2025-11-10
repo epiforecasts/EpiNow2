@@ -1,4 +1,5 @@
 functions {
+#include functions/helpers.stan
 #include functions/convolve.stan
 #include functions/pmfs.stan
 #include functions/delays.stan
@@ -114,9 +115,9 @@ generated quantities {
       imputed_reports[i] = report_rng(
         to_vector(reports[i]), dispersion[i], model_type
       );
-      r[i] = to_row_vector(
-        calculate_growth(to_vector(infections[i]), seeding_time + 1)
-      );
+      r[i] = to_row_vector(calculate_growth(
+        to_vector(infections[i]), seeding_time, gt_rev_pmf, growth_method
+        ));
     }
   }
 }

@@ -367,7 +367,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #'
 #' @return A `ggplot` object.
 #'
-#' @seealso plot estimate_secondary
+#' @seealso [estimate_secondary()]
 #' @method plot estimate_secondary
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw
@@ -449,7 +449,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' @return A `<data.frame>` containing simulated data in the format required by
 #' [estimate_secondary()].
 #'
-#' @seealso estimate_secondary
+#' @seealso [estimate_secondary()]
 #' @inheritParams secondary_opts
 #' @importFrom data.table as.data.table copy shift
 #' @importFrom purrr pmap_dbl
@@ -617,9 +617,8 @@ forecast_secondary <- function(estimate,
     primary <- primary[, .(date, sample, value)]
   }
   if (inherits(primary, "estimate_infections")) {
-    primary <- data.table::as.data.table(
-      primary$samples[variable == primary_variable]
-    )
+    primary_samples <- get_samples(primary)
+    primary <- primary_samples[variable == primary_variable]
     primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
     primary <- primary[, .(date, sample, value)]
     if (!is.null(samples)) {

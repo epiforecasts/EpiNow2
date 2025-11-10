@@ -237,8 +237,8 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' reproduction number. Custom settings can be supplied which override the
 #' defaults.
 #'
-#' @param prior A `<dist_spec>` giving the prior of the initial reproduciton
-#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distributin
+#' @param prior A `<dist_spec>` giving the prior of the initial reproduction
+#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distribution
 #' with mean of 1 and standard deviation of 1: `LogNormal(mean = 1, sd = 1)`.
 #' A lower limit of 0 will be enforced automatically.
 #'
@@ -268,13 +268,29 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' susceptible depletion but posterior predictions of infections and reports are
 #' adjusted.
 #'
-#' @param gp_on Character string, defaulting to  "R_t-1". Indicates how the
+#' @param gp_on Character string, defaulting to "R_t-1". Indicates how the
 #' Gaussian process, if in use, should be applied to Rt. Currently supported
 #' options are applying the Gaussian process to the last estimated Rt (i.e
 #' Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
 #' = R0 * GP). Both should produced comparable results when data is not sparse
 #' but the method relying on a global mean will revert to this for real time
 #' estimates, which may not be desirable.
+#'
+#' @param growth_method Method used to compute growth rates from Rt. Options
+#' are "infections" (default) and "infectiousness". The option "infections"
+#' uses the classical approach, i.e. computing the log derivative on the number
+#' of new infections. The option "infectiousness" uses an alternative approach
+#' by Parag et al., which computes the log derivative of the infectiousness
+#' (i.e. the convolution of past infections with the generation time) and
+#' shifts it by the mean generation time. This can provide better stability
+#' and temporal matching with Rt. Note that, due to the temporal shift the
+#' "infectiousness" method results in undefined (NaN) growth rates for the most
+#' recent time points (equal to the mean generation time).
+#'
+#' @references Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic
+#' growth rates more informative than reproduction numbers? Journal of the
+#' Royal Statistical Society: Series A (Statistics in Society) 185, S5–S15
+#' (2022).
 #'
 #' @return An `<rt_opts>` object with settings defining the time-varying
 #' reproduction number.
@@ -298,14 +314,16 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     future = "latest",
                     gp_on = c("R_t-1", "R0"),
                     pop = Fixed(0),
-                    pop_period = c("forecast", "all")) {
+                    pop_period = c("forecast", "all"), 
+                    growth_method = c("infections", "infectiousness")) {
   opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
     future = future,
     gp_on = arg_match(gp_on),
-    pop_period = arg_match(pop_period)
+    pop_period = arg_match(pop_period),
+    growth_method = arg_match(growth_method)
   )
 
   # replace default settings with those specified by user
@@ -1049,7 +1067,7 @@ stan_opts <- function(object = NULL,
 #'   the data used for fitting then the same accumulation will be used in
 #'   forecasts unless set explicitly here.
 #' @return A `<forecast_opts>` object of forecast setting.
-#' @seealso fill_missing
+#' @seealso [fill_missing()]
 #' @export
 #' @examples
 #' forecast_opts(horizon = 28, accumulate = 7)
