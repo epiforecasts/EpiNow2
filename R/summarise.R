@@ -890,15 +890,17 @@ print.epinowfit <- function(x, ...) {
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Returns a summary of the fitted secondary model including posterior
-#' parameter estimates.
+#' parameter estimates with credible intervals.
 #'
 #' @param object A fitted model object from `estimate_secondary()`
 #' @param CrIs Numeric vector of credible intervals to return. Defaults to
 #'   c(0.2, 0.5, 0.9).
 #' @param ... Additional arguments (currently unused)
 #'
-#' @return A `<data.frame>` of summary output
+#' @return A `<data.table>` with summary statistics (mean, sd, median,
+#'   credible intervals) for all model parameters
 #' @export
 summary.estimate_secondary <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
-  get_samples(object)
+  # Extract all parameters with summary statistics
+  extract_stan_param(object$fit, CrIs = CrIs)
 }
