@@ -76,7 +76,8 @@ forecasting will be done.}
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
-\item{CrIs}{Numeric vector of credible intervals to calculate.}
+\item{CrIs}{Deprecated; specify credible intervals when using \code{\link[=summary]{summary()}} or
+\code{\link[=plot]{plot()}}}
 
 \item{weigh_delay_priors}{Deprecated; this is now specified at the
 distribution level in \code{generation_time_opts()}, \code{delay_opts()} and
@@ -103,8 +104,10 @@ threshold then the zero is replaced using \code{fill}.}
 horizon}
 }
 \value{
-A list of output including: posterior samples, summarised posterior
-samples, data used to fit the model, and the fit object itself.
+An \verb{<estimate_infections>} object which is a list of outputs
+including: the stan object (\code{fit}), arguments used to fit the model
+(\code{args}), and the observed data (\code{observations}). The estimates included in
+the fit can be accessed using the \code{summary()} function.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}

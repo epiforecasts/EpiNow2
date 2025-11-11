@@ -12,11 +12,11 @@ with an appropriate `print()` method that shows some appropriate summary of what
 
 ## estimate_infections
 
-- `samples`: `get_samples()` (or `extract_samples()`) built on the existing `extract_parameter_samples()`; this could also take a parameter name and look up the ID, or take a delay distribution name and look up the ID; 
+- `samples`: `get_samples()` S3 generic method for extracting formatted posterior samples; built on low-level `extract_samples()` which extracts raw Stan arrays. Note: `format_simulation_output()` is a separate internal function for simulation outputs;
 - `summarised`: `summary()`
-- `fit`: `get_stan_fit()`
-- `args`: not needed (only internally to identify parameter ids)?
-- `observations`: not needed (only internally by `summary()` and `get_samples()`
+- `fit`: accessed directly via `object$fit` (no accessor function needed)
+- `args`: accessed directly via `object$args` (used internally to identify parameter ids)
+- `observations`: accessed directly via `object$observations` (used internally by `summary()` and `get_samples()`)
 
 # estimate_secondary
 

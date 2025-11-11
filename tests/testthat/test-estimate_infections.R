@@ -25,9 +25,9 @@ default_estimate_infections <- function(..., add_stan = list(), gt = TRUE,
 
 test_estimate_infections <- function(...) {
   out <- default_estimate_infections(...)
-  expect_equal(names(out), c("samples", "summarised", "fit", "args", "observations"))
-  expect_true(nrow(out$samples) > 0)
-  expect_true(nrow(out$summarised) > 0)
+  expect_equal(names(out), c("fit", "args", "observations"))
+  expect_true(nrow(get_samples(out)) > 0)
+  expect_true(nrow(summary(out, type = "parameters")) > 0)
   expect_true(nrow(out$observations) > 0)
   invisible(out)
 }
@@ -109,11 +109,12 @@ test_that("estimate_infections successfully returns estimates using a random wal
 test_that("estimate_infections works without setting a generation time", {
   df <- test_estimate_infections(reported_cases, gt = FALSE, delay = FALSE)
   ## check exp(r) == R
-  growth_rate <- df$samples[variable == "growth_rate"][
+  samples <- get_samples(df)
+  growth_rate <- samples[variable == "growth_rate"][
     ,
     list(date, sample, growth_rate = value)
   ]
-  R <- df$samples[variable == "R"][
+  R <- samples[variable == "R"][
     ,
     list(date, sample, R = value)
   ]
@@ -189,15 +190,75 @@ test_that("estimate_infections output contains breakpoints effect when breakpoin
   bp_dates <- as.Date(c("2020-02-25", "2020-03-05", "2020-03-15"))
   data[, breakpoint := ifelse(date %in% bp_dates, 1, 0)]
   out <- default_estimate_infections(data, gp = NULL)
+  samples <- get_samples(out)
   # Should have a breakpoints effect in samples
-  expect_true("breakpoints" %in% unique(out$samples$variable))
+  expect_true("breakpoints" %in% unique(samples$variable))
   # Should have at least as many unique breakpoints as in the data
-  expect_true(length(unique(out$samples[variable == "breakpoints"]$strat)) == length(bp_dates))
+  expect_true(length(unique(samples[variable == "breakpoints"]$strat)) == length(bp_dates))
 })
 
 test_that("estimate_infections output does not contain breakpoints effect when breakpoints are not present", {
   data <- data.table::copy(reported_cases)
   data[, breakpoint := 0]
   out <- default_estimate_infections(data, gp = NULL)
-  expect_false("breakpoints" %in% unique(out$samples$variable))
+  samples <- get_samples(out)
+  expect_false("breakpoints" %in% unique(samples$variable))
+})
+
+# Deprecation tests -------------------------------------------------------
+
+test_that("summary.estimate_infections with type = 'samples' is deprecated", {
+  out <- default_estimate_infections(reported_cases)
+
+  expect_deprecated(summary(out, type = "samples"))
+
+  # Verify it returns the same as get_samples()
+  withr::local_options(lifecycle_verbosity = "quiet")
+  samples_quiet <- summary(out, type = "samples")
+  samples_new <- get_samples(out)
+
+  expect_equal(samples_quiet, samples_new)
+})
+
+test_that("extract_parameter_samples is deprecated", {
+  # Create a simple fit to test with
+  out <- default_estimate_infections(reported_cases)
+
+  dates <- out$observations$date
+  reported_dates <- dates[-(1:out$args$seeding_time)]
+
+  # Lifecycle warnings need special handling
+  expect_deprecated(extract_parameter_samples(
+    out$fit,
+    out$args,
+    reported_dates = reported_dates,
+    imputed_dates = reported_dates[out$args$imputed_times],
+    reported_inf_dates = dates,
+    drop_length_1 = FALSE,
+    merge = FALSE
+  ))
+
+  # Verify it returns the same as format_simulation_output()
+  withr::local_options(lifecycle_verbosity = "quiet")
+  old_quiet <- extract_parameter_samples(
+    out$fit,
+    out$args,
+    reported_dates = reported_dates,
+    imputed_dates = reported_dates[out$args$imputed_times],
+    reported_inf_dates = dates,
+    drop_length_1 = FALSE,
+    merge = FALSE
+  )
+
+  new_output <- format_simulation_output(
+    out$fit,
+    out$args,
+    reported_dates = reported_dates,
+    imputed_dates = reported_dates[out$args$imputed_times],
+    reported_inf_dates = dates,
+    drop_length_1 = FALSE,
+    merge = FALSE
+  )
+
+  expect_equal(old_quiet, new_output)
 })

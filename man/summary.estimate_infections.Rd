@@ -6,9 +6,10 @@
 \usage{
 \method{summary}{estimate_infections}(
   object,
-  type = c("snapshot", "parameters", "samples"),
+  type = c("snapshot", "parameters"),
   date = NULL,
   params = NULL,
+  CrIs = c(0.2, 0.5, 0.9),
   ...
 )
 }
@@ -26,6 +27,8 @@ samples.}
 \item{date}{A date in the form "yyyy-mm-dd" to inspect estimates for.}
 
 \item{params}{A character vector of parameters to filter for.}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{...}{Pass additional arguments to \code{report_summary}}
 }
