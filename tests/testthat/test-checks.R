@@ -301,7 +301,7 @@ test_that("check_combined_np_pmf_lengths warns when delay_np_pmf_length > data_l
   )
   expect_warning(
     check_combined_np_pmf_lengths(stan_args_longer),
-    "The combined non-parametric delays PMFs is longer than the data"
+    "The combined non-parametric delays PMF is longer than the data"
   )
 })
 
@@ -316,7 +316,7 @@ test_that("check_combined_np_pmf_lengths warns with correct length information",
   )
   expect_warning(
     check_combined_np_pmf_lengths(stan_args_longer),
-    "The combined non-parametric delays PMFs is longer than the data"
+    "The combined non-parametric delays PMF is longer than the data"
   )
 })
 

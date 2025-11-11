@@ -257,7 +257,7 @@ check_combined_np_pmf_lengths <- function(stan_args) {
     # nolint start: duplicate_argument_linter
     cli::cli_warn(
       c(
-        "!" = "{cli::col_red('The combined non-parametric delays PMFs is
+        "!" = "{cli::col_red('The combined non-parametric delays PMF is
         longer than the data.')} ",
         "i" = "This happens when some individual delays are longer than the
         input data. You should have received a warning about this already.",
