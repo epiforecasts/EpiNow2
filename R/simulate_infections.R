@@ -105,6 +105,7 @@ simulate_infections <- function(R,
   assert_class(obs, "obs_opts")
   assert_class(generation_time, "generation_time_opts")
   assert_class(pop, "dist_spec")
+  assert_number(pop_floor, lower = 0, finite = TRUE)
   growth_method <- arg_match(growth_method)
 
   ## create R for all dates modelled

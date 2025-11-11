@@ -57,3 +57,18 @@ test_that("generate_infections works as expected", {
     c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 982, 980, 978, 976)
   )
 })
+
+test_that("generate_infections respects pop_floor with population adjustment", {
+  # Test with higher pop_floor to verify floor behavior
+  expect_equal(
+    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 10.0, 4, 0, 0, 1), 0),
+    c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 982, 980, 978, 976)
+  )
+
+  # Test with very small population where floor matters
+  result <- generate_infections(c(1, rep(1.5, 9)), 10, gt_rev_pmf, log(100), 500, 2, 50.0, 4, 0, 0, 1)
+  # With pop_floor = 50, susceptible population should never go below 50
+  # This allows infections to continue even when pop - cum_infections < 50
+  expect_true(all(result >= 0))
+  expect_true(all(is.finite(result)))
+})

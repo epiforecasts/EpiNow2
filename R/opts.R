@@ -368,6 +368,14 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     )
   }
 
+  if (!is.numeric(pop_floor) || pop_floor < 0 || !is.finite(pop_floor)) {
+    cli_abort(
+      c(
+        "!" = "{.var pop_floor} must be a non-negative finite number."
+      )
+    )
+  }
+
   if (opts$use_rt) {
     opts$prior <- prior
   } else if (!missing(prior)) {
