@@ -16,7 +16,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  eval = TRUE
 )
 ```
 
@@ -52,9 +52,37 @@ This guide covers priors for the three main modelling functions:
 
 We load the _EpiNow2_ package and the _posterior_ package which we will use for convergence diagnostics.
 
-```{r, eval = TRUE}
+```{r}
 library(EpiNow2)
 library(posterior)
+```
+
+We also set up example data and parameters that will be used in code examples throughout this vignette.
+
+```{r}
+# Example data for estimate_infections
+reported_cases <- example_confirmed[1:60]
+
+# Example data for estimate_secondary
+library(data.table)
+secondary_data <- copy(example_confirmed)[1:60]
+secondary_data[, secondary := as.integer(confirm * 0.02)]  # Simulated deaths
+
+# Example data for estimate_truncation
+truncation_data <- example_truncated
+
+# Example delays
+reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
+delay <- example_incubation_period + reporting_delay
+
+# Fast Stan settings for vignette building
+# (Use default settings for actual analyses)
+stan <- stan_opts(
+  samples = 100,
+  warmup = 100,
+  chains = 2,
+  control = list(adapt_delta = 0.9)
+)
 ```
 
 # Overview of all priors
@@ -231,8 +259,11 @@ gp_opts(alpha = Normal(mean = 0, sd = 0.005))
 # Weekly step changes
 estimate_infections(
   reported_cases,
+  generation_time = gt_opts(example_generation_time),
+  delays = delay_opts(delay),
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.5), rw = 7),
-  gp = NULL  # Disable GP when using random walk
+  gp = NULL,  # Disable GP when using random walk
+  stan = stan
 )
 ```
 
@@ -390,8 +421,9 @@ trunc_opts(LogNormal(mean = 0.5, sd = 0.5, max = 3))
 
 # Estimated truncation (run separately first)
 truncation_estimate <- estimate_truncation(
-  data_with_revisions,
-  truncation = trunc_opts(LogNormal(mean = 0.5, sd = 0.5, max = 10))
+  truncation_data,
+  truncation = trunc_opts(LogNormal(mean = 0.5, sd = 0.5, max = 10)),
+  stan = stan
 )
 # Then use in estimate_infections
 trunc_opts(truncation_estimate$dist)
@@ -423,7 +455,8 @@ estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.5))
+  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.5)),
+  stan = stan
 )
 
 # Non-mechanistic model
@@ -431,7 +464,8 @@ estimate_infections(
   reported_cases,
   delays = delay_opts(delay),
   rt = NULL,  # No Rt estimation
-  backcalc = backcalc_opts(prior = "reports")
+  backcalc = backcalc_opts(prior = "reports"),
+  stan = stan
 )
 ```
 
@@ -462,20 +496,22 @@ from primary observations (cases, admissions) with a delay and scaling.
 ```{r}
 # Fixed delay from literature
 estimate_secondary(
-  data,
-  delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30))
+  secondary_data,
+  delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30)),
+  stan = stan
 )
 
 # Uncertain delay (long time series)
 estimate_secondary(
-  data,
+  secondary_data,
   delays = delay_opts(
     LogNormal(
       meanlog = Normal(2, 0.3),
       sdlog = Normal(0.5, 0.2),
       max = 30
     )
-  )
+  ),
+  stan = stan
 )
 ```
 
@@ -500,9 +536,10 @@ estimate_secondary(
 ```{r}
 # Case fatality rate ~1% with uncertainty
 estimate_secondary(
-  data,
+  secondary_data,
   delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30)),
-  obs = obs_opts(scale = Normal(mean = 0.01, sd = 0.005, max = 1))
+  obs = obs_opts(scale = Normal(mean = 0.01, sd = 0.005, max = 1)),
+  stan = stan
 )
 ```
 
@@ -533,26 +570,28 @@ cause recent data to be revised upward over time.
 ```{r}
 # Quick turnaround testing (1-3 days typical delay)
 estimate_truncation(
-  data_snapshots,
+  truncation_data,
   truncation = trunc_opts(
     LogNormal(
       meanlog = Normal(0.5, 0.3),  # ~1.6 day median delay
       sdlog = Normal(0.5, 0.2),
       max = 7
     )
-  )
+  ),
+  stan = stan
 )
 
 # Slower reporting (e.g., deaths, 7-14 days)
 estimate_truncation(
-  data_snapshots,
+  truncation_data,
   truncation = trunc_opts(
     LogNormal(
       meanlog = Normal(2, 0.5),  # ~7 day median delay
       sdlog = Normal(0.5, 0.2),
       max = 21
     )
-  )
+  ),
+  stan = stan
 )
 ```
 
@@ -567,7 +606,8 @@ Always begin with default priors to check the model runs and produces reasonable
 estimates <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time),
-  delays = delay_opts(example_incubation_period + reporting_delay)
+  delays = delay_opts(example_incubation_period + reporting_delay),
+  stan = stan
 )
 ```
 
@@ -591,7 +631,8 @@ estimates_r0 <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2.5, sd = 0.5))
+  rt = rt_opts(prior = LogNormal(mean = 2.5, sd = 0.5)),
+  stan = stan
 )
 
 # Compare results
@@ -603,7 +644,7 @@ plot(estimates_r0)
 
 It is good practice to check if your priors generate reasonable trajectories before seeing data:
 
-```{r, eval = TRUE}
+```{r}
 # You can visualise prior choices using EpiNow2's distribution objects
 prior_r0 <- LogNormal(mean = 2, sd = 0.5, max = 10)
 plot(prior_r0)
