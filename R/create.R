@@ -241,7 +241,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 
   # Warn if population is smaller than cumulative cases
   if (rt$pop != Fixed(0) && !is.null(data)) {
-    pop_value <- mean(rt$pop, ignore_max = TRUE)
+    pop_value <- mean(rt$pop, ignore_uncertainty = TRUE)
     total_cases <- sum(data[!is.na(confirm)]$confirm, na.rm = TRUE)
 
     if (pop_value < total_cases) {
