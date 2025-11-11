@@ -85,4 +85,92 @@ test_that("estimate_truncation works with zero_threshold set", {
   expect_s3_class(out$dist, "dist_spec")
 })
 
+# Integration tests for PMF length checks ---------------------------------
+
+test_that("estimate_truncation warns when truncation PMF exceeds data length", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
+  
+  # Use short truncated example data (first 5 rows)
+  trunc_data <- lapply(example_truncated, function(x) x[1:5])
+  
+  # Long truncation PMF
+  long_trunc <- NonParametric(rep(0.1/9, 10))  # length 10
+  
+  expect_warning(
+    suppressWarnings(
+      estimate_truncation(
+        data = trunc_data,
+        truncation = trunc_opts(long_trunc),
+        stan = stan_opts(
+          chains = 1,
+          warmup = 20,
+          samples = 20
+        ),
+        verbose = FALSE
+      ),
+      classes = "pmf_combined_longer_than_data"
+    ),
+    "Non-parametric PMFs are longer than the input data"
+  )
+})
+
+test_that("estimate_truncation runs without PMF warnings when lengths are appropriate", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
+  
+  # Use full truncated example data
+  trunc_data <- example_truncated
+  
+  # Short truncation PMF that won't trigger warnings
+  short_trunc <- NonParametric(c(0.3, 0.4, 0.2, 0.1))  # length 4
+  
+  # Should not produce PMF length warnings
+  expect_no_warning(
+    suppressWarnings(
+      estimate_truncation(
+        data = trunc_data,
+        truncation = trunc_opts(short_trunc),
+        stan = stan_opts(
+          chains = 1,
+          warmup = 20,
+          samples = 20
+        ),
+        verbose = FALSE
+      ),
+      classes = c(
+        "epinow2_uncertain_tail",
+        "epinow2_sparse_pmf_tail"
+      )
+    ),
+    class = "pmf_.*_longer_than_data"
+  )
+})
+
+test_that("estimate_truncation warns for combined truncation and delay PMFs exceeding data", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
+  
+  # Short truncated data
+  trunc_data <- lapply(example_truncated, function(x) x[1:7])
+  
+  # Two medium PMFs that combine to exceed data length
+  trunc_pmf <- NonParametric(rep(0.25, 4))  # length 4
+  delay_pmf <- NonParametric(rep(0.2, 5))  # length 5
+  
+  expect_warning(
+    suppressWarnings(
+      estimate_truncation(
+        data = trunc_data,
+        truncation = trunc_opts(trunc_pmf + delay_pmf),
+        stan = stan_opts(
+          chains = 1,
+          warmup = 20,
+          samples = 20
+        ),
+        verbose = FALSE
+      ),
+      classes = "pmf_individual_longer_than_data"
+    ),
+    "The combined non-parametric delays PMF is longer"
+  )
+})
+
 options(old_opts)
