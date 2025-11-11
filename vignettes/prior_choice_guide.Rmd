@@ -18,8 +18,6 @@ knitr::opts_chunk$set(
   comment = "#>",
   eval = TRUE
 )
-library(EpiNow2)
-library(posterior)
 ```
 
 # Introduction
@@ -49,6 +47,15 @@ This guide covers priors for the three main modelling functions:
 **Key principle:** All defaults in `{EpiNow2}` are intentionally weakly informative to work across a range of pathogens and settings. For a specific application with domain knowledge, you may benefit from more informative priors.
 
 > **Important default:** The default generation time is `Fixed(1)`, meaning all transmission occurs after 1 day. With this default, $R_t$ represents the daily exponential growth rate rather than the traditional reproduction number. For epidemiologically meaningful $R_t$ estimates, you should always specify a realistic generation time distribution from the literature (see [Generation time distribution](#generation-time-distribution)).
+
+# Set up
+
+We load the _EpiNow2_ package and the _posterior_ package which we will use for convergence diagnostics.
+
+```{r}
+library(EpiNow2)
+library(posterior)
+```
 
 # Overview of all priors
 
