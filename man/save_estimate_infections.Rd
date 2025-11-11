@@ -8,7 +8,8 @@ save_estimate_infections(
   estimates,
   target_folder = NULL,
   samples = TRUE,
-  return_fit = TRUE
+  return_fit = TRUE,
+  CrIs = c(0.2, 0.5, 0.9)
 )
 }
 \arguments{
@@ -21,6 +22,8 @@ create if not present).}
 
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan object
 be returned.}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 }
 \value{
 No return value, called for side effects
