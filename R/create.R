@@ -247,9 +247,10 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     if (pop_value < total_cases) {
       cli_warn(
         c(
-          "!" = "Population ({pop_value}) is smaller than cumulative cases ({total_cases}).",
-          "i" = "This suggests the population value is incorrect.",
-          "i" = "Consider using the total at-risk population, not a subset."
+          "!" = "Population ({pop_value}) is smaller than cumulative
+          cases ({total_cases}).",
+          "i" = "This suggests the population value is incorrect.
+          Consider using the total at-risk population, not a subset."
         )
       )
     }
