@@ -1,4 +1,4 @@
-#' Real-time Rt Estimation, Forecasting and Reporting
+#' Real-time stuff
 #'
 #' @description `r lifecycle::badge("stable")`
 #' This function wraps the functionality of [estimate_infections()] in order
