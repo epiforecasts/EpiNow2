@@ -5,11 +5,7 @@
 \alias{plot}
 \title{Plot method for estimate_infections}
 \usage{
-\method{plot}{estimate_infections}(
-  x,
-  type = c("summary", "infections", "reports", "R", "growth_rate", "all"),
-  ...
-)
+\method{plot}{estimate_infections}(x, type = "summary", ...)
 }
 \arguments{
 \item{x}{A list of output as produced by \code{estimate_infections}}
@@ -29,5 +25,5 @@ List of plots as produced by \code{\link[=report_plots]{report_plots()}}
 \code{plot} method for class \verb{<estimate_infections>}.
 }
 \seealso{
-plot report_plots estimate_infections
+\code{\link[=report_plots]{report_plots()}}
 }

@@ -293,7 +293,7 @@ estimate_truncation <- function(data,
 #' @param ... Pass additional arguments to plot function. Not currently in use.
 #'
 #' @return `ggplot2` object
-#' @seealso plot estimate_truncation
+#' @seealso [estimate_truncation()]
 #' @method plot estimate_truncation
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw

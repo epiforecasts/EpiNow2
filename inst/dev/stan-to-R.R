@@ -2,7 +2,8 @@
 files <- c(
   "convolve.stan", "gaussian_process.stan", "pmfs.stan",
   "observation_model.stan", "secondary.stan", "params.stan",
-  "rt.stan", "infections.stan", "delays.stan", "generated_quantities.stan"
+  "rt.stan", "infections.stan", "delays.stan", "generated_quantities.stan",
+  "helpers.stan"
 )
 suppressMessages(
   expose_stan_fns(files,

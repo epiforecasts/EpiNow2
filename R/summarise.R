@@ -154,7 +154,7 @@ summarise_results <- function(regions,
 #' @param ... Additional arguments passed to `report_plots`.
 #' @return A list of summary measures and plots
 #' @export
-#' @seealso regional_epinow
+#' @seealso [regional_epinow()]
 #' @inheritParams summarise_results
 #' @inheritParams plot_summary
 #' @inheritParams plot_estimates
@@ -437,7 +437,7 @@ regional_summary <- function(regional_output = NULL,
 #'
 #' @inheritParams get_regional_results
 #' @importFrom cli cli_abort
-#' @seealso regional_summary
+#' @seealso [regional_summary()]
 #' @return A list of summarised Rt, cases by date of infection and cases by
 #' date of report
 #' @keywords internal
@@ -514,7 +514,7 @@ summarise_key_measures <- function(regional_results = NULL,
 #' @description `r lifecycle::badge("maturing")`
 #' Used internally by `regional_epinow` to summarise region run times.
 #'
-#' @seealso regional_summary regional_epinow
+#' @seealso [regional_summary()] [regional_epinow()]
 #' @inheritParams regional_summary
 #' @inheritParams epinow
 #' @return A data.table of region run times
@@ -772,7 +772,7 @@ calc_summary_measures <- function(samples,
 #'
 #' @param ... Pass additional summary arguments to lower level methods
 #'
-#' @seealso summary.estimate_infections epinow
+#' @seealso [summary.estimate_infections()] [epinow()]
 #' @aliases summary
 #' @method summary epinow
 #' @return Returns a `<data.frame>` of summary output
@@ -785,12 +785,13 @@ summary.epinow <- function(object,
                            ...) {
   output <- arg_match(output)
   if (output == "estimates") {
-    out <- summary(object$estimates,
-      date = date,
-      params = params, ...
-    )
+    out <- object$summary
   } else {
-    out <- object[[output]]$summarised
+    if (output == "forecast") {
+      out <- object$estimates$summarised
+    } else {
+      out <- object$estimated_reported_cases
+    }
     if (!is.null(date)) {
       target_date <- as.Date(date)
       out <- out[date == target_date]
@@ -823,37 +824,54 @@ summary.epinow <- function(object,
 #'
 #' @param ... Pass additional arguments to `report_summary`
 #' @importFrom rlang arg_match
-#' @seealso summary estimate_infections report_summary
+#' @inheritParams calc_summary_measures
+#' @seealso [summary.epinow()] [estimate_infections()] [report_summary()]
 #' @method summary estimate_infections
 #' @return Returns a `<data.frame>` of summary output
 #' @export
 summary.estimate_infections <- function(object,
-                                        type = c(
-                                          "snapshot", "parameters", "samples"
-                                        ),
-                                        date = NULL, params = NULL, ...) {
-  type <- arg_match(type)
-  if (is.null(date)) {
-    target_date <- unique(
-      object$summarised[type != "forecast"][date == max(date)]$date
+                                        type = c("snapshot", "parameters"),
+                                        date = NULL, params = NULL,
+                                        CrIs = c(0.2, 0.5, 0.9), ...) {
+  # Handle deprecated type = "samples" before arg_match
+  if (length(type) == 1 && type == "samples") {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      "summary.estimate_infections(type = 'samples')",
+      "get_samples()"
     )
+    return(get_samples(object))
+  }
+
+  type <- arg_match(type)
+
+  if (is.null(date)) {
+    target_date <- max(object$observations$date)
   } else {
     target_date <- as.Date(date)
   }
 
+  # Get posterior samples
+  samples <- get_samples(object)
+
+  # Calculate summary measures
+  summarised <- calc_summary_measures(
+    samples,
+    summarise_by = c("date", "variable", "strat", "type"),
+    order_by = c("variable", "date"),
+    CrIs = CrIs
+  )
+
   if (type == "snapshot") {
     out <- report_summary(
-      summarised_estimates = object$summarised[date == target_date],
-      rt_samples = object$samples[variable == "R"][
+      summarised_estimates = summarised[date == target_date],
+      rt_samples = samples[variable == "R"][
         date == target_date, .(sample, value)
       ],
       ...
     )
-  } else if (type %in% c("parameters", "samples")) {
-    if (type == "parameters") {
-      type <- "summarised"
-    }
-    out <- object[[type]]
+  } else if (type == "parameters") {
+    out <- summarised
     if (!is.null(date)) {
       out <- out[date == target_date]
     }
@@ -861,5 +879,16 @@ summary.estimate_infections <- function(object,
       out <- out[variable %in% params]
     }
   }
-  return(out)
+  out[]
+}
+
+##' Print information about an object that has resulted from a model fit.
+##'
+##' @param x The object containing fit results.
+##' @param ... Ignored
+##' @method print epinowfit
+##' @return Invisible
+##' @export
+print.epinowfit <- function(x, ...) {
+  print(summary(x))
 }

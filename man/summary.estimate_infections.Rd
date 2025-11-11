@@ -6,9 +6,10 @@
 \usage{
 \method{summary}{estimate_infections}(
   object,
-  type = c("snapshot", "parameters", "samples"),
+  type = c("snapshot", "parameters"),
   date = NULL,
   params = NULL,
+  CrIs = c(0.2, 0.5, 0.9),
   ...
 )
 }
@@ -27,6 +28,8 @@ samples.}
 
 \item{params}{A character vector of parameters to filter for.}
 
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
+
 \item{...}{Pass additional arguments to \code{report_summary}}
 }
 \value{
@@ -37,5 +40,5 @@ Returns a \verb{<data.frame>} of summary output
 \code{summary} method for class "estimate_infections".
 }
 \seealso{
-summary estimate_infections report_summary
+\code{\link[=summary.epinow]{summary.epinow()}} \code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=report_summary]{report_summary()}}
 }

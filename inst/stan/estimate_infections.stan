@@ -1,4 +1,5 @@
 functions {
+#include functions/helpers.stan
 #include functions/convolve.stan
 #include functions/pmfs.stan
 #include functions/delays.stan
@@ -258,26 +259,35 @@ generated quantities {
       vector[noise_terms] x = linspaced_vector(noise_terms, 1, noise_terms);
     }
 
-    if (estimate_r == 0) {
-      // sample generation time
-      vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(
-        delay_params_mean, delay_params_sd, delay_params_lower
-      ));
-      vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(
-        gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
-        delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_params_sample, delay_params_groups,
-        delay_dist, 1, 1, 0
-      );
-      // calculate Rt using infections and generation time
-      gen_R = calculate_Rt(
-        infections, seeding_time, sampled_gt_rev_pmf, rt_half_window
-      );
+    {
+      vector[delay_type_max[gt_id] + 1] gt_rev_pmf_for_growth;
+      
+      if (estimate_r == 0) {
+        // sample generation time
+        vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(
+          delay_params_mean, delay_params_sd, delay_params_lower
+        ));
+        vector[delay_type_max[gt_id] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(
+          gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
+          delay_types_groups, delay_max, delay_np_pmf,
+          delay_np_pmf_groups, delay_params_sample, delay_params_groups,
+          delay_dist, 1, 1, 0
+        );
+        gt_rev_pmf_for_growth = sampled_gt_rev_pmf;
+        // calculate Rt using infections and generation time
+        gen_R = calculate_Rt(
+          infections, seeding_time, sampled_gt_rev_pmf, rt_half_window
+        );
+      } else {
+        gt_rev_pmf_for_growth = gt_rev_pmf;
+      }
+  
+      // estimate growth from infections
+      r = calculate_growth(
+        infections, seeding_time, gt_rev_pmf_for_growth, growth_method
+        );
     }
-
-    // estimate growth from infections
-    r = calculate_growth(infections, seeding_time + 1);
-
+    
     // simulate reported cases
     if (any_accumulate) {
       vector[ot_h] accumulated_reports =
