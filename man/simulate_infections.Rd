@@ -17,6 +17,7 @@ simulate_infections(
   seeding_time = NULL,
   pop = Fixed(0),
   pop_period = c("forecast", "all"),
+  pop_floor = 1,
   growth_method = c("infections", "infectiousness")
 )
 }
@@ -76,7 +77,8 @@ R.}
 \item{pop}{A \verb{<dist_spec>} giving the initial susceptible population size.
 Used to adjust Rt estimates based on the proportion of the population that
 is susceptible. Defaults to \code{Fixed(0)} which means no population adjustment
-is done.}
+is done. See also \code{pop_floor} for the numerical stability floor used when
+population adjustment is enabled.}
 
 \item{pop_period}{Character string, defaulting to "forecast". Controls when
 susceptible population adjustment is applied. "forecast" only applies the
@@ -84,6 +86,14 @@ adjustment to forecasts while "all" applies it to both data and forecasts.
 Note that with "all" and "forecast", Rt estimates are unadjusted for
 susceptible depletion but posterior predictions of infections and reports are
 adjusted.}
+
+\item{pop_floor}{Numeric. Minimum susceptible population used as a
+floor when adjusting for population depletion. This prevents numerical
+instability (division by zero) when the susceptible population approaches
+zero. Defaults to 1.0. Can be interpreted as representing a minimal
+ongoing import level. Note that if pop_floor > 0, cumulative infections
+can exceed the population size, though this effect is negligible when
+pop_floor is very small compared to the population size.}
 
 \item{growth_method}{Method used to compute growth rates from Rt. Options
 are "infections" (default) and "infectiousness". The option "infections"
