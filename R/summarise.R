@@ -894,8 +894,8 @@ print.epinowfit <- function(x, ...) {
 #'
 #' @param object A fitted model object from `estimate_secondary()`
 #' @param type Character string indicating the type of summary to return.
-#'   Options are "estimates" (default, key estimated parameters only) or
-#'   "parameters" (all parameters or filtered set).
+#'   Options are "compact" (default, key parameters only) or "parameters"
+#'   (all parameters or filtered set).
 #' @param params Character vector of parameter names to include. Only used
 #'   when `type = "parameters"`. If NULL (default), returns all parameters.
 #' @param CrIs Numeric vector of credible intervals to return. Defaults to
@@ -903,14 +903,13 @@ print.epinowfit <- function(x, ...) {
 #' @param ... Additional arguments (currently unused)
 #'
 #' @return A `<data.table>` with summary statistics (mean, sd, median,
-#'   credible intervals) for model parameters. When `type = "estimates"`,
-#'   returns only key estimated parameters (delay distribution parameters and
-#'   scaling factors). When `type = "parameters"`, returns all or filtered
-#'   parameters.
+#'   credible intervals) for model parameters. When `type = "compact"`,
+#'   returns only key parameters (delay distribution parameters and scaling
+#'   factors). When `type = "parameters"`, returns all or filtered parameters.
 #' @importFrom rlang arg_match
 #' @export
 summary.estimate_secondary <- function(object,
-                                       type = c("estimates", "parameters"),
+                                       type = c("compact", "parameters"),
                                        params = NULL,
                                        CrIs = c(0.2, 0.5, 0.9), ...) {
   type <- arg_match(type)
@@ -918,8 +917,8 @@ summary.estimate_secondary <- function(object,
   # Extract all parameters with summary statistics
   out <- extract_stan_param(object$fit, CrIs = CrIs)
 
-  if (type == "estimates") {
-    # Return only key estimated parameters for a concise summary
+  if (type == "compact") {
+    # Return only key parameters for a compact summary
     # Typical parameters: delay_params (distribution parameters),
     # params (scaling factors)
     key_vars <- c("delay_params", "params", "frac_obs")
