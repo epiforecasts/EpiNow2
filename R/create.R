@@ -168,7 +168,11 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' breakpoints.
 #'
 #' @param horizon Numeric, forecast horizon.
-#' @importFrom cli cli_abort
+#'
+#' @param data A `data.table` of case data (optional). Used for validation
+#' checks.
+#'
+#' @importFrom cli cli_abort cli_warn
 #'
 #' @seealso [rt_opts()]
 #' @return A list of settings defining the time-varying reproduction number
@@ -189,7 +193,7 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' create_rt_data(rt_opts(rw = 7), breakpoints = rep(1, 10))
 #' }
 create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
-                           delay = 0, horizon = 0) {
+                           delay = 0, horizon = 0, data = NULL) {
   # Define if GP is on or off
   if (is.null(rt)) {
     rt <- rt_opts(
@@ -232,6 +236,25 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   # add a shift for 0 effect in breakpoints
   breakpoints <- breakpoints + 1
 
+  # Get pop_floor value
+  pop_floor_value <- rt$pop_floor
+
+  # Warn if population is smaller than cumulative cases
+  if (rt$pop != Fixed(0) && !is.null(data)) {
+    pop_value <- mean(rt$pop, ignore_max = TRUE)
+    total_cases <- sum(data[!is.na(confirm)]$confirm, na.rm = TRUE)
+
+    if (pop_value < total_cases) {
+      cli_warn(
+        c(
+          "!" = "Population ({pop_value}) is smaller than cumulative cases ({total_cases}).",
+          "i" = "This suggests the population value is incorrect.",
+          "i" = "Consider using the total at-risk population, not a subset."
+        )
+      )
+    }
+  }
+
   # map settings to underlying gp stan requirements
   rt_data <- list(
     estimate_r = as.numeric(rt$use_rt),
@@ -239,7 +262,9 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     breakpoints = breakpoints,
     future_fixed = as.numeric(future_rt$fixed),
     fixed_from = future_rt$from,
-    pop = rt$pop,
+    use_pop =
+      as.integer(rt$pop != Fixed(0)) + as.integer(rt$pop_period == "all"),
+    pop_floor = pop_floor_value,
     stationary = as.numeric(rt$gp_on == "R0"),
     future_time = horizon - future_rt$from,
     growth_method = list(
@@ -458,7 +483,8 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
     stan_data,
     create_rt_data(rt,
       breakpoints = cases$breakpoint,
-      delay = stan_data$seeding_time, horizon = stan_data$horizon
+      delay = stan_data$seeding_time, horizon = stan_data$horizon,
+      data = data
     )
   )
   # backcalculation settings

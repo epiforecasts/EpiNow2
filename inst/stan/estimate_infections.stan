@@ -117,8 +117,12 @@ transformed parameters {
         param_id_frac_obs, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
+      real pop = get_param(
+        param_id_pop, params_fixed_lookup, params_variable_lookup, params_value,
+        params
+      );
       infections = generate_infections(
-        R, seeding_time, gt_rev_pmf, initial_infections, pop,
+        R, seeding_time, gt_rev_pmf, initial_infections, pop, use_pop, pop_floor,
         future_time, obs_scale, frac_obs, 1
       );
     }

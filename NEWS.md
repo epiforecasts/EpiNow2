@@ -21,6 +21,7 @@
 
 - MCMC runs are now initialised with parameter values drawn from a distribution that approximates their prior distributions.
 - Added an option to compute growth rates using an estimator by Parag et al. (2022) based on total infectiousness rather than new infections, see `growth_method` argument in rt_opts().
+- Added support for fitting the susceptible population size.
 
 ## Bug fixes
 
@@ -67,7 +68,7 @@ Internal changes should improve performance, reduce the number of failing fits, 
     fill_missing(missing = "accumulate", initial_accumulate = 7) |>
     estimate_infections()
   ```
-
+  
 - A bug was fixed where the initial growth was never estimated (i.e. the prior mean was always zero). By @sbfnk in #853 and reviewed by @seabbs.
 - A bug was fixed where an internal function for applying a default cdf cutoff failed due to a difference a vector length issue. By @jamesmbaazam in #858 and reviewed by @sbfnk.
 - All parameters have been changed to the new parameter interface. By @sbfnk in #871 and #890 and reviewed by @seabbs.
