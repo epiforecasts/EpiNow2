@@ -4,6 +4,7 @@ output:
   rmarkdown::html_vignette:
     toc: true
     number_sections: true
+    colde_folding: hide
 bibliography: library.bib
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
 vignette: >
