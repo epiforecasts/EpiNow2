@@ -2,9 +2,9 @@
 # plot Rt vs data
 plot_estimates_truth <- function(est, truth, stat = "R", ...) {
   plot_estimates(
-    estimate = est$summarised[variable == stat],
+    estimate = summary(est, type = "parameters")[variable == stat],
     reported = data.table::data.table(
-      date = sims$summarised[variable == stat]$date,
+      date = summary(sims, type = "parameters")[variable == stat]$date,
       confirm = truth
     ),
     obs_as_col = FALSE,
