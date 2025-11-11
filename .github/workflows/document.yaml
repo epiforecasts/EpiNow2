@@ -8,7 +8,9 @@ concurrency:
 
 on:
   push:
-    paths: ["R/**"]
+    paths:
+      - "R/**"
+      - ".github/workflows/document.yaml"
 
 permissions: read-all
 
