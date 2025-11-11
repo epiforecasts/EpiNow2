@@ -36,6 +36,7 @@ jobs:
         with:
           extra-packages: any::roxygen2
           needs: roxygen2
+          dependencies: '"hard"'
 
       - name: Document
         run: roxygen2::roxygenise()
