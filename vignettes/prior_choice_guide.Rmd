@@ -51,11 +51,12 @@ This guide covers priors for the three main modelling functions:
 
 # Set up
 
-We load the _EpiNow2_ package and the _posterior_ package which we will use for convergence diagnostics.
+We load the _EpiNow2_ package and the _posterior_ and _data.table_ packages which we will use for convergence diagnostics and data wrangling, respectively.
 
 ```{r libraries}
 library(EpiNow2)
 library(posterior)
+library(data.table)
 ```
 
 We also set up example data and parameters that will be used in code examples throughout this vignette.
