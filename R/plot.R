@@ -372,20 +372,44 @@ plot_summary <- function(summary_results,
 #' @param ... Pass additional arguments to report_plots
 #' @importFrom rlang arg_match
 #' @inheritParams select_plots
+#' @inheritParams calc_summary_measures
 #'
 #' @seealso [report_plots()]
-#' @aliases plot
 #' @method plot estimate_infections
 #' @return List of plots as produced by [report_plots()]
 #' @export
 plot.estimate_infections <- function(x,
                                      type = "summary",
+                                     CrIs = c(0.2, 0.5, 0.9),
                                      ...) {
   out <- report_plots(
-    summarised_estimates = summary(x, type = "parameters"),
+    summarised_estimates = summary(x, type = "parameters", CrIs = CrIs),
     reported = x$observations, ...
   )
   select_plots(out, type)
+}
+
+#' Plot method for forecast_infections
+#'
+#' @description `r lifecycle::badge("maturing")`
+#' `plot` method for class `<forecast_infections>`.
+#'
+#' @param x A list of output as produced by `forecast_infections`
+#'
+#' @param ... Pass additional arguments to report_plots
+#' @importFrom rlang arg_match
+#' @inheritParams select_plots
+#' @inheritParams calc_summary_measures
+#'
+#' @seealso [report_plots()] [forecast_infections()]
+#' @method plot forecast_infections
+#' @return List of plots as produced by [report_plots()]
+#' @export
+plot.forecast_infections <- function(x,
+                                     type = "summary",
+                                     CrIs = c(0.2, 0.5, 0.9),
+                                     ...) {
+  plot.estimate_infections(x, type = type, CrIs = CrIs, ...)
 }
 
 #' Plot method for epinow
