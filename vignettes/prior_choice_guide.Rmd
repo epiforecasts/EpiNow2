@@ -257,7 +257,7 @@ gp_opts(alpha = Normal(mean = 0, sd = 0.005))
 **Example:**
 ```{r random-walk-example}
 # Weekly step changes
-estimate_infections(
+fit_rw <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
@@ -451,7 +451,7 @@ trunc_opts(truncation_estimate$dist)
 **Example:**
 ```{r model-choice-examples}
 # Renewal equation model (default)
-estimate_infections(
+fit_renewal <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
@@ -460,7 +460,7 @@ estimate_infections(
 )
 
 # Non-mechanistic model
-estimate_infections(
+fit_nonmech <- estimate_infections(
   reported_cases,
   delays = delay_opts(delay),
   rt = NULL,  # No Rt estimation
@@ -495,14 +495,14 @@ from primary observations (cases, admissions) with a delay and scaling.
 **Example:**
 ```{r secondary-delay-examples}
 # Fixed delay from literature
-estimate_secondary(
+fit_secondary_fixed <- estimate_secondary(
   secondary_data,
   delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30)),
   stan = stan
 )
 
 # Uncertain delay (long time series)
-estimate_secondary(
+fit_secondary_uncertain <- estimate_secondary(
   secondary_data,
   delays = delay_opts(
     LogNormal(
@@ -535,7 +535,7 @@ estimate_secondary(
 **Example:**
 ```{r secondary-scaling-example}
 # Case fatality rate ~1% with uncertainty
-estimate_secondary(
+fit_secondary_cfr <- estimate_secondary(
   secondary_data,
   delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30)),
   obs = obs_opts(scale = Normal(mean = 0.01, sd = 0.005, max = 1)),
@@ -569,7 +569,7 @@ cause recent data to be revised upward over time.
 **Example:**
 ```{r truncation-distribution-examples}
 # Quick turnaround testing (1-3 days typical delay)
-estimate_truncation(
+fit_trunc_fast <- estimate_truncation(
   truncation_data,
   truncation = trunc_opts(
     LogNormal(
@@ -582,7 +582,7 @@ estimate_truncation(
 )
 
 # Slower reporting (e.g., deaths, 7-14 days)
-estimate_truncation(
+fit_trunc_slow <- estimate_truncation(
   truncation_data,
   truncation = trunc_opts(
     LogNormal(
