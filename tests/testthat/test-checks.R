@@ -217,18 +217,6 @@ test_that("check_single_np_pmf_lengths warns when PMF is longer than data", {
   )
 })
 
-test_that("check_single_np_pmf_lengths warns with correct PMF length information", {
-  rlang::local_options(rlib_warning_verbosity = "verbose")
-  # Test that warning includes correct PMF length
-  expect_warning(
-    check_single_np_pmf_lengths(
-      generation_time = long_pmf,
-      data = est_inf
-    ),
-    "Non-parametric PMFs are longer than the input data"
-  )
-})
-
 test_that("check_single_np_pmf_lengths handles multiple long PMFs", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with multiple long PMFs
