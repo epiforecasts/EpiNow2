@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   eval = FALSE
 )
-library(distributional)
+library(EpiNow2)
 library(posterior)
 ```
 
@@ -132,8 +132,6 @@ This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probabi
 **Example:**
 
 ```{r}
-library(EpiNow2)
-
 # For a measles outbreak with strong prior knowledge
 rt_opts(prior = LogNormal(mean = 15, sd = 2))
 
@@ -598,14 +596,15 @@ plot(estimates_r0)
 
 It is good practice to check if your priors generate reasonable trajectories before seeing data:
 
-```{r}
-# You can examine prior choices using the distributional package
-prior_r0 <- dist_lognormal(log(2), 0.5)
-quantile(prior_r0, c(0.025, 0.5, 0.975))
-# Check if this range is sensible for your application
+```{r, eval = TRUE}
+# You can visualise prior choices using EpiNow2's distribution objects
+prior_r0 <- LogNormal(mean = 2, sd = 0.5, max = 10)
+plot(prior_r0)
 ```
 
-Note: Full prior predictive checks (simulating complete epidemic trajectories) require additional Stan code not currently exposed in `{EpiNow2}`, but checking individual prior distributions as shown above is a useful first step.
+This shows the probability density of your prior. Check if this range is sensible for your application. For example, does it put reasonable mass on plausible $R_0$ values for your pathogen?
+
+Note: Full prior predictive checks (simulating complete epidemic trajectories) require additional Stan code not currently exposed in `{EpiNow2}`, but visualising individual prior distributions as shown above is a useful first step.
 
 ## Step 5: Check model convergence
 
