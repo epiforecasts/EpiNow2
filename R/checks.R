@@ -187,7 +187,7 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 #'
 #' @param ... Delay distributions
 #' @inheritParams estimate_infections
-#' @importFrom cli cli_warn col_red
+#' @importFrom cli cli_warn
 #'
 #' @returns Called for its side effects
 #' @keywords internal
@@ -226,14 +226,12 @@ check_single_np_pmf_lengths <- function(..., data) {
     
     cli::cli_warn(
       c(
-        "!" = "{cli::col_red('You have supplied PMFs that are longer than
-        the data.')} ",
+        "!" = "Non-parametric PMFs are longer than the input data.",
         "{.var {names(long_pmf_lengths)}} {?has/have} length{?s}
         {.val {long_pmf_lengths}} but data has
         {.val {nrow(data)}} rows.",
-        "i" = "{cli::col_red('These will be trimmed to match the length of the
-        data. To remove this message, make sure the PMFs have the same length
-        as the data.')}"
+        "i" = "These will be trimmed to match the data length. To avoid this,
+        ensure PMFs have the same length as the data."
       ),
       .frequency = "once",
       .frequency_id = "pmf_individual_longer_than_data"
@@ -246,7 +244,7 @@ check_single_np_pmf_lengths <- function(..., data) {
 #' than the input data
 #'
 #' @param stan_args List of stan argument data
-#' @importFrom cli cli_warn col_red
+#' @importFrom cli cli_warn
 #' @return Called for its side effects
 #' @keywords internal
 check_combined_np_pmf_lengths <- function(stan_args) {
@@ -257,13 +255,12 @@ check_combined_np_pmf_lengths <- function(stan_args) {
     # nolint start: duplicate_argument_linter
     cli::cli_warn(
       c(
-        "!" = "{cli::col_red('The combined non-parametric delays PMF is
-        longer than the data.')} ",
+        "!" = "The combined non-parametric delays PMF is longer than the data.",
         "i" = "This happens when some individual delays are longer than the
         input data. You should have received a warning about this already.",
-        "i" = "{cli::col_red('The combined delays will be trimmed to match
-        the number of rows in the data. To remove this message, make sure the
-        combined PMFs have the same length as the data')}"
+        "i" = "The combined delays will be trimmed to match the number of rows
+        in the data. To remove this message, ensure the combined PMFs have the
+        same length as the data."
       ),
       .frequency = "once",
       .frequency_id = "pmf_combined_longer_than_data"

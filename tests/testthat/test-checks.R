@@ -213,7 +213,7 @@ test_that("check_single_np_pmf_lengths warns when PMF is longer than data", {
       generation_time = long_pmf,
       data = est_inf
     ),
-    "You have supplied PMFs that are longer than the data"
+    "Non-parametric PMFs are longer than the input data"
   )
 })
 
@@ -225,7 +225,7 @@ test_that("check_single_np_pmf_lengths warns with correct PMF length information
       generation_time = long_pmf,
       data = est_inf
     ),
-    "You have supplied PMFs that are longer than the data"
+    "Non-parametric PMFs are longer than the input data"
   )
 })
 
@@ -238,7 +238,7 @@ test_that("check_single_np_pmf_lengths handles multiple long PMFs", {
       delays = delay_opts(dist = very_long_pmf),
       data = est_inf
     ),
-    "You have supplied PMFs that are longer than the data"
+    "Non-parametric PMFs are longer than the input data"
   )
 })
 
@@ -251,7 +251,7 @@ test_that("check_single_np_pmf_lengths handles mixed parametric and nonparametri
       delays = delay_opts(dist = long_pmf),  # nonparametric
       data = est_inf
     ),
-    "You have supplied PMFs that are longer than the data"
+    "Non-parametric PMFs are longer than the input data"
   )
 })
 
@@ -263,7 +263,7 @@ test_that("check_single_np_pmf_lengths works with single distribution", {
       generation_time = long_pmf,
       data = est_inf
     ),
-    "You have supplied PMFs that are longer than the data"
+    "Non-parametric PMFs are longer than the input data"
   )
 })
 
@@ -332,7 +332,7 @@ test_that("check_single_np_pmf_lengths handles empty data gracefully", {
       generation_time = short_pmf,
       data = empty_data
     ),
-    "You have supplied PMFs that are longer than the data"
+    "Non-parametric PMFs are longer than the input data"
   )
 })
 
@@ -349,7 +349,7 @@ test_that("check_single_np_pmf_lengths handles single row data", {
       generation_time = medium_pmf,
       data = single_row_data
     ),
-    "You have supplied PMFs that are longer than the data"
+    "Non-parametric PMFs are longer than the input data"
   )
 })
 
