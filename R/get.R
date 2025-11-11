@@ -269,8 +269,11 @@ get_samples.forecast_infections <- function(object, ...) {
 #' @rdname get_samples
 #' @export
 get_samples.estimate_secondary <- function(object, ...) {
-  # Extract posterior samples from the fit
-  extract_stan_param(object$fit, CrIs = c(0.2, 0.5, 0.9))
+  # Extract raw samples from the fit
+  raw_samples <- extract_samples(object$fit)
+
+  # Format with meaningful parameter names for params[] array
+  format_secondary_samples(raw_samples)
 }
 
 #' Get predictions from a fitted model

@@ -211,6 +211,77 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
   return(out)
 }
 
+#' Format raw Stan samples from estimate_secondary with meaningful names
+#'
+#' @description Internal helper that extracts Stan parameters from
+#'   estimate_secondary, renames them to meaningful names, and combines into a
+#'   single long-format data.table.
+#'
+#' @param raw_samples Raw samples from extract_samples()
+#'
+#' @return A `data.table` in long format with meaningful parameter names
+#' @keywords internal
+format_secondary_samples <- function(raw_samples) {
+  out <- list()
+
+  # Extract delay_params as-is (keep delay_params[1], delay_params[2] etc.)
+  if (!is.null(raw_samples$delay_params)) {
+    n_delay_params <- ncol(raw_samples$delay_params)
+    for (i in seq_len(n_delay_params)) {
+      param_name <- paste0("delay_params[", i, "]")
+      out[[param_name]] <- data.table::data.table(
+        variable = param_name,
+        sample = seq_along(raw_samples$delay_params[, i]),
+        value = raw_samples$delay_params[, i]
+      )
+    }
+  }
+
+  # Auto-detect and extract all static parameters from params matrix
+  param_id_names <- names(raw_samples)[
+    startsWith(names(raw_samples), "param_id_")
+  ]
+  param_names_extract <- sub("^param_id_", "", param_id_names)
+
+  for (param in param_names_extract) {
+    result <- extract_static_parameter(param, raw_samples)
+    if (!is.null(result)) {
+      # Use standard naming conventions
+      param_name <- switch(param,
+        "dispersion" = "reporting_overdispersion",
+        "frac_obs" = "scaling",
+        param  # default: use param name as-is
+      )
+      # Rename parameter column to variable for consistency
+      data.table::setnames(result, "parameter", "variable", skip_absent = TRUE)
+      result[, variable := param_name]
+      out[[param_name]] <- result
+    }
+  }
+
+  # Combine all parameters into single data.table
+  combined <- data.table::rbindlist(out, fill = TRUE)
+
+  # Add empty columns for consistency with estimate_infections format
+  if (!("date" %in% names(combined))) {
+    combined[, date := as.Date(NA)]
+  }
+  if (!("strat" %in% names(combined))) {
+    combined[, strat := NA_character_]
+  }
+  if (!("type" %in% names(combined))) {
+    combined[, type := NA_character_]
+  }
+  if (!("time" %in% names(combined))) {
+    combined[, time := NA_integer_]
+  }
+
+  # Reorder columns for consistency
+  data.table::setcolorder(combined, c("date", "variable", "strat", "sample", "time", "value", "type"))
+
+  return(combined[])
+}
+
 #' Format raw Stan samples with dates and metadata
 #'
 #' @description Internal helper that extracts Stan parameters, adds dates to

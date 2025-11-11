@@ -909,23 +909,49 @@ print.epinowfit <- function(x, ...) {
 #' @importFrom rlang arg_match
 #' @method summary estimate_secondary
 #' @export
+#' @examples
+#' \dontrun{
+#' # Compact summary of key estimated parameters (default)
+#' summary(fit)
+#' # Shows: delay_params[1], delay_params[2], scaling, reporting_overdispersion
+#'
+#' # All parameters
+#' summary(fit, type = "parameters")
+#'
+#' # Specific parameters by name
+#' summary(fit, type = "parameters", params = c("delay_params[1]", "scaling"))
+#' }
 summary.estimate_secondary <- function(object,
                                        type = c("compact", "parameters"),
                                        params = NULL,
                                        CrIs = c(0.2, 0.5, 0.9), ...) {
   type <- arg_match(type)
 
-  # Extract all parameters with summary statistics
-  out <- extract_stan_param(object$fit, CrIs = CrIs)
+  # Get posterior samples with meaningful parameter names
+  samples <- get_samples(object)
+
+  # Calculate summary measures
+  summarised <- calc_summary_measures(
+    samples,
+    summarise_by = c("variable"),
+    order_by = c("variable"),
+    CrIs = CrIs
+  )
 
   if (type == "compact") {
-    # Return only key parameters for a compact summary
-    # Typical parameters: delay_params (distribution parameters),
-    # params (scaling factors)
-    key_vars <- c("delay_params", "params", "frac_obs")
-    out <- out[grepl(paste(key_vars, collapse = "|"), variable)]
+    # Return only key estimated parameters for a compact summary
+    # Key parameters: delay_params[] and named params (scaling, overdispersion)
+    key_params <- c(
+      "scaling",                             # fraction observed/scaling
+      "reporting_overdispersion"             # if estimated
+    )
+    # Also include delay_params (matches delay_params[1], delay_params[2], etc.)
+    out <- summarised[
+      variable %in% key_params | grepl("^delay_params\\[", variable)
+    ]
   } else if (type == "parameters") {
     # Optional filtering by parameter name
+    out <- summarised
     if (!is.null(params)) {
       out <- out[variable %in% params]
     }

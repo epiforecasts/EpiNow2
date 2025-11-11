@@ -30,10 +30,7 @@ inc <- estimate_secondary(inc_cases[1:60],
 )
 
 # extract posterior variables of interest
-params <- c(
-  "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-  "scaling" = "params[1]"
-)
+params <- c("delay_params[1]", "delay_params[2]", "scaling")
 
 inc_posterior <- get_samples(inc)[variable %in% params]
 
