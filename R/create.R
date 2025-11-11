@@ -247,7 +247,10 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     if (pop_value < total_cases) {
       cli_warn(
         c(
-          "!" = "Population ({pop_value}) is smaller than cumulative cases ({total_cases}).",
+          "!" = paste(
+            "Population ({pop_value}) is smaller than",
+            "cumulative cases ({total_cases})."
+          ),
           "i" = "This suggests the population value is incorrect.",
           "i" = "Consider using the total at-risk population, not a subset."
         )
@@ -834,7 +837,7 @@ create_stan_params <- function(params) {
     !all(vapply(x, is.numeric, logical(1)))
   }, logical(1))
   if (any(prior_uncertain)) {
-    uncertain_priors <- tparams$name[!fixed][prior_uncertain] # nolint: object_usage_linter
+    uncertain_priors <- tparams$name[!fixed][prior_uncertain] # nolint: line_length_linter, object_usage_linter.
     cli_abort(
       c(
         "!" = "Parameter prior distribution{?s} for {.var {uncertain_priors}}
