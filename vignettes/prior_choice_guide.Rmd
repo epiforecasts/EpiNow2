@@ -424,9 +424,15 @@ trunc_opts(LogNormal(mean = 0.5, sd = 0.5, max = 3))
 # Estimated truncation (run separately first)
 truncation_estimate <- estimate_truncation(
   truncation_data,
-  truncation = trunc_opts(LogNormal(mean = 0.5, sd = 0.5, max = 10)),
-  stan = stan
+  truncation = trunc_opts(
+    LogNormal(
+      meanlog = Normal(0, 1),
+      sdlog = Normal(1, 1),
+      max = 10
+    )
+  )
 )
+
 # Then use in estimate_infections
 trunc_opts(truncation_estimate$dist)
 ```
