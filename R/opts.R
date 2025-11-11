@@ -306,6 +306,7 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' @inheritParams create_future_rt
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_abort
+#' @importFrom checkmate assert_number
 #' @export
 #' @examples
 #' # default settings
@@ -368,13 +369,7 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     )
   }
 
-  if (!is.numeric(pop_floor) || pop_floor < 0 || !is.finite(pop_floor)) {
-    cli_abort(
-      c(
-        "!" = "{.var pop_floor} must be a non-negative finite number."
-      )
-    )
-  }
+  assert_number(pop_floor, lower = 0, finite = TRUE)
 
   if (opts$use_rt) {
     opts$prior <- prior
