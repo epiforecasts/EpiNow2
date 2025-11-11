@@ -189,7 +189,7 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 #' @inheritParams estimate_infections
 #' @importFrom cli cli_warn
 #'
-#' @returns Called for its side effects
+#' @return Called for its side effects
 #' @keywords internal
 check_single_np_pmf_lengths <- function(..., data) {
   delays <- list(...)
