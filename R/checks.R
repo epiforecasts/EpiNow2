@@ -230,10 +230,8 @@ check_single_np_pmf_lengths <- function(..., data) {
         "{.var {names(long_pmf_lengths)}} {?has/have} length{?s}
         {.val {long_pmf_lengths}} but data has
         {.val {nrow(data)}} rows.",
-        "i" = "These will be trimmed to match the data length.",
-        "i" = "To fix: reduce the {.code max} parameter when constructing the
-        distribution, use {.fun bound_dist} to trim the PMF, or increase your
-        data time span."
+        "i" = "These will be trimmed to match the data length. To avoid this,
+        ensure PMFs have the same length as the data."
       ),
       .frequency = "once",
       .frequency_id = "pmf_individual_longer_than_data"
@@ -261,9 +259,8 @@ check_combined_np_pmf_lengths <- function(stan_args) {
         "i" = "This occurs when individual delay distributions are longer than
         the data.",
         "i" = "The combined delays will be trimmed to match the number of rows
-        in the data.",
-        "i" = "To fix: reduce the {.code max} parameter for delay distributions,
-        use {.fun bound_dist}, or increase your data time span."
+        in the data. To remove this message, ensure the combined PMFs have the
+        same length as the data."
       ),
       .frequency = "once",
       .frequency_id = "pmf_combined_longer_than_data"
