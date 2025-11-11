@@ -2,7 +2,7 @@
 % Please edit documentation in R/epinow.R
 \name{epinow}
 \alias{epinow}
-\title{Real-time Rt Estimation, Forecasting and Reporting}
+\title{Real-time stuff}
 \usage{
 epinow(
   data,
