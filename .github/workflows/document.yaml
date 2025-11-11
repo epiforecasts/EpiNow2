@@ -8,8 +8,6 @@ permissions: read-all
 jobs:
   document:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       contents: write
     steps:
