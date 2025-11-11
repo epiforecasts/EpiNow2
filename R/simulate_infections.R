@@ -254,8 +254,9 @@ simulate_infections <- function(R,
 #' @importFrom checkmate assert_class assert_names test_numeric test_data_frame
 #' assert_numeric assert_integerish assert_logical
 #' @importFrom cli cli_abort
-#' @return A list of output as returned by [estimate_infections()] but based on
-#' results from the specified scenario rather than fitting.
+#' @return A `<forecast_infections>` object containing simulated infections and
+#' cases from the specified scenario. The structure is similar to
+#' [estimate_infections()] output but contains `samples` rather than `fit`.
 #' @seealso [generation_time_opts()] [delay_opts()] [rt_opts()]
 #' [estimate_infections()] [trunc_opts()] [stan_opts()] [obs_opts()]
 #' [gp_opts()]
@@ -524,6 +525,6 @@ forecast_infections <- function(estimates,
   ]
 
   format_out$observations <- estimates$observations
-  class(format_out) <- c("estimate_infections", class(format_out))
+  class(format_out) <- c("forecast_infections", class(format_out))
   return(format_out)
 }

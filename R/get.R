@@ -245,25 +245,23 @@ get_samples <- function(object, ...) {
 #' @rdname get_samples
 #' @export
 get_samples.estimate_infections <- function(object, ...) {
-  # If object already has samples (e.g., from forecast_infections), return them
-  if (!is.null(object$samples)) {
-    return(object$samples)
-  }
-
-  # Otherwise extract from fit
   raw_samples <- extract_samples(object$fit)
 
-  # Add model arguments to samples list
   for (arg_name in names(object$args)) {
     if (!(arg_name %in% names(raw_samples))) {
       raw_samples[[arg_name]] <- object$args[[arg_name]]
     }
   }
 
-  # Format with dates and metadata
   format_samples_with_dates(
     raw_samples = raw_samples,
     args = object$args,
     observations = object$observations
   )
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.forecast_infections <- function(object, ...) {
+  object$samples
 }
