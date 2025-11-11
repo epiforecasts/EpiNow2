@@ -12,7 +12,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -52,14 +52,14 @@ This guide covers priors for the three main modelling functions:
 
 We load the _EpiNow2_ package and the _posterior_ package which we will use for convergence diagnostics.
 
-```{r}
+```{r libraries}
 library(EpiNow2)
 library(posterior)
 ```
 
 We also set up example data and parameters that will be used in code examples throughout this vignette.
 
-```{r}
+```{r data-setup}
 # Example data for estimate_infections
 reported_cases <- example_confirmed[1:60]
 
@@ -166,7 +166,7 @@ This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probabi
 
 **Example:**
 
-```{r}
+```{r r0-prior-examples}
 # For a measles outbreak with strong prior knowledge
 rt_opts(prior = LogNormal(mean = 15, sd = 2))
 
@@ -201,7 +201,7 @@ This corresponds to a median of 21 days (range 9 to 36 days at 95% prior probabi
 - **Maximum adjustment**: Set `max` lower if working with short time series (e.g., `max=30` for 60-day outbreak)
 
 **Example:**
-```{r}
+```{r gp-length-scale-examples}
 # For outbreak with weekly policy changes
 gp_opts(ls = LogNormal(mean = 7, sd = 3, max = 30))
 
@@ -229,7 +229,7 @@ This corresponds to a half-normal (since negative values are truncated) with 95%
 - **Rarely modified** in practice: The default works well in most scenarios
 
 **Example:**
-```{r}
+```{r gp-magnitude-examples}
 # For outbreak with major interventions
 gp_opts(alpha = Normal(mean = 0, sd = 0.05))
 
@@ -255,7 +255,7 @@ gp_opts(alpha = Normal(mean = 0, sd = 0.005))
 - Use daily (`rw = 1`) for maximum flexibility with fast computation (but risk overfitting)
 
 **Example:**
-```{r}
+```{r random-walk-example}
 # Weekly step changes
 estimate_infections(
   reported_cases,
@@ -288,7 +288,7 @@ With truncation at 0, this half-normal has 95% prior mass below 0.5, correspondi
 - **Switch to Poisson**: Very large counts (>1000s daily) from stable reporting systems and when confident in model specification. Note that negative binomial overdispersion can absorb model misspecification, so switching to Poisson requires both high-quality data and confidence that the model structure is appropriate.
 
 **Example:**
-```{r}
+```{r overdispersion-examples}
 # For highly variable reporting
 obs_opts(dispersion = Normal(mean = 0, sd = 0.5))
 
@@ -314,7 +314,7 @@ obs_opts(family = "poisson")  # No dispersion parameter needed
 - **Identifiability warning**: Scaling and initial infections are weakly identified; estimating scale can cause convergence issues without strong external information
 
 **Example:**
-```{r}
+```{r scaling-examples}
 # Estimating with informative prior based on serology study
 obs_opts(scale = Normal(mean = 0.2, sd = 0.05, max = 1))
 
@@ -342,7 +342,7 @@ obs_opts(scale = Fixed(0.3))
 - **`weight_prior = FALSE`** can be tried if you believe the generation time should be learned from data, though results may vary
 
 **Example:**
-```{r}
+```{r generation-time-examples}
 # Well-established generation time (COVID-19 example)
 gt_opts(example_generation_time)  # Uses package data
 
@@ -378,7 +378,7 @@ gt_opts(Gamma(shape = 2.5, rate = 1.5, max = 10))
 - **Use fixed parameters** (recommended) when delays are known from external studies
 
 **Example:**
-```{r}
+```{r delays-examples}
 # Simple fixed delay
 delay_opts(LogNormal(meanlog = 1.6, sdlog = 0.5, max = 10))
 
@@ -415,7 +415,7 @@ delay_opts(
 - **Use informed prior** from data with known revisions if available
 
 **Example:**
-```{r}
+```{r truncation-examples}
 # Known truncation from external analysis
 trunc_opts(LogNormal(mean = 0.5, sd = 0.5, max = 3))
 
@@ -449,7 +449,7 @@ trunc_opts(truncation_estimate$dist)
 - **Warning**: This is a less epidemiologically informed model than the renewal equation model and may lead to undesired behaviour, particularly when extrapolating or forecasting
 
 **Example:**
-```{r}
+```{r model-choice-examples}
 # Renewal equation model (default)
 estimate_infections(
   reported_cases,
@@ -493,7 +493,7 @@ from primary observations (cases, admissions) with a delay and scaling.
 - Make uncertain only with long time series and uncertain external estimates
 
 **Example:**
-```{r}
+```{r secondary-delay-examples}
 # Fixed delay from literature
 estimate_secondary(
   secondary_data,
@@ -533,7 +533,7 @@ estimate_secondary(
 - Use tighter priors with external estimates (e.g., IFR from serology studies)
 
 **Example:**
-```{r}
+```{r secondary-scaling-example}
 # Case fatality rate ~1% with uncertainty
 estimate_secondary(
   secondary_data,
@@ -567,7 +567,7 @@ cause recent data to be revised upward over time.
 - Common reporting delays: 1-3 days (test results), 7-14 days (death reporting)
 
 **Example:**
-```{r}
+```{r truncation-distribution-examples}
 # Quick turnaround testing (1-3 days typical delay)
 estimate_truncation(
   truncation_data,
@@ -601,7 +601,7 @@ estimate_truncation(
 
 Always begin with default priors to check the model runs and produces reasonable results.
 
-```{r}
+```{r workflow-step1}
 # Minimal specification
 estimates <- estimate_infections(
   reported_cases,
@@ -625,7 +625,7 @@ Ask these questions:
 
 Make incremental changes and check sensitivity:
 
-```{r}
+```{r workflow-step3}
 # Modify R0 prior based on literature
 estimates_r0 <- estimate_infections(
   reported_cases,
@@ -644,7 +644,7 @@ plot(estimates_r0)
 
 It is good practice to check if your priors generate reasonable trajectories before seeing data:
 
-```{r}
+```{r workflow-step4}
 # You can visualise prior choices using EpiNow2's distribution objects
 prior_r0 <- LogNormal(mean = 2, sd = 0.5, max = 10)
 plot(prior_r0)
@@ -658,7 +658,7 @@ Note: Full prior predictive checks (simulating complete epidemic trajectories) r
 
 After modifying priors, always check that the model has converged properly. Poor prior choices can lead to convergence problems.
 
-```{r}
+```{r workflow-step5}
 # Check convergence diagnostics
 # Extract the Stan fit object
 fit <- estimates_r0$fit
