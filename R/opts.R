@@ -256,10 +256,26 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' conservative estimate of break point changes (alter this by setting
 #' `gp = NULL`).
 #'
-#' @param pop Integer, defaults to 0. Susceptible population initially present.
-#' Used to adjust Rt estimates in the forecast horizon based on the
-#' proportion of the population that is susceptible. When set to 0 no
-#' population adjustment is done.
+#' @param pop A `<dist_spec>` giving the initial susceptible population size.
+#' Used to adjust Rt estimates based on the proportion of the population that
+#' is susceptible. Defaults to `Fixed(0)` which means no population adjustment
+#' is done. See also `pop_floor` for the numerical stability floor used when
+#' population adjustment is enabled.
+#'
+#' @param pop_period Character string, defaulting to "forecast". Controls when
+#' susceptible population adjustment is applied. "forecast" only applies the
+#' adjustment to forecasts while "all" applies it to both data and forecasts.
+#' Note that with "all" and "forecast", Rt estimates are unadjusted for
+#' susceptible depletion but posterior predictions of infections and reports are
+#' adjusted.
+#'
+#' @param pop_floor Numeric. Minimum susceptible population used as a
+#' floor when adjusting for population depletion. This prevents numerical
+#' instability (division by zero) when the susceptible population approaches
+#' zero. Defaults to 1.0. Can be interpreted as representing a minimal
+#' ongoing import level. Note that if pop_floor > 0, cumulative infections
+#' can exceed the population size, though this effect is negligible when
+#' pop_floor is very small compared to the population size.
 #'
 #' @param gp_on Character string, defaulting to "R_t-1". Indicates how the
 #' Gaussian process, if in use, should be applied to Rt. Currently supported
@@ -290,6 +306,7 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' @inheritParams create_future_rt
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_abort
+#' @importFrom checkmate assert_number
 #' @export
 #' @examples
 #' # default settings
@@ -306,15 +323,18 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     use_breakpoints = TRUE,
                     future = "latest",
                     gp_on = c("R_t-1", "R0"),
-                    pop = 0,
+                    pop = Fixed(0),
+                    pop_period = c("forecast", "all"),
+                    pop_floor = 1.0,
                     growth_method = c("infections", "infectiousness")) {
   opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
     future = future,
-    pop = pop,
     gp_on = arg_match(gp_on),
+    pop_period = arg_match(pop_period),
+    pop_floor = pop_floor,
     growth_method = arg_match(growth_method)
   )
 
@@ -331,6 +351,25 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
       )
     )
   }
+
+  if (is.numeric(pop)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "rt_opts(pop = 'must be a `<dist_spec>`')",
+      details = "For specifying a fixed population size, use `Fixed(pop)`"
+    )
+    pop <- Fixed(pop)
+  }
+  opts$pop <- pop
+  if (opts$pop_period == "all" && pop == Fixed(0)) {
+    cli_abort(
+      c(
+        "!" = "pop_period = \"all\" but pop is fixed at 0."
+      )
+    )
+  }
+
+  assert_number(pop_floor, lower = 0, finite = TRUE)
 
   if (opts$use_rt) {
     opts$prior <- prior

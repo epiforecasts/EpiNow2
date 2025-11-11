@@ -20,6 +20,50 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
   expect_equal(names(sims), c("samples", "summarised", "observations"))
 })
 
+test_that("forecast_infections methods return expected output structure", {
+  sims <- forecast_infections(out)
+
+  # Test plot method returns expected object types
+  p <- plot(sims)
+  expect_s3_class(p, "patchwork")
+
+  # Test summary method returns data.table with expected structure
+  sum_snapshot <- summary(sims)
+  expect_s3_class(sum_snapshot, "data.frame")
+  expect_true(all(c("measure", "estimate") %in% names(sum_snapshot)))
+
+  sum_params <- summary(sims, type = "parameters")
+  expect_s3_class(sum_params, "data.table")
+  expect_true(all(c("date", "variable", "median", "mean") %in% names(sum_params)))
+
+  # Test get_samples method
+  samples <- get_samples(sims)
+  expect_s3_class(samples, "data.table")
+  expect_true(all(c("variable", "date", "sample", "value") %in% names(samples)))
+})
+
+test_that("forecast_infections methods respect CrIs argument", {
+  sims <- forecast_infections(out)
+
+  # Test summary with custom CrIs
+  sum_default <- summary(sims, type = "parameters")
+  sum_custom <- summary(sims, type = "parameters", CrIs = c(0.5, 0.95))
+
+  # Should have different credible interval columns
+  default_cols <- grep("^lower_|^upper_", names(sum_default), value = TRUE)
+  custom_cols <- grep("^lower_|^upper_", names(sum_custom), value = TRUE)
+  expect_false(identical(default_cols, custom_cols))
+
+  # Custom should have columns for 50% and 95% CrIs
+  expect_true("lower_50" %in% names(sum_custom))
+  expect_true("upper_50" %in% names(sum_custom))
+  expect_true("lower_95" %in% names(sum_custom))
+  expect_true("upper_95" %in% names(sum_custom))
+
+  # Test plot with custom CrIs (should not error)
+  expect_error(plot(sims, CrIs = c(0.5, 0.95)), NA)
+})
+
 test_that("forecast_infections works to simulate a passed in estimate_infections
            object when using the cmdstanr backend", {
   skip_on_os("windows")

@@ -8,7 +8,7 @@
 \method{summary}{epinow}(
   object,
   output = c("estimates", "forecast", "estimated_reported_cases"),
-  date = NULL,
+  target_date = NULL,
   params = NULL,
   ...
 )
@@ -19,7 +19,8 @@
 \item{output}{A character string of output to summarise. Defaults to
 "estimates" but also supports "forecast", and "estimated_reported_cases".}
 
-\item{date}{A date in the form "yyyy-mm-dd" to inspect estimates for.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 
 \item{params}{A character vector of parameters to filter for.}
 

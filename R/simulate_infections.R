@@ -68,9 +68,27 @@ simulate_infections <- function(R,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 backend = "rstan",
                                 seeding_time = NULL,
-                                pop = 0,
+                                pop = Fixed(0),
+                                pop_period = c("forecast", "all"),
+                                pop_floor = 1.0,
                                 growth_method = c("infections",
                                                   "infectiousness")) {
+  if (is.numeric(pop)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "simulate_infections(pop = 'must be a `<dist_spec>`')",
+      details = "For specifying a fixed population size, use `Fixed(pop)`"
+    )
+    pop <- Fixed(pop)
+  }
+  pop_period <- arg_match(pop_period)
+  if (pop_period == "all" && pop == Fixed(0)) {
+    cli_abort(
+      c(
+        "!" = "pop_period = \"all\" but pop is fixed at 0."
+      )
+    )
+  }
 
   ## check inputs
   assert_data_frame(R, any.missing = FALSE)
@@ -79,7 +97,6 @@ simulate_infections <- function(R,
   assert_numeric(R$R, lower = 0)
   assert_numeric(initial_infections, lower = 0)
   assert_numeric(day_of_week_effect, lower = 0, null.ok = TRUE)
-  assert_numeric(pop, lower = 0)
   if (!is.null(seeding_time)) {
     assert_integerish(seeding_time, lower = 1)
   }
@@ -87,6 +104,8 @@ simulate_infections <- function(R,
   assert_class(truncation, "trunc_opts")
   assert_class(obs, "obs_opts")
   assert_class(generation_time, "generation_time_opts")
+  assert_class(pop, "dist_spec")
+  assert_number(pop_floor, lower = 0, finite = TRUE)
   growth_method <- arg_match(growth_method)
 
   ## create R for all dates modelled
@@ -108,7 +127,8 @@ simulate_infections <- function(R,
     initial_infections = array(log(initial_infections), dim = c(1, 1)),
     initial_as_scale = 0,
     R = array(R$R, dim = c(1, nrow(R))),
-    pop = pop,
+    use_pop = as.integer(pop != Fixed(0)) + as.integer(pop_period == "all"),
+    pop_floor = pop_floor,
     growth_method = list(
       "infections" = 0, "infectiousness" = 1
     )[[growth_method]]
@@ -168,7 +188,8 @@ simulate_infections <- function(R,
     make_param("rho", NULL),
     make_param("R0", NULL),
     make_param("frac_obs", obs$scale, lower_bound = 0),
-    make_param("dispersion", obs$dispersion, lower_bound = 0)
+    make_param("dispersion", obs$dispersion, lower_bound = 0),
+    make_param("pop", pop, lower_bound = 0)
   )
 
   stan_data <- c(stan_data, create_stan_params(params))
@@ -254,8 +275,9 @@ simulate_infections <- function(R,
 #' @importFrom checkmate assert_class assert_names test_numeric test_data_frame
 #' assert_numeric assert_integerish assert_logical
 #' @importFrom cli cli_abort
-#' @return A list of output as returned by [estimate_infections()] but based on
-#' results from the specified scenario rather than fitting.
+#' @return A `<forecast_infections>` object containing simulated infections and
+#' cases from the specified scenario. The structure is similar to
+#' [estimate_infections()] output but contains `samples` rather than `fit`.
 #' @seealso [generation_time_opts()] [delay_opts()] [rt_opts()]
 #' [estimate_infections()] [trunc_opts()] [stan_opts()] [obs_opts()]
 #' [gp_opts()]
@@ -524,6 +546,6 @@ forecast_infections <- function(estimates,
   ]
 
   format_out$observations <- estimates$observations
-  class(format_out) <- c("estimate_infections", class(format_out))
+  class(format_out) <- c("forecast_infections", class(format_out))
   return(format_out)
 }

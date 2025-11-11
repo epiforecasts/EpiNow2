@@ -781,7 +781,7 @@ summary.epinow <- function(object,
                            output = c(
                              "estimates", "forecast", "estimated_reported_cases"
                            ),
-                           date = NULL, params = NULL,
+                           target_date = NULL, params = NULL,
                            ...) {
   output <- arg_match(output)
   if (output == "estimates") {
@@ -792,8 +792,8 @@ summary.epinow <- function(object,
     } else {
       out <- object$estimated_reported_cases
     }
-    if (!is.null(date)) {
-      target_date <- as.Date(date)
+    if (!is.null(target_date)) {
+      target_date <- as.Date(target_date)
       out <- out[date == target_date]
     }
     if (!is.null(params)) {
@@ -818,11 +818,12 @@ summary.epinow <- function(object,
 #' "samples" similarly returns posterior
 #' samples.
 #'
-#' @param date A date in the form "yyyy-mm-dd" to inspect estimates for.
+#' @inheritParams setup_target_folder
 #'
 #' @param params A character vector of parameters to filter for.
 #'
-#' @param ... Pass additional arguments to `report_summary`
+#' @param ... Pass additional arguments to `report_summary` when
+#'   `type = "snapshot"`.
 #' @importFrom rlang arg_match
 #' @inheritParams calc_summary_measures
 #' @seealso [summary.epinow()] [estimate_infections()] [report_summary()]
@@ -831,7 +832,7 @@ summary.epinow <- function(object,
 #' @export
 summary.estimate_infections <- function(object,
                                         type = c("snapshot", "parameters"),
-                                        date = NULL, params = NULL,
+                                        target_date = NULL, params = NULL,
                                         CrIs = c(0.2, 0.5, 0.9), ...) {
   # Handle deprecated type = "samples" before arg_match
   if (length(type) == 1 && type == "samples") {
@@ -843,43 +844,35 @@ summary.estimate_infections <- function(object,
     return(get_samples(object))
   }
 
-  type <- arg_match(type)
+  create_infection_summary(object, type, target_date, params, CrIs, ...)
+}
 
-  if (is.null(date)) {
-    target_date <- max(object$observations$date)
-  } else {
-    target_date <- as.Date(date)
-  }
-
-  # Get posterior samples
-  samples <- get_samples(object)
-
-  # Calculate summary measures
-  summarised <- calc_summary_measures(
-    samples,
-    summarise_by = c("date", "variable", "strat", "type"),
-    order_by = c("variable", "date"),
-    CrIs = CrIs
-  )
-
-  if (type == "snapshot") {
-    out <- report_summary(
-      summarised_estimates = summarised[date == target_date],
-      rt_samples = samples[variable == "R"][
-        date == target_date, .(sample, value)
-      ],
-      ...
-    )
-  } else if (type == "parameters") {
-    out <- summarised
-    if (!is.null(date)) {
-      out <- out[date == target_date]
-    }
-    if (!is.null(params)) {
-      out <- out[variable %in% params]
-    }
-  }
-  out[]
+#' Summary output from forecast_infections
+#'
+#' @description `r lifecycle::badge("stable")`
+#' \code{summary} method for class "forecast_infections".
+#'
+#' @param object A list of output as produced by "forecast_infections".
+#'
+#' @param type A character vector of data types to return. Defaults to
+#' "snapshot" but also supports "parameters". "snapshot" returns
+#' a summary at a given date (by default the latest date informed by data).
+#' "parameters" returns summarised parameter estimates that can be further
+#' filtered using `params` to show just the parameters of interest and date.
+#'
+#' @inheritParams summary.estimate_infections
+#' @importFrom rlang arg_match
+#' @inheritParams calc_summary_measures
+#' @seealso [summary.estimate_infections()] [forecast_infections()]
+#'   [report_summary()]
+#' @method summary forecast_infections
+#' @return Returns a `<data.frame>` of summary output
+#' @export
+summary.forecast_infections <- function(object,
+                                        type = c("snapshot", "parameters"),
+                                        target_date = NULL, params = NULL,
+                                        CrIs = c(0.2, 0.5, 0.9), ...) {
+  create_infection_summary(object, type, target_date, params, CrIs, ...)
 }
 
 ##' Print information about an object that has resulted from a model fit.

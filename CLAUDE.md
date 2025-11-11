@@ -1,5 +1,17 @@
 # Project-Specific Instructions for EpiNow2
 
+## General Principles
+
+### Language
+- Use British English for all written content including:
+  - Documentation (roxygen2 comments, vignettes, README files)
+  - Commit messages
+  - Pull request descriptions
+  - Code comments
+  - NEWS.md entries
+- Common differences: "modelling" not "modeling", "summarise" not
+  "summarize", "behaviour" not "behavior"
+
 ## Git and Commits
 
 ### Commit Messages
