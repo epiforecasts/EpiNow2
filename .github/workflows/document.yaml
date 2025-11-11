@@ -38,6 +38,14 @@ jobs:
         with:
           use-public-rspm: true
 
+      - name: Cache R package
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-r-${{ hashFiles('DESCRIPTION') }}
+          restore-keys: |
+            ${{ runner.os }}-r-
+
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
