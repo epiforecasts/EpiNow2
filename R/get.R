@@ -343,5 +343,4 @@ get_predictions.estimate_secondary <- function(object, CrIs = c(0.2, 0.5, 0.9), 
   )
 
   return(predictions)
->>>>>>> 84e3c31e (Standardise S3 interface for estimate_secondary (#1142))
 }
