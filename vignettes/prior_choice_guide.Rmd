@@ -64,9 +64,11 @@ We also set up example data and parameters that will be used in code examples th
 reported_cases <- example_confirmed[1:60]
 
 # Example data for estimate_secondary
-library(data.table)
 secondary_data <- copy(example_confirmed)[1:60]
-secondary_data[, secondary := as.integer(confirm * 0.02)]  # Simulated deaths
+setnames(secondary_data, "confirm", "primary")
+secondary_data[, scaling := 0.4]
+secondary_data[, meanlog := 1.8][, sdlog := 0.5]
+secondary_data <- convolve_and_scale(secondary_data, type = "incidence")
 
 # Example data for estimate_truncation
 truncation_data <- example_truncated
