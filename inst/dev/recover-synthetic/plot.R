@@ -4,7 +4,7 @@ plot_estimates_truth <- function(est, truth, stat = "R", ...) {
   plot_estimates(
     estimate = summary(est, type = "parameters")[variable == stat],
     reported = data.table::data.table(
-      date = summary(sims, type = "parameters")[variable == stat]$date,
+      date = summary(est, type = "parameters")[variable == stat]$date,
       confirm = truth
     ),
     obs_as_col = FALSE,
