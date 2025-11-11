@@ -907,6 +907,7 @@ print.epinowfit <- function(x, ...) {
 #'   returns only key parameters (delay distribution parameters and scaling
 #'   factors). When `type = "parameters"`, returns all or filtered parameters.
 #' @importFrom rlang arg_match
+#' @method summary estimate_secondary
 #' @export
 summary.estimate_secondary <- function(object,
                                        type = c("compact", "parameters"),
