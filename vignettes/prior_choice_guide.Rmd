@@ -16,7 +16,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  eval = TRUE
 )
 library(EpiNow2)
 library(posterior)
@@ -596,7 +596,7 @@ plot(estimates_r0)
 
 It is good practice to check if your priors generate reasonable trajectories before seeing data:
 
-```{r, eval = TRUE}
+```{r}
 # You can visualise prior choices using EpiNow2's distribution objects
 prior_r0 <- LogNormal(mean = 2, sd = 0.5, max = 10)
 plot(prior_r0)
