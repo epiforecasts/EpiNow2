@@ -260,14 +260,17 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' Used to adjust Rt estimates based on the proportion of the population that
 #' is susceptible. Defaults to `Fixed(0)` which means no population adjustment
 #' is done. See also `pop_floor` for the numerical stability floor used when
-#' population adjustment is enabled.
+#' population adjustment is enabled. When `pop` is specified, returned Rt
+#' estimates are adjusted for susceptible depletion (accounting for population
+#' immunity), and unadjusted Rt estimates are also provided in a separate
+#' output variable `R_unadjusted`. Adjusted Rt represents the effective
+#' reproduction number given the current susceptible population, whilst
+#' unadjusted Rt represents the reproduction number that would occur in a fully
+#' susceptible population.
 #'
 #' @param pop_period Character string, defaulting to "forecast". Controls when
 #' susceptible population adjustment is applied. "forecast" only applies the
-#' adjustment to forecasts while "all" applies it to both data and forecasts.
-#' Note that with "all" and "forecast", Rt estimates are unadjusted for
-#' susceptible depletion but posterior predictions of infections and reports are
-#' adjusted.
+#' adjustment to forecasts whilst "all" applies it to both data and forecasts.
 #'
 #' @param pop_floor Numeric. Minimum susceptible population used as a
 #' floor when adjusting for population depletion. This prevents numerical
