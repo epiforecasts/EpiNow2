@@ -122,7 +122,7 @@ transformed parameters {
         params
       );
       infections = generate_infections(
-        R, seeding_time, gt_rev_pmf, initial_infections, pop, use_pop,
+        R, seeding_time, gt_rev_pmf, initial_infections, pop, use_pop, pop_floor,
         future_time, obs_scale, frac_obs, 1
       );
     }
