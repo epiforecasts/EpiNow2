@@ -5,6 +5,7 @@
 .Ruserdata
 .cache
 .idea
+.claude
 
 # test data and logs
 .log
