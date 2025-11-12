@@ -126,7 +126,7 @@ The following tables list all priors available in `{EpiNow2}`, organised by mode
 | **Delays (primary to secondary)** |
 | Parameters | `delay_opts()` | `dist` | `LogNormal(meanlog = Normal(2.5, 0.5), sdlog = Normal(0.47, 0.25), max = 30)` | Time from primary to secondary event |
 | **Observation model** |
-| Scaling | `obs_opts()` | `scale` | Required, no default | Fraction of primary events leading to secondary |
+| Scaling | `obs_opts()` | `scale` | `Fixed(1)` | Fraction of primary events leading to secondary (shared parameter with `estimate_infections()`) |
 | Overdispersion | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterisation |
 | Day of week | (internal) | (auto) | `Dirichlet(1, ..., 1)` | Turn off via `week_effect = FALSE` |
 
@@ -304,28 +304,50 @@ obs_opts(family = "poisson")  # No dispersion parameter needed
 
 ## Observation model: scaling
 
-**What it controls:** The proportion of infections that are ultimately reported (ascertainment rate).
+**What it controls:** The `scale` parameter in `obs_opts()` is shared by both `estimate_infections()` and `estimate_secondary()`, but represents different quantities in each context:
 
-**Default:** `Fixed(1)` (assumes all infections are reported)
+- **For `estimate_infections()`**: The proportion of infections that are ultimately reported (ascertainment rate)
+- **For `estimate_secondary()`**: The fraction of primary events leading to secondary events (e.g., case fatality rate, hospitalization rate)
+
+**Default:** `Fixed(1)` for both functions
+
+For `estimate_infections()`, this assumes all infections are reported. For `estimate_secondary()`, this assumes a 1:1 relationship between primary and secondary events (which is rarely realistic).
 
 **Expected impact of changes:**
+
+### For estimate_infections():
 
 - **Estimate scaling (e.g., `Normal(mean=0.3, sd=0.1)`)**: Allows model to estimate underreporting. Reported cases = scaling × latent infections × delay convolution. Useful when you know reporting is incomplete but don't know the rate.
 - **Fixed lower value (e.g., `Fixed(0.5)`)**: Assumes you know 50% are reported. Changes interpretation of infections but not $R_t$.
 
+### For estimate_secondary():
+
+- **Tight prior (e.g., `Normal(mean=0.01, sd=0.005)`)**: Constrains estimates near prior (e.g., 1% case fatality rate), faster convergence
+- **Wide prior (e.g., `Normal(mean=0.05, sd=0.05)`)**: Flexible but may be poorly identified without long time series
+
 **When to modify:**
+
+### For estimate_infections():
 
 - **Nearly always keep at `Fixed(1)`** and interpret "infections" as "reported infections"
 - **Estimate only if**: You have external data to anchor scale (seroprevalence, death rates) AND can set an informative prior on the ascertainment rate
 - **Identifiability warning**: Scaling and initial infections are weakly identified; estimating scale can cause convergence issues without strong external information
 
+### For estimate_secondary():
+
+- **Always specify** based on domain knowledge (unlike `estimate_infections()`, the default of 1 is rarely appropriate)
+- Use tighter priors with external estimates (e.g., infection fatality rate from serology studies)
+
 **Example:**
 ```{r scaling-examples}
-# Estimating with informative prior based on serology study
+# estimate_infections(): Estimating with informative prior based on serology study
 obs_opts(scale = Normal(mean = 0.2, sd = 0.05, max = 1))
 
-# Fixed known ascertainment (rarely used)
+# estimate_infections(): Fixed known ascertainment (rarely used)
 obs_opts(scale = Fixed(0.3))
+
+# estimate_secondary(): Case fatality rate ~1% with uncertainty
+obs_opts(scale = Normal(mean = 0.01, sd = 0.005, max = 1))
 ```
 
 ## Generation time distribution
@@ -523,34 +545,6 @@ fit_secondary_uncertain <- estimate_secondary(
       max = 30
     )
   ),
-  stan = stan
-)
-```
-
-### Scaling (fraction reported)
-
-**What it controls:** Proportion of primary events leading to secondary events
-(e.g., case fatality rate).
-
-**Default:** None - must be specified by user.
-
-**Expected impact:**
-
-- **Tight prior**: Constrains estimates near prior, faster convergence
-- **Wide prior**: Flexible but may be poorly identified without long time series
-
-**When to modify:**
-
-- Always specify based on domain knowledge
-- Use tighter priors with external estimates (e.g., IFR from serology studies)
-
-**Example:**
-```{r secondary-scaling-example}
-# Case fatality rate ~1% with uncertainty
-fit_secondary_cfr <- estimate_secondary(
-  secondary_data,
-  delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30)),
-  obs = obs_opts(scale = Normal(mean = 0.01, sd = 0.005, max = 1)),
   stan = stan
 )
 ```
