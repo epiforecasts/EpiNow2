@@ -31,11 +31,11 @@ test_that("create_sampler_logging_vars returns expected samples and iterations f
 test_that("create_sampler_logging_vars handles missing fields gracefully", {
   args <- args_cmdstanr
   args$iter_warmup <- NULL
-  expect_error(create_sampler_logging_vars(args), NA)
+  expect_no_error(create_sampler_logging_vars(args))
 
   args <- args_rstan
   args$warmup <- NULL
-  expect_error(create_sampler_logging_vars(args), NA)
+  expect_no_error(create_sampler_logging_vars(args))
 })
 
 test_that("create_sampler_logging_vars output names are the same for both backends", {
