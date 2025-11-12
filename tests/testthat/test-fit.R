@@ -16,13 +16,13 @@ args_rstan <- list(
   chains = 2
 )
 
-test_that("create_sampler_logging_vars works for cmdstanr backend", {
+test_that("create_sampler_logging_vars returns expected samples and iterations for cmdstanr backend", {
   result <- create_sampler_logging_vars(args_cmdstanr)
   expect_equal(result$total_samples, 4000)
   expect_equal(result$warmup_iterations, 500)
 })
 
-test_that("create_sampler_logging_vars works for rstan backend", {
+test_that("create_sampler_logging_vars returns expected samples and iterations for rstan backend", {
   result <- create_sampler_logging_vars(args_rstan)
   expect_equal(result$total_samples, 2000)
   expect_equal(result$warmup_iterations, 1000)
