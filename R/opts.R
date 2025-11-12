@@ -237,8 +237,8 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' reproduction number. Custom settings can be supplied which override the
 #' defaults.
 #'
-#' @param prior A `<dist_spec>` giving the prior of the initial reproduciton
-#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distributin
+#' @param prior A `<dist_spec>` giving the prior of the initial reproduction
+#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distribution
 #' with mean of 1 and standard deviation of 1: `LogNormal(mean = 1, sd = 1)`.
 #' A lower limit of 0 will be enforced automatically.
 #'
@@ -256,12 +256,28 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' conservative estimate of break point changes (alter this by setting
 #' `gp = NULL`).
 #'
-#' @param pop Integer, defaults to 0. Susceptible population initially present.
-#' Used to adjust Rt estimates in the forecast horizon based on the
-#' proportion of the population that is susceptible. When set to 0 no
-#' population adjustment is done.
+#' @param pop A `<dist_spec>` giving the initial susceptible population size.
+#' Used to adjust Rt estimates based on the proportion of the population that
+#' is susceptible. Defaults to `Fixed(0)` which means no population adjustment
+#' is done. See also `pop_floor` for the numerical stability floor used when
+#' population adjustment is enabled.
 #'
-#' @param gp_on Character string, defaulting to  "R_t-1". Indicates how the
+#' @param pop_period Character string, defaulting to "forecast". Controls when
+#' susceptible population adjustment is applied. "forecast" only applies the
+#' adjustment to forecasts while "all" applies it to both data and forecasts.
+#' Note that with "all" and "forecast", Rt estimates are unadjusted for
+#' susceptible depletion but posterior predictions of infections and reports are
+#' adjusted.
+#'
+#' @param pop_floor Numeric. Minimum susceptible population used as a
+#' floor when adjusting for population depletion. This prevents numerical
+#' instability (division by zero) when the susceptible population approaches
+#' zero. Defaults to 1.0. Can be interpreted as representing a minimal
+#' ongoing import level. Note that if pop_floor > 0, cumulative infections
+#' can exceed the population size, though this effect is negligible when
+#' pop_floor is very small compared to the population size.
+#'
+#' @param gp_on Character string, defaulting to "R_t-1". Indicates how the
 #' Gaussian process, if in use, should be applied to Rt. Currently supported
 #' options are applying the Gaussian process to the last estimated Rt (i.e
 #' Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
@@ -269,11 +285,28 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' but the method relying on a global mean will revert to this for real time
 #' estimates, which may not be desirable.
 #'
+#' @param growth_method Method used to compute growth rates from Rt. Options
+#' are "infections" (default) and "infectiousness". The option "infections"
+#' uses the classical approach, i.e. computing the log derivative on the number
+#' of new infections. The option "infectiousness" uses an alternative approach
+#' by Parag et al., which computes the log derivative of the infectiousness
+#' (i.e. the convolution of past infections with the generation time) and
+#' shifts it by the mean generation time. This can provide better stability
+#' and temporal matching with Rt. Note that, due to the temporal shift the
+#' "infectiousness" method results in undefined (NaN) growth rates for the most
+#' recent time points (equal to the mean generation time).
+#'
+#' @references Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic
+#' growth rates more informative than reproduction numbers? Journal of the
+#' Royal Statistical Society: Series A (Statistics in Society) 185, S5–S15
+#' (2022).
+#'
 #' @return An `<rt_opts>` object with settings defining the time-varying
 #' reproduction number.
 #' @inheritParams create_future_rt
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_abort
+#' @importFrom checkmate assert_number
 #' @export
 #' @examples
 #' # default settings
@@ -290,14 +323,19 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     use_breakpoints = TRUE,
                     future = "latest",
                     gp_on = c("R_t-1", "R0"),
-                    pop = 0) {
+                    pop = Fixed(0),
+                    pop_period = c("forecast", "all"),
+                    pop_floor = 1.0,
+                    growth_method = c("infections", "infectiousness")) {
   opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
     future = future,
-    pop = pop,
-    gp_on = arg_match(gp_on)
+    gp_on = arg_match(gp_on),
+    pop_period = arg_match(pop_period),
+    pop_floor = pop_floor,
+    growth_method = arg_match(growth_method)
   )
 
   # replace default settings with those specified by user
@@ -313,6 +351,25 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
       )
     )
   }
+
+  if (is.numeric(pop)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "rt_opts(pop = 'must be a `<dist_spec>`')",
+      details = "For specifying a fixed population size, use `Fixed(pop)`"
+    )
+    pop <- Fixed(pop)
+  }
+  opts$pop <- pop
+  if (opts$pop_period == "all" && pop == Fixed(0)) {
+    cli_abort(
+      c(
+        "!" = "pop_period = \"all\" but pop is fixed at 0."
+      )
+    )
+  }
+
+  assert_number(pop_floor, lower = 0, finite = TRUE)
 
   if (opts$use_rt) {
     opts$prior <- prior
@@ -555,6 +612,7 @@ gp_opts <- function(basis_prop = 0.2,
   return(gp)
 }
 
+# nolint start
 #' Observation Model Options
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -566,7 +624,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'   parameter of the reporting process, used only if `familiy` is "negbin".
 #'   Internally parameterised such that this parameter is one over the square
 #'   root of the `phi` parameter for overdispersion of the
-#'   [negative binomial distribution](https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log). # nolint
+#'   [negative binomial distribution](https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log).
 #'   Defaults to a half-normal distribution with mean of 0 and
 #'   standard deviation of 0.25: `Normal(mean = 0, sd = 0.25)`. A lower limit of
 #'   zero will be enforced automatically.
@@ -602,6 +660,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'
 #' # Scale reported data
 #' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
+# nolint end
 obs_opts <- function(family = c("negbin", "poisson"),
                      dispersion = Normal(mean = 0, sd = 0.25),
                      weight = 1,
@@ -1022,7 +1081,7 @@ stan_opts <- function(object = NULL,
 #'   the data used for fitting then the same accumulation will be used in
 #'   forecasts unless set explicitly here.
 #' @return A `<forecast_opts>` object of forecast setting.
-#' @seealso fill_missing
+#' @seealso [fill_missing()]
 #' @export
 #' @examples
 #' forecast_opts(horizon = 28, accumulate = 7)

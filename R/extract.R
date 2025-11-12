@@ -16,6 +16,11 @@
 #' @importFrom data.table melt as.data.table
 #' @keywords internal
 extract_parameter <- function(param, samples, dates) {
+  # Return NULL if parameter doesn't exist
+  if (!(param %in% names(samples))) {
+    return(NULL)
+  }
+
   param_df <- data.table::as.data.table(
     t(
       data.table::as.data.table(
@@ -42,10 +47,18 @@ extract_parameter <- function(param, samples, dates) {
 #'
 #' @inheritParams extract_parameter
 #' @return A `<data.frame>` containing the parameter name, sample id and sample
-#' value
+#' value, or NULL if the parameter doesn't exist in the samples
 #' @keywords internal
 extract_static_parameter <- function(param, samples) {
-  id <- samples[[paste(param, "id", sep = "_")]]
+  id_name <- paste("param_id", param, sep = "_")
+
+  # Return NULL if parameter ID doesn't exist
+  if (!(id_name %in% names(samples))) {
+    return(NULL)
+  }
+
+  id <- samples[[id_name]]
+
   lookup <- samples[["params_variable_lookup"]][id]
   data.table::data.table(
     parameter = param,
@@ -131,127 +144,31 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
 
 #' Extract Parameter Samples from a Stan Model
 #'
-#' @description `r lifecycle::badge("stable")`
-#' Extracts a custom set of parameters from a stan object and adds
-#' stratification and dates where appropriate.
+#' @description `r lifecycle::badge("deprecated")`
+#' This function has been deprecated. Use [format_simulation_output()] for
+#' simulation outputs or [get_samples()] for estimation outputs instead.
 #'
-#' @param data A list of the data supplied to the [fit_model()] call.
-#'
-#' @param reported_dates A vector of dates to report estimates for.
-#'
-#' @param imputed_dates A vector of dates to report imputed reports for.
-#'
-##' @param reported_inf_dates A vector of dates to report infection estimates
-#' for.
-#'
-#' @param drop_length_1 Logical; whether the first dimension should be dropped
-#' if it is off length 1; this is necessary when processing simulation results.
-#'
-#' @param merge if TRUE, merge samples and data so that parameters can be
-#' extracted from data.
-#'
-#' @inheritParams extract_samples
+#' @inheritParams format_simulation_output
 #' @return A list of `<data.frame>`'s each containing the posterior of a
 #' parameter
-#' @importFrom rstan extract
-#' @importFrom data.table data.table
 #' @keywords internal
 extract_parameter_samples <- function(stan_fit, data, reported_dates,
                                       imputed_dates, reported_inf_dates,
                                       drop_length_1 = FALSE, merge = FALSE) {
-  # extract sample from stan object
-  samples <- extract_samples(stan_fit)
-
-  ## drop initial length 1 dimensions if requested
-  if (drop_length_1) {
-    samples <- lapply(samples, function(x) {
-      if (length(dim(x)) > 1 && dim(x)[1] == 1) dim(x) <- dim(x)[-1]
-      x
-    })
-  }
-
-  for (data_name in names(data)) {
-    if (!(data_name %in% names(samples))) {
-      samples[[data_name]] <- data[[data_name]]
-    }
-  }
-
-  # construct reporting list
-  out <- list()
-  # report infections, and R
-  out$infections <- extract_parameter(
-    "infections",
-    samples,
-    reported_inf_dates
+  lifecycle::deprecate_warn(
+    "1.8.0",
+    "extract_parameter_samples()",
+    "format_simulation_output()"
   )
-  out$infections <- out$infections[date >= min(reported_dates)]
-  out$reported_cases <- extract_parameter(
-    "imputed_reports",
-    samples,
-    imputed_dates
+  format_simulation_output(
+    stan_fit = stan_fit,
+    data = data,
+    reported_dates = reported_dates,
+    imputed_dates = imputed_dates,
+    reported_inf_dates = reported_inf_dates,
+    drop_length_1 = drop_length_1,
+    merge = merge
   )
-  if ("estimate_r" %in% names(data)) {
-    if (data$estimate_r == 1) {
-      out$R <- extract_parameter(
-        "R",
-        samples,
-        reported_dates
-      )
-      if (data$bp_n > 0) {
-        out$breakpoints <- extract_parameter(
-          "bp_effects",
-          samples,
-          1:data$bp_n
-        )
-        out$breakpoints <- out$breakpoints[
-          ,
-          strat := date
-        ][, c("time", "date") := NULL]
-      }
-    } else {
-      out$R <- extract_parameter(
-        "gen_R",
-        samples,
-        reported_dates
-      )
-    }
-  }
-  out$growth_rate <- extract_parameter(
-    "r",
-    samples,
-    reported_dates[-1]
-  )
-  if (data$week_effect > 1) {
-    out$day_of_week <- extract_parameter(
-      "day_of_week_simplex",
-      samples,
-      1:data$week_effect
-    )
-    out$day_of_week <- out$day_of_week[, value := value * data$week_effect]
-    out$day_of_week <- out$day_of_week[, strat := date][
-      ,
-      c("time", "date") := NULL
-    ]
-  }
-  if (data$delay_n_p > 0) {
-    out$delay_params <- extract_parameter(
-      "delay_params", samples, seq_len(data$delay_params_length)
-    )
-    out$delay_params <-
-      out$delay_params[, strat := as.character(time)][, time := NULL][
-        ,
-        date := NULL
-      ]
-  }
-  if (data$model_type == 1) {
-    out$reporting_overdispersion <- extract_static_parameter(
-      "dispersion", samples
-    )
-  }
-  if ("obs_scale_sd" %in% names(data) && data$obs_scale_sd > 0) {
-    out$fraction_observed <- extract_static_parameter("frac_obs", samples)
-  }
-  return(out)
 }
 
 #' Extract a Parameter Summary from a Stan Object

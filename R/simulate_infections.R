@@ -58,7 +58,8 @@
 #'   obs = obs_opts(family = "poisson")
 #' )
 #' }
-simulate_infections <- function(R, initial_infections,
+simulate_infections <- function(R,
+                                initial_infections,
                                 day_of_week_effect = NULL,
                                 generation_time = generation_time_opts(),
                                 delays = delay_opts(),
@@ -67,7 +68,27 @@ simulate_infections <- function(R, initial_infections,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 backend = "rstan",
                                 seeding_time = NULL,
-                                pop = 0) {
+                                pop = Fixed(0),
+                                pop_period = c("forecast", "all"),
+                                pop_floor = 1.0,
+                                growth_method = c("infections",
+                                                  "infectiousness")) {
+  if (is.numeric(pop)) {
+    lifecycle::deprecate_warn(
+      "1.7.0",
+      "simulate_infections(pop = 'must be a `<dist_spec>`')",
+      details = "For specifying a fixed population size, use `Fixed(pop)`"
+    )
+    pop <- Fixed(pop)
+  }
+  pop_period <- arg_match(pop_period)
+  if (pop_period == "all" && pop == Fixed(0)) {
+    cli_abort(
+      c(
+        "!" = "pop_period = \"all\" but pop is fixed at 0."
+      )
+    )
+  }
 
   ## check inputs
   assert_data_frame(R, any.missing = FALSE)
@@ -76,7 +97,6 @@ simulate_infections <- function(R, initial_infections,
   assert_numeric(R$R, lower = 0)
   assert_numeric(initial_infections, lower = 0)
   assert_numeric(day_of_week_effect, lower = 0, null.ok = TRUE)
-  assert_numeric(pop, lower = 0)
   if (!is.null(seeding_time)) {
     assert_integerish(seeding_time, lower = 1)
   }
@@ -84,6 +104,9 @@ simulate_infections <- function(R, initial_infections,
   assert_class(truncation, "trunc_opts")
   assert_class(obs, "obs_opts")
   assert_class(generation_time, "generation_time_opts")
+  assert_class(pop, "dist_spec")
+  assert_number(pop_floor, lower = 0, finite = TRUE)
+  growth_method <- arg_match(growth_method)
 
   ## create R for all dates modelled
   all_dates <- data.table(date = seq.Date(min(R$date), max(R$date), by = "day"))
@@ -104,7 +127,11 @@ simulate_infections <- function(R, initial_infections,
     initial_infections = array(log(initial_infections), dim = c(1, 1)),
     initial_as_scale = 0,
     R = array(R$R, dim = c(1, nrow(R))),
-    pop = pop
+    use_pop = as.integer(pop != Fixed(0)) + as.integer(pop_period == "all"),
+    pop_floor = pop_floor,
+    growth_method = list(
+      "infections" = 0, "infectiousness" = 1
+    )[[growth_method]]
   )
 
   stan_data <- c(stan_data, create_stan_delays(
@@ -156,13 +183,17 @@ simulate_infections <- function(R, initial_infections,
     obs$dispersion <- NULL
   }
 
-  stan_data <- c(stan_data, create_stan_params(
-    alpha = NULL,
-    rho = NULL,
-    R0 = NULL,
-    frac_obs = obs$scale,
-    dispersion = obs$dispersion
-  ))
+  params <- list(
+    make_param("alpha", NULL),
+    make_param("rho", NULL),
+    make_param("R0", NULL),
+    make_param("frac_obs", obs$scale, lower_bound = 0),
+    make_param("dispersion", obs$dispersion, lower_bound = 0),
+    make_param("pop", pop, lower_bound = 0)
+  )
+
+  stan_data <- c(stan_data, create_stan_params(params))
+
   ## set empty params matrix - variable parameters not supported here
   stan_data$params <- array(dim = c(1, 0))
 
@@ -193,7 +224,7 @@ simulate_infections <- function(R, initial_infections,
     seq(min(R$date) - seeding_time, min(R$date) - 1, by = "day"),
     R$date
   )
-  out <- extract_parameter_samples(sim, stan_data,
+  out <- format_simulation_output(sim, stan_data,
     reported_inf_dates = dates,
     reported_dates = dates[-(1:seeding_time)],
     imputed_dates = dates[-(1:seeding_time)],
@@ -244,8 +275,9 @@ simulate_infections <- function(R, initial_infections,
 #' @importFrom checkmate assert_class assert_names test_numeric test_data_frame
 #' assert_numeric assert_integerish assert_logical
 #' @importFrom cli cli_abort
-#' @return A list of output as returned by [estimate_infections()] but based on
-#' results from the specified scenario rather than fitting.
+#' @return A `<forecast_infections>` object containing simulated infections and
+#' cases from the specified scenario. The structure is similar to
+#' [estimate_infections()] output but contains `samples` rather than `fit`.
 #' @seealso [generation_time_opts()] [delay_opts()] [rt_opts()]
 #' [estimate_infections()] [trunc_opts()] [stan_opts()] [obs_opts()]
 #' [gp_opts()]
@@ -286,7 +318,7 @@ simulate_infections <- function(R, initial_infections,
 #' plot(sims)
 #'
 #' #' # with a data.frame input of samples
-#' R_samples <- summary(est, type = "samples", param = "R")
+#' R_samples <- get_samples(est)[variable == "R"]
 #' R_samples <- R_samples[
 #'   ,
 #'   .(date, sample, value)
@@ -402,12 +434,14 @@ forecast_infections <- function(estimates,
   }
 
   # define dates of interest
-  dates <-
-    seq(
-      min(na.omit(unique(estimates$summarised[variable == "R"]$date)))
-      - days(shift),
-      by = "day", length.out = dim(draws$R)[2] + shift
-    )
+  summarised <- summary(estimates, type = "parameters")
+  dates <- seq(
+    min(na.omit(unique(summarised[variable == "R"]$date))) - days(shift),
+    by = "day", length.out = dim(draws$R)[2] + shift
+  )
+
+  # Extract args for passing to parallel workers
+  estimates_args <- estimates$args
 
   # Load model
   stan <- stan_opts(
@@ -415,14 +449,14 @@ forecast_infections <- function(estimates,
   )
 
   ## set up batch simulation
-  batch_simulate <- function(estimates, draws, model,
+  batch_simulate <- function(estimates_args, draws, model, stan,
                              shift, dates, nstart, nend) {
     # extract batch samples from draws
     draws <- map(draws, ~ matrix(.[nstart:nend, ], nrow = nend - nstart + 1))
 
     ## prepare data for stan command
     stan_data <- c(
-      list(n = dim(draws$R)[1], initial_as_scale = 1), draws, estimates$args
+      list(n = dim(draws$R)[1], initial_as_scale = 1), draws, estimates_args
     )
 
     ## allocate empty parameters
@@ -440,7 +474,7 @@ forecast_infections <- function(estimates,
     ## simulate
     sims <- fit_model(stan_args, id = "simulate_infections")
 
-    extract_parameter_samples(sims, stan_data,
+    format_simulation_output(sims, stan_data,
       reported_inf_dates = dates,
       reported_dates = dates[-(1:shift)],
       imputed_dates = dates[-(1:shift)],
@@ -469,13 +503,17 @@ forecast_infections <- function(estimates,
           p()
         }
         safe_batch(
-          estimates, draws, model,
+          estimates_args, draws, model, stan,
           shift, dates, batch[[1]],
           batch[[2]]
         )[[1]]
       },
       future.opts = list(
-        future.seed = TRUE
+        future.seed = TRUE,
+        future.globals = c(
+          "estimates_args", "draws", "model", "stan", "shift", "dates",
+          "safe_batch"
+        )
       ),
       backend = backend
     )
@@ -499,15 +537,15 @@ forecast_infections <- function(estimates,
   ## format output
   format_out <- format_fit(
     posterior_samples = regional_out,
-    horizon = estimates$args$horizon,
+    horizon = estimates_args$horizon,
     shift = shift,
-    CrIs = extract_CrIs(estimates$summarised) / 100
+    CrIs = extract_CrIs(summarised) / 100
   )
   format_out$samples <- format_out$samples[, sample := seq_len(.N),
     by = c("variable", "time", "date", "strat")
   ]
 
   format_out$observations <- estimates$observations
-  class(format_out) <- c("estimate_infections", class(format_out))
+  class(format_out) <- c("forecast_infections", class(format_out))
   return(format_out)
 }

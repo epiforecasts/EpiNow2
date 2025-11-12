@@ -42,8 +42,9 @@ stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 package is available, a progress bar will be shown.}
 }
 \value{
-A list of output as returned by \code{\link[=estimate_infections]{estimate_infections()}} but based on
-results from the specified scenario rather than fitting.
+A \verb{<forecast_infections>} object containing simulated infections and
+cases from the specified scenario. The structure is similar to
+\code{\link[=estimate_infections]{estimate_infections()}} output but contains \code{samples} rather than \code{fit}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -88,7 +89,7 @@ sims <- forecast_infections(est, R_dt)
 plot(sims)
 
 #' # with a data.frame input of samples
-R_samples <- summary(est, type = "samples", param = "R")
+R_samples <- get_samples(est)[variable == "R"]
 R_samples <- R_samples[
   ,
   .(date, sample, value)

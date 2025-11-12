@@ -451,6 +451,7 @@ pad_reported_cases <- function(reported_cases, n, with = NA_real_) {
 #' @param a Numeric vector, the first sequence.
 #' @param b Numeric vector, the second sequence.
 #' @return A numeric vector representing the convolution of `a` and `b`.
+#' @keywords internal
 stable_convolve <- function(a, b) {
   n <- length(a)
   m <- length(b)
@@ -461,6 +462,23 @@ stable_convolve <- function(a, b) {
     }
   }
   result
+}
+
+##' Internal function to create a parameter list
+##'
+##' @param name Character, name of the parameter
+##' @param dist `<dist_spec>`, the distribution of the parameter; default: NULL
+##' @param lower_bound Numeric, lower bound for the parameter; default: -Inf
+##' @return A list with the parameter details, classed as "EpiNow2.param"
+##' @keywords internal
+make_param <- function(name, dist = NULL, lower_bound = -Inf) {
+  params <- list(
+    name = name,
+    dist = dist,
+    lower_bound = lower_bound
+  )
+  class(params) <- c("EpiNow2.param", "list")
+  params
 }
 
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp

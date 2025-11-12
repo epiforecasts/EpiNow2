@@ -7,14 +7,14 @@ in the form of issues and/or pull requests.
 
 ### Grammatical issues
 
-You can fix typos, spelling mistakes, or grammatical errors in the documentation directly using the GitHub web interface, as long as the changes are made in the _source_ file. 
-This generally means you'll need to edit [roxygen2 comments](https://roxygen2.r-lib.org/articles/roxygen2.html) in an `.R`, not a `.Rd` file. 
+You can fix typos, spelling mistakes, or grammatical errors in the documentation directly using the GitHub web interface, as long as the changes are made in the _source_ file.
+This generally means you'll need to edit [roxygen2 comments](https://roxygen2.r-lib.org/articles/roxygen2.html) in an `.R`, not a `.Rd` file.
 You can find the `.R` file that generates the `.Rd` by reading the comment in the first line of the `.Rd` file in the `/man` directory.
 
 ## Big changes
 
-If you want to make a bigger change, it's a good idea to first file an issue and make sure 
-someone from the team agrees that it’s needed. Any of the following counts as a big change:
+If you want to make a bigger change, it's a good idea to first file an issue and make sure
+someone from the team agrees that it's needed. Any of the following counts as a big change:
 
 ### New features
 
@@ -33,17 +33,43 @@ the suggested changes in the submitted issue for discussion with the team. Use t
 markdown features to (cross)reference lines, highlight suggested deletions/additions, etc.
 
 For new vignettes, please provide an outline of the vignette to be discussed with
-the team first. Since the models in _EpiNow2_ have long run times 
-in most cases, we pre-compile the vignettes before merging. Please follow this guide 
+the team first. Since the models in _EpiNow2_ have long run times
+in most cases, we pre-compile the vignettes before merging. Please follow this guide
 on [how to precompute vignettes or pkgdown articles](https://ropensci.org/blog/2019/12/08/precompute-vignettes/).
 Here is [an example where new pre-compiled vignettes](https://github.com/epiforecasts/EpiNow2/pull/458) were submitted.
 
-### Pull request process
+## Developer dependencies
+
+Some packages are required only for package development tasks
+(e.g., test coverage, pre-commit hooks, creating the hex sticker).
+These are specified in `Config/Needs/dev` in the DESCRIPTION file.
+
+To install all development dependencies including these extra
+packages, use one of:
+
+```r
+# Using pak (recommended)
+pak::pak(".", dependencies = TRUE, upgrade = FALSE)
+
+# Or install just the dev dependencies
+pak::pak(".", dependencies = c("Config/Needs/dev"),
+  upgrade = FALSE)
+
+# Using remotes
+remotes::install_deps(dependencies = TRUE)
+```
+
+Note: `devtools::install_dev_deps()` does not currently support
+Config/Needs fields, so use pak or remotes instead if you need the
+additional developer tools.
+
+## Pull request process
 
 *   Fork the package and clone onto your computer. If you haven't done this before, we recommend using `usethis::create_from_github("epiforecasts/EpiNow2", fork = TRUE)`.
 
-*   Install all development dependences with `devtools::install_dev_deps()`, and then make sure the package passes R CMD check by running `devtools::check()`. 
-    If R CMD check doesn't pass cleanly, it's a good idea to ask for help before continuing. 
+*   Install all development dependencies as described in the "Developer dependencies" section above, and then make sure the package passes R CMD check by running `devtools::check()`.
+    If R CMD check doesn't pass cleanly, it's a good idea to ask for help before continuing.
+
 *   Create a Git branch for your pull request (PR). We recommend using `usethis::pr_init("brief-description-of-change")`.
 
 * We use `pre-commit` to check our changes match our package standards. This is optional but can be enabled using the following steps.
@@ -78,20 +104,20 @@ precommit::use_precommit()
   *   Check that there are no linting issues by running `lintr::lint_package()`.
   *   Run `devtoools::check()` to check for wider package issues like mismatching documentation, etc. (this currently requires a fair bit of time/computation).
   *   (Optional) Turn on continuous integration with Github Actions on your forked repository.
-  
+
 * On a case-by-case basis, you may be asked to increment the package version both in the `NEWS.md` and
 `DESCRIPTION` files. Please do not do this unless you're asked to. We follow the [Tidyverse package versioning guide](https://r-pkgs.org/lifecycle.html). You can run `usethis::use_version()` to automatically
 make the changes for you interactively.
-  
+
 ### Code style
 
-*   New code should follow the tidyverse [style guide](https://style.tidyverse.org). 
-    You can use the [styler](https://CRAN.R-project.org/package=styler) package to apply these styles, but please don't restyle code that has nothing to do with your PR.  
+*   New code should follow the tidyverse [style guide](https://style.tidyverse.org).
+    You can use the [styler](https://CRAN.R-project.org/package=styler) package to apply these styles, but please don't restyle code that has nothing to do with your PR.
 
-*  We use [roxygen2](https://cran.r-project.org/package=roxygen2), with [Markdown syntax](https://cran.r-project.org/web/packages/roxygen2/vignettes/rd-formatting.html), for documentation.  
+*  We use [roxygen2](https://cran.r-project.org/package=roxygen2), with [Markdown syntax](https://cran.r-project.org/web/packages/roxygen2/vignettes/rd-formatting.html), for documentation.
 
-*  We use [testthat](https://cran.r-project.org/package=testthat) for unit tests. 
-   Contributions with test cases included are easier to accept.  
+*  We use [testthat](https://cran.r-project.org/package=testthat) for unit tests.
+   Contributions with test cases included are easier to accept.
 
 ## Code of Conduct
 

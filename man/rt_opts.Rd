@@ -11,12 +11,15 @@ rt_opts(
   use_breakpoints = TRUE,
   future = "latest",
   gp_on = c("R_t-1", "R0"),
-  pop = 0
+  pop = Fixed(0),
+  pop_period = c("forecast", "all"),
+  pop_floor = 1,
+  growth_method = c("infections", "infectiousness")
 )
 }
 \arguments{
-\item{prior}{A \verb{<dist_spec>} giving the prior of the initial reproduciton
-number. Ignored if \code{use_rt} is \code{FALSE}. Defaults to a LogNormal distributin
+\item{prior}{A \verb{<dist_spec>} giving the prior of the initial reproduction
+number. Ignored if \code{use_rt} is \code{FALSE}. Defaults to a LogNormal distribution
 with mean of 1 and standard deviation of 1: \code{LogNormal(mean = 1, sd = 1)}.
 A lower limit of 0 will be enforced automatically.}
 
@@ -42,7 +45,7 @@ to use the latest estimate based on data that is over 50\% complete
 days into the future (or past if negative) past will be used forwards in
 time.}
 
-\item{gp_on}{Character string, defaulting to  "R_t-1". Indicates how the
+\item{gp_on}{Character string, defaulting to "R_t-1". Indicates how the
 Gaussian process, if in use, should be applied to Rt. Currently supported
 options are applying the Gaussian process to the last estimated Rt (i.e
 Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
@@ -50,10 +53,37 @@ Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
 but the method relying on a global mean will revert to this for real time
 estimates, which may not be desirable.}
 
-\item{pop}{Integer, defaults to 0. Susceptible population initially present.
-Used to adjust Rt estimates in the forecast horizon based on the
-proportion of the population that is susceptible. When set to 0 no
-population adjustment is done.}
+\item{pop}{A \verb{<dist_spec>} giving the initial susceptible population size.
+Used to adjust Rt estimates based on the proportion of the population that
+is susceptible. Defaults to \code{Fixed(0)} which means no population adjustment
+is done. See also \code{pop_floor} for the numerical stability floor used when
+population adjustment is enabled.}
+
+\item{pop_period}{Character string, defaulting to "forecast". Controls when
+susceptible population adjustment is applied. "forecast" only applies the
+adjustment to forecasts while "all" applies it to both data and forecasts.
+Note that with "all" and "forecast", Rt estimates are unadjusted for
+susceptible depletion but posterior predictions of infections and reports are
+adjusted.}
+
+\item{pop_floor}{Numeric. Minimum susceptible population used as a
+floor when adjusting for population depletion. This prevents numerical
+instability (division by zero) when the susceptible population approaches
+zero. Defaults to 1.0. Can be interpreted as representing a minimal
+ongoing import level. Note that if pop_floor > 0, cumulative infections
+can exceed the population size, though this effect is negligible when
+pop_floor is very small compared to the population size.}
+
+\item{growth_method}{Method used to compute growth rates from Rt. Options
+are "infections" (default) and "infectiousness". The option "infections"
+uses the classical approach, i.e. computing the log derivative on the number
+of new infections. The option "infectiousness" uses an alternative approach
+by Parag et al., which computes the log derivative of the infectiousness
+(i.e. the convolution of past infections with the generation time) and
+shifts it by the mean generation time. This can provide better stability
+and temporal matching with Rt. Note that, due to the temporal shift the
+"infectiousness" method results in undefined (NaN) growth rates for the most
+recent time points (equal to the mean generation time).}
 }
 \value{
 An \verb{<rt_opts>} object with settings defining the time-varying
@@ -74,4 +104,10 @@ rt_opts(prior = LogNormal(mean = 2, sd = 1))
 
 # add a weekly random walk
 rt_opts(rw = 7)
+}
+\references{
+Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic
+growth rates more informative than reproduction numbers? Journal of the
+Royal Statistical Society: Series A (Statistics in Society) 185, S5–S15
+(2022).
 }

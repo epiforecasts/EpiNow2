@@ -217,3 +217,51 @@ get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
   }
   return(max(round(seeding_time), 1))
 }
+
+#' Get posterior samples from a fitted model
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Extracts posterior samples from a fitted model, combining all parameters
+#' into a single data.table with dates and metadata.
+#'
+#' @param object A fitted model object (e.g., from `estimate_infections()`)
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A `data.table` with columns: date, variable, strat, sample, time,
+#'   value, type. Contains all posterior samples for all parameters.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # After fitting a model
+#' samples <- get_samples(fit)
+#' # Filter to specific parameters
+#' R_samples <- samples[variable == "R"]
+#' }
+get_samples <- function(object, ...) {
+  UseMethod("get_samples")
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.estimate_infections <- function(object, ...) {
+  raw_samples <- extract_samples(object$fit)
+
+  for (arg_name in names(object$args)) {
+    if (!(arg_name %in% names(raw_samples))) {
+      raw_samples[[arg_name]] <- object$args[[arg_name]]
+    }
+  }
+
+  format_samples_with_dates(
+    raw_samples = raw_samples,
+    args = object$args,
+    observations = object$observations
+  )
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.forecast_infections <- function(object, ...) {
+  object$samples
+}

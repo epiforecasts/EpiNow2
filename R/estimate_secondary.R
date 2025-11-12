@@ -240,14 +240,12 @@ estimate_secondary <- function(data,
   # observation model data
   stan_data <- c(stan_data, create_obs_model(obs, dates = reports$date))
 
-  stan_data <- c(stan_data, create_stan_params(
-    frac_obs = obs$scale,
-    dispersion = obs$dispersion,
-    lower_bounds = c(
-      frac_obs = 0,
-      dispersion = 0
-    )
-  ))
+  params <- list(
+    make_param("frac_obs", obs$scale, lower_bound = 0),
+    make_param("dispersion", obs$dispersion, lower_bound = 0)
+  )
+
+  stan_data <- c(stan_data, create_stan_params(params))
 
   # update data to use specified priors rather than defaults
   stan_data <- update_secondary_args(stan_data,
@@ -256,7 +254,7 @@ estimate_secondary <- function(data,
 
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
-    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0))
+    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0)), params
   )
   # fit
   stan_ <- create_stan_args(
@@ -369,7 +367,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #'
 #' @return A `ggplot` object.
 #'
-#' @seealso plot estimate_secondary
+#' @seealso [estimate_secondary()]
 #' @method plot estimate_secondary
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw
@@ -451,7 +449,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' @return A `<data.frame>` containing simulated data in the format required by
 #' [estimate_secondary()].
 #'
-#' @seealso estimate_secondary
+#' @seealso [estimate_secondary()]
 #' @inheritParams secondary_opts
 #' @importFrom data.table as.data.table copy shift
 #' @importFrom purrr pmap_dbl
@@ -619,9 +617,8 @@ forecast_secondary <- function(estimate,
     primary <- primary[, .(date, sample, value)]
   }
   if (inherits(primary, "estimate_infections")) {
-    primary <- data.table::as.data.table(
-      primary$samples[variable == primary_variable]
-    )
+    primary_samples <- get_samples(primary)
+    primary <- primary_samples[variable == primary_variable]
     primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
     primary <- primary[, .(date, sample, value)]
     if (!is.null(samples)) {

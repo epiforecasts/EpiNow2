@@ -19,6 +19,6 @@ Takes the output of \code{\link[=backcalc_opts]{backcalc_opts()}} and converts i
 by stan.
 }
 \seealso{
-backcalc_opts
+\code{\link[=backcalc_opts]{backcalc_opts()}}
 }
 \keyword{internal}

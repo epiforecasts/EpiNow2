@@ -6,9 +6,10 @@
 \usage{
 \method{summary}{estimate_infections}(
   object,
-  type = c("snapshot", "parameters", "samples"),
-  date = NULL,
+  type = c("snapshot", "parameters"),
+  target_date = NULL,
   params = NULL,
+  CrIs = c(0.2, 0.5, 0.9),
   ...
 )
 }
@@ -23,11 +24,15 @@ filtered using \code{params} to show just the parameters of interest and date.
 "samples" similarly returns posterior
 samples.}
 
-\item{date}{A date in the form "yyyy-mm-dd" to inspect estimates for.}
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 
 \item{params}{A character vector of parameters to filter for.}
 
-\item{...}{Pass additional arguments to \code{report_summary}}
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
+
+\item{...}{Pass additional arguments to \code{report_summary} when
+\code{type = "snapshot"}.}
 }
 \value{
 Returns a \verb{<data.frame>} of summary output
@@ -37,5 +42,5 @@ Returns a \verb{<data.frame>} of summary output
 \code{summary} method for class "estimate_infections".
 }
 \seealso{
-summary estimate_infections report_summary
+\code{\link[=summary.epinow]{summary.epinow()}} \code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=report_summary]{report_summary()}}
 }
