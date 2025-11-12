@@ -175,11 +175,6 @@ estimate_truncation <- function(data,
   obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
   obs_data <- as.matrix(obs_data[obs_start:.N])
 
-  # Check that no PMF is longer than the data
-  check_single_np_pmf_lengths(
-    truncation = truncation,
-    data = obs_data
-  )
   # convert to stan list
   stan_data <- list(
     obs = obs_data,
@@ -204,8 +199,9 @@ estimate_truncation <- function(data,
     stan = stan, data = stan_data, init = init_fn, model = "estimate_truncation"
   )
 
-  # Warn if combined non-parametric delays is longer than data
-  check_combined_np_pmf_lengths(stan_args)
+  # Warn if non-parametric delays are longer than data
+  check_np_delay_lengths(stan_args, trunc = truncation)
+
   # fit
   fit <- fit_model(stan_args, id = "estimate_truncation")
 
