@@ -126,7 +126,7 @@ The following tables list all priors available in `{EpiNow2}`, organised by mode
 | **Delays (primary to secondary)** |
 | Parameters | `delay_opts()` | `dist` | `LogNormal(meanlog = Normal(2.5, 0.5), sdlog = Normal(0.47, 0.25), max = 30)` | Time from primary to secondary event |
 | **Observation model** |
-| Scaling | `obs_opts()` | `scale` | `Fixed(1)` | Fraction of primary events leading to secondary (shared parameter with `estimate_infections()`) |
+| Scaling | `obs_opts()` | `scale` | `Fixed(1)` | Fraction of primary events leading to secondary |
 | Overdispersion | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterisation |
 | Day of week | (internal) | (auto) | `Dirichlet(1, ..., 1)` | Turn off via `week_effect = FALSE` |
 
