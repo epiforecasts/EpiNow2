@@ -186,13 +186,6 @@ estimate_secondary <- function(data,
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
-  # Check that no PMF is longer than the data
-  check_single_np_pmf_lengths(
-    truncation = truncation,
-    delays = delays,
-    data = data
-  )
-
   reports <- data.table::as.data.table(data)
 
   reports <- default_fill_missing_obs(reports, obs, "secondary")
@@ -268,8 +261,8 @@ estimate_secondary <- function(data,
     stan = stan, data = stan_data, init = inits, model = "estimate_secondary"
   )
 
-  # Warn if combined non-parametric delays is longer than data
-  check_combined_np_pmf_lengths(stan_)
+  # Warn if non-parametric delays are longer than data
+  check_np_delay_lengths(stan_, delay = delays, trunc = truncation)
 
   fit <- fit_model(stan_, id = "estimate_secondary")
 
