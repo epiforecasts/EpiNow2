@@ -369,7 +369,6 @@ test_that("estimate_secondary runs without PMF warnings when lengths are appropr
           samples = 20
         ),
         verbose = FALSE
-    ),
-    class = "pmf_.*_longer_than_data"
+    )
   )
 })
