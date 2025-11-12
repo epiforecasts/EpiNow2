@@ -239,19 +239,23 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   # Get pop_floor value
   pop_floor_value <- rt$pop_floor
 
-  # Warn if population is smaller than cumulative cases
-  if (rt$pop != Fixed(0) && !is.null(data)) {
+  # Warn if fixed population is smaller than cumulative cases
+  if (rt$pop != Fixed(0) && !is.null(data) &&
+      get_distribution(rt$pop) == "fixed") {
     pop_value <- mean(rt$pop, ignore_uncertainty = TRUE)
     total_cases <- sum(data[!is.na(confirm)]$confirm, na.rm = TRUE)
 
     if (pop_value < total_cases) {
+      # nolint start: duplicate_argument_linter
       cli_warn(
         c(
-          "!" = "Population ({pop_value}) is smaller than cumulative cases ({total_cases}).",
+          "!" = "Population ({pop_value}) is smaller than cumulative cases",
+          "!" = "({total_cases}).",
           "i" = "This suggests the population value is incorrect.",
           "i" = "Consider using the total at-risk population, not a subset."
         )
       )
+      # nolint end
     }
   }
 

@@ -87,3 +87,57 @@ test_that("create_rt_data adjusts breakpoints for horizon", {
 
   expect_equal(result$breakpoints, c(1, 2, 2, 3, 3, 4, 4, 4, 4, 4))
 })
+
+test_that("create_rt_data warns when fixed population is smaller than cumulative cases", {
+  data <- data.table::data.table(
+    date = seq.Date(as.Date("2020-01-01"), by = "day", length.out = 10),
+    confirm = rep(100, 10)
+  )
+
+  # Should warn for fixed population smaller than total cases (1000)
+  expect_warning(
+    create_rt_data(rt_opts(pop = Fixed(500)), data = data),
+    "Population.*is smaller than cumulative cases"
+  )
+
+  # Should not warn for fixed population larger than total cases
+  expect_no_warning(
+    create_rt_data(rt_opts(pop = Fixed(2000)), data = data)
+  )
+})
+
+test_that("create_rt_data does not warn for uncertain population distributions", {
+  data <- data.table::data.table(
+    date = seq.Date(as.Date("2020-01-01"), by = "day", length.out = 10),
+    confirm = rep(100, 10)
+  )
+
+  # Should not warn even if mean is less than total cases (1000)
+  # because with a distribution this is acceptable uncertainty
+  expect_no_warning(
+    create_rt_data(rt_opts(pop = Normal(mean = 500, sd = 100)), data = data)
+  )
+})
+
+test_that("create_rt_data uses pop_period correctly", {
+  # Test that use_pop is set correctly for different pop_period values
+  result_forecast <- create_rt_data(rt_opts(
+    pop = Fixed(1000000),
+    pop_period = "forecast"
+  ))
+  expect_equal(result_forecast$use_pop, 1)
+
+  result_all <- create_rt_data(rt_opts(
+    pop = Fixed(1000000),
+    pop_period = "all"
+  ))
+  expect_equal(result_all$use_pop, 2)
+})
+
+test_that("create_rt_data passes pop_floor correctly", {
+  result <- create_rt_data(rt_opts(
+    pop = Fixed(1000000),
+    pop_floor = 10.0
+  ))
+  expect_equal(result$pop_floor, 10.0)
+})
