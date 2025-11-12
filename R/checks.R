@@ -182,89 +182,79 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 }
 
 
-#' Check and warn if individual non-parametric PMFs are longer than the input
-#' data
+#' Check and warn if individual non-parametric delay PMFs are longer than the
+#' input data
 #'
-#' @param ... Delay distributions
-#' @inheritParams estimate_infections
+#' @param stan_args List of stan arguments including the data element with
+#'   delay information from [create_stan_delays()]
+#' @param ... Named delay distributions (e.g., gt, delay, trunc) used to
+#'   identify which delays are too long
 #' @importFrom cli cli_warn
 #'
 #' @return Called for its side effects
 #' @keywords internal
-check_single_np_pmf_lengths <- function(..., data) {
+check_np_delay_lengths <- function(stan_args, ...) {
   delays <- list(...)
-  flat_delays <- if (length(delays) > 1) {
-    do.call(c, delays)
-  } else {
-    delays
+
+  # Check if there are any non-parametric delays
+  if (is.null(stan_args$data$delay_n_np) || stan_args$data$delay_n_np == 0) {
+    return(invisible())
   }
-  # Track which component each delay came from
-  delay_names <- rep(names(delays), vapply(delays, ndist, numeric(1)))
-  names(flat_delays) <- delay_names
-  # Find the non-parametric distributions
-  np_delays <- which(unname(vapply(
-    flat_delays, function(x) {
-      get_distribution(x) == "nonparametric"
-    }, logical(1)
-  )))
 
-  if (length(np_delays) == 0) return(invisible())
+  # Get the data length
+  data_length <- stan_args$data$t
 
-  # Check lengths and collect info about exceeding PMFs
-  pmf_longer_than_data <- vapply(flat_delays[np_delays], function(x) {
-    length(get_pmf(x)) > nrow(data)
+  # Get the groups array
+  np_pmf_groups <- stan_args$data$delay_np_pmf_groups
+
+  # Calculate individual PMF lengths from the groups
+  n_np <- length(np_pmf_groups) - 1
+  pmf_lengths <- numeric(n_np)
+  for (i in seq_len(n_np)) {
+    pmf_lengths[i] <- np_pmf_groups[i + 1] - np_pmf_groups[i]
+  }
+
+  # Build name mapping: replicate delay names by number of distributions
+  type_n <- vapply(delays, ndist, integer(1))
+  delay_names <- rep(names(delays), type_n)
+
+  # Flatten delays to match the order in stan data
+  if (length(delays) > 1) {
+    flat_delays <- do.call(c, delays)
+  } else {
+    flat_delays <- delays
+  }
+
+  # Find which delays are non-parametric
+  parametric <- vapply(flat_delays, function(x) {
+    get_distribution(x) != "nonparametric"
   }, logical(1))
 
+  # Get parameter names for non-parametric delays
+  np_delay_names <- delay_names[!parametric]
+
+  # Check which PMFs exceed data length
+  pmf_longer_than_data <- pmf_lengths > data_length
+
   if (any(pmf_longer_than_data)) {
-    # nolint start: object_usage_linter
-    # Get details for each long PMF
-    long_pmf_lengths <- vapply(
-      flat_delays[np_delays][pmf_longer_than_data], function(x) {
-        length(get_pmf(x))
-      }, numeric(1)
-    )
-    
+    long_pmf_lengths <- pmf_lengths[pmf_longer_than_data]
+    long_delay_names <- np_delay_names[pmf_longer_than_data]
+
     cli::cli_warn(
       c(
-        "!" = "Non-parametric PMFs are longer than the input data.",
-        "{.var {names(long_pmf_lengths)}} {?has/have} length{?s}
+        "!" = "Non-parametric delay distributions are longer than the input
+        data.",
+        "{.var {long_delay_names}} {?has/have} length{?s}
         {.val {long_pmf_lengths}} but data has
-        {.val {nrow(data)}} rows.",
+        {.val {data_length}} rows.",
         "i" = "These will be trimmed to match the data length. To avoid this,
         ensure PMFs have the same length as the data."
       ),
       .frequency = "once",
       .frequency_id = "pmf_individual_longer_than_data"
     )
-    # nolint end
   }
+
+  return(invisible())
 }
 
-#' Check and warn if combined non-parametric delay distributions are longer
-#' than the input data
-#'
-#' @param stan_args List of stan argument data
-#' @importFrom cli cli_warn
-#' @return Called for its side effects
-#' @keywords internal
-check_combined_np_pmf_lengths <- function(stan_args) {
-  delay_np_pmf_length <- stan_args$data$delay_np_pmf_length
-  data_length <- stan_args$data$t
-  # Combined non-parametric delay must not be longer than the data
-  if (!is.null(delay_np_pmf_length) && delay_np_pmf_length > data_length) {
-    # nolint start: duplicate_argument_linter
-    cli::cli_warn(
-      c(
-        "!" = "The combined non-parametric delays PMF is longer than the data.",
-        "i" = "This occurs when individual delay distributions are longer than
-        the data.",
-        "i" = "The combined delays will be trimmed to match the number of rows
-        in the data. To remove this message, ensure the combined PMFs have the
-        same length as the data."
-      ),
-      .frequency = "once",
-      .frequency_id = "pmf_combined_longer_than_data"
-    )
-    # nolint end
-  }
-}
