@@ -1032,7 +1032,7 @@ stan_opts <- function(object = NULL,
     if (inherits(object, "stanmodel")) {
       opts <- c(opts, backend = "rstan")
     } else if (inherits(object, "CmdStanModel")) {
-      opts <- c(opts, backend = "rstan")
+      opts <- c(opts, backend = "cmdstanr")
     } else {
       cli_abort(
         c(
