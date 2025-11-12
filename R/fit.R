@@ -32,7 +32,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   args$future <- NULL
 
   # The sampler parameters depend on the backend and model.
-  sampler_logging_vars <- create_logging_sampler_values(args)
+  sampler_logging_vars <- create_sampler_logging_vars(args)
   horizon_var <- ifelse(
     is.null(args$data$horizon),
     NA_character_,
@@ -325,7 +325,7 @@ fit_model <- function(args, id = "stan") {
 #'   - warmup_iterations: Number of warmup iterations
 #'
 #' @keywords internal
-create_logging_sampler_values <- function(args) {
+create_sampler_logging_vars <- function(args) {
   # Calculate parameters based on backend
   if (args$backend == "cmdstanr") {
     list(
