@@ -1,6 +1,3 @@
-# Setup for testing logging features
-futile.logger::flog.threshold("FATAL")
-
 # Set up arguments for cmdstanr and rstan
 args_cmdstanr <- list(
   backend = "cmdstanr",
