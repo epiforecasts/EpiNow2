@@ -284,7 +284,6 @@ test_that("estimate_secondary warns when delay PMF exceeds data length", {
   long_delay <- NonParametric(rep(0.1/9, 10))  # length 10
   
   expect_warning(
-    suppressWarnings(
       estimate_secondary(
         data = secondary_data,
         delays = delay_opts(long_delay),
@@ -298,8 +297,6 @@ test_that("estimate_secondary warns when delay PMF exceeds data length", {
           samples = 20
         ),
         verbose = FALSE
-      ),
-      classes = "pmf_combined_longer_than_data"
     ),
     "Non-parametric PMFs are longer than the input data"
   )
@@ -323,7 +320,6 @@ test_that("estimate_secondary warns when combined delay PMFs exceed data length"
   delay2 <- NonParametric(rep(0.2, 5))  # length 5
   
   expect_warning(
-    suppressWarnings(
       estimate_secondary(
         data = secondary_data,
         delays = delay_opts(delay1 + delay2),
@@ -337,8 +333,6 @@ test_that("estimate_secondary warns when combined delay PMFs exceed data length"
           samples = 20
         ),
         verbose = FALSE
-      ),
-      classes = "pmf_individual_longer_than_data"
     ),
     "The combined non-parametric delays PMF is longer"
   )
@@ -362,7 +356,6 @@ test_that("estimate_secondary runs without PMF warnings when lengths are appropr
   
   # Should not produce PMF length warnings
   expect_no_warning(
-    suppressWarnings(
       estimate_secondary(
         data = secondary_data,
         delays = delay_opts(short_delay),
@@ -376,11 +369,6 @@ test_that("estimate_secondary runs without PMF warnings when lengths are appropr
           samples = 20
         ),
         verbose = FALSE
-      ),
-      classes = c(
-        "epinow2_uncertain_tail",
-        "epinow2_sparse_pmf_tail"
-      )
     ),
     class = "pmf_.*_longer_than_data"
   )

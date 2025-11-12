@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Rscript:*)",
+      "Bash(git stash:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(NOT_CRAN=true Rscript:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

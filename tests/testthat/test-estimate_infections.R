@@ -285,11 +285,6 @@ test_that("estimate_infections warns when individual generation time PMF exceeds
         ),
         verbose = FALSE
       ),
-      classes = c(
-        "pmf_combined_longer_than_data",
-        "epinow2_maxgt_gt_seeding"
-      )
-    ),
     "Non-parametric PMFs are longer than the input data"
   )
 })
@@ -304,7 +299,6 @@ test_that("estimate_infections warns when individual delay PMF exceeds data leng
   long_delay <- NonParametric(rep(0.1/9, 10))  # length 10
   
   expect_warning(
-    suppressWarnings(
       estimate_infections(
         data = short_data,
         generation_time = gt_opts(Fixed(1)),
@@ -316,8 +310,6 @@ test_that("estimate_infections warns when individual delay PMF exceeds data leng
           control = list(adapt_delta = 0.8)
         ),
         verbose = FALSE
-      ),
-      classes = "pmf_combined_longer_than_data"
     ),
     "Non-parametric PMFs are longer than the input data"
   )
@@ -335,7 +327,6 @@ test_that("estimate_infections warns when combined delay PMFs exceed data length
   
   # Combined length (5 + 5 - 1 = 9) exceeds data (8 rows)
   expect_warning(
-    suppressWarnings(
       estimate_infections(
         data = short_data,
         generation_time = gt_opts(gen_time_np),
@@ -347,8 +338,6 @@ test_that("estimate_infections warns when combined delay PMFs exceed data length
           control = list(adapt_delta = 0.8)
         ),
         verbose = FALSE
-      ),
-      classes = "pmf_individual_longer_than_data"
     ),
     "The combined non-parametric delays PMF is longer"
   )
@@ -365,7 +354,6 @@ test_that("estimate_infections runs without PMF warnings when lengths are approp
   
   # Should not produce PMF length warnings
   expect_no_warning(
-    suppressWarnings(
       estimate_infections(
         data = data,
         generation_time = gt_opts(short_gen_time),
@@ -377,13 +365,6 @@ test_that("estimate_infections runs without PMF warnings when lengths are approp
         ),
         verbose = FALSE
       ),
-      classes = c(
-        "epinow2_maxgt_gt_seeding",
-        "epinow2_uncertain_tail",
-        "epinow2_sparse_pmf_tail"
-      )
-    ),
-    class = "pmf_.*_longer_than_data"
   )
 })
 
@@ -397,7 +378,6 @@ test_that("estimate_infections warns for multiple long nonparametric PMFs", {
   long_delay <- NonParametric(rep(0.1/11, 12))  # length 12
   
   expect_warning(
-    suppressWarnings(
       estimate_infections(
         data = short_data,
         generation_time = gt_opts(long_gen_time),
@@ -409,8 +389,6 @@ test_that("estimate_infections warns for multiple long nonparametric PMFs", {
         ),
         verbose = FALSE
       ),
-      classes = "pmf_combined_longer_than_data"
-    ),
     "Non-parametric PMFs are longer than the input data"
   )
 })
@@ -424,7 +402,6 @@ test_that("estimate_infections handles truncation PMF length check", {
   long_trunc <- NonParametric(rep(0.1/9, 10))  # length 10
   
   expect_warning(
-    suppressWarnings(
       estimate_infections(
         data = short_data,
         generation_time = gt_opts(Fixed(1)),
@@ -437,8 +414,6 @@ test_that("estimate_infections handles truncation PMF length check", {
         ),
         verbose = FALSE
       ),
-      classes = "pmf_combined_longer_than_data"
-    ),
     "Non-parametric PMFs are longer than the input data"
   )
 })

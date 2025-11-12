@@ -95,7 +95,6 @@ test_that("estimate_truncation warns when truncation PMF exceeds data length", {
   long_trunc <- NonParametric(rep(0.1/9, 10))  # length 10
   
   expect_warning(
-    suppressWarnings(
       estimate_truncation(
         data = trunc_data,
         truncation = trunc_opts(long_trunc),
@@ -105,8 +104,6 @@ test_that("estimate_truncation warns when truncation PMF exceeds data length", {
           samples = 20
         ),
         verbose = FALSE
-      ),
-      classes = "pmf_combined_longer_than_data"
     ),
     "Non-parametric PMFs are longer than the input data"
   )
@@ -123,7 +120,6 @@ test_that("estimate_truncation runs without PMF warnings when lengths are approp
   
   # Should not produce PMF length warnings
   expect_no_warning(
-    suppressWarnings(
       estimate_truncation(
         data = trunc_data,
         truncation = trunc_opts(short_trunc),
@@ -133,13 +129,7 @@ test_that("estimate_truncation runs without PMF warnings when lengths are approp
           samples = 20
         ),
         verbose = FALSE
-      ),
-      classes = c(
-        "epinow2_uncertain_tail",
-        "epinow2_sparse_pmf_tail"
       )
-    ),
-    class = "pmf_.*_longer_than_data"
   )
 })
 
@@ -154,7 +144,6 @@ test_that("estimate_truncation warns for combined truncation and delay PMFs exce
   delay_pmf <- NonParametric(rep(0.2, 5))  # length 5
   
   expect_warning(
-    suppressWarnings(
       estimate_truncation(
         data = trunc_data,
         truncation = trunc_opts(trunc_pmf + delay_pmf),
@@ -164,8 +153,6 @@ test_that("estimate_truncation warns for combined truncation and delay PMFs exce
           samples = 20
         ),
         verbose = FALSE
-      ),
-      classes = "pmf_individual_longer_than_data"
     ),
     "The combined non-parametric delays PMF is longer"
   )
