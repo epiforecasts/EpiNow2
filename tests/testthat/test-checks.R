@@ -168,8 +168,6 @@ very_long_pmf <- NonParametric(c(0, rep(0.05/24, 24)))  # length 25, first eleme
 gamma_dist <- Gamma(shape = 2, rate = 1, max = 10)
 lognormal_dist <- LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
 
-# Test check_single_np_pmf_lengths -----------------------------------------
-
 test_that("check_single_np_pmf_lengths returns invisibly when no nonparametric distributions", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with only parametric distributions
@@ -255,8 +253,6 @@ test_that("check_single_np_pmf_lengths works with single distribution", {
   )
 })
 
-# Test check_combined_np_pmf_lengths ---------------------------------------
-
 test_that("check_combined_np_pmf_lengths returns invisibly when delay_np_pmf_length <= data_length", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with equal lengths
@@ -307,8 +303,6 @@ test_that("check_combined_np_pmf_lengths warns with correct length information",
     "The combined non-parametric delays PMF is longer than the data"
   )
 })
-
-# Edge cases and error handling --------------------------------------------
 
 test_that("check_single_np_pmf_lengths handles empty data gracefully", {
   rlang::local_options(rlib_warning_verbosity = "verbose")

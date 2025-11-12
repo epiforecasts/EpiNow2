@@ -85,8 +85,6 @@ test_that("estimate_truncation works with zero_threshold set", {
   expect_s3_class(out$dist, "dist_spec")
 })
 
-# Integration tests for PMF length checks ---------------------------------
-
 test_that("estimate_truncation warns when truncation PMF exceeds data length", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   

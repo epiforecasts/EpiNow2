@@ -263,8 +263,6 @@ test_that("extract_parameter_samples is deprecated", {
   expect_equal(old_quiet, new_output)
 })
 
-# Integration tests for PMF length checks ---------------------------------
-
 test_that("estimate_infections warns when individual generation time PMF exceeds data length", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   
@@ -273,10 +271,8 @@ test_that("estimate_infections warns when individual generation time PMF exceeds
   
   # Create a long nonparametric PMF (longer than data)
   long_gen_time <- NonParametric(c(0, rep(0.1/9, 9)))  # length 10
-  
-  # Call estimate_infections - should trigger check_single_np_pmf_lengths
+
   expect_warning(
-    suppressWarnings(
       estimate_infections(
         data = short_data,
         generation_time = gt_opts(long_gen_time),

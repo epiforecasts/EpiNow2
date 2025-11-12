@@ -267,8 +267,6 @@ test_that("estimate_secondary works with zero_threshold set", {
   expect_named(out, c("predictions", "posterior", "data", "fit"))
 })
 
-# Integration tests for PMF length checks ---------------------------------
-
 test_that("estimate_secondary warns when delay PMF exceeds data length", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   
