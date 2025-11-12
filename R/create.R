@@ -168,7 +168,11 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' breakpoints.
 #'
 #' @param horizon Numeric, forecast horizon.
-#' @importFrom cli cli_abort
+#'
+#' @param data A `data.table` of case data (optional). Used for validation
+#' checks.
+#'
+#' @importFrom cli cli_abort cli_warn
 #'
 #' @seealso [rt_opts()]
 #' @return A list of settings defining the time-varying reproduction number
@@ -189,7 +193,7 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' create_rt_data(rt_opts(rw = 7), breakpoints = rep(1, 10))
 #' }
 create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
-                           delay = 0, horizon = 0) {
+                           delay = 0, horizon = 0, data = NULL) {
   # Define if GP is on or off
   if (is.null(rt)) {
     rt <- rt_opts(
@@ -232,6 +236,25 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   # add a shift for 0 effect in breakpoints
   breakpoints <- breakpoints + 1
 
+  # Get pop_floor value
+  pop_floor_value <- rt$pop_floor
+
+  # Warn if population is smaller than cumulative cases
+  if (rt$pop != Fixed(0) && !is.null(data)) {
+    pop_value <- mean(rt$pop, ignore_max = TRUE)
+    total_cases <- sum(data[!is.na(confirm)]$confirm, na.rm = TRUE)
+
+    if (pop_value < total_cases) {
+      cli_warn(
+        c(
+          "!" = "Population ({pop_value}) is smaller than cumulative cases ({total_cases}).",
+          "i" = "This suggests the population value is incorrect.",
+          "i" = "Consider using the total at-risk population, not a subset."
+        )
+      )
+    }
+  }
+
   # map settings to underlying gp stan requirements
   rt_data <- list(
     estimate_r = as.numeric(rt$use_rt),
@@ -239,7 +262,9 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     breakpoints = breakpoints,
     future_fixed = as.numeric(future_rt$fixed),
     fixed_from = future_rt$from,
-    pop = rt$pop,
+    use_pop =
+      as.integer(rt$pop != Fixed(0)) + as.integer(rt$pop_period == "all"),
+    pop_floor = pop_floor_value,
     stationary = as.numeric(rt$gp_on == "R0"),
     future_time = horizon - future_rt$from,
     growth_method = list(
@@ -458,7 +483,8 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
     stan_data,
     create_rt_data(rt,
       breakpoints = cases$breakpoint,
-      delay = stan_data$seeding_time, horizon = stan_data$horizon
+      delay = stan_data$seeding_time, horizon = stan_data$horizon,
+      data = data
     )
   )
   # backcalculation settings
@@ -842,4 +868,78 @@ create_stan_params <- function(params) {
     names(ids) <- paste("param_id", tparams$name, sep = "_")
   }
   c(ret, as.list(ids), as.list(null_ids))
+}
+
+#' Create summary output from infection estimation objects
+#'
+#' @description `r lifecycle::badge("stable")`
+#'
+#' This function creates summary output from infection estimation objects
+#' (either `estimate_infections` or `forecast_infections`). It is used
+#' internally by [summary.estimate_infections()] and
+#' [summary.forecast_infections()] to provide a consistent summary interface.
+#'
+#' @param object An infection estimation object (either from
+#'   [estimate_infections()] or [forecast_infections()]).
+#'
+#' @param type A character vector of data types to return. Defaults to
+#'   "snapshot" but also supports "parameters". "snapshot" returns
+#'   a summary at a given date (by default the latest date informed by data).
+#'   "parameters" returns summarised parameter estimates that can be further
+#'   filtered using `params` to show just the parameters of interest and date.
+#'
+#' @inheritParams summary.estimate_infections
+#'
+#' @param CrIs Numeric vector of credible intervals to calculate. Defaults
+#'   to c(0.2, 0.5, 0.9).
+#'
+#' @param ... Additional arguments passed to [report_summary()].
+#'
+#' @return A `<data.frame>` of summary output, either a snapshot summary
+#'   (via [report_summary()]) or parameter summaries (via
+#'   [calc_summary_measures()]).
+#'
+#' @importFrom rlang arg_match
+#' @seealso [summary.estimate_infections()] [summary.forecast_infections()]
+#'   [report_summary()] [calc_summary_measures()]
+#' @keywords internal
+create_infection_summary <- function(object,
+                                     type = c("snapshot", "parameters"),
+                                     target_date = NULL, params = NULL,
+                                     CrIs = c(0.2, 0.5, 0.9), ...) {
+  type <- arg_match(type)
+
+  if (is.null(target_date)) {
+    target_date <- max(object$observations$date)
+  } else {
+    target_date <- as.Date(target_date)
+  }
+
+  samples <- get_samples(object)
+
+  summarised <- calc_summary_measures(
+    samples,
+    summarise_by = c("date", "variable", "strat", "type"),
+    order_by = c("variable", "date"),
+    CrIs = CrIs
+  )
+
+  if (type == "snapshot") {
+    out <- report_summary(
+      summarised_estimates = summarised[date == target_date],
+      rt_samples = samples[variable == "R"][
+        date == target_date, .(sample, value)
+      ],
+      ...
+    )
+  } else if (type == "parameters") {
+    out <- summarised
+    if (!is.null(target_date)) {
+      out <- out[date == target_date]
+    }
+    if (!is.null(params)) {
+      out <- out[variable %in% params]
+    }
+  }
+  out[]
 }

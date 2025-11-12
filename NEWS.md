@@ -14,11 +14,14 @@
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
   - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
   - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
+- `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
+- `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
 
 ## Model changes
 
 - MCMC runs are now initialised with parameter values drawn from a distribution that approximates their prior distributions.
 - Added an option to compute growth rates using an estimator by Parag et al. (2022) based on total infectiousness rather than new infections, see `growth_method` argument in rt_opts().
+- Added support for fitting the susceptible population size.
 
 ## Bug fixes
 
@@ -66,7 +69,7 @@ Internal changes should improve performance, reduce the number of failing fits, 
     fill_missing(missing = "accumulate", initial_accumulate = 7) |>
     estimate_infections()
   ```
-
+  
 - A bug was fixed where the initial growth was never estimated (i.e. the prior mean was always zero). By @sbfnk in #853 and reviewed by @seabbs.
 - A bug was fixed where an internal function for applying a default cdf cutoff failed due to a difference a vector length issue. By @jamesmbaazam in #858 and reviewed by @sbfnk.
 - All parameters have been changed to the new parameter interface. By @sbfnk in #871 and #890 and reviewed by @seabbs.
