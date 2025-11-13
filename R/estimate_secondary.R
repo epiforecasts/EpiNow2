@@ -262,7 +262,7 @@ estimate_secondary <- function(data,
   )
 
   # Warn if non-parametric delays are longer than data
-  check_np_delay_lengths(stan_, delay = delays, trunc = truncation)
+  check_np_delay_lengths(stan_, data_length = nrow(data))
 
   fit <- fit_model(stan_, id = "estimate_secondary")
 

@@ -279,12 +279,7 @@ estimate_infections <- function(data,
   )
 
   # Warn if non-parametric delays are longer than data
-  check_np_delay_lengths(
-    stan_args,
-    gt = generation_time,
-    delay = delays,
-    trunc = truncation
-  )
+  check_np_delay_lengths(stan_args, data_length = nrow(data))
 
   # Fit model
   fit <- fit_model(stan_args, id = id)

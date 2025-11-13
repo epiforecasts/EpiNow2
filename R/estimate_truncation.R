@@ -200,7 +200,7 @@ estimate_truncation <- function(data,
   )
 
   # Warn if non-parametric delays are longer than data
-  check_np_delay_lengths(stan_args, trunc = truncation)
+  check_np_delay_lengths(stan_args, data_length = nrow(obs))
 
   # fit
   fit <- fit_model(stan_args, id = "estimate_truncation")
