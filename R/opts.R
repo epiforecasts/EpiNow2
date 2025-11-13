@@ -1056,7 +1056,7 @@ stan_opts <- function(object = NULL,
       opts, stan_vb_opts(samples = samples, ...)
     ),
     laplace = c(
-      opts, stan_laplace_opts(backend = backend,...)
+      opts, stan_laplace_opts(backend = backend, ...)
     ),
     pathfinder = c(
       opts, stan_pathfinder_opts(samples = samples, backend = backend, ...)
