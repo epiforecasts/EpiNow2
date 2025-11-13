@@ -332,6 +332,11 @@ get_predictions.estimate_infections <- function(object,
 get_predictions.estimate_secondary <- function(object,
                                                CrIs = c(0.2, 0.5, 0.9),
                                                ...) {
+  # Handle forecast_secondary objects (old structure with $predictions)
+  if (!is.null(object$predictions) && is.null(object$fit)) {
+    return(object$predictions)
+  }
+
   # Extract predictions from the fit
   predictions <- extract_stan_param(object$fit, "sim_secondary", CrIs = CrIs)
   predictions <- predictions[, lapply(.SD, round, 1)]
