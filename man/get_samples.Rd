@@ -5,6 +5,7 @@
 \alias{get_samples.estimate_infections}
 \alias{get_samples.forecast_infections}
 \alias{get_samples.estimate_secondary}
+\alias{get_samples.forecast_secondary}
 \title{Get posterior samples from a fitted model}
 \usage{
 get_samples(object, ...)
@@ -14,6 +15,8 @@ get_samples(object, ...)
 \method{get_samples}{forecast_infections}(object, ...)
 
 \method{get_samples}{estimate_secondary}(object, ...)
+
+\method{get_samples}{forecast_secondary}(object, ...)
 }
 \arguments{
 \item{object}{A fitted model object (e.g., from \code{estimate_infections()})}

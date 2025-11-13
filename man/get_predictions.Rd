@@ -4,6 +4,7 @@
 \alias{get_predictions}
 \alias{get_predictions.estimate_infections}
 \alias{get_predictions.estimate_secondary}
+\alias{get_predictions.forecast_secondary}
 \title{Get predictions from a fitted model}
 \usage{
 get_predictions(object, ...)
@@ -11,6 +12,8 @@ get_predictions(object, ...)
 \method{get_predictions}{estimate_infections}(object, CrIs = c(0.2, 0.5, 0.9), ...)
 
 \method{get_predictions}{estimate_secondary}(object, CrIs = c(0.2, 0.5, 0.9), ...)
+
+\method{get_predictions}{forecast_secondary}(object, ...)
 }
 \arguments{
 \item{object}{A fitted model object (e.g., from \code{estimate_infections()} or
