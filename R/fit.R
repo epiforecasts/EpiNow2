@@ -185,7 +185,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   method <- args$method
   args$method <- NULL
   ## The sampler parameters depend on the backend and model.
-  sampler_logging_vars <- create_logging_sampler_values(args)
+  sampler_logging_vars <- create_sampler_logging_vars(args)
   horizon_var <- ifelse(
     is.null(args$data$horizon),
     NA_character_,
