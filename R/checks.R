@@ -187,74 +187,34 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 #'
 #' @param stan_args List of stan arguments including the data element with
 #'   delay information from [create_stan_delays()]
-#' @param ... Named delay distributions (e.g., gt, delay, trunc) used to
-#'   identify which delays are too long
+#'  @param data_length Length of original data
 #' @importFrom cli cli_warn
 #'
 #' @return Called for its side effects
 #' @keywords internal
-check_np_delay_lengths <- function(stan_args, ...) {
-  delays <- list(...)
-
+check_np_delay_lengths <- function(stan_args, data_length) {
   # Check if there are any non-parametric delays
   if (is.null(stan_args$data$delay_n_np) || stan_args$data$delay_n_np == 0) {
     return(invisible())
   }
 
-  # Get the data length
-  data_length <- stan_args$data$t
-
-  # Get the groups array
-  np_pmf_groups <- stan_args$data$delay_np_pmf_groups
-
-  # Calculate individual PMF lengths from the groups
-  n_np <- length(np_pmf_groups) - 1
-  pmf_lengths <- numeric(n_np)
-  for (i in seq_len(n_np)) {
-    pmf_lengths[i] <- np_pmf_groups[i + 1] - np_pmf_groups[i]
-  }
-
-  # Build name mapping: replicate delay names by number of distributions
-  type_n <- vapply(delays, ndist, integer(1))
-  delay_names <- rep(names(delays), type_n)
-
-  # Flatten delays to match the order in stan data
-  if (length(delays) > 1) {
-    flat_delays <- do.call(c, delays)
-  } else {
-    flat_delays <- delays
-  }
-
-  # Find which delays are non-parametric
-  parametric <- vapply(flat_delays, function(x) {
-    get_distribution(x) != "nonparametric"
-  }, logical(1))
-
-  # Get parameter names for non-parametric delays
-  np_delay_names <- delay_names[!parametric]
-
+  # Calculate individual PMF lengths from the indices
+  np_pmf_lengths <- diff(stan_args$data$delay_np_pmf_groups)
   # Check which PMFs exceed data length
-  pmf_longer_than_data <- pmf_lengths > data_length
+  pmf_longer_than_data <- np_pmf_lengths > data_length
 
   if (any(pmf_longer_than_data)) {
-    long_pmf_lengths <- pmf_lengths[pmf_longer_than_data]
-    long_delay_names <- np_delay_names[pmf_longer_than_data]
-
     cli::cli_warn(
       c(
-        "!" = "Non-parametric delay distributions are longer than the input
-        data.",
-        "{.var {long_delay_names}} {?has/have} length{?s}
-        {.val {long_pmf_lengths}} but data has
-        {.val {data_length}} rows.",
-        "i" = "These will be trimmed to match the data length. To avoid this,
-        ensure PMFs have the same length as the data."
+        "!" = "Some supplied non-parametric delay distributions are longer
+        than the input data.",
+        "i" = "These will be trimmed to match the input data length. To
+        remove this warning, ensure that supplied non-parametric PMFs are
+        the same length or shorter than the input data."
       ),
       .frequency = "once",
       .frequency_id = "pmf_individual_longer_than_data"
     )
   }
-
-  return(invisible())
 }
 
