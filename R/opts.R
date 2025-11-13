@@ -1050,16 +1050,16 @@ stan_opts <- function(object = NULL,
   ))
   opts <- switch(method,
     sampling = c(
-      opts, stan_sampling_opts(samples = samples, ...)
+      opts, stan_sampling_opts(samples = samples, backend = backend, ...)
     ),
     vb = c(
       opts, stan_vb_opts(samples = samples, ...)
     ),
     laplace = c(
-      opts, stan_laplace_opts(...)
+      opts, stan_laplace_opts(backend = backend,...)
     ),
     pathfinder = c(
-      opts, stan_pathfinder_opts(samples = samples, ...)
+      opts, stan_pathfinder_opts(samples = samples, backend = backend, ...)
     )
   )
 
