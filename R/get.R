@@ -302,8 +302,8 @@ get_predictions <- function(object, ...) {
 #' @rdname get_predictions
 #' @export
 get_predictions.estimate_infections <- function(object,
-                                                 CrIs = c(0.2, 0.5, 0.9),
-                                                 ...) {
+                                                CrIs = c(0.2, 0.5, 0.9),
+                                                ...) {
   # Get samples for reported cases
   samples <- get_samples(object)
   reported_samples <- samples[variable == "reported_cases"]
@@ -330,8 +330,8 @@ get_predictions.estimate_infections <- function(object,
 #' @rdname get_predictions
 #' @export
 get_predictions.estimate_secondary <- function(object,
-                                                CrIs = c(0.2, 0.5, 0.9),
-                                                ...) {
+                                               CrIs = c(0.2, 0.5, 0.9),
+                                               ...) {
   # Extract predictions from the fit
   predictions <- extract_stan_param(object$fit, "sim_secondary", CrIs = CrIs)
   predictions <- predictions[, lapply(.SD, round, 1)]
