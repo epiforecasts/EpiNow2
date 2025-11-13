@@ -52,6 +52,8 @@ navbar:
       menu:
       - text: Workflow for Rt estimation and forecasting
         href: articles/estimate_infections_workflow.html
+      - text: Prior choice and specification guide
+        href: articles/prior_choice_guide.html
       - text: "Examples: estimate_infections()"
         href: articles/estimate_infections_options.html
       - text: Using epinow() for running in production mode
