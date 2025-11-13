@@ -924,11 +924,9 @@ summary.estimate_secondary <- function(object,
     # params (scaling factors)
     key_vars <- c("delay_params", "params", "frac_obs")
     out <- out[grepl(paste(key_vars, collapse = "|"), variable)]
-  } else if (type == "parameters") {
+  } else if (type == "parameters" && !is.null(params)) {
     # Optional filtering by parameter name
-    if (!is.null(params)) {
-      out <- out[variable %in% params]
-    }
+    out <- out[variable %in% params]
   }
 
   return(out[])
