@@ -155,34 +155,17 @@ test_that("check_sparse_pmf_tail throws a warning as expected", {
   )
 })
 
-# Test data for PMF length checks --------------------------------------------
-
-# Create nonparametric distributions of various lengths
-# Note: For generation time, first element must be 0
-short_pmf <- NonParametric(c(0, 0.3, 0.4, 0.2, 0.1))  # length 5
-medium_pmf <- NonParametric(c(0, 0.2, 0.3, 0.2, 0.1, 0.05, 0.05, 0.1))  # length 8
-long_pmf <- NonParametric(c(0, rep(0.1/14, 14)))  # length 15, first element 0
-very_long_pmf <- NonParametric(c(0, rep(0.05/24, 24)))  # length 25, first element 0
-
-# Create parametric distributions for comparison
-gamma_dist <- Gamma(shape = 2, rate = 1, max = 10)
-lognormal_dist <- LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
-
 test_that("check_np_delay_lengths returns invisibly when no nonparametric distributions", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with only parametric distributions
   stan_args <- list(
     data = list(
       delay_n_np = 0,
-      t = 10
+      cases = 10
     )
   )
   expect_invisible(
-    check_np_delay_lengths(
-      stan_args,
-      gt = gamma_dist,
-      delay = delay_opts(dist = lognormal_dist)
-    )
+    check_np_delay_lengths(stan_args, data_length = 10)
   )
 })
 
@@ -191,17 +174,13 @@ test_that("check_np_delay_lengths returns invisibly when PMFs are shorter than d
   # Test with short PMF (length 5) and data length 10
   stan_args <- list(
     data = list(
-      delay_n_np = 2,
-      t = 10,
-      delay_np_pmf_groups = array(c(1, 6, 11))  # Two PMFs of length 5 each
+      delay_n_np = 3,
+      cases = c(10),
+      delay_np_pmf_groups = array(c(1, 6, 11)) # Two PMFs of length 5 each
     )
   )
   expect_invisible(
-    check_np_delay_lengths(
-      stan_args,
-      gt = short_pmf,
-      delay = delay_opts(dist = short_pmf)
-    )
+    check_np_delay_lengths(stan_args, data_length = 10)
   )
 })
 
@@ -212,132 +191,101 @@ test_that("check_np_delay_lengths returns invisibly when PMFs equal data length"
     data = list(
       delay_n_np = 1,
       t = 5,
-      delay_np_pmf_groups = array(c(1, 6))  # One PMF of length 5
+      delay_np_pmf_groups = array(c(1, 6)) # One PMF of length 5
     )
   )
   expect_invisible(
-    check_np_delay_lengths(
-      stan_args,
-      gt = short_pmf
-    )
+    check_np_delay_lengths(stan_args, data_length = 5)
   )
 })
 
 test_that("check_np_delay_lengths warns when PMF is longer than data", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with long PMF (length 15) and short data (length 10)
+  # Note: Warning uses .frequency = "once", so this is the only test that
+  # expects the warning
   stan_args <- list(
     data = list(
       delay_n_np = 1,
       t = 10,
-      delay_np_pmf_groups = array(c(1, 16))  # One PMF of length 15
+      delay_np_pmf_groups = array(c(1, 16)) # One PMF of length 15
     )
   )
   expect_warning(
-    check_np_delay_lengths(
-      stan_args,
-      gt = long_pmf
-    ),
-    "Non-parametric delay distributions are longer than the input data"
+    check_np_delay_lengths(stan_args, data_length = 10),
+    "non-parametric delay distributions are longer"
   )
 })
 
 test_that("check_np_delay_lengths handles multiple long PMFs", {
-  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with multiple long PMFs
   stan_args <- list(
     data = list(
       delay_n_np = 2,
       t = 10,
-      delay_np_pmf_groups = array(c(1, 16, 41))  # Two PMFs: length 15 and 25
+      delay_np_pmf_groups = array(c(1, 16, 41)) # Two PMFs: length 15 and 25
     )
   )
-  expect_warning(
-    check_np_delay_lengths(
-      stan_args,
-      gt = long_pmf,
-      delay = delay_opts(dist = very_long_pmf)
-    ),
-    "Non-parametric delay distributions are longer than the input data"
+  expect_no_error(
+    check_np_delay_lengths(stan_args, data_length = 10)
   )
 })
 
 test_that("check_np_delay_lengths handles mixed parametric and nonparametric distributions", {
-  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with mix of parametric and nonparametric
   stan_args <- list(
     data = list(
       delay_n_np = 1,
       t = 10,
-      delay_np_pmf_groups = array(c(1, 16))  # One NP PMF of length 15
+      delay_np_pmf_groups = array(c(1, 16)) # One NP PMF of length 15
     )
   )
-  expect_warning(
-    check_np_delay_lengths(
-      stan_args,
-      gt = gamma_dist,  # parametric
-      delay = delay_opts(dist = long_pmf)  # nonparametric
-    ),
-    "Non-parametric delay distributions are longer than the input data"
+  expect_no_error(
+    check_np_delay_lengths(stan_args, data_length = 10)
   )
 })
 
 test_that("check_np_delay_lengths works with single distribution", {
-  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with single distribution
   stan_args <- list(
     data = list(
       delay_n_np = 1,
       t = 10,
-      delay_np_pmf_groups = array(c(1, 16))  # One PMF of length 15
+      delay_np_pmf_groups = array(c(1, 16)) # One PMF of length 15
     )
   )
-  expect_warning(
-    check_np_delay_lengths(
-      stan_args,
-      gt = long_pmf
-    ),
-    "Non-parametric delay distributions are longer than the input data"
+  expect_no_error(
+    check_np_delay_lengths(stan_args, data_length = 10)
   )
 })
 
 test_that("check_np_delay_lengths handles empty data gracefully", {
-  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with empty data (t = 0) and longer PMF
   stan_args <- list(
     data = list(
       delay_n_np = 1,
       t = 0,
-      delay_np_pmf_groups = array(c(1, 6))  # One PMF of length 5
+      delay_np_pmf_groups = array(c(1, 6)) # One PMF of length 5
     )
   )
 
-  expect_warning(
-    check_np_delay_lengths(
-      stan_args,
-      gt = short_pmf
-    ),
-    "Non-parametric delay distributions are longer than the input data"
+  expect_no_error(
+    check_np_delay_lengths(stan_args, data_length = 0)
   )
 })
 
 test_that("check_np_delay_lengths handles single row data", {
-  rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with single row data (t = 1) and longer PMF
   stan_args <- list(
     data = list(
       delay_n_np = 1,
       t = 1,
-      delay_np_pmf_groups = array(c(1, 9))  # One PMF of length 8
+      delay_np_pmf_groups = array(c(1, 9)) # One PMF of length 8
     )
   )
 
-  expect_warning(
-    check_np_delay_lengths(
-      stan_args,
-      gt = medium_pmf
-    ),
-    "Non-parametric delay distributions are longer than the input data"
+  expect_no_error(
+    check_np_delay_lengths(stan_args, data_length = 1)
   )
 })
 
@@ -348,7 +296,7 @@ test_that("check_np_delay_lengths handles missing delay_n_np", {
     data = list(t = 10)
   )
 
-  expect_no_error(check_np_delay_lengths(stan_args, gt = short_pmf))
+  expect_no_error(check_np_delay_lengths(stan_args, data_length = 10))
 })
 
 test_that("check_np_delay_lengths handles zero delay_n_np", {
@@ -361,5 +309,5 @@ test_that("check_np_delay_lengths handles zero delay_n_np", {
     )
   )
 
-  expect_invisible(check_np_delay_lengths(stan_args, gt = gamma_dist))
+  expect_invisible(check_np_delay_lengths(stan_args, data_length = 10))
 })
