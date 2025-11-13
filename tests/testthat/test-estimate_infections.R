@@ -96,6 +96,27 @@ test_that("estimate_infections successfully returns estimates using only mean sh
   test_estimate_infections(reported_cases, gp = NULL, rt = NULL)
 })
 
+test_that("summary with type='parameters' returns all dates by default", {
+  out <- default_estimate_infections(reported_cases)
+
+  # Get summary without specifying target_date
+  summ <- summary(out, type = "parameters")
+
+  # Should have multiple dates (not filtered to one)
+  summ_dates <- unique(summ$date)
+  expect_gt(length(summ_dates), 1)
+
+  # Should have data for multiple variables
+  expect_true("infections" %in% summ$variable)
+  expect_true("R" %in% summ$variable)
+
+  # When target_date is explicitly provided, should filter to that date
+  # Use a date that exists in the summarised estimates
+  target <- summ_dates[length(summ_dates) %/% 2]  # Pick middle date
+  summ_filtered <- summary(out, type = "parameters", target_date = target)
+  expect_equal(unique(summ_filtered$date), target)
+})
+
 test_that("estimate_infections successfully returns estimates using a single breakpoint", {
   test_estimate_infections(data.table::copy(reported_cases)[, breakpoint := ifelse(date == "2020-03-10", 1, 0)],
     gp = NULL
