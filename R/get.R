@@ -273,6 +273,12 @@ get_samples.estimate_secondary <- function(object, ...) {
   extract_stan_param(object$fit, CrIs = c(0.2, 0.5, 0.9))
 }
 
+#' @rdname get_samples
+#' @export
+get_samples.forecast_secondary <- function(object, ...) {
+  object$samples
+}
+
 #' Get predictions from a fitted model
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -332,11 +338,6 @@ get_predictions.estimate_infections <- function(object,
 get_predictions.estimate_secondary <- function(object,
                                                CrIs = c(0.2, 0.5, 0.9),
                                                ...) {
-  # Handle forecast_secondary objects (old structure with $predictions)
-  if (!is.null(object$predictions) && is.null(object$fit)) {
-    return(object$predictions)
-  }
-
   # Extract predictions from the fit
   predictions <- extract_stan_param(object$fit, "sim_secondary", CrIs = CrIs)
   predictions <- predictions[, lapply(.SD, round, 1)]
@@ -354,4 +355,10 @@ get_predictions.estimate_secondary <- function(object,
   )
 
   return(predictions)
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.forecast_secondary <- function(object, ...) {
+  object$predictions
 }

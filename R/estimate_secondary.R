@@ -728,6 +728,6 @@ forecast_secondary <- function(estimate,
   data.table::setcolorder(
     out$predictions, c("date", "primary", "secondary", "mean", "sd")
   )
-  class(out) <- c("estimate_secondary", class(out))
+  class(out) <- c("forecast_secondary", class(out))
   return(out)
 }
