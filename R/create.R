@@ -245,13 +245,16 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     total_cases <- sum(data[!is.na(confirm)]$confirm, na.rm = TRUE)
 
     if (pop_value < total_cases) {
+      # nolint start: duplicate_argument_linter
       cli_warn(
         c(
-          "!" = "Population ({pop_value}) is smaller than cumulative cases ({total_cases}).",
+          "!" = "Population ({pop_value}) is smaller than cumulative cases",
+          "!" = "({total_cases}).",
           "i" = "This suggests the population value is incorrect.",
           "i" = "Consider using the total at-risk population, not a subset."
         )
       )
+      # nolint end
     }
   }
 
@@ -908,12 +911,6 @@ create_infection_summary <- function(object,
                                      CrIs = c(0.2, 0.5, 0.9), ...) {
   type <- arg_match(type)
 
-  if (is.null(target_date)) {
-    target_date <- max(object$observations$date)
-  } else {
-    target_date <- as.Date(target_date)
-  }
-
   samples <- get_samples(object)
 
   summarised <- calc_summary_measures(
@@ -924,6 +921,11 @@ create_infection_summary <- function(object,
   )
 
   if (type == "snapshot") {
+    if (is.null(target_date)) {
+      target_date <- max(object$observations$date)
+    } else {
+      target_date <- as.Date(target_date)
+    }
     out <- report_summary(
       summarised_estimates = summarised[date == target_date],
       rt_samples = samples[variable == "R"][
@@ -934,7 +936,7 @@ create_infection_summary <- function(object,
   } else if (type == "parameters") {
     out <- summarised
     if (!is.null(target_date)) {
-      out <- out[date == target_date]
+      out <- out[date == as.Date(target_date)]
     }
     if (!is.null(params)) {
       out <- out[variable %in% params]
