@@ -1,27 +1,31 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/master/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
-on:
-  push:
-    branches: [main, master, develop]
-  pull_request:
-    branches: [main, master, develop]
-  merge_group:
-  workflow_dispatch:
+# Full integration test suite including slow MCMC-based tests
+# Runs on a weekly schedule and can be triggered manually
+name: test-full
 
-name: test-coverage
+on:
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly on Sunday at 2am UTC
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches: [main, master]
+    paths:
+      - 'src/**'  # Run if Stan code changes
+      - 'inst/stan/**'  # Run if Stan code changes
+      - 'R/estimate*.R'  # Run if core estimation code changes
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test-coverage:
+  test-full:
     runs-on: macos-latest
     if: "! contains(github.event.head_commit.message, '[ci skip]')"
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       NOT_CRAN: true
-      EPINOW2_SKIP_INTEGRATION: true  # Skip slow integration tests for fast coverage
+      EPINOW2_SKIP_INTEGRATION: false  # Run ALL tests including slow integration tests
 
     steps:
       - uses: actions/checkout@v5
@@ -36,8 +40,6 @@ jobs:
         with:
           dependencies: NA
           extra-packages: |
-            covr
-            stan-dev/cmdstanr
             testthat
             future
             future.apply
@@ -49,8 +51,12 @@ jobs:
           cmdstan-version: 'latest'
           num-cores: 2
 
-      - name: Test coverage
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: covr::codecov(quiet = FALSE)
+      - name: Run full test suite
+        run: |
+          testthat::test_local(reporter = testthat::ProgressReporter$new(max_failures = Inf))
         shell: Rscript {0}
+
+      - name: Show testthat output
+        if: always()
+        run: find . -name 'testthat.Rout*' -exec cat '{}' \; || true
+        shell: bash
