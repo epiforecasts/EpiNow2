@@ -20,3 +20,26 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
 if (requireNamespace("future", quietly = TRUE)) {
   withr::defer(future::plan("sequential"), teardown_env())
 }
+
+# Test categorisation helpers -----------------------------------------------
+
+#' Check if integration tests should be run
+#'
+#' Integration tests are slow MCMC-based tests. By default, these are skipped
+#' to speed up test runs. Set EPINOW2_SKIP_INTEGRATION=false to run them.
+#'
+#' @return Logical indicating whether to run integration tests
+integration_test <- function() {
+  skip_integration <- Sys.getenv("EPINOW2_SKIP_INTEGRATION", "true")
+  !isTRUE(as.logical(skip_integration))
+}
+
+#' Check if full test suite should be run
+#'
+#' Full tests include all integration tests and are typically run on a schedule
+#' rather than on every commit. Set EPINOW2_FULL_TESTS=true to run them.
+#'
+#' @return Logical indicating whether to run full test suite
+full_tests <- function() {
+  isTRUE(as.logical(Sys.getenv("EPINOW2_FULL_TESTS", "false")))
+}

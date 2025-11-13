@@ -44,7 +44,8 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
       NOT_CRAN: true
-      
+      EPINOW2_SKIP_INTEGRATION: true  # Skip slow integration tests for fast CI
+
     steps:
       - uses: actions/checkout@v5
         

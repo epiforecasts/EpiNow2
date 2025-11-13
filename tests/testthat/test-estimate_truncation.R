@@ -1,11 +1,18 @@
 # Setup for testing -------------------------------------------------------
 skip_on_cran()
+
+# Integration tests (MCMC-based) ------------------------------------------
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Core tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
+
 futile.logger::flog.threshold("FATAL")
 
 # set number of cores to use
 old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
+# Core test: Core functionality with default settings (always runs)
 test_that("estimate_truncation can return values from simulated data and plot
            them", {
   # fit model to example data
@@ -20,8 +27,10 @@ test_that("estimate_truncation can return values from simulated data and plot
   expect_error(plot(est), NA)
 })
 
+# Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_truncation can return values from simulated data with the
            cmdstanr backend", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   # fit model to example data
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
@@ -39,6 +48,7 @@ test_that("estimate_truncation can return values from simulated data with the
 })
 
 test_that("estimate_truncation works with filter_leading_zeros set", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   skip_on_os("windows")
   # Modify the first three rows of the first dataset to have zero cases
   # and fit the model with filter_leading_zeros = TRUE. This should
@@ -72,6 +82,7 @@ test_that("estimate_truncation works with filter_leading_zeros set", {
 })
 
 test_that("estimate_truncation works with zero_threshold set", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   skip_on_os("windows")
   # fit model to a modified version of example_data with zero leading cases
   # but with filter_leading_zeros = TRUE

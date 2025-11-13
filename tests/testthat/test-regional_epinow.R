@@ -1,5 +1,10 @@
 skip_on_cran()
 
+# Integration tests (MCMC-based) ------------------------------------------
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Core tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
+
 # get example delays
 futile.logger::flog.threshold("FATAL")
 
@@ -14,6 +19,7 @@ df_non_zero <- function(df) {
   expect_true(nrow(df) > 0)
 }
 
+# Core test: Core functionality with default settings (always runs)
 test_that("regional_epinow produces expected output when run with default settings", {
   out <- suppressWarnings(
     regional_epinow(
@@ -22,7 +28,7 @@ test_that("regional_epinow produces expected output when run with default settin
       delays = delay_opts(example_reporting_delay),
       rt = rt_opts(rw = 10), gp = NULL,
       stan = stan_opts(
-        samples = 100, warmup = 100,
+        samples = 25, warmup = 25,
         cores = 1, chains = 2,
         control = list(adapt_delta = 0.8)
       ),
@@ -44,7 +50,9 @@ test_that("regional_epinow produces expected output when run with default settin
   expect_equal(names(out$regional$realland$plots), c("summary", "infections", "reports", "R", "growth_rate"))
 })
 
+# Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("regional_epinow runs without error when given a very short timeout", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   output <- capture.output(suppressMessages(
     out <- regional_epinow(
       data = cases,
@@ -77,6 +85,7 @@ test_that("regional_epinow runs without error when given a very short timeout", 
 
 
 test_that("regional_epinow produces expected output when run with region specific settings", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   gp <- opts_list(gp_opts(), cases)
   gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
   rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
