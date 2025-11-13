@@ -7,10 +7,10 @@
 #'
 #' # Methodological details
 #'
-#' The probability mass function is computed using the primarycensored package,
-#' which provides double censored PMF calculations. This correctly represents
-#' the probability mass function of a double censored distribution arising from
-#' the difference of two censored events.
+#' The probability mass function is computed using the `{primarycensored}`
+#' package, which provides double censored PMF calculations. This correctly
+#' represents the probability mass function of a double censored distribution
+#' arising from the difference of two censored events.
 #'
 #' The probability mass function of the discretised probability distribution is
 #' a vector where the first entry corresponds to the integral over the (0,1]
