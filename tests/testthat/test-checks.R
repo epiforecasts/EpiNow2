@@ -160,8 +160,7 @@ test_that("check_np_delay_lengths returns invisibly when no nonparametric distri
   # Test with only parametric distributions
   stan_args <- list(
     data = list(
-      delay_n_np = 0,
-      cases = 10
+      delay_n_np = 0
     )
   )
   expect_invisible(
@@ -174,8 +173,7 @@ test_that("check_np_delay_lengths returns invisibly when PMFs are shorter than d
   # Test with short PMF (length 5) and data length 10
   stan_args <- list(
     data = list(
-      delay_n_np = 3,
-      cases = c(10),
+      delay_n_np = 2,
       delay_np_pmf_groups = array(c(1, 6, 11)) # Two PMFs of length 5 each
     )
   )
@@ -190,7 +188,6 @@ test_that("check_np_delay_lengths returns invisibly when PMFs equal data length"
   stan_args <- list(
     data = list(
       delay_n_np = 1,
-      t = 5,
       delay_np_pmf_groups = array(c(1, 6)) # One PMF of length 5
     )
   )
@@ -207,7 +204,6 @@ test_that("check_np_delay_lengths warns when PMF is longer than data", {
   stan_args <- list(
     data = list(
       delay_n_np = 1,
-      t = 10,
       delay_np_pmf_groups = array(c(1, 16)) # One PMF of length 15
     )
   )
@@ -222,7 +218,6 @@ test_that("check_np_delay_lengths handles multiple long PMFs", {
   stan_args <- list(
     data = list(
       delay_n_np = 2,
-      t = 10,
       delay_np_pmf_groups = array(c(1, 16, 41)) # Two PMFs: length 15 and 25
     )
   )
@@ -236,7 +231,6 @@ test_that("check_np_delay_lengths handles mixed parametric and nonparametric dis
   stan_args <- list(
     data = list(
       delay_n_np = 1,
-      t = 10,
       delay_np_pmf_groups = array(c(1, 16)) # One NP PMF of length 15
     )
   )
@@ -250,7 +244,6 @@ test_that("check_np_delay_lengths works with single distribution", {
   stan_args <- list(
     data = list(
       delay_n_np = 1,
-      t = 10,
       delay_np_pmf_groups = array(c(1, 16)) # One PMF of length 15
     )
   )
@@ -260,11 +253,10 @@ test_that("check_np_delay_lengths works with single distribution", {
 })
 
 test_that("check_np_delay_lengths handles empty data gracefully", {
-  # Test with empty data (t = 0) and longer PMF
+  # Test with empty data (data_length = 0) and longer PMF
   stan_args <- list(
     data = list(
       delay_n_np = 1,
-      t = 0,
       delay_np_pmf_groups = array(c(1, 6)) # One PMF of length 5
     )
   )
@@ -275,11 +267,10 @@ test_that("check_np_delay_lengths handles empty data gracefully", {
 })
 
 test_that("check_np_delay_lengths handles single row data", {
-  # Test with single row data (t = 1) and longer PMF
+  # Test with single row data (data_length = 1) and longer PMF
   stan_args <- list(
     data = list(
       delay_n_np = 1,
-      t = 1,
       delay_np_pmf_groups = array(c(1, 9)) # One PMF of length 8
     )
   )
@@ -293,7 +284,7 @@ test_that("check_np_delay_lengths handles missing delay_n_np", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with missing delay_n_np (should not error)
   stan_args <- list(
-    data = list(t = 10)
+    data = list()
   )
 
   expect_no_error(check_np_delay_lengths(stan_args, data_length = 10))
@@ -304,8 +295,7 @@ test_that("check_np_delay_lengths handles zero delay_n_np", {
   # Test with zero delay_n_np
   stan_args <- list(
     data = list(
-      delay_n_np = 0,
-      t = 10
+      delay_n_np = 0
     )
   )
 
