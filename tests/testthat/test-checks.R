@@ -223,3 +223,92 @@ test_that("check_np_delay_lengths handles zero delay_n_np", {
   )
   expect_invisible(check_np_delay_lengths(stan_args, data_length = 10))
 })
+
+test_that("check_np_delay_lengths works with delays from create_stan_delays", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
+
+  # Test 1: Short explicit NonParametric delay (should NOT warn)
+  short_np_delay <- delay_opts(NonParametric(pmf = c(0.3, 0.5, 0.2)))
+  stan_args_short_np <- list(
+    data = create_stan_delays(
+      delays = short_np_delay,
+      time_points = 1L
+    )
+  )
+  expect_invisible(
+    check_np_delay_lengths(stan_args_short_np, data_length = 10)
+  )
+
+  # Test 2: Long explicit NonParametric delay (should warn)
+  long_np_delay <- delay_opts(NonParametric(pmf = rep(1/15, 15)))
+  stan_args_long_np <- list(
+    data = create_stan_delays(
+      delays = long_np_delay,
+      time_points = 1L
+    )
+  )
+  expect_warning(
+    check_np_delay_lengths(stan_args_long_np, data_length = 10),
+    "non-parametric delay distributions are longer"
+  )
+
+  # Test 3: Short fixed parametric delay that becomes non-parametric (should NOT warn)
+  short_fixed_delay <- delay_opts(Fixed(value = 3))
+  stan_args_short_fixed <- list(
+    data = create_stan_delays(
+      delays = short_fixed_delay,
+      time_points = 1L
+    )
+  )
+  expect_invisible(
+    check_np_delay_lengths(stan_args_short_fixed, data_length = 10)
+  )
+
+  # Test 4: Long fixed parametric delay that becomes non-parametric (should warn)
+  long_fixed_delay <- delay_opts(LogNormal(meanlog = 2, sdlog = 0.5, max = 20))
+  stan_args_long_fixed <- list(
+    data = create_stan_delays(
+      delays = long_fixed_delay,
+      time_points = 1L
+    )
+  )
+  expect_warning(
+    check_np_delay_lengths(stan_args_long_fixed, data_length = 10),
+    "non-parametric delay distributions are longer"
+  )
+})
+
+test_that("check_np_delay_lengths works with explicitly defined non-parametric delay vectors", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
+
+  # Test with short explicit delay vector (5 days, data length 10)
+  short_delay_vector <- c(0.1, 0.2, 0.3, 0.25, 0.15)
+  short_np_delay <- delay_opts(NonParametric(pmf = short_delay_vector))
+  stan_args_short <- list(
+    data = create_stan_delays(
+      delays = short_np_delay,
+      time_points = 1L
+    )
+  )
+  expect_invisible(
+    check_np_delay_lengths(stan_args_short, data_length = 10)
+  )
+
+  # Test with long explicit delay vector (15 days, data length 10)
+  long_delay_vector <- c(
+    0.05, 0.08, 0.10, 0.12, 0.13,
+    0.12, 0.10, 0.08, 0.06, 0.05,
+    0.04, 0.03, 0.02, 0.01, 0.01
+  )
+  long_np_delay <- delay_opts(NonParametric(pmf = long_delay_vector))
+  stan_args_long <- list(
+    data = create_stan_delays(
+      delays = long_np_delay,
+      time_points = 1L
+    )
+  )
+  expect_warning(
+    check_np_delay_lengths(stan_args_long, data_length = 10),
+    "non-parametric delay distributions are longer"
+  )
+})
