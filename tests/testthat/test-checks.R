@@ -227,7 +227,7 @@ test_that("check_np_delay_lengths handles zero delay_n_np", {
 test_that("check_np_delay_lengths works with delays from create_stan_delays", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
 
-  # Test 1: Short explicit NonParametric delay (should NOT warn)
+  # Short explicit NonParametric delay (should NOT warn)
   short_np_delay <- delay_opts(NonParametric(pmf = c(0.3, 0.5, 0.2)))
   stan_args_short_np <- list(
     data = create_stan_delays(
@@ -239,7 +239,7 @@ test_that("check_np_delay_lengths works with delays from create_stan_delays", {
     check_np_delay_lengths(stan_args_short_np, data_length = 10)
   )
 
-  # Test 2: Long explicit NonParametric delay (should warn)
+  # Long explicit NonParametric delay (should warn)
   long_np_delay <- delay_opts(NonParametric(pmf = rep(1/15, 15)))
   stan_args_long_np <- list(
     data = create_stan_delays(
@@ -252,7 +252,7 @@ test_that("check_np_delay_lengths works with delays from create_stan_delays", {
     "non-parametric delay distributions are longer"
   )
 
-  # Test 3: Short fixed parametric delay that becomes non-parametric (should NOT warn)
+  # Short fixed parametric delay that becomes non-parametric (should NOT warn)
   short_fixed_delay <- delay_opts(Fixed(value = 3))
   stan_args_short_fixed <- list(
     data = create_stan_delays(
@@ -264,7 +264,7 @@ test_that("check_np_delay_lengths works with delays from create_stan_delays", {
     check_np_delay_lengths(stan_args_short_fixed, data_length = 10)
   )
 
-  # Test 4: Long fixed parametric delay that becomes non-parametric (should warn)
+  # Long fixed parametric delay that becomes non-parametric (should warn)
   long_fixed_delay <- delay_opts(LogNormal(meanlog = 2, sdlog = 0.5, max = 20))
   stan_args_long_fixed <- list(
     data = create_stan_delays(
