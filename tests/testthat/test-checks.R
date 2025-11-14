@@ -221,6 +221,5 @@ test_that("check_np_delay_lengths handles zero delay_n_np", {
       delay_n_np = 0
     )
   )
-
   expect_invisible(check_np_delay_lengths(stan_args, data_length = 10))
 })
