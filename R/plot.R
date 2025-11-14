@@ -71,6 +71,15 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' Default to all types with supported options being: "Estimate", "Estimate
 #' based on partial data", and "Forecast".
 #'
+#' @param aggregation Character string specifying the aggregation level for
+#' visualization. Options are "daily" (default) or "weekly". When set to
+#' "weekly", daily estimates and observations are aggregated to weekly summaries
+#' before plotting. This is useful for visualizing trends when daily variation
+#' obscures the overall pattern.
+#'
+#' @param week_start Integer specifying the day of week that starts each week
+#' (used when `aggregation = "weekly"`). 1 = Monday (default), 7 = Sunday.
+#'
 #' @return A `ggplot2` object
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_col geom_line geom_point geom_vline
@@ -112,16 +121,40 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #'   ylab = "Effective Reproduction No.",
 #'   hline = 1, estimate_type = "Estimate"
 #' )
+#'
+#' # plot reported cases aggregated to weekly
+#' plot_estimates(
+#'   estimate = out$summarised[variable == "reported_cases"],
+#'   reported = out$observations,
+#'   ylab = "Weekly cases",
+#'   aggregation = "weekly"
+#' )
 plot_estimates <- function(estimate, reported, ylab, hline,
                            obs_as_col = TRUE, max_plot = 10,
                            estimate_type = c(
                              "Estimate", "Estimate based on partial data",
                              "Forecast"
-                           )) {
+                           ),
+                           aggregation = c("daily", "weekly"),
+                           week_start = 1) {
+  aggregation <- arg_match(aggregation)
   # convert input to data.table
   estimate <- data.table::as.data.table(estimate)
   if (!missing(reported)) {
     reported <- data.table::as.data.table(reported)
+  }
+
+  # Aggregate to weekly if requested
+  if (aggregation == "weekly") {
+    aggregated <- aggregate_to_weekly(
+      estimate,
+      reported = if (!missing(reported)) reported else NULL,
+      week_start = week_start
+    )
+    estimate <- aggregated$estimate
+    if (!is.null(aggregated$reported)) {
+      reported <- aggregated$reported
+    }
   }
 
   # map type to presentation form
@@ -369,7 +402,8 @@ plot_summary <- function(summary_results,
 #'
 #' @param x A list of output as produced by `estimate_infections`
 #'
-#' @param ... Pass additional arguments to report_plots
+#' @param ... Pass additional arguments to report_plots (including `aggregation`
+#' and `week_start` for weekly plotting)
 #' @importFrom rlang arg_match
 #' @inheritParams select_plots
 #' @inheritParams calc_summary_measures

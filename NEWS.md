@@ -2,6 +2,7 @@
 
 ## Package changes
 
+- `plot_estimates()` and all plot S3 methods now support an `aggregation` parameter to visualise estimates aggregated to weekly summaries. Use `aggregation = "weekly"` to display weekly aggregated estimates and observations, making it easier to interpret trends in noisy daily data.
 - Development-only dependencies (`covr`, `here`, `hexSticker`, `magick`, `pkgdown`, `precommit`, `usethis`) have been moved from `Suggests` to `Config/Needs/dev`.
   This reduces the dependency burden for end users while maintaining full functionality for package developers.
   Developers should use `pak::pak(".", dependencies = TRUE)` to install all dependencies including dev tools.
