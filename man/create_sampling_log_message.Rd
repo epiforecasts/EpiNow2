@@ -4,19 +4,23 @@
 \alias{create_sampling_log_message}
 \title{Create sampling log message}
 \usage{
-create_sampling_log_message(args)
+create_sampling_log_message(args, method)
 }
 \arguments{
 \item{args}{List of stan arguments containing:
 \itemize{
 \item object: Stan model object (CmdStanModel or stanmodel)
-\item iter_sampling: Number of sampling iterations (for cmdstanr)
-\item iter_warmup: Number of warmup iterations (for cmdstanr)
-\item iter: Total number of iterations (for rstan)
-\item warmup: Number of warmup iterations (for rstan)
-\item chains: Number of chains
+\item For sampling method: iter_sampling, iter_warmup (cmdstanr) or iter,
+warmup (rstan), chains
+\item For vb method: iter, trials, output_samples
+\item For laplace method: trials
+\item For pathfinder method: trials, draws
 \item data: List potentially containing t (time steps) and horizon (forecast)
 }}
+
+\item{method}{Character string indicating the sampling method. One of
+"sampling" (exact MCMC), "vb" (variational Bayes), "laplace" (Laplace
+approximation), or "pathfinder" (pathfinder algorithm).}
 }
 \value{
 A character string containing the formatted log message with a \%s
@@ -24,8 +28,9 @@ placeholder for the id parameter (to be filled by sprintf or flog.debug)
 }
 \description{
 Internal function that creates a formatted log message
-describing the sampling parameters. The message includes information about
-the number of samples, chains, warmup iterations, and optionally time steps
-and forecast horizon.
+describing the sampling parameters. The message format varies by method,
+with different information shown for exact sampling vs approximate methods
+(VB, Laplace, Pathfinder). Optionally includes time steps and forecast
+horizon if present.
 }
 \keyword{internal}
