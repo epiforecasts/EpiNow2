@@ -16,6 +16,7 @@
   - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
 - `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
+- `estimate_truncation()` now returns an S3 object of class `c("epinowfit", "estimate_truncation", "list")` with elements `fit`, `args`, and `observations`, following the same design pattern as `estimate_infections()`. Use `summary(object)` to extract the truncation distribution (replaces direct access via `object$dist`).
 
 ## Model changes
 

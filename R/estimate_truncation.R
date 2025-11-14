@@ -52,15 +52,10 @@
 #'
 #' @param ... Additional parameters to pass to [rstan::sampling()].
 #'
-#' @return A list containing: the summary parameters of the truncation
-#' distribution (`dist`), which could be passed to the `truncation` argument
-#' of [epinow()], [regional_epinow()], and [estimate_infections()], the
-#' estimated CMF of the truncation distribution (`cmf`, can be used to
-#' adjusted new data), a `<data.frame>` containing the observed truncated
-#' data, latest observed data and the adjusted for
-#' truncation observations (`obs`), a `<data.frame>` containing the last
-#' observed data (`last_obs`, useful for plotting and validation), the data
-#' used for fitting (`data`) and the fit object (`fit`).
+#' @return An `<estimate_truncation>` object which is a list containing: the
+#' stan object (`fit`), arguments used to fit the model (`args`), and the
+#' observed data (`observations`). Use [summary()] to extract the truncation
+#' distribution parameters and [plot()] to visualise the fit.
 #'
 #' @export
 #' @inheritParams calc_CrIs
@@ -85,13 +80,13 @@
 #'   chains = 2, iter = 2000
 #' )
 #'
-#' # summary of the distribution
-#' est$dist
-#' # summary of the estimated truncation cmf (can be applied to new data)
-#' print(est$cmf)
-#' # observations linked to truncation adjusted estimates
-#' print(est$obs)
-#' # validation plot of observations vs estimates
+#' # Print summary information
+#' print(est)
+#'
+#' # Extract the truncation distribution
+#' trunc_dist <- summary(est)
+#'
+#' # Validation plot of observations vs estimates
 #' plot(est)
 #'
 #' # Pass the truncation distribution to `epinow()`.
@@ -101,7 +96,7 @@
 #' out <- epinow(
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   example_truncated[[5]],
-#'   truncation = trunc_opts(est$dist)
+#'   truncation = trunc_opts(trunc_dist)
 #' )
 #' plot(out)
 #' options(old_opts)
@@ -202,7 +197,6 @@ estimate_truncation <- function(data,
   )
   fit <- fit_model(stan_args, id = "estimate_truncation")
 
-  out <- list()
   # Summarise fit truncation distribution for downstream usage
   delay_params <- extract_stan_param(fit, params = "delay_params")
   params_mean <- round(delay_params$mean, 3)
@@ -211,7 +205,7 @@ estimate_truncation <- function(data,
     Normal(params_mean[id], params_sd[id])
   })
   names(parameters) <- natural_params(get_distribution(truncation))
-  out$dist <- new_dist_spec(
+  dist <- new_dist_spec(
     params = parameters,
     max = max(truncation),
     distribution = get_distribution(truncation)
@@ -259,18 +253,31 @@ estimate_truncation <- function(data,
     )
     target_obs[order(date)][, index := NULL]
   }
-  out$obs <- purrr::map(1:(stan_data$obs_sets), link_obs)
-  out$obs <- data.table::rbindlist(out$obs)
-  out$last_obs <- last_obs
+  obs <- purrr::map(1:(stan_data$obs_sets), link_obs)
+  obs <- data.table::rbindlist(obs)
   # summarise estimated cmf of the truncation distribution
-  out$cmf <- extract_stan_param(fit, "trunc_rev_cmf", CrIs = CrIs)
-  out$cmf <- data.table::as.data.table(out$cmf)[, index := seq_len(.N)]
-  data.table::setcolorder(out$cmf, "index")
-  out$data <- stan_data
-  out$fit <- fit
+  cmf <- extract_stan_param(fit, "trunc_rev_cmf", CrIs = CrIs)
+  cmf <- data.table::as.data.table(cmf)[, index := seq_len(.N)]
+  data.table::setcolorder(cmf, "index")
 
-  class(out) <- c("estimate_truncation", class(out))
-  return(out)
+  # Return S3 object following design document structure
+  ret <- list(
+    fit = fit,
+    args = stan_data,
+    observations = data
+  )
+
+  # Store internal data needed for plot() and summary() methods
+  ret$.internal <- list(
+    dist = dist,
+    obs = obs,
+    last_obs = last_obs,
+    cmf = cmf,
+    CrIs = CrIs
+  )
+
+  class(ret) <- c("epinowfit", "estimate_truncation", class(ret))
+  return(ret)
 }
 
 #' Plot method for estimate_truncation
@@ -292,18 +299,19 @@ estimate_truncation <- function(data,
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {
-  p <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
+  obs <- x$.internal$obs
+  p <- ggplot2::ggplot(obs, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
     ) +
     ggplot2::geom_point(
-      data = x$obs,
+      data = obs,
       ggplot2::aes(x = date, y = confirm)
     ) +
     ggplot2::facet_wrap(~report_date, scales = "free")
 
-  p <- plot_CrIs(p, extract_CrIs(x$obs),
+  p <- plot_CrIs(p, extract_CrIs(obs),
     alpha = 0.8, linewidth = 1
   )
 

@@ -59,15 +59,10 @@ threshold then the zero is replaced using \code{fill}.}
 \item{obs}{Deprecated; use \code{data} instead.}
 }
 \value{
-A list containing: the summary parameters of the truncation
-distribution (\code{dist}), which could be passed to the \code{truncation} argument
-of \code{\link[=epinow]{epinow()}}, \code{\link[=regional_epinow]{regional_epinow()}}, and \code{\link[=estimate_infections]{estimate_infections()}}, the
-estimated CMF of the truncation distribution (\code{cmf}, can be used to
-adjusted new data), a \verb{<data.frame>} containing the observed truncated
-data, latest observed data and the adjusted for
-truncation observations (\code{obs}), a \verb{<data.frame>} containing the last
-observed data (\code{last_obs}, useful for plotting and validation), the data
-used for fitting (\code{data}) and the fit object (\code{fit}).
+An \verb{<estimate_truncation>} object which is a list containing: the
+stan object (\code{fit}), arguments used to fit the model (\code{args}), and the
+observed data (\code{observations}). Use \code{\link[=summary]{summary()}} to extract the truncation
+distribution parameters and \code{\link[=plot]{plot()}} to visualise the fit.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -119,13 +114,13 @@ est <- estimate_truncation(example_truncated,
   chains = 2, iter = 2000
 )
 
-# summary of the distribution
-est$dist
-# summary of the estimated truncation cmf (can be applied to new data)
-print(est$cmf)
-# observations linked to truncation adjusted estimates
-print(est$obs)
-# validation plot of observations vs estimates
+# Print summary information
+print(est)
+
+# Extract the truncation distribution
+trunc_dist <- summary(est)
+
+# Validation plot of observations vs estimates
 plot(est)
 
 # Pass the truncation distribution to `epinow()`.
@@ -135,7 +130,7 @@ plot(est)
 out <- epinow(
   generation_time = generation_time_opts(example_generation_time),
   example_truncated[[5]],
-  truncation = trunc_opts(est$dist)
+  truncation = trunc_opts(trunc_dist)
 )
 plot(out)
 options(old_opts)

@@ -875,6 +875,23 @@ summary.forecast_infections <- function(object,
   create_infection_summary(object, type, target_date, params, CrIs, ...)
 }
 
+##' Summary method for estimate_truncation
+##'
+##' @description Returns the estimated truncation distribution from an
+##' [estimate_truncation()] fit.
+##'
+##' @param object An `<estimate_truncation>` object as produced by
+##' [estimate_truncation()].
+##' @param ... Ignored
+##' @method summary estimate_truncation
+##' @return A `<dist_spec>` object containing the estimated truncation
+##' distribution, which can be passed to [trunc_opts()] and used in
+##' [estimate_infections()], [epinow()], or [regional_epinow()].
+##' @export
+summary.estimate_truncation <- function(object, ...) {
+  object$.internal$dist
+}
+
 ##' Print information about an object that has resulted from a model fit.
 ##'
 ##' @param x The object containing fit results.
