@@ -4,15 +4,85 @@
 \alias{renewal_opts}
 \title{Renewal Model Specification}
 \usage{
-renewal_opts(rt = rt_opts(), generation_time = gt_opts())
+renewal_opts(
+  generation_time = gt_opts(),
+  prior = LogNormal(mean = 1, sd = 1),
+  rw = 0,
+  use_breakpoints = TRUE,
+  future = "latest",
+  gp_on = c("R_t-1", "R0"),
+  pop = Fixed(0),
+  pop_period = c("forecast", "all"),
+  pop_floor = 1,
+  growth_method = c("infections", "infectiousness")
+)
 }
 \arguments{
-\item{rt}{A call to \code{\link[=rt_opts]{rt_opts()}} defining the time-varying reproduction
-number. Defaults to \code{\link[=rt_opts]{rt_opts()}}.}
-
 \item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
 \code{\link[=generation_time_opts]{generation_time_opts()}}) defining the generation time distribution.
 Defaults to \code{\link[=gt_opts]{gt_opts()}}.}
+
+\item{prior}{A \verb{<dist_spec>} giving the prior of the initial reproduction
+number. Defaults to a LogNormal distribution with mean of 1 and standard
+deviation of 1: \code{LogNormal(mean = 1, sd = 1)}. A lower limit of 0 will be
+enforced automatically.}
+
+\item{rw}{Numeric step size of the random walk, defaults to 0. To specify a
+weekly random walk set \code{rw = 7}. For more custom break point settings
+consider passing in a \code{breakpoints} variable as outlined in the next section.}
+
+\item{use_breakpoints}{Logical, defaults to \code{TRUE}. Should break points be
+used if present as a \code{breakpoint} variable in the input data. Break points
+should be defined as 1 if present and otherwise 0. By default breakpoints
+are fit jointly with a global non-parametric effect and so represent a
+conservative estimate of break point changes (alter this by setting
+\code{gp = NULL}).}
+
+\item{future}{Character string, defaulting to "latest". Determines how the
+Rt is projected into the forecast horizon. Options are "latest" (project
+using the latest estimated Rt), "estimate" (continue to estimate Rt in the
+forecast using the Gaussian process), and "project" (project using the
+latest Rt estimate with additional uncertainty from the Gaussian process).}
+
+\item{gp_on}{Character string, defaulting to "R_t-1". Indicates how the
+Gaussian process, if in use, should be applied to Rt. Currently supported
+options are applying the Gaussian process to the last estimated Rt (i.e
+Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
+= R0 * GP). Both should produced comparable results when data is not sparse
+but the method relying on a global mean will revert to this for real time
+estimates, which may not be desirable.}
+
+\item{pop}{A \verb{<dist_spec>} giving the initial susceptible population size.
+Used to adjust Rt estimates based on the proportion of the population that
+is susceptible. Defaults to \code{Fixed(0)} which means no population adjustment
+is done. See also \code{pop_floor} for the numerical stability floor used when
+population adjustment is enabled.}
+
+\item{pop_period}{Character string, defaulting to "forecast". Controls when
+susceptible population adjustment is applied. "forecast" only applies the
+adjustment to forecasts while "all" applies it to both data and forecasts.
+Note that with "all" and "forecast", Rt estimates are unadjusted for
+susceptible depletion but posterior predictions of infections and reports are
+adjusted.}
+
+\item{pop_floor}{Numeric. Minimum susceptible population used as a
+floor when adjusting for population depletion. This prevents numerical
+instability (division by zero) when the susceptible population approaches
+zero. Defaults to 1.0. Can be interpreted as representing a minimal
+ongoing import level. Note that if pop_floor > 0, cumulative infections
+can exceed the population size, though this effect is negligible when
+pop_floor is very small compared to the population size.}
+
+\item{growth_method}{Method used to compute growth rates from Rt. Options
+are "infections" (default) and "infectiousness". The option "infections"
+uses the classical approach, i.e. computing the log derivative on the number
+of new infections. The option "infectiousness" uses an alternative approach
+by Parag et al., which computes the log derivative of the infectiousness
+(i.e. the convolution of past infections with the generation time) and
+shifts it by the mean generation time. This can provide better stability
+and temporal matching with Rt. Note that, due to the temporal shift the
+"infectiousness" method results in undefined (NaN) growth rates for the most
+recent time points (equal to the mean generation time).}
 }
 \value{
 A \verb{<renewal_opts>} object that can be passed to the \code{model}
@@ -28,18 +98,26 @@ distribution to relate the reproduction number to infections.
 # default settings
 renewal_opts()
 
-# with custom Rt prior
-renewal_opts(rt = rt_opts(prior = LogNormal(mean = 2, sd = 1)))
-
-# with custom generation time
+# with custom Rt prior and generation time
 generation_time <- Gamma(
   shape = Normal(1.3, 0.3),
   rate = Normal(0.37, 0.09),
   max = 14
 )
-renewal_opts(generation_time = gt_opts(generation_time))
+renewal_opts(
+  prior = LogNormal(mean = 2, sd = 1),
+  generation_time = gt_opts(generation_time)
+)
+
+# with a weekly random walk
+renewal_opts(rw = 7)
+}
+\references{
+Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic
+growth rates more informative than reproduction numbers? Journal of the
+Royal Statistical Society: Series A (Statistics in Society) 185, S5–S15
+(2022).
 }
 \seealso{
-\code{\link[=deconvolution_opts]{deconvolution_opts()}} \code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=rt_opts]{rt_opts()}}
-\code{\link[=gt_opts]{gt_opts()}}
+\code{\link[=deconvolution_opts]{deconvolution_opts()}} \code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=gt_opts]{gt_opts()}}
 }
