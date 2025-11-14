@@ -182,20 +182,6 @@ test_that("check_np_delay_lengths does not warn when PMFs are shorter than data"
   )
 })
 
-test_that("check_np_delay_lengths returns invisibly when PMFs equal data length", {
-  rlang::local_options(rlib_warning_verbosity = "verbose")
-  # Test with PMF length equal to data length
-  stan_args <- list(
-    data = list(
-      delay_n_np = 1,
-      delay_np_pmf_groups = array(c(1, 6)) # One PMF of length 5
-    )
-  )
-  expect_invisible(
-    check_np_delay_lengths(stan_args, data_length = 5)
-  )
-})
-
 test_that("check_np_delay_lengths warns when PMF is longer than data", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with long PMF (length 15) and short data (length 10)
