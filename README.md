@@ -279,6 +279,7 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=adrian-lison">adrian-lison</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=avehtari">avehtari</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=andrjohns">andrjohns</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=claude">claude</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jcken95">jcken95</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=medewitt">medewitt</a>,
