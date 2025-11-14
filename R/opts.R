@@ -447,48 +447,168 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' model. This is the mechanistic model that uses the generation time
 #' distribution to relate the reproduction number to infections.
 #'
-#' @param rt A call to [rt_opts()] defining the time-varying reproduction
-#' number. Defaults to [rt_opts()].
-#'
 #' @param generation_time A call to [gt_opts()] (or its alias
 #' [generation_time_opts()]) defining the generation time distribution.
 #' Defaults to [gt_opts()].
 #'
+#' @param prior A `<dist_spec>` giving the prior of the initial reproduction
+#' number. Defaults to a LogNormal distribution with mean of 1 and standard
+#' deviation of 1: `LogNormal(mean = 1, sd = 1)`. A lower limit of 0 will be
+#' enforced automatically.
+#'
+#' @param rw Numeric step size of the random walk, defaults to 0. To specify a
+#' weekly random walk set `rw = 7`. For more custom break point settings
+#' consider passing in a `breakpoints` variable as outlined in the next section.
+#'
+#' @param use_breakpoints Logical, defaults to `TRUE`. Should break points be
+#' used if present as a `breakpoint` variable in the input data. Break points
+#' should be defined as 1 if present and otherwise 0. By default breakpoints
+#' are fit jointly with a global non-parametric effect and so represent a
+#' conservative estimate of break point changes (alter this by setting
+#' `gp = NULL`).
+#'
+#' @param future Character string, defaulting to "latest". Determines how the
+#' Rt is projected into the forecast horizon. Options are "latest" (project
+#' using the latest estimated Rt), "estimate" (continue to estimate Rt in the
+#' forecast using the Gaussian process), and "project" (project using the
+#' latest Rt estimate with additional uncertainty from the Gaussian process).
+#'
+#' @param gp_on Character string, defaulting to "R_t-1". Indicates how the
+#' Gaussian process, if in use, should be applied to Rt. Currently supported
+#' options are applying the Gaussian process to the last estimated Rt (i.e
+#' Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
+#' = R0 * GP). Both should produced comparable results when data is not sparse
+#' but the method relying on a global mean will revert to this for real time
+#' estimates, which may not be desirable.
+#'
+#' @param pop A `<dist_spec>` giving the initial susceptible population size.
+#' Used to adjust Rt estimates based on the proportion of the population that
+#' is susceptible. Defaults to `Fixed(0)` which means no population adjustment
+#' is done. See also `pop_floor` for the numerical stability floor used when
+#' population adjustment is enabled.
+#'
+#' @param pop_period Character string, defaulting to "forecast". Controls when
+#' susceptible population adjustment is applied. "forecast" only applies the
+#' adjustment to forecasts while "all" applies it to both data and forecasts.
+#' Note that with "all" and "forecast", Rt estimates are unadjusted for
+#' susceptible depletion but posterior predictions of infections and reports are
+#' adjusted.
+#'
+#' @param pop_floor Numeric. Minimum susceptible population used as a
+#' floor when adjusting for population depletion. This prevents numerical
+#' instability (division by zero) when the susceptible population approaches
+#' zero. Defaults to 1.0. Can be interpreted as representing a minimal
+#' ongoing import level. Note that if pop_floor > 0, cumulative infections
+#' can exceed the population size, though this effect is negligible when
+#' pop_floor is very small compared to the population size.
+#'
+#' @param growth_method Method used to compute growth rates from Rt. Options
+#' are "infections" (default) and "infectiousness". The option "infections"
+#' uses the classical approach, i.e. computing the log derivative on the number
+#' of new infections. The option "infectiousness" uses an alternative approach
+#' by Parag et al., which computes the log derivative of the infectiousness
+#' (i.e. the convolution of past infections with the generation time) and
+#' shifts it by the mean generation time. This can provide better stability
+#' and temporal matching with Rt. Note that, due to the temporal shift the
+#' "infectiousness" method results in undefined (NaN) growth rates for the most
+#' recent time points (equal to the mean generation time).
+#'
+#' @references Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic
+#' growth rates more informative than reproduction numbers? Journal of the
+#' Royal Statistical Society: Series A (Statistics in Society) 185, S5–S15
+#' (2022).
+#'
 #' @return A `<renewal_opts>` object that can be passed to the `model`
 #' argument of [estimate_infections()].
-#' @seealso [deconvolution_opts()] [estimate_infections()] [rt_opts()]
-#' [gt_opts()]
+#' @seealso [deconvolution_opts()] [estimate_infections()] [gt_opts()]
 #' @importFrom cli cli_abort
-#' @importFrom checkmate assert_class
+#' @importFrom checkmate assert_class assert_number
+#' @importFrom rlang arg_match
 #' @export
 #' @examples
 #' # default settings
 #' renewal_opts()
 #'
-#' # with custom Rt prior
-#' renewal_opts(rt = rt_opts(prior = LogNormal(mean = 2, sd = 1)))
-#'
-#' # with custom generation time
+#' # with custom Rt prior and generation time
 #' generation_time <- Gamma(
 #'   shape = Normal(1.3, 0.3),
 #'   rate = Normal(0.37, 0.09),
 #'   max = 14
 #' )
-#' renewal_opts(generation_time = gt_opts(generation_time))
-renewal_opts <- function(rt = rt_opts(),
-                         generation_time = gt_opts()) {
-  assert_class(rt, "rt_opts")
+#' renewal_opts(
+#'   prior = LogNormal(mean = 2, sd = 1),
+#'   generation_time = gt_opts(generation_time)
+#' )
+#'
+#' # with a weekly random walk
+#' renewal_opts(rw = 7)
+renewal_opts <- function(generation_time = gt_opts(),
+                         prior = LogNormal(mean = 1, sd = 1),
+                         rw = 0,
+                         use_breakpoints = TRUE,
+                         future = "latest",
+                         gp_on = c("R_t-1", "R0"),
+                         pop = Fixed(0),
+                         pop_period = c("forecast", "all"),
+                         pop_floor = 1.0,
+                         growth_method = c("infections", "infectiousness")) {
   assert_class(generation_time, "generation_time_opts")
 
-  if (!rt$use_rt) {
+  # Validate prior
+  if (is.list(prior) && !is(prior, "dist_spec")) {
     cli_abort(
       c(
-        "!" = "The renewal model requires {.var use_rt = TRUE}.",
-        "i" = "You have set {.var use_rt = FALSE} in {.fn rt_opts}.",
-        "i" = "Either remove this setting or use {.fn deconvolution_opts} instead."
+        "!" = "Specifying {.var prior} as a list is deprecated.",
+        "i" = "Use a {.cls dist_spec} instead."
       )
     )
   }
+
+  # Validate population
+  if (is.numeric(pop)) {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      "renewal_opts(pop = 'must be a `<dist_spec>`')",
+      details = "For specifying a fixed population size, use `Fixed(pop)`"
+    )
+    pop <- Fixed(pop)
+  }
+
+  # Match arguments
+  gp_on <- arg_match(gp_on)
+  pop_period <- arg_match(pop_period)
+  growth_method <- arg_match(growth_method)
+
+  # Validate population settings
+  if (pop_period == "all" && pop == Fixed(0)) {
+    cli_abort(
+      c(
+        "!" = "pop_period = \"all\" but pop is fixed at 0."
+      )
+    )
+  }
+
+  assert_number(pop_floor, lower = 0, finite = TRUE)
+
+  # Adjust breakpoints if using random walk
+  if (rw > 0) {
+    use_breakpoints <- TRUE
+  }
+
+  # Build rt_opts object internally
+  rt <- list(
+    use_rt = TRUE,
+    prior = prior,
+    rw = rw,
+    use_breakpoints = use_breakpoints,
+    future = future,
+    gp_on = gp_on,
+    pop = pop,
+    pop_period = pop_period,
+    pop_floor = pop_floor,
+    growth_method = growth_method
+  )
+  attr(rt, "class") <- c("rt_opts", class(rt))
 
   model <- list(
     type = "renewal",
@@ -508,23 +628,65 @@ renewal_opts <- function(rt = rt_opts(),
 #' scale without using the renewal equation, and therefore does not require a
 #' generation time distribution.
 #'
-#' @param backcalc A call to [backcalc_opts()] defining the deconvolution
-#' settings. Defaults to [backcalc_opts()].
+#' @param prior A character string defaulting to "reports". Defines the prior
+#' to use when deconvolving. Currently implemented options are to use smoothed
+#' mean delay shifted reported cases ("reports"), to use the estimated
+#' infections from the previous time step seeded for the first time step using
+#' mean shifted reported cases ("infections"), or no prior ("none"). Using no
+#' prior will result in poor real time performance. No prior and using
+#' infections are only supported when a Gaussian process is present. If
+#' observed data is not reliable then a sensible first step is to explore
+#' increasing the `prior_window` with a sensible second step being to no longer
+#' use reported cases as a prior (i.e. set `prior = "none"`).
+#'
+#' @param prior_window Integer, defaults to 14 days. The mean centred smoothing
+#' window to apply to mean shifted reports (used as a prior during
+#' deconvolution). 7 days is minimum recommended setting as this smooths day of
+#' the week effects but depending on the quality of the data and the amount of
+#' information users wish to use as a prior (higher values equalling a less
+#' informative prior).
+#'
+#' @param rt_window Integer, defaults to 1. The size of the centred rolling
+#' average to use when estimating Rt. This must be odd so that the central
+#' estimate is included.
 #'
 #' @return A `<deconvolution_opts>` object that can be passed to the `model`
 #' argument of [estimate_infections()].
-#' @seealso [renewal_opts()] [estimate_infections()] [backcalc_opts()]
+#' @seealso [renewal_opts()] [estimate_infections()]
 #' @importFrom cli cli_abort
-#' @importFrom checkmate assert_class
+#' @importFrom rlang arg_match
 #' @export
 #' @examples
 #' # default settings
 #' deconvolution_opts()
 #'
 #' # with custom prior window
-#' deconvolution_opts(backcalc = backcalc_opts(prior_window = 21))
-deconvolution_opts <- function(backcalc = backcalc_opts()) {
-  assert_class(backcalc, "backcalc_opts")
+#' deconvolution_opts(prior_window = 21)
+#'
+#' # with no prior (requires Gaussian process)
+#' deconvolution_opts(prior = "none")
+deconvolution_opts <- function(prior = c("reports", "none", "infections"),
+                                prior_window = 14,
+                                rt_window = 1) {
+  # Validate rt_window
+  rt_window <- as.integer(rt_window)
+  if (rt_window %% 2 == 0) {
+    cli_abort(
+      c(
+        "!" = "{.var rt_window} must be odd in order to
+        include the current estimate.",
+        "i" = "You have supplied an even number."
+      )
+    )
+  }
+
+  # Build backcalc_opts object internally
+  backcalc <- list(
+    prior = arg_match(prior),
+    prior_window = prior_window,
+    rt_window = rt_window
+  )
+  attr(backcalc, "class") <- c("backcalc_opts", class(backcalc))
 
   model <- list(
     type = "deconvolution",

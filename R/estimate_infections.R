@@ -135,7 +135,7 @@
 #' # Using new interface (recommended) with renewal model
 #' def <- estimate_infections(reported_cases,
 #'   model = renewal_opts(
-#'     rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1)),
+#'     prior = LogNormal(mean = 2, sd = 0.1),
 #'     generation_time = gt_opts(generation_time)
 #'   ),
 #'   delays = delay_opts(incubation_period + reporting_delay)
