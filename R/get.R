@@ -268,10 +268,60 @@ get_samples.forecast_infections <- function(object, ...) {
 
 #' @rdname get_samples
 #' @export
-get_samples.estimate_secondary <- function(object, CrIs = c(0.2, 0.5, 0.9),
-                                           ...) {
-  # Extract posterior samples from the fit
-  extract_stan_param(object$fit, CrIs = CrIs)
+get_samples.estimate_secondary <- function(object, ...) {
+  # Extract raw posterior samples from the fit
+  raw_samples <- extract_samples(object$fit)
+
+  # Convert to long format data.table
+  samples_list <- list()
+
+  # Extract delay_params if present
+  if (!is.null(raw_samples$delay_params)) {
+    n_delay_params <- ncol(raw_samples$delay_params)
+    for (i in seq_len(n_delay_params)) {
+      param_name <- paste0("delay_params[", i, "]")
+      samples_list[[param_name]] <- data.table::data.table(
+        variable = param_name,
+        sample = seq_along(raw_samples$delay_params[, i]),
+        value = raw_samples$delay_params[, i]
+      )
+    }
+  }
+
+  # Extract params if present
+  if (!is.null(raw_samples$params)) {
+    n_params <- ncol(raw_samples$params)
+    for (i in seq_len(n_params)) {
+      param_name <- paste0("params[", i, "]")
+      samples_list[[param_name]] <- data.table::data.table(
+        variable = param_name,
+        sample = seq_along(raw_samples$params[, i]),
+        value = raw_samples$params[, i]
+      )
+    }
+  }
+
+  # Combine all samples
+  samples <- data.table::rbindlist(samples_list, fill = TRUE)
+
+  # Add placeholder columns for consistency with estimate_infections format
+  if (!("date" %in% names(samples))) {
+    samples[, date := as.Date(NA)]
+  }
+  if (!("strat" %in% names(samples))) {
+    samples[, strat := NA_character_]
+  }
+  if (!("type" %in% names(samples))) {
+    samples[, type := NA_character_]
+  }
+  if (!("time" %in% names(samples))) {
+    samples[, time := NA_integer_]
+  }
+
+  # Reorder columns
+  data.table::setcolorder(samples, c("date", "variable", "strat", "sample", "time", "value", "type"))
+
+  return(samples[])
 }
 
 #' @rdname get_samples

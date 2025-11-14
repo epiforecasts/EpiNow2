@@ -154,20 +154,30 @@ test_that("estimate_secondary works when only estimating scaling", {
 })
 
 test_that("estimate_secondary can recover simulated parameters", {
+  # Calculate summary statistics from raw samples
+  inc_summary <- inc_posterior[, .(
+    mean = mean(value),
+    median = stats::median(value)
+  ), by = variable]
+  prev_summary <- prev_posterior[, .(
+    mean = mean(value),
+    median = stats::median(value)
+  ), by = variable]
+
   expect_equal(
-    inc_posterior[, mean], c(1.8, 0.5, 0.4),
+    inc_summary$mean, c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
   expect_equal(
-    inc_posterior[, median], c(1.8, 0.5, 0.4),
+    inc_summary$median, c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
   expect_equal(
-    prev_posterior[, mean], c(1.6, 0.8, 0.3),
+    prev_summary$mean, c(1.6, 0.8, 0.3),
     tolerance = 0.2
   )
   expect_equal(
-    prev_posterior[, median], c(1.6, 0.8, 0.3),
+    prev_summary$median, c(1.6, 0.8, 0.3),
     tolerance = 0.2
   )
 })
@@ -182,12 +192,19 @@ test_that("estimate_secondary can recover simulated parameters with the
     )
   )))
   inc_posterior_cmdstanr <- get_samples(inc_cmdstanr)[variable %in% params]
+
+  # Calculate summary statistics from raw samples
+  inc_summary_cmdstanr <- inc_posterior_cmdstanr[, .(
+    mean = mean(value),
+    median = stats::median(value)
+  ), by = variable]
+
   expect_equal(
-    inc_posterior_cmdstanr[, mean], c(1.8, 0.5, 0.4),
+    inc_summary_cmdstanr$mean, c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
   expect_equal(
-    inc_posterior_cmdstanr[, median], c(1.8, 0.5, 0.4),
+    inc_summary_cmdstanr$median, c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
 })
