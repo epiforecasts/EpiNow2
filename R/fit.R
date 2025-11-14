@@ -286,6 +286,5 @@ create_sampling_log_message <- function(args) {
       )
     }
   }
-
-  return(log_msg)
+  log_msg
 }
