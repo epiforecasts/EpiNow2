@@ -15,6 +15,13 @@
   - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
   - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
 - `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
+- `estimate_secondary()` now returns an S3 object of class `c("epinowfit", "estimate_secondary", "list")` with elements `fit`, `args`, and `observations`, matching the structure of `estimate_infections()`.
+  - Use `get_samples(object)` to extract formatted posterior samples for delay and scaling parameters.
+  - Use `get_predictions(object)` to get predicted secondary observations with credible intervals merged with observations.
+  - Use `summary(object)` to get summarised parameter estimates. Use `type = "compact"` for key parameters only, or `type = "parameters"` with a `params` argument to select specific parameters.
+  - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
+  - **Breaking change**: The previous return structure with `predictions`, `posterior`, and `data` elements is no longer supported. Use the accessor methods instead.
+- `forecast_secondary()` now returns an independent S3 class `"forecast_secondary"` instead of inheriting from `"estimate_secondary"`, with dedicated `get_samples()`, `get_predictions()`, and `plot()` methods.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
 
 ## Model changes
