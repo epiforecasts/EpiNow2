@@ -182,26 +182,17 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   args$method <- NULL
   ## The sampler parameters depend on the backend and model.
   sampler_logging_vars <- create_sampler_logging_vars(args)
-  horizon_var <- ifelse(
-    is.null(args$data$horizon),
-    NA_character_,
-    args$data$horizon
-  )
-  time_var <- ifelse(
-    is.null(args$data$t),
-    NA_character_,
-    args$data$t
-  )
+  # t and horizon are not always present
+  if (!is.null(args$data$t)) {
+    log_msg <- paste0(log_msg, " and ", args$data$t, " time steps")
+    if (!is.null(args$data$horizon)) {
+      log_msg <- paste0(
+        log_msg, " of which ", args$data$horizon, " are a forecast"
+      )
+    }
+  }
   futile.logger::flog.debug(
-    paste0(
-      "%s: Running in approximate mode for ",
-      sampler_logging_vars$total_samples,
-      " samples (across ", args$chains,
-      " chains each with a warm up of ", sampler_logging_vars$warmup_iterations,
-      " iterations each) and ",
-      time_var, " time steps of which ",
-      horizon_var, " are a forecast"
-    ),
+    log_msg,
     id,
     name = "EpiNow2.epinow.estimate_infections.fit"
   )
