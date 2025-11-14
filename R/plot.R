@@ -71,11 +71,11 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' Default to all types with supported options being: "Estimate", "Estimate
 #' based on partial data", and "Forecast".
 #'
-#' @param aggregation Character string specifying the aggregation level for
-#' visualization. Options are "daily" (default) or "weekly". When set to
-#' "weekly", daily estimates and observations are aggregated to weekly summaries
-#' before plotting. This is useful for visualizing trends when daily variation
-#' obscures the overall pattern.
+#' @param aggregation Character string specifying the temporal aggregation level
+#' for visualization. Options are "daily" (default), "weekly", "monthly", or
+#' "yearly". When set to anything other than "daily", estimates and observations
+#' are aggregated to the specified time period before plotting. This is useful
+#' for visualizing trends when daily variation obscures the overall pattern.
 #'
 #' @param week_start Integer specifying the day of week that starts each week
 #' (used when `aggregation = "weekly"`). 1 = Monday (default), 7 = Sunday.
@@ -129,13 +129,21 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #'   ylab = "Weekly cases",
 #'   aggregation = "weekly"
 #' )
+#'
+#' # plot infections aggregated to monthly
+#' plot_estimates(
+#'   estimate = out$summarised[variable == "infections"],
+#'   reported = out$observations,
+#'   ylab = "Monthly infections",
+#'   aggregation = "monthly"
+#' )
 plot_estimates <- function(estimate, reported, ylab, hline,
                            obs_as_col = TRUE, max_plot = 10,
                            estimate_type = c(
                              "Estimate", "Estimate based on partial data",
                              "Forecast"
                            ),
-                           aggregation = c("daily", "weekly"),
+                           aggregation = c("daily", "weekly", "monthly", "yearly"),
                            week_start = 1) {
   aggregation <- arg_match(aggregation)
   # convert input to data.table
@@ -144,11 +152,12 @@ plot_estimates <- function(estimate, reported, ylab, hline,
     reported <- data.table::as.data.table(reported)
   }
 
-  # Aggregate to weekly if requested
-  if (aggregation == "weekly") {
-    aggregated <- aggregate_to_weekly(
+  # Aggregate if requested
+  if (aggregation != "daily") {
+    aggregated <- aggregate_to_period(
       estimate,
       reported = if (!missing(reported)) reported else NULL,
+      unit = aggregation,
       week_start = week_start
     )
     estimate <- aggregated$estimate

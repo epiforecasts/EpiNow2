@@ -104,12 +104,50 @@ test_that("plot.estimate_infections accepts aggregation argument", {
   expect_s3_class(plots, "gg")
 })
 
-test_that("aggregate_to_weekly is an internal function", {
-  # This function should not be exported
-  expect_false("aggregate_to_weekly" %in% getNamespaceExports("EpiNow2"))
+test_that("plot_estimates supports monthly aggregation", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+
+  out <- readRDS(system.file(
+    package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+  ))
+
+  # Plot with monthly aggregation
+  p <- plot_estimates(
+    estimate = out$summarised[variable == "infections"],
+    reported = out$observations,
+    ylab = "Monthly infections",
+    aggregation = "monthly"
+  )
+
+  expect_s3_class(p, "gg")
 })
 
-test_that("aggregate_to_weekly handles estimate data correctly", {
+test_that("plot_estimates supports yearly aggregation", {
+  skip_on_cran()
+  skip_if_not_installed("ggplot2")
+
+  out <- readRDS(system.file(
+    package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+  ))
+
+  # Plot with yearly aggregation
+  p <- plot_estimates(
+    estimate = out$summarised[variable == "reported_cases"],
+    reported = out$observations,
+    ylab = "Yearly cases",
+    aggregation = "yearly"
+  )
+
+  expect_s3_class(p, "gg")
+})
+
+test_that("aggregate_to_period is an internal function", {
+  # This function should not be exported
+  expect_false("aggregate_to_period" %in% getNamespaceExports("EpiNow2"))
+})
+
+test_that("aggregate_to_period handles estimate data correctly", {
   skip_on_cran()
 
   out <- readRDS(system.file(
@@ -119,19 +157,33 @@ test_that("aggregate_to_weekly handles estimate data correctly", {
   estimate <- out$summarised[variable == "reported_cases"]
   reported <- out$observations
 
-  # Call internal function directly
-  aggregated <- EpiNow2:::aggregate_to_weekly(
+  # Test weekly aggregation
+  aggregated_weekly <- EpiNow2:::aggregate_to_period(
     estimate,
     reported = reported,
+    unit = "weekly",
     week_start = 1
   )
 
-  expect_type(aggregated, "list")
-  expect_named(aggregated, c("estimate", "reported"))
-  expect_s3_class(aggregated$estimate, "data.table")
-  expect_s3_class(aggregated$reported, "data.table")
+  expect_type(aggregated_weekly, "list")
+  expect_named(aggregated_weekly, c("estimate", "reported"))
+  expect_s3_class(aggregated_weekly$estimate, "data.table")
+  expect_s3_class(aggregated_weekly$reported, "data.table")
 
   # Weekly data should have fewer rows than daily
-  expect_lt(nrow(aggregated$estimate), nrow(estimate))
-  expect_lt(nrow(aggregated$reported), nrow(reported))
+  expect_lt(nrow(aggregated_weekly$estimate), nrow(estimate))
+  expect_lt(nrow(aggregated_weekly$reported), nrow(reported))
+
+  # Test monthly aggregation
+  aggregated_monthly <- EpiNow2:::aggregate_to_period(
+    estimate,
+    reported = reported,
+    unit = "monthly"
+  )
+
+  expect_s3_class(aggregated_monthly$estimate, "data.table")
+  expect_s3_class(aggregated_monthly$reported, "data.table")
+
+  # Monthly data should have even fewer rows than weekly
+  expect_lt(nrow(aggregated_monthly$estimate), nrow(aggregated_weekly$estimate))
 })
