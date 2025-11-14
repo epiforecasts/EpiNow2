@@ -421,6 +421,65 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
 }
 
+#' Plot method for forecast_secondary objects
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Plot method for forecast secondary observations.
+#'
+#' @inheritParams plot.estimate_secondary
+#' @method plot forecast_secondary
+#' @export
+plot.forecast_secondary <- function(x, primary = FALSE,
+                                    from = NULL, to = NULL,
+                                    new_obs = NULL,
+                                    ...) {
+  predictions <- data.table::copy(get_predictions(x))
+
+  if (!is.null(new_obs)) {
+    new_obs <- data.table::as.data.table(new_obs)
+    new_obs <- new_obs[, .(date, secondary)]
+    predictions <- predictions[, secondary := NULL]
+    predictions <- data.table::merge.data.table(
+      predictions, new_obs,
+      all = TRUE, by = "date"
+    )
+  }
+  if (!is.null(from)) {
+    predictions <- predictions[date >= from]
+  }
+  if (!is.null(to)) {
+    predictions <- predictions[date <= to]
+  }
+
+  p <- ggplot2::ggplot(predictions, ggplot2::aes(x = date, y = secondary)) +
+    ggplot2::geom_col(
+      fill = "grey", col = "white",
+      show.legend = FALSE, na.rm = TRUE
+    )
+
+  if (primary) {
+    p <- p +
+      ggplot2::geom_point(
+        data = predictions,
+        ggplot2::aes(y = primary),
+        alpha = 0.4, size = 0.8
+      ) +
+      ggplot2::geom_line(
+        data = predictions,
+        ggplot2::aes(y = primary), alpha = 0.4
+      )
+  }
+  p <- plot_CrIs(p, extract_CrIs(predictions),
+    alpha = 0.6, linewidth = 1
+  )
+  p +
+    ggplot2::theme_bw() +
+    ggplot2::labs(y = "Reports per day", x = "Date") +
+    ggplot2::scale_x_date(date_breaks = "week", date_labels = "%b %d") +
+    ggplot2::scale_y_continuous(labels = scales::comma) +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+}
+
 #' Convolve and scale a time series
 #'
 #' This applies a lognormal convolution with given, potentially time-varying
