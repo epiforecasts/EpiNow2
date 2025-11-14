@@ -4,7 +4,7 @@
 \alias{aggregate_to_period}
 \title{Aggregate estimates to a specified time period}
 \usage{
-aggregate_to_period(estimate, reported = NULL, unit = "weekly", week_start = 1)
+aggregate_to_period(estimate, reported = NULL, unit = "week", week_start = 1)
 }
 \arguments{
 \item{estimate}{A \verb{<data.table>} of estimates containing date, type, and
@@ -13,12 +13,12 @@ credible interval columns (as used in \code{\link[=plot_estimates]{plot_estimate
 \item{reported}{A \verb{<data.table>} of reported cases with date and confirm
 columns (optional).}
 
-\item{unit}{Character string specifying the aggregation unit. Options include
-"weekly", "monthly", "yearly", or any other unit supported by
-\code{\link[lubridate:round_date]{lubridate::floor_date()}}.}
+\item{unit}{Character string specifying the aggregation unit. Any unit
+supported by \code{\link[lubridate:round_date]{lubridate::floor_date()}} can be used, such as "week", "month",
+"year", "quarter", "bimonth", etc.}
 
 \item{week_start}{Integer indicating the day of the week that starts the
-epidemiological week (used when \code{unit = "weekly"}). Uses standard weekday
+epidemiological week (used when \code{unit = "week"}). Uses standard weekday
 numbering where 1 = Monday, 2 = Tuesday, ..., 7 = Sunday. Defaults to 1
 (Monday).}
 }
