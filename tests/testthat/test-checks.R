@@ -168,16 +168,16 @@ test_that("check_np_delay_lengths returns invisibly when no nonparametric distri
   )
 })
 
-test_that("check_np_delay_lengths returns invisibly when PMFs are shorter than data", {
+test_that("check_np_delay_lengths does not warn when PMFs are shorter than data", {
   rlang::local_options(rlib_warning_verbosity = "verbose")
   # Test with short PMF (length 5) and data length 10
   stan_args <- list(
     data = list(
       delay_n_np = 2,
-      delay_np_pmf_groups = array(c(1, 6, 11)) # Two PMFs of length 5 each
+      delay_np_pmf_groups = array(c(1, 6, 11))
     )
   )
-  expect_invisible(
+  expect_no_warning(
     check_np_delay_lengths(stan_args, data_length = 10)
   )
 })
