@@ -2,27 +2,33 @@
 futile.logger::flog.threshold("DEBUG")
 
 # Set up arguments for cmdstanr and rstan
+# Backend is auto-detected from the object class
+
+# Create mock objects for testing
+cmdstanr_object <- structure(list(), class = "CmdStanModel")
+rstan_object <- structure(list(), class = "stanmodel")
+
 args_cmdstanr <- list(
-  backend = "cmdstanr",
+  object = cmdstanr_object,
   iter_sampling = 1000,
   iter_warmup = 500,
   chains = 4
 )
 
 args_rstan <- list(
-  backend = "rstan",
+  object = rstan_object,
   iter = 2000,
   warmup = 1000,
   chains = 2
 )
 
-test_that("create_sampler_logging_vars returns expected samples and iterations for cmdstanr backend", {
+test_that("create_sampler_logging_vars returns expected samples and iterations for CmdStanModel objects", {
   result <- create_sampler_logging_vars(args_cmdstanr)
   expect_equal(result$total_samples, 4000)
   expect_equal(result$warmup_iterations, 500)
 })
 
-test_that("create_sampler_logging_vars returns expected samples and iterations for rstan backend", {
+test_that("create_sampler_logging_vars returns expected samples and iterations for stanmodel objects", {
   result <- create_sampler_logging_vars(args_rstan)
   expect_equal(result$total_samples, 2000)
   expect_equal(result$warmup_iterations, 1000)
@@ -48,12 +54,11 @@ test_that("logging component logs correct sampling information for cmdstanr", {
   # Mock arguments that would normally be passed
   #cmdstanr args
   cmdstanr_args <- list(
-    backend = "cmdstanr",
+    object = cmdstanr_object,
     iter_sampling = 100,
     iter_warmup = 50,
     chains = 2,
-    data = list(t = 30, horizon = 7),
-    object = NULL  # Avoid needing actual model
+    data = list(t = 30, horizon = 7)
   )
   # Capture cmdstanr log messages without actually fitting
   cmdstanr_log_messages <- capture.output(
@@ -86,12 +91,11 @@ test_that("logging component logs correct sampling information for rstan", {
   # Mock arguments that would normally be passed
   # rstan args
   rstan_args <- list(
-    backend = "rstan",
+    object = rstan_object,
     iter = 100,
     warmup = 50,
     chains = 2,
-    data = list(t = 30, horizon = 7),
-    object = NULL  # Avoid needing actual model
+    data = list(t = 30, horizon = 7)
   )
   
   # Capture rstan log messages without actually fitting
