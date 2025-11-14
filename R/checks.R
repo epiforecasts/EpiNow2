@@ -208,14 +208,10 @@ check_truncation_length <- function(stan_args, time_points) {
     return(invisible())
   }
 
-  # Get truncation position in the flat delay array
-  trunc_id <- stan_args$data$trunc_id
-  delay_types_groups <- stan_args$data$delay_types_groups
-
   # Map truncation to its position in the non-parametric PMF array
   # delay_types_groups gives start and end indices for each delay type
-  trunc_start <- delay_types_groups[trunc_id]
-  trunc_end <- delay_types_groups[trunc_id + 1] - 1
+  trunc_start <- stan_args$data$delay_types_groups[stan_args$data$trunc_id]
+  trunc_end <- stan_args$data$delay_types_groups[stan_args$data$trunc_id + 1] - 1
 
   # Calculate individual PMF lengths from the indices
   np_pmf_lengths <- diff(stan_args$data$delay_np_pmf_groups)
