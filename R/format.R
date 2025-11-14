@@ -278,34 +278,13 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
 
   # Delay parameters
   if (args$delay_params_length > 0) {
-    delay_params <- extract_latent_state(
-      "delay_params", raw_samples, seq_len(args$delay_params_length)
+    out$delay_params <- extract_array_parameter(
+      "delay_params", raw_samples$delay_params
     )
-    if (!is.null(delay_params)) {
-      out$delay_params <- delay_params[, strat := as.character(time)][
-        , time := NULL
-      ][, date := NULL]
-    }
   }
 
-  # Auto-detect and extract all static parameters from params matrix
-  param_id_names <- names(raw_samples)[
-    startsWith(names(raw_samples), "param_id_")
-  ]
-  param_names <- sub("^param_id_", "", param_id_names)
-
-  for (param in param_names) {
-    result <- extract_parameter(param, raw_samples)
-    if (!is.null(result)) {
-      # Use standard naming conventions
-      param_name <- switch(param,
-        "dispersion" = "reporting_overdispersion",
-        "frac_obs" = "fraction_observed",
-        param # default: use param name as-is
-      )
-      out[[param_name]] <- result
-    }
-  }
+  # Params matrix
+  out$params <- extract_array_parameter("params", raw_samples$params)
 
   # Combine all parameters into single data.table
   combined <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")

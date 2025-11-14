@@ -76,6 +76,34 @@ extract_parameter <- function(param, samples) {
   )
 }
 
+#' Extract samples from an array parameter
+#'
+#' Extracts samples from a parameter stored as a matrix (samples x dimension)
+#' and returns them in long format with indexed parameter names.
+#'
+#' @param param_name Character string for the parameter name (e.g.,
+#'   "delay_params", "params")
+#' @param param_array A matrix of samples where rows are MCMC samples and
+#'   columns are parameter dimensions
+#' @return A `<data.table>` with columns: parameter, sample, value, or NULL if
+#'   param_array is NULL
+#' @keywords internal
+extract_array_parameter <- function(param_name, param_array) {
+  if (is.null(param_array)) {
+    return(NULL)
+  }
+
+  n_cols <- ncol(param_array)
+  samples_list <- lapply(seq_len(n_cols), function(i) {
+    data.table::data.table(
+      parameter = paste0(param_name, "[", i, "]"),
+      sample = seq_along(param_array[, i]),
+      value = param_array[, i]
+    )
+  })
+  data.table::rbindlist(samples_list)
+}
+
 #' Extract all samples from a stan fit
 #'
 #' If the `object` argument is a `<stanfit>` object, it simply returns the
