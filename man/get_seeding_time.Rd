@@ -11,7 +11,7 @@ get_seeding_time(delays, generation_time, rt = rt_opts())
 options. See the documentation of \code{\link[=delay_opts]{delay_opts()}} and the examples below for
 details.}
 
-\item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
+\item{generation_time}{Deprecated; use \code{model = renewal_opts(generation_time = ...)} instead. A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
 \code{\link[=generation_time_opts]{generation_time_opts()}}) defining the generation time distribution used.
 For backwards compatibility a list of summary parameters can also be passed.}
 

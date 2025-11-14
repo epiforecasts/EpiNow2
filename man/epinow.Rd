@@ -41,7 +41,7 @@ truncation as specified by the \code{truncation} argument. If all entries
 of \code{confirm} are missing (\code{NA}) the returned estimates will represent the
 prior distributions.}
 
-\item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
+\item{generation_time}{Deprecated; use \code{model = renewal_opts(generation_time = ...)} instead. A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
 \code{\link[=generation_time_opts]{generation_time_opts()}}) defining the generation time distribution used.
 For backwards compatibility a list of summary parameters can also be passed.}
 

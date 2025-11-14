@@ -16,6 +16,7 @@ estimate_infections(
   obs = obs_opts(),
   forecast = forecast_opts(),
   stan = stan_opts(),
+  model = NULL,
   CrIs = c(0.2, 0.5, 0.9),
   weigh_delay_priors = TRUE,
   id = "estimate_infections",
@@ -37,7 +38,7 @@ truncation as specified by the \code{truncation} argument. If all entries
 of \code{confirm} are missing (\code{NA}) the returned estimates will represent the
 prior distributions.}
 
-\item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
+\item{generation_time}{Deprecated; use \code{model = renewal_opts(generation_time = ...)} instead. A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
 \code{\link[=generation_time_opts]{generation_time_opts()}}) defining the generation time distribution used.
 For backwards compatibility a list of summary parameters can also be passed.}
 
@@ -76,6 +77,13 @@ forecasting will be done.}
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
+\item{model}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} A call to \code{\link[=renewal_opts]{renewal_opts()}}
+or \code{\link[=deconvolution_opts]{deconvolution_opts()}} defining the infection model to use. This is the
+recommended way to specify the model. If provided, the \code{rt},
+\code{generation_time}, and \code{backcalc} arguments are ignored (deprecated). If
+\code{NULL} (default), the function uses the legacy interface via \code{rt},
+\code{generation_time}, and \code{backcalc} arguments.}
+
 \item{CrIs}{Deprecated; specify credible intervals when using \code{\link[=summary]{summary()}} or
 \code{\link[=plot]{plot()}}}
 
@@ -112,16 +120,19 @@ the fit can be accessed using the \code{summary()} function.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Uses a non-parametric approach to reconstruct cases by date of infection
-from reported cases. It uses either a generative Rt model or non-parametric
-back calculation to estimate underlying latent infections and then maps
-these infections to observed cases via uncertain reporting delays and a
-flexible observation model. See the examples and function arguments for the
-details of all options. The default settings may not be sufficient for your
-use case so the number of warmup samples (\code{stan_args = list(warmup)}) may
-need to be increased as may the overall number of samples. Follow the links
-provided by any warnings messages to diagnose issues with the MCMC fit. It
-is recommended to explore several of the Rt estimation approaches supported
-as not all of them may be suited to users own use cases. See
+from reported cases. Two models are available: the renewal equation model
+(specified via \code{\link[=renewal_opts]{renewal_opts()}}) which uses the generation time distribution
+to relate the reproduction number to infections, and the deconvolution model
+(specified via \code{\link[=deconvolution_opts]{deconvolution_opts()}}) which directly estimates infections
+on the log scale without mechanistic assumptions. Both models map latent
+infections to observed cases via uncertain reporting delays and a flexible
+observation model. See the examples and function arguments for the details
+of all options. The default settings may not be sufficient for your use case
+so the number of warmup samples (\code{stan_args = list(warmup)}) may need to be
+increased as may the overall number of samples. Follow the links provided by
+any warnings messages to diagnose issues with the MCMC fit. It is
+recommended to explore both models as they may be suited to different use
+cases. See
 \href{https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867}{here}
 for an example of using \code{estimate_infections} within the \code{epinow} wrapper to
 estimate Rt for Covid-19 in a country from the ECDC data source.
@@ -154,15 +165,28 @@ incubation_period <- LogNormal(
 reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 
 # for more examples, see the "estimate_infections examples" vignette
+
+# Using new interface (recommended) with renewal model
 def <- estimate_infections(reported_cases,
-  generation_time = gt_opts(generation_time),
-  delays = delay_opts(incubation_period + reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1))
+  model = renewal_opts(
+    rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1)),
+    generation_time = gt_opts(generation_time)
+  ),
+  delays = delay_opts(incubation_period + reporting_delay)
 )
 # real time estimates
 summary(def)
 # summary plot
 plot(def)
+
+# Using deconvolution model (non-mechanistic)
+def_deconv <- estimate_infections(reported_cases,
+  model = deconvolution_opts(),
+  delays = delay_opts(incubation_period + reporting_delay),
+  gp = gp_opts()
+)
+summary(def_deconv)
+
 options(old_opts)
 }
 }
