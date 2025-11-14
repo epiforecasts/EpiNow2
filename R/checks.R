@@ -181,43 +181,6 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
   }
 }
 
-
-#' Check and warn if individual non-parametric delay PMFs are longer than the
-#' input data
-#'
-#' @param stan_args List of stan arguments including the data element with
-#'   delay information from [create_stan_delays()]
-#'  @param data_length Length of original data
-#' @importFrom cli cli_warn
-#'
-#' @return Called for its side effects
-#' @keywords internal
-check_np_delay_lengths <- function(stan_args, data_length) {
-  # Check if there are any non-parametric delays
-  if (is.null(stan_args$data$delay_n_np) || stan_args$data$delay_n_np == 0) {
-    return(invisible())
-  }
-
-  # Calculate individual PMF lengths from the indices
-  np_pmf_lengths <- diff(stan_args$data$delay_np_pmf_groups)
-  # Check which PMFs exceed data length
-  pmf_longer_than_data <- np_pmf_lengths > data_length
-
-  if (any(pmf_longer_than_data)) {
-    cli::cli_warn(
-      c(
-        "!" = "Some supplied non-parametric delay distributions are longer
-        than the input data.",
-        "i" = "These will be trimmed to match the input data length. To
-        remove this warning, ensure that supplied non-parametric PMFs are
-        the same length or shorter than the input data."
-      ),
-      .frequency = "once",
-      .frequency_id = "pmf_individual_longer_than_data"
-    )
-  }
-}
-
 #' Check and warn if truncation distribution is longer than observed time
 #'
 #' @description Checks if the truncation distribution PMF is longer than the
