@@ -217,4 +217,3 @@ check_np_delay_lengths <- function(stan_args, data_length) {
     )
   }
 }
-
