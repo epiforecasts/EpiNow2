@@ -14,7 +14,7 @@ get_samples(object, ...)
 
 \method{get_samples}{forecast_infections}(object, ...)
 
-\method{get_samples}{estimate_secondary}(object, CrIs = c(0.2, 0.5, 0.9), ...)
+\method{get_samples}{estimate_secondary}(object, ...)
 
 \method{get_samples}{forecast_secondary}(object, ...)
 }
