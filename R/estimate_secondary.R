@@ -264,6 +264,9 @@ estimate_secondary <- function(data,
   # Warn if non-parametric delays are longer than data
   check_np_delay_lengths(stan_, data_length = nrow(data))
 
+  # Warn if truncation distribution is longer than observed time
+  check_truncation_length(stan_, time_points = stan_data$t)
+
   fit <- fit_model(stan_, id = "estimate_secondary")
 
   out <- list()
