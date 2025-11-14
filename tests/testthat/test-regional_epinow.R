@@ -1,5 +1,9 @@
 skip_on_cran()
 
+# Integration tests (MCMC-based) ------------------------------------------
+# These tests run actual MCMC sampling and are slow. They are skipped by
+# default and only run in full test mode (EPINOW2_SKIP_INTEGRATION=false).
+
 # get example delays
 futile.logger::flog.threshold("FATAL")
 
@@ -15,6 +19,7 @@ df_non_zero <- function(df) {
 }
 
 test_that("regional_epinow produces expected output when run with default settings", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   out <- suppressWarnings(
     regional_epinow(
       data = cases,
@@ -45,6 +50,7 @@ test_that("regional_epinow produces expected output when run with default settin
 })
 
 test_that("regional_epinow runs without error when given a very short timeout", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   output <- capture.output(suppressMessages(
     out <- regional_epinow(
       data = cases,
@@ -77,6 +83,7 @@ test_that("regional_epinow runs without error when given a very short timeout", 
 
 
 test_that("regional_epinow produces expected output when run with region specific settings", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   gp <- opts_list(gp_opts(), cases)
   gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
   rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))

@@ -1,5 +1,10 @@
 # Setup for testing -------------------------------------------------------
 skip_on_cran()
+
+# Integration tests (MCMC-based) ------------------------------------------
+# These tests run actual MCMC sampling and are slow. They are skipped by
+# default and only run in full test mode (EPINOW2_SKIP_INTEGRATION=false).
+
 futile.logger::flog.threshold("FATAL")
 
 # set number of cores to use
@@ -8,6 +13,7 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 
 test_that("estimate_truncation can return values from simulated data and plot
            them", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   # fit model to example data
   est <- estimate_truncation(example_truncated,
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250
@@ -22,6 +28,7 @@ test_that("estimate_truncation can return values from simulated data and plot
 
 test_that("estimate_truncation can return values from simulated data with the
            cmdstanr backend", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   # fit model to example data
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
@@ -39,6 +46,7 @@ test_that("estimate_truncation can return values from simulated data with the
 })
 
 test_that("estimate_truncation works with filter_leading_zeros set", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   skip_on_os("windows")
   # Modify the first three rows of the first dataset to have zero cases
   # and fit the model with filter_leading_zeros = TRUE. This should
@@ -72,6 +80,7 @@ test_that("estimate_truncation works with filter_leading_zeros set", {
 })
 
 test_that("estimate_truncation works with zero_threshold set", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
   skip_on_os("windows")
   # fit model to a modified version of example_data with zero leading cases
   # but with filter_leading_zeros = TRUE
