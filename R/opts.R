@@ -440,6 +440,101 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
   return(backcalc)
 }
 
+#' Renewal Model Specification
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Specifies that infections should be estimated using the renewal equation
+#' model. This is the mechanistic model that uses the generation time
+#' distribution to relate the reproduction number to infections.
+#'
+#' @param rt A call to [rt_opts()] defining the time-varying reproduction
+#' number. Defaults to [rt_opts()].
+#'
+#' @param generation_time A call to [gt_opts()] (or its alias
+#' [generation_time_opts()]) defining the generation time distribution.
+#' Defaults to [gt_opts()].
+#'
+#' @return A `<renewal_opts>` object that can be passed to the `model`
+#' argument of [estimate_infections()].
+#' @seealso [deconvolution_opts()] [estimate_infections()] [rt_opts()]
+#' [gt_opts()]
+#' @importFrom cli cli_abort
+#' @importFrom checkmate assert_class
+#' @export
+#' @examples
+#' # default settings
+#' renewal_opts()
+#'
+#' # with custom Rt prior
+#' renewal_opts(rt = rt_opts(prior = LogNormal(mean = 2, sd = 1)))
+#'
+#' # with custom generation time
+#' generation_time <- Gamma(
+#'   shape = Normal(1.3, 0.3),
+#'   rate = Normal(0.37, 0.09),
+#'   max = 14
+#' )
+#' renewal_opts(generation_time = gt_opts(generation_time))
+renewal_opts <- function(rt = rt_opts(),
+                         generation_time = gt_opts()) {
+  assert_class(rt, "rt_opts")
+  assert_class(generation_time, "generation_time_opts")
+
+  if (!rt$use_rt) {
+    cli_abort(
+      c(
+        "!" = "The renewal model requires {.var use_rt = TRUE}.",
+        "i" = "You have set {.var use_rt = FALSE} in {.fn rt_opts}.",
+        "i" = "Either remove this setting or use {.fn deconvolution_opts} instead."
+      )
+    )
+  }
+
+  model <- list(
+    type = "renewal",
+    rt = rt,
+    generation_time = generation_time
+  )
+
+  attr(model, "class") <- c("renewal_opts", "model_opts", class(model))
+  return(model)
+}
+
+#' Deconvolution Model Specification
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Specifies that infections should be estimated using the deconvolution
+#' (non-mechanistic) model. This model directly estimates infections on the log
+#' scale without using the renewal equation, and therefore does not require a
+#' generation time distribution.
+#'
+#' @param backcalc A call to [backcalc_opts()] defining the deconvolution
+#' settings. Defaults to [backcalc_opts()].
+#'
+#' @return A `<deconvolution_opts>` object that can be passed to the `model`
+#' argument of [estimate_infections()].
+#' @seealso [renewal_opts()] [estimate_infections()] [backcalc_opts()]
+#' @importFrom cli cli_abort
+#' @importFrom checkmate assert_class
+#' @export
+#' @examples
+#' # default settings
+#' deconvolution_opts()
+#'
+#' # with custom prior window
+#' deconvolution_opts(backcalc = backcalc_opts(prior_window = 21))
+deconvolution_opts <- function(backcalc = backcalc_opts()) {
+  assert_class(backcalc, "backcalc_opts")
+
+  model <- list(
+    type = "deconvolution",
+    backcalc = backcalc
+  )
+
+  attr(model, "class") <- c("deconvolution_opts", "model_opts", class(model))
+  return(model)
+}
+
 #' Approximate Gaussian Process Settings
 #'
 #' @description `r lifecycle::badge("stable")`

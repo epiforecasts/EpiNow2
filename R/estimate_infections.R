@@ -3,16 +3,19 @@
 #'
 #' @description `r lifecycle::badge("maturing")`
 #' Uses a non-parametric approach to reconstruct cases by date of infection
-#' from reported cases. It uses either a generative Rt model or non-parametric
-#' back calculation to estimate underlying latent infections and then maps
-#' these infections to observed cases via uncertain reporting delays and a
-#' flexible observation model. See the examples and function arguments for the
-#' details of all options. The default settings may not be sufficient for your
-#' use case so the number of warmup samples (`stan_args = list(warmup)`) may
-#' need to be increased as may the overall number of samples. Follow the links
-#' provided by any warnings messages to diagnose issues with the MCMC fit. It
-#' is recommended to explore several of the Rt estimation approaches supported
-#' as not all of them may be suited to users own use cases. See
+#' from reported cases. Two models are available: the renewal equation model
+#' (specified via [renewal_opts()]) which uses the generation time distribution
+#' to relate the reproduction number to infections, and the deconvolution model
+#' (specified via [deconvolution_opts()]) which directly estimates infections
+#' on the log scale without mechanistic assumptions. Both models map latent
+#' infections to observed cases via uncertain reporting delays and a flexible
+#' observation model. See the examples and function arguments for the details
+#' of all options. The default settings may not be sufficient for your use case
+#' so the number of warmup samples (`stan_args = list(warmup)`) may need to be
+#' increased as may the overall number of samples. Follow the links provided by
+#' any warnings messages to diagnose issues with the MCMC fit. It is
+#' recommended to explore both models as they may be suited to different use
+#' cases. See
 #' [here](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867)
 #' for an example of using `estimate_infections` within the `epinow` wrapper to
 #' estimate Rt for Covid-19 in a country from the ECDC data source.
@@ -28,7 +31,15 @@
 #' of `confirm` are missing (`NA`) the returned estimates will represent the
 #' prior distributions.
 #'
-#' @param generation_time A call to [gt_opts()] (or its alias
+#' @param model `r lifecycle::badge("experimental")` A call to [renewal_opts()]
+#' or [deconvolution_opts()] defining the infection model to use. This is the
+#' recommended way to specify the model. If provided, the `rt`,
+#' `generation_time`, and `backcalc` arguments are ignored (deprecated). If
+#' `NULL` (default), the function uses the legacy interface via `rt`,
+#' `generation_time`, and `backcalc` arguments.
+#'
+#' @param generation_time Deprecated; use `model = renewal_opts(generation_time
+#' = ...)` instead. A call to [gt_opts()] (or its alias
 #' [generation_time_opts()]) defining the generation time distribution used.
 #' For backwards compatibility a list of summary parameters can also be passed.
 #'
@@ -91,6 +102,7 @@
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @importFrom checkmate assert_class assert_numeric assert_logical
 #' assert_string
+#' @importFrom cli cli_abort
 #' @examples
 #' \donttest{
 #' # set number of cores to use
@@ -119,15 +131,28 @@
 #' reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 #'
 #' # for more examples, see the "estimate_infections examples" vignette
+#'
+#' # Using new interface (recommended) with renewal model
 #' def <- estimate_infections(reported_cases,
-#'   generation_time = gt_opts(generation_time),
-#'   delays = delay_opts(incubation_period + reporting_delay),
-#'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1))
+#'   model = renewal_opts(
+#'     rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1)),
+#'     generation_time = gt_opts(generation_time)
+#'   ),
+#'   delays = delay_opts(incubation_period + reporting_delay)
 #' )
 #' # real time estimates
 #' summary(def)
 #' # summary plot
 #' plot(def)
+#'
+#' # Using deconvolution model (non-mechanistic)
+#' def_deconv <- estimate_infections(reported_cases,
+#'   model = deconvolution_opts(),
+#'   delays = delay_opts(incubation_period + reporting_delay),
+#'   gp = gp_opts()
+#' )
+#' summary(def_deconv)
+#'
 #' options(old_opts)
 #' }
 estimate_infections <- function(data,
@@ -140,6 +165,7 @@ estimate_infections <- function(data,
                                 obs = obs_opts(),
                                 forecast = forecast_opts(),
                                 stan = stan_opts(),
+                                model = NULL,
                                 CrIs = c(0.2, 0.5, 0.9),
                                 weigh_delay_priors = TRUE,
                                 id = "estimate_infections",
@@ -186,6 +212,64 @@ estimate_infections <- function(data,
         override any `horizon` argument passed via `forecast_opts()`."
     )
   }
+
+  # Handle new model interface
+  if (!is.null(model)) {
+    # Check if old interface is being used alongside new interface
+    rt_specified <- !missing(rt)
+    gt_specified <- !missing(generation_time)
+    bc_specified <- !missing(backcalc)
+
+    if (rt_specified || gt_specified || bc_specified) {
+      # Issue deprecation warning
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        "estimate_infections(rt = , generation_time = , backcalc = )",
+        "estimate_infections(model = )",
+        details = c(
+          "The `rt`, `generation_time`, and `backcalc` arguments are deprecated.",
+          "i" = "Please use the `model` argument with `renewal_opts()` or
+          `deconvolution_opts()` instead.",
+          "i" = "When `model` is specified, `rt`, `generation_time`, and
+          `backcalc` are ignored."
+        )
+      )
+    }
+
+    # Extract model-specific settings
+    if (inherits(model, "renewal_opts")) {
+      rt <- model$rt
+      generation_time <- model$generation_time
+      # Use default backcalc (won't be used since rt is not NULL)
+      backcalc <- backcalc_opts()
+    } else if (inherits(model, "deconvolution_opts")) {
+      rt <- NULL
+      backcalc <- model$backcalc
+      # Generation time should not be used for deconvolution
+      generation_time <- gt_opts()
+    } else {
+      cli_abort(
+        c(
+          "!" = "{.var model} must be created using {.fn renewal_opts} or
+          {.fn deconvolution_opts}.",
+          "i" = "You have provided an object of class {.cls {class(model)}}."
+        )
+      )
+    }
+  } else if (!missing(rt) || !missing(generation_time) || !missing(backcalc)) {
+    # Using old interface without model argument
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      "estimate_infections(rt = , generation_time = , backcalc = )",
+      "estimate_infections(model = )",
+      details = c(
+        "The `rt`, `generation_time`, and `backcalc` arguments are deprecated.",
+        "i" = "Please use the `model` argument with `renewal_opts()` or
+        `deconvolution_opts()` instead."
+      )
+    )
+  }
+
   # Validate inputs
   check_reports_valid(data, model = "estimate_infections")
   assert_class(generation_time, "generation_time_opts")

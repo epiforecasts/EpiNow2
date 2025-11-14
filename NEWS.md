@@ -14,6 +14,11 @@
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
   - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
   - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
+- `estimate_infections()` now accepts a `model` argument to explicitly specify the infection model via `renewal_opts()` or `deconvolution_opts()`.
+  - **Deprecated**: The `rt`, `generation_time`, and `backcalc` arguments are now deprecated in favour of the `model` argument.
+  - Use `model = renewal_opts(rt = ..., generation_time = ...)` for the renewal equation model.
+  - Use `model = deconvolution_opts(backcalc = ...)` for the deconvolution model (previously selected using `rt = NULL`).
+  - The old interface continues to work with deprecation warnings.
 - `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
 
