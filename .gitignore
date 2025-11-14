@@ -5,7 +5,6 @@
 .Ruserdata
 .cache
 .idea
-.claude
 
 # test data and logs
 .log
@@ -47,3 +46,6 @@ inst/stan/*
 # benchmarking
 inst/stan-main
 inst/dev/benchmark-results.md
+
+# Claude
+.claude/*
