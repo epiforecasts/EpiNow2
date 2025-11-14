@@ -12,7 +12,7 @@ plot_estimates(
   obs_as_col = TRUE,
   max_plot = 10,
   estimate_type = c("Estimate", "Estimate based on partial data", "Forecast"),
-  aggregation = c("daily", "weekly"),
+  aggregation = c("daily", "weekly", "monthly", "yearly"),
   week_start = 1
 )
 }
@@ -41,11 +41,11 @@ cases.}
 Default to all types with supported options being: "Estimate", "Estimate
 based on partial data", and "Forecast".}
 
-\item{aggregation}{Character string specifying the aggregation level for
-visualization. Options are "daily" (default) or "weekly". When set to
-"weekly", daily estimates and observations are aggregated to weekly summaries
-before plotting. This is useful for visualizing trends when daily variation
-obscures the overall pattern.}
+\item{aggregation}{Character string specifying the temporal aggregation level
+for visualization. Options are "daily" (default), "weekly", "monthly", or
+"yearly". When set to anything other than "daily", estimates and observations
+are aggregated to the specified time period before plotting. This is useful
+for visualizing trends when daily variation obscures the overall pattern.}
 
 \item{week_start}{Integer specifying the day of week that starts each week
 (used when \code{aggregation = "weekly"}). 1 = Monday (default), 7 = Sunday.}
@@ -99,5 +99,13 @@ plot_estimates(
   reported = out$observations,
   ylab = "Weekly cases",
   aggregation = "weekly"
+)
+
+# plot infections aggregated to monthly
+plot_estimates(
+  estimate = out$summarised[variable == "infections"],
+  reported = out$observations,
+  ylab = "Monthly infections",
+  aggregation = "monthly"
 )
 }
