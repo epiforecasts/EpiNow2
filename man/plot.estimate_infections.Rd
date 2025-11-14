@@ -16,7 +16,8 @@ generated.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{...}{Pass additional arguments to report_plots}
+\item{...}{Pass additional arguments to report_plots (including \code{aggregation}
+and \code{week_start} for weekly plotting)}
 }
 \value{
 List of plots as produced by \code{\link[=report_plots]{report_plots()}}

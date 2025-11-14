@@ -11,7 +11,9 @@ plot_estimates(
   hline,
   obs_as_col = TRUE,
   max_plot = 10,
-  estimate_type = c("Estimate", "Estimate based on partial data", "Forecast")
+  estimate_type = c("Estimate", "Estimate based on partial data", "Forecast"),
+  aggregation = c("daily", "weekly"),
+  week_start = 1
 )
 }
 \arguments{
@@ -38,6 +40,15 @@ cases.}
 \item{estimate_type}{Character vector indicating the type of data to plot.
 Default to all types with supported options being: "Estimate", "Estimate
 based on partial data", and "Forecast".}
+
+\item{aggregation}{Character string specifying the aggregation level for
+visualization. Options are "daily" (default) or "weekly". When set to
+"weekly", daily estimates and observations are aggregated to weekly summaries
+before plotting. This is useful for visualizing trends when daily variation
+obscures the overall pattern.}
+
+\item{week_start}{Integer specifying the day of week that starts each week
+(used when \code{aggregation = "weekly"}). 1 = Monday (default), 7 = Sunday.}
 }
 \value{
 A \code{ggplot2} object
@@ -80,5 +91,13 @@ plot_estimates(
   estimate = out$summarised[variable == "R"],
   ylab = "Effective Reproduction No.",
   hline = 1, estimate_type = "Estimate"
+)
+
+# plot reported cases aggregated to weekly
+plot_estimates(
+  estimate = out$summarised[variable == "reported_cases"],
+  reported = out$observations,
+  ylab = "Weekly cases",
+  aggregation = "weekly"
 )
 }

@@ -14,7 +14,8 @@ Defaults to  "summary" with supported options being "infections", "reports",
 "R", "growth_rate", "summary", "all". If "all" is supplied all plots are
 generated.}
 
-\item{...}{Pass additional arguments to report_plots}
+\item{...}{Pass additional arguments to report_plots (including \code{aggregation}
+and \code{week_start} for weekly plotting)}
 }
 \value{
 List of plots as produced by \code{\link[=report_plots]{report_plots()}}
