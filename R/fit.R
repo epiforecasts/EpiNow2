@@ -63,7 +63,6 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 
   fit_chain <- function(chain, stan_args, max_time, catch = FALSE) {
     stan_args$chain_id <- chain
-    stan_args$backend <- NULL # should be removed as it's not a valid argument
     if (inherits(stan_args$object, "stanmodel")) {
       sample_func <- rstan::sampling
     } else if (inherits(stan_args$object, "CmdStanModel")) {
@@ -227,7 +226,6 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
       }
       stan_args$object <- NULL
     }
-    stan_args$backend <- NULL # should be removed as it's not a valid argument
     fit <- do.call(sample_func, stan_args)
 
     if (length(names(fit)) == 0) {
@@ -287,7 +285,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
 #' @keywords internal
 create_sampler_logging_vars <- function(args) {
   # Calculate parameters based on backend
-  if (args$backend == "cmdstanr") {
+  if (inherits(args$object, "CmdStanModel")) {
     list(
       total_samples = args$iter_sampling * args$chains,
       warmup_iterations = args$iter_warmup
