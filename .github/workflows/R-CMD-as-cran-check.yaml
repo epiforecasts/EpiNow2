@@ -18,6 +18,10 @@ on:
   
 name: R-CMD-as-cran-check
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   R-CMD-as-cran-check:
     if: "! contains(github.event.head_commit.message, '[ci skip]')"
@@ -27,7 +31,7 @@ jobs:
       NOT_CRAN: false
       
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         
       - uses: r-lib/actions/setup-pandoc@v2
 

@@ -24,5 +24,5 @@ List of plots as produced by \code{\link[=report_plots]{report_plots()}}
 \code{plot} method for class \verb{<epinow>}.
 }
 \seealso{
-plot plot.estimate_infections report_plots estimate_infections
+\code{\link[=plot.estimate_infections]{plot.estimate_infections()}} \code{\link[=report_plots]{report_plots()}}
 }

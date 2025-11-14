@@ -451,6 +451,7 @@ pad_reported_cases <- function(reported_cases, n, with = NA_real_) {
 #' @param a Numeric vector, the first sequence.
 #' @param b Numeric vector, the second sequence.
 #' @return A numeric vector representing the convolution of `a` and `b`.
+#' @keywords internal
 stable_convolve <- function(a, b) {
   n <- length(a)
   m <- length(b)

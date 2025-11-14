@@ -2,7 +2,8 @@
 files <- c(
   "convolve.stan", "gaussian_process.stan", "pmfs.stan",
   "observation_model.stan", "secondary.stan", "params.stan",
-  "rt.stan", "infections.stan", "delays.stan", "generated_quantities.stan"
+  "rt.stan", "infections.stan", "delays.stan", "generated_quantities.stan",
+  "helpers.stan"
 )
 suppressMessages(
   expose_stan_fns(files,
@@ -133,7 +134,7 @@ simulate <- function(data,
       params
     )
     pop <- get_param(
-        pop_id, params_fixed_lookup, params_variable_lookup, params_value,
+        param_id_pop, params_fixed_lookup, params_variable_lookup, params_value,
         params
     )
     infections <- generate_infections(

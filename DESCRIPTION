@@ -3,7 +3,7 @@ Package: EpiNow2
 Title: Estimate Real-Time Case Counts and Time-Varying
     Epidemiological Parameters
 Version: 1.7.1.9000
-Authors@R: 
+Authors@R:
     c(person(given = "Sam",
              family = "Abbott",
              role = c("aut"),
@@ -41,6 +41,11 @@ Authors@R:
              role = "aut",
              email = "james.azam@lshtm.ac.uk",
              comment = c(ORCID = "0000-0001-5782-7330")),
+      person(given = "Adrian",
+             family = "Lison",
+             role = "aut",
+             email = "adrian.lison@bsse.ethz.ch",
+             comment = c(ORCID = "0000-0002-6822-8437")),
       person(given = "Robin",
              family = "Thompson",
              role = "ctb",
@@ -106,7 +111,7 @@ URL: https://epiforecasts.io/EpiNow2/,
     https://epiforecasts.io/EpiNow2/dev/,
     https://github.com/epiforecasts/EpiNow2
 BugReports: https://github.com/epiforecasts/EpiNow2/issues
-Depends: 
+Depends:
     R (>= 3.5.0)
 Imports:
     checkmate,
@@ -121,7 +126,7 @@ Imports:
     posterior,
     purrr,
     R.utils (>= 2.0.0),
-    Rcpp (>= 0.12.0), 
+    Rcpp (>= 0.12.0),
     rlang (>= 0.4.7),
     rstan (>= 2.26.0),
     rstantools (>= 2.2.0),
@@ -132,20 +137,16 @@ Imports:
     utils
 Suggests:
     cmdstanr,
-    covr,
     future,
     future.apply,
-    here,
     knitr,
-    precommit,
     progressr,
     rmarkdown,
     scoringutils,
     spelling,
     testthat,
-    usethis,
     withr
-LinkingTo: 
+LinkingTo:
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
     RcppEigen (>= 0.3.3.3.0),
@@ -153,15 +154,22 @@ LinkingTo:
     rstan (>= 2.26.0),
     StanHeaders (>= 2.26.0)
 Additional_repositories:
-    https://stan-dev.r-universe.dev
+    https://production.r-multiverse.org/2025-09-15
 Biarch: true
 Config/testthat/edition: 3
+Config/Needs/dev:
+    covr,
+    here,
+    hexSticker,
+    magick,
+    pkgdown,
+    precommit,
+    usethis
 Encoding: UTF-8
 Language: en-GB
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2.9000
-NeedsCompilation: yes
+RoxygenNote: 7.3.3
 SystemRequirements: GNU make
        C++17
 VignetteBuilder: knitr

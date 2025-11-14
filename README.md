@@ -276,8 +276,10 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=Bisaloo">Bisaloo</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=JAllen42">JAllen42</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=adamkucharski">adamkucharski</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=adrian-lison">adrian-lison</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=avehtari">avehtari</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=andrjohns">andrjohns</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=claude">claude</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jcken95">jcken95</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=medewitt">medewitt</a>,
@@ -320,12 +322,12 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Alorenzwalthert">lorenzwalthert</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Anlinton">nlinton</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amartinamcm">martinamcm</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aadrian-lison">adrian-lison</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ajonathonmellor">jonathonmellor</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3ATimTaylor">TimTaylor</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aciaramccarthy1">ciaramccarthy1</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3ASamuelBrand1">SamuelBrand1</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Adamonbayer">damonbayer</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Adamonbayer">damonbayer</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Avalentinedwv">valentinedwv</a>
 
 ### Issue Contributors
 
