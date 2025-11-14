@@ -31,23 +31,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   args$max_execution_time <- NULL
   args$future <- NULL
 
-  # The sampler parameters depend on the backend and model.
-  sampler_logging_vars <- create_sampler_logging_vars(args)
-  log_msg <- paste0(
-    "%s: Running in exact mode for ", sampler_logging_vars$total_samples,
-    " samples (across ", args$chains,
-    " chains each with a warm up of ", sampler_logging_vars$warmup_iterations,
-    " iterations each)"
-  )
-  # t and horizon are not always present
-  if (!is.null(args$data$t)) {
-  log_msg <- paste0(log_msg, " and ", args$data$t, " time steps")
-  if (!is.null(args$data$horizon)) {
-    log_msg <- paste0(
-      log_msg, " of which ", args$data$horizon, " are a forecast"
-      )
-    }
-  }
+  log_msg <- create_sampling_log_message(args)
   futile.logger::flog.debug(
     log_msg,
     id,
@@ -179,17 +163,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   method <- args$method
   args$method <- NULL
-  ## The sampler parameters depend on the backend and model.
-  sampler_logging_vars <- create_sampler_logging_vars(args)
-  # t and horizon are not always present
-  if (!is.null(args$data$t)) {
-    log_msg <- paste0(log_msg, " and ", args$data$t, " time steps")
-    if (!is.null(args$data$horizon)) {
-      log_msg <- paste0(
-        log_msg, " of which ", args$data$horizon, " are a forecast"
-      )
-    }
-  }
+  log_msg <- create_sampling_log_message(args)
   futile.logger::flog.debug(
     log_msg,
     id,
@@ -264,36 +238,54 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   return(fit)
 }
 
-#' Calculate number of post-warmup iterations and samples based on the backend
+#' Create sampling log message
 #'
-#' @description Internal function that calculates the total number of samples
-#' and warmup iterations based on the Stan backend being used
-#' (cmdstanr or rstan).
+#' @description Internal function that creates a formatted log message
+#' describing the sampling parameters. The message includes information about
+#' the number of samples, chains, warmup iterations, and optionally time steps
+#' and forecast horizon.
 #'
 #' @param args List of stan arguments containing:
-#'   - backend: Character string indicating the backend ("cmdstanr" or "rstan")
+#'   - object: Stan model object (CmdStanModel or stanmodel)
 #'   - iter_sampling: Number of sampling iterations (for cmdstanr)
 #'   - iter_warmup: Number of warmup iterations (for cmdstanr)
 #'   - iter: Total number of iterations (for rstan)
 #'   - warmup: Number of warmup iterations (for rstan)
 #'   - chains: Number of chains
+#'   - data: List potentially containing t (time steps) and horizon (forecast)
 #'
-#' @return A list containing:
-#'   - total_samples: Total number of post-warmup samples across all chains
-#'   - warmup_iterations: Number of warmup iterations
+#' @return A character string containing the formatted log message with a %s
+#'   placeholder for the id parameter (to be filled by sprintf or flog.debug)
 #'
 #' @keywords internal
-create_sampler_logging_vars <- function(args) {
+create_sampling_log_message <- function(args) {
   # Calculate parameters based on backend
   if (inherits(args$object, "CmdStanModel")) {
-    list(
-      total_samples = args$iter_sampling * args$chains,
-      warmup_iterations = args$iter_warmup
-    )
+    total_samples <- args$iter_sampling * args$chains
+    warmup_iterations <- args$iter_warmup
   } else {
-    list(
-      total_samples = (args$iter - args$warmup) * args$chains,
-      warmup_iterations = args$warmup
-    )
+    total_samples <- (args$iter - args$warmup) * args$chains
+    warmup_iterations <- args$warmup
   }
+
+  # Build base message
+  log_msg <- paste0(
+    "%s: Running in exact mode for ", total_samples,
+    " samples (across ", args$chains,
+    " chains each with a warm up of ", warmup_iterations,
+    " iterations each)"
+  )
+
+  # Add time steps if present
+  if (!is.null(args$data$t)) {
+    log_msg <- paste0(log_msg, " and ", args$data$t, " time steps")
+    # Add forecast horizon if present
+    if (!is.null(args$data$horizon)) {
+      log_msg <- paste0(
+        log_msg, " of which ", args$data$horizon, " are a forecast"
+      )
+    }
+  }
+
+  return(log_msg)
 }
