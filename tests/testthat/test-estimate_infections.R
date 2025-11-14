@@ -33,16 +33,16 @@ test_estimate_infections <- function(...) {
 }
 
 # Integration tests (MCMC-based) ------------------------------------------
-# These tests run actual MCMC sampling and are slow. They are skipped by
-# default and only run in full test mode (EPINOW2_SKIP_INTEGRATION=false).
-# Most configuration variations are now tested via unit tests in
-# test-create_stan_data.R and test-stan-*.R files.
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Smoke tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
 
+# Smoke test: Core functionality with default settings (always runs)
 test_that("estimate_infections successfully returns estimates using default settings", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
   test_estimate_infections(reported_cases)
 })
 
+# Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_infections successfully returns estimates using a Matern 5/2 kernel", {
   skip_if_not(integration_test(), "Skipping slow integration test")
   test_estimate_infections(

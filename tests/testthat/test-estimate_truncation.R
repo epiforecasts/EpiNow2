@@ -2,8 +2,9 @@
 skip_on_cran()
 
 # Integration tests (MCMC-based) ------------------------------------------
-# These tests run actual MCMC sampling and are slow. They are skipped by
-# default and only run in full test mode (EPINOW2_SKIP_INTEGRATION=false).
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Smoke tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
 
 futile.logger::flog.threshold("FATAL")
 
@@ -11,9 +12,9 @@ futile.logger::flog.threshold("FATAL")
 old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
+# Smoke test: Core functionality with default settings (always runs)
 test_that("estimate_truncation can return values from simulated data and plot
            them", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
   # fit model to example data
   est <- estimate_truncation(example_truncated,
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250
@@ -26,6 +27,7 @@ test_that("estimate_truncation can return values from simulated data and plot
   expect_error(plot(est), NA)
 })
 
+# Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_truncation can return values from simulated data with the
            cmdstanr backend", {
   skip_if_not(integration_test(), "Skipping slow integration test")

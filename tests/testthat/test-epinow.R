@@ -17,11 +17,12 @@ df_non_zero <- function(df) {
 expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")
 
 # Integration tests (MCMC-based) ------------------------------------------
-# These tests run actual MCMC sampling and are slow. They are skipped by
-# default and only run in full test mode (EPINOW2_SKIP_INTEGRATION=false).
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Smoke tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
 
+# Smoke test: Core functionality with default settings (always runs)
 test_that("epinow produces expected output when run with default settings", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
   outputs <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,

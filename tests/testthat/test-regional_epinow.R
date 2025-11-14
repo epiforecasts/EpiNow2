@@ -1,8 +1,9 @@
 skip_on_cran()
 
 # Integration tests (MCMC-based) ------------------------------------------
-# These tests run actual MCMC sampling and are slow. They are skipped by
-# default and only run in full test mode (EPINOW2_SKIP_INTEGRATION=false).
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Smoke tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
 
 # get example delays
 futile.logger::flog.threshold("FATAL")
@@ -18,8 +19,8 @@ df_non_zero <- function(df) {
   expect_true(nrow(df) > 0)
 }
 
+# Smoke test: Core functionality with default settings (always runs)
 test_that("regional_epinow produces expected output when run with default settings", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
   out <- suppressWarnings(
     regional_epinow(
       data = cases,
@@ -49,6 +50,7 @@ test_that("regional_epinow produces expected output when run with default settin
   expect_equal(names(out$regional$realland$plots), c("summary", "infections", "reports", "R", "growth_rate"))
 })
 
+# Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("regional_epinow runs without error when given a very short timeout", {
   skip_if_not(integration_test(), "Skipping slow integration test")
   output <- capture.output(suppressMessages(

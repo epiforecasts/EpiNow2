@@ -1,14 +1,15 @@
 skip_on_cran()
 
 # Integration tests (MCMC-based) ------------------------------------------
-# These tests run actual MCMC sampling and are slow. They are skipped by
-# default and only run in full test mode (EPINOW2_SKIP_INTEGRATION=false).
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Smoke tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
 
 # Setup for testing -------------------------------------------------------
 futile.logger::flog.threshold("FATAL")
 
-# Setup code - only run for integration tests
-if (integration_test()) {
+# Setup code for integration tests (needed for smoke tests)
+{
   reported_cases <- EpiNow2::example_confirmed[1:50]
 
   out <- suppressWarnings(estimate_infections(reported_cases,
@@ -23,13 +24,13 @@ if (integration_test()) {
   ))
 }
 
-
+# Smoke test: Core functionality with default settings (always runs)
 test_that("forecast_infections works to simulate a passed in estimate_infections object", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
   sims <- forecast_infections(out)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
 })
 
+# Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("forecast_infections methods return expected output structure", {
   skip_if_not(integration_test(), "Skipping slow integration test")
   sims <- forecast_infections(out)

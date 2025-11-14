@@ -1,11 +1,12 @@
 skip_on_cran()
 
 # Integration tests (MCMC-based) ------------------------------------------
-# These tests run actual MCMC sampling and are slow. They are skipped by
-# default and only run in full test mode (EPINOW2_SKIP_INTEGRATION=false).
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Smoke tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
 
-# Setup code - only run for integration tests
-if (integration_test()) {
+# Setup code for integration tests (needed for smoke tests)
+{
   #### Incidence data example ####
 
   # make some example secondary incidence data
@@ -75,10 +76,10 @@ if (integration_test()) {
   prev_posterior <- prev$posterior[variable %in% params]
 }
 
-# Test output
+# Smoke tests: Core functionality (always runs) ------------------------------
+
 test_that("estimate_secondary can return values from simulated data and plot
            them", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
   expect_equal(names(inc), c("predictions", "posterior", "data", "fit"))
   expect_equal(
     names(inc$predictions),
@@ -91,6 +92,18 @@ test_that("estimate_secondary can return values from simulated data and plot
   # validation plot of observations vs estimates
   expect_error(plot(inc, primary = TRUE), NA)
 })
+
+test_that("forecast_secondary can return values from simulated data and plot
+           them", {
+  inc_preds <- forecast_secondary(
+    inc, inc_cases[seq(61, .N)][, value := primary]
+  )
+  expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
+  # validation plot of observations vs estimates
+  expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
+})
+
+# Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false) -
 
 test_that("estimate_secondary successfully returns estimates when passed NA values", {
   skip_if_not(integration_test(), "Skipping slow integration test")
@@ -192,17 +205,6 @@ test_that("estimate_secondary can recover simulated parameters with the
     inc_posterior_cmdstanr[, median], c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
-})
-
-test_that("forecast_secondary can return values from simulated data and plot
-           them", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
-  inc_preds <- forecast_secondary(
-    inc, inc_cases[seq(61, .N)][, value := primary]
-  )
-  expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
-  # validation plot of observations vs estimates
-  expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
 })
 
 test_that("forecast_secondary works with fixed delays", {
