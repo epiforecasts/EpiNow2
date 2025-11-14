@@ -11,12 +11,12 @@
 #' @param reported A `<data.table>` of reported cases with date and confirm
 #' columns (optional).
 #'
-#' @param unit Character string specifying the aggregation unit. Options include
-#' "weekly", "monthly", "yearly", or any other unit supported by
-#' [lubridate::floor_date()].
+#' @param unit Character string specifying the aggregation unit. Any unit
+#' supported by [lubridate::floor_date()] can be used, such as "week", "month",
+#' "year", "quarter", "bimonth", etc.
 #'
 #' @param week_start Integer indicating the day of the week that starts the
-#' epidemiological week (used when `unit = "weekly"`). Uses standard weekday
+#' epidemiological week (used when `unit = "week"`). Uses standard weekday
 #' numbering where 1 = Monday, 2 = Tuesday, ..., 7 = Sunday. Defaults to 1
 #' (Monday).
 #'
@@ -29,31 +29,20 @@
 #' @importFrom lubridate floor_date
 aggregate_to_period <- function(estimate,
                                  reported = NULL,
-                                 unit = "weekly",
+                                 unit = "week",
                                  week_start = 1) {
   estimate <- data.table::copy(estimate)
   data.table::setDT(estimate)
 
-  # Map user-friendly names to lubridate units
-  unit_map <- c(
-    "weekly" = "week",
-    "monthly" = "month",
-    "yearly" = "year"
-  )
-  lubridate_unit <- unit_map[unit]
-  if (is.na(lubridate_unit)) {
-    lubridate_unit <- unit  # Use as-is if not in map
-  }
-
   # Add period column
-  if (lubridate_unit == "week") {
+  if (unit == "week") {
     estimate[, period := lubridate::floor_date(
       date,
-      unit = lubridate_unit,
+      unit = unit,
       week_start = week_start
     )]
   } else {
-    estimate[, period := lubridate::floor_date(date, unit = lubridate_unit)]
+    estimate[, period := lubridate::floor_date(date, unit = unit)]
   }
 
   # Identify grouping columns (everything except date, period, and value columns)
@@ -89,14 +78,14 @@ aggregate_to_period <- function(estimate,
     reported <- data.table::copy(reported)
     data.table::setDT(reported)
 
-    if (lubridate_unit == "week") {
+    if (unit == "week") {
       reported[, period := lubridate::floor_date(
         date,
-        unit = lubridate_unit,
+        unit = unit,
         week_start = week_start
       )]
     } else {
-      reported[, period := lubridate::floor_date(date, unit = lubridate_unit)]
+      reported[, period := lubridate::floor_date(date, unit = unit)]
     }
 
     # Get all columns except date and period

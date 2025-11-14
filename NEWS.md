@@ -2,7 +2,7 @@
 
 ## Package changes
 
-- `plot_estimates()` and all plot S3 methods now support an `aggregation` parameter to visualise estimates aggregated to different time periods. Options include `"daily"` (default), `"weekly"`, `"monthly"`, or `"yearly"`. This makes it easier to interpret trends when daily variation obscures the overall pattern.
+- `plot_estimates()` and all plot S3 methods now support an `aggregation` parameter to visualise estimates aggregated to different time periods. Options include `"daily"` (default), `"week"`, `"month"`, `"year"`, or any other unit supported by `lubridate::floor_date()`. This makes it easier to interpret trends when daily variation obscures the overall pattern.
 - Development-only dependencies (`covr`, `here`, `hexSticker`, `magick`, `pkgdown`, `precommit`, `usethis`) have been moved from `Suggests` to `Config/Needs/dev`.
   This reduces the dependency burden for end users while maintaining full functionality for package developers.
   Developers should use `pak::pak(".", dependencies = TRUE)` to install all dependencies including dev tools.

@@ -72,13 +72,14 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #' based on partial data", and "Forecast".
 #'
 #' @param aggregation Character string specifying the temporal aggregation level
-#' for visualization. Options are "daily" (default), "weekly", "monthly", or
-#' "yearly". When set to anything other than "daily", estimates and observations
-#' are aggregated to the specified time period before plotting. This is useful
-#' for visualizing trends when daily variation obscures the overall pattern.
+#' for visualization. Options are "daily" (default), "week", "month", "year",
+#' or any other unit supported by [lubridate::floor_date()]. When set to
+#' anything other than "daily", estimates and observations are aggregated to
+#' the specified time period before plotting. This is useful for visualizing
+#' trends when daily variation obscures the overall pattern.
 #'
 #' @param week_start Integer specifying the day of week that starts each week
-#' (used when `aggregation = "weekly"`). 1 = Monday (default), 7 = Sunday.
+#' (used when `aggregation = "week"`). 1 = Monday (default), 7 = Sunday.
 #'
 #' @return A `ggplot2` object
 #' @export
@@ -127,7 +128,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #'   estimate = out$summarised[variable == "reported_cases"],
 #'   reported = out$observations,
 #'   ylab = "Weekly cases",
-#'   aggregation = "weekly"
+#'   aggregation = "week"
 #' )
 #'
 #' # plot infections aggregated to monthly
@@ -135,7 +136,7 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #'   estimate = out$summarised[variable == "infections"],
 #'   reported = out$observations,
 #'   ylab = "Monthly infections",
-#'   aggregation = "monthly"
+#'   aggregation = "month"
 #' )
 plot_estimates <- function(estimate, reported, ylab, hline,
                            obs_as_col = TRUE, max_plot = 10,
@@ -143,7 +144,7 @@ plot_estimates <- function(estimate, reported, ylab, hline,
                              "Estimate", "Estimate based on partial data",
                              "Forecast"
                            ),
-                           aggregation = c("daily", "weekly", "monthly", "yearly"),
+                           aggregation = c("daily", "week", "month", "year"),
                            week_start = 1) {
   aggregation <- arg_match(aggregation)
   # convert input to data.table

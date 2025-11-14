@@ -12,7 +12,7 @@ test_that("plot_estimates works with aggregation = 'weekly'", {
     estimate = out$summarised[variable == "reported_cases"],
     reported = out$observations,
     ylab = "Weekly cases",
-    aggregation = "weekly"
+    aggregation = "week"
   )
 
   # Check it returns a ggplot object
@@ -51,7 +51,7 @@ test_that("plot_estimates respects week_start parameter", {
     estimate = out$summarised[variable == "reported_cases"],
     reported = out$observations,
     ylab = "Weekly cases",
-    aggregation = "weekly",
+    aggregation = "week",
     week_start = 1
   )
 
@@ -60,7 +60,7 @@ test_that("plot_estimates respects week_start parameter", {
     estimate = out$summarised[variable == "reported_cases"],
     reported = out$observations,
     ylab = "Weekly cases",
-    aggregation = "weekly",
+    aggregation = "week",
     week_start = 7
   )
 
@@ -84,7 +84,7 @@ test_that("plot_estimates with weekly aggregation works without reported", {
     estimate = out$summarised[variable == "R"],
     ylab = "Effective Reproduction No.",
     hline = 1,
-    aggregation = "weekly"
+    aggregation = "week"
   )
 
   expect_s3_class(p, "gg")
@@ -99,7 +99,7 @@ test_that("plot.estimate_infections accepts aggregation argument", {
   ))
 
   # Use S3 method with weekly aggregation
-  plots <- plot(out, type = "reports", aggregation = "weekly")
+  plots <- plot(out, type = "reports", aggregation = "week")
 
   expect_s3_class(plots, "gg")
 })
@@ -117,7 +117,7 @@ test_that("plot_estimates supports monthly aggregation", {
     estimate = out$summarised[variable == "infections"],
     reported = out$observations,
     ylab = "Monthly infections",
-    aggregation = "monthly"
+    aggregation = "month"
   )
 
   expect_s3_class(p, "gg")
@@ -136,7 +136,7 @@ test_that("plot_estimates supports yearly aggregation", {
     estimate = out$summarised[variable == "reported_cases"],
     reported = out$observations,
     ylab = "Yearly cases",
-    aggregation = "yearly"
+    aggregation = "year"
   )
 
   expect_s3_class(p, "gg")
@@ -161,7 +161,7 @@ test_that("aggregate_to_period handles estimate data correctly", {
   aggregated_weekly <- EpiNow2:::aggregate_to_period(
     estimate,
     reported = reported,
-    unit = "weekly",
+    unit = "week",
     week_start = 1
   )
 
@@ -178,7 +178,7 @@ test_that("aggregate_to_period handles estimate data correctly", {
   aggregated_monthly <- EpiNow2:::aggregate_to_period(
     estimate,
     reported = reported,
-    unit = "monthly"
+    unit = "month"
   )
 
   expect_s3_class(aggregated_monthly$estimate, "data.table")
