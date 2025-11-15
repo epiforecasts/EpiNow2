@@ -97,7 +97,7 @@ test_that("create_sampling_log_message works for rstan with t and horizon", {
 })
 
 # Tests for VB approximate mode
-test_that("create_sampling_log_message works for VB method", {
+test_that("create_sampling_log_message works for VB method without time steps and forecast", {
   args <- list(
     iter = 10000,
     trials = 10,
@@ -128,7 +128,7 @@ test_that("create_sampling_log_message works for VB with time steps and forecast
 })
 
 # Tests for Laplace approximate mode
-test_that("create_sampling_log_message works for Laplace method", {
+test_that("create_sampling_log_message works for Laplace method without time steps and forecast", {
   args <- list(
     trials = 10,
     data = list()
@@ -153,7 +153,7 @@ test_that("create_sampling_log_message works for Laplace with time steps and for
 })
 
 # Tests for Pathfinder approximate mode
-test_that("create_sampling_log_message works for Pathfinder method", {
+test_that("create_sampling_log_message works for Pathfinder method without time steps and forecast", {
   args <- list(
     trials = 10,
     draws = 2000,
