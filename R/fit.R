@@ -265,43 +265,48 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
 #' @keywords internal
 create_sampling_log_message <- function(args, method) {
   # Build base message depending on method
-  if (method == "sampling") {
-    # Exact mode - calculate parameters based on backend
-    if (inherits(args$object, "CmdStanModel")) {
-      total_samples <- args$iter_sampling * args$chains
-      warmup_iterations <- args$iter_warmup
-    } else {
-      total_samples <- (args$iter - args$warmup) * args$chains
-      warmup_iterations <- args$warmup
-    }
+  log_msg <- switch(method,
+    "sampling" = {
+      # Exact mode - calculate parameters based on backend
+      if (inherits(args$object, "CmdStanModel")) {
+        total_samples <- args$iter_sampling * args$chains
+        warmup_iterations <- args$iter_warmup
+      } else {
+        total_samples <- (args$iter - args$warmup) * args$chains
+        warmup_iterations <- args$warmup
+      }
 
-    log_msg <- paste0(
-      "%s: Running in exact mode for ", total_samples,
-      " samples (across ", args$chains,
-      " chains each with a warm up of ", warmup_iterations,
-      " iterations each)"
-    )
-  } else if (method == "vb") {
-    # VB approximate mode
-    log_msg <- paste0(
-      "%s: Running in approximate mode for ", args$iter,
-      " iterations (with ", args$trials, " attempts). Extracting ",
-      args$output_samples, " approximate posterior samples"
-    )
-  } else if (method == "laplace") {
-    # Laplace approximate mode
-    log_msg <- paste0(
-      "%s: Running in approximate mode using Laplace approximation (with ",
-      args$trials, " attempts)"
-    )
-  } else if (method == "pathfinder") {
-    # Pathfinder approximate mode
-    log_msg <- paste0(
-      "%s: Running in approximate mode using pathfinder (with ",
-      args$trials, " attempts). Extracting ",
-      args$draws, " approximate posterior samples"
-    )
-  }
+      paste0(
+        "%s: Running in exact mode for ", total_samples,
+        " samples (across ", args$chains,
+        " chains each with a warm up of ", warmup_iterations,
+        " iterations each)"
+      )
+    },
+    "vb" = {
+      # VB approximate mode
+      paste0(
+        "%s: Running in approximate mode for ", args$iter,
+        " iterations (with ", args$trials, " attempts). Extracting ",
+        args$output_samples, " approximate posterior samples"
+      )
+    },
+    "laplace" = {
+      # Laplace approximate mode
+      paste0(
+        "%s: Running in approximate mode using Laplace approximation (with ",
+        args$trials, " attempts)"
+      )
+    },
+    "pathfinder" = {
+      # Pathfinder approximate mode
+      paste0(
+        "%s: Running in approximate mode using pathfinder (with ",
+        args$trials, " attempts). Extracting ",
+        args$draws, " approximate posterior samples"
+      )
+    }
+  )
 
   # Add time steps if present (for all methods)
   if (!is.null(args$data$t)) {
