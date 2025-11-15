@@ -193,7 +193,7 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 #'   delay information from [create_stan_delays()]
 #' @param time_points Integer length of the observed time period
 #'   (t - seeding_time - horizon)
-#' @importFrom cli cli_warn
+#' @importFrom cli cli_warn col_blue
 #'
 #' @return Called for its side effects
 #' @keywords internal
@@ -208,16 +208,30 @@ check_truncation_length <- function(stan_args, time_points) {
     return(invisible())
   }
 
-  # Map truncation to its position in the non-parametric PMF array
+  # Map truncation to its position in the flat delays array
   # delay_types_groups gives start and end indices for each delay type
   trunc_start <- stan_args$data$delay_types_groups[stan_args$data$trunc_id]
-  trunc_end <- stan_args$data$delay_types_groups[stan_args$data$trunc_id + 1] - 1
+  trunc_end <- stan_args$data$delay_types_groups[
+    stan_args$data$trunc_id + 1
+  ] - 1
+
+  # Get which truncation delays are non-parametric
+  trunc_range <- trunc_start:trunc_end
+  is_np <- stan_args$data$delay_types_p[trunc_range] == 0
+
+  # Return early if all truncation delays are parametric
+  if (!any(is_np)) {
+    return(invisible())
+  }
+
+  # Get the IDs of non-parametric truncation delays within the np array
+  np_trunc_ids <- stan_args$data$delay_types_id[trunc_range[is_np]]
 
   # Calculate individual PMF lengths from the indices
   np_pmf_lengths <- diff(stan_args$data$delay_np_pmf_groups)
 
   # Extract truncation PMF length(s)
-  trunc_pmf_lengths <- np_pmf_lengths[trunc_start:trunc_end]
+  trunc_pmf_lengths <- np_pmf_lengths[np_trunc_ids]
 
   # Check if any truncation PMF exceeds time_points
   if (any(trunc_pmf_lengths > time_points)) {
@@ -225,9 +239,10 @@ check_truncation_length <- function(stan_args, time_points) {
       c(
         "!" = "The truncation distribution is longer than the observed time
         period.",
-        "i" = "The truncation distribution has length {max(trunc_pmf_lengths)}
-        but the observed time period is {time_points} days. The tail of the
-        truncation distribution will be used."
+        "i" = "The truncation distribution has length
+        {col_blue({max(trunc_pmf_lengths)})} but the observed time period is
+        {col_blue(time_points)} days. The tail of the truncation distribution
+        will be used."
       ),
       .frequency = "once",
       .frequency_id = "truncation_longer_than_data"

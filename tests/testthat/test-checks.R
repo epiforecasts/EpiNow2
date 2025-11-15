@@ -192,6 +192,8 @@ test_that("check_truncation_length does not warn when truncation PMF is shorter 
       trunc_id = 1,
       delay_n_np = 1,
       delay_types_groups = array(c(1, 2)), # Truncation maps to position 1
+      delay_types_p = array(c(0)), # Truncation is nonparametric
+      delay_types_id = array(c(1)), # ID within nonparametric array
       delay_np_pmf_groups = array(c(1, 6)) # One PMF of length 5
     )
   )
@@ -208,6 +210,8 @@ test_that("check_truncation_length warns when truncation PMF is longer than time
       trunc_id = 1,
       delay_n_np = 1,
       delay_types_groups = array(c(1, 2)), # Truncation maps to position 1
+      delay_types_p = array(c(0)), # Truncation is nonparametric
+      delay_types_id = array(c(1)), # ID within nonparametric array
       delay_np_pmf_groups = array(c(1, 16)) # One PMF of length 15
     )
   )
@@ -268,5 +272,34 @@ test_that("check_truncation_length works when truncation is combined with other 
   expect_warning(
     check_truncation_length(stan_args, time_points = 10),
     "truncation distribution is longer"
+  )
+})
+
+test_that("check_truncation_length correctly indexes when parametric delays precede nonparametric truncation", {
+  rlang::local_options(rlib_warning_verbosity = "verbose")
+
+  # Simulate scenario where parametric delays come before nonparametric truncation
+  # This tests the fix for the indexing bug where trunc_start was used directly
+  # to index into np_pmf_lengths, which only contains nonparametric delays
+  stan_args <- list(
+    data = list(
+      trunc_id = 3,
+      delay_n_np = 1,
+      delay_types_groups = array(c(1, 2, 3, 4)), # Three delays total
+      delay_types_p = array(c(1, 1, 0)), # First two parametric, third nonparametric
+      delay_types_id = array(c(1, 2, 1)), # IDs within their respective arrays
+      delay_np_pmf_groups = array(c(1, 21)) # One nonparametric PMF of length 20
+    )
+  )
+
+  # Should warn because truncation PMF (length 20) > time_points (10)
+  expect_warning(
+    check_truncation_length(stan_args, time_points = 10),
+    "truncation distribution is longer"
+  )
+
+  # Should not warn when time_points is larger
+  expect_no_warning(
+    check_truncation_length(stan_args, time_points = 25)
   )
 })
