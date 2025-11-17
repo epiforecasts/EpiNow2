@@ -5,10 +5,9 @@ skip_on_cran()
 # - Smoke tests: Essential tests that always run to catch critical failures
 # - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
 
-# Setup code for integration tests (needed for smoke tests)
-{
-  #### Incidence data example ####
+# Helper functions for setting up test data ----------------------------------
 
+setup_incidence_data <- function() {
   # make some example secondary incidence data
   cases <- example_confirmed
   cases <- as.data.table(cases)[, primary := confirm]
@@ -26,33 +25,14 @@ skip_on_cran()
     c("confirm", "scaling", "meanlog", "sdlog", "index", "scaled", "conv") :=
       NULL
   ]
-  #
-  # fit model to example data specifying a weak prior for fraction reported
-  # with a secondary case
-  inc <- estimate_secondary(inc_cases[1:60],
-    obs = obs_opts(
-      scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
-    ),
-    verbose = FALSE
-  )
+  return(inc_cases)
+}
 
-  # extract posterior variables of interest
-  params <- c(
-    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-    "scaling" = "params[1]"
-  )
-
-  inc_posterior <- inc$posterior[variable %in% params]
-
-  # fit model to example data with a fixed delay
-  inc_fixed <- estimate_secondary(inc_cases[1:60],
-    delays = delay_opts(Gamma(mean = 15, sd = 5, max = 30)),
-    verbose = FALSE
-  )
-
-  #### Prevalence data example ####
-
+setup_prevalence_data <- function() {
   # make some example prevalence data
+  cases <- example_confirmed
+  cases <- as.data.table(cases)[, primary := confirm]
+
   prev_cases <- copy(cases)
   # Assume that only 30 percent of cases are reported
   prev_cases[, scaling := 0.3]
@@ -62,24 +42,23 @@ skip_on_cran()
   # Simulate secondary cases
   prev_cases <- convolve_and_scale(prev_cases, type = "prevalence")
 
-  # fit model to example prevalence data
-  prev <- estimate_secondary(prev_cases[1:100],
-    secondary = secondary_opts(type = "prevalence"),
-    obs = obs_opts(
-      week_effect = FALSE,
-      scale = Normal(mean = 0.4, sd = 0.1)
-    ),
-    verbose = FALSE
-  )
-
-  # extract posterior parameters of interest
-  prev_posterior <- prev$posterior[variable %in% params]
+  return(prev_cases)
 }
 
 # Smoke tests: Core functionality (always runs) ------------------------------
 
 test_that("estimate_secondary can return values from simulated data and plot
            them", {
+  inc_cases <- setup_incidence_data()
+
+  # fit model to example data specifying a weak prior for fraction reported
+  inc <- estimate_secondary(inc_cases[1:60],
+    obs = obs_opts(
+      scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
+    ),
+    verbose = FALSE
+  )
+
   expect_equal(names(inc), c("predictions", "posterior", "data", "fit"))
   expect_equal(
     names(inc$predictions),
@@ -95,6 +74,17 @@ test_that("estimate_secondary can return values from simulated data and plot
 
 test_that("forecast_secondary can return values from simulated data and plot
            them", {
+  inc_cases <- setup_incidence_data()
+
+  # fit model first
+  inc <- estimate_secondary(inc_cases[1:60],
+    obs = obs_opts(
+      scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
+    ),
+    verbose = FALSE
+  )
+
+  # then forecast
   inc_preds <- forecast_secondary(
     inc, inc_cases[seq(61, .N)][, value := primary]
   )
@@ -107,6 +97,9 @@ test_that("forecast_secondary can return values from simulated data and plot
 
 test_that("estimate_secondary successfully returns estimates when passed NA values", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  inc_cases <- setup_incidence_data()
+  prev_cases <- setup_prevalence_data()
+
   cases_na <- data.table::copy(inc_cases)
   cases_na[sample(1:60, 5), secondary := NA]
   inc_na <- estimate_secondary(cases_na[1:60],
@@ -132,6 +125,11 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
 
 test_that("estimate_secondary successfully returns estimates when accumulating to weekly", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  inc_cases <- setup_incidence_data()
+
+  cases <- example_confirmed
+  cases <- as.data.table(cases)[, primary := confirm]
+
   secondary_weekly <- inc_cases[, list(date, secondary)]
   secondary_weekly[, secondary := frollsum(secondary, 7)]
   secondary_weekly <- secondary_weekly[seq(7, nrow(secondary_weekly), by = 7)]
@@ -158,6 +156,8 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
 
 test_that("estimate_secondary works when only estimating scaling", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  inc_cases <- setup_incidence_data()
+
   inc <- estimate_secondary(inc_cases[1:60],
     obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     delay = delay_opts(),
@@ -168,6 +168,36 @@ test_that("estimate_secondary works when only estimating scaling", {
 
 test_that("estimate_secondary can recover simulated parameters", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  inc_cases <- setup_incidence_data()
+  prev_cases <- setup_prevalence_data()
+
+  # fit model to example data specifying a weak prior for fraction reported
+  inc <- estimate_secondary(inc_cases[1:60],
+    obs = obs_opts(
+      scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
+    ),
+    verbose = FALSE
+  )
+
+  # fit model to example prevalence data
+  prev <- estimate_secondary(prev_cases[1:100],
+    secondary = secondary_opts(type = "prevalence"),
+    obs = obs_opts(
+      week_effect = FALSE,
+      scale = Normal(mean = 0.4, sd = 0.1)
+    ),
+    verbose = FALSE
+  )
+
+  # extract posterior variables of interest
+  params <- c(
+    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
+    "scaling" = "params[1]"
+  )
+
+  inc_posterior <- inc$posterior[variable %in% params]
+  prev_posterior <- prev$posterior[variable %in% params]
+
   expect_equal(
     inc_posterior[, mean], c(1.8, 0.5, 0.4),
     tolerance = 0.1
@@ -190,6 +220,14 @@ test_that("estimate_secondary can recover simulated parameters with the
            cmdstanr backend", {
   skip_if_not(integration_test(), "Skipping slow integration test")
   skip_on_os("windows")
+  inc_cases <- setup_incidence_data()
+
+  # extract posterior variables of interest
+  params <- c(
+    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
+    "scaling" = "params[1]"
+  )
+
   output <- capture.output(suppressMessages(suppressWarnings(
     inc_cmdstanr <- estimate_secondary(inc_cases[1:60],
       obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
@@ -209,6 +247,14 @@ test_that("estimate_secondary can recover simulated parameters with the
 
 test_that("forecast_secondary works with fixed delays", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  inc_cases <- setup_incidence_data()
+
+  # fit model to example data with a fixed delay
+  inc_fixed <- estimate_secondary(inc_cases[1:60],
+    delays = delay_opts(Gamma(mean = 15, sd = 5, max = 30)),
+    verbose = FALSE
+  )
+
   inc_preds <- forecast_secondary(
     inc_fixed, inc_cases[seq(61, .N)][, value := primary]
   )
@@ -221,6 +267,16 @@ test_that("forecast_secondary can return values from simulated data when using
            the cmdstanr backend", {
   skip_if_not(integration_test(), "Skipping slow integration test")
   skip_on_os("windows")
+  inc_cases <- setup_incidence_data()
+
+  # fit model first
+  inc <- estimate_secondary(inc_cases[1:60],
+    obs = obs_opts(
+      scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
+    ),
+    verbose = FALSE
+  )
+
   capture.output(suppressMessages(suppressWarnings(
     inc_preds <- forecast_secondary(
       inc, inc_cases[seq(61, .N)][, value := primary],
@@ -232,6 +288,8 @@ test_that("forecast_secondary can return values from simulated data when using
 
 test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  inc_cases <- setup_incidence_data()
+
   delays <- LogNormal(
     meanlog = Normal(2.5, 0.5),
     sdlog = Normal(0.47, 0.25),
@@ -248,6 +306,8 @@ test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
 
 test_that("estimate_secondary works with filter_leading_zeros set", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  inc_cases <- setup_incidence_data()
+
   ## testing deprecated functionality
   withr::local_options(lifecycle_verbosity = "quiet")
   modified_data <- inc_cases[1:10, secondary := 0]
@@ -267,6 +327,8 @@ test_that("estimate_secondary works with filter_leading_zeros set", {
 
 test_that("estimate_secondary works with zero_threshold set", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  inc_cases <- setup_incidence_data()
+
   ## testing deprecated functionality
   withr::local_options(lifecycle_verbosity = "quiet")
   modified_data <- inc_cases[sample(1:30, 10), primary := 0]

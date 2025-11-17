@@ -8,8 +8,8 @@ skip_on_cran()
 # Setup for testing -------------------------------------------------------
 futile.logger::flog.threshold("FATAL")
 
-# Setup code for integration tests (needed for smoke tests)
-{
+# Helper function to create estimate_infections output for testing
+setup_estimate_infections_for_forecast <- function() {
   reported_cases <- EpiNow2::example_confirmed[1:50]
 
   out <- suppressWarnings(estimate_infections(reported_cases,
@@ -22,10 +22,13 @@ futile.logger::flog.threshold("FATAL")
     ),
     verbose = FALSE
   ))
+  return(out)
 }
 
 # Smoke test: Core functionality with default settings (always runs)
 test_that("forecast_infections works to simulate a passed in estimate_infections object", {
+  out <- setup_estimate_infections_for_forecast()
+
   sims <- forecast_infections(out)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
 })
@@ -33,6 +36,8 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("forecast_infections methods return expected output structure", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  out <- setup_estimate_infections_for_forecast()
+
   sims <- forecast_infections(out)
 
   # Test plot method returns expected object types
@@ -56,6 +61,8 @@ test_that("forecast_infections methods return expected output structure", {
 
 test_that("forecast_infections methods respect CrIs argument", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  out <- setup_estimate_infections_for_forecast()
+
   sims <- forecast_infections(out)
 
   # Test summary with custom CrIs
@@ -81,6 +88,8 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
            object when using the cmdstanr backend", {
   skip_if_not(integration_test(), "Skipping slow integration test")
   skip_on_os("windows")
+  out <- setup_estimate_infections_for_forecast()
+
   output <- capture.output(suppressMessages(suppressWarnings(
     sims <- forecast_infections(out, backend = "cmdstanr")
   )))
@@ -89,6 +98,8 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
 
 test_that("forecast_infections works to simulate a passed in estimate_infections object with an adjusted Rt", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  out <- setup_estimate_infections_for_forecast()
+
   R <- c(rep(NA_real_, 40), rep(0.5, 17))
   sims <- forecast_infections(out, R)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
@@ -97,6 +108,8 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
 
 test_that("forecast_infections works to simulate a passed in estimate_infections object with a short adjusted Rt", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  out <- setup_estimate_infections_for_forecast()
+
   R <- c(rep(NA_real_, 40), rep(0.5, 17))
   sims <- forecast_infections(out, R)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
@@ -105,6 +118,8 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
 
 test_that("forecast_infections works to simulate a passed in estimate_infections object with a long adjusted Rt", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  out <- setup_estimate_infections_for_forecast()
+
   R <- c(rep(NA_real_, 40), rep(1.2, 15), rep(0.8, 15))
   sims <- forecast_infections(out, R)
   sims10 <- forecast_infections(out, R, samples = 10)
@@ -114,6 +129,8 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
 
 test_that("forecast infections can be run with a limited number of samples", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  out <- setup_estimate_infections_for_forecast()
+
   R <- c(rep(NA_real_, 40), rep(1.2, 15), rep(0.8, 15))
   sims <- forecast_infections(out, R, samples = 10)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
@@ -123,6 +140,8 @@ test_that("forecast infections can be run with a limited number of samples", {
 
 test_that("forecast infections can be run with one sample", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  out <- setup_estimate_infections_for_forecast()
+
   R <- c(rep(NA_real_, 40), rep(1.2, 15), rep(0.8, 15))
   sims <- forecast_infections(out, R, samples = 1)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
@@ -138,6 +157,8 @@ test_that("forecast infections fails as expected", {
 
 test_that("forecast_infections works to simulate a passed in estimate_infections object with an adjusted Rt in data frame", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  out <- setup_estimate_infections_for_forecast()
+
   R <- c(rep(1.4, 40), rep(0.5, 17))
   R_dt <- data.frame(date = summary(out, type = "parameters", param = "R")$date, value = R)
   sims_dt <- forecast_infections(out, R_dt)
@@ -146,6 +167,8 @@ test_that("forecast_infections works to simulate a passed in estimate_infections
 
 test_that("forecast_infections works to simulate a passed in estimate_infections object with samples of Rt in a data frame", {
   skip_if_not(integration_test(), "Skipping slow integration test")
+  out <- setup_estimate_infections_for_forecast()
+
   R_samples <- get_samples(out)[variable == "R"]
   R_samples <- R_samples[, .(date, sample, value)][sample <= 1000]
   R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
