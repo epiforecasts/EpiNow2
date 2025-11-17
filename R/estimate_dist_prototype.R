@@ -111,9 +111,14 @@ estimate_dist <- function(data,
 
   # Step 1: Get distribution IDs
   dist_id <- primarycensored::pcd_stan_dist_id(dist)
+
   # Primary distribution ID (for censoring of primary events)
-  # For uniform censoring (daily), use "uniform"
-  primary_id <- primarycensored::pcd_stan_dist_id(primary_dist)
+  # For uniform censoring (daily), pwindow in data handles it, no dist needed
+  if (primary_dist == "uniform") {
+    primary_id <- 0  # 0 means no primary distribution (uniform window)
+  } else {
+    primary_id <- primarycensored::pcd_stan_dist_id(primary_dist)
+  }
 
   # Step 2: Convert input data to primarycensored format
   pcd_data <- .convert_to_pcd_data(
