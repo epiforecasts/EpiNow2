@@ -109,8 +109,11 @@ estimate_dist <- function(data,
     )
   }
 
-  # Step 1: Convert input data to primarycensored format
-  pcd_data <- .convert_to_pcd_data(data, dist, primary_dist, verbose)
+  # Step 1: Get distribution ID
+  dist_id <- primarycensored::pcd_stan_dist_id(dist)
+
+  # Step 2: Convert input data to primarycensored format
+  pcd_data <- .convert_to_pcd_data(data, dist, dist_id, primary_dist, verbose)
 
   # Step 2: Compile/load the Stan model
   if (verbose) {
@@ -152,20 +155,21 @@ estimate_dist <- function(data,
 #'
 #' @param data Input data (vector or data.frame)
 #' @param dist Distribution type
+#' @param dist_id Distribution ID for Stan
 #' @param primary_dist Primary distribution
 #' @param verbose Verbose output?
 #'
 #' @return A list of data for primarycensored Stan model
 #' @keywords internal
-.convert_to_pcd_data <- function(data, dist, primary_dist, verbose) {
+.convert_to_pcd_data <- function(data, dist, dist_id, primary_dist, verbose) {
   # Case 1: Simple numeric vector (backwards compatible)
   if (is.numeric(data) && !is.data.frame(data)) {
-    return(.vector_to_pcd_data(data, primary_dist, verbose))
+    return(.vector_to_pcd_data(data, dist_id, primary_dist, verbose))
   }
 
   # Case 2: Data frame (linelist)
   if (is.data.frame(data)) {
-    return(.linelist_to_pcd_data(data, primary_dist, verbose))
+    return(.linelist_to_pcd_data(data, dist_id, primary_dist, verbose))
   }
 
   cli::cli_abort(
@@ -183,7 +187,7 @@ estimate_dist <- function(data,
 #'
 #' @return List for primarycensored
 #' @keywords internal
-.vector_to_pcd_data <- function(values, primary_dist, verbose) {
+.vector_to_pcd_data <- function(values, dist_id, primary_dist, verbose) {
   # Clean data
   values <- as.integer(values)
   values <- values[!is.na(values)]
@@ -211,7 +215,10 @@ estimate_dist <- function(data,
   )
 
   # Use primarycensored's data preparation helper
-  pcd_data <- primarycensored::pcd_as_stan_data(delay_df)
+  pcd_data <- primarycensored::pcd_as_stan_data(
+    delay_df,
+    dist_id = dist_id
+  )
 
   return(pcd_data)
 }
@@ -223,7 +230,7 @@ estimate_dist <- function(data,
 #'
 #' @return List for primarycensored
 #' @keywords internal
-.linelist_to_pcd_data <- function(data, primary_dist, verbose) {
+.linelist_to_pcd_data <- function(data, dist_id, primary_dist, verbose) {
   # Validate required columns
   # This is a simplified version - full implementation would be more robust
   required_cols <- c("ptime_lwr", "stime_lwr")
@@ -277,7 +284,10 @@ estimate_dist <- function(data,
 
   # Use primarycensored's data preparation
   # Pass the data frame directly
-  pcd_data <- primarycensored::pcd_as_stan_data(data)
+  pcd_data <- primarycensored::pcd_as_stan_data(
+    data,
+    dist_id = dist_id
+  )
 
   return(pcd_data)
 }
