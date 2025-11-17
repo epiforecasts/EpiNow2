@@ -125,15 +125,15 @@ estimate_dist <- function(data,
     data, dist, dist_id, primary_dist, primary_id, verbose
   )
 
-  # Step 2: Compile/load the Stan model
+  # Step 3: Compile/load the Stan model
   if (verbose) {
     cli::cli_alert_info("Compiling Stan model...")
   }
   model <- primarycensored::pcd_cmdstan_model(
-    threads = TRUE
+    cpp_options = list(stan_threads = TRUE)
   )
 
-  # Step 3: Fit the model
+  # Step 4: Fit the model
   if (verbose) {
     cli::cli_alert_info("Fitting {dist} distribution...")
   }
@@ -142,6 +142,7 @@ estimate_dist <- function(data,
     data = pcd_data,
     chains = chains,
     parallel_chains = cores,
+    threads_per_chain = 1,  # Use threading within chains
     iter_warmup = 1000,
     iter_sampling = ceiling(samples / chains),
     refresh = if (verbose) 500 else 0,
