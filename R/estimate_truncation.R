@@ -195,11 +195,14 @@ estimate_truncation <- function(data,
       sigma = abs(rnorm(1, 0, 1))
     ))
   }
-
-  # fit
   stan_args <- create_stan_args(
     stan = stan, data = stan_data, init = init_fn, model = "estimate_truncation"
   )
+
+  # Warn if truncation distribution is longer than observed time
+  check_truncation_length(stan_args, time_points = stan_data$t)
+
+  # fit
   fit <- fit_model(stan_args, id = "estimate_truncation")
 
   out <- list()
