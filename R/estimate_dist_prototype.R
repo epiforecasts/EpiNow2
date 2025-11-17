@@ -206,8 +206,7 @@ estimate_dist <- function(data,
     delay_upper = values + 1,
     pwindow = 1,  # Primary window (daily censoring)
     swindow = 1,  # Secondary window (daily censoring)
-    D = max(values) + 10,  # Truncation point (no truncation effectively)
-    ...
+    D = max(values) + 10  # Truncation point (no truncation effectively)
   )
 
   return(pcd_data)
