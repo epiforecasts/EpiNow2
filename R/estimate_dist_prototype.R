@@ -201,18 +201,18 @@ estimate_dist <- function(data,
   # - No truncation (set D high to effectively disable it)
 
   # Create data frame for primarycensored
-  # pcd_as_stan_data expects a data frame with columns
+  # pcd_as_stan_data expects: delay, delay_upper, n, relative_obs_time
   delay_df <- data.frame(
     delay = values,
     delay_upper = values + 1,
-    n = 1  # Each observation has weight 1
+    n = 1,  # Each observation has weight 1
+    relative_obs_time = max(values) + 10  # No truncation
   )
 
   # Use primarycensored's data preparation helper
   pcd_data <- primarycensored::pcd_as_stan_data(
     delay_df,
     pwindow = 1  # Primary window (daily censoring)
-    # Note: D (truncation) may need to be specified differently
   )
 
   return(pcd_data)
@@ -258,6 +258,14 @@ estimate_dist <- function(data,
     data$n <- 1  # Each row is one observation
   }
 
+  # Add relative observation time for truncation
+  if ("obs_time" %in% names(data) && "ptime_lwr" %in% names(data)) {
+    data$relative_obs_time <- data$obs_time - data$ptime_lwr
+  } else {
+    # No truncation - set relative_obs_time high
+    data$relative_obs_time <- max(data$delay_upper) + 10
+  }
+
   if (verbose) {
     cli::cli_alert_info(
       "Using {nrow(data)} linelist observations (delay range: {min(data$delay)}-{max(data$delay)})"
@@ -269,7 +277,6 @@ estimate_dist <- function(data,
   pcd_data <- primarycensored::pcd_as_stan_data(
     data,
     pwindow = 1  # Primary window (daily censoring)
-    # Note: may need to specify delay column names if different
   )
 
   return(pcd_data)
