@@ -228,15 +228,11 @@ estimate_dist <- function(data,
   )
 
   # Use primarycensored's data preparation helper
-  # Use default parameter bounds (will be set by pcd_as_stan_data)
+  # Use default parameter bounds (omit to use defaults)
   pcd_data <- primarycensored::pcd_as_stan_data(
     delay_df,
     dist_id = dist_id,
-    primary_id = primary_id,
-    param_bounds = NULL,  # Use defaults
-    primary_param_bounds = NULL,  # Use defaults
-    priors = NULL,  # Use default priors
-    primary_priors = NULL  # Use default priors
+    primary_id = primary_id
   )
 
   return(pcd_data)
@@ -302,15 +298,11 @@ estimate_dist <- function(data,
   }
 
   # Use primarycensored's data preparation
-  # Pass the data frame directly
+  # Pass the data frame directly (omit optional params to use defaults)
   pcd_data <- primarycensored::pcd_as_stan_data(
     data,
     dist_id = dist_id,
-    primary_id = primary_id,
-    param_bounds = NULL,  # Use defaults
-    primary_param_bounds = NULL,  # Use defaults
-    priors = NULL,  # Use default priors
-    primary_priors = NULL  # Use default priors
+    primary_id = primary_id
   )
 
   return(pcd_data)
