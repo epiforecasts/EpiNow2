@@ -4,14 +4,18 @@
 \alias{.convert_to_pcd_data}
 \title{Convert data to primarycensored format (internal helper)}
 \usage{
-.convert_to_pcd_data(data, dist, primary_dist, verbose)
+.convert_to_pcd_data(data, dist, dist_id, primary_dist, primary_id, verbose)
 }
 \arguments{
 \item{data}{Input data (vector or data.frame)}
 
 \item{dist}{Distribution type}
 
+\item{dist_id}{Distribution ID for Stan}
+
 \item{primary_dist}{Primary distribution}
+
+\item{primary_id}{Primary distribution ID for Stan}
 
 \item{verbose}{Verbose output?}
 }

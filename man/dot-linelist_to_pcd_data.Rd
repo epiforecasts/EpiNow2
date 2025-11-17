@@ -4,12 +4,14 @@
 \alias{.linelist_to_pcd_data}
 \title{Convert linelist to primarycensored data (internal)}
 \usage{
-.linelist_to_pcd_data(data, primary_dist, verbose)
+.linelist_to_pcd_data(data, dist_id, primary_id, verbose)
 }
 \arguments{
 \item{data}{Input data (vector or data.frame)}
 
-\item{primary_dist}{Primary distribution}
+\item{dist_id}{Distribution ID for Stan}
+
+\item{primary_id}{Primary distribution ID for Stan}
 
 \item{verbose}{Verbose output?}
 }

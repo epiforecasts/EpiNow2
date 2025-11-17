@@ -4,10 +4,12 @@
 \alias{.vector_to_pcd_data}
 \title{Convert vector to primarycensored data (internal)}
 \usage{
-.vector_to_pcd_data(values, primary_dist, verbose)
+.vector_to_pcd_data(values, dist_id, primary_id, verbose)
 }
 \arguments{
-\item{primary_dist}{Primary distribution}
+\item{dist_id}{Distribution ID for Stan}
+
+\item{primary_id}{Primary distribution ID for Stan}
 
 \item{verbose}{Verbose output?}
 }
