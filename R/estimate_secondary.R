@@ -260,6 +260,10 @@ estimate_secondary <- function(data,
   stan_ <- create_stan_args(
     stan = stan, data = stan_data, init = inits, model = "estimate_secondary"
   )
+
+  # Warn if truncation distribution is longer than observed time
+  check_truncation_length(stan_, time_points = stan_data$t)
+
   fit <- fit_model(stan_, id = "estimate_secondary")
 
   out <- list()
