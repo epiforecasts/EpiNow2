@@ -198,15 +198,21 @@ estimate_dist <- function(data,
   # For simple vector input, we assume:
   # - Primary events are uniformly distributed over [0, 1) (daily censoring)
   # - Secondary events are uniformly distributed over [delay, delay+1)
-  # - No truncation (D = max observed delay + some buffer)
+  # - No truncation (set D high to effectively disable it)
+
+  # Create data frame for primarycensored
+  # pcd_as_stan_data expects a data frame with columns
+  delay_df <- data.frame(
+    delay = values,
+    delay_upper = values + 1,
+    n = 1  # Each observation has weight 1
+  )
 
   # Use primarycensored's data preparation helper
   pcd_data <- primarycensored::pcd_as_stan_data(
-    delay = values,
-    delay_upper = values + 1,
-    pwindow = 1,  # Primary window (daily censoring)
-    swindow = 1,  # Secondary window (daily censoring)
-    D = max(values) + 10  # Truncation point (no truncation effectively)
+    delay_df,
+    pwindow = 1  # Primary window (daily censoring)
+    # Note: D (truncation) may need to be specified differently
   )
 
   return(pcd_data)
@@ -236,37 +242,34 @@ estimate_dist <- function(data,
     )
   }
 
-  # Calculate delays
-  delay <- data$stime_lwr - data$ptime_lwr
+  # Calculate delays from primary to secondary event
+  data$delay <- data$stime_lwr - data$ptime_lwr
 
-  # Handle upper bounds
-  if ("stime_upr" %in% names(data) && "ptime_upr" %in% names(data)) {
-    delay_upper <- data$stime_upr - data$ptime_lwr
+  # Handle upper bounds for delays
+  if ("stime_upr" %in% names(data) && "ptime_lwr" %in% names(data)) {
+    data$delay_upper <- data$stime_upr - data$ptime_lwr
   } else {
-    # Assume daily censoring
-    delay_upper <- delay + 1
+    # Assume daily censoring for secondary event
+    data$delay_upper <- data$delay + 1
   }
 
-  # Handle truncation
-  if ("obs_time" %in% names(data)) {
-    D <- max(data$obs_time - data$ptime_lwr)
-  } else {
-    D <- max(delay_upper) + 10
+  # Add count column if not present
+  if (!"n" %in% names(data)) {
+    data$n <- 1  # Each row is one observation
   }
 
   if (verbose) {
     cli::cli_alert_info(
-      "Using {nrow(data)} linelist observations (max delay: {max(delay)})"
+      "Using {nrow(data)} linelist observations (delay range: {min(data$delay)}-{max(data$delay)})"
     )
   }
 
   # Use primarycensored's data preparation
+  # Pass the data frame directly
   pcd_data <- primarycensored::pcd_as_stan_data(
-    delay = delay,
-    delay_upper = delay_upper,
-    pwindow = 1,
-    swindow = 1,
-    D = D
+    data,
+    pwindow = 1  # Primary window (daily censoring)
+    # Note: may need to specify delay column names if different
   )
 
   return(pcd_data)
