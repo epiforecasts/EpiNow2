@@ -227,12 +227,43 @@ estimate_dist <- function(data,
     relative_obs_time = max(values) + 10  # No truncation
   )
 
+  # Set up parameter bounds based on distribution type
+  # These are wide bounds to allow the model to fit flexibly
+  param_bounds <- switch(dist_id,
+    "1" = list(  # Lognormal: meanlog, sdlog
+      lower = c(-5, 0),
+      upper = c(5, 5)
+    ),
+    "2" = list(  # Gamma: shape, rate
+      lower = c(0, 0),
+      upper = c(100, 10)
+    ),
+    "3" = list(  # Weibull: shape, scale
+      lower = c(0, 0),
+      upper = c(100, 100)
+    ),
+    "4" = list(  # Exponential: rate
+      lower = c(0),
+      upper = c(10)
+    ),
+    # Default bounds
+    list(lower = c(0, 0), upper = c(100, 100))
+  )
+
+  # Primary bounds (for uniform censoring with primary_id=0, use empty)
+  primary_param_bounds <- if (primary_id == 0) {
+    list(lower = numeric(0), upper = numeric(0))
+  } else {
+    list(lower = c(0), upper = c(10))
+  }
+
   # Use primarycensored's data preparation helper
-  # Use default parameter bounds (omit to use defaults)
   pcd_data <- primarycensored::pcd_as_stan_data(
     delay_df,
     dist_id = dist_id,
-    primary_id = primary_id
+    primary_id = primary_id,
+    param_bounds = param_bounds,
+    primary_param_bounds = primary_param_bounds
   )
 
   return(pcd_data)
@@ -297,12 +328,28 @@ estimate_dist <- function(data,
     )
   }
 
+  # Set up parameter bounds based on distribution type
+  param_bounds <- switch(dist_id,
+    "1" = list(lower = c(-5, 0), upper = c(5, 5)),  # Lognormal
+    "2" = list(lower = c(0, 0), upper = c(100, 10)),  # Gamma
+    "3" = list(lower = c(0, 0), upper = c(100, 100)),  # Weibull
+    "4" = list(lower = c(0), upper = c(10)),  # Exponential
+    list(lower = c(0, 0), upper = c(100, 100))  # Default
+  )
+
+  primary_param_bounds <- if (primary_id == 0) {
+    list(lower = numeric(0), upper = numeric(0))
+  } else {
+    list(lower = c(0), upper = c(10))
+  }
+
   # Use primarycensored's data preparation
-  # Pass the data frame directly (omit optional params to use defaults)
   pcd_data <- primarycensored::pcd_as_stan_data(
     data,
     dist_id = dist_id,
-    primary_id = primary_id
+    primary_id = primary_id,
+    param_bounds = param_bounds,
+    primary_param_bounds = primary_param_bounds
   )
 
   return(pcd_data)
