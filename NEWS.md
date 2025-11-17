@@ -31,6 +31,7 @@
 - A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
 - A bug was fixed where `estimate_infection()` threw an error if there were too many consecutive `NA` observations.
 - A bug was fixed where an error was thrown when convolving delay distributions with very small values.
+- A bug was fixed where various log variables (time steps, horizon, samples, chains, and iterations) were not being reported correctly especially when using the `cmdstanr` backend and `estimate_delays()` function.
 - A bug was fixed where a cli warning was broken due to bad syntax.
 - A bug was fixed where intermediate data was being bound together by column position instead of column name, leading to erroneous results.
 - A bug was fixed in the implementation of the Matern 5/2 Gaussian process kernel spectral density. See discussion at https://discourse.mc-stan.org/t/diagspd-for-matern-gp-kernels-other-than-3-2/37011/12
