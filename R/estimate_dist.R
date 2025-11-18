@@ -233,7 +233,7 @@ estimate_dist <- function(data,
   return(bounds)
 }
 
-#' Fit model with rstan
+#' Fit model with rstan using primarycensored functions
 #'
 #' @keywords internal
 .fit_with_rstan <- function(stan_data, samples, chains, cores,
@@ -248,8 +248,43 @@ estimate_dist <- function(data,
     )
   }
 
-  # Get the compiled model
-  model <- epinow2_stan_model("rstan", "estimate_dist")
+  # Get primarycensored Stan functions path for include
+  if (requireNamespace("primarycensored", quietly = TRUE)) {
+    pcd_path <- primarycensored::pcd_stan_path()
+    use_pcd <- TRUE
+
+    if (verbose) {
+      cli::cli_alert_info(
+        "Using primarycensored Stan functions from {pcd_path}"
+      )
+    }
+  } else {
+    use_pcd <- FALSE
+    if (verbose) {
+      cli::cli_alert_warn(
+        "primarycensored not available, using simplified model"
+      )
+    }
+  }
+
+  # Get the model file
+  model_file <- system.file(
+    "stan",
+    if (use_pcd) "estimate_dist_pcd.stan" else "estimate_dist.stan",
+    package = "EpiNow2"
+  )
+
+  # Compile with primarycensored include path if available
+  if (use_pcd) {
+    # Compile with include paths to primarycensored
+    model <- rstan::stan_model(
+      file = model_file,
+      include_paths = pcd_path,
+      verbose = verbose
+    )
+  } else {
+    model <- epinow2_stan_model("rstan", "estimate_dist")
+  }
 
   # Sampling arguments
   stan_args <- create_stan_args(
