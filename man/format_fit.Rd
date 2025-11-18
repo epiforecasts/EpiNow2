@@ -8,7 +8,7 @@ format_fit(posterior_samples, horizon, shift, burn_in, start_date, CrIs)
 }
 \arguments{
 \item{posterior_samples}{A list of posterior samples as returned by
-\code{\link[=format_simulation_output]{format_simulation_output()}}.}
+\code{\link[=format_samples_with_dates]{format_samples_with_dates()}}.}
 
 \item{horizon}{Numeric, forecast horizon.}
 

@@ -30,8 +30,7 @@ for.}
 \item{drop_length_1}{Logical; drop dimensions of length 1 in arrays extracted
 from the stan fit. Used in simulations where there's only 1 realization.}
 
-\item{merge}{if TRUE, merge samples into a single data.table using
-rbindlist. If FALSE returns a list of samples by parameter.}
+\item{merge}{Deprecated parameter that was never implemented.}
 }
 \value{
 A list of \verb{<data.frame>}'s each containing the posterior of a
@@ -39,7 +38,7 @@ parameter
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
-This function has been deprecated. Use \code{\link[=format_simulation_output]{format_simulation_output()}} for
+This function has been deprecated. Use \code{\link[=format_samples_with_dates]{format_samples_with_dates()}} for
 simulation outputs or \code{\link[=get_samples]{get_samples()}} for estimation outputs instead.
 }
 \keyword{internal}

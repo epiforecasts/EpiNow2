@@ -30,22 +30,15 @@ for.}
 \item{drop_length_1}{Logical; drop dimensions of length 1 in arrays extracted
 from the stan fit. Used in simulations where there's only 1 realization.}
 
-\item{merge}{if TRUE, merge samples into a single data.table using
-rbindlist. If FALSE returns a list of samples by parameter.}
+\item{merge}{Deprecated parameter that was never implemented.}
 }
 \value{
 A list of \verb{<data.frame>}'s each containing the simulated trajectories
-of each parameter, or a single merged data.table if merge = TRUE.
+of each parameter.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Formats simulation output from Stan models into structured data.tables with
-dates. This is an internal function used by \code{\link[=simulate_infections]{simulate_infections()}} and
-\code{\link[=forecast_infections]{forecast_infections()}} to process simulation results.
-
-This differs from \code{\link[=get_samples]{get_samples()}} in that it's designed for simulation
-outputs which have different array structures (especially with
-\code{drop_length_1 = TRUE}) and need different date ranges for different
-parameters.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+This function has been deprecated. Use \code{\link[=format_samples_with_dates]{format_samples_with_dates()}} instead,
+which provides a unified interface for both estimation and simulation outputs.
 }
 \keyword{internal}
