@@ -150,7 +150,7 @@ report_summary <- function(summarised_estimates,
 #'
 #' # plot infections
 #' plots <- report_plots(
-#'   summarised_estimates = out$summarised,
+#'   summarised_estimates = summary(out, type = "parameters"),
 #'   reported = out$observations
 #' )
 #' plots

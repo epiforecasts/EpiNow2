@@ -87,28 +87,28 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth) {
 #'
 #' # plot infections
 #' plot_estimates(
-#'   estimate = out$summarised[variable == "infections"],
+#'   estimate = summary(out, type = "parameters", param = "infections"),
 #'   reported = out$observations,
 #'   ylab = "Cases", max_plot = 2
 #' ) + ggplot2::facet_wrap(~type, scales = "free_y")
 #'
 #' # plot reported cases estimated via Rt
 #' plot_estimates(
-#'   estimate = out$summarised[variable == "reported_cases"],
+#'   estimate = summary(out, type = "parameters", param = "reported_cases"),
 #'   reported = out$observations,
 #'   ylab = "Cases"
 #' )
 #'
 #' # plot Rt estimates
 #' plot_estimates(
-#'   estimate = out$summarised[variable == "R"],
+#'   estimate = summary(out, type = "parameters", param = "R"),
 #'   ylab = "Effective Reproduction No.",
 #'   hline = 1
 #' )
 #'
 #' #' # plot Rt estimates without forecasts
 #' plot_estimates(
-#'   estimate = out$summarised[variable == "R"],
+#'   estimate = summary(out, type = "parameters", param = "R"),
 #'   ylab = "Effective Reproduction No.",
 #'   hline = 1, estimate_type = "Estimate"
 #' )
