@@ -260,6 +260,7 @@ test_that("extract_parameter_samples is deprecated", {
   ))
 
   # Verify it returns the same as format_simulation_output()
+  # (both deprecated functions should still work)
   withr::local_options(lifecycle_verbosity = "quiet")
   old_quiet <- extract_parameter_samples(
     out$fit,
@@ -271,7 +272,7 @@ test_that("extract_parameter_samples is deprecated", {
     merge = FALSE
   )
 
-  new_output <- format_simulation_output(
+  sim_output <- format_simulation_output(
     out$fit,
     out$args,
     reported_dates = reported_dates,
@@ -281,5 +282,24 @@ test_that("extract_parameter_samples is deprecated", {
     merge = FALSE
   )
 
-  expect_equal(old_quiet, new_output)
+  expect_equal(old_quiet, sim_output)
+})
+
+test_that("format_simulation_output is deprecated", {
+  # Create a simple fit to test with
+  out <- default_estimate_infections(reported_cases)
+
+  dates <- out$observations$date
+  reported_dates <- dates[-(1:out$args$seeding_time)]
+
+  # Test that format_simulation_output shows deprecation warning
+  expect_deprecated(format_simulation_output(
+    out$fit,
+    out$args,
+    reported_dates = reported_dates,
+    imputed_dates = reported_dates[out$args$imputed_times],
+    reported_inf_dates = dates,
+    drop_length_1 = FALSE,
+    merge = FALSE
+  ))
 })

@@ -224,14 +224,37 @@ simulate_infections <- function(R,
     seq(min(R$date) - seeding_time, min(R$date) - 1, by = "day"),
     R$date
   )
-  out <- format_simulation_output(sim, stan_data,
-    reported_inf_dates = dates,
-    reported_dates = dates[-(1:seeding_time)],
-    imputed_dates = dates[-(1:seeding_time)],
-    drop_length_1 = TRUE
+
+  # Extract samples and apply drop_length_1
+  raw_samples <- extract_samples(sim)
+  raw_samples <- lapply(raw_samples, function(x) {
+    if (length(dim(x)) > 1 && dim(x)[1] == 1) dim(x) <- dim(x)[-1]
+    x
+  })
+
+  # Copy data fields into samples
+  for (data_name in names(stan_data)) {
+    if (!(data_name %in% names(raw_samples))) {
+      raw_samples[[data_name]] <- stan_data[[data_name]]
+    }
+  }
+
+  # Create observations structure with full date range
+  # Note: format_samples_with_dates will handle the seeding_time internally
+  observations <- data.table(date = dates)
+
+  # Add imputed_times to match what estimate_infections provides
+  stan_data$imputed_times <- seq_along(dates[-(1:seeding_time)])
+
+  # Format samples with dates
+  out <- format_samples_with_dates(
+    raw_samples = raw_samples,
+    args = stan_data,
+    observations = observations
   )
 
-  out <- rbindlist(out[c("infections", "reported_cases")], idcol = "variable")
+  # Filter to just infections and reported_cases
+  out <- out[variable %in% c("infections", "reported_cases")]
   out <- out[, c("sample", "parameter", "time") := NULL]
 
   return(out[])
@@ -474,11 +497,31 @@ forecast_infections <- function(estimates,
     ## simulate
     sims <- fit_model(stan_args, id = "simulate_infections")
 
-    format_simulation_output(sims, stan_data,
-      reported_inf_dates = dates,
-      reported_dates = dates[-(1:shift)],
-      imputed_dates = dates[-(1:shift)],
-      drop_length_1 = TRUE, merge = TRUE
+    # Extract samples and apply drop_length_1
+    raw_samples <- extract_samples(sims)
+    raw_samples <- lapply(raw_samples, function(x) {
+      if (length(dim(x)) > 1 && dim(x)[1] == 1) dim(x) <- dim(x)[-1]
+      x
+    })
+
+    # Copy data fields into samples
+    for (data_name in names(stan_data)) {
+      if (!(data_name %in% names(raw_samples))) {
+        raw_samples[[data_name]] <- stan_data[[data_name]]
+      }
+    }
+
+    # Create observations structure
+    observations <- data.table(date = dates)
+
+    # Add imputed_times to match what estimate_infections provides
+    stan_data$imputed_times <- seq_along(dates[-(1:shift)])
+
+    # Format samples with dates
+    format_samples_with_dates(
+      raw_samples = raw_samples,
+      args = stan_data,
+      observations = observations
     )
   }
 

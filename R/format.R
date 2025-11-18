@@ -4,7 +4,7 @@
 #' Summaries posterior samples and adds additional custom variables.
 #'
 #' @param posterior_samples A list of posterior samples as returned by
-#' [format_simulation_output()].
+#' [format_samples_with_dates()].
 #'
 #' @param horizon Numeric, forecast horizon.
 #'
@@ -71,15 +71,9 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
 
 #' Format Simulation Output from Stan
 #'
-#' @description `r lifecycle::badge("stable")`
-#' Formats simulation output from Stan models into structured data.tables with
-#' dates. This is an internal function used by [simulate_infections()] and
-#' [forecast_infections()] to process simulation results.
-#'
-#' This differs from [get_samples()] in that it's designed for simulation
-#' outputs which have different array structures (especially with
-#' `drop_length_1 = TRUE`) and need different date ranges for different
-#' parameters.
+#' @description `r lifecycle::badge("deprecated")`
+#' This function has been deprecated. Use [format_samples_with_dates()] instead,
+#' which provides a unified interface for both estimation and simulation outputs.
 #'
 #' @param data A list of the data supplied to the simulation.
 #'
@@ -93,18 +87,22 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
 #' @param drop_length_1 Logical; drop dimensions of length 1 in arrays extracted
 #' from the stan fit. Used in simulations where there's only 1 realization.
 #'
-#' @param merge if TRUE, merge samples into a single data.table using
-#' rbindlist. If FALSE returns a list of samples by parameter.
+#' @param merge Deprecated parameter that was never implemented.
 #'
 #' @inheritParams extract_samples
 #' @return A list of `<data.frame>`'s each containing the simulated trajectories
-#' of each parameter, or a single merged data.table if merge = TRUE.
+#' of each parameter.
 #' @importFrom rstan extract
 #' @importFrom data.table data.table
 #' @keywords internal
 format_simulation_output <- function(stan_fit, data, reported_dates,
                                      imputed_dates, reported_inf_dates,
                                      drop_length_1 = FALSE, merge = FALSE) {
+  lifecycle::deprecate_warn(
+    "1.8.0",
+    "format_simulation_output()",
+    "format_samples_with_dates()"
+  )
   # extract sample from stan object
   samples <- extract_samples(stan_fit)
 

@@ -13,7 +13,7 @@
   - Use `summary(object)` to get summarised estimates (same as before, but `type = "samples"` is now deprecated).
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
   - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
-  - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
+  - **Deprecated**: Internal functions `extract_parameter_samples()` and `format_simulation_output()` have been deprecated in favour of `format_samples_with_dates()`, which provides a unified interface for both estimation and simulation outputs.
 - `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
 
