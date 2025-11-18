@@ -2,25 +2,20 @@
 % Please edit documentation in R/extract.R
 \name{extract_parameter}
 \alias{extract_parameter}
-\title{Extract Samples for a Parameter from a Stan model}
+\title{Extract Samples from a Parameter with a Single Dimension}
 \usage{
-extract_parameter(param, samples, dates)
+extract_parameter(param, samples)
 }
 \arguments{
-\item{param}{Character string indicating the parameter to extract}
+\item{param}{Character string indicating the latent state to extract}
 
 \item{samples}{Extracted stan model (using \code{\link[rstan:stanfit-method-extract]{rstan::extract()}})}
-
-\item{dates}{A vector identifying the dimensionality of the parameter to
-extract. Generally this will be a date.}
 }
 \value{
-A \verb{<data.frame>} containing the parameter name, date, sample id and
-sample value.
+A \verb{<data.frame>} containing the parameter name, sample id and sample
+value, or NULL if the parameter doesn't exist in the samples
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Extracts a single from a list of stan output and returns it as a
-\verb{<data.table>}.
+Extract Samples from a Parameter with a Single Dimension
 }
 \keyword{internal}

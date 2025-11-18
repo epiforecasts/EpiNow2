@@ -28,7 +28,6 @@ format_fit <- function(posterior_samples, horizon, shift, burn_in, start_date,
       "format_fit(burn_in)",
       detail = "This functionality is no longer available."
     )
-
   }
   if (!missing(start_date)) {
     lifecycle::deprecate_stop(
@@ -125,26 +124,26 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
   # construct reporting list
   out <- list()
   # report infections, and R
-  out$infections <- extract_parameter(
+  out$infections <- extract_latent_state(
     "infections",
     samples,
     reported_inf_dates
   )
   out$infections <- out$infections[date >= min(reported_dates)]
-  out$reported_cases <- extract_parameter(
+  out$reported_cases <- extract_latent_state(
     "imputed_reports",
     samples,
     imputed_dates
   )
   if ("estimate_r" %in% names(data)) {
     if (data$estimate_r == 1) {
-      out$R <- extract_parameter(
+      out$R <- extract_latent_state(
         "R",
         samples,
         reported_dates
       )
       if (data$bp_n > 0) {
-        out$breakpoints <- extract_parameter(
+        out$breakpoints <- extract_latent_state(
           "bp_effects",
           samples,
           1:data$bp_n
@@ -155,14 +154,14 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
         ][, c("time", "date") := NULL]
       }
     } else {
-      out$R <- extract_parameter(
+      out$R <- extract_latent_state(
         "gen_R",
         samples,
         reported_dates
       )
     }
   }
-  out$growth_rate <- extract_parameter(
+  out$growth_rate <- extract_latent_state(
     "r",
     samples,
     reported_dates[-1]
@@ -170,7 +169,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
   incomplete_dates <- unique(out$growth_rate[is.na(value), ][["date"]])
   out$growth_rate[date %in% incomplete_dates, value := NA]
   if (data$week_effect > 1) {
-    out$day_of_week <- extract_parameter(
+    out$day_of_week <- extract_latent_state(
       "day_of_week_simplex",
       samples,
       1:data$week_effect
@@ -182,7 +181,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
     ]
   }
   if (data$delay_n_p > 0) {
-    out$delay_params <- extract_parameter(
+    out$delay_params <- extract_latent_state(
       "delay_params", samples, seq_len(data$delay_params_length)
     )
     out$delay_params <-
@@ -197,13 +196,13 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
   param_names <- sub("^param_id_", "", param_id_names)
 
   for (param in param_names) {
-    result <- extract_static_parameter(param, samples)
+    result <- extract_parameter(param, samples)
     if (!is.null(result)) {
       # Use standard naming conventions
       param_name <- switch(param,
         "dispersion" = "reporting_overdispersion",
         "frac_obs" = "fraction_observed",
-        param  # default: use param name as-is
+        param # default: use param name as-is
       )
       out[[param_name]] <- result
     }
@@ -230,25 +229,25 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
   out <- list()
 
   # Infections (for estimate_infections)
-  infections <- extract_parameter("infections", raw_samples, dates)
+  infections <- extract_latent_state("infections", raw_samples, dates)
   if (!is.null(infections)) {
     out$infections <- infections[date >= min(reported_dates)]
   }
 
   # Reported cases (for estimate_infections)
-  out$reported_cases <- extract_parameter(
+  out$reported_cases <- extract_latent_state(
     "imputed_reports", raw_samples, reported_dates[args$imputed_times]
   )
 
   # R (reproduction number) - try R first, then gen_R
-  out$R <- extract_parameter("R", raw_samples, reported_dates)
+  out$R <- extract_latent_state("R", raw_samples, reported_dates)
   if (is.null(out$R)) {
-    out$R <- extract_parameter("gen_R", raw_samples, reported_dates)
+    out$R <- extract_latent_state("gen_R", raw_samples, reported_dates)
   }
 
   # Breakpoints (if present in model)
   if (args$bp_n > 0) {
-    breakpoints <- extract_parameter("bp_effects", raw_samples, 1:args$bp_n)
+    breakpoints <- extract_latent_state("bp_effects", raw_samples, 1:args$bp_n)
     if (!is.null(breakpoints)) {
       out$breakpoints <- breakpoints[, strat := date][
         , c("time", "date") := NULL
@@ -257,7 +256,7 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
   }
 
   # Growth rate
-  growth_rate <- extract_parameter("r", raw_samples, reported_dates[-1])
+  growth_rate <- extract_latent_state("r", raw_samples, reported_dates[-1])
   if (!is.null(growth_rate)) {
     incomplete_dates <- unique(growth_rate[is.na(value), ][["date"]])
     growth_rate[date %in% incomplete_dates, value := NA]
@@ -266,7 +265,7 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
 
   # Day of week effect
   if (args$week_effect > 1) {
-    day_of_week <- extract_parameter(
+    day_of_week <- extract_latent_state(
       "day_of_week_simplex", raw_samples, 1:args$week_effect
     )
     if (!is.null(day_of_week)) {
@@ -279,7 +278,7 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
 
   # Delay parameters
   if (args$delay_params_length > 0) {
-    delay_params <- extract_parameter(
+    delay_params <- extract_latent_state(
       "delay_params", raw_samples, seq_len(args$delay_params_length)
     )
     if (!is.null(delay_params)) {
@@ -296,13 +295,13 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
   param_names <- sub("^param_id_", "", param_id_names)
 
   for (param in param_names) {
-    result <- extract_static_parameter(param, raw_samples)
+    result <- extract_parameter(param, raw_samples)
     if (!is.null(result)) {
       # Use standard naming conventions
       param_name <- switch(param,
         "dispersion" = "reporting_overdispersion",
         "frac_obs" = "fraction_observed",
-        param  # default: use param name as-is
+        param # default: use param name as-is
       )
       out[[param_name]] <- result
     }

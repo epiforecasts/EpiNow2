@@ -1,21 +1,21 @@
-#' Extract Samples for a Parameter from a Stan model
+#' Extract Samples for a Latent State from a Stan model
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extracts a single from a list of stan output and returns it as a
-#' `<data.table>`.
+#' Extracts a time-varying latent state from a list of stan output and returns
+#' it as a `<data.table>`.
 #
-#' @param param Character string indicating the parameter to extract
+#' @param param Character string indicating the latent state to extract
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
 #'
-#' @param dates A vector identifying the dimensionality of the parameter to
+#' @param dates A vector identifying the dimensionality of the latent state to
 #' extract. Generally this will be a date.
 #'
 #' @return A `<data.frame>` containing the parameter name, date, sample id and
 #' sample value.
 #' @importFrom data.table melt as.data.table
 #' @keywords internal
-extract_parameter <- function(param, samples, dates) {
+extract_latent_state <- function(param, samples, dates) {
   # Return NULL if parameter doesn't exist
   if (!(param %in% names(samples))) {
     return(NULL)
@@ -45,11 +45,11 @@ extract_parameter <- function(param, samples, dates) {
 
 #' Extract Samples from a Parameter with a Single Dimension
 #'
-#' @inheritParams extract_parameter
+#' @inheritParams extract_latent_state
 #' @return A `<data.frame>` containing the parameter name, sample id and sample
 #' value, or NULL if the parameter doesn't exist in the samples
 #' @keywords internal
-extract_static_parameter <- function(param, samples) {
+extract_parameter <- function(param, samples) {
   id_name <- paste("param_id", param, sep = "_")
 
   # Return NULL if parameter ID doesn't exist
@@ -90,7 +90,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     return(do.call(rstan::extract, extract_args))
   }
   if (!inherits(stan_fit, "CmdStanMCMC") &&
-        !inherits(stan_fit, "CmdStanFit")) {
+    !inherits(stan_fit, "CmdStanFit")) {
     cli_abort(
       "{.var stan_fit} must be a {.cls stanfit}, {.cls CmdStanMCMC} or
       {.cls CmdStanFit} object."
