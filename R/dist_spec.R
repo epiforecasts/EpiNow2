@@ -443,7 +443,7 @@ max.dist_spec <- function(x, ...) {
   ## try to discretise (which applies cdf cutoff and max)
   x <- discretise(x, strict = FALSE)
   switch(get_distribution(x),
-    nonparametric = length(get_pmf(x)) - 1,
+    nonparametric = length(get_pmf(x)),
     fixed = get_parameters(x)$value,
     ifelse(is.null(attr(x, "max")), Inf, attr(x, "max"))
   )
