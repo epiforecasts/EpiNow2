@@ -915,8 +915,20 @@ summary.estimate_secondary <- function(object,
                                        CrIs = c(0.2, 0.5, 0.9), ...) {
   type <- arg_match(type)
 
-  # Extract all parameters with summary statistics
-  out <- extract_stan_param(object$fit, CrIs = CrIs)
+  # Get all posterior samples
+  samples <- get_samples(object)
+
+  # Filter to non-time-varying parameters (delay_params and params)
+  # Time-varying parameters like secondary and sim_secondary have dates
+  param_samples <- samples[is.na(date)]
+
+  # Calculate summary statistics
+  out <- calc_summary_measures(
+    param_samples,
+    summarise_by = "variable",
+    order_by = "variable",
+    CrIs = CrIs
+  )
 
   if (type == "compact") {
     # Return only key parameters for a compact summary

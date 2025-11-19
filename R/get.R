@@ -272,25 +272,39 @@ get_samples.estimate_secondary <- function(object, ...) {
   # Extract raw posterior samples from the fit
   raw_samples <- extract_samples(object$fit)
 
-  # Extract delay_params and params using helper function
+  # Extract array parameters (delay_params and params)
   samples_list <- list(
     extract_array_parameter("delay_params", raw_samples$delay_params),
     extract_array_parameter("params", raw_samples$params)
   )
 
+  # Extract time-varying generated quantities
+  # Get dates for time-indexed parameters (post burn-in)
+  burn_in <- object$args$burn_in
+  dates <- object$observations[(burn_in + 1):.N]$date
+
+  # Extract sim_secondary (generated quantity, post burn-in) if available
+  sim_secondary_samples <- extract_latent_state(
+    "sim_secondary", raw_samples, dates
+  )
+  if (!is.null(sim_secondary_samples)) {
+    samples_list <- c(samples_list, list(sim_secondary_samples))
+  }
+
   # Combine all samples
   samples <- data.table::rbindlist(samples_list, fill = TRUE)
 
-  # Rename 'parameter' column to 'variable' for consistency
-  data.table::setnames(samples, "parameter", "variable")
+  # Rename 'parameter' column to 'variable' for consistency if needed
+  if ("parameter" %in% names(samples)) {
+    data.table::setnames(samples, "parameter", "variable")
+  }
 
   # Add placeholder columns for consistency with estimate_infections format
-  samples[, `:=`(
-    date = as.Date(NA),
-    strat = NA_character_,
-    time = NA_integer_,
-    type = NA_character_
-  )]
+  # Only add if not already present
+  if (!"date" %in% names(samples)) samples[, date := as.Date(NA)]
+  if (!"strat" %in% names(samples)) samples[, strat := NA_character_]
+  if (!"time" %in% names(samples)) samples[, time := NA_integer_]
+  if (!"type" %in% names(samples)) samples[, type := NA_character_]
 
   # Reorder columns
   data.table::setcolorder(
@@ -366,15 +380,20 @@ get_predictions.estimate_infections <- function(object,
 get_predictions.estimate_secondary <- function(object,
                                                CrIs = c(0.2, 0.5, 0.9),
                                                ...) {
-  # Extract predictions from the fit
-  predictions <- extract_stan_param(object$fit, "sim_secondary", CrIs = CrIs)
-  predictions <- predictions[, lapply(.SD, round, 1)]
+  # Get samples for simulated secondary observations
+  samples <- get_samples(object)
+  sim_secondary_samples <- samples[variable == "sim_secondary"]
 
-  # Add dates based on burn_in
-  burn_in <- object$args$burn_in
-  predictions <- predictions[
-    , date := object$observations[(burn_in + 1):.N]$date
-  ]
+  # Calculate summary measures
+  predictions <- calc_summary_measures(
+    sim_secondary_samples,
+    summarise_by = "date",
+    order_by = "date",
+    CrIs = CrIs
+  )
+
+  # Round predictions
+  predictions <- predictions[, lapply(.SD, round, 1)]
 
   # Merge with observations
   predictions <- data.table::merge.data.table(

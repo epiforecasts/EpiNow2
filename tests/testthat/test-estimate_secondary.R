@@ -80,8 +80,8 @@ test_that("estimate_secondary can return values from simulated data and plot
   expect_equal(
     names(predictions),
     c(
-      "date", "primary", "secondary", "accumulate", "mean", "se_mean", "sd",
-      "lower_90", "lower_50", "lower_20", "median", "upper_20", "upper_50", "upper_90"
+      "date", "primary", "secondary", "accumulate", "median", "mean", "sd",
+      "lower_90", "lower_50", "lower_20", "upper_20", "upper_50", "upper_90"
     )
   )
 
