@@ -14,13 +14,17 @@ BMC
 bp
 Bracher
 brynhayder
+cdf
 centered
 Centers
+cli
 CMD
 cmdstanr
 CMF
+cmfs
 CMMID
 codecov
+color
 com
 Cori
 CoV
@@ -29,6 +33,7 @@ COVID
 csl
 CSTE
 csv
+cutoff
 dajmcdon
 davidvilanova
 dd
@@ -44,6 +49,8 @@ dist
 div
 Dockerfile
 doi
+doxygen
+dropdown
 dt
 dynamicaltruncation
 ECDC
@@ -63,6 +70,7 @@ fabsig
 filepath
 fkrauer
 frac
+fulled
 furqan
 GauriSaran
 github
@@ -116,6 +124,7 @@ lt
 Makevars
 matern
 Matern
+Matérn
 mathcal
 mathrm
 Mayol
@@ -133,6 +142,7 @@ nikosbosse
 nlinton
 nolint
 nonmechanistic
+nonzero
 nowcast
 nowcasting
 nowcasts
@@ -143,7 +153,10 @@ objec
 obs
 ORCID
 org
+Ornstein
+ou
 pak
+Parag
 parallisation
 parameterisations
 parameterised
@@ -156,6 +169,8 @@ pkgdown
 PLoS
 pmf
 PMF
+pmfs
+PMFs
 pngs
 poisson
 Poisson
@@ -168,6 +183,7 @@ rhamoonga
 RichardMN
 Riutort
 rmarkdown
+roxygen
 rp
 rstan
 Rstan
@@ -199,6 +215,7 @@ timelimit
 toc
 tony
 trunc
+Uhlenbeck
 underreporting
 varphi
 vb
