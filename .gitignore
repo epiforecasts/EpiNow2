@@ -47,3 +47,6 @@ inst/stan/*
 # benchmarking
 inst/stan-main
 inst/dev/benchmark-results.md
+
+# Claude
+.claude/*

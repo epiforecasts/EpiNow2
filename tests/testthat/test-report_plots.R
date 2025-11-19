@@ -3,10 +3,10 @@ fit <- readRDS(system.file(
 ))
 cases <- fit$observations
 
-test_that("report_plots works with  default settings", {
+test_that("report_plots works with default settings", {
   expect_error(
     report_plots(
-      summarised_estimates = fit$summarised,
+      summarised_estimates = summary(fit, type = "parameters"),
       reported = cases
     ),
     NA
