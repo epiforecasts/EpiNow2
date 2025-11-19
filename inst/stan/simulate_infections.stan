@@ -59,9 +59,9 @@ generated quantities {
 
     for (i in 1:n) {
       // generate infections from Rt trace
-      vector[delay_type_max[gt_id] + 1] gt_rev_pmf;
+      vector[delay_type_max[delay_id_generation_time] + 1] gt_rev_pmf;
         gt_rev_pmf = get_delay_rev_pmf(
-        gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
+        delay_id_generation_time, delay_type_max[delay_id_generation_time] + 1, delay_types_p, delay_types_id,
         delay_types_groups, delay_max, delay_np_pmf,
         delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
         1, 1, 0

@@ -207,7 +207,7 @@ test_that("check_truncation_length warns when truncation PMF is longer than time
   # Test with long truncation PMF (length 15) and time_points = 10
   stan_args <- list(
     data = list(
-      trunc_id = 1,
+      delay_id_truncation = 1,
       delay_n_np = 1,
       delay_types_groups = array(c(1, 2)), # Truncation maps to position 1
       delay_types_p = array(c(0)), # Truncation is nonparametric
@@ -228,7 +228,7 @@ test_that("check_truncation_length works with truncation from create_stan_delays
   short_trunc <- trunc_opts(dist = LogNormal(mean = 1, sd = 0.5, max = 5))
   stan_args_short <- list(
     data = create_stan_delays(
-      trunc = short_trunc,
+      truncation = short_trunc,
       time_points = 10
     )
   )
@@ -240,7 +240,7 @@ test_that("check_truncation_length works with truncation from create_stan_delays
   long_trunc <- trunc_opts(dist = LogNormal(mean = 2, sd = 0.5, max = 20))
   stan_args_long <- list(
     data = create_stan_delays(
-      trunc = long_trunc,
+      truncation = long_trunc,
       time_points = 10
     )
   )
@@ -261,9 +261,9 @@ test_that("check_truncation_length works when truncation is combined with other 
 
   stan_args <- list(
     data = create_stan_delays(
-      gt = gt,
-      delay = delays,
-      trunc = long_trunc,
+      generation_time = gt,
+      reporting = delays,
+      truncation = long_trunc,
       time_points = 10
     )
   )
@@ -283,7 +283,7 @@ test_that("check_truncation_length correctly indexes when parametric delays prec
   # to index into np_pmf_lengths, which only contains nonparametric delays
   stan_args <- list(
     data = list(
-      trunc_id = 3,
+      delay_id_truncation = 3,
       delay_n_np = 1,
       delay_types_groups = array(c(1, 2, 3, 4)), # Three delays total
       delay_types_p = array(c(1, 1, 0)), # First two parametric, third nonparametric
