@@ -1,21 +1,29 @@
-#' Extract Samples for a Parameter from a Stan model
+#' Extract Samples for a Latent State from a Stan model
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extracts a single from a list of stan output and returns it as a
-#' `<data.table>`.
+#' Extracts a time-varying latent state from a list of stan output and returns
+#' it as a `<data.table>`.
 #
-#' @param param Character string indicating the parameter to extract
+#' @param param Character string indicating the latent state to extract
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
 #'
-#' @param dates A vector identifying the dimensionality of the parameter to
+#' @param dates A vector identifying the dimensionality of the latent state to
 #' extract. Generally this will be a date.
 #'
-#' @return A `<data.frame>` containing the parameter name, date, sample id and
-#' sample value.
+#' @return A `<data.frame>` containing the following columns:
+#' \describe{
+#'   \item{parameter}{Character string, the name of the extracted parameter}
+#'   \item{time}{Integer index (1..N) corresponding to the position in the
+#'     supplied dates vector. This is the row/time-step index that maps to the
+#'     date column}
+#'   \item{date}{The date corresponding to this time step}
+#'   \item{sample}{Integer sample ID from the posterior}
+#'   \item{value}{Numeric value of the parameter sample}
+#' }
 #' @importFrom data.table melt as.data.table
 #' @keywords internal
-extract_parameter <- function(param, samples, dates) {
+extract_latent_state <- function(param, samples, dates) {
   # Return NULL if parameter doesn't exist
   if (!(param %in% names(samples))) {
     return(NULL)
@@ -45,11 +53,12 @@ extract_parameter <- function(param, samples, dates) {
 
 #' Extract Samples from a Parameter with a Single Dimension
 #'
-#' @inheritParams extract_parameter
+#' @param param Character string indicating the parameter to extract
+#' @param samples Extracted stan model (using [rstan::extract()])
 #' @return A `<data.frame>` containing the parameter name, sample id and sample
 #' value, or NULL if the parameter doesn't exist in the samples
 #' @keywords internal
-extract_static_parameter <- function(param, samples) {
+extract_parameter <- function(param, samples) {
   id_name <- paste("param_id", param, sep = "_")
 
   # Return NULL if parameter ID doesn't exist
