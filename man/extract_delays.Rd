@@ -16,6 +16,7 @@ delay parameters don't exist in the samples
 \description{
 Extracts samples from all delay parameters using the delay ID lookup system.
 Similar to extract_parameters(), this extracts all delay distribution
-parameters and uses the delay_id_* variables to assign meaningful names.
+parameters and uses the *_id variables (e.g., delay_id, trunc_id) to assign
+meaningful names.
 }
 \keyword{internal}
