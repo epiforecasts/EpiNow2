@@ -232,8 +232,8 @@ estimate_secondary <- function(data,
   stan_data <- c(stan_data, secondary)
   # delay data
   stan_data <- c(stan_data, create_stan_delays(
-    delay = delays,
-    trunc = truncation,
+    secondary = delays,
+    truncation = truncation,
     time_points = stan_data$t
   ))
 

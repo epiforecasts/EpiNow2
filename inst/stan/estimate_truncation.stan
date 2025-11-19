@@ -14,7 +14,7 @@ data {
 }
 
 transformed data{
-  int trunc_id = 1;
+  int delay_id_truncation = 1;
   array[obs_sets] int<lower = 1> end_t;
   array[obs_sets] int<lower = 1> start_t;
 
@@ -26,7 +26,7 @@ transformed data{
 
   for (i in 1:obs_sets) {
     end_t[i] = t - obs_dist[i];
-    start_t[i] = max(1, end_t[i] - delay_type_max[trunc_id]);
+    start_t[i] = max(1, end_t[i] - delay_type_max[delay_id_truncation]);
   }
 }
 
@@ -38,11 +38,11 @@ parameters {
 
 transformed parameters{
   real phi = 1 / sqrt(dispersion);
-  matrix[delay_type_max[trunc_id] + 1, obs_sets - 1] trunc_obs = rep_matrix(
-    0, delay_type_max[trunc_id] + 1, obs_sets - 1
+  matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] trunc_obs = rep_matrix(
+    0, delay_type_max[delay_id_truncation] + 1, obs_sets - 1
   );
-  vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
-    trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
+  vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf = get_delay_rev_pmf(
+    delay_id_truncation, delay_type_max[delay_id_truncation] + 1, delay_types_p, delay_types_id,
     delay_types_groups, delay_max, delay_np_pmf,
     delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
     0, 1, 1
@@ -79,10 +79,10 @@ model {
 }
 
 generated quantities {
-  matrix[delay_type_max[trunc_id] + 1, obs_sets] recon_obs = rep_matrix(
-    0, delay_type_max[trunc_id] + 1, obs_sets
+  matrix[delay_type_max[delay_id_truncation] + 1, obs_sets] recon_obs = rep_matrix(
+    0, delay_type_max[delay_id_truncation] + 1, obs_sets
   );
-  matrix[delay_type_max[trunc_id] + 1, obs_sets - 1] gen_obs;
+  matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] gen_obs;
   // reconstruct all truncated datasets using posterior of the truncation distribution
   for (i in 1:obs_sets) {
     recon_obs[1:(end_t[i] - start_t[i] + 1), i] = truncate_obs(
@@ -91,7 +91,7 @@ generated quantities {
   }
   // generate observations for comparing
   for (i in 1:(obs_sets - 1)) {
-    for (j in 1:(delay_type_max[trunc_id] + 1)) {
+    for (j in 1:(delay_type_max[delay_id_truncation] + 1)) {
       if (trunc_obs[j, i] == 0) {
         gen_obs[j, i] = 0;
       } else {

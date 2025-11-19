@@ -4,3 +4,4 @@ int historic; // Should primary historic reports be considered
 int primary_hist_additive; // Should historic primary reports be additive
 int current; // Should current primary reports be considered
 int primary_current_additive; // Should current primary reports be additive
+int<lower = 0> delay_id_secondary; // id of secondary delay

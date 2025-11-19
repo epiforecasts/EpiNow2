@@ -265,9 +265,9 @@ estimate_infections <- function(data,
   )
 
   stan_data <- c(stan_data, create_stan_delays(
-    gt = generation_time,
-    delay = delays,
-    trunc = truncation,
+    generation_time = generation_time,
+    reporting = delays,
+    truncation = truncation,
     time_points = stan_data$t - stan_data$seeding_time - stan_data$horizon
   ))
 

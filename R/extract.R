@@ -126,19 +126,19 @@ extract_delays <- function(samples) {
   # Build reverse lookup: column index -> delay name
   delay_names <- rep(NA_character_, n_cols)
 
-  # Check all *_id variables to build the mapping (e.g., delay_id, trunc_id)
-  id_vars <- grep("_id$", names(samples), value = TRUE)
-  if (length(id_vars) > 0 && "delay_params_groups" %in% names(samples)) {
-    delay_params_groups <- samples[["delay_params_groups"]]
+  # Check all delay_id_* variables to build the mapping
+  id_vars <- grep("^delay_id_", names(samples), value = TRUE)
+  if (length(id_vars) > 0 && "delay_types_groups" %in% names(samples)) {
+    delay_types_groups <- samples[["delay_types_groups"]]
 
     for (id_var in id_vars) {
-      delay_name <- sub("_id$", "", id_var)
-      delay_id <- samples[[id_var]][1]  # Take first value (same across samples)
+      delay_name <- sub("^delay_id_", "", id_var)
+      id <- samples[[id_var]][1]  # Take first value (same across samples)
 
       # Check if this delay exists (ID > 0)
-      if (delay_id > 0 && delay_id < length(delay_params_groups)) {
-        start_idx <- delay_params_groups[delay_id]
-        end_idx <- delay_params_groups[delay_id + 1] - 1
+      if (!is.na(id) && id > 0 && id < length(delay_types_groups)) {
+        start_idx <- delay_types_groups[id]
+        end_idx <- delay_types_groups[id + 1] - 1
 
         # Mark columns for this delay
         for (i in seq_along(start_idx:end_idx)) {

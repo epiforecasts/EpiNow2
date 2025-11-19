@@ -136,11 +136,11 @@ transformed parameters {
   }
 
   // convolve from latent infections to mean of observations
-  if (delay_id) {
-    vector[delay_type_max[delay_id] + 1] delay_rev_pmf;
+  if (delay_id_reporting) {
+    vector[delay_type_max[delay_id_reporting] + 1] delay_rev_pmf;
     profile("delays") {
       delay_rev_pmf = get_delay_rev_pmf(
-        delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
+        delay_id_reporting, delay_type_max[delay_id_reporting] + 1, delay_types_p, delay_types_id,
         delay_types_groups, delay_max, delay_np_pmf,
         delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
         0, 1, 0
@@ -172,11 +172,11 @@ transformed parameters {
   }
 
   // truncate near time cases to observed reports
-  if (trunc_id) {
-    vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf;
+  if (delay_id_truncation) {
+    vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf;
     profile("truncation") {
       trunc_rev_cmf = get_delay_rev_pmf(
-        trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
+        delay_id_truncation, delay_type_max[delay_id_truncation] + 1, delay_types_p, delay_types_id,
         delay_types_groups, delay_max, delay_np_pmf,
         delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
         0, 1, 1
