@@ -82,10 +82,10 @@ We welcome contributions created with the assistance of AI tools (such as Claude
 *   **You are responsible for all submitted code**: Regardless of how code was generated, you are fully responsible for understanding, testing, and maintaining your contribution.
 
 *   **Review AI-generated code thoroughly**: AI can produce code that looks correct but contains subtle bugs, security issues, or doesn't follow our coding standards. Always:
-  *   Read and understand every line of AI-generated code
-  *   Test thoroughly using `devtools::test()` and `devtools::check()`
-  *   Check coding standards with `lintr::lint_package()`
-  *   Verify documentation is accurate and follows our style
+    *   Read and understand every line of AI-generated code
+    *   Test thoroughly using `devtools::test()` and `devtools::check()`
+    *   Check coding standards with `lintr::lint_package()`
+    *   Verify documentation is accurate and follows our style
 
 *   **Request reviews appropriately**: If your PR is substantially AI-generated and you haven't yet reviewed it thoroughly yourself, add a note at the top of your PR description:
 
