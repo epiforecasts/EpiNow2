@@ -7,7 +7,7 @@
 extract_parameter(param, samples)
 }
 \arguments{
-\item{param}{Character string indicating the latent state to extract}
+\item{param}{Character string indicating the parameter to extract}
 
 \item{samples}{Extracted stan model (using \code{\link[rstan:stanfit-method-extract]{rstan::extract()}})}
 }

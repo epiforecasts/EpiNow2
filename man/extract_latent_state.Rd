@@ -15,8 +15,16 @@ extract_latent_state(param, samples, dates)
 extract. Generally this will be a date.}
 }
 \value{
-A \verb{<data.frame>} containing the parameter name, date, sample id and
-sample value.
+A \verb{<data.frame>} containing the following columns:
+\describe{
+\item{parameter}{Character string, the name of the extracted parameter}
+\item{time}{Integer index (1..N) corresponding to the position in the
+supplied dates vector. This is the row/time-step index that maps to the
+date column}
+\item{date}{The date corresponding to this time step}
+\item{sample}{Integer sample ID from the posterior}
+\item{value}{Numeric value of the parameter sample}
+}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
