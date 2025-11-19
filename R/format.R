@@ -191,20 +191,22 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
       ]
   }
   # Auto-detect and extract all static parameters from params matrix
-  # Find all parameter IDs (names starting with "param_id_")
-  param_id_names <- names(samples)[startsWith(names(samples), "param_id_")]
-  param_names <- sub("^param_id_", "", param_id_names)
+  all_params <- extract_parameters(samples)
+  if (!is.null(all_params)) {
+    # Get unique parameter names
+    param_names <- unique(all_params$parameter)
 
-  for (param in param_names) {
-    result <- extract_parameter(param, samples)
-    if (!is.null(result)) {
-      # Use standard naming conventions
-      param_name <- switch(param,
-        "dispersion" = "reporting_overdispersion",
-        "frac_obs" = "fraction_observed",
-        param # default: use param name as-is
-      )
-      out[[param_name]] <- result
+    for (param in param_names) {
+      result <- all_params[parameter == param]
+      if (nrow(result) > 0) {
+        # Use standard naming conventions
+        param_name <- switch(param,
+          "dispersion" = "reporting_overdispersion",
+          "frac_obs" = "fraction_observed",
+          param # default: use param name as-is
+        )
+        out[[param_name]] <- result
+      }
     }
   }
   return(out)
@@ -278,13 +280,11 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
 
   # Delay parameters
   if (args$delay_params_length > 0) {
-    out$delay_params <- extract_array_parameter(
-      "delay_params", raw_samples$delay_params
-    )
+    out$delay_params <- extract_delays(raw_samples)
   }
 
   # Params matrix
-  out$params <- extract_array_parameter("params", raw_samples$params)
+  out$params <- extract_parameters(raw_samples)
 
   # Combine all parameters into single data.table
   combined <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")

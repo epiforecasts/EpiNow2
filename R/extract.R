@@ -51,58 +51,122 @@ extract_latent_state <- function(param, samples, dates) {
 }
 
 
-#' Extract Samples from a Parameter with a Single Dimension
+#' Extract Samples from All Parameters
 #'
-#' @param param Character string indicating the parameter to extract
 #' @param samples Extracted stan model (using [rstan::extract()])
-#' @return A `<data.frame>` containing the parameter name, sample id and sample
-#' value, or NULL if the parameter doesn't exist in the samples
+#' @return A `<data.table>` containing the parameter name, sample id and sample
+#' value, or NULL if parameters don't exist in the samples
 #' @keywords internal
-extract_parameter <- function(param, samples) {
-  id_name <- paste("param_id", param, sep = "_")
-
-  # Return NULL if parameter ID doesn't exist
-  if (!(id_name %in% names(samples))) {
+extract_parameters <- function(samples) {
+  # Check if params exist
+  if (!("params" %in% names(samples))) {
     return(NULL)
   }
 
-  id <- samples[[id_name]]
-
-  lookup <- samples[["params_variable_lookup"]][id]
-  data.table::data.table(
-    parameter = param,
-    sample = seq_along(samples[["params"]][, lookup]),
-    value = samples[["params"]][, lookup]
-  )
-}
-
-#' Extract samples from an array parameter
-#'
-#' Extracts samples from a parameter stored as a matrix (samples x dimension)
-#' and returns them in long format with indexed parameter names.
-#'
-#' @param param_name Character string for the parameter name (e.g.,
-#'   "delay_params", "params")
-#' @param param_array A matrix of samples where rows are MCMC samples and
-#'   columns are parameter dimensions
-#' @return A `<data.table>` with columns: parameter, sample, value, or NULL if
-#'   param_array is NULL
-#' @keywords internal
-extract_array_parameter <- function(param_name, param_array) {
-  if (is.null(param_array)) {
-    return(NULL)
-  }
-
+  # Extract all parameters
+  param_array <- samples[["params"]]
   n_cols <- ncol(param_array)
+
+  # Build reverse lookup: column index -> parameter name
+  param_names <- rep(NA_character_, n_cols)
+
+  # Check all param_id_* variables to build the mapping
+  id_vars <- grep("^param_id_", names(samples), value = TRUE)
+  for (id_var in id_vars) {
+    param_name <- sub("^param_id_", "", id_var)
+    id <- samples[[id_var]]
+    lookup_idx <- samples[["params_variable_lookup"]][id]
+    if (lookup_idx > 0 && lookup_idx <= n_cols) {
+      param_names[lookup_idx] <- param_name
+    }
+  }
+
+  # Extract all columns
   samples_list <- lapply(seq_len(n_cols), function(i) {
+    # Use named parameter if available, otherwise use indexed name
+    par_name <- if (!is.na(param_names[i])) {
+      param_names[i]
+    } else {
+      paste0("params[", i, "]")
+    }
+
     data.table::data.table(
-      parameter = paste0(param_name, "[", i, "]"),
+      parameter = par_name,
       sample = seq_along(param_array[, i]),
       value = param_array[, i]
     )
   })
+
   data.table::rbindlist(samples_list)
 }
+
+#' Extract Samples from All Delay Parameters
+#'
+#' Extracts samples from all delay parameters using the delay ID lookup system.
+#' Similar to extract_parameters(), this extracts all delay distribution
+#' parameters and uses the delay_id_* variables to assign meaningful names.
+#'
+#' @param samples Extracted stan model (using [rstan::extract()])
+#' @return A `<data.table>` with columns: parameter, sample, value, or NULL if
+#'   delay parameters don't exist in the samples
+#' @keywords internal
+extract_delays <- function(samples) {
+  # Check if delay_params exist
+  if (!("delay_params" %in% names(samples))) {
+    return(NULL)
+  }
+
+  # Extract all delay parameters
+  delay_params <- samples[["delay_params"]]
+  n_cols <- ncol(delay_params)
+
+  # Build reverse lookup: column index -> delay name
+  delay_names <- rep(NA_character_, n_cols)
+
+  # Check all delay_id_* variables to build the mapping
+  id_vars <- grep("^delay_id_", names(samples), value = TRUE)
+  if (length(id_vars) > 0 && "delay_params_groups" %in% names(samples)) {
+    delay_params_groups <- samples[["delay_params_groups"]]
+
+    for (id_var in id_vars) {
+      delay_name <- sub("^delay_id_", "", id_var)
+      delay_id <- samples[[id_var]]
+
+      # Check if this delay exists (ID > 0)
+      if (delay_id > 0 && delay_id < length(delay_params_groups)) {
+        start_idx <- delay_params_groups[delay_id]
+        end_idx <- delay_params_groups[delay_id + 1] - 1
+
+        # Mark columns for this delay
+        for (i in seq_along(start_idx:end_idx)) {
+          col_idx <- start_idx + i - 1
+          if (col_idx <= n_cols) {
+            delay_names[col_idx] <- paste0("delay_", delay_name, "[", i, "]")
+          }
+        }
+      }
+    }
+  }
+
+  # Extract all columns
+  samples_list <- lapply(seq_len(n_cols), function(i) {
+    # Use named delay if available, otherwise use indexed name
+    par_name <- if (!is.na(delay_names[i])) {
+      delay_names[i]
+    } else {
+      paste0("delay_params[", i, "]")
+    }
+
+    data.table::data.table(
+      parameter = par_name,
+      sample = seq_along(delay_params[, i]),
+      value = delay_params[, i]
+    )
+  })
+
+  data.table::rbindlist(samples_list)
+}
+
 
 #' Extract all samples from a stan fit
 #'

@@ -272,10 +272,10 @@ get_samples.estimate_secondary <- function(object, ...) {
   # Extract raw posterior samples from the fit
   raw_samples <- extract_samples(object$fit)
 
-  # Extract array parameters (delay_params and params)
+  # Extract parameters (delays and params)
   samples_list <- list(
-    extract_array_parameter("delay_params", raw_samples$delay_params),
-    extract_array_parameter("params", raw_samples$params)
+    extract_delays(raw_samples),
+    extract_parameters(raw_samples)
   )
 
   # Extract time-varying generated quantities
