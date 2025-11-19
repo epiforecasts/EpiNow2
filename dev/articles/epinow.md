@@ -1,0 +1,202 @@
+# Using epinow() for running in production mode
+
+The *EpiNow2* package contains functionality to run
+[`estimate_infections()`](https://epiforecasts.io/EpiNow2/dev/reference/estimate_infections.md)
+in production mode, i.e. with full logging and saving all relevant
+outputs and plots to dedicated folders in the hard drive. This is done
+with the
+[`epinow()`](https://epiforecasts.io/EpiNow2/dev/reference/epinow.md)
+function, that takes the same options as
+[`estimate_infections()`](https://epiforecasts.io/EpiNow2/dev/reference/estimate_infections.md)
+with some additional options that determine, for example, where output
+gets stored and what output exactly. The function can be a useful option
+when, e.g., running the model daily with updated data on a
+high-performance computing server to feed into a dashboard. For more
+detail on the various model options available, see the
+[Examples](https://epiforecasts.io/EpiNow2/dev/articles/estimate_infections_options.md)
+vignette, for more on the general modelling approach the
+[Workflow](https://epiforecasts.io/EpiNow2/dev/articles/estimate_infections_workflow.md),
+and for theoretical background the [Model
+definitions](https://epiforecasts.io/EpiNow2/dev/articles/estimate_infections.md)
+vignette
+
+## Running the model on a single region
+
+To run the model in production mode for a single region, set the
+parameters up in the same way as for
+[`estimate_infections()`](https://epiforecasts.io/EpiNow2/dev/reference/estimate_infections.md)
+(see the
+[Workflow](https://epiforecasts.io/EpiNow2/dev/articles/estimate_infections_workflow.md)
+vignette). Here we use the example delay and generation time
+distributions that come with the package. This should be replaced with
+parameters relevant to the system that is being studied.
+
+``` r
+library("EpiNow2")
+#> 
+#> Attaching package: 'EpiNow2'
+#> The following object is masked from 'package:stats':
+#> 
+#>     Gamma
+options(mc.cores = 4)
+reported_cases <- example_confirmed[1:60]
+reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
+delay <- example_incubation_period + reporting_delay
+rt_prior <- LogNormal(mean = 2, sd = 0.1)
+```
+
+We can then run the
+[`epinow()`](https://epiforecasts.io/EpiNow2/dev/reference/epinow.md)
+function with the same arguments as
+[`estimate_infections()`](https://epiforecasts.io/EpiNow2/dev/reference/estimate_infections.md).
+
+``` r
+res <- epinow(reported_cases,
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior)
+)
+#> Logging threshold set at INFO for the name logger
+#> Writing EpiNow2 logs to the console and:
+#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> Logging threshold set at INFO for the name logger
+#> Writing EpiNow2.epinow logs to the console and:
+#> '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
+res$plots$R
+```
+
+![plot of chunk epinow](epinow-epinow-1.png)
+
+plot of chunk epinow
+
+The initial messages here indicate where log files can be found. If you
+want summarised results and plots to be written out where they can be
+accessed later you can use the `target_folder` argument.
+
+## Running the model simultaneously on multiple regions
+
+The package also contains functionality to conduct inference
+contemporaneously (if separately) in production mode on multiple time
+series, e.g. to run the model on multiple regions. This is done with the
+[`regional_epinow()`](https://epiforecasts.io/EpiNow2/dev/reference/regional_epinow.md)
+function.
+
+Say, for example, we construct a dataset containing two regions,
+`testland` and `realland` (in this simple example both containing the
+same case data).
+
+``` r
+cases <- example_confirmed[1:60]
+cases <- data.table::rbindlist(list(
+  data.table::copy(cases)[, region := "testland"],
+  cases[, region := "realland"]
+ ))
+```
+
+To then run this on multiple regions using the default options above, we
+could use
+
+``` r
+region_rt <- regional_epinow(
+  data = cases,
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior),
+)
+#> INFO [2025-02-04 19:51:23] Producing following optional outputs: regions, summary, samples, plots, latest
+#> Logging threshold set at INFO for the name logger
+#> Writing EpiNow2 logs to the console and:
+#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> Logging threshold set at INFO for the name logger
+#> Writing EpiNow2.epinow logs to: '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
+#> INFO [2025-02-04 19:51:23] Reporting estimates using data up to: 2020-04-21
+#> INFO [2025-02-04 19:51:23] No target directory specified so returning output
+#> INFO [2025-02-04 19:51:23] Producing estimates for: testland, realland
+#> INFO [2025-02-04 19:51:23] Regions excluded: none
+#> INFO [2025-02-04 19:54:18] Completed estimates for: testland
+#> INFO [2025-02-04 19:55:24] Completed estimates for: realland
+#> INFO [2025-02-04 19:55:24] Completed regional estimates
+#> INFO [2025-02-04 19:55:24] Regions with estimates: 2
+#> INFO [2025-02-04 19:55:24] Regions with runtime errors: 0
+#> INFO [2025-02-04 19:55:24] Producing summary
+#> INFO [2025-02-04 19:55:24] No summary directory specified so returning summary output
+#> INFO [2025-02-04 19:55:24] No target directory specified so returning timings
+## summary
+region_rt$summary$summarised_results$table
+#>      Region New infections per day Expected change in reports
+#>      <char>                 <char>                     <fctr>
+#> 1: realland    2284 (1405 -- 3710)          Likely decreasing
+#> 2: testland    2237 (1344 -- 3795)          Likely decreasing
+#>    Effective reproduction no.           Rate of growth
+#>                        <char>                   <char>
+#> 1:         0.91 (0.73 -- 1.1)  -0.026 (-0.093 -- 0.04)
+#> 2:          0.9 (0.71 -- 1.1) -0.028 (-0.099 -- 0.041)
+#>    Doubling/halving time (days)
+#>                          <char>
+#> 1:             -27 (17 -- -7.4)
+#> 2:               -25 (17 -- -7)
+## plot
+region_rt$summary$plots$R
+```
+
+![plot of chunk regional_epinow](epinow-regional_epinow-1.png)
+
+plot of chunk regional_epinow
+
+If instead, we wanted to use the Gaussian Process for `testland` and a
+weekly random walk for `realland` we could specify these separately
+using the
+[`opts_list()`](https://epiforecasts.io/EpiNow2/dev/reference/opts_list.md)
+function from the package and
+[`modifyList()`](https://rdrr.io/r/utils/modifyList.html) from `R`.
+
+``` r
+gp <- opts_list(gp_opts(), cases)
+gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
+rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+region_separate_rt <- regional_epinow(
+  data = cases,
+  generation_time = generation_time_opts(example_generation_time),
+  delays = delay_opts(delay),
+  rt = rt, gp = gp,
+)
+#> INFO [2025-02-04 19:55:25] Producing following optional outputs: regions, summary, samples, plots, latest
+#> Logging threshold set at INFO for the name logger
+#> Writing EpiNow2 logs to the console and:
+#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> Logging threshold set at INFO for the name logger
+#> Writing EpiNow2.epinow logs to: '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
+#> INFO [2025-02-04 19:55:25] Reporting estimates using data up to: 2020-04-21
+#> INFO [2025-02-04 19:55:25] No target directory specified so returning output
+#> INFO [2025-02-04 19:55:25] Producing estimates for: testland, realland
+#> INFO [2025-02-04 19:55:25] Regions excluded: none
+#> INFO [2025-02-04 19:56:30] Completed estimates for: testland
+#> INFO [2025-02-04 19:56:59] Completed estimates for: realland
+#> INFO [2025-02-04 19:56:59] Completed regional estimates
+#> INFO [2025-02-04 19:56:59] Regions with estimates: 2
+#> INFO [2025-02-04 19:56:59] Regions with runtime errors: 0
+#> INFO [2025-02-04 19:56:59] Producing summary
+#> INFO [2025-02-04 19:56:59] No summary directory specified so returning summary output
+#> INFO [2025-02-04 19:57:00] No target directory specified so returning timings
+## summary
+region_separate_rt$summary$summarised_results$table
+#>      Region New infections per day Expected change in reports
+#>      <char>                 <char>                     <fctr>
+#> 1: realland    2017 (1042 -- 3839)          Likely decreasing
+#> 2: testland    2266 (1356 -- 3666)          Likely decreasing
+#>    Effective reproduction no.           Rate of growth
+#>                        <char>                   <char>
+#> 1:          0.84 (0.6 -- 1.2)  -0.042 (-0.11 -- 0.038)
+#> 2:          0.9 (0.71 -- 1.1) -0.028 (-0.098 -- 0.039)
+#>    Doubling/halving time (days)
+#>                          <char>
+#> 1:             -16 (18 -- -6.2)
+#> 2:             -25 (18 -- -7.1)
+## plot
+region_separate_rt$summary$plots$R
+```
+
+![plot of chunk
+regional_epinow_multiple](epinow-regional_epinow_multiple-1.png)
+
+plot of chunk regional_epinow_multiple
