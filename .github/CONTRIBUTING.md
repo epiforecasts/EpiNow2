@@ -63,6 +63,63 @@ Note: `devtools::install_dev_deps()` does not currently support
 Config/Needs fields, so use pak or remotes instead if you need the
 additional developer tools.
 
+## AI-assisted contributions
+
+We welcome contributions created with the assistance of AI tools (such as Claude, GitHub Copilot, ChatGPT, or similar). However, contributors using AI assistance must follow these guidelines:
+
+### Transparency and disclosure
+
+*   **Disclose AI usage in PRs**: If AI tools were used to generate a substantial portion of your contribution (code, documentation, or tests), indicate this in your PR description. You can add a note at the end of your PR summary:
+
+    ```markdown
+    🤖 Generated with [Tool Name](https://example.com)
+    ```
+
+*   **Minor AI assistance doesn't require disclosure**: Using AI for autocompletion, spell-checking, or minor suggestions doesn't require explicit disclosure. Use your judgement—if AI generated most of the content, disclose it.
+
+### Contributor responsibility
+
+*   **You are responsible for all submitted code**: Regardless of how code was generated, you are fully responsible for understanding, testing, and maintaining your contribution.
+
+*   **Review AI-generated code thoroughly**: AI can produce code that looks correct but contains subtle bugs, security issues, or doesn't follow our coding standards. Always:
+  *   Read and understand every line of AI-generated code
+  *   Test thoroughly using `devtools::test()` and `devtools::check()`
+  *   Check coding standards with `lintr::lint_package()`
+  *   Verify documentation is accurate and follows our style
+
+*   **Request reviews appropriately**: If your PR is substantially AI-generated and you haven't yet reviewed it thoroughly yourself, add a note at the top of your PR description:
+
+    ```markdown
+    **This PR contains substantial AI-generated content. I will complete my review
+    before requesting maintainer review.**
+    ```
+
+    Then, once you've completed your own review and are confident in the changes, update your PR to indicate it's ready for team review.
+
+### AI-assisted PR descriptions
+
+When writing PR descriptions for AI-assisted contributions, follow this template:
+
+```markdown
+## Summary
+- [Bullet point summary of changes]
+- [Focus on what was changed and why]
+
+Fixes #issue-number
+
+🤖 Generated with [Tool Name](https://example.com)
+```
+
+Then complete the standard PR checklist (see "Pull request process" section below) to document your testing and review process.
+
+### What to avoid
+
+*   **Don't submit without understanding**: Never submit code you don't fully understand, regardless of source.
+
+*   **Don't bypass our standards**: AI-generated code must meet the same quality standards as manually written code (see "Code style" section below).
+
+*   **Don't treat AI output as authoritative**: AI tools can be confidently wrong. Always verify claims, especially about package functionality or R behaviour.
+
 ## Pull request process
 
 *   Fork the package and clone onto your computer. If you haven't done this before, we recommend using `usethis::create_from_github("epiforecasts/EpiNow2", fork = TRUE)`.
