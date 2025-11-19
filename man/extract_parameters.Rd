@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract.R
 \name{extract_parameters}
 \alias{extract_parameters}
-\title{Extract Samples from All Parameters}
+\title{Extract samples from all parameters}
 \usage{
 extract_parameters(samples)
 }
@@ -14,6 +14,6 @@ A \verb{<data.table>} containing the parameter name, sample id and sample
 value, or NULL if parameters don't exist in the samples
 }
 \description{
-Extract Samples from All Parameters
+Extract samples from all parameters
 }
 \keyword{internal}

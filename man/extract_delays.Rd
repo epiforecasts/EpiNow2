@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract.R
 \name{extract_delays}
 \alias{extract_delays}
-\title{Extract Samples from All Delay Parameters}
+\title{Extract samples from all delay parameters}
 \usage{
 extract_delays(samples)
 }

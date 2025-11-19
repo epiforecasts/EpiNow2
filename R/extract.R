@@ -1,4 +1,4 @@
-#' Extract Samples for a Latent State from a Stan model
+#' Extract samples for a latent state from a Stan model
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Extracts a time-varying latent state from a list of stan output and returns
@@ -51,7 +51,7 @@ extract_latent_state <- function(param, samples, dates) {
 }
 
 
-#' Extract Samples from All Parameters
+#' Extract samples from all parameters
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
 #' @return A `<data.table>` containing the parameter name, sample id and sample
@@ -100,7 +100,7 @@ extract_parameters <- function(samples) {
   data.table::rbindlist(samples_list)
 }
 
-#' Extract Samples from All Delay Parameters
+#' Extract samples from all delay parameters
 #'
 #' Extracts samples from all delay parameters using the delay ID lookup system.
 #' Similar to extract_parameters(), this extracts all delay distribution
@@ -243,7 +243,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
   return(samples)
 }
 
-#' Extract Parameter Samples from a Stan Model
+#' Extract parameter samples from a Stan model
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #' This function has been deprecated. Use [format_simulation_output()] for
@@ -272,7 +272,7 @@ extract_parameter_samples <- function(stan_fit, data, reported_dates,
   )
 }
 
-#' Extract a Parameter Summary from a Stan Object
+#' Extract a parameter summary from a Stan object
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Extracts summarised parameter posteriors from a `stanfit` object using
