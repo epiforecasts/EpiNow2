@@ -92,7 +92,7 @@ discrete_pmf <- function(distribution =
       )
     )
     if (!is.na(cdf_cutoff_max) &&
-        (missing(max_value) || cdf_cutoff_max < max_value)) {
+          (missing(max_value) || cdf_cutoff_max < max_value)) {
       max_value <- cdf_cutoff_max
     }
   }
