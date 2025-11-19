@@ -17,6 +17,7 @@ data {
 #include data/gaussian_process.stan
 #include data/rt.stan
 #include data/backcalc.stan
+#include data/infections.stan
 #include data/observation_model.stan
 #include data/params.stan
 #include data/estimate_infections_params.stan
