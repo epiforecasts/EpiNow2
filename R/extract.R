@@ -75,9 +75,11 @@ extract_parameters <- function(samples) {
   for (id_var in id_vars) {
     param_name <- sub("^param_id_", "", id_var)
     id <- samples[[id_var]]
-    lookup_idx <- samples[["params_variable_lookup"]][id]
-    if (lookup_idx > 0 && lookup_idx <= n_cols) {
-      param_names[lookup_idx] <- param_name
+    if (!is.na(id) && id > 0) {
+      lookup_idx <- samples[["params_variable_lookup"]][id]
+      if (!is.na(lookup_idx) && lookup_idx > 0 && lookup_idx <= n_cols) {
+        param_names[lookup_idx] <- param_name
+      }
     }
   }
 
@@ -104,7 +106,8 @@ extract_parameters <- function(samples) {
 #'
 #' Extracts samples from all delay parameters using the delay ID lookup system.
 #' Similar to extract_parameters(), this extracts all delay distribution
-#' parameters and uses the delay_id_* variables to assign meaningful names.
+#' parameters and uses the *_id variables (e.g., delay_id, trunc_id) to assign
+#' meaningful names.
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
 #' @return A `<data.table>` with columns: parameter, sample, value, or NULL if
@@ -123,14 +126,14 @@ extract_delays <- function(samples) {
   # Build reverse lookup: column index -> delay name
   delay_names <- rep(NA_character_, n_cols)
 
-  # Check all delay_id_* variables to build the mapping
-  id_vars <- grep("^delay_id_", names(samples), value = TRUE)
+  # Check all *_id variables to build the mapping (e.g., delay_id, trunc_id)
+  id_vars <- grep("_id$", names(samples), value = TRUE)
   if (length(id_vars) > 0 && "delay_params_groups" %in% names(samples)) {
     delay_params_groups <- samples[["delay_params_groups"]]
 
     for (id_var in id_vars) {
-      delay_name <- sub("^delay_id_", "", id_var)
-      delay_id <- samples[[id_var]]
+      delay_name <- sub("_id$", "", id_var)
+      delay_id <- samples[[id_var]][1]  # Take first value (same across samples)
 
       # Check if this delay exists (ID > 0)
       if (delay_id > 0 && delay_id < length(delay_params_groups)) {
@@ -141,7 +144,7 @@ extract_delays <- function(samples) {
         for (i in seq_along(start_idx:end_idx)) {
           col_idx <- start_idx + i - 1
           if (col_idx <= n_cols) {
-            delay_names[col_idx] <- paste0("delay_", delay_name, "[", i, "]")
+            delay_names[col_idx] <- paste0(delay_name, "[", i, "]")
           }
         }
       }
