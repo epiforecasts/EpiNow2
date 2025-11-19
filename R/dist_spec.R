@@ -116,6 +116,7 @@ discrete_pmf <- function(distribution =
   )
 
   if (any(pmf < 0)) {
+    # nolint start: duplicate_argument_linter
     cli::cli_warn(
       c(
         "!" = "Negative PMF values detected and set to zero.",
@@ -123,6 +124,7 @@ discrete_pmf <- function(distribution =
         "i" = "Consider reducing max or setting cdf_cutoff instead."
       )
     )
+    # nolint end
     pmf[pmf < 0] <- 0
   }
 
