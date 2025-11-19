@@ -103,109 +103,44 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
     "format_simulation_output()",
     "format_samples_with_dates()"
   )
-  # extract sample from stan object
-  samples <- extract_samples(stan_fit)
 
-  ## drop initial length 1 dimensions if requested
+  # Extract samples and apply drop_length_1
+  raw_samples <- extract_samples(stan_fit)
   if (drop_length_1) {
-    samples <- lapply(samples, function(x) {
+    raw_samples <- lapply(raw_samples, function(x) {
       if (length(dim(x)) > 1 && dim(x)[1] == 1) dim(x) <- dim(x)[-1]
       x
     })
   }
 
+  # Copy data fields into samples
   for (data_name in names(data)) {
-    if (!(data_name %in% names(samples))) {
-      samples[[data_name]] <- data[[data_name]]
+    if (!(data_name %in% names(raw_samples))) {
+      raw_samples[[data_name]] <- data[[data_name]]
     }
   }
 
-  # construct reporting list
-  out <- list()
-  # report infections, and R
-  out$infections <- extract_parameter(
-    "infections",
-    samples,
-    reported_inf_dates
-  )
-  out$infections <- out$infections[date >= min(reported_dates)]
-  out$reported_cases <- extract_parameter(
-    "imputed_reports",
-    samples,
-    imputed_dates
-  )
-  if ("estimate_r" %in% names(data)) {
-    if (data$estimate_r == 1) {
-      out$R <- extract_parameter(
-        "R",
-        samples,
-        reported_dates
-      )
-      if (data$bp_n > 0) {
-        out$breakpoints <- extract_parameter(
-          "bp_effects",
-          samples,
-          1:data$bp_n
-        )
-        out$breakpoints <- out$breakpoints[
-          ,
-          strat := date
-        ][, c("time", "date") := NULL]
-      }
-    } else {
-      out$R <- extract_parameter(
-        "gen_R",
-        samples,
-        reported_dates
-      )
-    }
-  }
-  out$growth_rate <- extract_parameter(
-    "r",
-    samples,
-    reported_dates[-1]
-  )
-  incomplete_dates <- unique(out$growth_rate[is.na(value), ][["date"]])
-  out$growth_rate[date %in% incomplete_dates, value := NA]
-  if (data$week_effect > 1) {
-    out$day_of_week <- extract_parameter(
-      "day_of_week_simplex",
-      samples,
-      1:data$week_effect
-    )
-    out$day_of_week <- out$day_of_week[, value := value * data$week_effect]
-    out$day_of_week <- out$day_of_week[, strat := date][
-      ,
-      c("time", "date") := NULL
-    ]
-  }
-  if (data$delay_n_p > 0) {
-    out$delay_params <- extract_parameter(
-      "delay_params", samples, seq_len(data$delay_params_length)
-    )
-    out$delay_params <-
-      out$delay_params[, strat := as.character(time)][, time := NULL][
-        ,
-        date := NULL
-      ]
-  }
-  # Auto-detect and extract all static parameters from params matrix
-  # Find all parameter IDs (names starting with "param_id_")
-  param_id_names <- names(samples)[startsWith(names(samples), "param_id_")]
-  param_names <- sub("^param_id_", "", param_id_names)
+  # Construct observations and args for format_samples_with_dates
+  # Use the full date range from reported_inf_dates
+  observations <- data.table(date = reported_inf_dates)
 
-  for (param in param_names) {
-    result <- extract_static_parameter(param, samples)
-    if (!is.null(result)) {
-      # Use standard naming conventions
-      param_name <- switch(param,
-        "dispersion" = "reporting_overdispersion",
-        "frac_obs" = "fraction_observed",
-        param  # default: use param name as-is
-      )
-      out[[param_name]] <- result
-    }
-  }
+  # Calculate seeding_time from the date vectors
+  seeding_time <- length(reported_inf_dates) - length(reported_dates)
+
+  # Add imputed_times - these are the indices of imputed dates within reported dates
+  data$imputed_times <- match(imputed_dates, reported_dates)
+  data$seeding_time <- seeding_time
+
+  # Call unified formatting function
+  combined <- format_samples_with_dates(
+    raw_samples = raw_samples,
+    args = data,
+    observations = observations
+  )
+
+  # Split back into list format for backward compatibility
+  out <- split(combined, by = "variable", keep.by = FALSE)
+
   return(out)
 }
 
