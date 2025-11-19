@@ -78,7 +78,7 @@ discrete_pmf <- function(distribution =
   )
 
   ## apply CDF cutoff if given
-  if (!missing(cdf_cutoff)) {
+  if (!missing(cdf_cutoff) && cdf_cutoff > 0) {
     ## max from CDF cutoff using primarycensored quantile function
     cdf_cutoff_max <- do.call(
       primarycensored::qprimarycensored,
@@ -114,6 +114,17 @@ discrete_pmf <- function(distribution =
       params
     )
   )
+
+  if (any(pmf < 0)) {
+    cli::cli_warn(
+      c(
+        "!" = "Negative PMF values detected and set to zero.",
+        "i" = "This is likely due to numerical precision issues.",
+        "i" = "Consider reducing max or setting cdf_cutoff instead."
+      )
+    )
+    pmf[pmf < 0] <- 0
+  }
 
   return(pmf)
 }

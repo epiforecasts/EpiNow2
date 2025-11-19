@@ -40,7 +40,7 @@ inc_posterior <- inc$posterior[variable %in% params]
 
 # fit model to example data with a fixed delay
 inc_fixed <- estimate_secondary(inc_cases[1:60],
-  delays = delay_opts(Gamma(mean = 15, sd = 5, max = 30)),
+  delays = delay_opts(Gamma(mean = 15, sd = 5)),
   stan = stan_opts(cores = 1),
   verbose = FALSE
 )
@@ -93,7 +93,7 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
   cases_na[sample(1:60, 5), secondary := NA]
   inc_na <- estimate_secondary(cases_na[1:60],
     delays = delay_opts(
-      LogNormal(meanlog = 1.8, sdlog = 0.5, max = 30)
+      LogNormal(meanlog = 1.8, sdlog = 0.5)
     ),
     obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
@@ -103,7 +103,7 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
   prev_na <- estimate_secondary(prev_cases_na[1:60],
     secondary = secondary_opts(type = "prevalence"),
     delays = delay_opts(
-      LogNormal(mean = 1.8, sd = 0.5, max = 30)
+      LogNormal(mean = 1.8, sd = 0.5)
     ),
     obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
@@ -128,7 +128,7 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
   inc_weekly <- estimate_secondary(cases_weekly,
     delays = delay_opts(
       LogNormal(
-        mean = 1.8, sd = 0.5, max = 30
+        mean = 1.8, sd = 0.5
       )
     ),
     obs = obs_opts(
