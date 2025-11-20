@@ -38,15 +38,15 @@ parameters {
 
 transformed parameters{
   real phi = 1 / sqrt(dispersion);
-  matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] trunc_obs = rep_matrix(
-    0, delay_type_max[delay_id_truncation] + 1, obs_sets - 1
-  );
-  vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf = get_delay_rev_pmf(
-    delay_id_truncation, delay_type_max[delay_id_truncation] + 1, delay_types_p, delay_types_id,
-    delay_types_groups, delay_max, delay_np_pmf,
-    delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-    0, 1, 1
-  );
+  matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] trunc_obs =
+    rep_matrix(0, delay_type_max[delay_id_truncation] + 1, obs_sets - 1);
+  vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf =
+    get_delay_rev_pmf(
+      delay_id_truncation, delay_type_max[delay_id_truncation] + 1,
+      delay_types_p, delay_types_id, delay_types_groups, delay_max,
+      delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+      delay_dist, 0, 1, 1
+    );
   {
     vector[t] last_obs;
     // reconstruct latest data without truncation
@@ -79,11 +79,10 @@ model {
 }
 
 generated quantities {
-  matrix[delay_type_max[delay_id_truncation] + 1, obs_sets] recon_obs = rep_matrix(
-    0, delay_type_max[delay_id_truncation] + 1, obs_sets
-  );
+  matrix[delay_type_max[delay_id_truncation] + 1, obs_sets] recon_obs =
+    rep_matrix(0, delay_type_max[delay_id_truncation] + 1, obs_sets);
   matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] gen_obs;
-  // reconstruct all truncated datasets using posterior of the truncation distribution
+  // reconstruct all truncated datasets using posterior of truncation dist
   for (i in 1:obs_sets) {
     recon_obs[1:(end_t[i] - start_t[i] + 1), i] = truncate_obs(
       to_vector(obs[start_t[i]:end_t[i], i]), trunc_rev_cmf, 1

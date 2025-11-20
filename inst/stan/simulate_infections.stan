@@ -61,27 +61,32 @@ generated quantities {
       // generate infections from Rt trace
       vector[delay_type_max[delay_id_generation_time] + 1] gt_rev_pmf;
         gt_rev_pmf = get_delay_rev_pmf(
-        delay_id_generation_time, delay_type_max[delay_id_generation_time] + 1, delay_types_p, delay_types_id,
-        delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
-        1, 1, 0
+        delay_id_generation_time, delay_type_max[delay_id_generation_time] + 1,
+        delay_types_p, delay_types_id, delay_types_groups, delay_max,
+        delay_np_pmf, delay_np_pmf_groups, delay_params[i],
+        delay_params_groups, delay_dist, 1, 1, 0
       );
 
       infections[i] = to_row_vector(generate_infections(
         to_vector(R[i]), seeding_time, gt_rev_pmf, initial_infections[i],
-        pop[i], use_pop, pop_floor, future_time, obs_scale, frac_obs[i], initial_as_scale
+        pop[i], use_pop, pop_floor, future_time, obs_scale, frac_obs[i],
+        initial_as_scale
       ));
 
       if (delay_id_generation_time) {
-        vector[delay_type_max[delay_id_generation_time] + 1] delay_rev_pmf = get_delay_rev_pmf(
-          delay_id_generation_time, delay_type_max[delay_id_generation_time] + 1, delay_types_p, delay_types_id,
-          delay_types_groups, delay_max, delay_np_pmf,
-          delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
-          0, 1, 0
-        );
+        vector[delay_type_max[delay_id_generation_time] + 1] delay_rev_pmf =
+          get_delay_rev_pmf(
+            delay_id_generation_time,
+            delay_type_max[delay_id_generation_time] + 1, delay_types_p,
+            delay_types_id, delay_types_groups, delay_max, delay_np_pmf,
+            delay_np_pmf_groups, delay_params[i], delay_params_groups,
+            delay_dist, 0, 1, 0
+          );
         // convolve from latent infections to mean of observations
-        reports[i] = to_row_vector(convolve_to_report(
-          to_vector(infections[i]), delay_rev_pmf, seeding_time)
+        reports[i] = to_row_vector(
+          convolve_to_report(
+            to_vector(infections[i]), delay_rev_pmf, seeding_time
+          )
         );
       } else {
         reports[i] = to_row_vector(
@@ -97,19 +102,22 @@ generated quantities {
       }
       // truncate near time cases to observed reports
       if (delay_id_truncation) {
-        vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf = get_delay_rev_pmf(
-          delay_id_truncation, delay_type_max[delay_id_truncation] + 1, delay_types_p, delay_types_id,
-          delay_types_groups, delay_max, delay_np_pmf,
-          delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
-          0, 1, 1
-        );
+        vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf =
+          get_delay_rev_pmf(
+            delay_id_truncation, delay_type_max[delay_id_truncation] + 1,
+            delay_types_p, delay_types_id, delay_types_groups, delay_max,
+            delay_np_pmf, delay_np_pmf_groups, delay_params[i],
+            delay_params_groups, delay_dist, 0, 1, 1
+          );
         reports[i] = to_row_vector(truncate_obs(
           to_vector(reports[i]), trunc_rev_cmf, 0)
         );
       }
       // scale observations
       if (obs_scale) {
-        reports[i] = to_row_vector(scale_obs(to_vector(reports[i]), frac_obs[i]));
+        reports[i] = to_row_vector(
+          scale_obs(to_vector(reports[i]), frac_obs[i])
+        );
       }
       // simulate reported cases
       imputed_reports[i] = report_rng(

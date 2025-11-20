@@ -75,7 +75,8 @@ transformed parameters {
   vector[t] infections; // latent infections
   vector[ot_h] reports; // estimated reported cases
   vector[ot] obs_reports; // observed estimated reported cases
-  vector[estimate_r * (delay_type_max[delay_id_generation_time] + 1)] gt_rev_pmf;
+  vector[estimate_r * (delay_type_max[delay_id_generation_time] + 1)]
+    gt_rev_pmf;
 
   // GP in noise - spectral densities
   profile("update gp") {
@@ -98,10 +99,10 @@ transformed parameters {
   if (estimate_r) {
     profile("gt") {
       gt_rev_pmf = get_delay_rev_pmf(
-        delay_id_generation_time, delay_type_max[delay_id_generation_time] + 1, delay_types_p, delay_types_id,
-        delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-        1, 1, 0
+        delay_id_generation_time, delay_type_max[delay_id_generation_time] + 1,
+        delay_types_p, delay_types_id, delay_types_groups, delay_max,
+        delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+        delay_dist, 1, 1, 0
       );
     }
     profile("R0") {
@@ -176,10 +177,10 @@ transformed parameters {
     vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf;
     profile("truncation") {
       trunc_rev_cmf = get_delay_rev_pmf(
-        delay_id_truncation, delay_type_max[delay_id_truncation] + 1, delay_types_p, delay_types_id,
-        delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-        0, 1, 1
+        delay_id_truncation, delay_type_max[delay_id_truncation] + 1,
+        delay_types_p, delay_types_id, delay_types_groups, delay_max,
+        delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+        delay_dist, 0, 1, 1
       );
     }
     profile("truncate") {
@@ -264,19 +265,22 @@ generated quantities {
     }
 
     {
-      vector[delay_type_max[delay_id_generation_time] + 1] gt_rev_pmf_for_growth;
-      
+      vector[delay_type_max[delay_id_generation_time] + 1]
+        gt_rev_pmf_for_growth;
+
       if (estimate_r == 0) {
         // sample generation time
         vector[delay_params_length] delay_params_sample = to_vector(normal_lb_rng(
           delay_params_mean, delay_params_sd, delay_params_lower
         ));
-        vector[delay_type_max[delay_id_generation_time] + 1] sampled_gt_rev_pmf = get_delay_rev_pmf(
-          delay_id_generation_time, delay_type_max[delay_id_generation_time] + 1, delay_types_p, delay_types_id,
-          delay_types_groups, delay_max, delay_np_pmf,
-          delay_np_pmf_groups, delay_params_sample, delay_params_groups,
-          delay_dist, 1, 1, 0
-        );
+        vector[delay_type_max[delay_id_generation_time] + 1] sampled_gt_rev_pmf =
+          get_delay_rev_pmf(
+            delay_id_generation_time,
+            delay_type_max[delay_id_generation_time] + 1, delay_types_p,
+            delay_types_id, delay_types_groups, delay_max, delay_np_pmf,
+            delay_np_pmf_groups, delay_params_sample, delay_params_groups,
+            delay_dist, 1, 1, 0
+          );
         gt_rev_pmf_for_growth = sampled_gt_rev_pmf;
         // calculate Rt using infections and generation time
         gen_R = calculate_Rt(

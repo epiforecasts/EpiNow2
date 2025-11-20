@@ -79,12 +79,13 @@ generated quantities {
 
       // truncate near time cases to observed reports
       if (delay_id_truncation) {
-        vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf = get_delay_rev_pmf(
-          delay_id_truncation, delay_type_max[delay_id_truncation] + 1, delay_types_p, delay_types_id,
-          delay_types_groups, delay_max, delay_np_pmf,
-          delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
-          0, 1, 1
-        );
+        vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf =
+          get_delay_rev_pmf(
+            delay_id_truncation, delay_type_max[delay_id_truncation] + 1,
+            delay_types_p, delay_types_id, delay_types_groups, delay_max,
+            delay_np_pmf, delay_np_pmf_groups, delay_params[i],
+            delay_params_groups, delay_dist, 0, 1, 1
+          );
         secondary = truncate_obs(
           secondary, trunc_rev_cmf, 0
         );
