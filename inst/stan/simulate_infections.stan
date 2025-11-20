@@ -73,19 +73,18 @@ generated quantities {
         initial_as_scale
       ));
 
-      if (delay_id_generation_time) {
-        vector[delay_type_max[delay_id_generation_time] + 1] delay_rev_pmf =
+      if (delay_id_reporting) {
+        vector[delay_type_max[delay_id_reporting] + 1] reporting_rev_pmf =
           get_delay_rev_pmf(
-            delay_id_generation_time,
-            delay_type_max[delay_id_generation_time] + 1, delay_types_p,
-            delay_types_id, delay_types_groups, delay_max, delay_np_pmf,
-            delay_np_pmf_groups, delay_params[i], delay_params_groups,
-            delay_dist, 0, 1, 0
+            delay_id_reporting, delay_type_max[delay_id_reporting] + 1,
+            delay_types_p, delay_types_id, delay_types_groups, delay_max,
+            delay_np_pmf, delay_np_pmf_groups, delay_params[i],
+            delay_params_groups, delay_dist, 0, 1, 0
           );
         // convolve from latent infections to mean of observations
         reports[i] = to_row_vector(
           convolve_to_report(
-            to_vector(infections[i]), delay_rev_pmf, seeding_time
+            to_vector(infections[i]), reporting_rev_pmf, seeding_time
           )
         );
       } else {
