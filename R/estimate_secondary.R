@@ -748,3 +748,48 @@ forecast_secondary <- function(estimate,
   class(out) <- c("forecast_secondary", class(out))
   return(out)
 }
+
+#' Extract elements from estimate_secondary objects with deprecated warnings
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for the old return structure. The previous
+#' structure with \code{predictions}, \code{posterior}, and \code{data}
+#' elements is deprecated. Use the accessor methods instead:
+#' \itemize{
+#'   \item \code{predictions} - use \code{get_predictions(object)}
+#'   \item \code{posterior} - use \code{get_samples(object)}
+#'   \item \code{data} - use \code{object$observations}
+#' }
+#'
+#' @param x An \code{estimate_secondary} object
+#' @param name The name of the element to extract
+#' @return The requested element with a deprecation warning
+#' @export
+#' @method $ estimate_secondary
+`$.estimate_secondary` <- function(x, name) {
+  if (name == "predictions") {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      "estimate_secondary()$predictions",
+      "get_predictions()"
+    )
+    return(get_predictions(x))
+  } else if (name == "posterior") {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      "estimate_secondary()$posterior",
+      "get_samples()"
+    )
+    return(get_samples(x))
+  } else if (name == "data") {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      "estimate_secondary()$data",
+      "estimate_secondary()$observations"
+    )
+    return(x[["observations"]])
+  } else {
+    # For other elements, use normal list extraction
+    return(NextMethod("$"))
+  }
+}
