@@ -21,7 +21,6 @@ data {
 #include data/simulation_rt.stan
   // delay from infection to report
 #include data/simulation_delays.stan
-#include data/simulation_infections.stan
   // observation model
 #include data/simulation_observation_model.stan
   // parameters

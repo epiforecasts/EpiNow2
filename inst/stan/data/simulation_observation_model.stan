@@ -4,3 +4,4 @@ array[n, week_effect] real<lower = 0> day_of_week_simplex;
 int obs_scale;
 int model_type;
 int<lower = 0> delay_id_truncation; // id of truncation delay
+int<lower = 0> delay_id_reporting; // id of reporting delay

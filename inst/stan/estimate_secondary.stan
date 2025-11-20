@@ -56,9 +56,9 @@ transformed parameters {
       scaled = primary;
     }
 
-    if (delay_id_secondary) {
-      vector[delay_type_max[delay_id_secondary] + 1] delay_rev_pmf = get_delay_rev_pmf(
-        delay_id_secondary, delay_type_max[delay_id_secondary] + 1, delay_types_p, delay_types_id,
+    if (delay_id_reporting) {
+      vector[delay_type_max[delay_id_reporting] + 1] delay_rev_pmf = get_delay_rev_pmf(
+        delay_id_reporting, delay_type_max[delay_id_reporting] + 1, delay_types_p, delay_types_id,
         delay_types_groups, delay_max, delay_np_pmf,
         delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
         0, 1, 0

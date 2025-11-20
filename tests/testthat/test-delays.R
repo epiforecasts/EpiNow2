@@ -112,17 +112,17 @@ test_that("create_stan_delays creates delay_id_* variables with correct names", 
   expect_equal(data$delay_id_truncation, 3)
 })
 
-test_that("create_stan_delays creates delay_id_* for secondary context", {
-  # Test with secondary delay naming
+test_that("create_stan_delays creates delay_id_* for secondary models", {
+  # Test with reporting delay for secondary models
   data <- EpiNow2:::create_stan_delays(
-    secondary = delay_opts(Fixed(2)),
+    reporting = delay_opts(Fixed(2)),
     truncation = trunc_opts(Fixed(1))
   )
 
-  expect_true("delay_id_secondary" %in% names(data))
+  expect_true("delay_id_reporting" %in% names(data))
   expect_true("delay_id_truncation" %in% names(data))
 
-  expect_equal(data$delay_id_secondary, 1)
+  expect_equal(data$delay_id_reporting, 1)
   expect_equal(data$delay_id_truncation, 2)
 })
 

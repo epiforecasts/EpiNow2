@@ -70,7 +70,7 @@ simulate_secondary <- function(primary,
   stan_data <- c(stan_data, secondary)
 
   stan_data <- c(stan_data, create_stan_delays(
-    secondary = delays,
+    reporting = delays,
     truncation = truncation
   ))
 
