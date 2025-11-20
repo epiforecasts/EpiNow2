@@ -118,10 +118,10 @@ simulate <- function(data,
   }
   if (estimate_r) {
     gt_rev_pmf <- get_delay_rev_pmf(
-      gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
-      delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-      1, 1, 0
+      delay_id_generation_time, delay_type_max[delay_id_generation_time] + 1,
+      delay_types_p, delay_types_id, delay_types_groups, delay_max,
+      delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+      delay_dist, 1, 1, 0
     )
     R0 <- get_param(
       param_id_R0, params_fixed_lookup, params_variable_lookup, params_value, params
@@ -147,10 +147,10 @@ simulate <- function(data,
     )
   }
   delay_rev_pmf <- get_delay_rev_pmf(
-    delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
-    delay_types_groups, delay_max, delay_np_pmf,
-    delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-    0, 1, 0
+    delay_id_reporting, delay_type_max[delay_id_reporting] + 1, delay_types_p,
+    delay_types_id, delay_types_groups, delay_max, delay_np_pmf,
+    delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist, 0, 1,
+    0
   )
   reports <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
   if (week_effect > 1) {
@@ -163,12 +163,12 @@ simulate <- function(data,
     )
     reports <- scale_obs(reports, frac_obs)
   }
-  if (trunc_id) {
+  if (delay_id_truncation) {
     trunc_rev_cmf <- get_delay_rev_pmf(
-      trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
-      delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-      0, 1, 1
+      delay_id_truncation, delay_type_max[delay_id_truncation] + 1,
+      delay_types_p, delay_types_id, delay_types_groups, delay_max,
+      delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+      delay_dist, 0, 1, 1
     )
     obs_reports <- truncate_obs(reports[1:ot], trunc_rev_cmf, 0)
   } else {
