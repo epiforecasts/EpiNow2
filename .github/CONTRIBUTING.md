@@ -65,17 +65,8 @@ additional developer tools.
 
 ## AI-assisted contributions
 
-We welcome contributions created with the assistance of AI tools (such as Claude, GitHub Copilot, ChatGPT, or similar). However, contributors using AI assistance must follow these guidelines:
-
-### Transparency and disclosure
-
-*   **Disclose AI usage in PRs**: If AI tools were used to generate a substantial portion of your contribution (code, documentation, or tests), indicate this in your PR description. You can add a note at the end of your PR summary:
-
-    ```markdown
-    🤖 Generated with [Tool Name](https://example.com)
-    ```
-
-*   **Minor AI assistance doesn't require disclosure**: Using AI for autocompletion, spell-checking, or minor suggestions doesn't require explicit disclosure. Use your judgement—if AI generated most of the content, disclose it.
+We welcome contributions created with the assistance of AI tools (such as Claude, GitHub Copilot, ChatGPT, or similar). However, contributors using AI assistance must be transparent about it. For example, if AI tools were used to generate a substantial portion of your contribution (code, documentation, or tests), indicate this in your PR description and indicate where you need more attention.
+Currently, AI-tools automatically [co-author git commits](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors) but if that's not the case for the tool you use, ensure to acknowledge AI contributions in a transparent way.
 
 ### Contributor responsibility
 
