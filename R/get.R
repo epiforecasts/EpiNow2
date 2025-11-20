@@ -263,7 +263,7 @@ get_samples.estimate_infections <- function(object, ...) {
 #' @rdname get_samples
 #' @export
 get_samples.forecast_infections <- function(object, ...) {
-  object$samples
+  data.table::copy(object$samples)
 }
 
 #' @rdname get_samples
@@ -318,7 +318,7 @@ get_samples.estimate_secondary <- function(object, ...) {
 #' @rdname get_samples
 #' @export
 get_samples.forecast_secondary <- function(object, ...) {
-  object$samples
+  data.table::copy(object$samples)
 }
 
 #' Get predictions from a fitted model
@@ -402,6 +402,12 @@ get_predictions.estimate_secondary <- function(object,
   )
 
   return(predictions)
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.forecast_infections <- function(object, ...) {
+  object$predictions
 }
 
 #' @rdname get_predictions

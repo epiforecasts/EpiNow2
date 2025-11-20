@@ -374,7 +374,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
                                     from = NULL, to = NULL,
                                     new_obs = NULL,
                                     ...) {
-  predictions <- data.table::copy(get_predictions(x))
+  predictions <- get_predictions(x)
 
   if (!is.null(new_obs)) {
     new_obs <- data.table::as.data.table(new_obs)
