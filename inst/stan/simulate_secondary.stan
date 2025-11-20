@@ -54,13 +54,14 @@ generated quantities {
       }
 
       if (delay_id_reporting) {
-        vector[delay_type_max[delay_id_reporting] + 1] delay_rev_pmf = get_delay_rev_pmf(
-          delay_id_reporting, delay_type_max[delay_id_reporting] + 1, delay_types_p, delay_types_id,
-          delay_types_groups, delay_max, delay_np_pmf,
-          delay_np_pmf_groups, delay_params[i], delay_params_groups, delay_dist,
-          0, 1, 0
-        );
-        convolved = convolved + convolve_to_report(scaled, delay_rev_pmf, 0);
+        vector[delay_type_max[delay_id_reporting] + 1] reporting_rev_pmf =
+          get_delay_rev_pmf(
+            delay_id_reporting, delay_type_max[delay_id_reporting] + 1,
+            delay_types_p, delay_types_id, delay_types_groups, delay_max,
+            delay_np_pmf, delay_np_pmf_groups, delay_params[i],
+            delay_params_groups, delay_dist, 0, 1, 0
+          );
+        convolved = convolved + convolve_to_report(scaled, reporting_rev_pmf, 0);
       } else {
         convolved = convolved + scaled;
       }

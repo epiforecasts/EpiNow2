@@ -137,17 +137,17 @@ transformed parameters {
 
   // convolve from latent infections to mean of observations
   if (delay_id_reporting) {
-    vector[delay_type_max[delay_id_reporting] + 1] delay_rev_pmf;
+    vector[delay_type_max[delay_id_reporting] + 1] reporting_rev_pmf;
     profile("delays") {
-      delay_rev_pmf = get_delay_rev_pmf(
-        delay_id_reporting, delay_type_max[delay_id_reporting] + 1, delay_types_p, delay_types_id,
-        delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-        0, 1, 0
+      reporting_rev_pmf = get_delay_rev_pmf(
+        delay_id_reporting, delay_type_max[delay_id_reporting] + 1,
+        delay_types_p, delay_types_id, delay_types_groups, delay_max,
+        delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+        delay_dist, 0, 1, 0
       );
     }
     profile("reports") {
-      reports = convolve_to_report(infections, delay_rev_pmf, seeding_time);
+      reports = convolve_to_report(infections, reporting_rev_pmf, seeding_time);
     }
   } else {
     reports = infections[(seeding_time + 1):t];

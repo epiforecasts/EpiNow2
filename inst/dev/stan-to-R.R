@@ -146,13 +146,13 @@ simulate <- function(data,
       shifted_cases, noise, fixed, backcalc_prior
     )
   }
-  delay_rev_pmf <- get_delay_rev_pmf(
+  reporting_rev_pmf <- get_delay_rev_pmf(
     delay_id_reporting, delay_type_max[delay_id_reporting] + 1, delay_types_p,
     delay_types_id, delay_types_groups, delay_max, delay_np_pmf,
     delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist, 0, 1,
     0
   )
-  reports <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
+  reports <- convolve_to_report(infections, reporting_rev_pmf, seeding_time)
   if (week_effect > 1) {
     reports <- day_of_week_effect(reports, day_of_week, day_of_week_simplex)
   }
