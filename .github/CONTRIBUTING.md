@@ -90,27 +90,10 @@ We welcome contributions created with the assistance of AI tools (such as Claude
 *   **Request reviews appropriately**: If your PR is substantially AI-generated and you haven't yet reviewed it thoroughly yourself, add a note at the top of your PR description:
 
     ```markdown
-    **This PR contains substantial AI-generated content. I will complete my review
-    before requesting maintainer review.**
+    **This PR contains substantial AI-generated content. I will complete my review before requesting maintainer review.**
     ```
 
-    Then, once you've completed your own review and are confident in the changes, update your PR to indicate it's ready for team review.
-
-### AI-assisted PR descriptions
-
-When writing PR descriptions for AI-assisted contributions, follow this template:
-
-```markdown
-## Summary
-- [Bullet point summary of changes]
-- [Focus on what was changed and why]
-
-Fixes #issue-number
-
-🤖 Generated with [Tool Name](https://example.com)
-```
-
-Then complete the standard PR checklist (see "Pull request process" section below) to document your testing and review process.
+Then, once you've completed your own review and are confident in the changes, update your PR to indicate it's ready for team review.
 
 ### What to avoid
 
