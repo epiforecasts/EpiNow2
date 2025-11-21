@@ -78,11 +78,6 @@ Currently, AI-tools automatically [co-author git commits](https://docs.github.co
     *   Check coding standards with `lintr::lint_package()`
     *   Verify documentation is accurate and follows our style
 
-*   **Request reviews appropriately**: If your PR is substantially AI-generated and you haven't yet reviewed it thoroughly yourself, add a note at the top of your PR description:
-
-    ```markdown
-    **This PR contains substantial AI-generated content. I will complete my review before requesting maintainer review.**
-    ```
 
 Then, once you've completed your own review and are confident in the changes, update your PR to indicate it's ready for team review.
 
