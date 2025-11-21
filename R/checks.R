@@ -200,7 +200,7 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 check_truncation_length <- function(stan_args, time_points) {
   # Check if truncation exists
   if (is.null(stan_args$data$delay_id_truncation) ||
-      stan_args$data$delay_id_truncation == 0) {
+        stan_args$data$delay_id_truncation == 0) {
     return(invisible())
   }
 
