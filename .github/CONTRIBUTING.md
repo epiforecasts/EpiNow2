@@ -78,9 +78,6 @@ Currently, AI-tools automatically [co-author git commits](https://docs.github.co
     *   Check coding standards with `lintr::lint_package()`
     *   Verify documentation is accurate and follows our style
 
-
-Then, once you've completed your own review and are confident in the changes, update your PR to indicate it's ready for team review.
-
 ### What to avoid
 
 *   **Don't submit without understanding**: Never submit code you don't fully understand, regardless of source.
@@ -114,7 +111,9 @@ precommit::use_precommit()
     The title of your PR should briefly describe the change.
     The body of your PR should contain `Fixes #issue-number`.
 
-*  For user-facing changes, add a bullet to the top of `NEWS.md` (i.e. just below the first header). Follow the style described in <https://style.tidyverse.org/news.html>.
+*   If your PR is a work in progress, [mark it as a draft](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/changing-the-stage-of-a-pull-request) until it's ready, then update your PR to indicate it's ready for team review.
+
+*   For user-facing changes, add a bullet to the top of `NEWS.md` (i.e. just below the first header). Follow the style described in <https://style.tidyverse.org/news.html>.
 
 #### What happens after submitting a PR?
 
