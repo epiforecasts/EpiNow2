@@ -283,3 +283,52 @@ test_that("extract_parameter_samples is deprecated", {
 
   expect_equal(old_quiet, new_output)
 })
+
+test_that("estimate_infections returns adjusted Rt when population is specified", {
+  skip_on_cran()
+
+  # Run with population adjustment enabled
+  out <- default_estimate_infections(
+    reported_cases,
+    rt = rt_opts(pop = Fixed(1e6))
+  )
+
+  # Get samples
+  samples <- get_samples(out)
+
+  # Check that both R and R_unadjusted are returned
+  expect_true("R" %in% unique(samples$variable))
+  expect_true("R_unadjusted" %in% unique(samples$variable))
+
+  # Extract R and R_unadjusted
+  R_adj <- samples[variable == "R"]
+  R_unadj <- samples[variable == "R_unadjusted"]
+
+  # Both should have the same number of samples
+  expect_equal(nrow(R_adj), nrow(R_unadj))
+
+  # For each date, adjusted Rt should be less than or equal to unadjusted
+  # (susceptible depletion reduces effective reproduction)
+  merged <- merge(
+    R_adj[, .(date, sample, R_adj = value)],
+    R_unadj[, .(date, sample, R_unadj = value)],
+    by = c("date", "sample")
+  )
+
+  # Allow small numerical tolerance
+  expect_true(all(merged$R_adj <= merged$R_unadj + 1e-10))
+})
+
+test_that("estimate_infections does not return R_unadjusted when population is not specified", {
+  skip_on_cran()
+
+  # Run without population adjustment
+  out <- default_estimate_infections(reported_cases)
+
+  # Get samples
+  samples <- get_samples(out)
+
+  # Check that R is returned but not R_unadjusted
+  expect_true("R" %in% unique(samples$variable))
+  expect_false("R_unadjusted" %in% unique(samples$variable))
+})
