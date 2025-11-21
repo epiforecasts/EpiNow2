@@ -232,7 +232,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
 #' @keywords internal
 #' @importFrom data.table copy setorder
 calculate_adjusted_rt <- function(R_unadjusted, infections, pop, pop_floor,
-                                   seeding_time, reported_dates) {
+                                  seeding_time, reported_dates) {
   # Calculate cumulative infections by sample
   infections_copy <- data.table::copy(infections)
   data.table::setorder(infections_copy, sample, date)
@@ -298,7 +298,7 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
 
   # Calculate adjusted Rt if population adjustment is enabled
   if (!is.null(R_unadjusted) && args$use_pop > 0) {
-    pop <- extract_static_parameter("pop", raw_samples)
+    pop <- extract_parameter("pop", raw_samples)
 
     if (!is.null(pop) && !is.null(infections)) {
       # Calculate adjusted Rt accounting for susceptible depletion
