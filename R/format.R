@@ -298,36 +298,9 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
 
   # Calculate adjusted Rt if population adjustment is enabled
   if (!is.null(R_unadjusted) && args$use_pop > 0 && !is.null(infections)) {
-    # Get population value from args
-    # For Fixed distributions, extract the fixed value
-    # For uncertain distributions, extract samples
-    pop_value <- NULL
+    pop <- extract_parameter("pop", raw_samples)
 
-    if (!is.null(args$pop)) {
-      if (inherits(args$pop, "dist_spec")) {
-        # Check if it's a fixed distribution
-        pop_params <- get_parameters(args$pop)
-        if (nrow(pop_params) == 1 && pop_params$distribution == "fixed") {
-          pop_value <- pop_params$value
-        }
-      }
-    }
-
-    # If we have a fixed pop value, create pop data.table
-    pop <- NULL
-    if (!is.null(pop_value)) {
-      n_samples <- length(unique(R_unadjusted$sample))
-      pop <- data.table::data.table(
-        parameter = "pop",
-        sample = seq_len(n_samples),
-        value = rep(pop_value, n_samples)
-      )
-    } else {
-      # Try to extract from Stan samples (uncertain pop)
-      pop <- extract_parameter("pop", raw_samples)
-    }
-
-    if (!is.null(pop) && nrow(pop) > 0) {
+    if (!is.null(pop)) {
       # Calculate adjusted Rt accounting for susceptible depletion
       out$R <- calculate_adjusted_rt(
         R_unadjusted,

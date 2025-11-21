@@ -68,12 +68,34 @@ extract_parameter <- function(param, samples) {
 
   id <- samples[[id_name]]
 
+  # Try variable parameters first
   lookup <- samples[["params_variable_lookup"]][id]
-  data.table::data.table(
-    parameter = param,
-    sample = seq_along(samples[["params"]][, lookup]),
-    value = samples[["params"]][, lookup]
-  )
+
+  if (!is.na(lookup) && lookup > 0) {
+    # Variable parameter
+    return(data.table::data.table(
+      parameter = param,
+      sample = seq_along(samples[["params"]][, lookup]),
+      value = samples[["params"]][, lookup]
+    ))
+  }
+
+  # Try fixed parameters
+  fixed_lookup <- samples[["params_fixed_lookup"]][id]
+
+  if (!is.na(fixed_lookup) && fixed_lookup > 0) {
+    # Fixed parameter - same value for all samples
+    fixed_value <- samples[["params_value"]][fixed_lookup]
+    n_samples <- nrow(samples[["params"]])
+    return(data.table::data.table(
+      parameter = param,
+      sample = seq_len(n_samples),
+      value = rep(fixed_value, n_samples)
+    ))
+  }
+
+  # Parameter not found in either location
+  return(NULL)
 }
 
 #' Extract all samples from a stan fit
