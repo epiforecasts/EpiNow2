@@ -199,7 +199,8 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 #' @keywords internal
 check_truncation_length <- function(stan_args, time_points) {
   # Check if truncation exists
-  if (is.null(stan_args$data$delay_id_truncation) || stan_args$data$delay_id_truncation == 0) {
+  if (is.null(stan_args$data$delay_id_truncation) ||
+      stan_args$data$delay_id_truncation == 0) {
     return(invisible())
   }
 
@@ -210,7 +211,9 @@ check_truncation_length <- function(stan_args, time_points) {
 
   # Map truncation to its position in the flat delays array
   # delay_types_groups gives start and end indices for each delay type
-  trunc_start <- stan_args$data$delay_types_groups[stan_args$data$delay_id_truncation]
+  trunc_start <- stan_args$data$delay_types_groups[
+    stan_args$data$delay_id_truncation
+  ]
   trunc_end <- stan_args$data$delay_types_groups[
     stan_args$data$delay_id_truncation + 1
   ] - 1

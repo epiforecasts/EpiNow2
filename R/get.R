@@ -312,7 +312,7 @@ get_samples.estimate_secondary <- function(object, ...) {
     c("date", "variable", "strat", "sample", "time", "value", "type")
   )
 
-  return(samples[])
+  samples[]
 }
 
 #' @rdname get_samples

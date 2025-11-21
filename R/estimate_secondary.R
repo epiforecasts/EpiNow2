@@ -767,29 +767,32 @@ forecast_secondary <- function(estimate,
 #' @export
 #' @method $ estimate_secondary
 `$.estimate_secondary` <- function(x, name) {
-  if (name == "predictions") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
-      "estimate_secondary()$predictions",
-      "get_predictions()"
-    )
-    return(get_predictions(x))
-  } else if (name == "posterior") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
-      "estimate_secondary()$posterior",
-      "get_samples()"
-    )
-    return(get_samples(x))
-  } else if (name == "data") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
-      "estimate_secondary()$data",
-      "estimate_secondary()$observations"
-    )
-    return(x[["observations"]])
-  } else {
+  switch(name,
+    predictions = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        "estimate_secondary()$predictions",
+        "get_predictions()"
+      )
+      get_predictions(x)
+    },
+    posterior = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        "estimate_secondary()$posterior",
+        "get_samples()"
+      )
+      get_samples(x)
+    },
+    data = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        "estimate_secondary()$data",
+        "estimate_secondary()$observations"
+      )
+      x[["observations"]]
+    },
     # For other elements, use normal list extraction
-    return(NextMethod("$"))
-  }
+    NextMethod("$")
+  )
 }
