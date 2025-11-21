@@ -257,11 +257,6 @@ calculate_adjusted_rt <- function(R_unadjusted, infections, pop, pop_floor,
   merged <- merge(merged, pop_values, by = "sample")
 
   # Calculate susceptible population and adjust Rt
-  # Ensure numeric types for calculation
-  merged[, `:=`(
-    pop_value = as.numeric(pop_value),
-    cum_infections_before = as.numeric(cum_infections_before)
-  )]
   merged[, susceptible := pmax(pop_floor, pop_value - cum_infections_before)]
   merged[, value := value * (susceptible / pop_value)]
 
@@ -302,28 +297,37 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
   }
 
   # Calculate adjusted Rt if population adjustment is enabled
-  if (!is.null(R_unadjusted) && args$use_pop > 0) {
-    # Extract pop - could be fixed or variable parameter
-    pop <- extract_parameter("pop", raw_samples)
+  if (!is.null(R_unadjusted) && args$use_pop > 0 && !is.null(infections)) {
+    # Get population value from args
+    # For Fixed distributions, extract the fixed value
+    # For uncertain distributions, extract samples
+    pop_value <- NULL
 
-    # If pop is a fixed parameter, extract it from params_value
-    if (is.null(pop) && "param_id_pop" %in% names(raw_samples)) {
-      pop_id <- raw_samples[["param_id_pop"]]
-      pop_fixed_lookup <- raw_samples[["params_fixed_lookup"]][pop_id]
-
-      if (!is.na(pop_fixed_lookup) && pop_fixed_lookup > 0) {
-        # Fixed parameter - same value for all samples
-        pop_value <- raw_samples[["params_value"]][pop_fixed_lookup]
-        n_samples <- nrow(raw_samples[["params"]])
-        pop <- data.table::data.table(
-          parameter = "pop",
-          sample = seq_len(n_samples),
-          value = rep(pop_value, n_samples)
-        )
+    if (!is.null(args$pop)) {
+      if (inherits(args$pop, "dist_spec")) {
+        # Check if it's a fixed distribution
+        pop_params <- get_parameters(args$pop)
+        if (nrow(pop_params) == 1 && pop_params$distribution == "fixed") {
+          pop_value <- pop_params$value
+        }
       }
     }
 
-    if (!is.null(pop) && !is.null(infections) && nrow(pop) > 0) {
+    # If we have a fixed pop value, create pop data.table
+    pop <- NULL
+    if (!is.null(pop_value)) {
+      n_samples <- length(unique(R_unadjusted$sample))
+      pop <- data.table::data.table(
+        parameter = "pop",
+        sample = seq_len(n_samples),
+        value = rep(pop_value, n_samples)
+      )
+    } else {
+      # Try to extract from Stan samples (uncertain pop)
+      pop <- extract_parameter("pop", raw_samples)
+    }
+
+    if (!is.null(pop) && nrow(pop) > 0) {
       # Calculate adjusted Rt accounting for susceptible depletion
       out$R <- calculate_adjusted_rt(
         R_unadjusted,
