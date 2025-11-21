@@ -764,6 +764,7 @@ forecast_secondary <- function(estimate,
 #' @param x An \code{estimate_secondary} object
 #' @param name The name of the element to extract
 #' @return The requested element with a deprecation warning
+#' @keywords internal
 #' @export
 #' @method $ estimate_secondary
 `$.estimate_secondary` <- function(x, name) {

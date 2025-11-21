@@ -25,3 +25,4 @@ elements is deprecated. Use the accessor methods instead:
 \item \code{data} - use \code{object$observations}
 }
 }
+\keyword{internal}
