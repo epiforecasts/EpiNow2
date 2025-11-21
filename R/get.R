@@ -407,11 +407,11 @@ get_predictions.estimate_secondary <- function(object,
 #' @rdname get_predictions
 #' @export
 get_predictions.forecast_infections <- function(object, ...) {
-  object$predictions
+  data.table::copy(object$predictions)
 }
 
 #' @rdname get_predictions
 #' @export
 get_predictions.forecast_secondary <- function(object, ...) {
-  object$predictions
+  data.table::copy(object$predictions)
 }

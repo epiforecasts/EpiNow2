@@ -20,7 +20,7 @@
   - Use `get_predictions(object)` to get predicted secondary observations with credible intervals merged with observations.
   - Use `summary(object)` to get summarised parameter estimates. Use `type = "compact"` for key parameters only, or `type = "parameters"` with a `params` argument to select specific parameters.
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
-  - **Breaking change**: The previous return structure with `predictions`, `posterior`, and `data` elements is no longer supported. Use the accessor methods instead.
+  - **Deprecated**: The previous return structure with `predictions`, `posterior`, and `data` elements is deprecated and will be removed in a future release. Backward compatibility is provided with deprecation warnings when accessing these elements via `$`.
 - `forecast_secondary()` now returns an independent S3 class `"forecast_secondary"` instead of inheriting from `"estimate_secondary"`, with dedicated `get_samples()`, `get_predictions()`, and `plot()` methods.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
 
