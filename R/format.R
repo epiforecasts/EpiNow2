@@ -298,7 +298,25 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
 
   # Calculate adjusted Rt if population adjustment is enabled
   if (!is.null(R_unadjusted) && args$use_pop > 0) {
+    # Extract pop - could be fixed or variable parameter
     pop <- extract_parameter("pop", raw_samples)
+
+    # If pop is a fixed parameter, extract it from params_value
+    if (is.null(pop) && "param_id_pop" %in% names(raw_samples)) {
+      pop_id <- raw_samples[["param_id_pop"]]
+      pop_fixed_lookup <- raw_samples[["params_fixed_lookup"]][pop_id]
+
+      if (!is.na(pop_fixed_lookup) && pop_fixed_lookup > 0) {
+        # Fixed parameter - same value for all samples
+        pop_value <- raw_samples[["params_value"]][pop_fixed_lookup]
+        n_samples <- nrow(raw_samples[["params"]])
+        pop <- data.table::data.table(
+          parameter = "pop",
+          sample = seq_len(n_samples),
+          value = rep(pop_value, n_samples)
+        )
+      }
+    }
 
     if (!is.null(pop) && !is.null(infections)) {
       # Calculate adjusted Rt accounting for susceptible depletion
