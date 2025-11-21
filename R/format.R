@@ -257,6 +257,11 @@ calculate_adjusted_rt <- function(R_unadjusted, infections, pop, pop_floor,
   merged <- merge(merged, pop_values, by = "sample")
 
   # Calculate susceptible population and adjust Rt
+  # Ensure numeric types for calculation
+  merged[, `:=`(
+    pop_value = as.numeric(pop_value),
+    cum_infections_before = as.numeric(cum_infections_before)
+  )]
   merged[, susceptible := pmax(pop_floor, pop_value - cum_infections_before)]
   merged[, value := value * (susceptible / pop_value)]
 
@@ -318,7 +323,7 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
       }
     }
 
-    if (!is.null(pop) && !is.null(infections)) {
+    if (!is.null(pop) && !is.null(infections) && nrow(pop) > 0) {
       # Calculate adjusted Rt accounting for susceptible depletion
       out$R <- calculate_adjusted_rt(
         R_unadjusted,
