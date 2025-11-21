@@ -120,6 +120,8 @@ precommit::use_precommit()
 
 *   PRs are reviewed by the team before they are merged. The review process only begins after the continuous integration checks, which have to be manually triggered by a maintainer for first-time contributors, have passed.
 
+*   You should expect to see reviews from our AI code reviewer, [CodeRabbit](https://www.coderabbit.ai/), which will point out some initial issues to fix. Be sure to address review comments that you think are accurate and reply with reasons why other comments won't be fixed. Provide commits to support your fixes.
+
 *   The Github Actions checks currently take a while (about an hour), so it might be helpful to "watch" the repository and check your email for a notification when it's all done.
 
 *   Usually, all the review conversations occur under the PR. The reviewer merges the PR when every issue has been resolved. Please use the "Resolve conversation" functionality in the GitHub web interface to indicate when a specific issue has been adressed, responding with a commit pointing to the change made where applicable.
