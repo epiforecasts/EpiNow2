@@ -68,10 +68,15 @@ extract_parameter <- function(param, samples) {
 
   id <- samples[[id_name]]
 
+  # Return NULL if parameter is not in use (id = 0 or NA)
+  if (is.na(id) || id == 0) {
+    return(NULL)
+  }
+
   # Try variable parameters first
   lookup <- samples[["params_variable_lookup"]][id]
 
-  if (!is.null(lookup) && length(lookup) > 0 && !is.na(lookup) && lookup > 0) {
+  if (!is.na(lookup) && lookup > 0) {
     # Variable parameter
     return(data.table::data.table(
       parameter = param,
