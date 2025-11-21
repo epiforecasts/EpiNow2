@@ -71,7 +71,7 @@ extract_parameter <- function(param, samples) {
   # Try variable parameters first
   lookup <- samples[["params_variable_lookup"]][id]
 
-  if (!is.na(lookup) && lookup > 0) {
+  if (!is.null(lookup) && length(lookup) > 0 && !is.na(lookup) && lookup > 0) {
     # Variable parameter
     return(data.table::data.table(
       parameter = param,

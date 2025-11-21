@@ -260,8 +260,12 @@ calculate_adjusted_rt <- function(R_unadjusted, infections, pop, pop_floor,
   merged[, susceptible := pmax(pop_floor, pop_value - cum_infections_before)]
   merged[, value := value * (susceptible / pop_value)]
 
-  # Return adjusted Rt in same format, dropping intermediate columns
-  merged[, .(sample, date, value, strat)]
+  # Return adjusted Rt in same format as input, dropping intermediate columns
+  output_cols <- intersect(
+    names(R_unadjusted),
+    c("parameter", "time", "date", "sample", "value")
+  )
+  merged[, ..output_cols]
 }
 
 #' Format raw Stan samples with dates and metadata
