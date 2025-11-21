@@ -506,6 +506,7 @@ globalVariables(
     "..lowers", "..upper_CrI", "..uppers", "timing", "dataset", "last_confirm",
     "report_date", "secondary", "id", "conv", "meanlog", "primary", "scaled",
     "scaling", "sdlog", "lookup", "new_draw", ".draw", "p", "distribution",
-    "accumulate", "..present", "reported_cases", "counter", "future_accumulate"
+    "accumulate", "..present", "reported_cases", "counter", "future_accumulate",
+    "parameter"
   )
 )

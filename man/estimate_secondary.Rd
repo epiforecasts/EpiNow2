@@ -91,11 +91,11 @@ number of cases based on the 7-day average. If the average is above this
 threshold then the zero is replaced using \code{fill}.}
 }
 \value{
-A list containing: \code{predictions} (a \verb{<data.frame>} ordered by date
-with the primary, and secondary observations, and a summary of the model
-estimated secondary observations), \code{posterior} which contains a summary of
-the entire model posterior, \code{data} (a list of data used to fit the
-model), and \code{fit} (the \code{stanfit} object).
+An \verb{<estimate_secondary>} object which is a list of outputs
+including: the stan object (\code{fit}), arguments used to fit the model
+(\code{args}), and the observed data (\code{observations}). Use \code{summary()} to access
+estimates, \code{get_samples()} to extract posterior samples, and
+\code{get_predictions()} to access predictions.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
