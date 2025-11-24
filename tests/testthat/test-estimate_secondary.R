@@ -111,7 +111,7 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
     delays = delay_opts(
       LogNormal(mean = 1.8, sd = 0.5, max = 30)
     ),
-    obs = opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
+    obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
   )
   expect_true(is.list(inc_na$data))

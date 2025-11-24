@@ -63,7 +63,7 @@ jobs:
             future.apply
 
       - name: Install cmdstan
-        if: (runner.os != 'Windows') && (github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0')
+        if: github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0'
         uses: epinowcast/actions/install-cmdstan@v1
         with:
           cmdstan-version: 'latest'
