@@ -21,6 +21,12 @@ if (requireNamespace("future", quietly = TRUE)) {
   withr::defer(future::plan("sequential"), teardown_env())
 }
 
+# Disable progressr output during tests
+if (requireNamespace("progressr", quietly = TRUE)) {
+  # Use void handler for silent progress (no output at all)
+  progressr::handlers("void")
+}
+
 # Test categorisation helpers -----------------------------------------------
 
 #' Check if integration tests should be run
