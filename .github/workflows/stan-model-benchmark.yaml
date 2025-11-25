@@ -45,7 +45,7 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           packages: |
-            local::./main
+            local::.
             stan-dev/cmdstanr
           working-directory: main
 
@@ -63,7 +63,7 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           packages: |
-            local::./branch
+            local::.
             stan-dev/cmdstanr
           working-directory: branch
 
