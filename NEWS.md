@@ -25,6 +25,7 @@
 
 ## Bug fixes
 
+- A bug was fixed where the truncation PMF vector in `estimate_secondary.stan` was declared with incorrect dimension, causing a dimension mismatch with the `get_delay_rev_pmf()` function call.
 - A bug was fixed where the `CrIs` parameter in `epinow()` was not being passed through to internal functions, causing user-specified credible intervals to be ignored in saved files and output.
 - A bug was fixed where `forecast_infections` would fail with `samples = 1`.
 - A bug was fixed where `opts_list()` recursed lists which it shouldn't.
