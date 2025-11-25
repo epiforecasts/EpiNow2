@@ -27,6 +27,10 @@ delays <- delay_opts(example_incubation_period + example_reporting_delay)
 fixed_generation_time <- fix_parameters(example_generation_time)
 
 ## Compile model with cmdstanr (required for profiling)
+## Note: using internal function via ::: because epinow2_cmdstan_model() is not
+## exported. This is necessary to get a cmdstanr model object that supports
+## profiling via $profiles(). If the internal API changes, this script may need
+## updating.
 compiled_model <- EpiNow2:::epinow2_cmdstan_model()
 
 message("Running ", n_iter, " iterations for profiling...")
@@ -49,7 +53,6 @@ profiles <- lapply(seq_along(seeds), function(i) {
 
   profile_data <- rbindlist(fit$fit$profiles(), idcol = "chain")
   profile_data[, iter := i]
-  profile_data[, seed := seeds[i]]
 
   profile_data
 })

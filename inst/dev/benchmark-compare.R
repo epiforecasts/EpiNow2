@@ -143,7 +143,7 @@ if (any(changes$trend != "no change")) {
 
   sink(file = output_file)
   cat(knitr::kable(
-    format_output, align = "lrrrr",
+    format_output, align = "lrrrrr",
     caption = "Benchmarking results (mean time in seconds)."
   ))
   cat("\n")
