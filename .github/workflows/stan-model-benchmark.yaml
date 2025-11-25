@@ -52,10 +52,8 @@ jobs:
       - name: Benchmark main branch
         id: benchmark-main
         continue-on-error: true
-        env:
-          R_LIBS_USER: ${{ github.workspace }}/main/renv/library
+        working-directory: main
         run: |
-          cd main
           # Use benchmark-single.R from PR branch (main may not have it yet)
           Rscript ../branch/inst/dev/benchmark-single.R main
 
