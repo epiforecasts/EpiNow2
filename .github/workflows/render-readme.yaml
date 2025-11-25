@@ -17,7 +17,7 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout repos
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
