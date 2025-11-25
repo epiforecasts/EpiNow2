@@ -34,9 +34,9 @@ bootci <- function(x, n_boot = NULL) {
   )
 }
 
-## Read profiles
-main_profiles <- fread(main_file)
-branch_profiles <- fread(branch_file)
+## Read profiles (integer64="numeric" avoids bit64 warning for large integers)
+main_profiles <- fread(main_file, integer64 = "numeric")
+branch_profiles <- fread(branch_file, integer64 = "numeric")
 
 ## Add branch labels
 main_profiles[, branch := "main"]
