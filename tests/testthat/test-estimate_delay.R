@@ -25,7 +25,7 @@ test_that("dist_fit produces expected output", {
 
 # Variant test: bootstrapped_dist_fit runs Stan 3 times (original + 2 bootstraps)
 test_that("bootstrapped_dist_fit produces expected output", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   bootstrapped_dist_fit_out <- bootstrapped_dist_fit(
     delays,
     samples = samples,

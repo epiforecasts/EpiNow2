@@ -30,7 +30,7 @@ test_that("estimate_truncation can return values from simulated data and plot
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_truncation can return values from simulated data with the
            cmdstanr backend", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   # fit model to example data
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
@@ -48,7 +48,7 @@ test_that("estimate_truncation can return values from simulated data with the
 })
 
 test_that("estimate_truncation works with filter_leading_zeros set", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   skip_on_os("windows")
   # Modify the first three rows of the first dataset to have zero cases
   # and fit the model with filter_leading_zeros = TRUE. This should
@@ -82,7 +82,7 @@ test_that("estimate_truncation works with filter_leading_zeros set", {
 })
 
 test_that("estimate_truncation works with zero_threshold set", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   skip_on_os("windows")
   # fit model to a modified version of example_data with zero leading cases
   # but with filter_leading_zeros = TRUE

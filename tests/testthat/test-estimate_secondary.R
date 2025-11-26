@@ -91,7 +91,7 @@ test_that("forecast_secondary can return values from simulated data and plot
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false) -
 
 test_that("estimate_secondary successfully returns estimates when passed NA values", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   inc_cases <- setup_incidence_data()
   prev_cases <- setup_prevalence_data()
 
@@ -119,7 +119,7 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
 })
 
 test_that("estimate_secondary successfully returns estimates when accumulating to weekly", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   inc_cases <- setup_incidence_data()
 
   cases <- example_confirmed
@@ -150,7 +150,7 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
 })
 
 test_that("estimate_secondary works when only estimating scaling", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   inc_cases <- setup_incidence_data()
 
   inc <- estimate_secondary(inc_cases[1:60],
@@ -162,7 +162,7 @@ test_that("estimate_secondary works when only estimating scaling", {
 })
 
 test_that("estimate_secondary can recover simulated parameters", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   inc_cases <- setup_incidence_data()
   prev_cases <- setup_prevalence_data()
 
@@ -213,7 +213,7 @@ test_that("estimate_secondary can recover simulated parameters", {
 
 test_that("estimate_secondary can recover simulated parameters with the
            cmdstanr backend", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   skip_on_os("windows")
   inc_cases <- setup_incidence_data()
 
@@ -241,7 +241,7 @@ test_that("estimate_secondary can recover simulated parameters with the
 })
 
 test_that("forecast_secondary works with fixed delays", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   inc_cases <- setup_incidence_data()
 
   # fit model to example data with a fixed delay
@@ -260,7 +260,7 @@ test_that("forecast_secondary works with fixed delays", {
 
 test_that("forecast_secondary can return values from simulated data when using
            the cmdstanr backend", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   skip_on_os("windows")
   inc_cases <- setup_incidence_data()
 
@@ -282,7 +282,7 @@ test_that("forecast_secondary can return values from simulated data when using
 })
 
 test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   inc_cases <- setup_incidence_data()
 
   delays <- LogNormal(
@@ -300,7 +300,7 @@ test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
 })
 
 test_that("estimate_secondary works with filter_leading_zeros set", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   inc_cases <- setup_incidence_data()
 
   ## testing deprecated functionality
@@ -321,7 +321,7 @@ test_that("estimate_secondary works with filter_leading_zeros set", {
 })
 
 test_that("estimate_secondary works with zero_threshold set", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   inc_cases <- setup_incidence_data()
 
   ## testing deprecated functionality

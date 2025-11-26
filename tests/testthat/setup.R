@@ -40,6 +40,16 @@ integration_test <- function() {
   !isTRUE(as.logical(skip_integration))
 }
 
+#' Skip test if not running integration tests
+#'
+#' Helper to skip integration tests with a consistent message.
+#' Use at the start of test_that blocks for slow MCMC-based tests.
+#'
+#' @return Invisibly returns NULL, called for side effect of skipping test
+skip_integration <- function() {
+  testthat::skip_if_not(integration_test(), "Skipping integration test")
+}
+
 #' Check if full test suite should be run
 #'
 #' Full tests include all integration tests and are typically run on a schedule

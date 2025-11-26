@@ -51,7 +51,7 @@ test_that("estimate_infections successfully returns estimates using default sett
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_infections successfully returns estimates using a Matern 5/2 kernel", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   test_estimate_infections(
     reported_cases,
     gp = gp_opts(kernel = "matern", matern_order = 5 / 2)
@@ -59,12 +59,12 @@ test_that("estimate_infections successfully returns estimates using a Matern 5/2
 })
 
 test_that("estimate_infections successfully returns estimates using backcalculation", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   test_estimate_infections(reported_cases, rt = NULL)
 })
 
 test_that("estimate_infections successfully returns estimates using no delays", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   test_estimate_infections(reported_cases, delay = FALSE)
 })
 

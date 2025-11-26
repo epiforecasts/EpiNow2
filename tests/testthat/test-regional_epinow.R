@@ -52,7 +52,7 @@ test_that("regional_epinow produces expected output when run with default settin
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("regional_epinow runs without error when given a very short timeout", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   output <- capture.output(suppressMessages(
     out <- regional_epinow(
       data = cases,
@@ -85,7 +85,7 @@ test_that("regional_epinow runs without error when given a very short timeout", 
 
 
 test_that("regional_epinow produces expected output when run with region specific settings", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   gp <- opts_list(gp_opts(), cases)
   gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
   rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))

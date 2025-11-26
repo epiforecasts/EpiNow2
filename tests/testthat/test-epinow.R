@@ -24,7 +24,7 @@ expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "
 # Variant test: epinow is tested via estimate_infections underneath.
 # This test verifies wrapper-specific functionality (plots, CrIs).
 test_that("epinow produces expected output when run with default settings", {
-  skip_if_not(integration_test(), "Skipping slow integration test")
+  skip_integration()
   outputs <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
