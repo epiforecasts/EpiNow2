@@ -243,9 +243,11 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 
 #' Estimate a Delay Distribution
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("deprecated")`
 #' Estimate a log normal delay distribution from a vector of integer delays.
-#' Currently this function is a simple wrapper for [bootstrapped_dist_fit()].
+#'
+#' **This function is deprecated.** Please use [estimate_dist()] instead,
+#' which provides better handling of censoring and truncation.
 #'
 #' @param delays Integer vector of delays
 #'
@@ -253,14 +255,23 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #'
 #' @return A `<dist_spec>` summarising the bootstrapped distribution
 #' @export
-#' @seealso [bootstrapped_dist_fit()]
+#' @seealso [estimate_dist()] for the recommended replacement
 #' @examples
 #' \donttest{
-#' # bootstraps and samples have been reduced for this example
 #' delays <- rlnorm(500, log(5), 1)
-#' estimate_delay(delays, samples = 500, bootstraps = 2)
+#' # Old way (deprecated):
+#' # estimate_delay(delays, samples = 1000, bootstraps = 10)
+#'
+#' # New way (recommended):
+#' # estimate_dist(delays, dist = "lognormal", samples = 1000)
 #' }
 estimate_delay <- function(delays, ...) {
+  lifecycle::deprecate_warn(
+    when = "1.8.0",
+    what = "estimate_delay()",
+    with = "estimate_dist()"
+  )
+
   bootstrapped_dist_fit(
     values = delays,
     dist = "lognormal", ...

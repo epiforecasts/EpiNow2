@@ -1,5 +1,10 @@
 # EpiNow2 (development version)
 
+## Package changes
+
+- Added `estimate_dist()` function for estimating delay distributions with proper handling of interval censoring using Stan/MCMC inference, supporting both rstan and cmdstanr backends.
+- Deprecated `estimate_delay()` in favour of `estimate_dist()`, which provides more robust handling of censoring and truncation.
+
 # EpiNow2 1.8.0
 
 ## Breaking changes
