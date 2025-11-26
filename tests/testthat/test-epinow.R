@@ -53,6 +53,137 @@ test_that("epinow produces expected output when run with default settings", {
   expect_equal(extract_CrIs(out$estimated_reported_cases$summarised), 95)
 })
 
+test_that("epinow produces expected output with cmdstanr backend", {
+  skip_integration()
+  skip_on_os("windows")
+  output <- capture.output(suppressMessages(suppressWarnings(
+    out <- epinow(
+      data = reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      stan = stan_opts(backend = "cmdstanr"),
+      logs = NULL, verbose = FALSE
+    )
+  )))
+
+  expect_equal(names(out), expected_out)
+  df_non_zero(out$estimates$samples)
+  df_non_zero(out$estimates$summarised)
+  df_non_zero(out$estimated_reported_cases$samples)
+  df_non_zero(out$estimated_reported_cases$summarised)
+  df_non_zero(out$summary)
+  expect_equal(
+    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+  )
+})
+
+test_that("epinow produces expected output with laplace algorithm", {
+  skip_integration()
+  skip_on_os("windows")
+  output <- capture.output(suppressMessages(suppressWarnings(
+    out <- epinow(
+      data = reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      stan = stan_opts(method = "laplace", backend = "cmdstanr"),
+      logs = NULL, verbose = FALSE
+    )
+  )))
+  expect_equal(names(out), expected_out)
+  df_non_zero(out$estimates$samples)
+  df_non_zero(out$estimates$summarised)
+  df_non_zero(out$estimated_reported_cases$samples)
+  df_non_zero(out$estimated_reported_cases$summarised)
+  df_non_zero(out$summary)
+  expect_equal(
+    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+  )
+})
+
+test_that("epinow produces expected output with pathfinder algorithm", {
+  skip_integration()
+  skip_on_os("windows")
+  output <- capture.output(suppressMessages(suppressWarnings(
+    out <- epinow(
+      data = reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      stan = stan_opts(method = "pathfinder", backend = "cmdstanr"),
+      logs = NULL, verbose = FALSE
+    )
+  )))
+  expect_equal(names(out), expected_out)
+  df_non_zero(out$estimates$samples)
+  df_non_zero(out$estimates$summarised)
+  df_non_zero(out$estimated_reported_cases$samples)
+  df_non_zero(out$estimated_reported_cases$summarised)
+  df_non_zero(out$summary)
+  expect_equal(
+    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+  )
+})
+
+test_that("epinow runs without error when saving to disk", {
+  skip_integration()
+  output <- capture.output(suppressMessages(suppressWarnings(
+    out <- epinow(
+      data = reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      stan = stan_opts(
+        samples = 25, warmup = 25, cores = 1, chains = 2,
+        control = list(adapt_delta = 0.8)
+      ),
+      target_folder = tempdir(check = TRUE),
+      logs = NULL, verbose = FALSE
+    )
+  )))
+  expect_null(out)
+})
+
+test_that("epinow can produce partial output as specified", {
+  skip_integration()
+  output <- capture.output(suppressMessages(suppressWarnings(
+    out <- epinow(
+      data = reported_cases,
+      generation_time = gt_opts(
+        example_generation_time,
+        weight_prior = FALSE
+      ),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      stan = stan_opts(
+        samples = 25, warmup = 25,
+        cores = 1, chains = 2,
+        control = list(adapt_delta = 0.8)
+      ),
+      output = NULL,
+      logs = NULL, verbose = FALSE
+    )
+  )))
+  expect_equal(names(out), c("estimates", "estimated_reported_cases", "summary"))
+  expect_null(out$estimates$samples)
+  df_non_zero(out$estimates$summarised)
+  expect_null(out$estimated_reported_cases$samples)
+  df_non_zero(out$estimated_reported_cases$summarised)
+  df_non_zero(out$summary)
+})
+
+test_that("epinow fails as expected when given a short timeout", {
+  skip_integration()
+  expect_error(suppressWarnings(x <- epinow(
+    data = reported_cases,
+    generation_time = gt_opts(example_generation_time),
+    delays = delay_opts(example_incubation_period + reporting_delay),
+    stan = stan_opts(
+      samples = 100, warmup = 100,
+      cores = 1, chains = 2,
+      control = list(adapt_delta = 0.8),
+      max_execution_time = 1
+    ),
+    logs = NULL, verbose = FALSE
+  )))
+})
+
 # Argument validation tests (fast - no MCMC) ------------------------------
 
 
