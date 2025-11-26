@@ -11,7 +11,8 @@ plot_estimates(
   hline,
   obs_as_col = TRUE,
   max_plot = 10,
-  estimate_type = c("Estimate", "Estimate based on partial data", "Forecast")
+  estimate_type = c("Estimate", "Estimate based on partial data", "Forecast"),
+  style = c("ribbon", "linerange")
 )
 }
 \arguments{
@@ -38,6 +39,11 @@ cases.}
 \item{estimate_type}{Character vector indicating the type of data to plot.
 Default to all types with supported options being: "Estimate", "Estimate
 based on partial data", and "Forecast".}
+
+\item{style}{Character string indicating the plot style for credible
+intervals. Options are "ribbon" (default) for shaded ribbon plots or
+"linerange" for error bars. Error bars can be clearer for weekly or
+aggregated data.}
 }
 \value{
 A \code{ggplot2} object
@@ -80,5 +86,12 @@ plot_estimates(
   estimate = summary(out, type = "parameters", param = "R"),
   ylab = "Effective Reproduction No.",
   hline = 1, estimate_type = "Estimate"
+)
+
+# plot with error bars instead of ribbons
+plot_estimates(
+  estimate = summary(out, type = "parameters", param = "R"),
+  ylab = "Effective Reproduction No.",
+  hline = 1, style = "linerange"
 )
 }
