@@ -97,16 +97,24 @@ jobs:
             exit 1
           fi
 
-      - name: Update DESCRIPTION file
+      - name: Update DESCRIPTION and workflow files
         if: steps.compare.outputs.needs_update == 'true' && steps.verify.outputs.available == 'true'
         run: |
           CURRENT="${{ steps.current.outputs.date }}"
           LATEST="${{ steps.latest.outputs.date }}"
 
+          # Update DESCRIPTION
           sed -i "s|production\.r-multiverse\.org/$CURRENT|production.r-multiverse.org/$LATEST|g" DESCRIPTION
-
           echo "Updated DESCRIPTION file"
+
+          # Update all GitHub Actions workflow files
+          find .github/workflows -name "*.yaml" -type f -exec \
+            sed -i "s|production\.r-multiverse\.org/$CURRENT|production.r-multiverse.org/$LATEST|g" {} \;
+          echo "Updated workflow files"
+
+          # Show changes
           git diff DESCRIPTION
+          git diff .github/workflows/
 
       - name: Create Pull Request
         if: steps.compare.outputs.needs_update == 'true' && steps.verify.outputs.available == 'true'
@@ -118,10 +126,12 @@ jobs:
           delete-branch: true
           title: "Update R-multiverse production snapshot to ${{ steps.latest.outputs.date }}"
           body: |
-            This automated PR updates the R-multiverse production snapshot reference in `DESCRIPTION`.
+            This automated PR updates the R-multiverse production snapshot reference.
 
             **Changes:**
             - Update from `${{ steps.current.outputs.date }}` to `${{ steps.latest.outputs.date }}`
+            - Updated `DESCRIPTION` file
+            - Updated all GitHub Actions workflow files (`.github/workflows/*.yaml`)
             - Verified cmdstanr ${{ steps.verify.outputs.version }} is available in the new snapshot
 
             **About R-multiverse production snapshots:**
