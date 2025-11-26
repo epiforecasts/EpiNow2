@@ -12,8 +12,9 @@
 #' @param output A character vector of optional output to return. Supported
 #' options are samples ("samples"), plots ("plots"), the run time ("timing"),
 #' copying the dated folder into a latest folder (if `target_folder` is not
-#' null, set using "latest"), and the stan fit ("fit"). The default is to
-#' return all options.
+#' null, set using "latest"), the stan fit ("fit"), and the full
+#' [estimate_infections()] return object ("estimate_infections"). The default
+#' is to return all options.
 #'
 #' @param return_output Logical, defaults to FALSE. Should output be returned,
 #' this automatically updates to TRUE if no directory for saving is specified.
@@ -92,7 +93,10 @@ epinow <- function(data,
                    stan = stan_opts(),
                    CrIs = c(0.2, 0.5, 0.9),
                    return_output = is.null(target_folder),
-                   output = c("samples", "plots", "latest", "fit", "timing"),
+                   output = c(
+                     "samples", "plots", "latest", "fit", "timing",
+                     "estimate_infections"
+                   ),
                    plot_args = list(),
                    target_folder = NULL, target_date,
                    logs = tempdir(), id = "epinow", verbose = interactive(),
@@ -249,6 +253,9 @@ epinow <- function(data,
       if (output["fit"]) {
         out$estimates$fit <- estimates$fit
         out$estimates$args <- estimates$args
+      }
+      if (output["estimate_infections"]) {
+        out$estimate_infections <- estimates
       }
       out$estimates$observations <- estimates$observations
       return(out)
