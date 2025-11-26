@@ -24,7 +24,7 @@ jobs:
       EPINOW2_SKIP_INTEGRATION: true  # Skip slow integration tests for fast coverage
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: r-lib/actions/setup-pandoc@v2
 
