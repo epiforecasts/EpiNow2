@@ -1,7 +1,16 @@
 # EpiNow2 (development version)
 
+## Breaking changes
+
+- The `discretise()` function now uses the `primarycensored` package for double censored PMF calculations, replacing the previous CDF difference approximation.
+This provides more accurate discretisation but will change the exact numerical values returned every time a distribution without uncertainty is discretised.
+Code that depends on the specific numerical output of `discretise()` may produce different results, though the differences should be small and represent improvements in accuracy.
+The function interface remains unchanged.
+
 ## Package changes
 
+- Added `estimate_dist()` function for estimating delay distributions with proper handling of interval censoring using Stan/MCMC inference, supporting both rstan and cmdstanr backends.
+- Deprecated `estimate_delay()` in favour of `estimate_dist()`, which provides more robust handling of censoring and truncation.
 - Development-only dependencies (`covr`, `here`, `hexSticker`, `magick`, `pkgdown`, `precommit`, `usethis`) have been moved from `Suggests` to `Config/Needs/dev`.
   This reduces the dependency burden for end users while maintaining full functionality for package developers.
   Developers should use `pak::pak(".", dependencies = TRUE)` to install all dependencies including dev tools.
@@ -31,6 +40,7 @@
 - A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
 - A bug was fixed where `estimate_infection()` threw an error if there were too many consecutive `NA` observations.
 - A bug was fixed where an error was thrown when convolving delay distributions with very small values.
+- A bug was fixed where various log variables (time steps, horizon, samples, chains, and iterations) were not being reported correctly especially when using the `cmdstanr` backend and `estimate_delays()` function.
 - A bug was fixed where a cli warning was broken due to bad syntax.
 - A bug was fixed where intermediate data was being bound together by column position instead of column name, leading to erroneous results.
 - A bug was fixed in the implementation of the Matern 5/2 Gaussian process kernel spectral density. See discussion at https://discourse.mc-stan.org/t/diagspd-for-matern-gp-kernels-other-than-3-2/37011/12
