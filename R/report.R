@@ -176,7 +176,7 @@ report_plots <- function(summarised_estimates, reported,
   )
 
   # Rt plot ------------------------------------------------------------------
-  R <- plot_estimates(
+  R_plot <- plot_estimates(
     estimate = summarised_estimates[variable == "R"],
     ylab = "Effective \n reproduction no.", hline = 1,
     ...
@@ -207,7 +207,7 @@ report_plots <- function(summarised_estimates, reported,
           axis.ticks.x = ggplot2::element_blank()
         ) +
         ggplot2::labs(tag = "B") +
-        R +
+        R_plot +
         ggplot2::labs(tag = "C") +
         patchwork::plot_layout(ncol = 1) &
         ggplot2::scale_x_date(
@@ -225,7 +225,7 @@ report_plots <- function(summarised_estimates, reported,
   plots <- list(
     infections = infections,
     reports = reports,
-    R = R,
+    R = R_plot,
     growth_rate = growth_rate,
     summary = plot_summary
   )
