@@ -77,3 +77,89 @@ test_that("convolve_dot_product can combine two vectors where x > y and len = x"
     c(1, 4, 10, 16, 22)
   )
 })
+
+# Test convolve_to_report function
+test_that("convolve_to_report convolves infections with delay distribution", {
+  infections <- rep(100, 10)
+  delay_rev_pmf <- discretised_pmf(c(log(3), 0.5), 5, 0)
+  seeding_time <- 3
+
+  result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
+
+  # Result should exclude seeding time
+  expect_equal(length(result), 10 - seeding_time)
+
+  # All values should be positive
+  expect_true(all(result > 0))
+
+  # With constant infections, reported cases should stabilise
+  expect_equal(result[length(result) - 1], result[length(result)], tolerance = 0.1)
+})
+
+test_that("convolve_to_report handles zero delay correctly", {
+  infections <- c(10, 20, 30, 40, 50)
+  delay_rev_pmf <- numeric(0)  # Empty delay
+  seeding_time <- 2
+
+  result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
+
+  # With no delay, should just drop seeding time
+  expect_equal(result, infections[(seeding_time + 1):5])
+})
+
+test_that("convolve_to_report produces correct length output", {
+  infections <- rep(50, 15)
+  delay_rev_pmf <- discretised_pmf(c(log(2), 0.3), 7, 0)
+  seeding_time <- 5
+
+  result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
+
+  expect_equal(length(result), 15 - seeding_time)
+})
+
+test_that("convolve_to_report with increasing infections shows delay", {
+  # Growing infections
+  infections <- exp(0.1 * (1:20))
+  delay_rev_pmf <- discretised_pmf(c(log(3), 0.4), 8, 0)
+  seeding_time <- 5
+
+  result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
+
+  # Reports should show overall increasing trend
+  # (last report should be higher than first, though not necessarily monotonic)
+  expect_gt(result[length(result)], result[1])
+
+  # Most differences should be positive
+  expect_true(sum(diff(result) > 0) > sum(diff(result) < 0))
+
+  # But reports should lag behind infections due to delay
+  expect_lt(result[1], infections[seeding_time + 1])
+})
+
+test_that("convolve_to_report handles decreasing infections", {
+  # Declining epidemic
+  infections <- exp(-0.1 * (1:20))
+  delay_rev_pmf <- discretised_pmf(c(log(3), 0.4), 8, 0)
+  seeding_time <- 5
+
+  result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
+
+  # Reports should show overall declining trend
+  # (last report should be lower than first, though not necessarily monotonic)
+  expect_lt(result[length(result)], result[1])
+
+  # Most differences should be negative
+  expect_true(sum(diff(result) < 0) > sum(diff(result) > 0))
+})
+
+test_that("convolve_to_report handles step change in infections", {
+  # Abrupt increase
+  infections <- c(rep(50, 10), rep(200, 10))
+  delay_rev_pmf <- discretised_pmf(c(log(3), 0.4), 8, 0)
+  seeding_time <- 5
+
+  result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
+
+  # Reports should show gradual increase due to delay smoothing
+  expect_true(any(diff(result) > 0))
+})

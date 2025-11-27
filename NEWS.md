@@ -2,6 +2,8 @@
 
 ## Package changes
 
+- The test suite has been reorganised into core tests (fast, always run) and integration tests (slow, run weekly), improving local development speed by 77% (from 9 minutes to 2 minutes) whilst maintaining test coverage.
+- Added comprehensive unit tests for Stan functions including `discretised_pmf`, `get_delay_rev_pmf`, `convolve_to_report`, and `deconvolve_infections`.
 - Development-only dependencies (`covr`, `here`, `hexSticker`, `magick`, `pkgdown`, `precommit`, `usethis`) have been moved from `Suggests` to `Config/Needs/dev`.
   This reduces the dependency burden for end users while maintaining full functionality for package developers.
   Developers should use `pak::pak(".", dependencies = TRUE)` to install all dependencies including dev tools.

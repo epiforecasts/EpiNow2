@@ -1,0 +1,81 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
+# Full integration test suite including slow MCMC-based tests
+# Runs on a weekly schedule and can be triggered manually
+name: test-full
+
+on:
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly on Sunday at 2am UTC
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches: [main, master]
+    paths:
+      - 'src/**'  # Run if Stan code changes
+      - 'inst/stan/**'  # Run if Stan code changes
+      - 'R/estimate*.R'  # Run if core estimation code changes
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-full:
+    runs-on: macos-latest
+    if: "! contains(github.event.head_commit.message, '[ci skip]')"
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      NOT_CRAN: true
+      EPINOW2_SKIP_INTEGRATION: false  # Run ALL tests including slow integration tests
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Fetch full history for change detection
+
+      - name: Check for code changes (scheduled runs only)
+        id: check_changes
+        if: github.event_name == 'schedule'
+        run: |
+          # Check if there have been changes to relevant files in the last 7 days
+          CHANGES=$(git log --since="7 days ago" --oneline -- src/ inst/stan/ R/estimate*.R tests/ | wc -l)
+          echo "changes=$CHANGES" >> $GITHUB_OUTPUT
+          if [ "$CHANGES" -eq 0 ]; then
+            echo "No code changes in the last week, skipping tests"
+          else
+            echo "Found $CHANGES commits with code changes in the last week"
+          fi
+
+      - uses: r-lib/actions/setup-pandoc@v2
+        if: github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0'
+
+      - uses: r-lib/actions/setup-r@v2
+        if: github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0'
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        if: github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0'
+        with:
+          dependencies: NA
+          extra-packages: |
+            testthat
+            future
+            future.apply
+
+      - name: Install cmdstan
+        if: github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0'
+        uses: epinowcast/actions/install-cmdstan@v1
+        with:
+          cmdstan-version: 'latest'
+          num-cores: 2
+
+      - name: Run full test suite
+        if: github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0'
+        run: |
+          testthat::test_local(reporter = testthat::ProgressReporter$new(max_failures = Inf))
+        shell: Rscript {0}
+
+      - name: Show testthat output
+        if: always() && (github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0')
+        run: find . -name 'testthat.Rout*' -exec cat '{}' \; || true
+        shell: bash

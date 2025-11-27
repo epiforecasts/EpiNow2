@@ -119,6 +119,63 @@ make the changes for you interactively.
 *  We use [testthat](https://cran.r-project.org/package=testthat) for unit tests.
    Contributions with test cases included are easier to accept.
 
+### Testing strategy
+
+The EpiNow2 test suite is organised into different categories to balance thoroughness with speed:
+
+#### Test categories
+
+1. **Unit tests** (fast, always run): Test individual functions without running MCMC. These include:
+   - R function tests (e.g., `test-create_stan_data.R`, `test-obs_opts.R`)
+   - Stan function tests (e.g., `test-stan-infections.R`, `test-stan-observation_model.R`)
+   - These tests run on every commit and PR
+
+2. **Integration tests** (slow, run weekly): Test the full MCMC estimation pipeline. These are marked with `skip_if_not(integration_test())` and only run:
+   - Weekly on Sunday at 2am UTC (via the `test-full` workflow)
+   - Manually via workflow dispatch
+   - When core Stan or estimation code changes
+
+#### Running tests locally
+
+By default, slow integration tests are skipped:
+```r
+# Run fast tests only (default)
+devtools::test()
+```
+
+To run the full test suite including integration tests:
+```r
+# Run all tests including slow integration tests
+Sys.setenv(EPINOW2_SKIP_INTEGRATION = "false")
+devtools::test()
+```
+
+#### Writing tests
+
+When adding new features:
+- **Prefer unit tests** over integration tests when possible
+- Test configuration and data preparation in R unit tests (e.g., `test-create_stan_data.R`)
+- Test mathematical functions in Stan unit tests (e.g., `test-stan-*.R`)
+- Use integration tests sparingly, only for essential end-to-end smoke tests
+- Mark integration tests with `skip_if_not(integration_test())`
+
+Example:
+```r
+test_that("estimate_infections works with custom settings", {
+  skip_if_not(integration_test(), "Skipping slow integration test")
+  # ... MCMC test code ...
+})
+```
+
+#### CI/CD behaviour
+
+- **Pull requests and commits**: Run fast tests only (skip integration tests)
+- **Test coverage**: Measured on fast tests only
+- **Weekly schedule**: Run full test suite including integration tests
+- **Manual trigger**: Full test suite can be triggered via GitHub Actions workflow dispatch
+
+This approach ensures fast feedback during development whilst maintaining comprehensive test coverage through scheduled runs.
+
 ## Code of Conduct
 
 Please note that the EpiNow2 project is released with a
