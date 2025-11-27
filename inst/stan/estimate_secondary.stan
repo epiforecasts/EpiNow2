@@ -81,7 +81,7 @@ transformed parameters {
 
   // truncate near time cases to observed reports
   if (trunc_id) {
-    vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(
+    vector[delay_type_max[trunc_id] + 1] trunc_rev_cmf = get_delay_rev_pmf(
       trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
       delay_types_groups, delay_max, delay_np_pmf,
       delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
