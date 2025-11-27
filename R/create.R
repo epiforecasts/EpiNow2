@@ -149,7 +149,7 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
     out$fixed <- TRUE
     out$from <- as.integer(future)
   }
-  return(out)
+  out
 }
 
 #' Create Time-varying Reproduction Number Data
@@ -275,7 +275,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
       "infections" = 0, "infectiousness" = 1
     )[[rt$growth_method]]
   )
-  return(rt_data)
+  rt_data
 }
 #' Create Back Calculation Data
 #'
@@ -371,7 +371,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
   )
 
   gp_data <- c(data, gp_data)
-  return(gp_data)
+  gp_data
 }
 
 #' Create Observation Model Settings
@@ -416,7 +416,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 
   opts$day_of_week <- add_day_of_week(dates, opts$week_effect)
 
-  return(opts)
+  opts
 }
 
 #' Create Stan Data Required for estimate_infections
@@ -674,7 +674,7 @@ create_stan_args <- function(stan = stan_opts(),
   )
   stan_args <- modifyList(stan_args, stan)
   stan_args$return_fit <- NULL
-  return(stan_args)
+  stan_args
 }
 
 ##' Create delay variables for stan
@@ -687,6 +687,8 @@ create_stan_args <- function(stan = stan_opts(),
 ##' @keywords internal
 create_stan_delays <- function(..., time_points = 1L) {
   delays <- list(...)
+  delay_names <- names(delays)
+
   ## discretise
   delays <- map(delays, discretise, strict = FALSE)
   delays <- map(delays, collapse)
@@ -695,10 +697,12 @@ create_stan_delays <- function(..., time_points = 1L) {
   max_delay <- unname(as.numeric(flatten(map(bounded_delays, max))))
   ## number of different non-empty types
   type_n <- vapply(delays, ndist, integer(1))
-  ## assign ID values to each type
-  ids <- rep(0L, length(type_n))
-  ids[type_n > 0] <- seq_len(sum(type_n > 0))
-  names(ids) <- paste(names(type_n), "id", sep = "_")
+
+  ## Create delay_id_* variables pointing to delay_types_groups index
+  ## Similar to param_id_* in create_stan_params()
+  delay_ids <- rep(0L, length(type_n))
+  delay_ids[type_n > 0] <- seq_len(sum(type_n > 0))
+  names(delay_ids) <- paste("delay_id", delay_names, sep = "_")
 
   ## create "flat version" of delays, i.e. a list of all the delays (including
   ## elements of composite delays)
@@ -774,9 +778,9 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$dist <- array(match(distributions, c("lognormal", "gamma")) - 1L)
 
   names(ret) <- paste("delay", names(ret), sep = "_")
-  ret <- c(ret, ids)
+  ret <- c(ret, as.list(delay_ids))
 
-  return(ret)
+  ret
 }
 
 ##' Create parameters for stan
