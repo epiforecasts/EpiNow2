@@ -281,7 +281,7 @@ estimate_secondary <- function(data,
   out$data <- stan_data
   out$fit <- fit
   class(out) <- c("estimate_secondary", class(out))
-  return(out)
+  out
 }
 
 #' Update estimate_secondary default priors
@@ -346,7 +346,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       data$dispersion_sd <- signif(dispersion$sd, 3)
     }
   }
-  return(data)
+  data
 }
 
 #' Plot method for estimate_secondary
