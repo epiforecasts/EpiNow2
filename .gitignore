@@ -3,6 +3,7 @@
 .Rhistory
 .RData
 .Ruserdata
+.Renviron
 .cache
 .idea
 
