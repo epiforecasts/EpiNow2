@@ -4,7 +4,7 @@
 \alias{plot_CrIs}
 \title{Plot EpiNow2 Credible Intervals}
 \usage{
-plot_CrIs(plot, CrIs, alpha, linewidth)
+plot_CrIs(plot, CrIs, alpha, linewidth, style = c("ribbon", "linerange"))
 }
 \arguments{
 \item{plot}{A \code{{ggplot2}} plot}
@@ -12,14 +12,17 @@ plot_CrIs(plot, CrIs, alpha, linewidth)
 \item{CrIs}{Numeric list of credible intervals present in the data. As
 produced by \code{\link[=extract_CrIs]{extract_CrIs()}}.}
 
-\item{alpha}{Numeric, overall alpha of the target line range}
+\item{alpha}{Numeric, overall alpha of the target line range.}
 
 \item{linewidth}{Numeric, line width of the default line range.}
+
+\item{style}{Character string indicating the plot style. Options are
+"ribbon" (default) for shaded ribbon plots or "linerange" for error bars.}
 }
 \value{
 A \code{{ggplot2}} plot.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Adds lineranges for user specified credible intervals
+Adds credible intervals to a plot, either as ribbons or error bars.
 }

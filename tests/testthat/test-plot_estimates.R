@@ -52,3 +52,39 @@ test_that("plot_estimates can be restricted to only plot within the forecasting
     NA
   )
 })
+
+test_that("plot_estimates supports linerange style for error bars", {
+  expect_error(
+    plot_estimates(
+      estimate = summary(fit, type = "parameters", param = "R"),
+      ylab = "Effective Reproduction No.",
+      style = "linerange"
+    ),
+    NA
+  )
+  expect_error(
+    plot_estimates(
+      estimate = summary(fit, type = "parameters", param = "infections"),
+      reported = cases,
+      ylab = "Cases",
+      style = "linerange"
+    ),
+    NA
+  )
+})
+
+test_that("plot_estimates style defaults to ribbon", {
+  p_default <- plot_estimates(
+    estimate = summary(fit, type = "parameters", param = "R"),
+    ylab = "R"
+  )
+  p_ribbon <- plot_estimates(
+    estimate = summary(fit, type = "parameters", param = "R"),
+    ylab = "R",
+    style = "ribbon"
+  )
+  # Both should produce ggplot objects
+
+  expect_s3_class(p_default, "ggplot")
+  expect_s3_class(p_ribbon, "ggplot")
+})
