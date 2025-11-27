@@ -45,6 +45,7 @@ jobs:
       - name: Install main branch dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          working-directory: main
           packages: |
             local::.
             here
@@ -62,10 +63,10 @@ jobs:
       - name: Install PR branch dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          working-directory: branch
           packages: |
             local::.
-            stan-dev/cmdstanr
-          working-directory: branch
+            any::cmdstanr
 
       - name: Benchmark PR branch
         working-directory: branch
