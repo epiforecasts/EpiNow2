@@ -274,7 +274,7 @@ estimate_secondary <- function(data,
   )
 
   class(ret) <- c("epinowfit", "estimate_secondary", class(ret))
-  return(ret)
+  ret
 }
 
 #' Update estimate_secondary default priors
@@ -339,7 +339,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       data$dispersion_sd <- signif(dispersion$sd, 3)
     }
   }
-  return(data)
+  data
 }
 
 #' Plot method for estimate_secondary

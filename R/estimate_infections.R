@@ -296,5 +296,5 @@ estimate_infections <- function(data,
 
   ## Join stan fit if required
   class(ret) <- c("epinowfit", "estimate_infections", class(ret))
-  return(ret)
+  ret
 }
