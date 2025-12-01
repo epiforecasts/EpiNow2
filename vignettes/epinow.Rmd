@@ -51,10 +51,15 @@ res <- epinow(reported_cases,
 )
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2 logs to the console and:
-#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> '/tmp/Rtmpw0STfa/regional-epinow/2020-04-21.log'.
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2.epinow logs to the console and:
-#> '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
+#> '/tmp/Rtmpw0STfa/epinow/2020-04-21.log'.
+#> WARN [2025-12-01 00:37:19] epinow: There were 3 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them. - 
+#> WARN [2025-12-01 00:37:19] epinow: Examine the pairs() plot to diagnose sampling problems
+#>  -
 res$plots$R
 ```
 
@@ -89,38 +94,38 @@ region_rt <- regional_epinow(
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
 )
-#> INFO [2025-02-04 19:51:23] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2025-12-01 00:37:25] Producing following optional outputs: regions, summary, samples, plots, latest
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2 logs to the console and:
-#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> '/tmp/Rtmpw0STfa/regional-epinow/2020-04-21.log'.
 #> Logging threshold set at INFO for the name logger
-#> Writing EpiNow2.epinow logs to: '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
-#> INFO [2025-02-04 19:51:23] Reporting estimates using data up to: 2020-04-21
-#> INFO [2025-02-04 19:51:23] No target directory specified so returning output
-#> INFO [2025-02-04 19:51:23] Producing estimates for: testland, realland
-#> INFO [2025-02-04 19:51:23] Regions excluded: none
-#> INFO [2025-02-04 19:54:18] Completed estimates for: testland
-#> INFO [2025-02-04 19:55:24] Completed estimates for: realland
-#> INFO [2025-02-04 19:55:24] Completed regional estimates
-#> INFO [2025-02-04 19:55:24] Regions with estimates: 2
-#> INFO [2025-02-04 19:55:24] Regions with runtime errors: 0
-#> INFO [2025-02-04 19:55:24] Producing summary
-#> INFO [2025-02-04 19:55:24] No summary directory specified so returning summary output
-#> INFO [2025-02-04 19:55:24] No target directory specified so returning timings
+#> Writing EpiNow2.epinow logs to: '/tmp/Rtmpw0STfa/epinow/2020-04-21.log'.
+#> INFO [2025-12-01 00:37:25] Reporting estimates using data up to: 2020-04-21
+#> INFO [2025-12-01 00:37:25] No target directory specified so returning output
+#> INFO [2025-12-01 00:37:25] Producing estimates for: testland, realland
+#> INFO [2025-12-01 00:37:25] Regions excluded: none
+#> INFO [2025-12-01 00:38:32] Completed estimates for: testland
+#> INFO [2025-12-01 00:39:38] Completed estimates for: realland
+#> INFO [2025-12-01 00:39:38] Completed regional estimates
+#> INFO [2025-12-01 00:39:38] Regions with estimates: 2
+#> INFO [2025-12-01 00:39:38] Regions with runtime errors: 0
+#> INFO [2025-12-01 00:39:38] Producing summary
+#> INFO [2025-12-01 00:39:38] No summary directory specified so returning summary output
+#> INFO [2025-12-01 00:39:39] No target directory specified so returning timings
 ## summary
 region_rt$summary$summarised_results$table
 #>      Region New infections per day Expected change in reports
 #>      <char>                 <char>                     <fctr>
-#> 1: realland    2284 (1405 -- 3710)          Likely decreasing
-#> 2: testland    2237 (1344 -- 3795)          Likely decreasing
-#>    Effective reproduction no.           Rate of growth
-#>                        <char>                   <char>
-#> 1:         0.91 (0.73 -- 1.1)  -0.026 (-0.093 -- 0.04)
-#> 2:          0.9 (0.71 -- 1.1) -0.028 (-0.099 -- 0.041)
+#> 1: realland     1834 (741 -- 4472)          Likely decreasing
+#> 2: testland     1843 (711 -- 4546)          Likely decreasing
+#>    Effective reproduction no.          Rate of growth
+#>                        <char>                  <char>
+#> 1:          0.9 (0.72 -- 1.1) -0.03 (-0.085 -- 0.029)
+#> 2:           0.9 (0.7 -- 1.1) -0.029 (-0.09 -- 0.029)
 #>    Doubling/halving time (days)
 #>                          <char>
-#> 1:             -27 (17 -- -7.4)
-#> 2:               -25 (17 -- -7)
+#> 1:             -23 (24 -- -8.2)
+#> 2:             -24 (24 -- -7.7)
 ## plot
 region_rt$summary$plots$R
 ```
@@ -140,38 +145,38 @@ region_separate_rt <- regional_epinow(
   delays = delay_opts(delay),
   rt = rt, gp = gp,
 )
-#> INFO [2025-02-04 19:55:25] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2025-12-01 00:39:39] Producing following optional outputs: regions, summary, samples, plots, latest
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2 logs to the console and:
-#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> '/tmp/Rtmpw0STfa/regional-epinow/2020-04-21.log'.
 #> Logging threshold set at INFO for the name logger
-#> Writing EpiNow2.epinow logs to: '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
-#> INFO [2025-02-04 19:55:25] Reporting estimates using data up to: 2020-04-21
-#> INFO [2025-02-04 19:55:25] No target directory specified so returning output
-#> INFO [2025-02-04 19:55:25] Producing estimates for: testland, realland
-#> INFO [2025-02-04 19:55:25] Regions excluded: none
-#> INFO [2025-02-04 19:56:30] Completed estimates for: testland
-#> INFO [2025-02-04 19:56:59] Completed estimates for: realland
-#> INFO [2025-02-04 19:56:59] Completed regional estimates
-#> INFO [2025-02-04 19:56:59] Regions with estimates: 2
-#> INFO [2025-02-04 19:56:59] Regions with runtime errors: 0
-#> INFO [2025-02-04 19:56:59] Producing summary
-#> INFO [2025-02-04 19:56:59] No summary directory specified so returning summary output
-#> INFO [2025-02-04 19:57:00] No target directory specified so returning timings
+#> Writing EpiNow2.epinow logs to: '/tmp/Rtmpw0STfa/epinow/2020-04-21.log'.
+#> INFO [2025-12-01 00:39:39] Reporting estimates using data up to: 2020-04-21
+#> INFO [2025-12-01 00:39:39] No target directory specified so returning output
+#> INFO [2025-12-01 00:39:39] Producing estimates for: testland, realland
+#> INFO [2025-12-01 00:39:39] Regions excluded: none
+#> INFO [2025-12-01 00:40:48] Completed estimates for: testland
+#> INFO [2025-12-01 00:41:20] Completed estimates for: realland
+#> INFO [2025-12-01 00:41:20] Completed regional estimates
+#> INFO [2025-12-01 00:41:20] Regions with estimates: 2
+#> INFO [2025-12-01 00:41:20] Regions with runtime errors: 0
+#> INFO [2025-12-01 00:41:20] Producing summary
+#> INFO [2025-12-01 00:41:20] No summary directory specified so returning summary output
+#> INFO [2025-12-01 00:41:21] No target directory specified so returning timings
 ## summary
 region_separate_rt$summary$summarised_results$table
 #>      Region New infections per day Expected change in reports
 #>      <char>                 <char>                     <fctr>
-#> 1: realland    2017 (1042 -- 3839)          Likely decreasing
-#> 2: testland    2266 (1356 -- 3666)          Likely decreasing
-#>    Effective reproduction no.           Rate of growth
-#>                        <char>                   <char>
-#> 1:          0.84 (0.6 -- 1.2)  -0.042 (-0.11 -- 0.038)
-#> 2:          0.9 (0.71 -- 1.1) -0.028 (-0.098 -- 0.039)
+#> 1: realland     1448 (454 -- 4742)          Likely decreasing
+#> 2: testland   2134 (811 -- 521559)          Likely decreasing
+#>    Effective reproduction no.          Rate of growth
+#>                        <char>                  <char>
+#> 1:         0.84 (0.59 -- 1.1) -0.044 (-0.12 -- 0.036)
+#> 2:         0.92 (0.72 -- 2.4)  -0.022 (-0.08 -- 0.23)
 #>    Doubling/halving time (days)
 #>                          <char>
-#> 1:             -16 (18 -- -6.2)
-#> 2:             -25 (18 -- -7.1)
+#> 1:             -16 (19 -- -5.8)
+#> 2:            -31 (3.1 -- -8.7)
 ## plot
 region_separate_rt$summary$plots$R
 ```
