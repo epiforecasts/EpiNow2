@@ -26,7 +26,7 @@
 extract_latent_state <- function(param, samples, dates) {
   # Return NULL if parameter doesn't exist
   if (!(param %in% names(samples))) {
-    NULL
+    return(NULL)
   }
 
   param_df <- data.table::as.data.table(
@@ -63,7 +63,7 @@ extract_parameter <- function(param, samples) {
 
   # Return NULL if parameter ID doesn't exist
   if (!(id_name %in% names(samples))) {
-    NULL
+    return(NULL)
   }
 
   id <- samples[[id_name]]

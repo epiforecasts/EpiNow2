@@ -142,7 +142,7 @@ discrete_pmf <- function(distribution =
 `==.dist_spec` <- function(e1, e2) {
   ## both must have same number of distributions
   if (ndist(e1) != ndist(e2)) {
-    FALSE
+    return(FALSE)
   }
   ## loop over constituent distributions
   for (i in seq_len(ndist(e1))) {
@@ -482,7 +482,7 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     )
   }
   if (get_distribution(x) == "nonparametric") {
-    x
+    return(x)
   } else if (!is.na(sd(x)) && is_constrained(x)) {
     cdf_cutoff <- attr(x, "cdf_cutoff")
     if (is.null(cdf_cutoff)) {
@@ -840,7 +840,7 @@ extract_single_dist <- function(x, i) {
     )
   }
   if (ndist(x) == 1) {
-    x
+    return(x)
   } else {
     x[[i]]
   }
@@ -883,7 +883,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
   ## if x is fixed already we don't have to do anything
   if (get_distribution(x) == "nonparametric" ||
         all(vapply(get_parameters(x), is.numeric, logical(1)))) {
-    x
+    return(x)
   }
   ## apply strategy depending on choice
   if (strategy == "mean") {
@@ -945,7 +945,7 @@ is_constrained <- function(x, ...) {
 #' is_constrained(dist1 + dist2)
 is_constrained.dist_spec <- function(x, ...) {
   if (get_distribution(x) %in% c("nonparametric", "fixed")) {
-    TRUE
+    return(TRUE)
   }
   cdf_cutoff <- attr(x, "cdf_cutoff")
   tol_constrained <- !is.null(cdf_cutoff) && cdf_cutoff > 0
