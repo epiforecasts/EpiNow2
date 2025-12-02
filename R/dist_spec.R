@@ -483,7 +483,8 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
   }
   if (get_distribution(x) == "nonparametric") {
     return(x)
-  } else if (!is.na(sd(x)) && is_constrained(x)) {
+  }
+  if (!is.na(sd(x)) && is_constrained(x)) {
     cdf_cutoff <- attr(x, "cdf_cutoff")
     if (is.null(cdf_cutoff)) {
       cdf_cutoff <- 0
@@ -841,9 +842,8 @@ extract_single_dist <- function(x, i) {
   }
   if (ndist(x) == 1) {
     return(x)
-  } else {
-    x[[i]]
   }
+  x[[i]]
 }
 
 #' @export
