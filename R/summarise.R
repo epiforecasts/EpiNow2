@@ -841,7 +841,7 @@ summary.estimate_infections <- function(object,
       "summary.estimate_infections(type = 'samples')",
       "get_samples()"
     )
-    get_samples(object)
+    return(get_samples(object))
   }
 
   create_infection_summary(object, type, target_date, params, CrIs, ...)
