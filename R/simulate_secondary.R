@@ -152,5 +152,5 @@ simulate_secondary <- function(primary,
   secondary <- extract_samples(sim, "sim_secondary")$sim_secondary[1, , ]
   out <- data.table(date = all_dates$date, secondary = secondary)
 
-  return(out[])
+  out[]
 }

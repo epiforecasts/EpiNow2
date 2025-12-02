@@ -26,7 +26,7 @@
 extract_latent_state <- function(param, samples, dates) {
   # Return NULL if parameter doesn't exist
   if (!(param %in% names(samples))) {
-    return(NULL)
+    NULL
   }
 
   param_df <- data.table::as.data.table(
@@ -63,7 +63,7 @@ extract_parameter <- function(param, samples) {
 
   # Return NULL if parameter ID doesn't exist
   if (!(id_name %in% names(samples))) {
-    return(NULL)
+    NULL
   }
 
   id <- samples[[id_name]]
@@ -96,7 +96,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
   if (inherits(stan_fit, "stanfit")) {
     extract_args <- list(object = stan_fit, include = include)
     if (!is.null(pars)) extract_args <- c(extract_args, list(pars = pars))
-    return(do.call(rstan::extract, extract_args))
+    do.call(rstan::extract, extract_args)
   }
   if (!inherits(stan_fit, "CmdStanMCMC") &&
         !inherits(stan_fit, "CmdStanFit")) {
@@ -148,7 +148,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     ret
   })
 
-  return(samples)
+  samples
 }
 
 #' Extract Parameter Samples from a Stan Model
@@ -244,7 +244,7 @@ extract_stan_param <- function(fit, params = NULL,
     cols <- c("variable", cols)
   }
   colnames(param_summary) <- cols
-  return(param_summary)
+  param_summary
 }
 
 #' Generate initial conditions from a Stan fit
@@ -326,7 +326,7 @@ extract_inits <- function(fit, current_inits,
     } else {
       new_inits <- fit_inits
     }
-    return(new_inits)
+    new_inits
   }
-  return(inits_sample)
+  inits_sample
 }

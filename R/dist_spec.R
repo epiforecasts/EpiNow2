@@ -93,7 +93,7 @@ discrete_pmf <- function(distribution =
 
   pmf <- diff(cmf)
 
-  return(pmf)
+  pmf
 }
 
 #' Creates a delay distribution as the sum of two other delay distributions.
@@ -142,7 +142,7 @@ discrete_pmf <- function(distribution =
 `==.dist_spec` <- function(e1, e2) {
   ## both must have same number of distributions
   if (ndist(e1) != ndist(e2)) {
-    return(FALSE)
+    FALSE
   }
   ## loop over constituent distributions
   for (i in seq_len(ndist(e1))) {
@@ -174,7 +174,7 @@ discrete_pmf <- function(distribution =
       }
     }
   }
-  return(TRUE)
+  TRUE
 }
 ## nolint end: cyclocomp_linter
 
@@ -218,7 +218,7 @@ c.dist_spec <- function(...) {
   ## process delay distributions
   dist_specs <- list(...)
   if (length(dist_specs) == 1) {
-    return(dist_specs[[1]])
+    dist_specs[[1]]
   }
   if (!(all(vapply(dist_specs, is, "dist_spec", FUN.VALUE = logical(1))))) {
     cli_abort(
@@ -317,7 +317,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #' @export
 mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
   ret <- vapply(x, mean, ignore_uncertainty = ignore_uncertainty, numeric(1))
-  return(ret)
+  ret
 }
 
 
@@ -482,7 +482,7 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     )
   }
   if (get_distribution(x) == "nonparametric") {
-    return(x)
+    x
   } else if (!is.na(sd(x)) && is_constrained(x)) {
     cdf_cutoff <- attr(x, "cdf_cutoff")
     if (is.null(cdf_cutoff)) {
@@ -508,7 +508,7 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
     if (remove_trailing_zeros) {
       y$pmf <- y$pmf[seq_len(max(which(y$pmf != 0)))]
     }
-    return(y)
+    y
   } else if (strict) {
     cli_abort(
       c(
@@ -516,7 +516,7 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
       )
     )
   } else {
-    return(x)
+    x
   }
 }
 #' @method discretise multi_dist_spec
@@ -524,7 +524,7 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
 discretise.multi_dist_spec <- function(x, strict = TRUE, ...) {
   ret <- lapply(x, discretise, strict = strict)
   attributes(ret) <- attributes(x)
-  return(ret)
+  ret
 }
 #' @rdname discretise
 #' @export
@@ -803,7 +803,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
     p <- p +
       geom_step(data = cmf_data)
   }
-  return(p)
+  p
 }
 
 #' Extract a single element of a composite `<dist_spec>`
@@ -883,7 +883,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
   ## if x is fixed already we don't have to do anything
   if (get_distribution(x) == "nonparametric" ||
         all(vapply(get_parameters(x), is.numeric, logical(1)))) {
-    return(x)
+    x
   }
   ## apply strategy depending on choice
   if (strategy == "mean") {
@@ -901,7 +901,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
     names(sampled) <- names(get_parameters(x))
     x$parameters <- sampled
   }
-  return(x)
+  x
 }
 
 #' @export
@@ -911,7 +911,7 @@ fix_parameters.multi_dist_spec <- function(x, strategy =
   for (i in seq_len(ndist(x))) {
     x[[i]] <- fix_parameters(x[[i]])
   }
-  return(x)
+  x
 }
 
 #' @export
@@ -945,7 +945,7 @@ is_constrained <- function(x, ...) {
 #' is_constrained(dist1 + dist2)
 is_constrained.dist_spec <- function(x, ...) {
   if (get_distribution(x) %in% c("nonparametric", "fixed")) {
-    return(TRUE)
+    TRUE
   }
   cdf_cutoff <- attr(x, "cdf_cutoff")
   tol_constrained <- !is.null(cdf_cutoff) && cdf_cutoff > 0
@@ -1140,7 +1140,7 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
     if (is.finite(max)) attr(x, "max") <- max
     if (cdf_cutoff > 0) attr(x, "cdf_cutoff") <- cdf_cutoff
   }
-  return(x)
+  x
 }
 
 #' Extract parameter names
@@ -1265,7 +1265,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
   ret <- bound_dist(ret, max, cdf_cutoff)
 
   ## now we have a distribution with natural parameters - return dist_spec
-  return(ret)
+  ret
 }
 
 #' Internal function for converting parameters to natural parameters.
@@ -1378,9 +1378,9 @@ get_element <- function(x, id = NULL, element) {
         )
       )
     }
-    return(x[[id]][[element]])
+    x[[id]][[element]]
   } else {
-    return(x[[element]])
+    x[[element]]
   }
 }
 
@@ -1414,7 +1414,7 @@ get_parameters <- function(x, id = NULL) {
       )
     )
   }
-  return(get_element(x, id, "parameters"))
+  get_element(x, id, "parameters")
 }
 
 ##' Get the probability mass function of a nonparametric distribution
@@ -1443,7 +1443,7 @@ get_pmf <- function(x, id = NULL) {
       )
     )
   }
-  return(get_element(x, id, "pmf"))
+  get_element(x, id, "pmf")
 }
 
 ##' Get the distribution of a `<dist_spec>`
@@ -1465,7 +1465,7 @@ get_distribution <- function(x, id = NULL) {
       )
     )
   }
-  return(get_element(x, id, "distribution"))
+  get_element(x, id, "distribution")
 }
 
 ##' Calculate the number of distributions in a `<dist_spec>`

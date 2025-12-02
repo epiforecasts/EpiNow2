@@ -133,7 +133,7 @@ summarise_results <- function(regions,
 
   out <- list(estimates, numeric_estimates, high_inc_regions)
   names(out) <- c("table", "data", "regions_by_inc")
-  return(out)
+  out
 }
 
 
@@ -411,9 +411,9 @@ regional_summary <- function(regional_output = NULL,
     if (all_regions && plot) {
       out$plots <- plots
     }
-    return(out)
+    out
   } else {
-    return(invisible(NULL))
+    invisible(NULL)
   }
 }
 
@@ -468,7 +468,7 @@ summarise_key_measures <- function(regional_results = NULL,
     }
     data.table::setorderv(df, cols = c("region", "date", "type", "strat"))
     data.table::setnames(df, "region", type)
-    return(df)
+    df
   }
 
   save_variable <- function(df, name) {
@@ -506,7 +506,7 @@ summarise_key_measures <- function(regional_results = NULL,
     ], 1
   )
   save_variable(out$cases_by_report, "cases_by_report")
-  return(out)
+  out
 }
 
 #' Summarise Regional Runtimes
@@ -574,9 +574,9 @@ regional_runtimes <- function(regional_output = NULL,
     data.table::fwrite(timings, file.path(target_folder, "runtimes.csv"))
   }
   if (return_output) {
-    return(timings)
+    timings
   } else {
-    return(invisible(NULL))
+    invisible(NULL)
   }
 }
 
@@ -612,7 +612,7 @@ calc_CrI <- function(samples, summarise_by = NULL, CrI = 0.9) {
     ),
     by = summarise_by
     ]
-  return(with_CrI)
+  with_CrI
 }
 
 
@@ -656,7 +656,7 @@ calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
     with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
     value.var = "value"
   )
-  return(with_CrIs)
+  with_CrIs
 }
 
 #' Extract Credible Intervals Present
@@ -707,7 +707,7 @@ calc_summary_stats <- function(samples, summarise_by = NULL) {
     ),
     by = summarise_by
     ]
-  return(sum_stats)
+  sum_stats
 }
 
 #' Calculate All Summary Measures
@@ -753,7 +753,7 @@ calc_summary_measures <- function(samples,
 
   summarised <- sum_stats[CrIs, on = summarise_by]
   data.table::setorderv(summarised, cols = order_by)
-  return(summarised)
+  summarised
 }
 
 
@@ -800,7 +800,7 @@ summary.epinow <- function(object,
       out <- out[variable == params]
     }
   }
-  return(out)
+  out
 }
 
 #' Summary output from estimate_infections
@@ -841,7 +841,7 @@ summary.estimate_infections <- function(object,
       "summary.estimate_infections(type = 'samples')",
       "get_samples()"
     )
-    return(get_samples(object))
+    get_samples(object)
   }
 
   create_infection_summary(object, type, target_date, params, CrIs, ...)

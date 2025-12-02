@@ -48,7 +48,7 @@ check_reports_valid <- function(data,
     assert_numeric(data$confirm, lower = 0)
   }
   assert_logical(data$accumulate, null.ok = TRUE)
-  return(invisible(data))
+  invisible(data)
 }
 
 #' Validate probability distribution for passing to stan
@@ -200,12 +200,12 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
 check_truncation_length <- function(stan_args, time_points) {
   # Check if truncation exists
   if (is.null(stan_args$data$trunc_id) || stan_args$data$trunc_id == 0) {
-    return(invisible())
+    invisible()
   }
 
   # Check if there are any non-parametric delays
   if (is.null(stan_args$data$delay_n_np) || stan_args$data$delay_n_np == 0) {
-    return(invisible())
+    invisible()
   }
 
   # Map truncation to its position in the flat delays array
@@ -221,7 +221,7 @@ check_truncation_length <- function(stan_args, time_points) {
 
   # Return early if all truncation delays are parametric
   if (!any(is_np)) {
-    return(invisible())
+    invisible()
   }
 
   # Get the IDs of non-parametric truncation delays within the np array
