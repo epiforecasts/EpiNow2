@@ -197,8 +197,7 @@ get_regions_with_most_reports <- function(data,
     most_reports,
     cols = "confirm", order = -1
   )
-  most_reports <- most_reports[1:no_regions][!is.na(region)]$region
-  most_reports
+  most_reports[1:no_regions][!is.na(region)]$region
 }
 
 ##' Estimate seeding time from delays and generation time

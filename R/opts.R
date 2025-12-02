@@ -858,8 +858,7 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
       iter_sampling = ceiling(samples / opts$chains)
     ), control_def)
   }
-  opts <- c(opts, dot_args)
-  opts
+  c(opts, dot_args)
 }
 
 #' Stan Variational Bayes Options
@@ -894,8 +893,7 @@ stan_vb_opts <- function(samples = 2000,
     iter = iter,
     output_samples = samples
   )
-  opts <- c(opts, ...)
-  opts
+  c(opts, ...)
 }
 
 #' Stan Laplace algorithm Options
@@ -923,9 +921,7 @@ stan_laplace_opts <- function(backend = "cmdstanr",
       )
     )
   }
-  opts <- list(trials = trials)
-  opts <- c(opts, ...)
-  opts
+  c(list(trials = trials), ...)
 }
 
 #' Stan pathfinder algorithm Options
@@ -958,8 +954,7 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
     trials = trials,
     draws = samples
   )
-  opts <- c(opts, ...)
-  opts
+  c(opts, ...)
 }
 
 #' Stan Options

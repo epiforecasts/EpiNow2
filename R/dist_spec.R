@@ -218,7 +218,7 @@ c.dist_spec <- function(...) {
   ## process delay distributions
   dist_specs <- list(...)
   if (length(dist_specs) == 1) {
-    dist_specs[[1]]
+    return(dist_specs[[1]])
   }
   if (!(all(vapply(dist_specs, is, "dist_spec", FUN.VALUE = logical(1))))) {
     cli_abort(
@@ -316,8 +316,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #' @method mean multi_dist_spec
 #' @export
 mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
-  ret <- vapply(x, mean, ignore_uncertainty = ignore_uncertainty, numeric(1))
-  ret
+  vapply(x, mean, ignore_uncertainty = ignore_uncertainty, numeric(1))
 }
 
 

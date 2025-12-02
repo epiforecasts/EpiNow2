@@ -370,8 +370,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
     w0 = gp$w0
   )
 
-  gp_data <- c(data, gp_data)
-  gp_data
+  c(data, gp_data)
 }
 
 #' Create Observation Model Settings
