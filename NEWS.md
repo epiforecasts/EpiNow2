@@ -2,6 +2,9 @@
 
 ## Package changes
 
+- Removed explicit `return()` statements throughout the codebase in favour of implicit returns, following updated lintr defaults.
+- Added a scheduled monthly lint check workflow that opens a GitHub issue if new lint warnings are detected.
+
 - Development-only dependencies (`covr`, `here`, `hexSticker`, `magick`, `pkgdown`, `precommit`, `usethis`) have been moved from `Suggests` to `Config/Needs/dev`.
   This reduces the dependency burden for end users while maintaining full functionality for package developers.
   Developers should use `pak::pak(".", dependencies = TRUE)` to install all dependencies including dev tools.
