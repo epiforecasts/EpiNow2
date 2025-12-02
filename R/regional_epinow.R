@@ -125,7 +125,7 @@ regional_epinow <- function(data,
     supported_args = c(
       "plots", "samples", "fit",
       "regions", "summary",
-      "timing", "latest"
+      "timing", "latest", "estimate_infections"
     ),
     logger = "EpiNow2"
   )

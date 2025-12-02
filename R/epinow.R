@@ -164,7 +164,7 @@ epinow <- function(data,
     supported_args = c(
       "plots", "samples",
       "fit", "timing",
-      "latest"
+      "latest", "estimate_infections"
     ),
     logger = "EpiNow2.epinow",
     level = "debug"
