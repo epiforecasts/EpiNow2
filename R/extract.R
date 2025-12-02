@@ -96,7 +96,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
   if (inherits(stan_fit, "stanfit")) {
     extract_args <- list(object = stan_fit, include = include)
     if (!is.null(pars)) extract_args <- c(extract_args, list(pars = pars))
-    do.call(rstan::extract, extract_args)
+    return(do.call(rstan::extract, extract_args))
   }
   if (!inherits(stan_fit, "CmdStanMCMC") &&
         !inherits(stan_fit, "CmdStanFit")) {
