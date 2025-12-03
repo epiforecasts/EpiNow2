@@ -371,7 +371,7 @@ get_predictions.estimate_infections <- function(object,
     all = TRUE
   )
 
-  return(predictions)
+  predictions
 }
 
 #' @rdname get_predictions
@@ -400,7 +400,7 @@ get_predictions.estimate_secondary <- function(object,
     all = TRUE, by = "date"
   )
 
-  return(predictions)
+  predictions
 }
 
 #' @rdname get_predictions

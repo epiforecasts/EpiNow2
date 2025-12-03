@@ -941,5 +941,5 @@ summary.estimate_secondary <- function(object,
     out <- out[variable %in% params]
   }
 
-  return(out[])
+  out[]
 }
