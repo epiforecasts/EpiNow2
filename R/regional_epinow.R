@@ -252,9 +252,9 @@ regional_epinow <- function(data,
   }
 
   if (return_output) {
-    return(out)
+    out
   } else {
-    return(invisible(NULL))
+    invisible(NULL)
   }
 }
 
@@ -403,7 +403,7 @@ run_region <- function(target_region,
   if (!is.null(progress_fn)) {
     progress_fn(sprintf("Region: %s", target_region))
   }
-  return(out)
+  out
 }
 
 #' Process regional estimate
@@ -441,7 +441,7 @@ process_region <- function(out, target_region, timing,
       name = complete_logger
     )
   }
-  return(out)
+  out
 }
 
 #' Process all Region Estimates

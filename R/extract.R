@@ -148,7 +148,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     ret
   })
 
-  return(samples)
+  samples
 }
 
 #' Extract Parameter Samples from a Stan Model
@@ -244,7 +244,7 @@ extract_stan_param <- function(fit, params = NULL,
     cols <- c("variable", cols)
   }
   colnames(param_summary) <- cols
-  return(param_summary)
+  param_summary
 }
 
 #' Generate initial conditions from a Stan fit
@@ -326,7 +326,7 @@ extract_inits <- function(fit, current_inits,
     } else {
       new_inits <- fit_inits
     }
-    return(new_inits)
+    new_inits
   }
-  return(inits_sample)
+  inits_sample
 }

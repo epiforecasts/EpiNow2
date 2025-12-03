@@ -207,7 +207,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
       out[[param_name]] <- result
     }
   }
-  return(out)
+  out
 }
 
 #' Format raw Stan samples with dates and metadata
@@ -220,6 +220,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
 #' @param observations Observation data with dates
 #'
 #' @return A `data.table` in long format with dates and metadata
+#' @importFrom rlang %||%
 #' @keywords internal
 format_samples_with_dates <- function(raw_samples, args, observations) {
   dates <- observations$date
@@ -316,7 +317,7 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
   }
 
   # Add type column based on horizon
-  horizon <- if (is.null(args$horizon)) 0 else args$horizon
+  horizon <- args$horizon %||% 0
   shift <- args$seeding_time
 
   combined <- combined[

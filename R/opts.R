@@ -65,7 +65,7 @@ gt_opts <- function(dist = Fixed(1), default_cdf_cutoff = 0.001,
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("generation_time_opts", class(dist))
   check_generation_time(dist)
-  return(dist)
+  dist
 }
 
 #' @rdname generation_time_opts
@@ -137,7 +137,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
   }
   opts <- modifyList(opts, list(...))
   attr(opts, "class") <- c("secondary_opts", class(opts))
-  return(opts)
+  opts
 }
 
 #' Delay Distribution Options
@@ -181,7 +181,7 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("delay_opts", class(dist))
   check_stan_delay(dist)
-  return(dist)
+  dist
 }
 
 #' Truncation Distribution Options
@@ -227,7 +227,7 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("trunc_opts", class(dist))
   check_stan_delay(dist)
-  return(dist)
+  dist
 }
 
 #' Time-Varying Reproduction Number Options
@@ -382,7 +382,7 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
   }
 
   attr(opts, "class") <- c("rt_opts", class(opts))
-  return(opts)
+  opts
 }
 
 #' Back Calculation Options
@@ -437,7 +437,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
     )
   }
   attr(backcalc, "class") <- c("backcalc_opts", class(backcalc))
-  return(backcalc)
+  backcalc
 }
 
 #' Approximate Gaussian Process Settings
@@ -609,7 +609,7 @@ gp_opts <- function(basis_prop = 0.2,
   )
 
   attr(gp, "class") <- c("gp_opts", class(gp))
-  return(gp)
+  gp
 }
 
 # nolint start
@@ -756,7 +756,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
   }
 
   attr(obs, "class") <- c("obs_opts", class(obs))
-  return(obs)
+  obs
 }
 
 #' Stan Sampling Options
@@ -858,8 +858,7 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
       iter_sampling = ceiling(samples / opts$chains)
     ), control_def)
   }
-  opts <- c(opts, dot_args)
-  return(opts)
+  c(opts, dot_args)
 }
 
 #' Stan Variational Bayes Options
@@ -894,8 +893,7 @@ stan_vb_opts <- function(samples = 2000,
     iter = iter,
     output_samples = samples
   )
-  opts <- c(opts, ...)
-  return(opts)
+  c(opts, ...)
 }
 
 #' Stan Laplace algorithm Options
@@ -923,9 +921,7 @@ stan_laplace_opts <- function(backend = "cmdstanr",
       )
     )
   }
-  opts <- list(trials = trials)
-  opts <- c(opts, ...)
-  return(opts)
+  c(list(trials = trials), ...)
 }
 
 #' Stan pathfinder algorithm Options
@@ -958,8 +954,7 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
     trials = trials,
     draws = samples
   )
-  opts <- c(opts, ...)
-  return(opts)
+  c(opts, ...)
 }
 
 #' Stan Options
@@ -1065,7 +1060,7 @@ stan_opts <- function(object = NULL,
 
   opts <- c(opts, list(return_fit = return_fit))
   attr(opts, "class") <- c("stan_opts", class(opts))
-  return(opts)
+  opts
 }
 
 #' Forecast options
@@ -1093,7 +1088,7 @@ forecast_opts <- function(horizon = 7, accumulate) {
     opts$accumulate <- accumulate
   }
   attr(opts, "class") <- c("forecast_opts", class(opts))
-  return(opts)
+  opts
 }
 
 #' Forecast optiong
