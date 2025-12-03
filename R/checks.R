@@ -48,7 +48,7 @@ check_reports_valid <- function(data,
     assert_numeric(data$confirm, lower = 0)
   }
   assert_logical(data$accumulate, null.ok = TRUE)
-  return(invisible(data))
+  invisible(data)
 }
 
 #' Validate probability distribution for passing to stan

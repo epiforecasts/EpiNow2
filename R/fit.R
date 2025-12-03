@@ -144,7 +144,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
       rlang::abort("model fitting was timed out or failed")
     }
   }
-  return(fit)
+  fit
 }
 
 #' Fit a Stan Model using an approximate method
@@ -236,7 +236,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
     )
     rlang::abort(paste("Approximate inference failed due to:", error))
   }
-  return(fit)
+  fit
 }
 
 #' Create sampling log message

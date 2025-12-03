@@ -454,8 +454,8 @@ select_plots <- function(plots, type = c(
     if (length(type) == 1) {
       plots <- plots[[1]]
     }
-    return(plots)
+    plots
   } else {
-    return(invisible(NULL))
+    invisible(NULL)
   }
 }
