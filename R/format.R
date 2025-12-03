@@ -220,6 +220,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
 #' @param observations Observation data with dates
 #'
 #' @return A `data.table` in long format with dates and metadata
+#' @importFrom rlang %||%
 #' @keywords internal
 format_samples_with_dates <- function(raw_samples, args, observations) {
   dates <- observations$date
