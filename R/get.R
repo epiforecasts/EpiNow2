@@ -159,7 +159,7 @@ get_regional_results <- function(regional_output,
         get_estimates_data("estimated_reported_cases")
     }
   }
-  return(out)
+  out
 }
 
 #' Get Regions with Most Reported Cases
@@ -197,8 +197,7 @@ get_regions_with_most_reports <- function(data,
     most_reports,
     cols = "confirm", order = -1
   )
-  most_reports <- most_reports[1:no_regions][!is.na(region)]$region
-  return(most_reports)
+  most_reports[1:no_regions][!is.na(region)]$region
 }
 
 ##' Estimate seeding time from delays and generation time
@@ -215,7 +214,7 @@ get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
     ## make sure we have at least (length of total gt pmf - 1) seeding time
     seeding_time <- max(seeding_time, sum(max(generation_time)))
   }
-  return(max(round(seeding_time), 1))
+  max(round(seeding_time), 1)
 }
 
 #' Get posterior samples from a fitted model

@@ -62,7 +62,7 @@ setup_logging <- function(threshold = "INFO", file = NULL,
     )
     futile.logger::flog.appender(futile.logger::appender.console(), name = name)
   }
-  return(invisible(NULL))
+  invisible(NULL)
 }
 
 #' Setup Default Logging
@@ -115,7 +115,7 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
       name = "EpiNow2.epinow"
     )
   }
-  return(invisible(NULL))
+  invisible(NULL)
 }
 
 #' Set up Future Backend
@@ -184,7 +184,7 @@ setup_future <- function(data,
       gc = TRUE, earlySignal = TRUE
     )
     cores_per_worker <- 1
-    return(invisible(NULL))
+    invisible(NULL)
   } else {
     jobs <- length(unique(data$region))
     workers <- min(
@@ -204,7 +204,7 @@ setup_future <- function(data,
       ),
       future::tweak(strategies[2], workers = cores_per_worker)
     ))
-    return(cores_per_worker)
+    cores_per_worker
   }
 }
 
@@ -239,8 +239,8 @@ setup_target_folder <- function(target_folder = NULL, target_date) {
     if (!dir.exists(target_folder)) {
       dir.create(target_folder, recursive = TRUE)
     }
-    return(list(date = target_folder, latest = latest_folder))
+    list(date = target_folder, latest = latest_folder)
   } else {
-    return(invisible(NULL))
+    invisible(NULL)
   }
 }

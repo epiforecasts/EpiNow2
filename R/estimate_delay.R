@@ -105,7 +105,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 
   fit <- fit_model(stan_args, id = "dist_fit")
 
-  return(fit)
+  fit
 }
 
 
@@ -194,7 +194,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
       out$shape <- sample(extract(fit)$alpha, samples)
       out$rate <- sample(extract(fit)$beta, samples)
     }
-    return(out)
+    out
   }
 
   if (bootstraps == 1) {
@@ -236,7 +236,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
   } else {
     dist_max <- max(values)
   }
-  return(new_dist_spec(params = params, max = dist_max, distribution = dist))
+  new_dist_spec(params = params, max = dist_max, distribution = dist)
 }
 
 #' Estimate a Delay Distribution

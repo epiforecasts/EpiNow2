@@ -273,7 +273,7 @@ estimate_truncation <- function(data,
   out$fit <- fit
 
   class(out) <- c("estimate_truncation", class(out))
-  return(out)
+  out
 }
 
 #' Plot method for estimate_truncation

@@ -550,7 +550,7 @@ convolve_and_scale <- function(data, type = c("incidence", "prevalence"),
     )]
   }
   data <- data[, secondary := as.integer(secondary)]
-  return(data[])
+  data[]
 }
 
 #' Forecast Secondary Observations Given a Fit from estimate_secondary
@@ -746,7 +746,7 @@ forecast_secondary <- function(estimate,
     out$predictions, c("date", "primary", "secondary", "mean", "sd")
   )
   class(out) <- c("forecast_secondary", class(out))
-  return(out)
+  out
 }
 
 #' Extract elements from estimate_secondary objects with deprecated warnings

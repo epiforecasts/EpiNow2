@@ -44,7 +44,7 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
     dir = tempdir(),
     ...
   ))
-  return(model)
+  model
 }
 
 #' Load an EpiNow2 rstan model.
@@ -58,7 +58,7 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
 #' @return An `rstan` model.
 #' @keywords internal
 epinow2_rstan_model <- function(model = "estimate_infections") {
-  return(stanmodels[[model]])
+  stanmodels[[model]]
 }
 
 ##' Return a stan model object for the appropriate backend
@@ -88,7 +88,7 @@ epinow2_stan_model <- function(backend = c("rstan", "cmdstanr"),
   } else {
     object <- epinow2_rstan_model(model = model)
   }
-  return(object)
+  object
 }
 
 #' Fit a model using the chosen backend.
@@ -115,5 +115,5 @@ fit_model <- function(args, id = "stan") {
       )
     )
   }
-  return(fit)
+  fit
 }

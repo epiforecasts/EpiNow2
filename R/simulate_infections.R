@@ -234,7 +234,7 @@ simulate_infections <- function(R,
   out <- rbindlist(out[c("infections", "reported_cases")], idcol = "variable")
   out <- out[, c("sample", "parameter", "time") := NULL]
 
-  return(out[])
+  out[]
 }
 
 #' Forecast infections from a given fit and trajectory of the time-varying
@@ -547,5 +547,5 @@ forecast_infections <- function(estimates,
 
   format_out$observations <- estimates$observations
   class(format_out) <- c("forecast_infections", class(format_out))
-  return(format_out)
+  format_out
 }
