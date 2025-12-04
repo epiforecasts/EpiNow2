@@ -21,6 +21,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       NOT_CRAN: true
+      EPINOW2_SKIP_INTEGRATION: true  # Skip slow integration tests for fast coverage
 
     steps:
       - uses: actions/checkout@v6
