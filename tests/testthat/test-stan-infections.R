@@ -72,3 +72,71 @@ test_that("generate_infections respects pop_floor with population adjustment", {
   expect_true(all(result >= 0))
   expect_true(all(is.finite(result)))
 })
+
+# test deconvolve_infections
+test_that("deconvolve_infections with fixed mode returns shifted cases", {
+  shifted_cases <- c(10, 20, 30, 40, 50)
+  noise <- numeric(0)  # Noise not used in fixed mode
+  result <- deconvolve_infections(shifted_cases, noise, fixed = 1, prior = 0)
+
+  # With fixed = 1, should return shifted_cases + small offset
+  expect_equal(result, shifted_cases + 1e-5, tolerance = 1e-6)
+})
+
+test_that("deconvolve_infections with prior=0 applies noise only", {
+  shifted_cases <- rep(100, 10)
+  noise <- rep(0.1, 10)  # Small positive noise
+
+  result <- deconvolve_infections(shifted_cases, noise, fixed = 0, prior = 0)
+
+  # Should be close to exp(noise) since prior=0
+  expected <- 1e-5 + exp(noise)
+  expect_equal(result, expected, tolerance = 1e-6)
+})
+
+test_that("deconvolve_infections with prior=1 scales cases by noise", {
+  shifted_cases <- c(10, 20, 30, 40, 50)
+  noise <- rep(0, 5)  # Zero noise for simple test
+
+  result <- deconvolve_infections(shifted_cases, noise, fixed = 0, prior = 1)
+
+  # With zero noise and prior=1, should be cases * exp(0) = cases
+  expect_equal(result, shifted_cases + 1e-5, tolerance = 1e-6)
+})
+
+test_that("deconvolve_infections with prior=2 implements random walk", {
+  shifted_cases <- c(100, 110, 120, 130, 140)
+  noise <- c(0, 0.1, -0.05, 0.05, 0.1)
+
+  result <- deconvolve_infections(shifted_cases, noise, fixed = 0, prior = 2)
+
+  # First infection based on first case
+  expect_equal(result[1], 1e-5 + shifted_cases[1] * exp(noise[1]), tolerance = 1e-6)
+
+  # Subsequent infections follow random walk
+  for (i in 2:5) {
+    expect_equal(result[i], result[i - 1] * exp(noise[i]) + 1e-5, tolerance = 1e-6)
+  }
+})
+
+test_that("deconvolve_infections handles different noise levels", {
+  shifted_cases <- rep(50, 10)
+  noise_high <- rep(0.5, 10)
+  noise_low <- rep(0.1, 10)
+
+  result_high <- deconvolve_infections(shifted_cases, noise_high, fixed = 0, prior = 1)
+  result_low <- deconvolve_infections(shifted_cases, noise_low, fixed = 0, prior = 1)
+
+  # Higher noise should produce higher infections
+  expect_true(all(result_high > result_low))
+})
+
+test_that("deconvolve_infections always returns positive values", {
+  shifted_cases <- c(1, 5, 10, 20, 50)
+  noise <- c(-1, -0.5, 0, 0.5, 1)
+
+  result <- deconvolve_infections(shifted_cases, noise, fixed = 0, prior = 1)
+
+  # Should all be positive due to 1e-5 offset and exponential transform
+  expect_true(all(result > 0))
+})
