@@ -56,38 +56,6 @@ default_inc <- estimate_secondary(inc_cases[1:60],
   verbose = FALSE
 )
 
-# extract posterior variables of interest
-params <- c(
-  "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-  "scaling" = "params[1]"
-)
-
-inc_posterior <- get_samples(default_inc)[variable %in% params]
-
-# fit model to example data with a fixed delay
-inc_fixed <- estimate_secondary(inc_cases[1:60],
-  delays = delay_opts(Gamma(mean = 15, sd = 5, max = 30)),
-  verbose = FALSE
-)
-
-#### Prevalence data example ####
-
-# make some example prevalence data
-prev_cases <- setup_prevalence_data()
-
-# fit model to example prevalence data
-prev <- estimate_secondary(prev_cases[1:100],
-  secondary = secondary_opts(type = "prevalence"),
-  obs = obs_opts(
-    week_effect = FALSE,
-    scale = Normal(mean = 0.4, sd = 0.1)
-  ),
-  verbose = FALSE
-)
-
-# extract posterior parameters of interest
-prev_posterior <- get_samples(prev)[variable %in% params]
-
 # Test output
 test_that("estimate_secondary can return values from simulated data and plot
            them", {
@@ -204,6 +172,37 @@ test_that("estimate_secondary works when only estimating scaling", {
 })
 
 test_that("estimate_secondary can recover simulated parameters", {
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+  prev_cases <- setup_prevalence_data()
+
+  # fit model to example data specifying a weak prior for fraction reported
+  inc <- estimate_secondary(inc_cases[1:60],
+    obs = obs_opts(
+      scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
+    ),
+    verbose = FALSE
+  )
+
+  # fit model to example prevalence data
+  prev <- estimate_secondary(prev_cases[1:100],
+    secondary = secondary_opts(type = "prevalence"),
+    obs = obs_opts(
+      week_effect = FALSE,
+      scale = Normal(mean = 0.4, sd = 0.1)
+    ),
+    verbose = FALSE
+  )
+
+  # extract posterior variables of interest
+  params <- c(
+    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
+    "scaling" = "params[1]"
+  )
+
+  inc_posterior <- get_samples(inc)[variable %in% params]
+  prev_posterior <- get_samples(prev)[variable %in% params]
+
   # Calculate summary statistics from raw samples
   inc_summary <- inc_posterior[, .(
     mean = mean(value),
