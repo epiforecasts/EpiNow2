@@ -98,6 +98,27 @@ test_that("forecast_secondary can return values from simulated data and plot
   expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
 })
 
+test_that("estimate_secondary recovers scaling parameter from incidence data", {
+  # Basic parameter recovery check using pre-computed fit
+  # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
+  params <- c(
+    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
+    "scaling" = "params[1]"
+  )
+
+  inc_posterior <- get_samples(default_inc)[variable %in% params]
+  inc_summary <- inc_posterior[, .(
+    mean = mean(value),
+    median = stats::median(value)
+  ), by = variable]
+
+  # Check scaling parameter is reasonably recovered (0.4 true value)
+  expect_equal(
+    inc_summary$mean, c(1.8, 0.5, 0.4),
+    tolerance = 0.15
+  )
+})
+
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false) -
 
 test_that("estimate_secondary successfully returns estimates when passed NA values", {
