@@ -899,8 +899,7 @@ print.epinowfit <- function(x, ...) {
 #'   or a filtered set.
 #' @param params Character vector of parameter names to include. Only used
 #'   when `type = "parameters"`. If NULL (default), returns all parameters.
-#' @param CrIs Numeric vector of credible intervals to return. Defaults to
-#'   c(0.2, 0.5, 0.9).
+#' @inheritParams calc_summary_measures
 #' @param ... Additional arguments (currently unused)
 #'
 #' @return A `<data.table>` with summary statistics (mean, sd, median,
