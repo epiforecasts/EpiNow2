@@ -894,8 +894,9 @@ print.epinowfit <- function(x, ...) {
 #'
 #' @param object A fitted model object from `estimate_secondary()`
 #' @param type Character string indicating the type of summary to return.
-#'   Options are "compact" (default, key parameters only) or "parameters"
-#'   (all parameters or filtered set).
+#'   Options are "compact" (default) which returns delay distribution
+#'   parameters and scaling factors, or "parameters" for all parameters
+#'   or a filtered set.
 #' @param params Character vector of parameter names to include. Only used
 #'   when `type = "parameters"`. If NULL (default), returns all parameters.
 #' @param CrIs Numeric vector of credible intervals to return. Defaults to
