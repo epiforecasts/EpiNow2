@@ -25,6 +25,7 @@
   - **Deprecated**: The previous return structure with `predictions`, `posterior`, and `data` elements is deprecated and will be removed in a future release. Backward compatibility is provided with deprecation warnings when accessing these elements via `$`.
 - `forecast_secondary()` now returns an independent S3 class `"forecast_secondary"` instead of inheriting from `"estimate_secondary"`, with dedicated `get_samples()`, `get_predictions()`, and `plot()` methods.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
+- **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 
 ## Model changes
 
