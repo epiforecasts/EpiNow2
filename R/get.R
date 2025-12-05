@@ -391,9 +391,6 @@ get_predictions.estimate_secondary <- function(object,
     CrIs = CrIs
   )
 
-  # Round predictions
-  predictions <- predictions[, lapply(.SD, round, 1)]
-
   # Merge with observations
   predictions <- data.table::merge.data.table(
     object$observations, predictions,
