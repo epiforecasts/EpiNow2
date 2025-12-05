@@ -16,14 +16,14 @@
 \item{object}{A fitted model object from \code{estimate_secondary()}}
 
 \item{type}{Character string indicating the type of summary to return.
-Options are "compact" (default, key parameters only) or "parameters"
-(all parameters or filtered set).}
+Options are "compact" (default) which returns delay distribution
+parameters and scaling factors, or "parameters" for all parameters
+or a filtered set.}
 
 \item{params}{Character vector of parameter names to include. Only used
 when \code{type = "parameters"}. If NULL (default), returns all parameters.}
 
-\item{CrIs}{Numeric vector of credible intervals to return. Defaults to
-c(0.2, 0.5, 0.9).}
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{...}{Additional arguments (currently unused)}
 }
