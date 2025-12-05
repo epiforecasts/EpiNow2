@@ -885,3 +885,61 @@ summary.forecast_infections <- function(object,
 print.epinowfit <- function(x, ...) {
   print(summary(x))
 }
+
+#' Summarise results from estimate_secondary
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Returns a summary of the fitted secondary model including posterior
+#' parameter estimates with credible intervals.
+#'
+#' @param object A fitted model object from `estimate_secondary()`
+#' @param type Character string indicating the type of summary to return.
+#'   Options are "compact" (default) which returns delay distribution
+#'   parameters and scaling factors, or "parameters" for all parameters
+#'   or a filtered set.
+#' @param params Character vector of parameter names to include. Only used
+#'   when `type = "parameters"`. If NULL (default), returns all parameters.
+#' @inheritParams calc_summary_measures
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A `<data.table>` with summary statistics (mean, sd, median,
+#'   credible intervals) for model parameters. When `type = "compact"`,
+#'   returns only key parameters (delay distribution parameters and scaling
+#'   factors). When `type = "parameters"`, returns all or filtered parameters.
+#' @importFrom rlang arg_match
+#' @method summary estimate_secondary
+#' @export
+summary.estimate_secondary <- function(object,
+                                       type = c("compact", "parameters"),
+                                       params = NULL,
+                                       CrIs = c(0.2, 0.5, 0.9), ...) {
+  type <- arg_match(type)
+
+  # Get all posterior samples
+  samples <- get_samples(object)
+
+  # Filter to non-time-varying parameters (delay_params and params)
+  # Time-varying parameters like secondary and sim_secondary have dates
+  param_samples <- samples[is.na(date)]
+
+  # Calculate summary statistics
+  out <- calc_summary_measures(
+    param_samples,
+    summarise_by = "variable",
+    order_by = "variable",
+    CrIs = CrIs
+  )
+
+  if (type == "compact") {
+    # Return only key parameters for a compact summary
+    # Typical parameters: delay_params (distribution parameters),
+    # params (scaling factors)
+    key_vars <- c("delay_params", "params", "frac_obs")
+    out <- out[grepl(paste(key_vars, collapse = "|"), variable)]
+  } else if (type == "parameters" && !is.null(params)) {
+    # Optional filtering by parameter name
+    out <- out[variable %in% params]
+  }
+
+  out[]
+}

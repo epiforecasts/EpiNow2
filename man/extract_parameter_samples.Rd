@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract.R
 \name{extract_parameter_samples}
 \alias{extract_parameter_samples}
-\title{Extract Parameter Samples from a Stan Model}
+\title{Extract parameter samples from a Stan model}
 \usage{
 extract_parameter_samples(
   stan_fit,

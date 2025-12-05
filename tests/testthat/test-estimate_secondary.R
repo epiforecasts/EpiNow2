@@ -56,20 +56,30 @@ default_inc <- estimate_secondary(inc_cases[1:60],
   verbose = FALSE
 )
 
+# Test output
 test_that("estimate_secondary can return values from simulated data and plot
            them", {
   # Reuse pre-computed fit
   inc <- default_inc
 
-  expect_equal(names(inc), c("predictions", "posterior", "data", "fit"))
+  expect_equal(names(inc), c("fit", "args", "observations"))
+  expect_s3_class(inc, "estimate_secondary")
+  expect_s3_class(inc, "epinowfit")
+
+  # Test accessor methods
+  predictions <- get_predictions(inc)
   expect_equal(
-    names(inc$predictions),
+    names(predictions),
     c(
-      "date", "primary", "secondary", "accumulate", "mean", "se_mean", "sd",
-      "lower_90", "lower_50", "lower_20", "median", "upper_20", "upper_50", "upper_90"
+      "date", "primary", "secondary", "accumulate", "median", "mean", "sd",
+      "lower_90", "lower_50", "lower_20", "upper_20", "upper_50", "upper_90"
     )
   )
-  expect_true(is.list(inc$data))
+
+  posterior <- get_samples(inc)
+  expect_true(is.data.frame(posterior))
+
+  expect_true(is.list(inc$args))
   # validation plot of observations vs estimates
   expect_error(plot(inc, primary = TRUE), NA)
 })
@@ -86,6 +96,27 @@ test_that("forecast_secondary can return values from simulated data and plot
   expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
   # validation plot of observations vs estimates
   expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
+})
+
+test_that("estimate_secondary recovers scaling parameter from incidence data", {
+  # Basic parameter recovery check using pre-computed fit
+  # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
+  params <- c(
+    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
+    "scaling" = "params[1]"
+  )
+
+  inc_posterior <- get_samples(default_inc)[variable %in% params]
+  inc_summary <- inc_posterior[, .(
+    mean = mean(value),
+    median = stats::median(value)
+  ), by = variable]
+
+  # Check scaling parameter is reasonably recovered (0.4 true value)
+  expect_equal(
+    inc_summary$mean, c(1.8, 0.5, 0.4),
+    tolerance = 0.15
+  )
 })
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false) -
@@ -114,8 +145,8 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
     obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
   )
-  expect_true(is.list(inc_na$data))
-  expect_true(is.list(prev_na$data))
+  expect_true(is.list(inc_na$args))
+  expect_true(is.list(prev_na$args))
 })
 
 test_that("estimate_secondary successfully returns estimates when accumulating to weekly", {
@@ -146,7 +177,7 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
       scale = Normal(mean = 0.4, sd = 0.05), week_effect = FALSE
     ), verbose = FALSE
   )
-  expect_true(is.list(inc_weekly$data))
+  expect_true(is.list(inc_weekly$args))
 })
 
 test_that("estimate_secondary works when only estimating scaling", {
@@ -158,7 +189,7 @@ test_that("estimate_secondary works when only estimating scaling", {
     delay = delay_opts(),
     verbose = FALSE
   )
-  expect_equal(names(inc), c("predictions", "posterior", "data", "fit"))
+  expect_equal(names(inc), c("fit", "args", "observations"))
 })
 
 test_that("estimate_secondary can recover simulated parameters", {
@@ -190,23 +221,33 @@ test_that("estimate_secondary can recover simulated parameters", {
     "scaling" = "params[1]"
   )
 
-  inc_posterior <- inc$posterior[variable %in% params]
-  prev_posterior <- prev$posterior[variable %in% params]
+  inc_posterior <- get_samples(inc)[variable %in% params]
+  prev_posterior <- get_samples(prev)[variable %in% params]
+
+  # Calculate summary statistics from raw samples
+  inc_summary <- inc_posterior[, .(
+    mean = mean(value),
+    median = stats::median(value)
+  ), by = variable]
+  prev_summary <- prev_posterior[, .(
+    mean = mean(value),
+    median = stats::median(value)
+  ), by = variable]
 
   expect_equal(
-    inc_posterior[, mean], c(1.8, 0.5, 0.4),
+    inc_summary$mean, c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
   expect_equal(
-    inc_posterior[, median], c(1.8, 0.5, 0.4),
+    inc_summary$median, c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
   expect_equal(
-    prev_posterior[, mean], c(1.6, 0.8, 0.3),
+    prev_summary$mean, c(1.6, 0.8, 0.3),
     tolerance = 0.2
   )
   expect_equal(
-    prev_posterior[, median], c(1.6, 0.8, 0.3),
+    prev_summary$median, c(1.6, 0.8, 0.3),
     tolerance = 0.2
   )
 })
@@ -229,13 +270,20 @@ test_that("estimate_secondary can recover simulated parameters with the
       verbose = FALSE, stan = stan_opts(backend = "cmdstanr")
     )
   )))
-  inc_posterior_cmdstanr <- inc_cmdstanr$posterior[variable %in% params]
+  inc_posterior_cmdstanr <- get_samples(inc_cmdstanr)[variable %in% params]
+
+  # Calculate summary statistics from raw samples
+  inc_summary_cmdstanr <- inc_posterior_cmdstanr[, .(
+    mean = mean(value),
+    median = stats::median(value)
+  ), by = variable]
+
   expect_equal(
-    inc_posterior_cmdstanr[, mean], c(1.8, 0.5, 0.4),
+    inc_summary_cmdstanr$mean, c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
   expect_equal(
-    inc_posterior_cmdstanr[, median], c(1.8, 0.5, 0.4),
+    inc_summary_cmdstanr$median, c(1.8, 0.5, 0.4),
     tolerance = 0.1
   )
 })
@@ -316,8 +364,8 @@ test_that("estimate_secondary works with filter_leading_zeros set", {
     verbose = FALSE
   ))
   expect_s3_class(out, "estimate_secondary")
-  expect_named(out, c("predictions", "posterior", "data", "fit"))
-  expect_equal(out$predictions$primary, modified_data$primary)
+  expect_named(out, c("fit", "args", "observations"))
+  expect_equal(get_predictions(out)$primary, modified_data$primary)
 })
 
 test_that("estimate_secondary works with zero_threshold set", {
@@ -340,5 +388,5 @@ test_that("estimate_secondary works with zero_threshold set", {
     verbose = FALSE
   )
   expect_s3_class(out, "estimate_secondary")
-  expect_named(out, c("predictions", "posterior", "data", "fit"))
+  expect_named(out, c("fit", "args", "observations"))
 })

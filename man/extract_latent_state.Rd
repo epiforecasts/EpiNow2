@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract.R
 \name{extract_latent_state}
 \alias{extract_latent_state}
-\title{Extract Samples for a Latent State from a Stan model}
+\title{Extract samples for a latent state from a Stan model}
 \usage{
 extract_latent_state(param, samples, dates)
 }

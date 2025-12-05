@@ -53,7 +53,7 @@ jobs:
           cache-version: 1
           extra-packages: any::cmdstanr
           extra-repositories: https://production.r-multiverse.org/2025-09-15
-          touchstone_ref: '@289cfc7'
+          touchstone_ref: '@main'
           benchmarking_repo: ${{ matrix.config.benchmarking_repo }}
           benchmarking_ref: ${{ matrix.config.benchmarking_ref }}
           benchmarking_path: ${{ matrix.config.benchmarking_path }}

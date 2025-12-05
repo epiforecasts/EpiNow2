@@ -26,9 +26,29 @@
 
 ## Pull Requests
 
+### Workflow Overview
+When working on a task, follow this sequence:
+
+1. **During development**: Make commits with descriptive messages (NO issue numbers)
+2. **Before opening PR**: Add a NEWS.md item for user-facing changes
+3. **When opening PR**: Link the issue in PR description using "This PR closes #XXX"
+4. **In PR template**: Complete all applicable checklist items
+
+### Key Distinctions
+- **Commit messages**: Describe what the code does, never reference issues
+  - Good: "Standardise return structure for estimate_secondary"
+  - Bad: "Standardise return structure for estimate_secondary (#1142)"
+- **PR descriptions**: Link to issues here using the template
+  - Format: "This PR closes #1142."
+- **NEWS items**: Describe user-facing changes, never reference issues or PRs
+  - Good: "Added S3 methods for estimate_secondary objects"
+  - Bad: "Added S3 methods for estimate_secondary (#1142)"
+
+### PR Template Requirements
 - Follow the pull request template in `.github/PULL_REQUEST_TEMPLATE.md`
 - Complete the checklist items in the template
 - Link to the related issue in the PR description (not in commit messages)
+- Ensure you've added a NEWS.md item before submitting
 
 ## Testing
 

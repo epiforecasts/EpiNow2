@@ -29,6 +29,14 @@ test_estimate_infections <- function(...) {
   expect_true(nrow(get_samples(out)) > 0)
   expect_true(nrow(summary(out, type = "parameters")) > 0)
   expect_true(nrow(out$observations) > 0)
+
+  # Test get_predictions accessor
+  predictions <- get_predictions(out)
+  expect_true(nrow(predictions) > 0)
+  expect_true("date" %in% names(predictions))
+  expect_true("confirm" %in% names(predictions))
+  expect_true("mean" %in% names(predictions))
+
   invisible(out)
 }
 

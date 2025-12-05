@@ -262,5 +262,152 @@ get_samples.estimate_infections <- function(object, ...) {
 #' @rdname get_samples
 #' @export
 get_samples.forecast_infections <- function(object, ...) {
-  object$samples
+  data.table::copy(object$samples)
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.estimate_secondary <- function(object, ...) {
+  # Extract raw posterior samples from the fit
+  raw_samples <- extract_samples(object$fit)
+
+  # Extract parameters (delays and params)
+  samples_list <- list(
+    extract_delays(raw_samples),
+    extract_parameters(raw_samples)
+  )
+
+  # Extract time-varying generated quantities
+  # Get dates for time-indexed parameters (post burn-in)
+  burn_in <- object$args$burn_in
+  dates <- object$observations[(burn_in + 1):.N]$date
+
+  # Extract sim_secondary (generated quantity, post burn-in) if available
+  sim_secondary_samples <- extract_latent_state(
+    "sim_secondary", raw_samples, dates
+  )
+  if (!is.null(sim_secondary_samples)) {
+    samples_list <- c(samples_list, list(sim_secondary_samples))
+  }
+
+  # Combine all samples
+  samples <- data.table::rbindlist(samples_list, fill = TRUE)
+
+  # Rename 'parameter' column to 'variable' for consistency if needed
+  if ("parameter" %in% names(samples)) {
+    data.table::setnames(samples, "parameter", "variable")
+  }
+
+  # Add placeholder columns for consistency with estimate_infections format
+  # Only add if not already present
+  if (!"date" %in% names(samples)) samples[, date := as.Date(NA)]
+  if (!"strat" %in% names(samples)) samples[, strat := NA_character_]
+  if (!"time" %in% names(samples)) samples[, time := NA_integer_]
+  if (!"type" %in% names(samples)) samples[, type := NA_character_]
+
+  # Reorder columns
+  data.table::setcolorder(
+    samples,
+    c("date", "variable", "strat", "sample", "time", "value", "type")
+  )
+
+  samples[]
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.forecast_secondary <- function(object, ...) {
+  data.table::copy(object$samples)
+}
+
+#' Get predictions from a fitted model
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Extracts predictions from a fitted model, combining observations with model
+#' estimates. For `estimate_infections()` returns predicted reported cases, for
+#' `estimate_secondary()` returns predicted secondary observations.
+#'
+#' @param object A fitted model object (e.g., from `estimate_infections()` or
+#'   `estimate_secondary()`)
+#' @param CrIs Numeric vector of credible intervals to return. Defaults to
+#'   c(0.2, 0.5, 0.9).
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A `data.table` with columns including date, observations, and summary
+#'   statistics (mean, sd, credible intervals) for the model predictions.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # After fitting a model
+#' predictions <- get_predictions(fit)
+#' }
+get_predictions <- function(object, ...) {
+  UseMethod("get_predictions")
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.estimate_infections <- function(object,
+                                                CrIs = c(0.2, 0.5, 0.9),
+                                                ...) {
+  # Get samples for reported cases
+  samples <- get_samples(object)
+  reported_samples <- samples[variable == "reported_cases"]
+
+  # Calculate summary measures
+  predictions <- calc_summary_measures(
+    reported_samples,
+    summarise_by = "date",
+    order_by = "date",
+    CrIs = CrIs
+  )
+
+  # Merge with observations
+  predictions <- data.table::merge.data.table(
+    object$observations[, .(date, confirm)],
+    predictions,
+    by = "date",
+    all = TRUE
+  )
+
+  predictions
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.estimate_secondary <- function(object,
+                                               CrIs = c(0.2, 0.5, 0.9),
+                                               ...) {
+  # Get samples for simulated secondary observations
+  samples <- get_samples(object)
+  sim_secondary_samples <- samples[variable == "sim_secondary"]
+
+  # Calculate summary measures
+  predictions <- calc_summary_measures(
+    sim_secondary_samples,
+    summarise_by = "date",
+    order_by = "date",
+    CrIs = CrIs
+  )
+
+  # Merge with observations
+  predictions <- data.table::merge.data.table(
+    object$observations, predictions,
+    all = TRUE, by = "date"
+  )
+
+  predictions
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.forecast_infections <- function(object, ...) {
+  data.table::copy(object$predictions)
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.forecast_secondary <- function(object, ...) {
+  data.table::copy(object$predictions)
 }

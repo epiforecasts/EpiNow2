@@ -70,8 +70,8 @@ simulate_secondary <- function(primary,
   stan_data <- c(stan_data, secondary)
 
   stan_data <- c(stan_data, create_stan_delays(
-    delay = delays,
-    trunc = truncation
+    reporting = delays,
+    truncation = truncation
   ))
 
   if (length(stan_data$delay_params_sd) > 0 &&
