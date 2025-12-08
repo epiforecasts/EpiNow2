@@ -8,8 +8,10 @@
 \method{summary}{epinow}(
   object,
   output = c("estimates", "forecast", "estimated_reported_cases"),
+  type = c("snapshot", "parameters"),
   target_date = NULL,
   params = NULL,
+  CrIs = c(0.2, 0.5, 0.9),
   ...
 )
 }
@@ -19,10 +21,19 @@
 \item{output}{A character string of output to summarise. Defaults to
 "estimates" but also supports "forecast", and "estimated_reported_cases".}
 
+\item{type}{A character vector of data types to return. Defaults to
+"snapshot" but also supports "parameters". "snapshot" returns
+a summary at a given date (by default the latest date informed by data).
+"parameters" returns summarised parameter estimates that can be further
+filtered using \code{params} to show just the parameters of interest and date.
+This argument is only used when \code{output = "estimates"}.}
+
 \item{target_date}{Date, defaults to maximum found in the data if not
 specified.}
 
 \item{params}{A character vector of parameters to filter for.}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{...}{Pass additional summary arguments to lower level methods}
 }

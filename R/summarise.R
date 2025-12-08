@@ -766,7 +766,18 @@ calc_summary_measures <- function(samples,
 #' @param output A character string of output to summarise. Defaults to
 #' "estimates" but also supports "forecast", and "estimated_reported_cases".
 #'
-#' @inheritParams summary.estimate_infections
+#' @param type A character vector of data types to return. Defaults to
+#' "snapshot" but also supports "parameters". "snapshot" returns
+#' a summary at a given date (by default the latest date informed by data).
+#' "parameters" returns summarised parameter estimates that can be further
+#' filtered using `params` to show just the parameters of interest and date.
+#' This argument is only used when `output = "estimates"`.
+#'
+#' @inheritParams setup_target_folder
+#'
+#' @param params A character vector of parameters to filter for.
+#'
+#' @inheritParams calc_summary_measures
 #'
 #' @importFrom rlang arg_match
 #'
@@ -781,11 +792,31 @@ summary.epinow <- function(object,
                            output = c(
                              "estimates", "forecast", "estimated_reported_cases"
                            ),
+                           type = c("snapshot", "parameters"),
                            target_date = NULL, params = NULL,
+                           CrIs = c(0.2, 0.5, 0.9),
                            ...) {
   output <- arg_match(output)
+  type <- arg_match(type)
   if (output == "estimates") {
-    out <- object$summary
+    if (type == "snapshot") {
+      out <- object$summary
+    } else {
+      # For type = "parameters", use estimate_infections object if available
+      if (is.null(object$estimate_infections)) {
+        cli::cli_abort(c(
+          paste(
+            "{.code type = \"parameters\"} requires the {.code epinow()}",
+            "output to include {.val estimate_infections}."
+          ),
+          "i" = "Re-run with {.code output} including {.val estimate_infections}."
+        ))
+      }
+      out <- summary(
+        object$estimate_infections, type = type, target_date = target_date,
+        params = params, CrIs = CrIs, ...
+      )
+    }
   } else {
     if (output == "forecast") {
       out <- object$estimates$summarised

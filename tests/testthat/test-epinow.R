@@ -215,3 +215,41 @@ test_that("epinow fails if given variational inference arguments when using NUTs
     )
   ))))
 })
+
+# S3 method tests (using fixtures) -----------------------------------------
+
+test_that("summary.epinow respects type argument", {
+  fixtures <- get_test_fixtures()
+  epinow_result <- fixtures$regional$regional$testland
+
+  # Default type = "snapshot" returns summary data.frame
+  sum_snapshot <- summary(epinow_result)
+  expect_s3_class(sum_snapshot, "data.frame")
+  expect_true("measure" %in% names(sum_snapshot))
+
+  # type = "parameters" returns parameter data.table
+  sum_params <- summary(epinow_result, type = "parameters")
+  expect_s3_class(sum_params, "data.table")
+  expect_true(all(c("date", "variable", "median", "mean") %in% names(sum_params)))
+
+  # params argument filters variables
+  sum_R <- summary(epinow_result, type = "parameters", params = "R")
+  expect_true(all(sum_R$variable == "R"))
+})
+
+test_that("summary.epinow respects CrIs argument", {
+  fixtures <- get_test_fixtures()
+  epinow_result <- fixtures$regional$regional$testland
+
+  sum_default <- summary(epinow_result, type = "parameters")
+  sum_custom <- summary(epinow_result, type = "parameters", CrIs = c(0.5, 0.95))
+
+  # Different CrI columns
+  default_cols <- grep("^lower_|^upper_", names(sum_default), value = TRUE)
+  custom_cols <- grep("^lower_|^upper_", names(sum_custom), value = TRUE)
+  expect_false(identical(default_cols, custom_cols))
+
+  # Custom should have 50% and 95% CrI columns
+  expect_true("lower_50" %in% names(sum_custom))
+  expect_true("upper_95" %in% names(sum_custom))
+})
