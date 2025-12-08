@@ -103,7 +103,6 @@ test_that("forecast_infections works with a long adjusted Rt", {
 test_that("forecast infections can be run with a limited number of samples", {
   skip_integration()
   fixtures <- get_test_fixtures()
-  # Use 30 NAs to fit within the ~37 R values from the 30-day fixture
   R <- c(rep(NA_real_, 30), rep(1.2, 20), rep(0.8, 20))
   sims <- forecast_infections(fixtures$estimate_infections, R, samples = 10)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
@@ -114,7 +113,6 @@ test_that("forecast infections can be run with a limited number of samples", {
 test_that("forecast infections can be run with one sample", {
   skip_integration()
   fixtures <- get_test_fixtures()
-  # Use 30 NAs to fit within the ~37 R values from the 30-day fixture
   R <- c(rep(NA_real_, 30), rep(1.2, 20), rep(0.8, 20))
   sims <- forecast_infections(fixtures$estimate_infections, R, samples = 1)
   expect_equal(names(sims), c("samples", "summarised", "observations"))
@@ -132,7 +130,6 @@ test_that("forecast infections fails as expected", {
 test_that("forecast_infections works with an adjusted Rt in data frame", {
   skip_integration()
   fixtures <- get_test_fixtures()
-  # Get dates from the original fit and create matching R values
   R_dates <- summary(
     fixtures$estimate_infections, type = "parameters", param = "R"
   )$date
@@ -140,6 +137,7 @@ test_that("forecast_infections works with an adjusted Rt in data frame", {
   R_dt <- data.frame(date = R_dates, value = R)
   sims_dt <- forecast_infections(fixtures$estimate_infections, R_dt)
   expect_equal(names(sims_dt), c("samples", "summarised", "observations"))
+  expect_equal(tail(sims_dt$summarised[variable == "R"]$median, 10), rep(0.5, 10))
 })
 
 test_that("forecast_infections works with samples of Rt in a data frame", {
