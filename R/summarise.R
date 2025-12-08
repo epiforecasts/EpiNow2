@@ -809,7 +809,9 @@ summary.epinow <- function(object,
             "{.code type = \"parameters\"} requires the {.code epinow()}",
             "output to include {.val estimate_infections}."
           ),
-          "i" = "Re-run with {.code output} including {.val estimate_infections}."
+          "i" = paste(
+            "Re-run with {.code output} including {.val estimate_infections}."
+          )
         ))
       }
       out <- summary(

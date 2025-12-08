@@ -253,3 +253,18 @@ test_that("summary.epinow respects CrIs argument", {
   expect_true("lower_50" %in% names(sum_custom))
   expect_true("upper_95" %in% names(sum_custom))
 })
+
+test_that("summary.epinow errors when estimate_infections missing", {
+  fixtures <- get_test_fixtures()
+  epinow_result <- fixtures$regional$regional$testland
+
+  # Remove estimate_infections to simulate output without it
+
+  epinow_without_ei <- epinow_result
+  epinow_without_ei$estimate_infections <- NULL
+
+  expect_error(
+    summary(epinow_without_ei, type = "parameters"),
+    "estimate_infections"
+  )
+})
