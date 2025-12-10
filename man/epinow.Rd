@@ -92,7 +92,8 @@ null, set using "latest"), the stan fit ("fit"), and the full
 \code{\link[=estimate_infections]{estimate_infections()}} return object ("estimate_infections"). The default
 is to return all options.}
 
-\item{plot_args}{A list of optional arguments passed to \code{\link[=plot.epinow]{plot.epinow()}}.}
+\item{plot_args}{A list of optional arguments passed to
+\code{\link[=plot.estimate_infections]{plot.estimate_infections()}}.}
 
 \item{target_folder}{Character string specifying where to save results (will
 create if not present).}
