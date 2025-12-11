@@ -20,7 +20,8 @@ elements
 Provides backward compatibility for the old return structure. The previous
 structure with \code{estimates}, \code{estimated_reported_cases},
 \code{summary}, \code{plots}, and \code{estimate_infections} elements is
-deprecated. Use the standard S3 methods instead:
+deprecated. Use the standard S3 methods
+instead:
 \itemize{
 \item \code{estimates$samples} - use \code{get_samples(object)}
 \item \code{estimates$summarised} - use \code{summary(object,
