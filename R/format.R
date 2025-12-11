@@ -191,23 +191,25 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
       ]
   }
   # Auto-detect and extract all static parameters from params matrix
-  # Find all parameter IDs (names starting with "param_id_")
-  param_id_names <- names(samples)[startsWith(names(samples), "param_id_")]
-  param_names <- sub("^param_id_", "", param_id_names)
+  all_params <- extract_parameters(samples)
+  if (!is.null(all_params)) {
+    # Get unique parameter names
+    param_names <- unique(all_params$parameter)
 
-  for (param in param_names) {
-    result <- extract_parameter(param, samples)
-    if (!is.null(result)) {
-      # Use standard naming conventions
-      param_name <- switch(param,
-        "dispersion" = "reporting_overdispersion",
-        "frac_obs" = "fraction_observed",
-        param # default: use param name as-is
-      )
-      out[[param_name]] <- result
+    for (param in param_names) {
+      result <- all_params[parameter == param]
+      if (nrow(result) > 0) {
+        # Use standard naming conventions
+        param_name <- switch(param,
+          "dispersion" = "reporting_overdispersion",
+          "frac_obs" = "fraction_observed",
+          param # default: use param name as-is
+        )
+        out[[param_name]] <- result
+      }
     }
   }
-  return(out)
+  out
 }
 
 #' Format raw Stan samples with dates and metadata
@@ -220,6 +222,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
 #' @param observations Observation data with dates
 #'
 #' @return A `data.table` in long format with dates and metadata
+#' @importFrom rlang %||%
 #' @keywords internal
 format_samples_with_dates <- function(raw_samples, args, observations) {
   dates <- observations$date
@@ -278,34 +281,11 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
 
   # Delay parameters
   if (args$delay_params_length > 0) {
-    delay_params <- extract_latent_state(
-      "delay_params", raw_samples, seq_len(args$delay_params_length)
-    )
-    if (!is.null(delay_params)) {
-      out$delay_params <- delay_params[, strat := as.character(time)][
-        , time := NULL
-      ][, date := NULL]
-    }
+    out$delay_params <- extract_delays(raw_samples)
   }
 
-  # Auto-detect and extract all static parameters from params matrix
-  param_id_names <- names(raw_samples)[
-    startsWith(names(raw_samples), "param_id_")
-  ]
-  param_names <- sub("^param_id_", "", param_id_names)
-
-  for (param in param_names) {
-    result <- extract_parameter(param, raw_samples)
-    if (!is.null(result)) {
-      # Use standard naming conventions
-      param_name <- switch(param,
-        "dispersion" = "reporting_overdispersion",
-        "frac_obs" = "fraction_observed",
-        param # default: use param name as-is
-      )
-      out[[param_name]] <- result
-    }
-  }
+  # Params matrix
+  out$params <- extract_parameters(raw_samples)
 
   # Combine all parameters into single data.table
   combined <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
@@ -316,7 +296,7 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
   }
 
   # Add type column based on horizon
-  horizon <- if (is.null(args$horizon)) 0 else args$horizon
+  horizon <- args$horizon %||% 0
   shift <- args$seeding_time
 
   combined <- combined[

@@ -19,19 +19,21 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout PR branch
+        uses: actions/checkout@v6
+        with:
+          path: branch
+
+      - name: Checkout main branch
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          path: main
 
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          packages: |
-            local::.
-            here
-            purrr
-            stan-dev/cmdstanr
+          extra-repositories: https://production.r-multiverse.org/2025-09-15
 
       - name: Install cmdstan
         uses: epinowcast/actions/install-cmdstan@v1
@@ -39,28 +41,68 @@ jobs:
           cmdstan-version: 'latest'
           num-cores: 2
 
-      - name: Checkout main branch in parallel and move to separate dir
-        run: |
-          mv inst/stan inst/stan-branch
-          git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin main
-          git checkout origin/main inst/stan
-          mv inst/stan inst/stan-main
-          mv inst/stan-branch inst/stan
+      # Install dependencies for both versions into separate libraries
+      - name: Install main branch dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: main
+          packages: |
+            local::.
+            here
+            purrr
+            any::cmdstanr
 
-      - name: Benchmark
+      - name: Benchmark main branch
+        id: benchmark-main
+        continue-on-error: true
+        working-directory: main
         run: |
-          Rscript inst/dev/benchmark.R
+          # Use benchmark-single.R from PR branch (main may not have it yet)
+          Rscript ../branch/inst/dev/benchmark-single.R main
+
+      - name: Install PR branch dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: branch
+          packages: |
+            local::.
+            any::cmdstanr
+
+      - name: Benchmark PR branch
+        working-directory: branch
+        run: |
+          Rscript inst/dev/benchmark-single.R branch
+
+      # Compare results
+      - name: Compare benchmarks
+        id: compare
+        if: steps.benchmark-main.outcome == 'success'
+        working-directory: branch
+        run: |
+          Rscript inst/dev/benchmark-compare.R \
+            ../main/main-profiles.csv \
+            branch-profiles.csv \
+            benchmark-results.md
+
+      - name: Note if main benchmark failed
+        if: steps.benchmark-main.outcome == 'failure'
+        working-directory: branch
+        run: |
+          echo "Main branch benchmark failed (likely due to interface changes)." > benchmark-results.md
+          echo "PR branch benchmark completed successfully." >> benchmark-results.md
+          echo "" >> benchmark-results.md
+          echo "Comparison not available - only PR branch results collected." >> benchmark-results.md
 
       - id: output
         name: Output to environment variable
-        if: ${{ hashFiles('inst/dev/benchmark-results.md') != '' }}
+        if: ${{ hashFiles('branch/benchmark-results.md') != '' }}
         run: |
-          echo 'BENCHMARK<<EOF' > $GITHUB_OUTPUT
-          cat inst/dev/benchmark-results.md >> $GITHUB_OUTPUT
+          echo 'BENCHMARK<<EOF' >> $GITHUB_OUTPUT
+          cat branch/benchmark-results.md >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: Post comment
-        if: ${{ hashFiles('inst/dev/benchmark-results.md') != '' }}
+        if: ${{ hashFiles('branch/benchmark-results.md') != '' }}
         uses: actions/github-script@v8
         env:
           BENCHMARK: ${{ steps.output.outputs.BENCHMARK }}

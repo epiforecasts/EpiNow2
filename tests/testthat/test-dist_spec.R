@@ -1,7 +1,7 @@
 test_that("dist_spec returns correct output for fixed lognormal distribution", {
   result <- discretise(LogNormal(meanlog = 5, sdlog = 1, max = 19))
   expect_equal(get_distribution(result), "nonparametric")
-  expect_equal(max(result), 18)
+  expect_equal(max(result), 19)
   expect_equal(
     as.vector(round(get_pmf(result), 2)),
     c(
@@ -45,7 +45,7 @@ test_that("dist_spec returns correct output for fixed distribution", {
     fix_parameters(LogNormal(meanlog = Normal(5, 3), sdlog = 1, max = 19))
   )
   expect_equal(get_distribution(result), "nonparametric")
-  expect_equal(max(result), 18)
+  expect_equal(max(result), 19)
   expect_equal(
     as.vector(round(get_pmf(result), 2)),
     c(
@@ -86,7 +86,7 @@ test_that("collapse returns correct output for sum of two nonparametric distribu
   dist2 <- NonParametric(c(0.1, 0.2, 0.3, 0.4))
   result <- collapse(c(dist1, dist2))
   expect_equal(get_distribution(result), "nonparametric")
-  expect_equal(max(result), 6)
+  expect_equal(max(result), 7)
   expect_equal(ndist(result), 1)
   expect_equal(
     round(get_pmf(result), 2),
@@ -125,7 +125,7 @@ test_that("summary functions return correct output for fixed lognormal distribut
   dist <- discretise(LogNormal(mean = 3, sd = 1, max = 19))
   expect_equal(mean(dist), 3.0, tolerance = 0.01)
   expect_equal(EpiNow2:::sd(dist), 1.17, tolerance = 0.01)
-  expect_equal(max(dist), 18L)
+  expect_equal(max(dist), 19L)
 })
 
 test_that("summary functions return correct output for uncertain gamma distribution", {
@@ -141,7 +141,7 @@ test_that("mean returns correct output for sum of two distributions", {
   expect_equal(mean(dist), c(4.48, 3), tolerance = 0.001)
   expect_equal(EpiNow2:::sd(dist), c(5.87, 2), tolerance = 0.001)
   ## shortened due to tolerance level
-  expect_equal(max(dist), c(18L, 18L))
+  expect_equal(max(dist), c(19L, 19L))
 })
 
 test_that("mean returns NA when applied to uncertain distributions", {
@@ -180,7 +180,7 @@ test_that("print.dist_spec correctly prints the parameters of a combination of d
   dist1 <- LogNormal(meanlog = 1.5, sdlog = 0.5, max = 19)
   dist2 <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 19)
   combined <- dist1 + dist2
-  expect_output(print(combined), "Composite distribution:\\n- lognormal distribution \\(max: 18\\):\\n  meanlog:\\n    1\\.5\\n  sdlog:\\n    0\\.5\\n- gamma distribution \\(max: 19\\):\\n  shape:\\n    - normal distribution:\\n      mean:\\n        3\\n      sd:\\n        0\\.5\\n  rate:\\n    - normal distribution:\\n      mean:\\n        2\\n      sd:\\n        0\\.5")
+  expect_output(print(combined), "Composite distribution:\\n- lognormal distribution \\(max: 19\\):\\n  meanlog:\\n    1\\.5\\n  sdlog:\\n    0\\.5\\n- gamma distribution \\(max: 19\\):\\n  shape:\\n    - normal distribution:\\n      mean:\\n        3\\n      sd:\\n        0\\.5\\n  rate:\\n    - normal distribution:\\n      mean:\\n        2\\n      sd:\\n        0\\.5")
 })
 
 test_that("plot.dist_spec returns a ggplot object", {

@@ -1,9 +1,12 @@
-fit <- readRDS(system.file(
-  package = "EpiNow2", "extdata", "example_estimate_infections.rds"
-))
-cases <- fit$observations
+skip_on_cran()
+
+# Uses shared fixtures from setup.R (regional_epinow run once)
 
 test_that("plot_estimates can plot by type", {
+  fixtures <- get_test_fixtures()
+  fit <- fixtures$estimate_infections
+  cases <- fit$observations
+
   expect_error(
     plot_estimates(
       estimate = summary(fit, type = "parameters", param = "infections"),
@@ -31,6 +34,9 @@ test_that("plot_estimates can plot by type", {
 })
 
 test_that("plot_estimates can add a horizontal line ", {
+  fixtures <- get_test_fixtures()
+  fit <- fixtures$estimate_infections
+
   expect_error(
     plot_estimates(
       estimate = summary(fit, type = "parameters", param = "R"),
@@ -43,6 +49,9 @@ test_that("plot_estimates can add a horizontal line ", {
 
 test_that("plot_estimates can be restricted to only plot within the forecasting
            time horizon", {
+  fixtures <- get_test_fixtures()
+  fit <- fixtures$estimate_infections
+
   expect_error(
     plot_estimates(
       estimate = summary(fit, type = "parameters", param = "R"),
