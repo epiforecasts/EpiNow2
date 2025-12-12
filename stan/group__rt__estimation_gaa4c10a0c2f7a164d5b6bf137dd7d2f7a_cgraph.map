@@ -1,0 +1,11 @@
+<map id="calculate_growth" name="calculate_growth">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,125,56"/>
+<area shape="rect" id="Node000002" href="$group__rt__estimation.html#ga53dc66f0a449ff36b7aed7401fdf8574" title=" " alt="" coords="173,5,355,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="125,33,157,29,157,34,126,39"/>
+<area shape="rect" id="Node000003" href="$group__rt__estimation.html#gad5dfeda95f3acce7e217c7c47f13d0ee" title=" " alt="" coords="180,55,348,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="126,48,164,53,164,58,125,53"/>
+<area shape="rect" id="Node000004" href="$helpers_8stan.html#afa477a8216c6eb77642d20640ca868cf" title=" " alt="" coords="418,29,539,55"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="348,55,403,48,403,54,349,60"/>
+<area shape="rect" id="Node000005" href="$group__infections__estimation.html#ga2b1ee9503c17947f9516f55eeeb9046c" title=" " alt="" coords="403,79,554,104"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="349,74,388,79,387,84,348,80"/>
+</map>

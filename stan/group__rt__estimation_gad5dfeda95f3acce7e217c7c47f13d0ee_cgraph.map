@@ -1,0 +1,7 @@
+<map id="calculate_growth_infness" name="calculate_growth_infness">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,174,56"/>
+<area shape="rect" id="Node000002" href="$helpers_8stan.html#afa477a8216c6eb77642d20640ca868cf" title=" " alt="" coords="237,5,358,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="174,31,221,25,222,30,175,36"/>
+<area shape="rect" id="Node000003" href="$group__infections__estimation.html#ga2b1ee9503c17947f9516f55eeeb9046c" title=" " alt="" coords="222,55,373,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="175,51,206,54,206,60,174,56"/>
+</map>
