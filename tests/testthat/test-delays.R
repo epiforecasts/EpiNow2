@@ -33,7 +33,7 @@ test_that("generation times can be specified in different ways", {
       ),
       params = delay_params
     ), digits = 2),
-    c(0.01, 0.08, 0.20, 0.32, 0.40, 1.00, 1.00)
+    c(0.01, 0.12, 0.34, 0.53, 1.00, 1.00)
   )
 })
 
@@ -52,7 +52,7 @@ test_that("delay parameters can be specified in different ways", {
       ),
       params = delay_params
     ), digits = 2), n = -2),
-    c(0.01, 0.08, 0.20, 0.32, 0.40, 1.00)
+    c(0.01, 0.12, 0.34, 0.53, 1.00)
   )
   expect_equal(
     tail(round(test_stan_delays(
@@ -61,7 +61,7 @@ test_that("delay parameters can be specified in different ways", {
       )),
       params = delay_params
     ), digits = 2), n = -2),
-    c(0.08, 0.33, 0.36, 0.16, 0.05, 0.02, 0.01, 0.00, 0.00, 1.00)
+    c(0.03, 0.38, 0.37, 0.14, 0.05, 0.02, 0.01, 0.00, 0.00, 1.00)
   )
   expect_equal(
     test_stan_delays(
@@ -80,7 +80,7 @@ test_that("truncation parameters can be specified in different ways", {
       ),
       params = delay_params
     ), digits = 2), n = -2),
-    c(1.00, 0.01, 0.08, 0.20, 0.32, 0.40)
+    c(1.00, 0.01, 0.12, 0.34, 0.53)
   )
 })
 

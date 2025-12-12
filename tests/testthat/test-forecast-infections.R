@@ -7,7 +7,6 @@ futile.logger::flog.threshold("FATAL")
 
 # Helper to build R vector that fits within fixture constraints
 make_adjusted_R <- function(estimate_infections, adjusted_values) {
-
   n_R <- nrow(summary(estimate_infections, type = "parameters", param = "R"))
   n_adjusted <- length(adjusted_values)
   c(rep(NA_real_, n_R - n_adjusted), adjusted_values)
