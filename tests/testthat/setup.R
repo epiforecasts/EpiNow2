@@ -106,14 +106,10 @@ get_test_fixtures <- local({
         )
       }))
 
-      # Extract estimate_infections objects for each region
-      estimate_infections_testland <- regional_out$regional$testland$estimate_infections
-      estimate_infections_realland <- regional_out$regional$realland$estimate_infections
-
       fixtures <<- list(
         regional = regional_out,
-        estimate_infections = estimate_infections_testland,
-        estimate_infections_alt = estimate_infections_realland
+        estimate_infections = regional_out$regional$testland,
+        estimate_infections_alt = regional_out$regional$realland
       )
     }
     fixtures

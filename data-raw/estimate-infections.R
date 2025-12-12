@@ -1,6 +1,5 @@
 library(EpiNow2)
 library(here)
-library(purrr)
 
 options(mc.cores = 4)
 
@@ -34,19 +33,8 @@ example_regional_epinow <- regional_epinow(
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
   stan = stan_opts(
     samples = 200, control = list(adapt_delta = 0.95), return_fit = FALSE
-  )
-)
-
-## remove plots
-example_regional_epinow <- modify_tree(
-  example_regional_epinow,
-  post = function(x) {
-    plot_names <- grep("plots?$", names(x), value = TRUE)
-    for (name in plot_names) {
-      x[[name]] <- NULL
-    }
-    x
-  }
+  ),
+  output = c("regions", "summary", "samples")
 )
 
 saveRDS(

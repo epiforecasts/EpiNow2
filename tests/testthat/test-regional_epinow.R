@@ -40,14 +40,30 @@ test_that("regional_epinow produces expected output when run with default settin
     "latest_date", "results", "summarised_results", "summary_plot",
     "summarised_measures", "reported_cases", "high_plots", "plots"
   ))
-  expect_equal(names(out$regional$realland), c("estimates", "estimated_reported_cases", "summary", "plots", "timing"))
+  expect_equal(
+    names(out$regional$realland),
+    c("fit", "args", "observations", "timing")
+  )
   expect_s3_class(out$regional$realland$timing, "difftime")
-  df_non_zero(out$regional$realland$estimates$samples)
-  df_non_zero(out$regional$realland$estimates$summarised)
-  df_non_zero(out$regional$realland$estimated_reported_cases$samples)
-  df_non_zero(out$regional$realland$estimated_reported_cases$summarised)
-  df_non_zero(out$regional$realland$summary)
-  expect_equal(names(out$regional$realland$plots), c("summary", "infections", "reports", "R", "growth_rate"))
+  lifecycle::expect_deprecated(
+    df_non_zero(out$regional$realland$estimates$samples)
+  )
+  lifecycle::expect_deprecated(
+    df_non_zero(out$regional$realland$estimates$summarised)
+  )
+  lifecycle::expect_deprecated(
+    df_non_zero(out$regional$realland$estimated_reported_cases$samples)
+  )
+  lifecycle::expect_deprecated(
+    df_non_zero(out$regional$realland$estimated_reported_cases$summarised)
+  )
+  lifecycle::expect_deprecated(df_non_zero(out$regional$realland$summary))
+  lifecycle::expect_deprecated(
+    expect_equal(
+      names(out$regional$realland$plots),
+      c("summary", "infections", "reports", "R", "growth_rate")
+    )
+  )
 })
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
@@ -111,12 +127,28 @@ test_that("regional_epinow produces expected output when run with region specifi
     "latest_date", "results", "summarised_results", "summary_plot",
     "summarised_measures", "reported_cases", "high_plots", "plots"
   ))
-  expect_equal(names(out$regional$realland), c("estimates", "estimated_reported_cases", "summary", "plots", "timing"))
+  expect_equal(
+    names(out$regional$realland),
+    c("fit", "args", "observations", "timing")
+  )
   expect_s3_class(out$regional$realland$timing, "difftime")
-  df_non_zero(out$regional$realland$estimates$samples)
-  df_non_zero(out$regional$realland$estimates$summarised)
-  df_non_zero(out$regional$realland$estimated_reported_cases$samples)
-  df_non_zero(out$regional$realland$estimated_reported_cases$summarised)
-  df_non_zero(out$regional$realland$summary)
-  expect_equal(names(out$regional$realland$plots), c("summary", "infections", "reports", "R", "growth_rate"))
+  lifecycle::expect_deprecated(
+    df_non_zero(out$regional$realland$estimates$samples)
+  )
+  lifecycle::expect_deprecated(
+    df_non_zero(out$regional$realland$estimates$summarised)
+  )
+  lifecycle::expect_deprecated(
+    df_non_zero(out$regional$realland$estimated_reported_cases$samples)
+  )
+  lifecycle::expect_deprecated(
+    df_non_zero(out$regional$realland$estimated_reported_cases$summarised)
+  )
+  lifecycle::expect_deprecated(df_non_zero(out$regional$realland$summary))
+  lifecycle::expect_deprecated(
+    expect_equal(
+      names(out$regional$realland$plots),
+      c("summary", "infections", "reports", "R", "growth_rate")
+    )
+  )
 })

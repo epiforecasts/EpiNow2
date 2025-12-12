@@ -412,23 +412,6 @@ plot.forecast_infections <- function(x,
   plot.estimate_infections(x, type = type, CrIs = CrIs, ...)
 }
 
-#' Plot method for epinow
-#'
-#' @description `r lifecycle::badge("maturing")`
-#' `plot` method for class `<epinow>`.
-#' @param x A list of output as produced by [epinow()].
-#' @inheritParams plot.estimate_infections
-#' @seealso [plot.estimate_infections()] [report_plots()]
-#' @method plot epinow
-#' @return List of plots as produced by [report_plots()]
-#' @export
-plot.epinow <- function(x, type = "summary", ...) {
-  out <- report_plots(
-    summarised_estimates = x$estimates$summarised,
-    reported = x$estimates$observations, ...
-  )
-  select_plots(out, type)
-}
 
 #' Internal helper function to select plots from those created by
 #' [report_plots()]
