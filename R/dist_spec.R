@@ -439,11 +439,15 @@ sd.default <- function(x, ...) {
 #' # The max the sum of two distributions
 #' max(dist1 + dist2)
 max.dist_spec <- function(x, ...) {
+  ## return fixed value before discretisation (discretise converts to
+  ## nonparametric which then uses PMF length)
+  if (get_distribution(x) == "fixed") {
+    return(get_parameters(x)$value)
+  }
   ## try to discretise (which applies cdf cutoff and max)
   x <- discretise(x, strict = FALSE)
   switch(get_distribution(x),
     nonparametric = length(get_pmf(x)),
-    fixed = get_parameters(x)$value,
     ifelse(is.null(attr(x, "max")), Inf, attr(x, "max"))
   )
 }
