@@ -308,6 +308,9 @@ test_that("delay distributions can be specified in different ways", {
     c(0.00, 0.01, 0.07, 0.26, 0.40, 0.26)
   )
   expect_equal(get_pmf(discretise(Fixed(value = 3))), c(0, 0, 0, 1))
+  ## fractional fixed values split probability across adjacent intervals
+  expect_equal(get_pmf(discretise(Fixed(value = 2.5))), c(0, 0, 0.5, 0.5))
+  expect_equal(get_pmf(discretise(Fixed(value = 1.25))), c(0, 0.75, 0.25))
   expect_equal(get_parameters(Fixed(value = 3.5))$value, 3.5)
   expect_equal(
     get_pmf(NonParametric(c(0.1, 0.3, 0.2, 0.4))),
