@@ -13,8 +13,8 @@ test_that("Seeding times are correctly calculated", {
 
 test_that("Short seeding times are rounded up to 1", {
   delay <- LogNormal(mean = 0.5, sd = 1, max = 2)
-  gt <- Fixed(value = 1)
-  # mean(delay) ≈ 0.5, max(gt) = 1 (Fixed value before discretisation),
-  # so seeding_time = max(round(max(0.5, 1)), 1) = 1
+  gt <- Fixed(value = 0.5)
+  # mean(delay) ≈ 0.5, max(gt) = 0.5 (Fixed value before discretisation),
+  # so seeding_time = max(round(max(0.5, 0.5)), 1) = max(0, 1) = 1
   expect_equal(EpiNow2:::get_seeding_time(delay, gt), 1L)
 })

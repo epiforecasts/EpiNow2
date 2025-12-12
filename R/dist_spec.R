@@ -56,15 +56,27 @@ discrete_pmf <- function(distribution =
   distribution <- arg_match(distribution)
 
   ## handle fixed distribution as special case
+  ## for fractional values, split probability proportionally across intervals
   if (distribution == "fixed") {
     value <- params[["value"]]
     if (missing(max_value) || is.infinite(max_value)) {
-      max_value <- value + 1
+      max_value <- ceiling(value) + 1
     }
     max_value <- ceiling(max_value)
     pmf <- rep(0, max_value)
     if (value < max_value) {
-      pmf[value + 1] <- 1
+      floor_v <- floor(value)
+      frac <- value - floor_v
+      if (frac == 0) {
+        ## integer value: all mass in interval [value, value+1)
+        pmf[floor_v + 1] <- 1
+      } else {
+        ## fractional: split between adjacent intervals
+        pmf[floor_v + 1] <- 1 - frac
+        if (floor_v + 2 <= max_value) {
+          pmf[floor_v + 2] <- frac
+        }
+      }
     }
     return(pmf)
   }
