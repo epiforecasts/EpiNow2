@@ -53,7 +53,6 @@ default_inc <- estimate_secondary(inc_cases[1:60],
   obs = obs_opts(
     scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
   ),
-  stan = stan_opts(cores = 1),
   verbose = FALSE
 )
 
