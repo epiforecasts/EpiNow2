@@ -130,7 +130,7 @@ jobs:
 
       - name: Create Pull Request
         if: steps.compare.outputs.needs_update == 'true' && steps.verify.outputs.available == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: update R-multiverse production snapshot to ${{ steps.latest.outputs.date }}"
