@@ -41,7 +41,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Upload README.md as an artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: readme
           path: README.md
