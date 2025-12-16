@@ -477,6 +477,7 @@ references:
   abstract: 'cmdstanr: R Interface to ''CmdStan'''
   notes: Suggests
   url: https://mc-stan.org/cmdstanr/
+  repository: https://r-multiverse-staging.r-universe.dev
   authors:
   - family-names: Gabry
     given-names: Jonah
