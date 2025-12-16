@@ -32,14 +32,17 @@ nonparametric.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 }
 \section{Methodological details}{
+The probability mass function is computed using the \code{{primarycensored}}
+package, which provides double censored PMF calculations. This correctly
+represents the probability mass function of a double censored distribution
+arising from the difference of two censored events.
+
 The probability mass function of the discretised probability distribution is
 a vector where the first entry corresponds to the integral over the (0,1]
 interval of the corresponding continuous distribution (probability of
 integer 0), the second entry corresponds to the (0,2] interval (probability
 mass of integer 1), the third entry corresponds to the (1, 3] interval
-(probability mass of integer 2), etc. This approximates the true
-probability mass function of a double censored distribution which arises
-from the difference of two censored events.
+(probability mass of integer 2), etc.
 }
 
 \examples{
@@ -58,11 +61,13 @@ dist2 <- LogNormal(
 discretise(dist1 + dist2, strict = FALSE)
 }
 \references{
-Charniga, K., et al. “Best practices for estimating and reporting
+Charniga, K., et al. "Best practices for estimating and reporting
 epidemiological delay distributions of infectious diseases using public
-health surveillance and healthcare data”, \emph{arXiv e-prints}, 2024.
+health surveillance and healthcare data", \emph{arXiv e-prints}, 2024.
 \doi{10.48550/arXiv.2405.08841}
 Park,  S. W.,  et al.,  "Estimating epidemiological delay distributions for
 infectious diseases", \emph{medRxiv}, 2024.
 \doi{https://doi.org/10.1101/2024.01.12.24301247}
+Abbott S., et al., "primarycensored: Primary Event Censored Distributions",
+2025. \doi{10.5281/zenodo.13632839}
 }

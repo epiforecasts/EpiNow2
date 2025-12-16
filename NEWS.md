@@ -1,5 +1,12 @@
 # EpiNow2 (development version)
 
+## Breaking changes
+
+- The `discretise()` function now uses the `primarycensored` package for double censored PMF calculations, replacing the previous CDF difference approximation.
+This provides more accurate discretisation but will change the exact numerical values returned every time a distribution without uncertainty is discretised.
+Code that depends on the specific numerical output of `discretise()` may produce different results, though the differences should be small and represent improvements in accuracy.
+The function interface remains unchanged.
+
 ## Package changes
 
 - The test suite has been reorganised into core tests (fast, always run) and integration tests (slow, run weekly), improving local development speed by 77% (from 9 minutes to 2 minutes) whilst maintaining test coverage.

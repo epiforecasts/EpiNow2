@@ -223,7 +223,7 @@ get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
   # Estimate the mean delay -----------------------------------------------
   seeding_time <- sum(mean(delays, ignore_uncertainty = TRUE))
   if (!is.null(rt)) {
-    ## make sure we have at least (length of total gt pmf - 1) seeding time
+    ## make sure we have at least max(generation_time) seeding time
     seeding_time <- max(seeding_time, sum(max(generation_time)))
   }
   max(round(seeding_time), 1)
