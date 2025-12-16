@@ -80,12 +80,12 @@ jobs:
       NOT_CRAN: true
       EPINOW2_SKIP_INTEGRATION: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: r-lib/actions/pr-fetch@v2
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Post start comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({
@@ -114,7 +114,7 @@ jobs:
         shell: Rscript {0}
       - name: Post success comment
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({
@@ -125,7 +125,7 @@ jobs:
             })
       - name: Post failure comment
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({
