@@ -41,7 +41,7 @@ jobs:
 
       - name: Create or update issue
         if: steps.lintr.outputs.has_lints == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
