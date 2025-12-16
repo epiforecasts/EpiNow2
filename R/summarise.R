@@ -853,12 +853,12 @@ summary.epinow <- function(object,
 #' @param object A list of output as produced by "estimate_infections".
 #'
 #' @param type A character vector of data types to return. Defaults to
-#' "snapshot" but also supports "parameters", and "samples". "snapshot" return
-#' a summary at a given date (by default the latest date informed by data).
-#' "parameters" returns summarised parameter estimates that can be further
-#' filtered using `params` to show just the parameters of interest and date.
-#' "samples" similarly returns posterior
-#' samples.
+#' "snapshot" but also supports "parameters". "snapshot" returns a summary at
+#' a given date (by default the latest date informed by data). "parameters"
+#' returns summarised parameter estimates that can be further filtered using
+#' `params` to show just the parameters of interest and date.
+#'
+#' Note: `type = "samples"` is deprecated. Use [get_samples()] instead.
 #'
 #' @inheritParams setup_target_folder
 #'
