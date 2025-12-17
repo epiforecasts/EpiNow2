@@ -114,8 +114,8 @@ transformed parameters {
       );
     }
     profile("infections") {
-      real frac_obs = get_param(
-        param_id_frac_obs, params_fixed_lookup, params_variable_lookup, params_value,
+      real fraction_observed = get_param(
+        param_id_fraction_observed, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       real pop = get_param(
@@ -124,7 +124,7 @@ transformed parameters {
       );
       infections = generate_infections(
         R, seeding_time, gt_rev_pmf, initial_infections, pop, use_pop, pop_floor,
-        future_time, obs_scale, frac_obs, 1
+        future_time, obs_scale, fraction_observed, 1
       );
     }
   } else {
@@ -164,11 +164,11 @@ transformed parameters {
   // scaling of reported cases by fraction observed
   if (obs_scale) {
     profile("scale") {
-      real frac_obs = get_param(
-        param_id_frac_obs, params_fixed_lookup, params_variable_lookup, params_value,
+      real fraction_observed = get_param(
+        param_id_fraction_observed, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
-      reports = scale_obs(reports, frac_obs);
+      reports = scale_obs(reports, fraction_observed);
     }
   }
 
@@ -234,12 +234,12 @@ model {
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {
     profile("report lp") {
-      real dispersion = get_param(
-        param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
+      real reporting_overdispersion = get_param(
+        param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       report_lp(
-        cases, case_times, obs_reports, dispersion, model_type, obs_weight
+        cases, case_times, obs_reports, reporting_overdispersion, model_type, obs_weight
       );
     }
   }
@@ -252,8 +252,8 @@ generated quantities {
   vector[return_likelihood ? ot : 0] log_lik;
 
   profile("generated quantities") {
-    real dispersion = get_param(
-      param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
+    real reporting_overdispersion = get_param(
+      param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     if (!fixed) {
@@ -301,16 +301,16 @@ generated quantities {
       vector[ot_h] accumulated_reports =
         accumulate_reports(reports, accumulate);
       imputed_reports = report_rng(
-        accumulated_reports[imputed_times], dispersion, model_type
+        accumulated_reports[imputed_times], reporting_overdispersion, model_type
       );
     } else {
-      imputed_reports = report_rng(reports, dispersion, model_type);
+      imputed_reports = report_rng(reports, reporting_overdispersion, model_type);
     }
 
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
-        cases, obs_reports[case_times], dispersion, model_type, obs_weight
+        cases, obs_reports[case_times], reporting_overdispersion, model_type, obs_weight
       );
     }
   }

@@ -47,11 +47,11 @@ transformed parameters {
 
     // scaling of primary reports by fraction observed
     if (obs_scale) {
-      real frac_obs = get_param(
-        param_id_frac_obs, params_fixed_lookup, params_variable_lookup, params_value,
+      real fraction_observed = get_param(
+        param_id_fraction_observed, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
-      scaled = scale_obs(primary, frac_obs);
+      scaled = scale_obs(primary, fraction_observed);
     } else {
       scaled = primary;
     }
@@ -115,13 +115,13 @@ model {
   }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
-    real dispersion = get_param(
-      param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
+    real reporting_overdispersion = get_param(
+      param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     report_lp(
       obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      dispersion, model_type, 1
+      reporting_overdispersion, model_type, 1
     );
   }
 }
@@ -130,19 +130,19 @@ generated quantities {
   array[t - burn_in] int sim_secondary;
   vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
   {
-    real dispersion = get_param(
-      param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
+    real reporting_overdispersion = get_param(
+      param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     // simulate secondary reports
     sim_secondary = report_rng(
-      secondary[(burn_in + 1):t], dispersion, model_type
+      secondary[(burn_in + 1):t], reporting_overdispersion, model_type
     );
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
         obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-        dispersion, model_type, obs_weight
+        reporting_overdispersion, model_type, obs_weight
       );
     }
   }
