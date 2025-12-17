@@ -985,3 +985,55 @@ summary.estimate_secondary <- function(object,
 
   out[]
 }
+
+#' Summarise results from estimate_truncation
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Returns a summary of the fitted truncation model.
+#'
+#' @param object A fitted model object from `estimate_truncation()`
+#' @param type Character string indicating the type of summary to return.
+#'   Options are "dist" (default) which returns the truncation distribution,
+#'   "parameters" for posterior parameter estimates, or "observations" for
+#'   the reconstructed observations summary.
+#' @inheritParams calc_summary_measures
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return Depends on `type`:
+#' - `"dist"`: A `<dist_spec>` object representing the truncation distribution.
+#' - `"parameters"`: A `<data.table>` with summary statistics for delay
+#'   parameters.
+#' - `"observations"`: A `<data.table>` with the observations and estimates.
+#' @importFrom rlang arg_match
+#' @method summary estimate_truncation
+#' @export
+summary.estimate_truncation <- function(object,
+                                        type = c("dist", "parameters",
+                                                 "observations"),
+                                        CrIs = c(0.2, 0.5, 0.9), ...) {
+  type <- arg_match(type)
+
+  if (type == "dist") {
+    return(object$dist)
+  }
+
+  if (type == "observations") {
+    return(object$observations)
+  }
+
+  # Return parameter summary statistics
+  samples <- get_samples(object)
+
+  # Filter to delay parameters only
+  param_samples <- samples[variable == "delay_params"]
+
+  # Calculate summary statistics
+  out <- calc_summary_measures(
+    param_samples,
+    summarise_by = c("variable", "strat"),
+    order_by = "strat",
+    CrIs = CrIs
+  )
+
+  out[]
+}
