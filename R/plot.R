@@ -42,12 +42,12 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth,
           )
       }
     } else {
-      # linerange style - use error bars
+      # linerange style - graduated linewidths (narrower CrIs drawn thicker)
+      lw <- c(6, 4, 1.5)[min(index, 3)]
       p <- p +
         ggplot2::geom_linerange(
           ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
-          alpha = ifelse(index == 1, 0.4, alpha_per_CrI),
-          linewidth = ifelse(index == 1, linewidth * 2, linewidth)
+          linewidth = lw
         )
     }
     index <- index + 1
