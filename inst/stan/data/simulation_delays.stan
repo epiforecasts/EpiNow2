@@ -25,4 +25,4 @@ array[delay_n] int<lower = 0> delay_types_id;
 // index of each delay (parametric or non)
 array[delay_types + 1] int<lower = 0> delay_types_groups;
 
-int<lower = 0> delay_id; // id of generation time
+int<lower = 0> delay_id_reporting; // id of reporting delay

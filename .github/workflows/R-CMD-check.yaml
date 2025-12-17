@@ -44,7 +44,8 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
       NOT_CRAN: true
-      
+      EPINOW2_SKIP_INTEGRATION: true  # Skip slow integration tests for fast CI
+
     steps:
       - uses: actions/checkout@v6
         
@@ -55,6 +56,7 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
+          extra-repositories: https://production.r-multiverse.org/2025-09-15
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -62,7 +64,7 @@ jobs:
           extra-packages: |
             rmarkdown
             rcmdcheck
-            stan-dev/cmdstanr
+            any::cmdstanr
             testthat
             future
             future.apply

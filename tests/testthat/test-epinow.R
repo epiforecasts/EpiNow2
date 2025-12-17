@@ -16,12 +16,20 @@ df_non_zero <- function(df) {
 }
 expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")
 
+# Integration tests (MCMC-based) ------------------------------------------
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Core tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
+
+# Variant test: epinow is tested via estimate_infections underneath.
+# This test verifies wrapper-specific functionality (plots, CrIs).
 test_that("epinow produces expected output when run with default settings", {
+  skip_integration()
   outputs <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
       generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(c(example_incubation_period, reporting_delay)),
+      delays = delay_opts(example_incubation_period + reporting_delay),
       stan = stan_opts(
         samples = 25, warmup = 25,
         cores = 1, chains = 2,
@@ -45,8 +53,8 @@ test_that("epinow produces expected output when run with default settings", {
   expect_equal(extract_CrIs(out$estimated_reported_cases$summarised), 95)
 })
 
-test_that("epinow produces expected output when run with the
-           cmdstanr backend", {
+test_that("epinow produces expected output with cmdstanr backend", {
+  skip_integration()
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
@@ -69,8 +77,8 @@ test_that("epinow produces expected output when run with the
   )
 })
 
-test_that("epinow produces expected output when run with the
-           laplace algorithm", {
+test_that("epinow produces expected output with laplace algorithm", {
+  skip_integration()
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
@@ -92,8 +100,8 @@ test_that("epinow produces expected output when run with the
   )
 })
 
-test_that("epinow produces expected output when run with the
-           pathfinder algorithm", {
+test_that("epinow produces expected output with pathfinder algorithm", {
+  skip_integration()
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
@@ -116,6 +124,7 @@ test_that("epinow produces expected output when run with the
 })
 
 test_that("epinow runs without error when saving to disk", {
+  skip_integration()
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
@@ -133,6 +142,7 @@ test_that("epinow runs without error when saving to disk", {
 })
 
 test_that("epinow can produce partial output as specified", {
+  skip_integration()
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
@@ -158,10 +168,9 @@ test_that("epinow can produce partial output as specified", {
   df_non_zero(out$summary)
 })
 
-
-
 test_that("epinow fails as expected when given a short timeout", {
-  expect_error(suppressWarnings(x = epinow(
+  skip_integration()
+  expect_error(suppressWarnings(x <- epinow(
     data = reported_cases,
     generation_time = gt_opts(example_generation_time),
     delays = delay_opts(example_incubation_period + reporting_delay),
@@ -174,6 +183,8 @@ test_that("epinow fails as expected when given a short timeout", {
     logs = NULL, verbose = FALSE
   )))
 })
+
+# Argument validation tests (fast - no MCMC) ------------------------------
 
 
 test_that("epinow fails if given NUTs arguments when using variational inference", {

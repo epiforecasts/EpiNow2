@@ -184,7 +184,7 @@ estimate_truncation <- function(data,
   )
 
   stan_data <- c(stan_data, create_stan_delays(
-    trunc = truncation,
+    truncation = truncation,
     time_points = stan_data$t
   ))
 
@@ -273,7 +273,7 @@ estimate_truncation <- function(data,
   out$fit <- fit
 
   class(out) <- c("estimate_truncation", class(out))
-  return(out)
+  out
 }
 
 #' Plot method for estimate_truncation

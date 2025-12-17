@@ -31,7 +31,8 @@
 #' options are the individual regional estimates ("regions"),  samples
 #' ("samples"), plots ("plots"), copying the individual region dated folder into
 #' a latest folder (if `target_folder` is not null, set using "latest"), the
-#' stan fit of the underlying model ("fit"), and an overall summary across
+#' stan fit of the underlying model ("fit"), the full [estimate_infections()]
+#' return object ("estimate_infections"), and an overall summary across
 #' regions ("summary"). The default is to return samples and plots alongside
 #' summarised estimates and summary statistics. If `target_folder` is not NULL
 #' then the default is also to copy all results into a latest folder.
@@ -124,7 +125,7 @@ regional_epinow <- function(data,
     supported_args = c(
       "plots", "samples", "fit",
       "regions", "summary",
-      "timing", "latest"
+      "timing", "latest", "estimate_infections"
     ),
     logger = "EpiNow2"
   )
@@ -251,9 +252,9 @@ regional_epinow <- function(data,
   }
 
   if (return_output) {
-    return(out)
+    out
   } else {
-    return(invisible(NULL))
+    invisible(NULL)
   }
 }
 
@@ -402,7 +403,7 @@ run_region <- function(target_region,
   if (!is.null(progress_fn)) {
     progress_fn(sprintf("Region: %s", target_region))
   }
-  return(out)
+  out
 }
 
 #' Process regional estimate
@@ -440,7 +441,7 @@ process_region <- function(out, target_region, timing,
       name = complete_logger
     )
   }
-  return(out)
+  out
 }
 
 #' Process all Region Estimates

@@ -6,8 +6,8 @@ test_that("dist_spec returns correct output for fixed lognormal distribution", {
     as.vector(round(get_pmf(result), 2)),
     c(
       0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03,
-      0.03, 0.04, 0.05, 0.06, 0.07, 0.07, 0.08, 0.09,
-      0.10, 0.11, 0.11, 0.12
+      0.04, 0.05, 0.06, 0.07, 0.08, 0.08, 0.09, 0.10,
+      0.11, 0.12, 0.13
     )
   )
 })
@@ -50,8 +50,8 @@ test_that("dist_spec returns correct output for fixed distribution", {
     as.vector(round(get_pmf(result), 2)),
     c(
       0.00, 0.00, 0.00, 0.00, 0.01, 0.01, 0.02, 0.03,
-      0.03, 0.04, 0.05, 0.06, 0.07, 0.07, 0.08, 0.09,
-      0.10, 0.11, 0.11, 0.12
+      0.04, 0.05, 0.06, 0.07, 0.08, 0.08, 0.09, 0.10,
+      0.11, 0.12, 0.13
     )
   )
 })
@@ -86,7 +86,7 @@ test_that("collapse returns correct output for sum of two nonparametric distribu
   dist2 <- NonParametric(c(0.1, 0.2, 0.3, 0.4))
   result <- collapse(c(dist1, dist2))
   expect_equal(get_distribution(result), "nonparametric")
-  expect_equal(max(result), 6)
+  expect_equal(max(result), 7)
   expect_equal(ndist(result), 1)
   expect_equal(
     round(get_pmf(result), 2),
@@ -124,7 +124,7 @@ test_that("`bound_dist` function can be applied to a convolution", {
 test_that("summary functions return correct output for fixed lognormal distribution", {
   dist <- discretise(LogNormal(mean = 3, sd = 1, max = 19))
   expect_equal(mean(dist), 3.0, tolerance = 0.01)
-  expect_equal(EpiNow2:::sd(dist), 1.34, tolerance = 0.01)
+  expect_equal(EpiNow2:::sd(dist), 1.17, tolerance = 0.01)
   expect_equal(max(dist), 19L)
 })
 
@@ -157,7 +157,7 @@ test_that("sd returns NA when applied to uncertain distributions", {
 test_that("print.dist_spec correctly prints the parameters of the fixed lognormal", {
   dist <- discretise(LogNormal(meanlog = 1.5, sdlog = 0.5, max = 19))
 
-  expect_output(print(dist), "- nonparametric distribution\\n  PMF: \\[0\\.00068 0\\.027 0\\.11 0\\.18 0\\.19 0\\.16 0\\.11 0\\.078 0\\.052 0\\.035 0\\.023 0\\.015 0\\.0099 0\\.0065 0\\.0044 0\\.003 0\\.002 0\\.0014 0\\.00095 0\\.00066\\]")
+  expect_output(print(dist), "- nonparametric distribution\\n  PMF: \\[0\\.00017 0\\.019 0\\.11 0\\.19 0\\.19 0\\.16 0\\.11 0\\.078 0\\.052 0\\.034 0\\.022 0\\.015 0\\.0097 0\\.0065 0\\.0043 0\\.0029 0\\.002 0\\.0014 0\\.00094\\]")
 })
 
 test_that("print.dist_spec correctly prints the parameters of the uncertain gamma", {
@@ -250,13 +250,13 @@ test_that("delay distributions can be specified in different ways", {
   )
   expect_equal(
     round(get_pmf(discretise(LogNormal(mean = 4, sd = 1, max = 10))), 2),
-    c(0.00, 0.00, 0.07, 0.27, 0.35, 0.21, 0.07, 0.02, 0.00, 0.00, 0.00)
+    c(0.00, 0.00, 0.05, 0.29, 0.38, 0.20, 0.06, 0.02, 0.00, 0.00)
   )
   expect_equal(
     round(
       get_pmf(discretise(LogNormal(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2
     ),
-    c(0.00, 0.00, 0.08, 0.28, 0.36, 0.21, 0.07)
+    c(0.00, 0.00, 0.05, 0.32, 0.41, 0.22)
   )
   expect_equal(
     unname(as.numeric(get_parameters(Gamma(mean = 4, sd = 1)))),
@@ -265,11 +265,11 @@ test_that("delay distributions can be specified in different ways", {
   )
   expect_equal(
     round(get_pmf(discretise(Gamma(mean = 4, sd = 1, max = 7))), 2),
-    c(0.00, 0.00, 0.08, 0.26, 0.35, 0.22, 0.08, 0.02)
+    c(0.00, 0.00, 0.06, 0.28, 0.38, 0.22, 0.07)
   )
   expect_equal(
     round(get_pmf(discretise(Gamma(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2),
-    c(0.00, 0.00, 0.08, 0.27, 0.35, 0.22, 0.08)
+    c(0.00, 0.00, 0.06, 0.30, 0.40, 0.23)
   )
   expect_equal(
     unname(as.numeric(
@@ -301,13 +301,16 @@ test_that("delay distributions can be specified in different ways", {
   )
   expect_equal(
     round(get_pmf(discretise(Normal(mean = 4, sd = 1, max = 5))), 2),
-    c(0.00, 0.01, 0.09, 0.26, 0.38, 0.26)
+    c(0.00, 0.01, 0.10, 0.35, 0.54)
   )
   expect_equal(
     round(get_pmf(discretise(Normal(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2),
-    c(0.00, 0.01, 0.08, 0.24, 0.35, 0.24, 0.08)
+    c(0.00, 0.01, 0.07, 0.26, 0.40, 0.26)
   )
   expect_equal(get_pmf(discretise(Fixed(value = 3))), c(0, 0, 0, 1))
+  ## fractional fixed values split probability across adjacent intervals
+  expect_equal(get_pmf(discretise(Fixed(value = 2.5))), c(0, 0, 0.5, 0.5))
+  expect_equal(get_pmf(discretise(Fixed(value = 1.25))), c(0, 0.75, 0.25))
   expect_equal(get_parameters(Fixed(value = 3.5))$value, 3.5)
   expect_equal(
     get_pmf(NonParametric(c(0.1, 0.3, 0.2, 0.4))),

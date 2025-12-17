@@ -56,11 +56,11 @@
 #' @param verbose Logical, should model fitting progress be returned. Defaults
 #' to [interactive()].
 #'
-#' @return A list containing: `predictions` (a `<data.frame>` ordered by date
-#' with the primary, and secondary observations, and a summary of the model
-#' estimated secondary observations), `posterior` which contains a summary of
-#' the entire model posterior, `data` (a list of data used to fit the
-#' model), and `fit` (the `stanfit` object).
+#' @return An `<estimate_secondary>` object which is a list of outputs
+#' including: the stan object (`fit`), arguments used to fit the model
+#' (`args`), and the observed data (`observations`). Use `summary()` to access
+#' estimates, `get_samples()` to extract posterior samples, and
+#' `get_predictions()` to access predictions.
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams update_secondary_args
@@ -232,8 +232,8 @@ estimate_secondary <- function(data,
   stan_data <- c(stan_data, secondary)
   # delay data
   stan_data <- c(stan_data, create_stan_delays(
-    delay = delays,
-    trunc = truncation,
+    reporting = delays,
+    truncation = truncation,
     time_points = stan_data$t
   ))
 
@@ -266,22 +266,15 @@ estimate_secondary <- function(data,
 
   fit <- fit_model(stan_, id = "estimate_secondary")
 
-  out <- list()
-  out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
-  out$predictions <- out$predictions[, lapply(.SD, round, 1)]
-  out$predictions <- out$predictions[, date := reports[(burn_in + 1):.N]$date]
-  out$predictions <- data.table::merge.data.table(
-    reports, out$predictions,
-    all = TRUE, by = "date"
+  # Create standardized S3 return structure
+  ret <- list(
+    fit = fit,
+    args = stan_data,
+    observations = reports
   )
-  out$posterior <- extract_stan_param(
-    fit,
-    CrIs = CrIs
-  )
-  out$data <- stan_data
-  out$fit <- fit
-  class(out) <- c("estimate_secondary", class(out))
-  return(out)
+
+  class(ret) <- c("epinowfit", "estimate_secondary", class(ret))
+  ret
 }
 
 #' Update estimate_secondary default priors
@@ -346,7 +339,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       data$dispersion_sd <- signif(dispersion$sd, 3)
     }
   }
-  return(data)
+  data
 }
 
 #' Plot method for estimate_secondary
@@ -381,7 +374,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
                                     from = NULL, to = NULL,
                                     new_obs = NULL,
                                     ...) {
-  predictions <- data.table::copy(x$predictions)
+  predictions <- get_predictions(x)
 
   if (!is.null(new_obs)) {
     new_obs <- data.table::as.data.table(new_obs)
@@ -426,6 +419,23 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     ggplot2::scale_x_date(date_breaks = "week", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+}
+
+#' Plot method for forecast_secondary objects
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Plot method for forecast secondary observations.
+#'
+#' @inheritParams plot.estimate_secondary
+#' @method plot forecast_secondary
+#' @export
+plot.forecast_secondary <- function(x, primary = FALSE,
+                                    from = NULL, to = NULL,
+                                    new_obs = NULL,
+                                    ...) {
+  plot.estimate_secondary(
+    x, primary = primary, from = from, to = to, new_obs = new_obs, ...
+  )
 }
 
 #' Convolve and scale a time series
@@ -540,7 +550,7 @@ convolve_and_scale <- function(data, type = c("incidence", "prevalence"),
     )]
   }
   data <- data[, secondary := as.integer(secondary)]
-  return(data[])
+  data[]
 }
 
 #' Forecast Secondary Observations Given a Fit from estimate_secondary
@@ -623,7 +633,7 @@ forecast_secondary <- function(estimate,
   if (inherits(primary, "estimate_infections")) {
     primary_samples <- get_samples(primary)
     primary <- primary_samples[variable == primary_variable]
-    primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
+    primary <- primary[date > max(get_predictions(estimate)$date, na.rm = TRUE)]
     primary <- primary[, .(date, sample, value)]
     if (!is.null(samples)) {
       primary <- primary[sample(.N, samples, replace = TRUE)]
@@ -641,10 +651,10 @@ forecast_secondary <- function(estimate,
     include = FALSE
   )
   # extract data from stanfit
-  stan_data <- estimate$data
+  stan_data <- estimate$args
 
   # combined primary from data and input primary
-  primary_fit <- estimate$predictions[
+  primary_fit <- get_predictions(estimate)[
     ,
     .(date, value = primary, sample = list(unique(updated_primary$sample)))
   ]
@@ -721,7 +731,7 @@ forecast_secondary <- function(estimate,
   # link previous prediction observations with forecast observations
   forecast_obs <- data.table::rbindlist(
     list(
-      estimate$predictions[, .(date, primary, secondary)],
+      get_predictions(estimate)[, .(date, primary, secondary)],
       data.table::copy(primary)[, .(primary = median(value)), by = "date"]
     ),
     use.names = TRUE, fill = TRUE
@@ -735,6 +745,55 @@ forecast_secondary <- function(estimate,
   data.table::setcolorder(
     out$predictions, c("date", "primary", "secondary", "mean", "sd")
   )
-  class(out) <- c("estimate_secondary", class(out))
-  return(out)
+  class(out) <- c("forecast_secondary", class(out))
+  out
+}
+
+#' Extract elements from estimate_secondary objects with deprecated warnings
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for the old return structure. The previous
+#' structure with \code{predictions}, \code{posterior}, and \code{data}
+#' elements is deprecated. Use the accessor methods instead:
+#' \itemize{
+#'   \item \code{predictions} - use \code{get_predictions(object)}
+#'   \item \code{posterior} - use \code{get_samples(object)}
+#'   \item \code{data} - use \code{object$observations}
+#' }
+#'
+#' @param x An \code{estimate_secondary} object
+#' @param name The name of the element to extract
+#' @return The requested element with a deprecation warning
+#' @keywords internal
+#' @export
+#' @method $ estimate_secondary
+`$.estimate_secondary` <- function(x, name) {
+  switch(name,
+    predictions = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        "estimate_secondary()$predictions",
+        "get_predictions()"
+      )
+      get_predictions(x)
+    },
+    posterior = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        "estimate_secondary()$posterior",
+        "get_samples()"
+      )
+      get_samples(x)
+    },
+    data = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        "estimate_secondary()$data",
+        "estimate_secondary()$observations"
+      )
+      x[["observations"]]
+    },
+    # For other elements, use normal list extraction
+    NextMethod("$")
+  )
 }

@@ -1,7 +1,16 @@
 # EpiNow2 (development version)
 
+## Breaking changes
+
+- The `discretise()` function now uses the `primarycensored` package for double censored PMF calculations, replacing the previous CDF difference approximation.
+This provides more accurate discretisation but will change the exact numerical values returned every time a distribution without uncertainty is discretised.
+Code that depends on the specific numerical output of `discretise()` may produce different results, though the differences should be small and represent improvements in accuracy.
+The function interface remains unchanged.
+
 ## Package changes
 
+- The test suite has been reorganised into core tests (fast, always run) and integration tests (slow, run weekly), improving local development speed by 77% (from 9 minutes to 2 minutes) whilst maintaining test coverage.
+- Added comprehensive unit tests for Stan functions including `discretised_pmf`, `get_delay_rev_pmf`, `convolve_to_report`, and `deconvolve_infections`.
 - Development-only dependencies (`covr`, `here`, `hexSticker`, `magick`, `pkgdown`, `precommit`, `usethis`) have been moved from `Suggests` to `Config/Needs/dev`.
   This reduces the dependency burden for end users while maintaining full functionality for package developers.
   Developers should use `pak::pak(".", dependencies = TRUE)` to install all dependencies including dev tools.
@@ -15,8 +24,16 @@
   - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
   - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
 - `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
+- `estimate_secondary()` now returns an S3 object of class `c("epinowfit", "estimate_secondary", "list")` with elements `fit`, `args`, and `observations`, matching the structure of `estimate_infections()`.
+  - Use `get_samples(object)` to extract formatted posterior samples for delay and scaling parameters.
+  - Use `get_predictions(object)` to get predicted secondary observations with credible intervals merged with observations.
+  - Use `summary(object)` to get summarised parameter estimates. Use `type = "compact"` for key parameters only, or `type = "parameters"` with a `params` argument to select specific parameters.
+  - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
+  - **Deprecated**: The previous return structure with `predictions`, `posterior`, and `data` elements is deprecated and will be removed in a future release. Backward compatibility is provided with deprecation warnings when accessing these elements via `$`.
+- `forecast_secondary()` now returns an independent S3 class `"forecast_secondary"` instead of inheriting from `"estimate_secondary"`, with dedicated `get_samples()`, `get_predictions()`, and `plot()` methods.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
 - Added a `style` argument to `plot_estimates()` and related plot methods to display credible intervals as error bars (`"linerange"`) instead of the default ribbons (`"ribbon"`). Error bars can be clearer for weekly or aggregated data.
+- **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 
 ## Model changes
 
@@ -26,6 +43,7 @@
 
 ## Bug fixes
 
+- A bug was fixed where the truncation PMF vector in `estimate_secondary.stan` was declared with incorrect dimension, causing a dimension mismatch with the `get_delay_rev_pmf()` function call.
 - A bug was fixed where the `CrIs` parameter in `epinow()` was not being passed through to internal functions, causing user-specified credible intervals to be ignored in saved files and output.
 - A bug was fixed where `forecast_infections` would fail with `samples = 1`.
 - A bug was fixed where `opts_list()` recursed lists which it shouldn't.

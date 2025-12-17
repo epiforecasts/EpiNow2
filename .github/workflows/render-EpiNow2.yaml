@@ -44,14 +44,14 @@ jobs:
         shell: Rscript {0}
 
       - name: Upload vignette as an artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: vignettes
           path: vignettes
   
       - name: Create Pull Request
         if: github.ref == 'refs/heads/main'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "Automatic Vignette update"
           title: "Update EpiNow2 vignette"

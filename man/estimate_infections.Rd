@@ -106,8 +106,9 @@ horizon}
 \value{
 An \verb{<estimate_infections>} object which is a list of outputs
 including: the stan object (\code{fit}), arguments used to fit the model
-(\code{args}), and the observed data (\code{observations}). The estimates included in
-the fit can be accessed using the \code{summary()} function.
+(\code{args}), and the observed data (\code{observations}). Use \code{summary()} to access
+estimates, \code{get_samples()} to extract posterior samples, and
+\code{get_predictions()} to access predicted reported cases.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
