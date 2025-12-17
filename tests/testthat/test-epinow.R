@@ -14,7 +14,7 @@ futile.logger::flog.threshold("FATAL")
 df_non_zero <- function(df) {
   expect_true(nrow(df) > 0)
 }
-expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")
+expected_out <- c("fit", "args", "observations", "timing")
 
 # Integration tests (MCMC-based) ------------------------------------------
 # These tests run actual MCMC sampling and are slow. Tests are divided into:
@@ -41,16 +41,29 @@ test_that("epinow produces expected output when run with default settings", {
   )))
 
   expect_equal(names(out), expected_out)
-  df_non_zero(out$estimates$samples)
-  df_non_zero(out$estimates$summarised)
-  df_non_zero(out$estimated_reported_cases$samples)
-  df_non_zero(out$estimated_reported_cases$summarised)
-  df_non_zero(out$summary)
-  expect_equal(names(out$plots), c("summary", "infections", "reports", "R", "growth_rate"))
+  lifecycle::expect_deprecated(df_non_zero(out$estimates$samples))
+  lifecycle::expect_deprecated(df_non_zero(out$estimates$summarised))
+  lifecycle::expect_deprecated(
+    df_non_zero(out$estimated_reported_cases$samples)
+  )
+  lifecycle::expect_deprecated(
+    df_non_zero(out$estimated_reported_cases$summarised)
+  )
+
+  lifecycle::expect_deprecated(df_non_zero(out$summary))
+  lifecycle::expect_deprecated(
+    expect_equal(
+      names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+    )
+  )
 
   # Regression test: custom CrIs should be respected in output
-  expect_equal(extract_CrIs(out$estimates$summarised), 95)
-  expect_equal(extract_CrIs(out$estimated_reported_cases$summarised), 95)
+  lifecycle::expect_deprecated(
+    expect_equal(extract_CrIs(out$estimates$summarised), 95)
+  )
+  lifecycle::expect_deprecated(
+    expect_equal(extract_CrIs(out$estimated_reported_cases$summarised), 95)
+  )
 })
 
 test_that("epinow produces expected output with cmdstanr backend", {
@@ -67,13 +80,19 @@ test_that("epinow produces expected output with cmdstanr backend", {
   )))
 
   expect_equal(names(out), expected_out)
-  df_non_zero(out$estimates$samples)
-  df_non_zero(out$estimates$summarised)
-  df_non_zero(out$estimated_reported_cases$samples)
-  df_non_zero(out$estimated_reported_cases$summarised)
-  df_non_zero(out$summary)
-  expect_equal(
-    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+  lifecycle::expect_deprecated(df_non_zero(out$estimates$samples))
+  lifecycle::expect_deprecated(df_non_zero(out$estimates$summarised))
+  lifecycle::expect_deprecated(
+    df_non_zero(out$estimated_reported_cases$samples)
+  )
+  lifecycle::expect_deprecated(
+    df_non_zero(out$estimated_reported_cases$summarised)
+  )
+  lifecycle::expect_deprecated(df_non_zero(out$summary))
+  lifecycle::expect_deprecated(
+    expect_equal(
+      names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+    )
   )
 })
 
@@ -90,13 +109,20 @@ test_that("epinow produces expected output with laplace algorithm", {
     )
   )))
   expect_equal(names(out), expected_out)
-  df_non_zero(out$estimates$samples)
-  df_non_zero(out$estimates$summarised)
-  df_non_zero(out$estimated_reported_cases$samples)
-  df_non_zero(out$estimated_reported_cases$summarised)
-  df_non_zero(out$summary)
-  expect_equal(
-    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+  expect_warning(df_non_zero(out$estimates$samples), "deprecated")
+  expect_warning(df_non_zero(out$estimates$summarised), "deprecated")
+  expect_warning(
+    df_non_zero(out$estimated_reported_cases$samples), "deprecated"
+  )
+  expect_warning(
+    df_non_zero(out$estimated_reported_cases$summarised), "deprecated"
+  )
+  expect_warning(df_non_zero(out$summary), "deprecated")
+  expect_warning(
+    expect_equal(
+      names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+    ),
+    "deprecated"
   )
 })
 
@@ -113,13 +139,20 @@ test_that("epinow produces expected output with pathfinder algorithm", {
     )
   )))
   expect_equal(names(out), expected_out)
-  df_non_zero(out$estimates$samples)
-  df_non_zero(out$estimates$summarised)
-  df_non_zero(out$estimated_reported_cases$samples)
-  df_non_zero(out$estimated_reported_cases$summarised)
-  df_non_zero(out$summary)
-  expect_equal(
-    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+  expect_warning(df_non_zero(out$estimates$samples), "deprecated")
+  expect_warning(df_non_zero(out$estimates$summarised), "deprecated")
+  expect_warning(
+    df_non_zero(out$estimated_reported_cases$samples), "deprecated"
+  )
+  expect_warning(
+    df_non_zero(out$estimated_reported_cases$summarised), "deprecated"
+  )
+  expect_warning(df_non_zero(out$summary), "deprecated")
+  expect_warning(
+    expect_equal(
+      names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+    ),
+    "deprecated"
   )
 })
 
@@ -160,12 +193,13 @@ test_that("epinow can produce partial output as specified", {
       logs = NULL, verbose = FALSE
     )
   )))
-  expect_equal(names(out), c("estimates", "estimated_reported_cases", "summary"))
-  expect_null(out$estimates$samples)
-  df_non_zero(out$estimates$summarised)
-  expect_null(out$estimated_reported_cases$samples)
-  df_non_zero(out$estimated_reported_cases$summarised)
-  df_non_zero(out$summary)
+  expect_equal(names(out), c("fit", "args", "observations"))
+  expect_warning(df_non_zero(out$estimates$samples), "deprecated")
+  expect_warning(df_non_zero(out$estimates$summarised), "deprecated")
+  expect_warning(
+    df_non_zero(out$estimated_reported_cases$summarised), "deprecated"
+  )
+  expect_warning(df_non_zero(out$summary), "deprecated")
 })
 
 test_that("epinow fails as expected when given a short timeout", {
