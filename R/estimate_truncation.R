@@ -52,15 +52,18 @@
 #'
 #' @param ... Additional parameters to pass to [rstan::sampling()].
 #'
-#' @return A list containing: the summary parameters of the truncation
-#' distribution (`dist`), which could be passed to the `truncation` argument
-#' of [epinow()], [regional_epinow()], and [estimate_infections()], the
-#' estimated CMF of the truncation distribution (`cmf`, can be used to
-#' adjusted new data), a `<data.frame>` containing the observed truncated
-#' data, latest observed data and the adjusted for
-#' truncation observations (`obs`), a `<data.frame>` containing the last
-#' observed data (`last_obs`, useful for plotting and validation), the data
-#' used for fitting (`data`) and the fit object (`fit`).
+#' @return An `<estimate_truncation>` object containing:
+#'
+#' - `dist`: The estimated truncation distribution as a `<dist_spec>`, which
+#'   can be passed to the `truncation` argument of [epinow()],
+#'   [regional_epinow()], and [estimate_infections()].
+#' - `observations`: A `<data.table>` containing the observed truncated data,
+#'   latest observed data, and truncation-adjusted estimates.
+#' - `args`: A list of arguments used for fitting (stan data).
+#' - `fit`: The stan fit object.
+#'
+#' S3 methods available: [summary.estimate_truncation()],
+#' [plot.estimate_truncation()], [get_samples.estimate_truncation()].
 #'
 #' @export
 #' @inheritParams calc_CrIs
@@ -87,10 +90,10 @@
 #'
 #' # summary of the distribution
 #' est$dist
-#' # summary of the estimated truncation cmf (can be applied to new data)
-#' print(est$cmf)
+#' # or using the summary method
+#' summary(est, type = "dist")
 #' # observations linked to truncation adjusted estimates
-#' print(est$obs)
+#' print(est$observations)
 #' # validation plot of observations vs estimates
 #' plot(est)
 #'
@@ -262,14 +265,9 @@ estimate_truncation <- function(data,
     )
     target_obs[order(date)][, index := NULL]
   }
-  out$obs <- purrr::map(1:(stan_data$obs_sets), link_obs)
-  out$obs <- data.table::rbindlist(out$obs)
-  out$last_obs <- last_obs
-  # summarise estimated cmf of the truncation distribution
-  out$cmf <- extract_stan_param(fit, "trunc_rev_cmf", CrIs = CrIs)
-  out$cmf <- data.table::as.data.table(out$cmf)[, index := seq_len(.N)]
-  data.table::setcolorder(out$cmf, "index")
-  out$data <- stan_data
+  out$observations <- purrr::map(1:(stan_data$obs_sets), link_obs)
+  out$observations <- data.table::rbindlist(out$observations)
+  out$args <- stan_data
   out$fit <- fit
 
   class(out) <- c("estimate_truncation", class(out))
@@ -295,18 +293,19 @@ estimate_truncation <- function(data,
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {
-  p <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
+  obs <- x$observations
+  p <- ggplot2::ggplot(obs, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
     ) +
     ggplot2::geom_point(
-      data = x$obs,
+      data = obs,
       ggplot2::aes(x = date, y = confirm)
     ) +
     ggplot2::facet_wrap(~report_date, scales = "free")
 
-  p <- plot_CrIs(p, extract_CrIs(x$obs),
+  p <- plot_CrIs(p, extract_CrIs(obs),
     alpha = 0.8, linewidth = 1
   )
 
@@ -318,4 +317,68 @@ plot.estimate_truncation <- function(x, ...) {
     ggplot2::scale_x_date(date_breaks = "day", date_labels = "%b %d") +
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+}
+
+#' @export
+#' @method $ estimate_truncation
+`$.estimate_truncation` <- function(x, name) {
+  deprecated_map <- list(
+    obs = "observations",
+    data = "args"
+  )
+
+  if (name %in% names(deprecated_map)) {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      paste0("estimate_truncation()$", name),
+      paste0("estimate_truncation()$", deprecated_map[[name]])
+    )
+    return(NextMethod("$"))
+  }
+
+  removed <- c("last_obs", "cmf")
+  if (name %in% removed) {
+    lifecycle::deprecate_stop(
+      "1.8.0",
+      paste0("estimate_truncation()$", name),
+      details = switch(name,
+        last_obs = "This is now included in `observations`.",
+        cmf = "Use `summary(x, type = 'dist')` to get the distribution."
+      )
+    )
+  }
+
+  NextMethod("$")
+}
+
+#' @export
+#' @method [[ estimate_truncation
+`[[.estimate_truncation` <- function(x, i) {
+  deprecated_map <- list(
+    obs = "observations",
+    data = "args"
+  )
+
+  if (i %in% names(deprecated_map)) {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      paste0("estimate_truncation()$", i),
+      paste0("estimate_truncation()$", deprecated_map[[i]])
+    )
+    return(NextMethod("[["))
+  }
+
+  removed <- c("last_obs", "cmf")
+  if (i %in% removed) {
+    lifecycle::deprecate_stop(
+      "1.8.0",
+      paste0("estimate_truncation()$", i),
+      details = switch(i,
+        last_obs = "This is now included in `observations`.",
+        cmf = "Use `summary(x, type = 'dist')` to get the distribution."
+      )
+    )
+  }
+
+  NextMethod("[[")
 }
