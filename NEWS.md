@@ -16,7 +16,7 @@ The function interface remains unchanged.
   Developers should use `pak::pak(".", dependencies = TRUE)` to install all dependencies including dev tools.
   Fixes #1067.
 - The package now has a hex logo.
-- Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now have to do `param_id_[parameter_name]`, for example, `frac_obs_id` is now `param_id_frac_obs`.
+- Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now have to do `param_id_[parameter_name]`, for example, `fraction_observed_id` is now `param_id_fraction_observed`.
 - `estimate_infections()` now returns an S3 object of class `c("epinowfit", "estimate_infections", "list")` with elements `fit`, `args`, and `observations`.
   - Use `get_samples(object)` to extract formatted posterior samples (replaces `summary(object, type = "samples")`).
   - Use `summary(object)` to get summarised estimates (same as before, but `type = "samples"` is now deprecated).
@@ -40,6 +40,7 @@ The function interface remains unchanged.
   - **Deprecated**: The previous return structure with `$estimates`, `$estimated_reported_cases`, `$summary`, `$plots`, and `$estimate_infections` elements is deprecated. Backward compatibility is provided via `$` and `[[` operators with deprecation warnings.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
 - **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
+- **Internal**: Stan model parameter names have been renamed for clarity (`dispersion` → `reporting_overdispersion`, `frac_obs` → `fraction_observed`). This simplifies internal code by removing post-hoc parameter renaming. This may affect users who access Stan models directly or use custom priors with the old parameter names.
 
 ## Model changes
 
