@@ -31,6 +31,13 @@ The function interface remains unchanged.
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
   - **Deprecated**: The previous return structure with `predictions`, `posterior`, and `data` elements is deprecated and will be removed in a future release. Backward compatibility is provided with deprecation warnings when accessing these elements via `$`.
 - `forecast_secondary()` now returns an independent S3 class `"forecast_secondary"` instead of inheriting from `"estimate_secondary"`, with dedicated `get_samples()`, `get_predictions()`, and `plot()` methods.
+- `epinow()` now returns an S3 object that inherits from `estimate_infections`, with class `c("epinow", "epinowfit", "estimate_infections", "list")`. This provides a consistent interface with `estimate_infections()` whilst adding epinow-specific computed elements.
+  - Use `get_samples(object)` to extract formatted posterior samples.
+  - Use `summary(object)` to get a snapshot summary or `summary(object, type = "parameters")` for detailed parameter estimates.
+  - Use `plot(object)` to generate visualisations.
+  - Access the Stan fit via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
+  - The `output` argument now controls what is saved to disk, not the return structure.
+  - **Deprecated**: The previous return structure with `$estimates`, `$estimated_reported_cases`, `$summary`, `$plots`, and `$estimate_infections` elements is deprecated. Backward compatibility is provided via `$` and `[[` operators with deprecation warnings.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
 - **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 
