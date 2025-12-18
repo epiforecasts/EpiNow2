@@ -19,6 +19,12 @@
 - Don't reference issue numbers in commit messages - these belong in PR descriptions, not commits
 - Focus on what the change does, not which issue it addresses
 - Break work into small atomic commits when possible
+- Don't include "Generated with Claude Code" or similar
+
+### Updating Branches
+- **Never rebase onto main** - always merge main into your branch instead
+- Rebasing rewrites history and makes it hard for collaborators to see what happened
+- Use `git merge origin/main` not `git rebase main`
 
 ### Example
 
