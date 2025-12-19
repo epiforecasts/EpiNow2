@@ -253,6 +253,56 @@ get_samples <- function(object, ...) {
   UseMethod("get_samples")
 }
 
+#' Get the estimated delay distribution from a fitted model
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Extracts the estimated delay distribution from a fitted model as a
+#' `dist_spec` object. Currently implemented for `estimate_truncation` objects.
+#'
+#' @param object A fitted model object
+#' @param ... Additional arguments passed to methods
+#'
+#' @return A `dist_spec` object representing the estimated delay distribution
+#'   with posterior uncertainty.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # After fitting a truncation model
+#' trunc_dist <- get_dist(est)
+#' # Use in epinow()
+#' epinow(..., truncation = trunc_opts(trunc_dist))
+#' }
+get_dist <- function(object, ...) {
+  UseMethod("get_dist")
+}
+
+#' @rdname get_dist
+#' @export
+get_dist.estimate_truncation <- function(object, ...) {
+  # Extract delay parameters from the fit
+  delay_params <- extract_stan_param(object$fit, params = "delay_params")
+  params_mean <- round(delay_params$mean, 3)
+  params_sd <- round(delay_params$sd, 3)
+
+  # Get the original truncation distribution info from args
+  dist_type <- object$args$dist_type
+  dist_max <- object$args$dist_max
+
+  # Create Normal distributions for each parameter
+  parameters <- purrr::map(seq_along(params_mean), function(id) {
+    Normal(params_mean[id], params_sd[id])
+  })
+  names(parameters) <- natural_params(dist_type)
+
+  # Create and return the dist_spec
+  new_dist_spec(
+    params = parameters,
+    max = dist_max,
+    distribution = dist_type
+  )
+}
+
 #' @rdname get_samples
 #' @export
 get_samples.estimate_infections <- function(object, ...) {
