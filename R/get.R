@@ -253,6 +253,56 @@ get_samples <- function(object, ...) {
   UseMethod("get_samples")
 }
 
+#' Get the estimated delay distribution from a fitted model
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Extracts the estimated delay distribution from a fitted model as a
+#' `dist_spec` object. Currently implemented for `estimate_truncation` objects.
+#'
+#' @param object A fitted model object
+#' @param ... Additional arguments passed to methods
+#'
+#' @return A `dist_spec` object representing the estimated delay distribution
+#'   with posterior uncertainty.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # After fitting a truncation model
+#' trunc_dist <- get_dist(est)
+#' # Use in epinow()
+#' epinow(..., truncation = trunc_opts(trunc_dist))
+#' }
+get_dist <- function(object, ...) {
+  UseMethod("get_dist")
+}
+
+#' @rdname get_dist
+#' @export
+get_dist.estimate_truncation <- function(object, ...) {
+  # Extract delay parameters from the fit
+  delay_params <- extract_stan_param(object$fit, params = "delay_params")
+  params_mean <- round(delay_params$mean, 3)
+  params_sd <- round(delay_params$sd, 3)
+
+  # Get the original truncation distribution info from args
+  dist_type <- object$args$dist_type
+  dist_max <- object$args$dist_max
+
+  # Create Normal distributions for each parameter
+  parameters <- purrr::map(seq_along(params_mean), function(id) {
+    Normal(params_mean[id], params_sd[id])
+  })
+  names(parameters) <- natural_params(dist_type)
+
+  # Create and return the dist_spec
+  new_dist_spec(
+    params = parameters,
+    max = dist_max,
+    distribution = dist_type
+  )
+}
+
 #' @rdname get_samples
 #' @export
 get_samples.estimate_infections <- function(object, ...) {
@@ -330,6 +380,50 @@ get_samples.estimate_secondary <- function(object, ...) {
 #' @export
 get_samples.forecast_secondary <- function(object, ...) {
   data.table::copy(object$samples)
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.estimate_truncation <- function(object, ...) {
+  raw_samples <- extract_samples(object$fit)
+
+  samples_list <- list()
+
+  # Extract delay parameters (truncation distribution)
+  samples_list$delay_params <- extract_delays(raw_samples)
+
+  # Extract reconstructed observations
+  recon_obs <- raw_samples[["recon_obs"]]
+  if (!is.null(recon_obs)) {
+    obs_sets <- object$args$obs_sets
+    n_time <- object$args$t
+    n_samples <- dim(recon_obs)[1]
+
+    recon_dt <- data.table::data.table(
+      sample = rep(seq_len(n_samples), each = n_time * obs_sets),
+      time = rep(rep(seq_len(n_time), obs_sets), n_samples),
+      dataset = rep(rep(seq_len(obs_sets), each = n_time), n_samples),
+      value = as.vector(aperm(recon_obs, c(2, 3, 1)))
+    )
+    recon_dt[, variable := "recon_obs"]
+    samples_list$recon_obs <- recon_dt
+  }
+
+  # Combine all samples
+  samples <- data.table::rbindlist(samples_list, fill = TRUE)
+
+  # Rename 'parameter' column to 'variable' for consistency if needed
+  if ("parameter" %in% names(samples)) {
+    data.table::setnames(samples, "parameter", "variable")
+  }
+
+  # Add placeholder columns for consistency
+  if (!"date" %in% names(samples)) samples[, date := as.Date(NA)]
+  if (!"strat" %in% names(samples)) samples[, strat := NA_character_]
+  if (!"time" %in% names(samples)) samples[, time := NA_integer_]
+  if (!"type" %in% names(samples)) samples[, type := NA_character_]
+
+  samples[]
 }
 
 #' Get predictions from a fitted model
