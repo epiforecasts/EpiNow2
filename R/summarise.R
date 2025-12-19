@@ -1014,7 +1014,7 @@ summary.estimate_truncation <- function(object,
   type <- arg_match(type)
 
   if (type == "dist") {
-    return(object$dist)
+    return(get_dist(object))
   }
 
   if (type == "observations") {
