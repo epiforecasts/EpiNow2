@@ -544,7 +544,10 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
       attributes(y)[attribute] <- attributes(x)[attribute]
     }
     if (remove_trailing_zeros) {
-      y$pmf <- y$pmf[seq_len(max(which(y$pmf != 0)))]
+      non_zero_idx <- which(y$pmf != 0)
+      if (length(non_zero_idx) > 0) {
+        y$pmf <- y$pmf[seq_len(max(non_zero_idx))]
+      }
     }
     y
   } else if (strict) {
