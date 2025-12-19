@@ -39,6 +39,7 @@ The function interface remains unchanged.
   - The `output` argument now controls what is saved to disk, not the return structure.
   - **Deprecated**: The previous return structure with `$estimates`, `$estimated_reported_cases`, `$summary`, `$plots`, and `$estimate_infections` elements is deprecated. Backward compatibility is provided via `$` and `[[` operators with deprecation warnings.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
+- Added a `style` argument to `plot_estimates()` and related plot methods to display credible intervals as error bars (`"linerange"`) instead of the default ribbons (`"ribbon"`). Error bars can be clearer for weekly or aggregated data.
 - **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 
 ## Model changes
