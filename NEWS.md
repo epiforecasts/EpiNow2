@@ -3,7 +3,7 @@
 ## Package changes
 
 - The package now has a hex logo.
-- Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now have to do `param_id_[parameter_name]`, for example, `frac_obs_id` is now `param_id_frac_obs`.
+- Changed parameter IDs to use `param_id_parameter_name` prefix to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now need to use `param_id_[parameter_name]`, for example, `frac_obs_id` is now `param_id_frac_obs`.
 
 ## Model changes
 
