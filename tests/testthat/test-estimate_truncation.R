@@ -21,9 +21,9 @@ test_that("estimate_truncation can return values from simulated data and plot
   )
   expect_equal(
     names(est),
-    c("dist", "observations", "args", "fit")
+    c("observations", "args", "fit")
   )
-  expect_s3_class(est$dist, "dist_spec")
+  expect_s3_class(get_dist(est), "dist_spec")
   expect_s3_class(summary(est, type = "dist"), "dist_spec")
   expect_s3_class(est$observations, "data.table")
   expect_error(plot(est), NA)
@@ -43,9 +43,9 @@ test_that("estimate_truncation can return values from simulated data with the
   )))
   expect_equal(
     names(est),
-    c("dist", "observations", "args", "fit")
+    c("observations", "args", "fit")
   )
-  expect_s3_class(est$dist, "dist_spec")
+  expect_s3_class(get_dist(est), "dist_spec")
   expect_error(plot(est), NA)
 })
 
@@ -70,12 +70,12 @@ test_that("estimate_truncation works with filter_leading_zeros set", {
   )
   expect_named(
     modified_data_fit,
-    c("dist", "observations", "args", "fit")
+    c("observations", "args", "fit")
   )
   # Compare the results of the two fits
   expect_equal(
-    original_data_fit$dist$dist,
-    modified_data_fit$dist$dist
+    get_dist(original_data_fit)$dist,
+    get_dist(modified_data_fit)$dist
   )
   expect_equal(
     original_data_fit$args$obs_dist,
@@ -94,8 +94,8 @@ test_that("estimate_truncation works with zero_threshold set", {
   out <- estimate_truncation(modified_data,
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250
   )
-  expect_named(out, c("dist", "observations", "args", "fit"))
-  expect_s3_class(out$dist, "dist_spec")
+  expect_named(out, c("observations", "args", "fit"))
+  expect_s3_class(get_dist(out), "dist_spec")
 })
 
 options(old_opts)
