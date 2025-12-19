@@ -32,12 +32,12 @@ transformed data{
 
 parameters {
   vector<lower = delay_params_lower>[delay_params_length] delay_params;
-  real<lower=0> dispersion;
+  real<lower=0> reporting_overdispersion;
   real<lower=0> sigma;
 }
 
 transformed parameters{
-  real phi = 1 / sqrt(dispersion);
+  real phi = 1 / sqrt(reporting_overdispersion);
   matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] trunc_obs =
     rep_matrix(0, delay_type_max[delay_id_truncation] + 1, obs_sets - 1);
   vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf =
@@ -67,7 +67,7 @@ model {
     delay_dist, delay_weight
   );
 
-  dispersion ~ normal(0, 1) T[0,];
+  reporting_overdispersion ~ normal(0, 1) T[0,];
   sigma ~ normal(0, 1) T[0,];
   
   // log density of truncated latest data vs that observed

@@ -976,7 +976,7 @@ summary.estimate_secondary <- function(object,
     # Return only key parameters for a compact summary
     # Typical parameters: delay_params (distribution parameters),
     # params (scaling factors)
-    key_vars <- c("delay_params", "params", "frac_obs")
+    key_vars <- c("delay_params", "params", "fraction_observed")
     out <- out[grepl(paste(key_vars, collapse = "|"), variable)]
   } else if (type == "parameters" && !is.null(params)) {
     # Optional filtering by parameter name

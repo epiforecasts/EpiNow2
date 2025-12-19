@@ -58,13 +58,13 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
  * @param pop_floor Minimum susceptible population (floor to prevent instability)
  * @param ht Horizon time
  * @param obs_scale Whether to scale by fraction observed (1) or not (0)
- * @param frac_obs Fraction of infections that are observed
+ * @param fraction_observed Fraction of infections that are observed
  * @param initial_as_scale Whether initial infections are a scaling factor (1) or not (0)
  * @return A vector of infection counts
  */
 vector generate_infections(vector R, int uot, vector gt_rev_pmf,
                            array[] real initial_infections, real pop,
-                           int use_pop, real pop_floor, int ht, int obs_scale, real frac_obs,
+                           int use_pop, real pop_floor, int ht, int obs_scale, real fraction_observed,
                            int initial_as_scale) {
   // time indices and storage
   int ot = num_elements(R);
@@ -79,7 +79,7 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
   if (initial_as_scale) {
     infections[1] = exp(initial_infections[1] - growth * uot);
     if (obs_scale) {
-      infections[1] = infections[1] / frac_obs;
+      infections[1] = infections[1] / fraction_observed;
     }
   } else {
     infections[1] = exp(initial_infections[1]);

@@ -241,8 +241,8 @@ estimate_secondary <- function(data,
   stan_data <- c(stan_data, create_obs_model(obs, dates = reports$date))
 
   params <- list(
-    make_param("frac_obs", obs$scale, lower_bound = 0),
-    make_param("dispersion", obs$dispersion, lower_bound = 0)
+    make_param("fraction_observed", obs$scale, lower_bound = 0),
+    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0)
   )
 
   stan_data <- c(stan_data, create_stan_params(params))
@@ -291,7 +291,7 @@ estimate_secondary <- function(data,
 #'   rather than the defaults supplied from other arguments. This is typically
 #'   useful if wanting to inform a estimate from the posterior of another model
 #'   fit. Priors that are currently use to update the defaults are the scaling
-#'   fraction ("frac_obs"), and delay parameters ("delay_params"). The
+#'   fraction ("fraction_observed"), and delay parameters ("delay_params"). The
 #'   `<data.frame>` should have the following variables: `variable`, `mean`, and
 #'   `sd`.
 #'
@@ -301,7 +301,7 @@ estimate_secondary <- function(data,
 #' @importFrom data.table as.data.table
 #' @importFrom cli cli_inform cli_warn
 #' @examples
-#' priors <- data.frame(variable = "frac_obs", mean = 3, sd = 1)
+#' priors <- data.frame(variable = "fraction_observed", mean = 3, sd = 1)
 #' data <- list(obs_scale_mean = 4, obs_scale_sd = 3)
 #' update_secondary_args(data, priors)
 update_secondary_args <- function(data, priors, verbose = TRUE) {
@@ -314,10 +314,12 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       )
     }
     # replace scaling if present in the prior
-    frac_obs <- priors[grepl("frac_obs", variable, fixed = TRUE)]
-    if (nrow(frac_obs) > 0) {
-      data$obs_scale_mean <- as.array(signif(frac_obs$mean, 3))
-      data$obs_scale_sd <- as.array(signif(frac_obs$sd, 3))
+    fraction_observed <- priors[
+      grepl("fraction_observed", variable, fixed = TRUE)
+    ]
+    if (nrow(fraction_observed) > 0) {
+      data$obs_scale_mean <- as.array(signif(fraction_observed$mean, 3))
+      data$obs_scale_sd <- as.array(signif(fraction_observed$sd, 3))
     }
     # replace delay parameters if present
     delay_params <- priors[grepl("delay_params", variable, fixed = TRUE)]
@@ -333,10 +335,12 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       data$delay_params_mean <- as.array(signif(delay_params$mean, 3))
       data$delay_params_sd <- as.array(signif(delay_params$sd, 3))
     }
-    dispersion <- priors[grepl("dispersion", variable, fixed = TRUE)]
-    if (nrow(dispersion) > 0) {
-      data$dispersion_mean <- signif(dispersion$mean, 3)
-      data$dispersion_sd <- signif(dispersion$sd, 3)
+    reporting_overdispersion <- priors[
+      grepl("reporting_overdispersion", variable, fixed = TRUE)
+    ]
+    if (nrow(reporting_overdispersion) > 0) {
+      data$dispersion_mean <- signif(reporting_overdispersion$mean, 3)
+      data$dispersion_sd <- signif(reporting_overdispersion$sd, 3)
     }
   }
   data

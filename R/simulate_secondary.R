@@ -118,8 +118,8 @@ simulate_secondary <- function(primary,
   }
 
   params <- list(
-    make_param("frac_obs", obs$scale, lower_bound = 0),
-    make_param("dispersion", obs$dispersion, lower_bound = 0)
+    make_param("fraction_observed", obs$scale, lower_bound = 0),
+    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0)
   )
 
   stan_data <- c(stan_data, create_stan_params(params))
