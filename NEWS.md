@@ -41,11 +41,11 @@ The function interface remains unchanged.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
 - `estimate_truncation()` now returns a proper S3 object with a simplified structure.
   - Return elements have been renamed: `obs` → `observations`, `data` → `args`.
-  - Removed elements: `last_obs` (now included in `observations`), `cmf` and `dist` (use `get_dist(object)` to extract the truncation distribution as a `dist_spec`).
-  - Use `get_dist(object)` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
+  - Removed elements: `last_obs` (now included in `observations`), `cmf` and `dist` (use `get_delay(object)` to extract the truncation distribution as a `dist_spec`).
+  - Use `get_delay(object)` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
   - Use `get_samples(object)` to extract posterior samples.
   - Use `summary(object)` to get the truncation distribution (`type = "dist"`), parameter estimates (`type = "parameters"`), or observations (`type = "observations"`).
-  - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_dist()` instead.
+  - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_delay()` instead.
 - **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 
 ## Model changes

@@ -269,17 +269,17 @@ get_samples <- function(object, ...) {
 #' @examples
 #' \dontrun{
 #' # After fitting a truncation model
-#' trunc_dist <- get_dist(est)
+#' trunc_dist <- get_delay(est)
 #' # Use in epinow()
 #' epinow(..., truncation = trunc_opts(trunc_dist))
 #' }
-get_dist <- function(object, ...) {
-  UseMethod("get_dist")
+get_delay <- function(object, ...) {
+  UseMethod("get_delay")
 }
 
-#' @rdname get_dist
+#' @rdname get_delay
 #' @export
-get_dist.estimate_truncation <- function(object, ...) {
+get_delay.estimate_truncation <- function(object, ...) {
   # Extract delay parameters from the fit
   delay_params <- extract_stan_param(object$fit, params = "delay_params")
   params_mean <- round(delay_params$mean, 3)
