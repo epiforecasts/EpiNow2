@@ -29,6 +29,27 @@ test_that("estimate_truncation can return values from simulated data and plot
   expect_error(plot(est), NA)
 })
 
+test_that("deprecated accessors return correct values with warnings", {
+  est <- estimate_truncation(example_truncated,
+    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
+  )
+  # $obs returns observations with deprecation warning
+  lifecycle::expect_deprecated(obs_result <- est$obs)
+  expect_equal(obs_result, est$observations)
+
+  # $data returns args with deprecation warning
+  lifecycle::expect_deprecated(data_result <- est$data)
+  expect_equal(data_result, est$args)
+
+  # $dist returns dist_spec with deprecation warning
+  lifecycle::expect_deprecated(dist_result <- est$dist)
+  expect_s3_class(dist_result, "dist_spec")
+
+  # [[ accessor works the same way
+  lifecycle::expect_deprecated(obs_bracket <- est[["obs"]])
+  expect_equal(obs_bracket, est$observations)
+})
+
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_truncation can return values from simulated data with the
            cmdstanr backend", {
