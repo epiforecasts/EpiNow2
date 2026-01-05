@@ -199,13 +199,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
     for (param in param_names) {
       result <- all_params[parameter == param]
       if (nrow(result) > 0) {
-        # Use standard naming conventions
-        param_name <- switch(param,
-          "dispersion" = "reporting_overdispersion",
-          "frac_obs" = "fraction_observed",
-          param # default: use param name as-is
-        )
-        out[[param_name]] <- result
+        out[[param]] <- result
       }
     }
   }

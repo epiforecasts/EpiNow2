@@ -43,12 +43,12 @@ generated quantities {
   array[n, t - seeding_time] int imputed_reports;
   matrix[n, t - seeding_time - 1] r;
   {
-    vector[n] dispersion = get_param(
-      param_id_dispersion, params_fixed_lookup, params_variable_lookup,
+    vector[n] reporting_overdispersion = get_param(
+      param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
-    vector[n] frac_obs = get_param(
-      param_id_frac_obs, params_fixed_lookup, params_variable_lookup,
+    vector[n] fraction_observed = get_param(
+      param_id_fraction_observed, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
 
@@ -69,7 +69,7 @@ generated quantities {
 
       infections[i] = to_row_vector(generate_infections(
         to_vector(R[i]), seeding_time, gt_rev_pmf, initial_infections[i],
-        pop[i], use_pop, pop_floor, future_time, obs_scale, frac_obs[i],
+        pop[i], use_pop, pop_floor, future_time, obs_scale, fraction_observed[i],
         initial_as_scale
       ));
 
@@ -115,12 +115,12 @@ generated quantities {
       // scale observations
       if (obs_scale) {
         reports[i] = to_row_vector(
-          scale_obs(to_vector(reports[i]), frac_obs[i])
+          scale_obs(to_vector(reports[i]), fraction_observed[i])
         );
       }
       // simulate reported cases
       imputed_reports[i] = report_rng(
-        to_vector(reports[i]), dispersion[i], model_type
+        to_vector(reports[i]), reporting_overdispersion[i], model_type
       );
       r[i] = to_row_vector(calculate_growth(
         to_vector(infections[i]), seeding_time, gt_rev_pmf, growth_method
