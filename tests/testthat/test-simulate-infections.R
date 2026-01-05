@@ -21,7 +21,7 @@ test_that("simulate_infections works as expected with standard parameters", {
     generation_time = gt_opts(Fixed(1))
   )
   expect_equal(nrow(sim), 2 * nrow(R))
-  expect_snapshot_output(sim)
+  expect_snapshot_output(as.data.frame(sim))
   set.seed(Sys.time())
 })
 
@@ -34,7 +34,7 @@ test_that("simulate_infections works as expected with additional parameters", {
     seeding_time = 10
   )
   expect_equal(nrow(sim), 2 * nrow(R))
-  expect_snapshot_output(sim)
+  expect_snapshot_output(as.data.frame(sim))
   set.seed(Sys.time())
 })
 
