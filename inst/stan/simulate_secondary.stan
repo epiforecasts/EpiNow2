@@ -34,12 +34,12 @@ transformed data {
 generated quantities {
   array[n, all_dates ? t : horizon] int sim_secondary;
   {
-    vector[n] dispersion = get_param(
-      param_id_dispersion, params_fixed_lookup, params_variable_lookup,
+    vector[n] reporting_overdispersion = get_param(
+      param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
-    vector[n] frac_obs = get_param(
-      param_id_frac_obs, params_fixed_lookup, params_variable_lookup,
+    vector[n] fraction_observed = get_param(
+      param_id_fraction_observed, params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
     for (i in 1:n) {
@@ -48,7 +48,7 @@ generated quantities {
       vector[t] convolved = rep_vector(1e-5, t);
 
       if (obs_scale) {
-        scaled = scale_obs(to_vector(primary[i]), frac_obs[i]);
+        scaled = scale_obs(to_vector(primary[i]), fraction_observed[i]);
       } else {
         scaled = to_vector(primary[i]);
       }
@@ -93,7 +93,7 @@ generated quantities {
 
       // simulate secondary reports
       sim_secondary[i] = report_rng(
-        tail(secondary, all_dates ? t : horizon), dispersion[i], model_type
+        tail(secondary, all_dates ? t : horizon), reporting_overdispersion[i], model_type
       );
     }
   }
