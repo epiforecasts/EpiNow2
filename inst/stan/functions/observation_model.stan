@@ -200,7 +200,7 @@ vector report_log_lik(array[] int cases, vector reports,
     real phi = inv_square(reporting_overdispersion);
     for (i in 1:t) {
       log_lik[i] = neg_binomial_2_lpmf(
-        cases[i] | reports[i], reporting_overdispersion
+        cases[i] | reports[i], phi
       ) * weight;
     }
   }
