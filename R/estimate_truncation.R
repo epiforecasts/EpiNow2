@@ -316,11 +316,10 @@ plot.estimate_truncation <- function(x, ...) {
 #' @method $ estimate_truncation
 `$.estimate_truncation` <- function(x, name) {
   # Handle $dist with deprecation warning
-
   if (name == "dist") {
     lifecycle::deprecate_warn(
       "1.8.0",
-      "estimate_truncation()$dist",
+      I("estimate_truncation()$dist"),
       "get_delay()"
     )
     return(get_delay(x))
@@ -332,19 +331,20 @@ plot.estimate_truncation <- function(x, ...) {
   )
 
   if (name %in% names(deprecated_map)) {
+    new_name <- deprecated_map[[name]]
     lifecycle::deprecate_warn(
       "1.8.0",
-      paste0("estimate_truncation()$", name),
-      paste0("estimate_truncation()$", deprecated_map[[name]])
+      I(paste0("estimate_truncation()$", name)),
+      I(paste0("estimate_truncation()$", new_name))
     )
-    return(NextMethod("$"))
+    return(.subset2(x, new_name))
   }
 
   removed <- c("last_obs", "cmf")
   if (name %in% removed) {
     lifecycle::deprecate_stop(
       "1.8.0",
-      paste0("estimate_truncation()$", name),
+      I(paste0("estimate_truncation()$", name)),
       details = switch(name,
         last_obs = "This is now included in `observations`.",
         cmf = "Use `get_delay()` to get the distribution."
@@ -362,7 +362,7 @@ plot.estimate_truncation <- function(x, ...) {
   if (i == "dist") {
     lifecycle::deprecate_warn(
       "1.8.0",
-      "estimate_truncation()$dist",
+      I("estimate_truncation()$dist"),
       "get_delay()"
     )
     return(get_delay(x))
@@ -374,19 +374,20 @@ plot.estimate_truncation <- function(x, ...) {
   )
 
   if (i %in% names(deprecated_map)) {
+    new_name <- deprecated_map[[i]]
     lifecycle::deprecate_warn(
       "1.8.0",
-      paste0("estimate_truncation()$", i),
-      paste0("estimate_truncation()$", deprecated_map[[i]])
+      I(paste0("estimate_truncation()$", i)),
+      I(paste0("estimate_truncation()$", new_name))
     )
-    return(NextMethod("[["))
+    return(.subset2(x, new_name))
   }
 
   removed <- c("last_obs", "cmf")
   if (i %in% removed) {
     lifecycle::deprecate_stop(
       "1.8.0",
-      paste0("estimate_truncation()$", i),
+      I(paste0("estimate_truncation()$", i)),
       details = switch(i,
         last_obs = "This is now included in `observations`.",
         cmf = "Use `get_delay()` to get the distribution."
