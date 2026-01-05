@@ -3,30 +3,32 @@
 \name{get_delay}
 \alias{get_delay}
 \alias{get_delay.estimate_truncation}
-\title{Get the estimated delay distribution from a fitted model}
+\title{Get the estimated truncation delay distribution from a fitted model}
 \usage{
 get_delay(object, ...)
 
 \method{get_delay}{estimate_truncation}(object, ...)
 }
 \arguments{
-\item{object}{A fitted model object}
+\item{object}{A fitted model object (currently only \code{estimate_truncation})}
 
 \item{...}{Additional arguments passed to methods}
 }
 \value{
-A \code{dist_spec} object representing the estimated delay distribution
-with posterior uncertainty.
+A \code{dist_spec} object representing the estimated truncation delay
+distribution with posterior uncertainty.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-Extracts the estimated delay distribution from a fitted model as a
-\code{dist_spec} object. Currently implemented for \code{estimate_truncation} objects.
+Extracts the estimated truncation delay distribution from a fitted
+\code{estimate_truncation} model as a \code{dist_spec} object. The returned
+distribution can be passed directly to \code{\link[=trunc_opts]{trunc_opts()}} for use in
+\code{\link[=epinow]{epinow()}}, \code{\link[=regional_epinow]{regional_epinow()}}, or \code{\link[=estimate_infections]{estimate_infections()}}.
 }
 \examples{
 \dontrun{
 # After fitting a truncation model
-trunc_dist <- get_delay(est)
+trunc_dist <- get_delay(truncation_estimate)
 # Use in epinow()
 epinow(..., truncation = trunc_opts(trunc_dist))
 }

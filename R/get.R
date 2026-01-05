@@ -253,23 +253,25 @@ get_samples <- function(object, ...) {
   UseMethod("get_samples")
 }
 
-#' Get the estimated delay distribution from a fitted model
+#' Get the estimated truncation delay distribution from a fitted model
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' Extracts the estimated delay distribution from a fitted model as a
-#' `dist_spec` object. Currently implemented for `estimate_truncation` objects.
+#' Extracts the estimated truncation delay distribution from a fitted
+#' `estimate_truncation` model as a `dist_spec` object. The returned
+#' distribution can be passed directly to [trunc_opts()] for use in
+#' [epinow()], [regional_epinow()], or [estimate_infections()].
 #'
-#' @param object A fitted model object
+#' @param object A fitted model object (currently only `estimate_truncation`)
 #' @param ... Additional arguments passed to methods
 #'
-#' @return A `dist_spec` object representing the estimated delay distribution
-#'   with posterior uncertainty.
+#' @return A `dist_spec` object representing the estimated truncation delay
+#'   distribution with posterior uncertainty.
 #'
 #' @export
 #' @examples
 #' \dontrun{
 #' # After fitting a truncation model
-#' trunc_dist <- get_delay(est)
+#' trunc_dist <- get_delay(truncation_estimate)
 #' # Use in epinow()
 #' epinow(..., truncation = trunc_opts(trunc_dist))
 #' }
