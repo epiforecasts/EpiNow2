@@ -253,57 +253,6 @@ get_samples <- function(object, ...) {
   UseMethod("get_samples")
 }
 
-#' Get the estimated truncation delay distribution from a fitted model
-#'
-#' @description `r lifecycle::badge("experimental")`
-#' Extracts the estimated truncation delay distribution from a fitted
-#' `estimate_truncation` model as a `dist_spec` object. The returned
-#' distribution can be passed directly to [trunc_opts()] for use in
-#' [epinow()], [regional_epinow()], or [estimate_infections()].
-#'
-#' @param object A fitted model object (currently only `estimate_truncation`)
-#' @param ... Additional arguments passed to methods
-#'
-#' @return A `dist_spec` object representing the estimated truncation delay
-#'   distribution with posterior uncertainty.
-#'
-#' @export
-#' @examples
-#' \dontrun{
-#' # After fitting a truncation model
-#' trunc_dist <- get_delay(truncation_estimate)
-#' # Use in epinow()
-#' epinow(..., truncation = trunc_opts(trunc_dist))
-#' }
-get_delay <- function(object, ...) {
-  UseMethod("get_delay")
-}
-
-#' @rdname get_delay
-#' @export
-get_delay.estimate_truncation <- function(object, ...) {
-  # Extract delay parameters from the fit
-  delay_params <- extract_stan_param(object$fit, params = "delay_params")
-  params_mean <- round(delay_params$mean, 3)
-  params_sd <- round(delay_params$sd, 3)
-
-  # Get the original truncation distribution info from args
-  dist_type <- object$args$dist_type
-  dist_max <- object$args$dist_max
-
-  # Create Normal distributions for each parameter
-  parameters <- purrr::map(seq_along(params_mean), function(id) {
-    Normal(params_mean[id], params_sd[id])
-  })
-  names(parameters) <- natural_params(dist_type)
-
-  # Create and return the dist_spec
-  new_dist_spec(
-    params = parameters,
-    max = dist_max,
-    distribution = dist_type
-  )
-}
 
 #' @rdname get_samples
 #' @export
@@ -518,4 +467,210 @@ get_predictions.forecast_infections <- function(object, ...) {
 #' @export
 get_predictions.forecast_secondary <- function(object, ...) {
   data.table::copy(object$predictions)
+}
+
+#' Get delay distributions from a fitted model
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Extracts the delay distributions used in a fitted model. For
+#' `estimate_infections()` this includes generation time, reporting delays,
+#' and truncation delays. For `estimate_secondary()` this includes any
+#' delays specified in the model. For `estimate_truncation()` this returns
+#' the estimated truncation distribution.
+#'
+#' @param object A fitted model object (e.g., from `estimate_infections()`,
+#'   `estimate_secondary()`, or `estimate_truncation()`)
+#' @param ... Additional arguments passed to methods
+#'
+#' @return A named list of `dist_spec` objects representing the delay
+#'   distributions. The list may be empty if no delays were specified.
+#'   Use `names()` to see available delays.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Get all delays from a fitted model
+#' delays <- get_delays(fit)
+#' names(delays)
+#' # Access specific delay
+#' delays$generation_time
+#' }
+get_delays <- function(object, ...) {
+  UseMethod("get_delays")
+}
+
+#' Reconstruct a dist_spec from stored stan data and posterior
+#'
+#' @param object A fitted model object containing fit and args
+#' @param delay_name The name of the delay (e.g., "generation_time")
+#' @return A dist_spec object, or NULL if the delay doesn't exist
+#' @keywords internal
+reconstruct_delay <- function(object, delay_name) {
+  args <- object$args
+  fit <- object$fit
+
+  # Get the delay ID for this named delay
+  id_var <- paste0("delay_id_", delay_name)
+  delay_id <- args[[id_var]]
+
+  # Return NULL if delay doesn't exist (ID is 0 or NULL)
+  if (is.null(delay_id) || delay_id == 0) {
+    return(NULL)
+  }
+
+  # Get delay type groups to find indices for this delay
+  types_groups <- args$delay_types_groups
+  if (is.null(types_groups)) {
+    return(NULL)
+  }
+
+  # Extract posterior estimates if any parameters were estimated
+  posterior <- NULL
+  if (args$delay_params_length > 0 && !is.null(fit)) {
+    posterior <- extract_stan_param(fit, params = "delay_params")
+  }
+
+  # Get start and end indices for this delay type
+  start_idx <- types_groups[delay_id]
+  end_idx <- types_groups[delay_id + 1] - 1
+  delay_indices <- seq(start_idx, end_idx)
+
+  # Determine if parametric or nonparametric
+  types_p <- args$delay_types_p[delay_indices]
+
+  # Each delay in the range could be parametric or nonparametric
+  delay_list <- lapply(seq_along(delay_indices), function(i) {
+    idx <- delay_indices[i]
+    is_parametric <- types_p[i] == 1
+
+    if (is_parametric) {
+      # Get the parametric delay ID
+      param_id <- args$delay_types_id[idx]
+
+      # Get distribution type (0 = lognormal, 1 = gamma)
+      dist_type <- c("lognormal", "gamma")[args$delay_dist[param_id] + 1]
+
+      # Get parameter indices
+      param_start <- args$delay_params_groups[param_id]
+      param_end <- args$delay_params_groups[param_id + 1] - 1
+      param_indices <- seq(param_start, param_end)
+
+      # Get prior values
+      params_prior_mean <- args$delay_params_mean[param_indices]
+      params_prior_sd <- args$delay_params_sd[param_indices]
+
+      # Get max delay
+      dist_max <- args$delay_max[param_id]
+
+      # Create parameters - use posterior if estimated, prior/fixed otherwise
+      param_names <- natural_params(dist_type)
+      parameters <- lapply(seq_along(params_prior_mean), function(j) {
+        param_idx <- param_indices[j]
+        was_estimated <- params_prior_sd[j] > 0 && !is.na(params_prior_sd[j])
+
+        if (was_estimated && !is.null(posterior)) {
+          # Use posterior estimates
+          post_mean <- round(posterior$mean[param_idx], 3)
+          post_sd <- round(posterior$sd[param_idx], 3)
+          Normal(post_mean, post_sd)
+        } else if (params_prior_sd[j] == 0 || is.na(params_prior_sd[j])) {
+          # Fixed value
+          params_prior_mean[j]
+        } else {
+          # Prior (no fit available)
+          Normal(params_prior_mean[j], params_prior_sd[j])
+        }
+      })
+      names(parameters) <- param_names
+
+      new_dist_spec(
+        params = parameters,
+        max = dist_max,
+        distribution = dist_type
+      )
+    } else {
+      # Nonparametric delay
+      np_id <- args$delay_types_id[idx]
+
+      # Get PMF indices
+      pmf_start <- args$delay_np_pmf_groups[np_id]
+      pmf_end <- args$delay_np_pmf_groups[np_id + 1] - 1
+      pmf <- args$delay_np_pmf[seq(pmf_start, pmf_end)]
+
+      NonParametric(pmf = pmf)
+    }
+  })
+
+  # If single delay, return it directly; otherwise combine
+  if (length(delay_list) == 1) {
+    delay_list[[1]]
+  } else {
+    do.call(c, delay_list)
+  }
+}
+
+#' @rdname get_delays
+#' @export
+get_delays.estimate_infections <- function(object, ...) {
+  args <- object$args
+  all_delay_names <- c("generation_time", "reporting", "truncation")
+
+  # Find which delays actually exist (have non-zero IDs)
+  available <- vapply(all_delay_names, function(n) {
+    id_var <- paste0("delay_id_", n)
+    id <- args[[id_var]]
+    !is.null(id) && id > 0
+  }, logical(1))
+  available_names <- all_delay_names[available]
+
+  # Return named list of all available delays (with posterior if estimated)
+  delays <- lapply(available_names, function(n) reconstruct_delay(object, n))
+  names(delays) <- available_names
+  delays
+}
+
+#' @rdname get_delays
+#' @export
+get_delays.estimate_secondary <- function(object, ...) {
+  args <- object$args
+
+  # Find all delay_id_* variables in args with non-zero IDs
+  id_vars <- grep("^delay_id_", names(args), value = TRUE)
+  available_names <- sub("^delay_id_", "", id_vars)
+  available_names <- available_names[vapply(
+    id_vars, function(v) !is.null(args[[v]]) && args[[v]] > 0, logical(1)
+  )]
+
+  # Return named list of all available delays (with posterior if estimated)
+  delays <- lapply(available_names, function(n) reconstruct_delay(object, n))
+  names(delays) <- available_names
+  delays
+}
+
+#' @rdname get_delays
+#' @export
+get_delays.estimate_truncation <- function(object, ...) {
+  # Extract estimated delay parameters from the posterior
+  delay_params <- extract_stan_param(object$fit, params = "delay_params")
+  params_mean <- round(delay_params$mean, 3)
+  params_sd <- round(delay_params$sd, 3)
+
+  # Get the original truncation distribution info from args
+  dist_type <- object$args$dist_type
+  dist_max <- object$args$dist_max
+
+  # Create Normal distributions for each parameter
+  parameters <- purrr::map(seq_along(params_mean), function(id) {
+    Normal(params_mean[id], params_sd[id])
+  })
+  names(parameters) <- natural_params(dist_type)
+
+  # Create and return the dist_spec in a named list
+  trunc_dist <- new_dist_spec(
+    params = parameters,
+    max = dist_max,
+    distribution = dist_type
+  )
+
+  list(truncation = trunc_dist)
 }

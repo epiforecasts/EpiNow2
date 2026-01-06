@@ -23,7 +23,7 @@ test_that("estimate_truncation can return values from simulated data and plot
     names(est),
     c("observations", "args", "fit")
   )
-  expect_s3_class(get_delay(est), "dist_spec")
+  expect_s3_class(get_delays(est)$truncation, "dist_spec")
   expect_s3_class(summary(est, type = "dist"), "dist_spec")
   expect_s3_class(est$observations, "data.table")
   expect_error(plot(est), NA)
@@ -50,6 +50,21 @@ test_that("deprecated accessors return correct values with warnings", {
   expect_equal(obs_bracket, est$observations)
 })
 
+test_that("get_delays returns truncation distribution from estimate_truncation", {
+  est <- estimate_truncation(example_truncated,
+    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
+  )
+
+  # Test getting all delays as named list
+  delays <- get_delays(est)
+  expect_type(delays, "list")
+  expect_named(delays, "truncation")
+  expect_s3_class(delays$truncation, "dist_spec")
+
+  # Should be same as summary(type = "dist")
+  expect_equal(delays$truncation, summary(est, type = "dist"))
+})
+
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_truncation can return values from simulated data with the
            cmdstanr backend", {
@@ -66,7 +81,7 @@ test_that("estimate_truncation can return values from simulated data with the
     names(est),
     c("observations", "args", "fit")
   )
-  expect_s3_class(get_delay(est), "dist_spec")
+  expect_s3_class(get_delays(est)$truncation, "dist_spec")
   expect_error(plot(est), NA)
 })
 
@@ -95,8 +110,8 @@ test_that("estimate_truncation works with filter_leading_zeros set", {
   )
   # Compare the results of the two fits
   expect_equal(
-    get_delay(original_data_fit)$dist,
-    get_delay(modified_data_fit)$dist
+    get_delays(original_data_fit)$truncation$dist,
+    get_delays(modified_data_fit)$truncation$dist
   )
   expect_equal(
     original_data_fit$args$obs_dist,
@@ -116,7 +131,7 @@ test_that("estimate_truncation works with zero_threshold set", {
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250
   )
   expect_named(out, c("observations", "args", "fit"))
-  expect_s3_class(get_delay(out), "dist_spec")
+  expect_s3_class(get_delays(out)$truncation, "dist_spec")
 })
 
 options(old_opts)

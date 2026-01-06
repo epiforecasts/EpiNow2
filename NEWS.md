@@ -42,10 +42,11 @@ The function interface remains unchanged.
 - `estimate_truncation()` now returns a proper S3 object with a simplified structure.
   - Return elements have been renamed: `obs` → `observations`, `data` → `args`.
   - Removed elements: `last_obs` (now included in `observations`), `cmf` and `dist`.
-  - Use `get_delay(object)` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
+  - Use `get_delays(object)$truncation` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
   - Use `get_samples(object)` to extract posterior samples.
   - Use `summary(object)` to get the truncation distribution (`type = "dist"`), parameter estimates (`type = "parameters"`), or observations (`type = "observations"`).
-  - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_delay()` instead.
+  - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_delays()$truncation` instead.
+- Added `get_delays()` generic function to extract delay distributions from fitted models as a named list of `dist_spec` objects. Works with `estimate_infections()`, `estimate_secondary()`, and `estimate_truncation()`.
 - Added a `style` argument to `plot_estimates()` and related plot methods to display credible intervals as error bars (`"linerange"`) instead of the default ribbons (`"ribbon"`). Error bars can be clearer for weekly or aggregated data.
 - **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 - **Internal**: Stan model parameter names have been renamed for clarity (`dispersion` → `reporting_overdispersion`, `frac_obs` → `fraction_observed`). This simplifies internal code by removing post-hoc parameter renaming. This may affect users who access Stan models directly or use custom priors with the old parameter names.

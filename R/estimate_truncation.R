@@ -59,13 +59,13 @@
 #' - `args`: A list of arguments used for fitting (stan data).
 #' - `fit`: The stan fit object.
 #'
-#' Use [get_delay()] to extract the estimated truncation distribution as a
+#' Use [get_delays()] to extract the estimated truncation distribution as a
 #' `<dist_spec>`, which can be passed to the `truncation` argument of
 #' [epinow()], [regional_epinow()], and [estimate_infections()].
 #'
 #' S3 methods available: [summary.estimate_truncation()],
 #' [plot.estimate_truncation()], [get_samples.estimate_truncation()],
-#' [get_delay.estimate_truncation()].
+#' [get_delays.estimate_truncation()].
 #'
 #' @export
 #' @inheritParams calc_CrIs
@@ -91,7 +91,7 @@
 #' )
 #'
 #' # extract the estimated truncation distribution
-#' get_delay(est)
+#' get_delays(est)$truncation
 #' # or using the summary method
 #' summary(est, type = "dist")
 #' # observations linked to truncation adjusted estimates
@@ -106,7 +106,7 @@
 #' out <- epinow(
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   example_truncated[[5]],
-#'   truncation = trunc_opts(get_delay(est))
+#'   truncation = trunc_opts(get_delays(est)$truncation)
 #' )
 #' plot(out)
 #' options(old_opts)
@@ -212,7 +212,7 @@ estimate_truncation <- function(data,
 
   out <- list()
 
-  # Store distribution info for get_delay() accessor
+  # Store distribution info for get_delays() accessor
   stan_data$dist_type <- get_distribution(truncation)
   stan_data$dist_max <- max(truncation)
 
@@ -320,9 +320,9 @@ plot.estimate_truncation <- function(x, ...) {
     lifecycle::deprecate_warn(
       "1.8.0",
       I("estimate_truncation()$dist"),
-      "get_delay()"
+      I("get_delays()$truncation")
     )
-    return(get_delay(x))
+    return(get_delays(x)$truncation)
   }
 
   deprecated_map <- list(
@@ -347,7 +347,7 @@ plot.estimate_truncation <- function(x, ...) {
       I(paste0("estimate_truncation()$", name)),
       details = switch(name,
         last_obs = "This is now included in `observations`.",
-        cmf = "Use `get_delay()` to get the distribution."
+        cmf = "Use `get_delays()$truncation` to get the distribution."
       )
     )
   }
@@ -357,15 +357,15 @@ plot.estimate_truncation <- function(x, ...) {
 
 #' @export
 #' @method [[ estimate_truncation
-`[[.estimate_truncation` <- function(x, i) {
+`[[.estimate_truncation` <- function(x, name) {
   # Handle [["dist"]] with deprecation warning
-  if (i == "dist") {
+  if (name == "dist") {
     lifecycle::deprecate_warn(
       "1.8.0",
       I("estimate_truncation()$dist"),
-      "get_delay()"
+      I("get_delays()$truncation")
     )
-    return(get_delay(x))
+    return(get_delays(x)$truncation)
   }
 
   deprecated_map <- list(
@@ -373,24 +373,24 @@ plot.estimate_truncation <- function(x, ...) {
     data = "args"
   )
 
-  if (i %in% names(deprecated_map)) {
-    new_name <- deprecated_map[[i]]
+  if (name %in% names(deprecated_map)) {
+    new_name <- deprecated_map[[name]]
     lifecycle::deprecate_warn(
       "1.8.0",
-      I(paste0("estimate_truncation()$", i)),
+      I(paste0("estimate_truncation()$", name)),
       I(paste0("estimate_truncation()$", new_name))
     )
     return(.subset2(x, new_name))
   }
 
   removed <- c("last_obs", "cmf")
-  if (i %in% removed) {
+  if (name %in% removed) {
     lifecycle::deprecate_stop(
       "1.8.0",
-      I(paste0("estimate_truncation()$", i)),
-      details = switch(i,
+      I(paste0("estimate_truncation()$", name)),
+      details = switch(name,
         last_obs = "This is now included in `observations`.",
-        cmf = "Use `get_delay()` to get the distribution."
+        cmf = "Use `get_delays()$truncation` to get the distribution."
       )
     )
   }

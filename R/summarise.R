@@ -1014,7 +1014,7 @@ summary.estimate_truncation <- function(object,
   type <- arg_match(type)
 
   if (type == "dist") {
-    return(get_delay(object))
+    return(get_delays(object)$truncation)
   }
 
   if (type == "observations") {

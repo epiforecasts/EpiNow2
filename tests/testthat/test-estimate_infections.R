@@ -327,3 +327,19 @@ test_that("extract_parameter_samples is deprecated", {
 
   expect_equal(old_quiet, new_output)
 })
+
+test_that("get_delays returns correct delays from estimate_infections", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  # Test getting all delays as named list
+  delays <- get_delays(out)
+  expect_type(delays, "list")
+  expect_true(length(delays) >= 1)
+  expect_true("generation_time" %in% names(delays))
+
+  # All elements should be dist_spec
+  for (nm in names(delays)) {
+    expect_s3_class(delays[[nm]], "dist_spec")
+  }
+})
