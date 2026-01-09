@@ -240,18 +240,26 @@ estimate_truncation <- function(data,
 #' @export
 plot.estimate_truncation <- function(x, ...) {
   preds <- get_predictions(x)
-  p <- ggplot2::ggplot(preds, ggplot2::aes(x = date, y = last_confirm)) +
+
+  # Get latest observations for reference (grey bars)
+  last_obs <- data.table::as.data.table(x$observations[[length(x$observations)]])
+  last_obs <- last_obs[, .(date, last_confirm = confirm)]
+
+  # Merge with predictions for plotting
+  plot_data <- data.table::merge.data.table(preds, last_obs, by = "date")
+
+  p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
     ) +
     ggplot2::geom_point(
-      data = preds,
+      data = plot_data,
       ggplot2::aes(x = date, y = confirm)
     ) +
     ggplot2::facet_wrap(~report_date, scales = "free")
 
-  p <- plot_CrIs(p, extract_CrIs(preds),
+  p <- plot_CrIs(p, extract_CrIs(plot_data),
     alpha = 0.8, linewidth = 1
   )
 
@@ -300,10 +308,11 @@ plot.estimate_truncation <- function(x, ...) {
     lifecycle::deprecate_warn(
       "1.8.0",
       I("estimate_truncation()$last_obs"),
-      details = "Use `get_predictions()` and extract the `last_confirm` column."
+      details = "Use the last element of `observations` instead."
     )
-    preds <- get_predictions(x)
-    return(unique(preds[, .(date, confirm = last_confirm)]))
+    obs <- .subset2(x, "observations")
+    last <- data.table::as.data.table(obs[[length(obs)]])
+    return(last[, .(date, confirm)])
   }
 
   if (name == "cmf") {

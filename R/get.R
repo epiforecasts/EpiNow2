@@ -485,8 +485,8 @@ get_predictions.estimate_truncation <- function(object,
     dataset == 0, dataset := obs_sets
   ]
 
-  # Process input observations (same as in estimate_truncation)
-  dirty_obs <- purrr::map(object$observations, data.table::as.data.table)
+  # Process input observations to get dates
+ dirty_obs <- purrr::map(object$observations, data.table::as.data.table)
   earliest_date <- max(
     as.Date(
       purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])
@@ -496,17 +496,11 @@ get_predictions.estimate_truncation <- function(object,
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
 
-  # Get latest observations
-  last_obs <- data.table::copy(dirty_obs[[length(dirty_obs)]])[
-    , last_confirm := confirm
-  ][, confirm := NULL]
-
   # Get truncation max from args
   trunc_max <- object$args$delay_max[1]
 
-  # Link reconstructed observations to observed
-
-  link_obs <- function(index) {
+  # Link predictions to dates and observations
+  link_preds <- function(index) {
     target_obs <- dirty_obs[[index]][, idx := .N - 0:(.N - 1)]
     target_obs <- target_obs[idx < trunc_max]
     estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
@@ -519,18 +513,17 @@ get_predictions.estimate_truncation <- function(object,
       estimates[, "Rhat" := NULL]
     }
 
-    target_obs <- data.table::merge.data.table(
-      target_obs, last_obs,
-      by = "date"
-    )
-    target_obs[, report_date := max(date)]
-    target_obs <- data.table::merge.data.table(target_obs, estimates,
+    # Merge predictions with date and observed confirm
+    result <- data.table::merge.data.table(
+      target_obs[, .(date, confirm, idx)],
+      estimates,
       by = "idx", all.x = TRUE
     )
-    target_obs[order(date)][, idx := NULL]
+    result[, report_date := max(target_obs$date)]
+    result[order(date)][, idx := NULL]
   }
 
-  predictions <- purrr::map(seq_len(obs_sets), link_obs)
+  predictions <- purrr::map(seq_len(obs_sets), link_preds)
   data.table::rbindlist(predictions)
 }
 
