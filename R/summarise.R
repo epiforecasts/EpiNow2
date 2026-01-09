@@ -1016,7 +1016,8 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
   # Map generic parameter names to distribution-specific names
   dist_type <- dist_types()[object$args$delay_dist[1] + 1]
   param_names <- natural_params(dist_type)
-  out[, variable := param_names[as.integer(gsub(".*\\[(\\d+)\\]", "\\1", variable))]]
+  idx <- as.integer(gsub(".*\\[(\\d+)\\]", "\\1", out$variable))
+  out[, variable := param_names[idx]]
 
   # Add distribution info as attribute
   attr(out, "distribution") <- dist_type
@@ -1030,7 +1031,10 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
 print.summary.estimate_truncation <- function(x, ...) {
   dist_type <- attr(x, "distribution")
   dist_max <- attr(x, "max")
-  cat("Truncation distribution:", dist_type, paste0("(max: ", dist_max, ")"), "\n\n")
+  cat(
+    "Truncation distribution:", dist_type,
+    paste0("(max: ", dist_max, ")"), "\n\n"
+  )
   cat("Parameter estimates:\n")
   # Print as regular data.table
   print(as.data.table(x), ...)
