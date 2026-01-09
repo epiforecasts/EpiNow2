@@ -1123,6 +1123,22 @@ natural_params <- function(distribution) {
   )
 }
 
+#' Get parametric distribution types
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Returns the mapping of Stan integer codes to distribution names.
+#' Stan uses 0 for lognormal, 1 for gamma.
+#' @return A character vector of distribution names in Stan order.
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#' dist_types()
+#' dist_types()[1]  # "lognormal"
+#' }
+dist_types <- function() {
+  c("lognormal", "gamma")
+}
+
 #' Get the lower bounds of the parameters of a distribution
 #'
 #' @description `r lifecycle::badge("experimental")`

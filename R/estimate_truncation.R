@@ -334,16 +334,37 @@ plot.estimate_truncation <- function(x, ...) {
     return(.subset2(x, new_name))
   }
 
-  removed <- c("last_obs", "cmf")
-  if (name %in% removed) {
-    lifecycle::deprecate_stop(
+  if (name == "last_obs") {
+    lifecycle::deprecate_warn(
       "1.8.0",
-      I(paste0("estimate_truncation()$", name)),
-      details = switch(name,
-        last_obs = "This is now included in `observations`.",
-        cmf = "Use `get_delays()$truncation` to get the distribution."
-      )
+      I("estimate_truncation()$last_obs"),
+      details = "This is now the `last_confirm` column in `observations`."
     )
+    obs <- .subset2(x, "observations")
+    return(unique(obs[, .(date, confirm = last_confirm)]))
+  }
+
+  if (name == "cmf") {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      I("estimate_truncation()$cmf"),
+      I("get_delays()$truncation")
+    )
+    trunc_dist <- get_delays(x)$truncation
+    # Extract mean parameter values for discretisation
+    dist_type <- get_distribution(trunc_dist)
+    param_names <- natural_params(dist_type)
+    params <- lapply(param_names, function(p) {
+      trunc_dist[[1]][[p]]$parameters$mean
+    })
+    names(params) <- param_names
+    fixed_dist <- new_dist_spec(
+      params = params,
+      max = max(trunc_dist),
+      distribution = dist_type
+    )
+    pmf <- discretise(fixed_dist)[[1]]
+    return(cumsum(pmf))
   }
 
   NextMethod("$")
@@ -377,16 +398,37 @@ plot.estimate_truncation <- function(x, ...) {
     return(.subset2(x, new_name))
   }
 
-  removed <- c("last_obs", "cmf")
-  if (name %in% removed) {
-    lifecycle::deprecate_stop(
+  if (name == "last_obs") {
+    lifecycle::deprecate_warn(
       "1.8.0",
-      I(paste0("estimate_truncation()$", name)),
-      details = switch(name,
-        last_obs = "This is now included in `observations`.",
-        cmf = "Use `get_delays()$truncation` to get the distribution."
-      )
+      I("estimate_truncation()$last_obs"),
+      details = "This is now the `last_confirm` column in `observations`."
     )
+    obs <- .subset2(x, "observations")
+    return(unique(obs[, .(date, confirm = last_confirm)]))
+  }
+
+  if (name == "cmf") {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      I("estimate_truncation()$cmf"),
+      I("get_delays()$truncation")
+    )
+    trunc_dist <- get_delays(x)$truncation
+    # Extract mean parameter values for discretisation
+    dist_type <- get_distribution(trunc_dist)
+    param_names <- natural_params(dist_type)
+    params <- lapply(param_names, function(p) {
+      trunc_dist[[1]][[p]]$parameters$mean
+    })
+    names(params) <- param_names
+    fixed_dist <- new_dist_spec(
+      params = params,
+      max = max(trunc_dist),
+      distribution = dist_type
+    )
+    pmf <- discretise(fixed_dist)[[1]]
+    return(cumsum(pmf))
   }
 
   NextMethod("[[")

@@ -989,44 +989,50 @@ summary.estimate_secondary <- function(object,
 #' Summarise results from estimate_truncation
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Returns a summary of the fitted truncation model.
+#' Returns parameter summary statistics for the fitted truncation model.
 #'
 #' @param object A fitted model object from `estimate_truncation()`
-#' @param type Character string indicating the type of summary to return.
-#'   Options are "dist" (default) which returns the truncation distribution,
-#'   or "parameters" for posterior parameter estimates.
 #' @inheritParams calc_summary_measures
 #' @param ... Additional arguments (currently unused)
 #'
-#' @return Depends on `type`:
-#' - `"dist"`: A `<dist_spec>` object representing the truncation distribution.
-#' - `"parameters"`: A `<data.table>` with summary statistics for delay
-#'   parameters.
-#' @importFrom rlang arg_match
+#' @return A `<data.table>` with summary statistics for the truncation
+#'   distribution parameters.
 #' @method summary estimate_truncation
 #' @export
-summary.estimate_truncation <- function(object,
-                                        type = c("dist", "parameters"),
-                                        CrIs = c(0.2, 0.5, 0.9), ...) {
-  type <- arg_match(type)
-
-  if (type == "dist") {
-    return(get_delays(object)$truncation)
-  }
-
-  # Return parameter summary statistics
-  samples <- get_samples(object)
-
-  # Filter to delay parameters only (variable is "delay_params[1]", etc.)
-  param_samples <- samples[grepl("^delay_params", variable)]
+summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
+  # Extract delay parameters directly from fit (avoids rbindlist warning)
+  raw_samples <- extract_samples(object$fit)
+  param_samples <- extract_delays(raw_samples)
+  data.table::setnames(param_samples, "parameter", "variable")
 
   # Calculate summary statistics
   out <- calc_summary_measures(
     param_samples,
-    summarise_by = c("variable", "strat"),
-    order_by = "strat",
+    summarise_by = "variable",
+    order_by = "variable",
     CrIs = CrIs
   )
 
-  out[]
+  # Map generic parameter names to distribution-specific names
+  dist_type <- dist_types()[object$args$delay_dist[1] + 1]
+  param_names <- natural_params(dist_type)
+  out[, variable := param_names[as.integer(gsub(".*\\[(\\d+)\\]", "\\1", variable))]]
+
+  # Add distribution info as attribute
+  attr(out, "distribution") <- dist_type
+  attr(out, "max") <- object$args$delay_max[1]
+  class(out) <- c("summary.estimate_truncation", class(out))
+
+  out
+}
+
+#' @export
+print.summary.estimate_truncation <- function(x, ...) {
+  dist_type <- attr(x, "distribution")
+  dist_max <- attr(x, "max")
+  cat("Truncation distribution:", dist_type, paste0("(max: ", dist_max, ")"), "\n\n")
+  cat("Parameter estimates:\n")
+  # Print as regular data.table
+  print(as.data.table(x), ...)
+  invisible(x)
 }

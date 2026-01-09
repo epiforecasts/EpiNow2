@@ -551,8 +551,8 @@ reconstruct_delay <- function(object, delay_name) {
       # Get the parametric delay ID
       param_id <- stan_data$delay_types_id[idx]
 
-      # Get distribution type (0 = lognormal, 1 = gamma)
-      dist_type <- c("lognormal", "gamma")[stan_data$delay_dist[param_id] + 1]
+      # Get distribution type
+      dist_type <- dist_types()[stan_data$delay_dist[param_id] + 1]
 
       # Get parameter indices
       param_start <- stan_data$delay_params_groups[param_id]
@@ -659,8 +659,8 @@ get_delays.estimate_truncation <- function(object, ...) {
   params_mean <- round(delay_params$mean, 3)
   params_sd <- round(delay_params$sd, 3)
 
-  # Get distribution info from Stan data (delay_dist: 0=lognormal, 1=gamma)
-  dist_type <- c("lognormal", "gamma")[object$args$delay_dist[1] + 1]
+  # Get distribution info from Stan data
+  dist_type <- dist_types()[object$args$delay_dist[1] + 1]
   dist_max <- object$args$delay_max[1]
 
   # Create Normal distributions for each parameter

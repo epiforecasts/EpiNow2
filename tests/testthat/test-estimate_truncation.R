@@ -24,7 +24,7 @@ test_that("estimate_truncation can return values from simulated data and plot
     c("observations", "args", "fit")
   )
   expect_s3_class(get_delays(est)$truncation, "dist_spec")
-  expect_s3_class(summary(est, type = "dist"), "dist_spec")
+  expect_s3_class(summary(est), "data.table")
   expect_s3_class(est$observations, "data.table")
   expect_error(plot(est), NA)
 })
@@ -45,6 +45,18 @@ test_that("deprecated accessors return correct values with warnings", {
   lifecycle::expect_deprecated(dist_result <- est$dist)
   expect_s3_class(dist_result, "dist_spec")
 
+  # $last_obs returns data.table with deprecation warning
+  lifecycle::expect_deprecated(last_obs_result <- est$last_obs)
+  expect_s3_class(last_obs_result, "data.table")
+  expect_true("date" %in% names(last_obs_result))
+  expect_true("confirm" %in% names(last_obs_result))
+
+  # $cmf returns numeric vector with deprecation warning
+  lifecycle::expect_deprecated(cmf_result <- est$cmf)
+  expect_type(cmf_result, "double")
+  # Use tolerance for floating point comparison
+  expect_true(all(cmf_result >= -1e-10 & cmf_result <= 1 + 1e-10))
+
   # [[ accessor works the same way
   lifecycle::expect_deprecated(obs_bracket <- est[["obs"]])
   expect_equal(obs_bracket, est$observations)
@@ -60,9 +72,6 @@ test_that("get_delays returns truncation distribution from estimate_truncation",
   expect_type(delays, "list")
   expect_named(delays, "truncation")
   expect_s3_class(delays$truncation, "dist_spec")
-
-  # Should be same as summary(type = "dist")
-  expect_equal(delays$truncation, summary(est, type = "dist"))
 })
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
