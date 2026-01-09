@@ -2,12 +2,12 @@
 % Please edit documentation in R/get.R
 \name{reconstruct_delay}
 \alias{reconstruct_delay}
-\title{Reconstruct a dist_spec from stored stan data}
+\title{Reconstruct a dist_spec from stored stan data and posterior}
 \usage{
-reconstruct_delay(args, delay_name)
+reconstruct_delay(object, delay_name)
 }
 \arguments{
-\item{args}{The args list from a fitted model (containing stan data)}
+\item{object}{A fitted model object containing fit and args}
 
 \item{delay_name}{The name of the delay (e.g., "generation_time")}
 }
@@ -15,6 +15,6 @@ reconstruct_delay(args, delay_name)
 A dist_spec object, or NULL if the delay doesn't exist
 }
 \description{
-Reconstruct a dist_spec from stored stan data
+Reconstruct a dist_spec from stored stan data and posterior
 }
 \keyword{internal}
