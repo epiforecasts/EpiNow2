@@ -92,8 +92,8 @@
 #'
 #' # extract the estimated truncation distribution
 #' get_delays(est)$truncation
-#' # or using the summary method
-#' summary(est, type = "dist")
+#' # summarise the truncation distribution parameters
+#' summary(est)
 #' # validation plot of observations vs estimates
 #' plot(est)
 #'
