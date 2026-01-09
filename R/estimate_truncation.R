@@ -247,9 +247,9 @@ plot.estimate_truncation <- function(x, ...) {
 
   # Get truncated observations from each snapshot
   obs_list <- purrr::map(x$observations, function(obs) {
-    dt <- data.table::as.data.table(obs)
-    dt[, report_date := max(date)]
-    dt
+    obs_dt <- data.table::as.data.table(obs)
+    obs_dt[, report_date := max(date)]
+    obs_dt
   })
   obs_combined <- data.table::rbindlist(obs_list)
 
@@ -310,9 +310,9 @@ plot.estimate_truncation <- function(x, ...) {
     last_obs <- data.table::as.data.table(obs[[length(obs)]])
     last_obs <- last_obs[, .(date, last_confirm = confirm)]
     obs_list <- purrr::map(obs, function(o) {
-      dt <- data.table::as.data.table(o)
-      dt[, report_date := max(date)]
-      dt
+      obs_dt <- data.table::as.data.table(o)
+      obs_dt[, report_date := max(date)]
+      obs_dt
     })
     obs_combined <- data.table::rbindlist(obs_list)
     result <- data.table::merge.data.table(

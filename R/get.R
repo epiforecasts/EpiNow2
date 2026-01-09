@@ -337,39 +337,13 @@ get_samples.forecast_secondary <- function(object, ...) {
 get_samples.estimate_truncation <- function(object, ...) {
   raw_samples <- extract_samples(object$fit)
 
-  samples_list <- list()
-
   # Extract delay parameters (truncation distribution)
-  samples_list$delay_params <- extract_delays(raw_samples)
+  samples <- extract_delays(raw_samples)
 
-  # Extract reconstructed observations
-  recon_obs <- raw_samples[["recon_obs"]]
-  obs_sets <- object$args$obs_sets
-  n_time <- object$args$t
-  n_samples <- dim(recon_obs)[1]
-
-  recon_dt <- data.table::data.table(
-    sample = rep(seq_len(n_samples), each = n_time * obs_sets),
-    time = rep(rep(seq_len(n_time), obs_sets), n_samples),
-    dataset = rep(rep(seq_len(obs_sets), each = n_time), n_samples),
-    value = as.vector(aperm(recon_obs, c(2, 3, 1)))
-  )
-  recon_dt[, variable := "recon_obs"]
-  samples_list$recon_obs <- recon_dt
-
-  # Combine all samples
-  samples <- data.table::rbindlist(samples_list, fill = TRUE)
-
-  # Rename 'parameter' column to 'variable' for consistency if needed
+  # Rename 'parameter' column to 'variable' for consistency
   if ("parameter" %in% names(samples)) {
     data.table::setnames(samples, "parameter", "variable")
   }
-
-  # Add placeholder columns for consistency
-  if (!"date" %in% names(samples)) samples[, date := as.Date(NA)]
-  if (!"strat" %in% names(samples)) samples[, strat := NA_character_]
-  if (!"time" %in% names(samples)) samples[, time := NA_integer_]
-  if (!"type" %in% names(samples)) samples[, type := NA_character_]
 
   samples[]
 }
