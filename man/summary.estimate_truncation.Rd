@@ -4,20 +4,14 @@
 \alias{summary.estimate_truncation}
 \title{Summarise results from estimate_truncation}
 \usage{
-\method{summary}{estimate_truncation}(
-  object,
-  type = c("dist", "parameters", "observations"),
-  CrIs = c(0.2, 0.5, 0.9),
-  ...
-)
+\method{summary}{estimate_truncation}(object, type = c("dist", "parameters"), CrIs = c(0.2, 0.5, 0.9), ...)
 }
 \arguments{
 \item{object}{A fitted model object from \code{estimate_truncation()}}
 
 \item{type}{Character string indicating the type of summary to return.
 Options are "dist" (default) which returns the truncation distribution,
-"parameters" for posterior parameter estimates, or "observations" for
-the reconstructed observations summary.}
+or "parameters" for posterior parameter estimates.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
@@ -29,7 +23,6 @@ Depends on \code{type}:
 \item \code{"dist"}: A \verb{<dist_spec>} object representing the truncation distribution.
 \item \code{"parameters"}: A \verb{<data.table>} with summary statistics for delay
 parameters.
-\item \code{"observations"}: A \verb{<data.table>} with the observations and estimates.
 }
 }
 \description{

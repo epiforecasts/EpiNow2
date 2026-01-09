@@ -253,7 +253,6 @@ get_samples <- function(object, ...) {
   UseMethod("get_samples")
 }
 
-
 #' @rdname get_samples
 #' @export
 get_samples.estimate_infections <- function(object, ...) {
@@ -345,20 +344,18 @@ get_samples.estimate_truncation <- function(object, ...) {
 
   # Extract reconstructed observations
   recon_obs <- raw_samples[["recon_obs"]]
-  if (!is.null(recon_obs)) {
-    obs_sets <- object$args$obs_sets
-    n_time <- object$args$t
-    n_samples <- dim(recon_obs)[1]
+  obs_sets <- object$args$obs_sets
+  n_time <- object$args$t
+  n_samples <- dim(recon_obs)[1]
 
-    recon_dt <- data.table::data.table(
-      sample = rep(seq_len(n_samples), each = n_time * obs_sets),
-      time = rep(rep(seq_len(n_time), obs_sets), n_samples),
-      dataset = rep(rep(seq_len(obs_sets), each = n_time), n_samples),
-      value = as.vector(aperm(recon_obs, c(2, 3, 1)))
-    )
-    recon_dt[, variable := "recon_obs"]
-    samples_list$recon_obs <- recon_dt
-  }
+  recon_dt <- data.table::data.table(
+    sample = rep(seq_len(n_samples), each = n_time * obs_sets),
+    time = rep(rep(seq_len(n_time), obs_sets), n_samples),
+    dataset = rep(rep(seq_len(obs_sets), each = n_time), n_samples),
+    value = as.vector(aperm(recon_obs, c(2, 3, 1)))
+  )
+  recon_dt[, variable := "recon_obs"]
+  samples_list$recon_obs <- recon_dt
 
   # Combine all samples
   samples <- data.table::rbindlist(samples_list, fill = TRUE)
@@ -469,6 +466,13 @@ get_predictions.forecast_secondary <- function(object, ...) {
   data.table::copy(object$predictions)
 }
 
+#' @rdname get_predictions
+#' @export
+get_predictions.estimate_truncation <- function(object, ...) {
+  # Predictions are already merged with observations during model fitting
+  data.table::copy(object$observations)
+}
+
 #' Get delay distributions from a fitted model
 #'
 #' @description `r lifecycle::badge("experimental")`
@@ -506,12 +510,12 @@ get_delays <- function(object, ...) {
 #' @return A dist_spec object, or NULL if the delay doesn't exist
 #' @keywords internal
 reconstruct_delay <- function(object, delay_name) {
-  args <- object$args
+  stan_data <- object$args
   fit <- object$fit
 
   # Get the delay ID for this named delay
   id_var <- paste0("delay_id_", delay_name)
-  delay_id <- args[[id_var]]
+  delay_id <- stan_data[[id_var]]
 
   # Return NULL if delay doesn't exist (ID is 0 or NULL)
   if (is.null(delay_id) || delay_id == 0) {
@@ -519,14 +523,14 @@ reconstruct_delay <- function(object, delay_name) {
   }
 
   # Get delay type groups to find indices for this delay
-  types_groups <- args$delay_types_groups
+  types_groups <- stan_data$delay_types_groups
   if (is.null(types_groups)) {
     return(NULL)
   }
 
   # Extract posterior estimates if any parameters were estimated
   posterior <- NULL
-  if (args$delay_params_length > 0 && !is.null(fit)) {
+  if (stan_data$delay_params_length > 0 && !is.null(fit)) {
     posterior <- extract_stan_param(fit, params = "delay_params")
   }
 
@@ -536,7 +540,7 @@ reconstruct_delay <- function(object, delay_name) {
   delay_indices <- seq(start_idx, end_idx)
 
   # Determine if parametric or nonparametric
-  types_p <- args$delay_types_p[delay_indices]
+  types_p <- stan_data$delay_types_p[delay_indices]
 
   # Each delay in the range could be parametric or nonparametric
   delay_list <- lapply(seq_along(delay_indices), function(i) {
@@ -545,22 +549,22 @@ reconstruct_delay <- function(object, delay_name) {
 
     if (is_parametric) {
       # Get the parametric delay ID
-      param_id <- args$delay_types_id[idx]
+      param_id <- stan_data$delay_types_id[idx]
 
       # Get distribution type (0 = lognormal, 1 = gamma)
-      dist_type <- c("lognormal", "gamma")[args$delay_dist[param_id] + 1]
+      dist_type <- c("lognormal", "gamma")[stan_data$delay_dist[param_id] + 1]
 
       # Get parameter indices
-      param_start <- args$delay_params_groups[param_id]
-      param_end <- args$delay_params_groups[param_id + 1] - 1
+      param_start <- stan_data$delay_params_groups[param_id]
+      param_end <- stan_data$delay_params_groups[param_id + 1] - 1
       param_indices <- seq(param_start, param_end)
 
       # Get prior values
-      params_prior_mean <- args$delay_params_mean[param_indices]
-      params_prior_sd <- args$delay_params_sd[param_indices]
+      params_prior_mean <- stan_data$delay_params_mean[param_indices]
+      params_prior_sd <- stan_data$delay_params_sd[param_indices]
 
       # Get max delay
-      dist_max <- args$delay_max[param_id]
+      dist_max <- stan_data$delay_max[param_id]
 
       # Create parameters - use posterior if estimated, prior/fixed otherwise
       param_names <- natural_params(dist_type)
@@ -590,12 +594,12 @@ reconstruct_delay <- function(object, delay_name) {
       )
     } else {
       # Nonparametric delay
-      np_id <- args$delay_types_id[idx]
+      np_id <- stan_data$delay_types_id[idx]
 
       # Get PMF indices
-      pmf_start <- args$delay_np_pmf_groups[np_id]
-      pmf_end <- args$delay_np_pmf_groups[np_id + 1] - 1
-      pmf <- args$delay_np_pmf[seq(pmf_start, pmf_end)]
+      pmf_start <- stan_data$delay_np_pmf_groups[np_id]
+      pmf_end <- stan_data$delay_np_pmf_groups[np_id + 1] - 1
+      pmf <- stan_data$delay_np_pmf[seq(pmf_start, pmf_end)]
 
       NonParametric(pmf = pmf)
     }
@@ -612,16 +616,15 @@ reconstruct_delay <- function(object, delay_name) {
 #' @rdname get_delays
 #' @export
 get_delays.estimate_infections <- function(object, ...) {
-  args <- object$args
-  all_delay_names <- c("generation_time", "reporting", "truncation")
+  stan_data <- object$args
 
-  # Find which delays actually exist (have non-zero IDs)
-  available <- vapply(all_delay_names, function(n) {
-    id_var <- paste0("delay_id_", n)
-    id <- args[[id_var]]
-    !is.null(id) && id > 0
-  }, logical(1))
-  available_names <- all_delay_names[available]
+  # Find all delay_id_* variables in stan_data with non-zero IDs
+  id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
+  available_names <- sub("^delay_id_", "", id_vars)
+  available_names <- available_names[vapply(
+    id_vars, function(v) !is.null(stan_data[[v]]) && stan_data[[v]] > 0,
+    logical(1)
+  )]
 
   # Return named list of all available delays (with posterior if estimated)
   delays <- lapply(available_names, function(n) reconstruct_delay(object, n))
@@ -632,13 +635,14 @@ get_delays.estimate_infections <- function(object, ...) {
 #' @rdname get_delays
 #' @export
 get_delays.estimate_secondary <- function(object, ...) {
-  args <- object$args
+  stan_data <- object$args
 
-  # Find all delay_id_* variables in args with non-zero IDs
-  id_vars <- grep("^delay_id_", names(args), value = TRUE)
+  # Find all delay_id_* variables in stan_data with non-zero IDs
+  id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
   available_names <- sub("^delay_id_", "", id_vars)
   available_names <- available_names[vapply(
-    id_vars, function(v) !is.null(args[[v]]) && args[[v]] > 0, logical(1)
+    id_vars, function(v) !is.null(stan_data[[v]]) && stan_data[[v]] > 0,
+    logical(1)
   )]
 
   # Return named list of all available delays (with posterior if estimated)

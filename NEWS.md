@@ -44,7 +44,7 @@ The function interface remains unchanged.
   - Removed elements: `last_obs` (now included in `observations`), `cmf` and `dist`.
   - Use `get_delays(object)$truncation` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
   - Use `get_samples(object)` to extract posterior samples.
-  - Use `summary(object)` to get the truncation distribution (`type = "dist"`), parameter estimates (`type = "parameters"`), or observations (`type = "observations"`).
+  - Use `summary(object)` to get the truncation distribution (`type = "dist"`) or parameter estimates (`type = "parameters"`).
   - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_delays()$truncation` instead.
 - Added `get_delays()` generic function to extract delay distributions from fitted models as a named list of `dist_spec` objects. Works with `estimate_infections()`, `estimate_secondary()`, and `estimate_truncation()`.
 - Added a `style` argument to `plot_estimates()` and related plot methods to display credible intervals as error bars (`"linerange"`) instead of the default ribbons (`"ribbon"`). Error bars can be clearer for weekly or aggregated data.

@@ -6,6 +6,7 @@
 \alias{get_predictions.estimate_secondary}
 \alias{get_predictions.forecast_infections}
 \alias{get_predictions.forecast_secondary}
+\alias{get_predictions.estimate_truncation}
 \title{Get predictions from a fitted model}
 \usage{
 get_predictions(object, ...)
@@ -17,6 +18,8 @@ get_predictions(object, ...)
 \method{get_predictions}{forecast_infections}(object, ...)
 
 \method{get_predictions}{forecast_secondary}(object, ...)
+
+\method{get_predictions}{estimate_truncation}(object, ...)
 }
 \arguments{
 \item{object}{A fitted model object (e.g., from \code{estimate_infections()} or
