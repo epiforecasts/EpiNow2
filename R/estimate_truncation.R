@@ -210,10 +210,6 @@ estimate_truncation <- function(data,
 
   out <- list()
 
-  # Store distribution info for get_delays() accessor
-  stan_data$dist_type <- get_distribution(truncation)
-  stan_data$dist_max <- max(truncation)
-
   # summarise reconstructed observations
   recon_obs <- extract_stan_param(fit, "recon_obs",
     CrIs = CrIs,

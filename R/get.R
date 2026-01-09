@@ -655,9 +655,9 @@ get_delays.estimate_truncation <- function(object, ...) {
   params_mean <- round(delay_params$mean, 3)
   params_sd <- round(delay_params$sd, 3)
 
-  # Get the original truncation distribution info from args
-  dist_type <- object$args$dist_type
-  dist_max <- object$args$dist_max
+  # Get distribution info from Stan data (delay_dist: 0=lognormal, 1=gamma)
+  dist_type <- c("lognormal", "gamma")[object$args$delay_dist[1] + 1]
+  dist_max <- object$args$delay_max[1]
 
   # Create Normal distributions for each parameter
   parameters <- purrr::map(seq_along(params_mean), function(id) {
