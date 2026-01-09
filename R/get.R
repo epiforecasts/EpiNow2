@@ -468,9 +468,70 @@ get_predictions.forecast_secondary <- function(object, ...) {
 
 #' @rdname get_predictions
 #' @export
-get_predictions.estimate_truncation <- function(object, ...) {
-  # Predictions are already merged with observations during model fitting
-  data.table::copy(object$observations)
+get_predictions.estimate_truncation <- function(object,
+                                                CrIs = c(0.2, 0.5, 0.9),
+                                                ...) {
+  # Extract reconstructed observations from fit
+  recon_obs <- extract_stan_param(object$fit, "recon_obs",
+    CrIs = CrIs,
+    var_names = TRUE
+  )
+  recon_obs <- recon_obs[, id := variable][, variable := NULL]
+  obs_sets <- object$args$obs_sets
+  recon_obs <- recon_obs[, dataset := seq_len(.N)][
+    ,
+    dataset := dataset %% obs_sets
+  ][
+    dataset == 0, dataset := obs_sets
+  ]
+
+  # Process input observations (same as in estimate_truncation)
+  dirty_obs <- purrr::map(object$observations, data.table::as.data.table)
+  earliest_date <- max(
+    as.Date(
+      purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])
+    )
+  )
+  dirty_obs <- purrr::map(dirty_obs, function(x) x[date >= earliest_date])
+  nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
+  dirty_obs <- dirty_obs[nrow_obs]
+
+  # Get latest observations
+  last_obs <- data.table::copy(dirty_obs[[length(dirty_obs)]])[
+    , last_confirm := confirm
+  ][, confirm := NULL]
+
+  # Get truncation max from args
+  trunc_max <- object$args$delay_max[1]
+
+  # Link reconstructed observations to observed
+
+  link_obs <- function(index) {
+    target_obs <- dirty_obs[[index]][, idx := .N - 0:(.N - 1)]
+    target_obs <- target_obs[idx < trunc_max]
+    estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
+    estimates <- estimates[, lapply(.SD, as.integer)]
+    estimates <- estimates[, idx := .N - 0:(.N - 1)]
+    if (!is.null(estimates$n_eff)) {
+      estimates[, "n_eff" := NULL]
+    }
+    if (!is.null(estimates$Rhat)) {
+      estimates[, "Rhat" := NULL]
+    }
+
+    target_obs <- data.table::merge.data.table(
+      target_obs, last_obs,
+      by = "date"
+    )
+    target_obs[, report_date := max(date)]
+    target_obs <- data.table::merge.data.table(target_obs, estimates,
+      by = "idx", all.x = TRUE
+    )
+    target_obs[order(date)][, idx := NULL]
+  }
+
+  predictions <- purrr::map(seq_len(obs_sets), link_obs)
+  data.table::rbindlist(predictions)
 }
 
 #' Get delay distributions from a fitted model

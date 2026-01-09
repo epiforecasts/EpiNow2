@@ -25,7 +25,8 @@ test_that("estimate_truncation can return values from simulated data and plot
   )
   expect_s3_class(get_delays(est)$truncation, "dist_spec")
   expect_s3_class(summary(est), "data.table")
-  expect_s3_class(est$observations, "data.table")
+  expect_type(est$observations, "list")
+  expect_s3_class(get_predictions(est), "data.table")
   expect_error(plot(est), NA)
 })
 
@@ -33,9 +34,10 @@ test_that("deprecated accessors return correct values with warnings", {
   est <- estimate_truncation(example_truncated,
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250
   )
-  # $obs returns observations with deprecation warning
+  # $obs returns get_predictions() result with deprecation warning
   lifecycle::expect_deprecated(obs_result <- est$obs)
-  expect_equal(obs_result, est$observations)
+  expect_s3_class(obs_result, "data.table")
+  expect_equal(obs_result, get_predictions(est))
 
   # $data returns args with deprecation warning
   lifecycle::expect_deprecated(data_result <- est$data)
@@ -59,7 +61,7 @@ test_that("deprecated accessors return correct values with warnings", {
 
   # [[ accessor works the same way
   lifecycle::expect_deprecated(obs_bracket <- est[["obs"]])
-  expect_equal(obs_bracket, est$observations)
+  expect_equal(obs_bracket, get_predictions(est))
 })
 
 test_that("get_delays returns truncation distribution from estimate_truncation", {

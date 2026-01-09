@@ -54,8 +54,7 @@
 #'
 #' @return An `<estimate_truncation>` object containing:
 #'
-#' - `observations`: A `<data.table>` containing the observed truncated data,
-#'   latest observed data, and truncation-adjusted estimates.
+#' - `observations`: The input data (list of `<data.frame>`s).
 #' - `args`: A list of arguments used for fitting (stan data).
 #' - `fit`: The stan fit object.
 #'
@@ -63,9 +62,12 @@
 #' `<dist_spec>`, which can be passed to the `truncation` argument of
 #' [epinow()], [regional_epinow()], and [estimate_infections()].
 #'
+#' Use [get_predictions()] to extract truncation-adjusted estimates that can
+#' be compared to the observed data.
+#'
 #' S3 methods available: [summary.estimate_truncation()],
 #' [plot.estimate_truncation()], [get_samples.estimate_truncation()],
-#' [get_delays.estimate_truncation()].
+#' [get_delays.estimate_truncation()], [get_predictions.estimate_truncation()].
 #'
 #' @export
 #' @inheritParams calc_CrIs
@@ -208,54 +210,11 @@ estimate_truncation <- function(data,
   # fit
   fit <- fit_model(stan_args, id = "estimate_truncation")
 
-  out <- list()
-
-  # summarise reconstructed observations
-  recon_obs <- extract_stan_param(fit, "recon_obs",
-    CrIs = CrIs,
-    var_names = TRUE
+  out <- list(
+    observations = data,
+    args = stan_data,
+    fit = fit
   )
-  recon_obs <- recon_obs[, id := variable][, variable := NULL]
-  recon_obs <- recon_obs[, dataset := seq_len(.N)][
-    ,
-    dataset := dataset %% stan_data$obs_sets
-  ][
-    dataset == 0, dataset := stan_data$obs_sets
-  ]
-  # link reconstructed observations to observed
-  last_obs <-
-    data.table::copy(dirty_obs[[length(dirty_obs)]])[, last_confirm := confirm][
-      ,
-      confirm := NULL
-    ]
-  link_obs <- function(index) {
-    target_obs <- dirty_obs[[index]][, index := .N - 0:(.N - 1)]
-    target_obs <- target_obs[index < max(truncation)]
-    estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
-    estimates <- estimates[, lapply(.SD, as.integer)]
-    estimates <- estimates[, index := .N - 0:(.N - 1)]
-    if (!is.null(estimates$n_eff)) {
-      estimates[, "n_eff" := NULL]
-    }
-    if (!is.null(estimates$Rhat)) {
-      estimates[, "Rhat" := NULL]
-    }
-
-    target_obs <-
-      data.table::merge.data.table(
-        target_obs, last_obs,
-        by = "date"
-      )
-    target_obs[, report_date := max(date)]
-    target_obs <- data.table::merge.data.table(target_obs, estimates,
-      by = "index", all.x = TRUE
-    )
-    target_obs[order(date)][, index := NULL]
-  }
-  out$observations <- purrr::map(1:(stan_data$obs_sets), link_obs)
-  out$observations <- data.table::rbindlist(out$observations)
-  out$args <- stan_data
-  out$fit <- fit
 
   class(out) <- c("estimate_truncation", class(out))
   out
@@ -280,15 +239,14 @@ estimate_truncation <- function(data,
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {
-  obs <- x$observations
   preds <- get_predictions(x)
-  p <- ggplot2::ggplot(obs, ggplot2::aes(x = date, y = last_confirm)) +
+  p <- ggplot2::ggplot(preds, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
     ) +
     ggplot2::geom_point(
-      data = obs,
+      data = preds,
       ggplot2::aes(x = date, y = confirm)
     ) +
     ggplot2::facet_wrap(~report_date, scales = "free")
@@ -320,29 +278,32 @@ plot.estimate_truncation <- function(x, ...) {
     return(get_delays(x)$truncation)
   }
 
-  deprecated_map <- list(
-    obs = "observations",
-    data = "args"
-  )
-
-  if (name %in% names(deprecated_map)) {
-    new_name <- deprecated_map[[name]]
+  if (name == "obs") {
     lifecycle::deprecate_warn(
       "1.8.0",
-      I(paste0("estimate_truncation()$", name)),
-      I(paste0("estimate_truncation()$", new_name))
+      I("estimate_truncation()$obs"),
+      I("get_predictions()")
     )
-    return(.subset2(x, new_name))
+    return(get_predictions(x))
+  }
+
+  if (name == "data") {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      I("estimate_truncation()$data"),
+      I("estimate_truncation()$args")
+    )
+    return(.subset2(x, "args"))
   }
 
   if (name == "last_obs") {
     lifecycle::deprecate_warn(
       "1.8.0",
       I("estimate_truncation()$last_obs"),
-      details = "This is now the `last_confirm` column in `observations`."
+      details = "Use `get_predictions()` and extract the `last_confirm` column."
     )
-    obs <- .subset2(x, "observations")
-    return(unique(obs[, .(date, confirm = last_confirm)]))
+    preds <- get_predictions(x)
+    return(unique(preds[, .(date, confirm = last_confirm)]))
   }
 
   if (name == "cmf") {

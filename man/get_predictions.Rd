@@ -19,7 +19,7 @@ get_predictions(object, ...)
 
 \method{get_predictions}{forecast_secondary}(object, ...)
 
-\method{get_predictions}{estimate_truncation}(object, ...)
+\method{get_predictions}{estimate_truncation}(object, CrIs = c(0.2, 0.5, 0.9), ...)
 }
 \arguments{
 \item{object}{A fitted model object (e.g., from \code{estimate_infections()} or
