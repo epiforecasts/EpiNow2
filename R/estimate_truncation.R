@@ -280,14 +280,15 @@ estimate_truncation <- function(data,
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {
+  obs <- x$observations
   preds <- get_predictions(x)
-  p <- ggplot2::ggplot(preds, ggplot2::aes(x = date, y = last_confirm)) +
+  p <- ggplot2::ggplot(obs, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
     ) +
     ggplot2::geom_point(
-      data = preds,
+      data = obs,
       ggplot2::aes(x = date, y = confirm)
     ) +
     ggplot2::facet_wrap(~report_date, scales = "free")
