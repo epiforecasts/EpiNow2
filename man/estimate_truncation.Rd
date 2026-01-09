@@ -129,8 +129,6 @@ est <- estimate_truncation(example_truncated,
 get_delays(est)$truncation
 # or using the summary method
 summary(est, type = "dist")
-# observations linked to truncation adjusted estimates
-print(est$observations)
 # validation plot of observations vs estimates
 plot(est)
 
