@@ -374,63 +374,10 @@ plot.estimate_truncation <- function(x, ...) {
 #' @export
 #' @method [[ estimate_truncation
 `[[.estimate_truncation` <- function(x, name) {
-  # Handle [["dist"]] with deprecation warning
-  if (name == "dist") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
-      I("estimate_truncation()$dist"),
-      I("get_delays()$truncation")
-    )
-    return(get_delays(x)$truncation)
+  # Delegate to $ method for deprecated element handling
+  deprecated_names <- c("dist", "obs", "data", "last_obs", "cmf")
+  if (name %in% deprecated_names) {
+    return(`$.estimate_truncation`(x, name))
   }
-
-  deprecated_map <- list(
-    obs = "observations",
-    data = "args"
-  )
-
-  if (name %in% names(deprecated_map)) {
-    new_name <- deprecated_map[[name]]
-    lifecycle::deprecate_warn(
-      "1.8.0",
-      I(paste0("estimate_truncation()$", name)),
-      I(paste0("estimate_truncation()$", new_name))
-    )
-    return(.subset2(x, new_name))
-  }
-
-  if (name == "last_obs") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
-      I("estimate_truncation()$last_obs"),
-      details = "This is now the `last_confirm` column in `observations`."
-    )
-    obs <- .subset2(x, "observations")
-    return(unique(obs[, .(date, confirm = last_confirm)]))
-  }
-
-  if (name == "cmf") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
-      I("estimate_truncation()$cmf"),
-      I("get_delays()$truncation")
-    )
-    trunc_dist <- get_delays(x)$truncation
-    # Extract mean parameter values for discretisation
-    dist_type <- get_distribution(trunc_dist)
-    param_names <- natural_params(dist_type)
-    params <- lapply(param_names, function(p) {
-      trunc_dist[[1]][[p]]$parameters$mean
-    })
-    names(params) <- param_names
-    fixed_dist <- new_dist_spec(
-      params = params,
-      max = max(trunc_dist),
-      distribution = dist_type
-    )
-    pmf <- discretise(fixed_dist)[[1]]
-    return(cumsum(pmf))
-  }
-
   NextMethod("[[")
 }
