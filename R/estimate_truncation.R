@@ -280,7 +280,7 @@ estimate_truncation <- function(data,
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {
-  obs <- x$observations
+  obs <- get_predictions(x)
   p <- ggplot2::ggplot(obs, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(
       fill = "grey", col = "white",
