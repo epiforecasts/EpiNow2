@@ -34,10 +34,12 @@ test_that("deprecated accessors return correct values with warnings", {
   est <- estimate_truncation(example_truncated,
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250
   )
-  # $obs returns get_predictions() result with deprecation warning
+  # $obs returns merged predictions+observations with deprecation warning
   lifecycle::expect_deprecated(obs_result <- est$obs)
   expect_s3_class(obs_result, "data.table")
-  expect_equal(obs_result, get_predictions(est))
+  expect_true("confirm" %in% names(obs_result))
+  expect_true("last_confirm" %in% names(obs_result))
+  expect_true("median" %in% names(obs_result))
 
   # $data returns args with deprecation warning
   lifecycle::expect_deprecated(data_result <- est$data)
@@ -61,7 +63,8 @@ test_that("deprecated accessors return correct values with warnings", {
 
   # [[ accessor works the same way
   lifecycle::expect_deprecated(obs_bracket <- est[["obs"]])
-  expect_equal(obs_bracket, get_predictions(est))
+  expect_s3_class(obs_bracket, "data.table")
+  expect_true("confirm" %in% names(obs_bracket))
 })
 
 test_that("get_delays returns truncation distribution from estimate_truncation", {

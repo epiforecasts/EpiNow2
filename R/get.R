@@ -499,7 +499,7 @@ get_predictions.estimate_truncation <- function(object,
   # Get truncation max from args
   trunc_max <- object$args$delay_max[1]
 
-  # Link predictions to dates and observations
+  # Link predictions to dates
   link_preds <- function(index) {
     target_obs <- dirty_obs[[index]][, idx := .N - 0:(.N - 1)]
     target_obs <- target_obs[idx < trunc_max]
@@ -513,9 +513,9 @@ get_predictions.estimate_truncation <- function(object,
       estimates[, "Rhat" := NULL]
     }
 
-    # Merge predictions with date and observed confirm
+    # Merge predictions with date only (no observations)
     result <- data.table::merge.data.table(
-      target_obs[, .(date, confirm, idx)],
+      target_obs[, .(date, idx)],
       estimates,
       by = "idx", all.x = TRUE
     )

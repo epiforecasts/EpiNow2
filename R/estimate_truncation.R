@@ -245,8 +245,20 @@ plot.estimate_truncation <- function(x, ...) {
   last_obs <- data.table::as.data.table(x$observations[[length(x$observations)]])
   last_obs <- last_obs[, .(date, last_confirm = confirm)]
 
-  # Merge with predictions for plotting
-  plot_data <- data.table::merge.data.table(preds, last_obs, by = "date")
+  # Get truncated observations from each snapshot
+  obs_list <- purrr::map(x$observations, function(obs) {
+    dt <- data.table::as.data.table(obs)
+    dt[, report_date := max(date)]
+    dt
+  })
+  obs_combined <- data.table::rbindlist(obs_list)
+
+  # Merge predictions with observations for plotting
+  plot_data <- data.table::merge.data.table(
+    preds, obs_combined[, .(date, confirm, report_date)],
+    by = c("date", "report_date")
+  )
+  plot_data <- data.table::merge.data.table(plot_data, last_obs, by = "date")
 
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(
@@ -290,9 +302,25 @@ plot.estimate_truncation <- function(x, ...) {
     lifecycle::deprecate_warn(
       "1.8.0",
       I("estimate_truncation()$obs"),
-      I("get_predictions()")
+      I("get_predictions() and observations")
     )
-    return(get_predictions(x))
+    # Reconstruct old format: predictions merged with observations
+    preds <- get_predictions(x)
+    obs <- .subset2(x, "observations")
+    last_obs <- data.table::as.data.table(obs[[length(obs)]])
+    last_obs <- last_obs[, .(date, last_confirm = confirm)]
+    obs_list <- purrr::map(obs, function(o) {
+      dt <- data.table::as.data.table(o)
+      dt[, report_date := max(date)]
+      dt
+    })
+    obs_combined <- data.table::rbindlist(obs_list)
+    result <- data.table::merge.data.table(
+      preds, obs_combined[, .(date, confirm, report_date)],
+      by = c("date", "report_date")
+    )
+    result <- data.table::merge.data.table(result, last_obs, by = "date")
+    return(result)
   }
 
   if (name == "data") {
