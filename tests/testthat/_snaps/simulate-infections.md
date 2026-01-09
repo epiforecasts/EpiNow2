@@ -31,6 +31,7 @@
     27: reported_cases 2023-01-13  80.00000
     28: reported_cases 2023-01-14  95.00000
               variable       date     value
+                <char>     <Date>     <num>
 
 # simulate_infections works as expected with additional parameters
 
@@ -65,4 +66,5 @@
     27: reported_cases 2023-01-13  83.0000
     28: reported_cases 2023-01-14  66.0000
               variable       date    value
+                <char>     <Date>    <num>
 
