@@ -216,7 +216,7 @@ estimate_truncation <- function(data,
     fit = fit
   )
 
-  class(out) <- c("estimate_truncation", class(out))
+  class(out) <- c("epinowfit", "estimate_truncation", class(out))
   out
 }
 
