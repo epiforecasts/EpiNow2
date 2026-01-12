@@ -242,7 +242,8 @@ plot.estimate_truncation <- function(x, ...) {
   preds <- get_predictions(x)
 
   # Get latest observations for reference (grey bars)
-  last_obs <- data.table::as.data.table(x$observations[[length(x$observations)]])
+  last_snapshot <- x$observations[[length(x$observations)]]
+  last_obs <- data.table::as.data.table(last_snapshot)
   last_obs <- last_obs[, .(date, last_confirm = confirm)]
 
   # Get truncated observations from each snapshot

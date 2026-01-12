@@ -460,7 +460,7 @@ get_predictions.estimate_truncation <- function(object,
   ]
 
   # Process input observations to get dates
- dirty_obs <- purrr::map(object$observations, data.table::as.data.table)
+  dirty_obs <- purrr::map(object$observations, data.table::as.data.table)
   earliest_date <- max(
     as.Date(
       purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])
