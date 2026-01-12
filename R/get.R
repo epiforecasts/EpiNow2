@@ -539,106 +539,83 @@ get_delays <- function(object, ...) {
 #' @keywords internal
 reconstruct_delay <- function(object, delay_name) {
   stan_data <- object$args
-  fit <- object$fit
 
   # Get the delay ID for this named delay
-  id_var <- paste0("delay_id_", delay_name)
-  delay_id <- stan_data[[id_var]]
-
-  # Return NULL if delay doesn't exist (ID is 0 or NULL)
+  delay_id <- stan_data[[paste0("delay_id_", delay_name)]]
   if (is.null(delay_id) || delay_id == 0) {
     return(NULL)
   }
 
-  # Get delay type groups to find indices for this delay
   types_groups <- stan_data$delay_types_groups
   if (is.null(types_groups)) {
     return(NULL)
   }
 
-  # Extract posterior estimates if any parameters were estimated
+  # Extract posterior if parameters were estimated
   posterior <- NULL
-  if (stan_data$delay_params_length > 0 && !is.null(fit)) {
-    posterior <- extract_stan_param(fit, params = "delay_params")
+  if (stan_data$delay_params_length > 0 && !is.null(object$fit)) {
+    posterior <- extract_stan_param(object$fit, params = "delay_params")
   }
 
-  # Get start and end indices for this delay type
-  start_idx <- types_groups[delay_id]
-  end_idx <- types_groups[delay_id + 1] - 1
-  delay_indices <- seq(start_idx, end_idx)
-
-  # Determine if parametric or nonparametric
+  # Get indices for this delay type
+  delay_indices <- seq(types_groups[delay_id], types_groups[delay_id + 1] - 1)
   types_p <- stan_data$delay_types_p[delay_indices]
 
-  # Each delay in the range could be parametric or nonparametric
+  # Reconstruct each delay component
   delay_list <- lapply(seq_along(delay_indices), function(i) {
     idx <- delay_indices[i]
-    is_parametric <- types_p[i] == 1
+    type_id <- stan_data$delay_types_id[idx]
 
-    if (is_parametric) {
-      # Get the parametric delay ID
-      param_id <- stan_data$delay_types_id[idx]
-
-      # Get distribution type
-      dist_type <- dist_types()[stan_data$delay_dist[param_id] + 1]
-
-      # Get parameter indices
-      param_start <- stan_data$delay_params_groups[param_id]
-      param_end <- stan_data$delay_params_groups[param_id + 1] - 1
-      param_indices <- seq(param_start, param_end)
-
-      # Get prior values
-      params_prior_mean <- stan_data$delay_params_mean[param_indices]
-      params_prior_sd <- stan_data$delay_params_sd[param_indices]
-
-      # Get max delay
-      dist_max <- stan_data$delay_max[param_id]
-
-      # Create parameters - use posterior if estimated, prior/fixed otherwise
-      param_names <- natural_params(dist_type)
-      parameters <- lapply(seq_along(params_prior_mean), function(j) {
-        param_idx <- param_indices[j]
-        was_estimated <- params_prior_sd[j] > 0 && !is.na(params_prior_sd[j])
-
-        if (was_estimated && !is.null(posterior)) {
-          # Use posterior estimates
-          post_mean <- round(posterior$mean[param_idx], 3)
-          post_sd <- round(posterior$sd[param_idx], 3)
-          Normal(post_mean, post_sd)
-        } else if (params_prior_sd[j] == 0 || is.na(params_prior_sd[j])) {
-          # Fixed value
-          params_prior_mean[j]
-        } else {
-          # Prior (no fit available)
-          Normal(params_prior_mean[j], params_prior_sd[j])
-        }
-      })
-      names(parameters) <- param_names
-
-      new_dist_spec(
-        params = parameters,
-        max = dist_max,
-        distribution = dist_type
-      )
+    if (types_p[i] == 1) {
+      reconstruct_parametric(stan_data, type_id, posterior)
     } else {
-      # Nonparametric delay
-      np_id <- stan_data$delay_types_id[idx]
-
-      # Get PMF indices
-      pmf_start <- stan_data$delay_np_pmf_groups[np_id]
-      pmf_end <- stan_data$delay_np_pmf_groups[np_id + 1] - 1
-      pmf <- stan_data$delay_np_pmf[seq(pmf_start, pmf_end)]
-
-      NonParametric(pmf = pmf)
+      reconstruct_nonparametric(stan_data, type_id)
     }
   })
 
-  # If single delay, return it directly; otherwise combine
-  if (length(delay_list) == 1) {
-    delay_list[[1]]
-  } else {
-    do.call(c, delay_list)
-  }
+  if (length(delay_list) == 1) delay_list[[1]] else do.call(c, delay_list)
+}
+
+#' Reconstruct a parametric delay distribution
+#' @keywords internal
+reconstruct_parametric <- function(stan_data, param_id, posterior) {
+  dist_type <- dist_types()[stan_data$delay_dist[param_id] + 1]
+  dist_max <- stan_data$delay_max[param_id]
+
+  # Get parameter indices and values
+  param_idx <- seq(
+    stan_data$delay_params_groups[param_id],
+    stan_data$delay_params_groups[param_id + 1] - 1
+  )
+  prior_mean <- stan_data$delay_params_mean[param_idx]
+  prior_sd <- stan_data$delay_params_sd[param_idx]
+
+  # Build parameters: posterior if estimated, fixed or prior otherwise
+  param_names <- natural_params(dist_type)
+  parameters <- lapply(seq_along(prior_mean), function(j) {
+    estimated <- prior_sd[j] > 0 && !is.na(prior_sd[j])
+    if (estimated && !is.null(posterior)) {
+      Normal(round(posterior$mean[param_idx[j]], 3),
+             round(posterior$sd[param_idx[j]], 3))
+    } else if (prior_sd[j] == 0 || is.na(prior_sd[j])) {
+      prior_mean[j]
+    } else {
+      Normal(prior_mean[j], prior_sd[j])
+    }
+  })
+  names(parameters) <- param_names
+
+  new_dist_spec(params = parameters, max = dist_max, distribution = dist_type)
+}
+
+#' Reconstruct a nonparametric delay distribution
+#' @keywords internal
+reconstruct_nonparametric <- function(stan_data, np_id) {
+  pmf_idx <- seq(
+    stan_data$delay_np_pmf_groups[np_id],
+    stan_data$delay_np_pmf_groups[np_id + 1] - 1
+  )
+  NonParametric(pmf = stan_data$delay_np_pmf[pmf_idx])
 }
 
 #' @rdname get_delays
