@@ -643,26 +643,7 @@ reconstruct_delay <- function(object, delay_name) {
 
 #' @rdname get_delays
 #' @export
-get_delays.estimate_infections <- function(object, ...) {
-  stan_data <- object$args
-
-  # Find all delay_id_* variables in stan_data with non-zero IDs
-  id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
-  available_names <- sub("^delay_id_", "", id_vars)
-  available_names <- available_names[vapply(
-    id_vars, function(v) !is.null(stan_data[[v]]) && stan_data[[v]] > 0,
-    logical(1)
-  )]
-
-  # Return named list of all available delays (with posterior if estimated)
-  delays <- lapply(available_names, function(n) reconstruct_delay(object, n))
-  names(delays) <- available_names
-  delays
-}
-
-#' @rdname get_delays
-#' @export
-get_delays.estimate_secondary <- function(object, ...) {
+get_delays.epinowfit <- function(object, ...) {
   stan_data <- object$args
 
   # Find all delay_id_* variables in stan_data with non-zero IDs

@@ -2,16 +2,13 @@
 % Please edit documentation in R/get.R
 \name{get_delays}
 \alias{get_delays}
-\alias{get_delays.estimate_infections}
-\alias{get_delays.estimate_secondary}
+\alias{get_delays.epinowfit}
 \alias{get_delays.estimate_truncation}
 \title{Get delay distributions from a fitted model}
 \usage{
 get_delays(object, ...)
 
-\method{get_delays}{estimate_infections}(object, ...)
-
-\method{get_delays}{estimate_secondary}(object, ...)
+\method{get_delays}{epinowfit}(object, ...)
 
 \method{get_delays}{estimate_truncation}(object, ...)
 }
