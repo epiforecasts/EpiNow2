@@ -258,12 +258,6 @@ get_samples <- function(object, ...) {
 get_samples.estimate_infections <- function(object, ...) {
   raw_samples <- extract_samples(object$fit)
 
-  for (arg_name in names(object$args)) {
-    if (!(arg_name %in% names(raw_samples))) {
-      raw_samples[[arg_name]] <- object$args[[arg_name]]
-    }
-  }
-
   format_samples_with_dates(
     raw_samples = raw_samples,
     args = object$args,
@@ -280,21 +274,12 @@ get_samples.forecast_infections <- function(object, ...) {
 #' @rdname get_samples
 #' @export
 get_samples.estimate_secondary <- function(object, ...) {
-
   # Extract raw posterior samples from the fit
   raw_samples <- extract_samples(object$fit)
 
-  # Extract parameters (delays and params) with category labels
+  # Extract parameters (delays and params) - variable column added by extract_*
   delay_samples <- extract_delays(raw_samples, args = object$args)
-  if (!is.null(delay_samples)) {
-    delay_samples[, variable := "delay_params"]
-  }
-
   param_samples <- extract_parameters(raw_samples, args = object$args)
-  if (!is.null(param_samples)) {
-    param_samples[, variable := "params"]
-  }
-
   samples_list <- list(delay_samples, param_samples)
 
   # Extract time-varying generated quantities
@@ -342,12 +327,8 @@ get_samples.estimate_truncation <- function(object, ...) {
   raw_samples <- extract_samples(object$fit)
 
   # Extract delay parameters (truncation distribution)
+  # variable column is added by extract_delays()
   samples <- extract_delays(raw_samples, args = object$args)
-
-  # Add variable column for consistency with estimate_infections format
-  if (!is.null(samples)) {
-    samples[, variable := "delay_params"]
-  }
 
   samples[]
 }
