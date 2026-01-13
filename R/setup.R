@@ -157,6 +157,16 @@ setup_future <- function(data,
       )
     )
   }
+  if (!requireNamespace("parallelly", quietly = TRUE)) {
+    futile.logger::flog.error(
+      "The parallelly package is required for parallelisation"
+    )
+    cli_abort(
+      c(
+        "!" = "The parallelly package is required for parallelisation."
+      )
+    )
+  }
   if (length(strategies) > 2 || length(strategies) == 0) {
     futile.logger::flog.error("1 or 2 strategies should be used")
     cli_abort(
@@ -174,23 +184,23 @@ setup_future <- function(data,
     )
   }
   if (length(strategies) == 1) {
-    workers <- future::availableCores()
+    workers <- parallelly::availableCores()
     futile.logger::flog.info(
       "Using %s workers with 1 core per worker",
       workers
     )
     future::plan(strategies,
       workers = workers,
-      gc = TRUE, earlySignal = TRUE
+      gc = TRUE
     )
     cores_per_worker <- 1
     invisible(NULL)
   } else {
     jobs <- length(unique(data$region))
     workers <- min(
-      ceiling(future::availableCores() / min_cores_per_worker), jobs
+      ceiling(parallelly::availableCores() / min_cores_per_worker), jobs
     )
-    cores_per_worker <- max(1, round(future::availableCores() / workers, 0))
+    cores_per_worker <- max(1, round(parallelly::availableCores() / workers, 0))
 
     futile.logger::flog.info(
       "Using %s workers with %s cores per worker",
@@ -200,7 +210,7 @@ setup_future <- function(data,
     future::plan(list(
       future::tweak(strategies[1],
         workers = workers,
-        gc = TRUE, earlySignal = TRUE
+        gc = TRUE
       ),
       future::tweak(strategies[2], workers = cores_per_worker)
     ))
