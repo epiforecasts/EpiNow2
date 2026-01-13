@@ -333,74 +333,23 @@ get_samples.estimate_truncation <- function(object, ...) {
   samples[]
 }
 
-#' Get observations from a fitted model
-#'
-#' @description `r lifecycle::badge("experimental")`
-#' Extracts observations from a fitted model in a format suitable for
-#' comparison with predictions from [get_predictions()].
-#'
-#' @param object A fitted model object (e.g., from `estimate_infections()`,
-#'   `estimate_secondary()`, or `estimate_truncation()`)
-#' @param ... Additional arguments passed to methods
-#'
-#' @return A `data.table` with observations. For `estimate_truncation()`,
-#'   includes `report_date` to match the structure of predictions.
-#'
-#' @export
-#' @examples
-#' \dontrun{
-#' obs <- get_observations(fit)
-#' preds <- get_predictions(fit)
-#' # Merge for comparison
-#' combined <- merge(obs, preds, by = "date")
-#' }
-get_observations <- function(object, ...) {
-  UseMethod("get_observations")
-}
-
-#' @rdname get_observations
-#' @export
-get_observations.epinowfit <- function(object, ...) {
-  data.table::copy(object$observations)
-}
-
-#' @rdname get_observations
-#' @export
-get_observations.estimate_truncation <- function(object, ...) {
-  if (length(object$observations) == 0) {
-    return(data.table::data.table())
-  }
-  # Format observations to match predictions structure
-  obs_list <- purrr::map(object$observations, function(obs) {
-    obs_dt <- data.table::as.data.table(obs)
-    obs_dt[, report_date := max(date)]
-    obs_dt
-  })
-  obs_combined <- data.table::rbindlist(obs_list)
-
-  # Add last_confirm from latest snapshot
-  last_snapshot <- object$observations[[length(object$observations)]]
-  last_obs <- data.table::as.data.table(last_snapshot)
-  last_obs <- last_obs[, .(date, last_confirm = confirm)]
-
-  data.table::merge.data.table(obs_combined, last_obs, by = "date")
-}
-
 #' Get predictions from a fitted model
 #'
 #' @description `r lifecycle::badge("stable")`
 #' Extracts predictions from a fitted model, combining observations with model
 #' estimates. For `estimate_infections()` returns predicted reported cases, for
-#' `estimate_secondary()` returns predicted secondary observations.
+#' `estimate_secondary()` returns predicted secondary observations. For
+#' `estimate_truncation()` returns reconstructed observations adjusted for
+#' truncation.
 #'
-#' @param object A fitted model object (e.g., from `estimate_infections()` or
-#'   `estimate_secondary()`)
+#' @param object A fitted model object (e.g., from `estimate_infections()`,
+#'   `estimate_secondary()`, or `estimate_truncation()`)
 #' @param CrIs Numeric vector of credible intervals to return. Defaults to
 #'   c(0.2, 0.5, 0.9).
 #' @param ... Additional arguments (currently unused)
 #'
-#' @return A `data.table` with columns including date, observations, and summary
-#'   statistics (mean, sd, credible intervals) for the model predictions.
+#' @return A `data.table` with columns including date and summary statistics
+#'   (mean, sd, credible intervals) for the model predictions.
 #'
 #' @export
 #' @examples
