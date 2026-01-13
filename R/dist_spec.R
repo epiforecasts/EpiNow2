@@ -1132,10 +1132,10 @@ natural_params <- function(distribution) {
 #' @keywords internal
 #' @examples
 #' \dontrun{
-#' dist_types()
-#' dist_types()[1]  # "lognormal"
+#' dist_spec_distributions()
+#' dist_spec_distributions()[1]  # "lognormal"
 #' }
-dist_types <- function() {
+dist_spec_distributions <- function() {
   c("lognormal", "gamma")
 }
 

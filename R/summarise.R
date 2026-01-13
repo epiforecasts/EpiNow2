@@ -1014,7 +1014,7 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
   )
 
   # Map generic parameter names to distribution-specific names
-  dist_type <- dist_types()[object$args$delay_dist[1] + 1]
+  dist_type <- dist_spec_distributions()[object$args$delay_dist[1] + 1]
   param_names <- natural_params(dist_type)
   idx <- as.integer(gsub(".*\\[(\\d+)\\]", "\\1", out$variable))
   out[, variable := param_names[idx]]

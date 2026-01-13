@@ -280,14 +280,22 @@ get_samples.forecast_infections <- function(object, ...) {
 #' @rdname get_samples
 #' @export
 get_samples.estimate_secondary <- function(object, ...) {
+
   # Extract raw posterior samples from the fit
   raw_samples <- extract_samples(object$fit)
 
-  # Extract parameters (delays and params)
-  samples_list <- list(
-    extract_delays(raw_samples),
-    extract_parameters(raw_samples)
-  )
+  # Extract parameters (delays and params) with category labels
+  delay_samples <- extract_delays(raw_samples)
+  if (!is.null(delay_samples)) {
+    delay_samples[, variable := "delay_params"]
+  }
+
+  param_samples <- extract_parameters(raw_samples)
+  if (!is.null(param_samples)) {
+    param_samples[, variable := "params"]
+  }
+
+  samples_list <- list(delay_samples, param_samples)
 
   # Extract time-varying generated quantities
   # Get dates for time-indexed parameters (post burn-in)
@@ -299,28 +307,24 @@ get_samples.estimate_secondary <- function(object, ...) {
     "sim_secondary", raw_samples, dates
   )
   if (!is.null(sim_secondary_samples)) {
+    sim_secondary_samples[, variable := "sim_secondary"]
     samples_list <- c(samples_list, list(sim_secondary_samples))
   }
 
   # Combine all samples
   samples <- data.table::rbindlist(samples_list, fill = TRUE)
 
-  # Rename 'parameter' column to 'variable' for consistency if needed
-  if ("parameter" %in% names(samples)) {
-    data.table::setnames(samples, "parameter", "variable")
-  }
-
   # Add placeholder columns for consistency with estimate_infections format
-  # Only add if not already present
   if (!"date" %in% names(samples)) samples[, date := as.Date(NA)]
   if (!"strat" %in% names(samples)) samples[, strat := NA_character_]
   if (!"time" %in% names(samples)) samples[, time := NA_integer_]
   if (!"type" %in% names(samples)) samples[, type := NA_character_]
 
-  # Reorder columns
+  # Reorder columns to match estimate_infections format
   data.table::setcolorder(
     samples,
-    c("date", "variable", "strat", "sample", "time", "value", "type")
+    c("variable", "parameter", "time", "date", "sample", "value", "strat",
+      "type")
   )
 
   samples[]
@@ -340,9 +344,9 @@ get_samples.estimate_truncation <- function(object, ...) {
   # Extract delay parameters (truncation distribution)
   samples <- extract_delays(raw_samples)
 
-  # Rename 'parameter' column to 'variable' for consistency
-  if ("parameter" %in% names(samples)) {
-    data.table::setnames(samples, "parameter", "variable")
+  # Add variable column for consistency with estimate_infections format
+  if (!is.null(samples)) {
+    samples[, variable := "delay_params"]
   }
 
   samples[]
@@ -638,7 +642,7 @@ reconstruct_delay <- function(object, delay_name) {
 #' @return A `dist_spec` object representing the delay distribution
 #' @keywords internal
 reconstruct_parametric <- function(stan_data, param_id, posterior) {
-  dist_type <- dist_types()[stan_data$delay_dist[param_id] + 1]
+  dist_type <- dist_spec_distributions()[stan_data$delay_dist[param_id] + 1]
   dist_max <- stan_data$delay_max[param_id]
 
   # Get parameter indices and values
@@ -712,7 +716,7 @@ get_delays.estimate_truncation <- function(object, ...) {
   params_sd <- round(delay_params$sd, 3)
 
   # Get distribution info from Stan data
-  dist_type <- dist_types()[object$args$delay_dist[1] + 1]
+  dist_type <- dist_spec_distributions()[object$args$delay_dist[1] + 1]
   dist_max <- object$args$delay_max[1]
 
   # Create Normal distributions for each parameter
