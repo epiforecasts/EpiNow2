@@ -102,15 +102,15 @@ test_that("estimate_secondary recovers scaling parameter from incidence data", {
   # Basic parameter recovery check using pre-computed fit
   # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
   params <- c(
-    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-    "scaling" = "params[1]"
+    "meanlog" = "reporting[1]", "sdlog" = "reporting[2]",
+    "scaling" = "fraction_observed"
   )
 
-  inc_posterior <- get_samples(default_inc)[variable %in% params]
+  inc_posterior <- get_samples(default_inc)[parameter %in% params]
   inc_summary <- inc_posterior[, .(
     mean = mean(value),
     median = stats::median(value)
-  ), by = variable]
+  ), by = parameter]
 
   # Check scaling parameter is reasonably recovered (0.4 true value)
   expect_equal(
