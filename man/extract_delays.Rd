@@ -4,10 +4,13 @@
 \alias{extract_delays}
 \title{Extract samples from all delay parameters}
 \usage{
-extract_delays(samples)
+extract_delays(samples, args = NULL)
 }
 \arguments{
 \item{samples}{Extracted stan model (using \code{\link[rstan:stanfit-method-extract]{rstan::extract()}})}
+
+\item{args}{Stan data list containing delay_id_* and delay_types_groups
+for parameter naming. If NULL, generic names are used.}
 }
 \value{
 A \verb{<data.table>} with columns: parameter, sample, value, or NULL if
