@@ -139,6 +139,7 @@ extract_delays <- function(samples, args) {
     for (id_var in id_vars) {
       delay_name <- sub("^delay_id_", "", id_var)
       id_val <- args[[id_var]]
+      # Use first element if multi-valued (defensive; not expected in practice)
       id <- if (length(id_val) > 1) id_val[1] else id_val
 
       # Check if this delay exists (ID > 0)

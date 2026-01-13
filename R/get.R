@@ -367,6 +367,9 @@ get_observations.epinowfit <- function(object, ...) {
 #' @rdname get_observations
 #' @export
 get_observations.estimate_truncation <- function(object, ...) {
+  if (length(object$observations) == 0) {
+    return(data.table::data.table())
+  }
   # Format observations to match predictions structure
   obs_list <- purrr::map(object$observations, function(obs) {
     obs_dt <- data.table::as.data.table(obs)
@@ -487,6 +490,8 @@ get_predictions.estimate_truncation <- function(object,
   )
   recon_obs <- recon_obs[, id := variable][, variable := NULL]
   obs_sets <- object$args$obs_sets
+  # Assign dataset index using modulo: rows cycle through 1..obs_sets
+  # e.g., with obs_sets=3: row 1->1, row 2->2, row 3->3, row 4->1, ...
   recon_obs <- recon_obs[, dataset := seq_len(.N)][
     ,
     dataset := dataset %% obs_sets
