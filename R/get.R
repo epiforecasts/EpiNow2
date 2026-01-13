@@ -627,6 +627,15 @@ reconstruct_delay <- function(object, delay_name) {
 }
 
 #' Reconstruct a parametric delay distribution
+#'
+#' Helper function to reconstruct a single parametric delay component from
+#' Stan data and posterior samples.
+#'
+#' @param stan_data List of Stan data containing delay specification
+#' @param param_id Integer index into the parametric delay arrays
+#' @param posterior Data frame with posterior mean and sd for delay_params,
+#'   or NULL if not estimated
+#' @return A `dist_spec` object representing the delay distribution
 #' @keywords internal
 reconstruct_parametric <- function(stan_data, param_id, posterior) {
   dist_type <- dist_types()[stan_data$delay_dist[param_id] + 1]
@@ -659,6 +668,13 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
 }
 
 #' Reconstruct a nonparametric delay distribution
+#'
+#' Helper function to reconstruct a single nonparametric delay component from
+#' Stan data. Nonparametric delays are stored as probability mass functions.
+#'
+#' @param stan_data List of Stan data containing delay specification
+#' @param np_id Integer index into the nonparametric delay PMF arrays
+#' @return A `dist_spec` object representing the nonparametric delay
 #' @keywords internal
 reconstruct_nonparametric <- function(stan_data, np_id) {
   pmf_idx <- seq(

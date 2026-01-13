@@ -6,7 +6,19 @@
 \usage{
 reconstruct_parametric(stan_data, param_id, posterior)
 }
+\arguments{
+\item{stan_data}{List of Stan data containing delay specification}
+
+\item{param_id}{Integer index into the parametric delay arrays}
+
+\item{posterior}{Data frame with posterior mean and sd for delay_params,
+or NULL if not estimated}
+}
+\value{
+A \code{dist_spec} object representing the delay distribution
+}
 \description{
-Reconstruct a parametric delay distribution
+Helper function to reconstruct a single parametric delay component from
+Stan data and posterior samples.
 }
 \keyword{internal}
