@@ -54,10 +54,12 @@ extract_latent_state <- function(param, samples, dates) {
 #' Extract samples from all parameters
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
+#' @param args Stan data list containing param_id_* and params_variable_lookup
+#'   for parameter naming. If NULL, generic names are used.
 #' @return A `<data.table>` containing the parameter name, sample id and sample
 #' value, or NULL if parameters don't exist in the samples
 #' @keywords internal
-extract_parameters <- function(samples) {
+extract_parameters <- function(samples, args = NULL) {
   # Check if params exist
   if (!("params" %in% names(samples))) {
     return(NULL)
@@ -70,13 +72,16 @@ extract_parameters <- function(samples) {
   # Build reverse lookup: column index -> parameter name
   param_names <- rep(NA_character_, n_cols)
 
+  # Use args for ID lookups if provided
+  lookup <- args %||% samples
+
   # Check all param_id_* variables to build the mapping
-  id_vars <- grep("^param_id_", names(samples), value = TRUE)
+  id_vars <- grep("^param_id_", names(lookup), value = TRUE)
   for (id_var in id_vars) {
     param_name <- sub("^param_id_", "", id_var)
-    id <- samples[[id_var]]
+    id <- lookup[[id_var]]
     if (!is.na(id) && id > 0) {
-      lookup_idx <- samples[["params_variable_lookup"]][id]
+      lookup_idx <- lookup[["params_variable_lookup"]][id]
       if (!is.na(lookup_idx) && lookup_idx > 0 && lookup_idx <= n_cols) {
         param_names[lookup_idx] <- param_name
       }
@@ -110,10 +115,12 @@ extract_parameters <- function(samples) {
 #' meaningful names.
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
+#' @param args Stan data list containing delay_id_* and delay_types_groups
+#'   for parameter naming. If NULL, generic names are used.
 #' @return A `<data.table>` with columns: parameter, sample, value, or NULL if
 #'   delay parameters don't exist in the samples
 #' @keywords internal
-extract_delays <- function(samples) {
+extract_delays <- function(samples, args = NULL) {
   # Check if delay_params exist
   if (!("delay_params" %in% names(samples))) {
     return(NULL)
@@ -126,14 +133,19 @@ extract_delays <- function(samples) {
   # Build reverse lookup: column index -> delay name
   delay_names <- rep(NA_character_, n_cols)
 
+  # Use args for ID lookups if provided
+
+  lookup <- args %||% samples
+
   # Check all delay_id_* variables to build the mapping
-  id_vars <- grep("^delay_id_", names(samples), value = TRUE)
-  if (length(id_vars) > 0 && "delay_types_groups" %in% names(samples)) {
-    delay_types_groups <- samples[["delay_types_groups"]]
+  id_vars <- grep("^delay_id_", names(lookup), value = TRUE)
+  if (length(id_vars) > 0 && "delay_types_groups" %in% names(lookup)) {
+    delay_types_groups <- lookup[["delay_types_groups"]]
 
     for (id_var in id_vars) {
       delay_name <- sub("^delay_id_", "", id_var)
-      id <- samples[[id_var]][1]  # Take first value (same across samples)
+      id_val <- lookup[[id_var]]
+      id <- if (length(id_val) > 1) id_val[1] else id_val
 
       # Check if this delay exists (ID > 0)
       if (!is.na(id) && id > 0 && id < length(delay_types_groups)) {

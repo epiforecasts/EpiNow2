@@ -285,12 +285,12 @@ get_samples.estimate_secondary <- function(object, ...) {
   raw_samples <- extract_samples(object$fit)
 
   # Extract parameters (delays and params) with category labels
-  delay_samples <- extract_delays(raw_samples)
+  delay_samples <- extract_delays(raw_samples, args = object$args)
   if (!is.null(delay_samples)) {
     delay_samples[, variable := "delay_params"]
   }
 
-  param_samples <- extract_parameters(raw_samples)
+  param_samples <- extract_parameters(raw_samples, args = object$args)
   if (!is.null(param_samples)) {
     param_samples[, variable := "params"]
   }
@@ -342,7 +342,7 @@ get_samples.estimate_truncation <- function(object, ...) {
   raw_samples <- extract_samples(object$fit)
 
   # Extract delay parameters (truncation distribution)
-  samples <- extract_delays(raw_samples)
+  samples <- extract_delays(raw_samples, args = object$args)
 
   # Add variable column for consistency with estimate_infections format
   if (!is.null(samples)) {
