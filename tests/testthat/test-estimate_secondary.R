@@ -102,9 +102,8 @@ test_that("estimate_secondary recovers scaling parameter from incidence data", {
   # Basic parameter recovery check using pre-computed fit
   # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
   # Note: Due to how delay_types_groups handles mixed parametric/nonparametric
-
   # delays, the sdlog parameter may be named truncation[1] instead of
-  # reporting[2] when truncation is Fixed(0).
+  # reporting[2] when truncation is Fixed(0). See #1236.
   samples <- get_samples(default_inc)
   delay_samples <- samples[variable == "delay_params"]
   param_samples <- samples[variable == "params"]
