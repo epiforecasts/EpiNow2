@@ -513,6 +513,9 @@ get_predictions.estimate_truncation <- function(object,
     target_obs <- dirty_obs[[index]][, idx := .N - 0:(.N - 1)]
     target_obs <- target_obs[idx < trunc_max]
     estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
+    # Convert to integer: reconstructed observations are counts, so integer
+    # representation is appropriate. CrI columns are also converted for
+    # consistency since fractional counts are not meaningful.
     estimates <- estimates[, lapply(.SD, as.integer)]
     estimates <- estimates[, idx := .N - 0:(.N - 1)]
     if (!is.null(estimates$n_eff)) {
@@ -635,6 +638,9 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
   prior_sd <- stan_data$delay_params_sd[param_idx]
 
   # Build parameters: posterior if estimated, fixed or prior otherwise
+  # NA handling: if prior_sd[j] is NA, then prior_sd[j] > 0 evaluates to NA,
+  # and NA && !is.na(NA) -> NA && FALSE -> FALSE, so estimated = FALSE.
+  # This correctly treats NA prior_sd as a fixed (non-estimated) parameter.
   param_names <- natural_params(dist_type)
   parameters <- lapply(seq_along(prior_mean), function(j) {
     estimated <- prior_sd[j] > 0 && !is.na(prior_sd[j])
