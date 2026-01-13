@@ -191,7 +191,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
       ]
   }
   # Auto-detect and extract all static parameters from params matrix
-  all_params <- extract_parameters(samples)
+  all_params <- extract_parameters(samples, args = data)
   if (!is.null(all_params)) {
     # Get unique parameter names
     param_names <- unique(all_params$parameter)

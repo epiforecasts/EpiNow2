@@ -139,17 +139,21 @@ test_that("create_stan_delays sets ID to 0 for missing delays", {
 })
 
 test_that("extract_delays works with delay_id_* naming", {
-  # Create mock samples with delay_id_* variables
+  # Create mock samples with delay_params
   samples <- list(
-    delay_params = matrix(c(1.5, 2.0, 1.8, 2.2), nrow = 2, ncol = 2),
+    delay_params = matrix(c(1.5, 2.0, 1.8, 2.2), nrow = 2, ncol = 2)
+  )
+  # Args contain the ID lookup information
+  args <- list(
     delay_id_generation_time = c(1, 1),  # ID = 1
     delay_id_reporting = c(0, 0),         # ID = 0 (not used)
     delay_types_groups = c(1, 3)          # Group 1: cols 1-2
   )
 
-  result <- EpiNow2:::extract_delays(samples)
+  result <- EpiNow2:::extract_delays(samples, args = args)
 
   expect_true(!is.null(result))
+  expect_true("variable" %in% names(result))
   expect_true("parameter" %in% names(result))
   expect_true("sample" %in% names(result))
   expect_true("value" %in% names(result))
@@ -161,17 +165,19 @@ test_that("extract_delays works with delay_id_* naming", {
 
 test_that("extract_delays returns NULL when delay_params don't exist", {
   samples <- list(some_other_param = 1:10)
-  result <- EpiNow2:::extract_delays(samples)
+  args <- list()  # Empty args
+  result <- EpiNow2:::extract_delays(samples, args = args)
   expect_null(result)
 })
 
 test_that("extract_delays handles delays with no ID lookup gracefully", {
-  # Samples without delay_id_* variables
+  # Samples with delay_params but args without delay_id_* variables
   samples <- list(
     delay_params = matrix(c(1.5, 2.0), nrow = 2, ncol = 1)
   )
+  args <- list()  # No ID lookup information
 
-  result <- EpiNow2:::extract_delays(samples)
+  result <- EpiNow2:::extract_delays(samples, args = args)
 
   expect_true(!is.null(result))
   # Should fall back to indexed naming
