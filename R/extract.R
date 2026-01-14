@@ -105,6 +105,79 @@ extract_parameters <- function(samples, args) {
   data.table::rbindlist(samples_list)
 }
 
+#' Name delay parameters for a single delay type
+#'
+#' @param delay_names Current delay names vector (modified in place via env)
+#' @param delay_name Name prefix for this delay type
+#' @param flat_range Indices of flat delays for this type
+#' @param types_p Vector indicating parametric (1) or not (0)
+#' @param types_id Vector of parametric delay indices
+#' @param params_groups Parameter column groupings
+#' @param n_cols Total number of parameter columns
+#' @return Updated delay_names vector
+#' @keywords internal
+#' @noRd
+name_delay_type_params <- function(delay_names, delay_name, flat_range,
+                                   types_p, types_id, params_groups, n_cols) {
+  param_idx <- 1
+  for (flat_i in flat_range) {
+    if (types_p[flat_i] != 1) next
+    p_idx <- types_id[flat_i]
+    col_start <- params_groups[p_idx]
+    col_end <- params_groups[p_idx + 1] - 1
+    for (col in col_start:col_end) {
+      if (col <= n_cols) {
+        delay_names[col] <- paste0(delay_name, "[", param_idx, "]")
+        param_idx <- param_idx + 1
+      }
+    }
+  }
+  delay_names
+}
+
+#' Build delay name lookup from args
+#'
+#' Helper function to map parameter column indices to delay names.
+#'
+#' @param args Stan data list with delay lookup variables
+#' @param n_cols Number of parameter columns
+#' @return Character vector mapping column indices to delay names
+#' @keywords internal
+#' @noRd
+build_delay_name_lookup <- function(args, n_cols) {
+  delay_names <- rep(NA_character_, n_cols)
+
+  id_vars <- grep("^delay_id_", names(args), value = TRUE)
+  required <- c(
+    "delay_types_groups", "delay_types_p",
+    "delay_types_id", "delay_params_groups"
+  )
+  if (length(id_vars) == 0 || !all(required %in% names(args))) {
+    return(delay_names)
+  }
+
+  types_groups <- args[["delay_types_groups"]]
+  types_p <- args[["delay_types_p"]]
+  types_id <- args[["delay_types_id"]]
+  params_groups <- args[["delay_params_groups"]]
+
+  for (id_var in id_vars) {
+    delay_name <- sub("^delay_id_", "", id_var)
+    id_val <- args[[id_var]]
+    id <- if (length(id_val) > 1) id_val[1] else id_val
+
+    if (is.na(id) || id <= 0 || id >= length(types_groups)) next
+
+    flat_start <- types_groups[id]
+    flat_end <- types_groups[id + 1] - 1
+    delay_names <- name_delay_type_params(
+      delay_names, delay_name, flat_start:flat_end,
+      types_p, types_id, params_groups, n_cols
+    )
+  }
+  delay_names
+}
+
 #' Extract samples from all delay parameters
 #'
 #' Extracts samples from all delay parameters using the delay ID lookup system.
@@ -113,68 +186,18 @@ extract_parameters <- function(samples, args) {
 #' meaningful names.
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
-#' @param args Stan data list containing delay_id_*, delay_types_groups,
-#'   delay_types_p, delay_types_id, and delay_params_groups for parameter naming.
+#' @param args Stan data list with delay_id_* and related lookup variables.
 #' @return A `<data.table>` with columns: variable, parameter, sample, value,
 #'   or NULL if delay parameters don't exist in the samples
 #' @keywords internal
 extract_delays <- function(samples, args) {
-  # Check if delay_params exist
   if (!("delay_params" %in% names(samples))) {
     return(NULL)
   }
 
-  # Extract all delay parameters
   delay_params <- samples[["delay_params"]]
   n_cols <- ncol(delay_params)
-
-  # Build reverse lookup: column index -> delay name
-  delay_names <- rep(NA_character_, n_cols)
-
-  # Check all delay_id_* variables to build the mapping
-  # Use types_p, types_id, and params_groups to map delay type IDs to
-  # parameter columns (correctly handling nonparametric delays)
-  id_vars <- grep("^delay_id_", names(args), value = TRUE)
-  required_args <- c(
-    "delay_types_groups", "delay_types_p", "delay_types_id", "delay_params_groups"
-  )
-  if (length(id_vars) > 0 && all(required_args %in% names(args))) {
-    types_groups <- args[["delay_types_groups"]]
-    types_p <- args[["delay_types_p"]]
-    types_id <- args[["delay_types_id"]]
-    params_groups <- args[["delay_params_groups"]]
-
-    for (id_var in id_vars) {
-      delay_name <- sub("^delay_id_", "", id_var)
-      id_val <- args[[id_var]]
-      id <- if (length(id_val) > 1) id_val[1] else id_val
-
-      # Check if this delay type exists (ID > 0)
-      if (!is.na(id) && id > 0 && id < length(types_groups)) {
-        # Get flat delay indices for this type
-        flat_start <- types_groups[id]
-        flat_end <- types_groups[id + 1] - 1
-
-        # Find parameter columns for parametric delays in this type
-        param_idx <- 1
-        for (flat_i in flat_start:flat_end) {
-          if (types_p[flat_i] == 1) {
-            # This flat delay is parametric
-            p_idx <- types_id[flat_i]
-            col_start <- params_groups[p_idx]
-            col_end <- params_groups[p_idx + 1] - 1
-
-            for (col in col_start:col_end) {
-              if (col <= n_cols) {
-                delay_names[col] <- paste0(delay_name, "[", param_idx, "]")
-                param_idx <- param_idx + 1
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  delay_names <- build_delay_name_lookup(args, n_cols)
 
   # Extract all columns
   samples_list <- lapply(seq_len(n_cols), function(i) {
