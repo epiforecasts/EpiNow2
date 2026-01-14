@@ -157,16 +157,6 @@ setup_future <- function(data,
       )
     )
   }
-  if (!requireNamespace("parallelly", quietly = TRUE)) {
-    futile.logger::flog.error(
-      "The parallelly package is required for parallelisation"
-    )
-    cli_abort(
-      c(
-        "!" = "The parallelly package is required for parallelisation."
-      )
-    )
-  }
   if (length(strategies) > 2 || length(strategies) == 0) {
     futile.logger::flog.error("1 or 2 strategies should be used")
     cli_abort(
