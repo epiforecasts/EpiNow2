@@ -9,8 +9,7 @@ extract_delays(samples, args)
 \arguments{
 \item{samples}{Extracted stan model (using \code{\link[rstan:stanfit-method-extract]{rstan::extract()}})}
 
-\item{args}{Stan data list containing delay_id_*, delay_types_groups,
-delay_types_p, delay_types_id, and delay_params_groups for parameter naming.}
+\item{args}{Stan data list with delay_id_* and related lookup variables.}
 }
 \value{
 A \verb{<data.table>} with columns: variable, parameter, sample, value,
