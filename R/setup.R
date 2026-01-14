@@ -147,13 +147,16 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 setup_future <- function(data,
                          strategies = c("multisession", "multisession"),
                          min_cores_per_worker = 4) {
-  if (!requireNamespace("future", quietly = TRUE)) {
-    futile.logger::flog.error(
-      "The future package is required for parallelisation"
-    )
+
+  required_pkgs <- c("future", "parallelly")
+  missing_pkgs <- required_pkgs[
+    !vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)
+  ]
+  if (length(missing_pkgs) > 0) {
     cli_abort(
       c(
-        "!" = "The future package is required for parallelisation."
+        "!" = "{.pkg {missing_pkgs}} must be installed to use {.fn setup_future}.",
+        "i" = "Install with {.code install.packages({deparse(missing_pkgs)})}."
       )
     )
   }
