@@ -139,15 +139,19 @@ test_that("create_stan_delays sets ID to 0 for missing delays", {
 })
 
 test_that("extract_delays works with delay_id_* naming", {
-  # Create mock samples with delay_params
+  # Create mock samples with delay_params (2 samples, 2 params)
   samples <- list(
     delay_params = matrix(c(1.5, 2.0, 1.8, 2.2), nrow = 2, ncol = 2)
   )
-  # Args contain the ID lookup information
+  # Args contain the ID lookup information using existing delay variables
+  # Scenario: one delay type (generation_time) with one parametric delay
   args <- list(
-    delay_id_generation_time = c(1, 1),  # ID = 1
-    delay_id_reporting = c(0, 0),         # ID = 0 (not used)
-    delay_types_groups = c(1, 3)          # Group 1: cols 1-2
+    delay_id_generation_time = 1,
+    delay_id_reporting = 0,
+    delay_types_groups = c(1, 2),    # type 1 has flat delay 1
+    delay_types_p = c(1),            # flat delay 1 is parametric
+    delay_types_id = c(1),           # flat delay 1 is parametric delay 1
+    delay_params_groups = c(1, 3)    # parametric delay 1 has params 1-2
   )
 
   result <- EpiNow2:::extract_delays(samples, args = args)

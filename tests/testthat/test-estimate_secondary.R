@@ -128,6 +128,21 @@ test_that("estimate_secondary recovers scaling parameter from incidence data", {
   expect_equal(scaling_mean, 0.4, tolerance = 0.05)
 })
 
+test_that("delay parameters are correctly named with mixed parametric/nonparametric delays", {
+  # Regression test for #1236: when truncation is Fixed(0) (nonparametric),
+  # the reporting delay parameters should still be named reporting[1], reporting[2]
+  # not truncation[1] (which was the bug)
+  samples <- get_samples(default_inc)
+  delay_samples <- samples[variable == "delay_params"]
+
+  # Both parameters should be named as reporting delay params
+  param_names <- unique(delay_samples$parameter)
+  expect_true("reporting[1]" %in% param_names)
+  expect_true("reporting[2]" %in% param_names)
+  # Should NOT have truncation parameters (Fixed(0) has none)
+  expect_false(any(grepl("truncation", param_names)))
+})
+
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false) -
 
 test_that("estimate_secondary successfully returns estimates when passed NA values", {
