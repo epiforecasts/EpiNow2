@@ -139,12 +139,17 @@ test_that("create_stan_delays sets ID to 0 for missing delays", {
 })
 
 test_that("extract_delays works with delay_id_* naming", {
+
   # Create mock samples with delay_id_* variables
+  # Scenario: one delay type (generation_time) with one parametric delay
   samples <- list(
     delay_params = matrix(c(1.5, 2.0, 1.8, 2.2), nrow = 2, ncol = 2),
-    delay_id_generation_time = c(1, 1),  # ID = 1
-    delay_id_reporting = c(0, 0),         # ID = 0 (not used)
-    delay_types_groups = c(1, 3)          # Group 1: cols 1-2
+    delay_id_generation_time = c(1, 1),
+    delay_id_reporting = c(0, 0),
+    delay_types_groups = c(1, 2),
+    delay_types_p = c(1),
+    delay_types_id = c(1),
+    delay_params_groups = c(1, 3)
   )
 
   result <- EpiNow2:::extract_delays(samples)
@@ -157,6 +162,29 @@ test_that("extract_delays works with delay_id_* naming", {
   # Check that generation_time parameters are named correctly
   expect_true(any(grepl("generation_time\\[1\\]", result$parameter)))
   expect_true(any(grepl("generation_time\\[2\\]", result$parameter)))
+})
+
+test_that("extract_delays correctly names params with mixed parametric/nonparametric delays", {
+
+  # Issue #1236: mixing parametric (reporting) with nonparametric (truncation)
+  # should correctly name all params as reporting[1], reporting[2]
+  samples <- list(
+    delay_params = matrix(c(1.5, 2.0, 0.5, 0.6), nrow = 2, ncol = 2),
+    delay_id_reporting = c(1, 1),
+    delay_id_truncation = c(2, 2),
+    delay_types_groups = c(1, 2, 3),
+    delay_types_p = c(1, 0),
+    delay_types_id = c(1, 1),
+    delay_params_groups = c(1, 3)
+  )
+
+  result <- EpiNow2:::extract_delays(samples)
+
+  # Both params should be named reporting[1] and reporting[2]
+  # NOT truncation[1] (which was the bug)
+  expect_true(any(result$parameter == "reporting[1]"))
+  expect_true(any(result$parameter == "reporting[2]"))
+  expect_false(any(grepl("truncation", result$parameter)))
 })
 
 test_that("extract_delays returns NULL when delay_params don't exist", {
