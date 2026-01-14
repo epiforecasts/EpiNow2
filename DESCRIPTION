@@ -141,6 +141,7 @@ Suggests:
     future,
     future.apply,
     knitr,
+    parallelly,
     progressr,
     rmarkdown,
     spelling,
