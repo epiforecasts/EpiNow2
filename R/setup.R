@@ -155,7 +155,7 @@ setup_future <- function(data,
   if (length(missing_pkgs) > 0) {
     cli_abort(
       c(
-        "!" = "{.pkg {missing_pkgs}} must be installed to use {.fn setup_future}.",
+        "!" = "{.pkg {missing_pkgs}} required for {.fn setup_future}.",
         "i" = "Install with {.code install.packages({deparse(missing_pkgs)})}."
       )
     )
