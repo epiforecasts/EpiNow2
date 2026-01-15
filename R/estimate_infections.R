@@ -73,8 +73,9 @@
 #' @export
 #' @return An `<estimate_infections>` object which is a list of outputs
 #' including: the stan object (`fit`), arguments used to fit the model
-#' (`args`), and the observed data (`observations`). The estimates included in
-#' the fit can be accessed using the `summary()` function.
+#' (`args`), and the observed data (`observations`). Use `summary()` to access
+#' estimates, `get_samples()` to extract posterior samples, and
+#' `get_predictions()` to access predicted reported cases.
 #'
 #' @seealso [epinow()] [regional_epinow()] [forecast_infections()]
 #' [estimate_truncation()]
@@ -246,8 +247,8 @@ estimate_infections <- function(data,
     make_param("alpha", gp$alpha, lower_bound = 0),
     make_param("rho", gp$ls, lower_bound = 0),
     make_param("R0", rt$prior, lower_bound = 0),
-    make_param("frac_obs", obs$scale, lower_bound = 0),
-    make_param("dispersion", obs$dispersion, lower_bound = 0),
+    make_param("fraction_observed", obs$scale, lower_bound = 0),
+    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("pop", rt$pop, lower_bound = 0)
   )
 
@@ -264,9 +265,9 @@ estimate_infections <- function(data,
   )
 
   stan_data <- c(stan_data, create_stan_delays(
-    gt = generation_time,
-    delay = delays,
-    trunc = truncation,
+    generation_time = generation_time,
+    reporting = delays,
+    truncation = truncation,
     time_points = stan_data$t - stan_data$seeding_time - stan_data$horizon
   ))
 
@@ -295,5 +296,5 @@ estimate_infections <- function(data,
 
   ## Join stan fit if required
   class(ret) <- c("epinowfit", "estimate_infections", class(ret))
-  return(ret)
+  ret
 }

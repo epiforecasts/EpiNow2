@@ -7,31 +7,46 @@
 \usage{
 \method{summary}{epinow}(
   object,
-  output = c("estimates", "forecast", "estimated_reported_cases"),
+  output = NULL,
+  type = c("snapshot", "parameters"),
   target_date = NULL,
   params = NULL,
+  CrIs = c(0.2, 0.5, 0.9),
   ...
 )
 }
 \arguments{
-\item{object}{A list of output as produced by "epinow".}
+\item{object}{An \verb{<epinow>} object as produced by \code{\link[=epinow]{epinow()}}.}
 
-\item{output}{A character string of output to summarise. Defaults to
-"estimates" but also supports "forecast", and "estimated_reported_cases".}
+\item{output}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use the \code{type} argument
+instead. Previously supported "estimates", "forecast", and
+"estimated_reported_cases".}
+
+\item{type}{A character vector of data types to return. Defaults to
+"snapshot" but also supports "parameters". "snapshot" returns a summary at
+a given date (by default the latest date informed by data). "parameters"
+returns summarised parameter estimates that can be further filtered using
+\code{params} to show just the parameters of interest and date.
+
+Note: \code{type = "samples"} is deprecated. Use \code{\link[=get_samples]{get_samples()}} instead.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not
 specified.}
 
 \item{params}{A character vector of parameters to filter for.}
 
-\item{...}{Pass additional summary arguments to lower level methods}
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
+
+\item{...}{Pass additional summary arguments to
+\code{\link[=summary.estimate_infections]{summary.estimate_infections()}}}
 }
 \value{
 Returns a \verb{<data.frame>} of summary output
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-\code{summary} method for class "epinow".
+\code{summary} method for class "epinow". This method inherits from
+\code{\link[=summary.estimate_infections]{summary.estimate_infections()}} and supports the same arguments.
 }
 \seealso{
 \code{\link[=summary.estimate_infections]{summary.estimate_infections()}} \code{\link[=epinow]{epinow()}}

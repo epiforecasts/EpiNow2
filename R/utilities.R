@@ -62,7 +62,7 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
     ifelse(reverse, CrI$upper, CrI$lower), " -- ",
     ifelse(reverse, CrI$lower, CrI$upper), ")"
   )
-  return(conf)
+  conf
 }
 
 
@@ -170,7 +170,7 @@ allocate_empty <- function(data, params, n = 0) {
       data[[param]] <- array(0, dim = c(n, 0))
     }
   }
-  return(data)
+  data
 }
 #' Match User Supplied Arguments with Supported Options
 #'
@@ -225,7 +225,7 @@ match_output_arguments <- function(input_args = NULL,
   }
   # assign true false to supported arguments based on found arguments
   output_args[names(output_args) %in% found_args] <- TRUE
-  return(output_args)
+  output_args
 }
 
 
@@ -308,7 +308,7 @@ discretised_lognormal_pmf <- function(meanlog, sdlog, max_d, reverse = FALSE) {
   if (reverse) {
     pmf <- rev(pmf)
   }
-  return(pmf)
+  pmf
 }
 
 discretised_lognormal_pmf_conv <- function(x, meanlog, sdlog) {
@@ -333,7 +333,7 @@ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
   if (reverse) {
     pmf <- rev(pmf)
   }
-  return(pmf)
+  pmf
 }
 
 #' Adds a day of the week vector
@@ -360,7 +360,7 @@ add_day_of_week <- function(dates, week_effect = 7) {
     day_of_week <- as.numeric(dates - min(dates)) %% week_effect
     day_of_week <- ifelse(day_of_week == 0, week_effect, day_of_week)
   }
-  return(day_of_week)
+  day_of_week
 }
 
 #' Set to Single Threading
@@ -506,6 +506,7 @@ globalVariables(
     "..lowers", "..upper_CrI", "..uppers", "timing", "dataset", "last_confirm",
     "report_date", "secondary", "id", "conv", "meanlog", "primary", "scaled",
     "scaling", "sdlog", "lookup", "new_draw", ".draw", "p", "distribution",
-    "accumulate", "..present", "reported_cases", "counter", "future_accumulate"
+    "accumulate", "..present", "reported_cases", "counter", "future_accumulate",
+    "parameter"
   )
 )

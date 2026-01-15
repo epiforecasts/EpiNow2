@@ -12,13 +12,15 @@
 #' @param output A character vector of optional output to return. Supported
 #' options are samples ("samples"), plots ("plots"), the run time ("timing"),
 #' copying the dated folder into a latest folder (if `target_folder` is not
-#' null, set using "latest"), and the stan fit ("fit"). The default is to
-#' return all options.
+#' null, set using "latest"), the stan fit ("fit"), and the full
+#' [estimate_infections()] return object ("estimate_infections"). The default
+#' is to return all options.
 #'
 #' @param return_output Logical, defaults to FALSE. Should output be returned,
 #' this automatically updates to TRUE if no directory for saving is specified.
 #'
-#' @param plot_args A list of optional arguments passed to [plot.epinow()].
+#' @param plot_args A list of optional arguments passed to
+#' [plot.estimate_infections()].
 #'
 #' @return A list of output from estimate_infections with additional elements
 #'   summarising results and reporting errors if they have occurred.
@@ -92,7 +94,10 @@ epinow <- function(data,
                    stan = stan_opts(),
                    CrIs = c(0.2, 0.5, 0.9),
                    return_output = is.null(target_folder),
-                   output = c("samples", "plots", "latest", "fit", "timing"),
+                   output = c(
+                     "samples", "plots", "latest", "fit", "timing",
+                     "estimate_infections"
+                   ),
                    plot_args = list(),
                    target_folder = NULL, target_date,
                    logs = tempdir(), id = "epinow", verbose = interactive(),
@@ -160,7 +165,7 @@ epinow <- function(data,
     supported_args = c(
       "plots", "samples",
       "fit", "timing",
-      "latest"
+      "latest", "estimate_infections"
     ),
     logger = "EpiNow2.epinow",
     level = "debug"
@@ -239,19 +244,7 @@ epinow <- function(data,
     }
 
     if (return_output) {
-      out <- construct_output(estimates,
-        estimated_reported_cases,
-        plots = plots,
-        summary,
-        samples = output["samples"],
-        CrIs = CrIs
-      )
-      if (output["fit"]) {
-        out$estimates$fit <- estimates$fit
-        out$estimates$args <- estimates$args
-      }
-      out$estimates$observations <- estimates$observations
-      return(out)
+      return(estimates)
     } else {
       return(invisible(NULL))
     }
@@ -314,3 +307,141 @@ epinow <- function(data,
   }
 }
 # nolint end: cyclocomp_linter
+
+#' Internal function for backward-compatible element access
+#'
+#' @description Helper function that provides backward compatibility for
+#' deprecated element names in epinow objects.
+#'
+#' @param x An `epinow` object
+#' @param name The name of the element to extract
+#' @return The requested element
+#' @keywords internal
+#' @noRd
+epinow_compat_extract <- function(x, name) {
+  switch(name,
+    estimates = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        I("epinow()$estimates"),
+        details = paste(
+          "Use `get_samples()` for samples,",
+          "`summary(x, type = 'parameters')` for summarised estimates."
+        )
+      )
+      list(
+        samples = get_samples(x),
+        summarised = summary(x, type = "parameters"),
+        fit = x$fit,
+        args = x$args,
+        observations = x$observations
+      )
+    },
+    estimated_reported_cases = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        I("epinow()$estimated_reported_cases"),
+        "estimates_by_report_date()"
+      )
+      estimates_by_report_date(x)
+    },
+    summary = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        I("epinow()$summary"),
+        "summary()"
+      )
+      latest_date <- max(x$observations$date, na.rm = TRUE)
+      summarised <- summary(x, type = "parameters")
+      summarised <- summarised[date == latest_date]
+      rt_samples <- get_samples(x)[variable == "R" & date == latest_date]
+      report_summary(summarised, rt_samples, return_numeric = TRUE)
+    },
+    plots = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        I("epinow()$plots"),
+        "plot()"
+      )
+      plot(x, type = "all")
+    },
+    estimate_infections = {
+      lifecycle::deprecate_warn(
+        "1.8.0",
+        I("epinow()$estimate_infections"),
+        details = paste(
+          "The epinow object now inherits from estimate_infections.",
+          "Use the object directly."
+        )
+      )
+      out <- x
+      class(out) <- setdiff(class(out), "epinow")
+      out
+    },
+    NULL
+  )
+}
+
+#' Extract elements from epinow objects with deprecated warnings
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for the old return structure. The previous
+#' structure with \code{estimates}, \code{estimated_reported_cases},
+#' \code{summary}, \code{plots}, and \code{estimate_infections} elements is
+#' deprecated. Use the standard S3 methods
+#' instead:
+#' \itemize{
+#'   \item \code{estimates$samples} - use \code{get_samples(object)}
+#'   \item \code{estimates$summarised} - use \code{summary(object,
+#'     type = "parameters")}
+#'   \item \code{estimated_reported_cases} - use
+#'     \code{estimates_by_report_date(object)}
+#'   \item \code{summary} - use \code{summary(object)}
+#'   \item \code{plots} - use \code{plot(object)}
+#'   \item \code{estimate_infections} - use the object directly (it now
+#'     inherits from \code{estimate_infections})
+#' }
+#'
+#' @param x An \code{epinow} object
+#' @param name The name of the element to extract
+#' @return The requested element with a deprecation warning for deprecated
+#'   elements
+#' @keywords internal
+#' @export
+#' @method $ epinow
+`$.epinow` <- function(x, name) {
+  deprecated_names <- c(
+    "estimates", "estimated_reported_cases", "summary", "plots",
+    "estimate_infections"
+  )
+  result <- epinow_compat_extract(x, name)
+  if (!is.null(result) || name %in% deprecated_names) {
+    return(result)
+  }
+  NextMethod("$")
+}
+
+#' Extract elements from epinow objects with bracket notation
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for bracket-based access to deprecated
+#' elements. See [$.epinow] for details on the deprecation.
+#'
+#' @param x An `epinow` object
+#' @param i The name or index of the element to extract
+#' @return The requested element with a deprecation warning for deprecated
+#'   elements
+#' @keywords internal
+#' @export
+#' @method [[ epinow
+`[[.epinow` <- function(x, i) {
+  deprecated_names <- c(
+    "estimates", "estimated_reported_cases", "summary", "plots",
+    "estimate_infections"
+  )
+  result <- epinow_compat_extract(x, i)
+  if (!is.null(result) || i %in% deprecated_names) {
+    return(result)
+  }
+  NextMethod("[[")
+}

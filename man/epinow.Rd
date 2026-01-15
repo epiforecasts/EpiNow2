@@ -17,7 +17,7 @@ epinow(
   stan = stan_opts(),
   CrIs = c(0.2, 0.5, 0.9),
   return_output = is.null(target_folder),
-  output = c("samples", "plots", "latest", "fit", "timing"),
+  output = c("samples", "plots", "latest", "fit", "timing", "estimate_infections"),
   plot_args = list(),
   target_folder = NULL,
   target_date,
@@ -88,10 +88,12 @@ this automatically updates to TRUE if no directory for saving is specified.}
 \item{output}{A character vector of optional output to return. Supported
 options are samples ("samples"), plots ("plots"), the run time ("timing"),
 copying the dated folder into a latest folder (if \code{target_folder} is not
-null, set using "latest"), and the stan fit ("fit"). The default is to
-return all options.}
+null, set using "latest"), the stan fit ("fit"), and the full
+\code{\link[=estimate_infections]{estimate_infections()}} return object ("estimate_infections"). The default
+is to return all options.}
 
-\item{plot_args}{A list of optional arguments passed to \code{\link[=plot.epinow]{plot.epinow()}}.}
+\item{plot_args}{A list of optional arguments passed to
+\code{\link[=plot.estimate_infections]{plot.estimate_infections()}}.}
 
 \item{target_folder}{Character string specifying where to save results (will
 create if not present).}
