@@ -72,7 +72,7 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
       saveRDS(estimates$args, file.path(target_folder, "model_args.rds"))
     }
   }
-  return(invisible(NULL))
+  invisible(NULL)
 }
 
 #' Estimate Cases by Report Date
@@ -121,7 +121,7 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
       file.path(target_folder, "summarised_estimated_reported_cases.rds")
     )
   }
-  return(estimated_reported_cases)
+  estimated_reported_cases
 }
 
 
@@ -159,7 +159,7 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
       )
     )
   }
-  return(invisible(NULL))
+  invisible(NULL)
 }
 
 
@@ -197,5 +197,5 @@ construct_output <- function(estimates,
   if (!is.null(plots)) {
     out$plots <- plots
   }
-  return(out)
+  out
 }

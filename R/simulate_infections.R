@@ -135,9 +135,9 @@ simulate_infections <- function(R,
   )
 
   stan_data <- c(stan_data, create_stan_delays(
-    gt = generation_time,
-    delay = delays,
-    trunc = truncation
+    generation_time = generation_time,
+    reporting = delays,
+    truncation = truncation
   ))
 
   if (length(stan_data$delay_params_sd) > 0 &&
@@ -187,8 +187,8 @@ simulate_infections <- function(R,
     make_param("alpha", NULL),
     make_param("rho", NULL),
     make_param("R0", NULL),
-    make_param("frac_obs", obs$scale, lower_bound = 0),
-    make_param("dispersion", obs$dispersion, lower_bound = 0),
+    make_param("fraction_observed", obs$scale, lower_bound = 0),
+    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("pop", pop, lower_bound = 0)
   )
 
@@ -234,7 +234,7 @@ simulate_infections <- function(R,
   out <- rbindlist(out[c("infections", "reported_cases")], idcol = "variable")
   out <- out[, c("sample", "parameter", "time") := NULL]
 
-  return(out[])
+  out[]
 }
 
 #' Forecast infections from a given fit and trajectory of the time-varying
@@ -547,5 +547,5 @@ forecast_infections <- function(estimates,
 
   format_out$observations <- estimates$observations
   class(format_out) <- c("forecast_infections", class(format_out))
-  return(format_out)
+  format_out
 }

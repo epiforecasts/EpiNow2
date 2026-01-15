@@ -7,23 +7,30 @@
 #'
 #' # Methodological details
 #'
+#' The probability mass function is computed using the `{primarycensored}`
+#' package, which provides double censored PMF calculations. This correctly
+#' represents the probability mass function of a double censored distribution
+#' arising from the difference of two censored events.
+#'
 #' The probability mass function of the discretised probability distribution is
-#'   a vector where the first entry corresponds to the integral over the (0,1]
-#'   interval of the corresponding continuous distribution (probability of
-#'   integer 0), the second entry corresponds to the (0,2] interval (probability
-#'   mass of integer 1), the third entry corresponds to the (1, 3] interval
-#'   (probability mass of integer 2), etc. This approximates the true
-#'   probability mass function of a double censored distribution which arises
-#'   from the difference of two censored events.
+#' a vector where the first entry corresponds to the integral over the (0,1]
+#' interval of the corresponding continuous distribution (probability of
+#' integer 0), the second entry corresponds to the (0,2] interval (probability
+#' mass of integer 1), the third entry corresponds to the (1, 3] interval
+#' (probability mass of integer 2), etc.
 #'
 #' @references
-#' Charniga, K., et al. “Best practices for estimating and reporting
+#' Charniga, K., et al. "Best practices for estimating and reporting
 #'   epidemiological delay distributions of infectious diseases using public
-#'   health surveillance and healthcare data”, *arXiv e-prints*, 2024.
+#'   health surveillance and healthcare data", *arXiv e-prints*, 2024.
 #'   \doi{10.48550/arXiv.2405.08841}
 #' Park,  S. W.,  et al.,  "Estimating epidemiological delay distributions for
 #'   infectious diseases", *medRxiv*, 2024.
 #'   \doi{https://doi.org/10.1101/2024.01.12.24301247}
+#' Abbott S., et al., "primarycensored: Primary Event Censored Distributions",
+#'   2025. \doi{10.5281/zenodo.13632839}
+#'
+#' @importFrom primarycensored dprimarycensored
 #'
 #' @param distribution A character string representing the distribution to be
 #'   used (one of "exp", "gamma", "lognormal", "normal" or "fixed")
@@ -40,60 +47,87 @@
 #' @return A vector representing a probability distribution.
 #' @keywords internal
 #' @inheritParams bound_dist
-#' @importFrom stats pexp pgamma plnorm pnorm qexp qgamma qlnorm qnorm
+#' @importFrom stats pexp pgamma plnorm pnorm
 #' @importFrom rlang arg_match
+#' @importFrom primarycensored qprimarycensored
 discrete_pmf <- function(distribution =
                            c("exp", "gamma", "lognormal", "normal", "fixed"),
                          params, max_value, cdf_cutoff, width) {
   distribution <- arg_match(distribution)
-  ## define unnormalised support function and cumulative density function
-  updist <- switch(distribution,
-    exp = function(n) {
-      pexp(n, params[["rate"]])
-    },
-    gamma = function(n) {
-      pgamma(n, params[["shape"]], params[["rate"]])
-    },
-    lognormal = function(n) {
-      plnorm(n, params[["meanlog"]], params[["sdlog"]])
-    },
-    normal = function(n) {
-      pnorm(n, params[["mean"]], params[["sd"]])
-    },
-    fixed = function(n) {
-      as.integer(n > params[["value"]])
+
+  ## handle fixed distribution as special case
+  ## for fractional values, split probability proportionally across intervals
+  if (distribution == "fixed") {
+    value <- params[["value"]]
+    if (missing(max_value) || is.infinite(max_value)) {
+      max_value <- ceiling(value) + 1
     }
-  )
-  qdist <- switch(distribution,
-    exp = qexp,
-    gamma = qgamma,
-    lognormal = qlnorm,
-    normal = qnorm,
-    fixed = function(p, value) value
+    max_value <- ceiling(max_value)
+    pmf <- rep(0, max_value)
+    if (value < max_value) {
+      floor_v <- floor(value)
+      frac <- value - floor_v
+      if (frac == 0) {
+        ## integer value: all mass in interval [value, value+1)
+        pmf[floor_v + 1] <- 1
+      } else {
+        ## fractional: split between adjacent intervals
+        pmf[floor_v + 1] <- 1 - frac
+        if (floor_v + 2 <= max_value) {
+          pmf[floor_v + 2] <- frac
+        }
+      }
+    }
+    return(pmf)
+  }
+
+  ## map distribution types to CDF functions
+  pdist <- switch(distribution,
+    exp = pexp,
+    gamma = pgamma,
+    lognormal = plnorm,
+    normal = pnorm
   )
 
   ## apply CDF cutoff if given
-  if (!missing(cdf_cutoff)) {
-    ## max from CDF cutoff
-    cdf_cutoff_max <- do.call(qdist, c(list(p = 1 - cdf_cutoff), params))
-    if (missing(max_value) || cdf_cutoff_max < max_value) {
+  if (!missing(cdf_cutoff) && cdf_cutoff > 0) {
+    ## max from CDF cutoff using primarycensored quantile function
+    cdf_cutoff_max <- do.call(
+      primarycensored::qprimarycensored,
+      c(
+        list(
+          p = 1 - cdf_cutoff,
+          pdist = pdist,
+          pwindow = width
+        ),
+        params
+      )
+    )
+    if (!is.na(cdf_cutoff_max) &&
+          (missing(max_value) || cdf_cutoff_max < max_value)) {
       max_value <- cdf_cutoff_max
     }
   }
 
-  ## determine pmf
+  ## determine pmf using primarycensored
   max_value <- ceiling(max_value)
-  if (max_value < width) {
-    cmf <- c(0, 1)
-  } else {
-    x <- seq(width, max_value, by = width)
-    cmf <- c(0, updist(width), (updist(x) + updist(x + width))) /
-      (updist(max_value) + updist(max_value + width))
-  }
 
-  pmf <- diff(cmf)
+  ## compute double censored PMF using primarycensored
+  pmf <- do.call(
+    primarycensored::dprimarycensored,
+    c(
+      list(
+        x = seq(0, max_value - width, by = width),
+        pdist = pdist,
+        pwindow = width,
+        swindow = width,
+        D = max_value
+      ),
+      params
+    )
+  )
 
-  return(pmf)
+  pmf
 }
 
 #' Creates a delay distribution as the sum of two other delay distributions.
@@ -174,7 +208,7 @@ discrete_pmf <- function(distribution =
       }
     }
   }
-  return(TRUE)
+  TRUE
 }
 ## nolint end: cyclocomp_linter
 
@@ -316,8 +350,7 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
 #' @method mean multi_dist_spec
 #' @export
 mean.multi_dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
-  ret <- vapply(x, mean, ignore_uncertainty = ignore_uncertainty, numeric(1))
-  return(ret)
+  vapply(x, mean, ignore_uncertainty = ignore_uncertainty, numeric(1))
 }
 
 
@@ -418,11 +451,15 @@ sd.default <- function(x, ...) {
 #' # The max the sum of two distributions
 #' max(dist1 + dist2)
 max.dist_spec <- function(x, ...) {
+  ## return fixed value before discretisation (discretise converts to
+  ## nonparametric which then uses PMF length)
+  if (get_distribution(x) == "fixed") {
+    return(get_parameters(x)$value)
+  }
   ## try to discretise (which applies cdf cutoff and max)
   x <- discretise(x, strict = FALSE)
   switch(get_distribution(x),
-    nonparametric = length(get_pmf(x)) - 1,
-    fixed = get_parameters(x)$value,
+    nonparametric = length(get_pmf(x)),
     ifelse(is.null(attr(x, "max")), Inf, attr(x, "max"))
   )
 }
@@ -483,7 +520,8 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
   }
   if (get_distribution(x) == "nonparametric") {
     return(x)
-  } else if (!is.na(sd(x)) && is_constrained(x)) {
+  }
+  if (!is.na(sd(x)) && is_constrained(x)) {
     cdf_cutoff <- attr(x, "cdf_cutoff")
     if (is.null(cdf_cutoff)) {
       cdf_cutoff <- 0
@@ -506,9 +544,12 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
       attributes(y)[attribute] <- attributes(x)[attribute]
     }
     if (remove_trailing_zeros) {
-      y$pmf <- y$pmf[seq_len(max(which(y$pmf != 0)))]
+      non_zero_idx <- which(y$pmf != 0)
+      if (length(non_zero_idx) > 0) {
+        y$pmf <- y$pmf[seq_len(max(non_zero_idx))]
+      }
     }
-    return(y)
+    y
   } else if (strict) {
     cli_abort(
       c(
@@ -516,7 +557,7 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
       )
     )
   } else {
-    return(x)
+    x
   }
 }
 #' @method discretise multi_dist_spec
@@ -524,7 +565,7 @@ discretise.dist_spec <- function(x, strict = TRUE, remove_trailing_zeros = TRUE,
 discretise.multi_dist_spec <- function(x, strict = TRUE, ...) {
   ret <- lapply(x, discretise, strict = strict)
   attributes(ret) <- attributes(x)
-  return(ret)
+  ret
 }
 #' @rdname discretise
 #' @export
@@ -803,7 +844,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
     p <- p +
       geom_step(data = cmf_data)
   }
-  return(p)
+  p
 }
 
 #' Extract a single element of a composite `<dist_spec>`
@@ -840,10 +881,9 @@ extract_single_dist <- function(x, i) {
     )
   }
   if (ndist(x) == 1) {
-    x
-  } else {
-    x[[i]]
+    return(x)
   }
+  x[[i]]
 }
 
 #' @export
@@ -901,7 +941,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
     names(sampled) <- names(get_parameters(x))
     x$parameters <- sampled
   }
-  return(x)
+  x
 }
 
 #' @export
@@ -911,7 +951,7 @@ fix_parameters.multi_dist_spec <- function(x, strategy =
   for (i in seq_len(ndist(x))) {
     x[[i]] <- fix_parameters(x[[i]])
   }
-  return(x)
+  x
 }
 
 #' @export
@@ -1140,7 +1180,7 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
     if (is.finite(max)) attr(x, "max") <- max
     if (cdf_cutoff > 0) attr(x, "cdf_cutoff") <- cdf_cutoff
   }
-  return(x)
+  x
 }
 
 #' Extract parameter names
@@ -1265,7 +1305,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
   ret <- bound_dist(ret, max, cdf_cutoff)
 
   ## now we have a distribution with natural parameters - return dist_spec
-  return(ret)
+  ret
 }
 
 #' Internal function for converting parameters to natural parameters.
@@ -1378,9 +1418,9 @@ get_element <- function(x, id = NULL, element) {
         )
       )
     }
-    return(x[[id]][[element]])
+    x[[id]][[element]]
   } else {
-    return(x[[element]])
+    x[[element]]
   }
 }
 
@@ -1414,7 +1454,7 @@ get_parameters <- function(x, id = NULL) {
       )
     )
   }
-  return(get_element(x, id, "parameters"))
+  get_element(x, id, "parameters")
 }
 
 ##' Get the probability mass function of a nonparametric distribution
@@ -1443,7 +1483,7 @@ get_pmf <- function(x, id = NULL) {
       )
     )
   }
-  return(get_element(x, id, "pmf"))
+  get_element(x, id, "pmf")
 }
 
 ##' Get the distribution of a `<dist_spec>`
@@ -1465,7 +1505,7 @@ get_distribution <- function(x, id = NULL) {
       )
     )
   }
-  return(get_element(x, id, "distribution"))
+  get_element(x, id, "distribution")
 }
 
 ##' Calculate the number of distributions in a `<dist_spec>`

@@ -70,8 +70,8 @@ simulate_secondary <- function(primary,
   stan_data <- c(stan_data, secondary)
 
   stan_data <- c(stan_data, create_stan_delays(
-    delay = delays,
-    trunc = truncation
+    reporting = delays,
+    truncation = truncation
   ))
 
   if (length(stan_data$delay_params_sd) > 0 &&
@@ -118,8 +118,8 @@ simulate_secondary <- function(primary,
   }
 
   params <- list(
-    make_param("frac_obs", obs$scale, lower_bound = 0),
-    make_param("dispersion", obs$dispersion, lower_bound = 0)
+    make_param("fraction_observed", obs$scale, lower_bound = 0),
+    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0)
   )
 
   stan_data <- c(stan_data, create_stan_params(params))
@@ -152,5 +152,5 @@ simulate_secondary <- function(primary,
   secondary <- extract_samples(sim, "sim_secondary")$sim_secondary[1, , ]
   out <- data.table(date = all_dates$date, secondary = secondary)
 
-  return(out[])
+  out[]
 }

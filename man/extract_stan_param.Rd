@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract.R
 \name{extract_stan_param}
 \alias{extract_stan_param}
-\title{Extract a Parameter Summary from a Stan Object}
+\title{Extract a parameter summary from a Stan object}
 \usage{
 extract_stan_param(
   fit,

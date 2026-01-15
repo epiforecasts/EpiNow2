@@ -21,7 +21,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -44,14 +44,14 @@ jobs:
         shell: Rscript {0}
 
       - name: Upload vignette as an artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: vignettes
           path: vignettes
   
       - name: Create Pull Request
         if: github.ref == 'refs/heads/main'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "Automatic Vignette update"
           title: "Update epinow vignette"
