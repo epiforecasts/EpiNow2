@@ -403,7 +403,8 @@ plot.estimate_truncation <- function(x, ...) {
     return(cumsum(pmf))
   }
 
-  NextMethod("$")
+  # Use .subset2 instead of NextMethod for list-based S3 objects
+  .subset2(x, name)
 }
 
 #' @export
@@ -414,5 +415,6 @@ plot.estimate_truncation <- function(x, ...) {
   if (name %in% deprecated_names) {
     return(`$.estimate_truncation`(x, name))
   }
-  NextMethod("[[")
+  # Use .subset2 instead of NextMethod for list-based S3 objects
+  .subset2(x, name)
 }
