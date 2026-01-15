@@ -651,27 +651,5 @@ get_delays.epinowfit <- function(object, ...) {
 #' @rdname get_delays
 #' @export
 get_delays.estimate_truncation <- function(object, ...) {
-  # Extract estimated delay parameters from the posterior
-  delay_params <- extract_stan_param(object$fit, params = "delay_params")
-  params_mean <- round(delay_params$mean, 3)
-  params_sd <- round(delay_params$sd, 3)
-
-  # Get distribution info from Stan data
-  dist_type <- dist_spec_distributions()[object$args$delay_dist[1] + 1]
-  dist_max <- object$args$delay_max[1]
-
-  # Create Normal distributions for each parameter
-  parameters <- purrr::map(seq_along(params_mean), function(id) {
-    Normal(params_mean[id], params_sd[id])
-  })
-  names(parameters) <- natural_params(dist_type)
-
-  # Create and return the dist_spec in a named list
-  trunc_dist <- new_dist_spec(
-    params = parameters,
-    max = dist_max,
-    distribution = dist_type
-  )
-
-  list(truncation = trunc_dist)
+  list(truncation = reconstruct_delay(object, "truncation"))
 }
