@@ -140,7 +140,7 @@ There are various ways the specific delay distributions mentioned below might be
 Often, they will come directly from the existing literature reviewed by the user and studies conducted elsewhere.
 Sometimes it might be possible to obtain them from existing databases, e.g. using the [epiparameter](https://github.com/epiverse-trace/epiparameter) R package.
 Alternatively they might be obtainable from raw data, e.g. line-listed individual-level records.
-The _EpiNow2_ package contains functionality for estimating delay distributions from observed delays in the `estimate_delay()` function, which is a wrapper around the [primarycensored](https://primarycensored.epinowcast.org/index.html) R package.
+The _EpiNow2_ package contains functionality for estimating delay distributions from observed delays in the `estimate_delay()` function.
 For a more comprehensive treatment of delays and their estimation avoiding common biases one can also consider the [epidist](https://epidist.epinowcast.org/index.html) R package.
 
 ### Generation intervals
