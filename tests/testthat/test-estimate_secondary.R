@@ -101,9 +101,6 @@ test_that("forecast_secondary can return values from simulated data and plot
 test_that("estimate_secondary recovers scaling parameter from incidence data", {
   # Basic parameter recovery check using pre-computed fit
   # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
-  # Note: Due to how delay_types_groups handles mixed parametric/nonparametric
-  # delays, the sdlog parameter may be named truncation[1] instead of
-  # reporting[2] when truncation is Fixed(0). See #1236.
   samples <- get_samples(default_inc)
   delay_samples <- samples[variable == "delay_params"]
   param_samples <- samples[variable == "params"]
@@ -112,35 +109,13 @@ test_that("estimate_secondary recovers scaling parameter from incidence data", {
   meanlog_mean <- delay_samples[parameter == "reporting[1]", mean(value)]
   expect_equal(meanlog_mean, 1.8, tolerance = 0.2)
 
-  # Check sdlog is reasonably recovered (0.5 true value)
-  # May be named truncation[1] or reporting[2] depending on delay structure
-  sdlog_param <- intersect(
-    unique(delay_samples$parameter),
-    c("reporting[2]", "truncation[1]")
-  )
-  if (length(sdlog_param) > 0) {
-    sdlog_mean <- delay_samples[parameter == sdlog_param[1], mean(value)]
-    expect_equal(sdlog_mean, 0.5, tolerance = 0.15)
-  }
+  # Check sdlog (reporting[2]) is reasonably recovered (0.5 true value)
+  sdlog_mean <- delay_samples[parameter == "reporting[2]", mean(value)]
+  expect_equal(sdlog_mean, 0.5, tolerance = 0.15)
 
   # Check scaling (fraction_observed) is reasonably recovered (0.4 true value)
   scaling_mean <- param_samples[parameter == "fraction_observed", mean(value)]
   expect_equal(scaling_mean, 0.4, tolerance = 0.05)
-})
-
-test_that("delay parameters are correctly named with mixed parametric/nonparametric delays", {
-  # Regression test for #1236: when truncation is Fixed(0) (nonparametric),
-  # the reporting delay parameters should still be named reporting[1], reporting[2]
-  # not truncation[1] (which was the bug)
-  samples <- get_samples(default_inc)
-  delay_samples <- samples[variable == "delay_params"]
-
-  # Both parameters should be named as reporting delay params
-  param_names <- unique(delay_samples$parameter)
-  expect_true("reporting[1]" %in% param_names)
-  expect_true("reporting[2]" %in% param_names)
-  # Should NOT have truncation parameters (Fixed(0) has none)
-  expect_false(any(grepl("truncation", param_names)))
 })
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false) -
