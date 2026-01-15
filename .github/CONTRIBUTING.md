@@ -110,17 +110,17 @@ precommit::use_precommit()
 
 *   Make your changes, commit to git, and then create a PR by running `usethis::pr_push()`, and following the prompts in your browser.
     The title of your PR should briefly describe the change.
-    The body of your PR should contain `Fixes #issue-number`.
+    The body of your PR should follow the template in [.github/PULL_REQUEST_TEMPLATE.md](https://github.com/epiforecasts/EpiNow2/blob/main/.github/PULL_REQUEST_TEMPLATE.md) and include a reference to the Issue it fixes.
 
-*   If your PR is a work in progress, [mark it as a draft](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/changing-the-stage-of-a-pull-request) until it's ready, then update your PR to indicate it's ready for team review.
+*   If your PR is a work in progress or you haven't had a chance to fully review it, [mark it as a draft](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/changing-the-stage-of-a-pull-request) until it's ready for review by others, then update your PR by marking it as "ready for review".
 
-*   For user-facing changes, add a bullet to the top of `NEWS.md` (i.e. just below the first header). Follow the style described in <https://style.tidyverse.org/news.html>.
+*   For user-facing changes, add a bullet to the top of `NEWS.md` in the section that corresponds to the type of change. Follow the style described in <https://style.tidyverse.org/news.html>.
 
 #### What happens after submitting a PR?
 
 *   PRs are reviewed by the team before they are merged. The review process only begins after the continuous integration checks, which have to be manually triggered by a maintainer for first-time contributors, have passed.
 
-*   You should expect to see reviews from our AI code reviewer, [CodeRabbit](https://www.coderabbit.ai/), which will point out some initial issues to fix. Be sure to address review comments that you think are accurate and reply with reasons why other comments won't be fixed. Provide commits to support your fixes.
+*   You should expect to see reviews from an AI code reviewer, which will point out some initial issues to fix. Be sure to address review comments that you think are accurate and reply with reasons why other comments won't be fixed. Provide commits to support your fixes.
 
 *   The Github Actions checks currently take a while (about an hour), so it might be helpful to "watch" the repository and check your email for a notification when it's all done.
 
