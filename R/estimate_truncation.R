@@ -1,3 +1,59 @@
+#' Prepare truncation observations for Stan
+#'
+#' @description Internal function to process a list of observation snapshots
+#' into the matrix format required by the truncation Stan model.
+#'
+#' @param data A list of `<data.frame>`s each containing date and confirm
+#'   columns. Each data set should be a snapshot of reported data.
+#' @param trunc_max Integer, the maximum truncation delay to consider.
+#'
+#' @return A list containing:
+#' - `obs`: Matrix of observations (time x datasets)
+#' - `obs_dist`: Vector of NA counts per dataset (used to determine truncation)
+#' - `t`: Number of time points
+#' - `obs_sets`: Number of observation datasets
+#' - `dirty_obs`: The processed data.tables (ordered by nrow)
+#'
+#' @keywords internal
+prepare_truncation_obs <- function(data, trunc_max) {
+  # Convert to data.tables and find common date range
+  dirty_obs <- purrr::map(data, data.table::as.data.table)
+  earliest_date <- max(
+    as.Date(
+      purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])
+    )
+  )
+  dirty_obs <- purrr::map(dirty_obs, function(x) x[date >= earliest_date])
+
+  # Order by number of rows (shortest first)
+  nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
+  dirty_obs <- dirty_obs[nrow_obs]
+
+  # Merge all observations into a single data.table with columns named 1, 2, ...
+  obs <- purrr::map(dirty_obs, data.table::copy)
+  obs <- purrr::map(seq_along(obs), ~ obs[[.]][, (as.character(.)) := confirm][
+    ,
+    confirm := NULL
+  ])
+  obs <- purrr::reduce(obs, merge, all = TRUE)
+
+  # Calculate observation start point and distance metrics
+  obs_start <- max(nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1, 1)
+  obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
+
+  # Create observation matrix (replacing NAs with 0)
+  obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
+  obs_data <- as.matrix(obs_data[obs_start:.N])
+
+  list(
+    obs = obs_data,
+    obs_dist = obs_dist,
+    t = nrow(obs_data),
+    obs_sets = ncol(obs_data),
+    dirty_obs = dirty_obs
+  )
+}
+
 #' Estimate Truncation of Observed Data
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -159,33 +215,13 @@ estimate_truncation <- function(data,
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
-  # combine into ordered matrix
-  dirty_obs <- purrr::map(data, data.table::as.data.table)
-  earliest_date <- max(
-    as.Date(
-      purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])
-    )
-  )
-  dirty_obs <- purrr::map(dirty_obs, function(x) x[date >= earliest_date])
-  nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
-  dirty_obs <- dirty_obs[nrow_obs]
-  obs <- purrr::map(dirty_obs, data.table::copy)
-  obs <- purrr::map(seq_along(obs), ~ obs[[.]][, (as.character(.)) := confirm][
-    ,
-    confirm := NULL
-  ])
-  obs <- purrr::reduce(obs, merge, all = TRUE)
-  obs_start <- max(nrow(obs) - max(truncation) - sum(is.na(obs$`1`)) + 1, 1)
-  obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
-  obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
-  obs_data <- as.matrix(obs_data[obs_start:.N])
-
-  # convert to stan list
+  # Prepare observation matrix for Stan
+  obs_prep <- prepare_truncation_obs(data, trunc_max = max(truncation))
   stan_data <- list(
-    obs = obs_data,
-    obs_dist = obs_dist,
-    t = nrow(obs_data),
-    obs_sets = ncol(obs_data)
+    obs = obs_prep$obs,
+    obs_dist = obs_prep$obs_dist,
+    t = obs_prep$t,
+    obs_sets = obs_prep$obs_sets
   )
 
   stan_data <- c(stan_data, create_stan_delays(
