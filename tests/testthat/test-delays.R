@@ -187,3 +187,75 @@ test_that("extract_delays handles delays with no ID lookup gracefully", {
   # Should fall back to indexed naming
   expect_true(any(grepl("delay_params\\[", result$parameter)))
 })
+
+test_that("build_delay_name_lookup correctly names parameters", {
+  # Scenario 1: Single parametric delay (reporting with 2 params)
+  args_single <- list(
+    delay_id_reporting = 1,
+    delay_types_groups = c(1, 2),
+    delay_types_p = c(1),
+    delay_types_id = c(1),
+    delay_params_groups = c(1, 3)
+  )
+  result <- EpiNow2:::build_delay_name_lookup(args_single, n_cols = 2)
+  expect_equal(result, c("reporting[1]", "reporting[2]"))
+
+  # Scenario 2: Nonparametric followed by parametric
+  # This pattern caused bug #1236: truncation is Fixed(0), reporting is LogNormal
+  args_nonparam_first <- list(
+    delay_id_truncation = 1,
+    delay_id_reporting = 2,
+    delay_types_groups = c(1, 2, 3),
+    delay_types_p = c(0, 1),
+    delay_types_id = c(1, 1),
+    delay_params_groups = c(1, 3)
+  )
+  result <- EpiNow2:::build_delay_name_lookup(args_nonparam_first, n_cols = 2)
+  # Should be reporting, NOT truncation
+  expect_equal(result, c("reporting[1]", "reporting[2]"))
+
+  # Scenario 3: Two parametric delays (reporting then truncation)
+  args_both_param <- list(
+    delay_id_reporting = 1,
+    delay_id_truncation = 2,
+    delay_types_groups = c(1, 2, 3),
+    delay_types_p = c(1, 1),
+    delay_types_id = c(1, 2),
+    delay_params_groups = c(1, 3, 5)
+  )
+  result <- EpiNow2:::build_delay_name_lookup(args_both_param, n_cols = 4)
+  expect_equal(
+    result,
+    c("reporting[1]", "reporting[2]", "truncation[1]", "truncation[2]")
+  )
+
+  # Scenario 4: Parametric followed by nonparametric
+  args_param_first <- list(
+    delay_id_reporting = 1,
+    delay_id_truncation = 2,
+    delay_types_groups = c(1, 2, 3),
+    delay_types_p = c(1, 0),
+    delay_types_id = c(1, 1),
+    delay_params_groups = c(1, 3)
+  )
+  result <- EpiNow2:::build_delay_name_lookup(args_param_first, n_cols = 2)
+  expect_equal(result, c("reporting[1]", "reporting[2]"))
+
+  # Scenario 5: Three delay types with mixed parametric/nonparametric
+  # generation_time (parametric), reporting (nonparametric), truncation (param)
+  args_three_mixed <- list(
+    delay_id_generation_time = 1,
+    delay_id_reporting = 2,
+    delay_id_truncation = 3,
+    delay_types_groups = c(1, 2, 3, 4),
+    delay_types_p = c(1, 0, 1),
+    delay_types_id = c(1, 1, 2),
+    delay_params_groups = c(1, 3, 5)
+  )
+  result <- EpiNow2:::build_delay_name_lookup(args_three_mixed, n_cols = 4)
+  expect_equal(
+    result,
+    c("generation_time[1]", "generation_time[2]",
+      "truncation[1]", "truncation[2]")
+  )
+})
