@@ -43,6 +43,7 @@ The function interface remains unchanged.
   - Renamed return elements: `obs` → `observations`, `data` → `args`.
   - Removed elements: `last_obs` (now included in `observations`), `cmf` and `dist`.
   - Use `get_delays(object)$truncation` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
+  - Use `get_predictions(object)` to extract truncation-adjusted (nowcast) estimates that can be compared to observed data.
   - Use `get_samples(object)` to extract posterior samples.
   - Use `summary(object)` to get parameter estimates as a data.table.
   - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_delays()$truncation` instead.
