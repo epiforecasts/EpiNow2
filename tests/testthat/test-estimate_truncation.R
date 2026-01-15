@@ -1,6 +1,62 @@
 # Setup for testing -------------------------------------------------------
 skip_on_cran()
 
+# Unit tests (fast, no MCMC) -----------------------------------------------
+
+test_that("prepare_truncation_obs correctly processes observation snapshots", {
+  # Create simple test data: 3 snapshots with increasing completeness
+  dates <- seq(as.Date("2020-01-01"), as.Date("2020-01-10"), by = "day")
+
+  # Snapshot 1: only first 7 days
+  snap1 <- data.frame(date = dates[1:7], confirm = 10:16)
+  # Snapshot 2: first 8 days
+  snap2 <- data.frame(date = dates[1:8], confirm = 10:17)
+  # Snapshot 3: all 10 days (most complete)
+  snap3 <- data.frame(date = dates, confirm = 10:19)
+
+  data <- list(snap1, snap2, snap3)
+
+  result <- EpiNow2:::prepare_truncation_obs(data, trunc_max = 5)
+
+  # Check structure
+  expect_type(result, "list")
+  expect_named(result, c("obs", "obs_dist", "t", "obs_sets", "dirty_obs"))
+
+  # Check that obs is a matrix
+  expect_true(is.matrix(result$obs))
+
+  # Check dimensions: should have 3 observation sets
+  expect_equal(result$obs_sets, 3)
+
+  # Check that obs_dist reflects the truncation in each dataset
+  expect_type(result$obs_dist, "double")
+  expect_equal(length(result$obs_dist), 2)  # one less than obs_sets
+
+  # dirty_obs should be ordered by nrow (shortest first)
+  expect_equal(length(result$dirty_obs), 3)
+})
+
+test_that("prepare_truncation_obs handles datasets with different start dates", {
+  # Snapshot 1: days 1-5
+  snap1 <- data.frame(
+    date = seq(as.Date("2020-01-01"), as.Date("2020-01-05"), by = "day"),
+    confirm = 1:5
+  )
+  # Snapshot 2: days 3-8 (starts later)
+  snap2 <- data.frame(
+    date = seq(as.Date("2020-01-03"), as.Date("2020-01-08"), by = "day"),
+    confirm = 3:8
+  )
+
+  data <- list(snap1, snap2)
+
+  result <- EpiNow2:::prepare_truncation_obs(data, trunc_max = 3)
+
+  # Should only use dates from Jan 3 onwards (the latest start date)
+  expect_true(result$t > 0)
+  expect_equal(result$obs_sets, 2)
+})
+
 # Integration tests (MCMC-based) ------------------------------------------
 # These tests run actual MCMC sampling and are slow. Tests are divided into:
 # - Core tests: Essential tests that always run to catch critical failures
@@ -12,13 +68,15 @@ futile.logger::flog.threshold("FATAL")
 old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
+# Run MCMC once and reuse across multiple tests to save time
+default_est <- estimate_truncation(example_truncated,
+  verbose = FALSE, chains = 2, iter = 1000, warmup = 250
+)
+
 # Core test: Core functionality with default settings (always runs)
 test_that("estimate_truncation can return values from simulated data and plot
            them", {
-  # fit model to example data
-  est <- estimate_truncation(example_truncated,
-    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
-  )
+  est <- default_est
   expect_equal(
     names(est),
     c("observations", "args", "fit")
@@ -30,10 +88,28 @@ test_that("estimate_truncation can return values from simulated data and plot
   expect_error(plot(est), NA)
 })
 
+test_that("estimate_truncation recovers truncation parameters", {
+  # example_truncated was generated with:
+  # meanlog = Normal(0.9, 0.1), sdlog = Normal(0.6, 0.1), max = 10
+  est <- default_est
+
+  # Extract the estimated truncation distribution
+  trunc_dist <- get_delays(est)$truncation
+
+  # Get the posterior mean estimates for the parameters
+  # The dist_spec stores parameters as Normal distributions with mean/sd
+  meanlog_est <- trunc_dist[[1]]$meanlog$parameters$mean
+  sdlog_est <- trunc_dist[[1]]$sdlog$parameters$mean
+
+  # Check that estimated parameters are reasonably close to true values
+  # Using wider tolerance (0.3) due to MCMC variability and short chains
+  expect_equal(meanlog_est, 0.9, tolerance = 0.3)
+  expect_equal(sdlog_est, 0.6, tolerance = 0.3)
+})
+
 test_that("deprecated accessors return correct values with warnings", {
-  est <- estimate_truncation(example_truncated,
-    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
-  )
+  est <- default_est
+
   # $obs returns merged predictions+observations with deprecation warning
   lifecycle::expect_deprecated(obs_result <- est$obs)
   expect_s3_class(obs_result, "data.table")
@@ -68,9 +144,7 @@ test_that("deprecated accessors return correct values with warnings", {
 })
 
 test_that("get_delays returns truncation distribution from estimate_truncation", {
-  est <- estimate_truncation(example_truncated,
-    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
-  )
+  est <- default_est
 
   # Test getting all delays as named list
   delays <- get_delays(est)
