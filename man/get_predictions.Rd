@@ -6,6 +6,7 @@
 \alias{get_predictions.estimate_secondary}
 \alias{get_predictions.forecast_infections}
 \alias{get_predictions.forecast_secondary}
+\alias{get_predictions.estimate_truncation}
 \title{Get predictions from a fitted model}
 \usage{
 get_predictions(object, ...)
@@ -17,10 +18,12 @@ get_predictions(object, ...)
 \method{get_predictions}{forecast_infections}(object, ...)
 
 \method{get_predictions}{forecast_secondary}(object, ...)
+
+\method{get_predictions}{estimate_truncation}(object, CrIs = c(0.2, 0.5, 0.9), ...)
 }
 \arguments{
-\item{object}{A fitted model object (e.g., from \code{estimate_infections()} or
-\code{estimate_secondary()})}
+\item{object}{A fitted model object (e.g., from \code{estimate_infections()},
+\code{estimate_secondary()}, or \code{estimate_truncation()})}
 
 \item{...}{Additional arguments (currently unused)}
 
@@ -28,14 +31,16 @@ get_predictions(object, ...)
 c(0.2, 0.5, 0.9).}
 }
 \value{
-A \code{data.table} with columns including date, observations, and summary
-statistics (mean, sd, credible intervals) for the model predictions.
+A \code{data.table} with columns including date and summary statistics
+(mean, sd, credible intervals) for the model predictions.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Extracts predictions from a fitted model, combining observations with model
 estimates. For \code{estimate_infections()} returns predicted reported cases, for
-\code{estimate_secondary()} returns predicted secondary observations.
+\code{estimate_secondary()} returns predicted secondary observations. For
+\code{estimate_truncation()} returns reconstructed observations adjusted for
+truncation.
 }
 \examples{
 \dontrun{

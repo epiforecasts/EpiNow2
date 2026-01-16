@@ -4,14 +4,17 @@
 \alias{extract_parameters}
 \title{Extract samples from all parameters}
 \usage{
-extract_parameters(samples)
+extract_parameters(samples, args)
 }
 \arguments{
 \item{samples}{Extracted stan model (using \code{\link[rstan:stanfit-method-extract]{rstan::extract()}})}
+
+\item{args}{Stan data list containing param_id_* and params_variable_lookup
+for parameter naming.}
 }
 \value{
-A \verb{<data.table>} containing the parameter name, sample id and sample
-value, or NULL if parameters don't exist in the samples
+A \verb{<data.table>} containing variable, parameter name, sample id and
+sample value, or NULL if parameters don't exist in the samples
 }
 \description{
 Extract samples from all parameters

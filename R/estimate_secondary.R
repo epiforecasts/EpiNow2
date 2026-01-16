@@ -273,7 +273,7 @@ estimate_secondary <- function(data,
     observations = reports
   )
 
-  class(ret) <- c("epinowfit", "estimate_secondary", class(ret))
+  class(ret) <- c("estimate_secondary", "epinowfit", class(ret))
   ret
 }
 
