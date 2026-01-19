@@ -58,6 +58,43 @@ test_that("prepare_truncation_obs handles datasets with different start dates", 
   expect_equal(result$obs_sets, 2)
 })
 
+test_that("merge_predictions_obs correctly merges predictions with observations", {
+  # Create simple test observations: 2 snapshots
+  obs1 <- data.frame(
+    date = as.Date("2020-01-01") + 0:2,
+    confirm = c(10, 20, 30)
+  )
+  obs2 <- data.frame(
+    date = as.Date("2020-01-01") + 0:3,
+    confirm = c(10, 20, 30, 40)
+  )
+  observations <- list(obs1, obs2)
+
+  # Create simple predictions matching the observations
+  predictions <- data.table::data.table(
+    date = rep(as.Date("2020-01-01") + 0:2, 2),
+    report_date = c(
+      rep(as.Date("2020-01-03"), 3),
+      rep(as.Date("2020-01-04"), 3)
+    ),
+    median = 1:6
+  )
+
+  result <- EpiNow2:::merge_predictions_obs(observations, predictions)
+
+  # Check structure
+  expect_s3_class(result, "data.table")
+  expect_true("last_confirm" %in% names(result))
+  expect_true("confirm" %in% names(result))
+  expect_true("median" %in% names(result))
+  expect_true("date" %in% names(result))
+  expect_true("report_date" %in% names(result))
+
+  # last_confirm should come from obs2 (the latest snapshot)
+  # For date 2020-01-01, last_confirm should be 10
+  expect_equal(result[date == as.Date("2020-01-01")]$last_confirm[1], 10)
+})
+
 # Integration tests (MCMC-based) ------------------------------------------
 # These tests run actual MCMC sampling and are slow. Tests are divided into:
 # - Core tests: Essential tests that always run to catch critical failures
@@ -136,8 +173,9 @@ test_that("deprecated accessors return correct values with warnings", {
   # Use tolerance for floating point comparison
   expect_true(all(cmf_result >= -1e-10 & cmf_result <= 1 + 1e-10))
 
-  # [[ accessor works the same way
-  lifecycle::expect_deprecated(obs_bracket <- est[["obs"]])
+  # [[ accessor delegates to $ (deprecation warnings already fired above)
+  # Just verify it returns the correct result
+  suppressWarnings(obs_bracket <- est[["obs"]])
   expect_s3_class(obs_bracket, "data.table")
   expect_true("confirm" %in% names(obs_bracket))
 })

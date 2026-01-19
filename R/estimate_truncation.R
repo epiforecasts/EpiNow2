@@ -54,6 +54,42 @@ prepare_truncation_obs <- function(data, trunc_max) {
   )
 }
 
+#' Merge predictions with observations for truncation display
+#'
+#' @description Internal function to prepare data for plotting or returning
+#' merged predictions and observations. Combines predictions with observed
+#' data from each snapshot, including the latest observations as reference.
+#'
+#' @param observations A list of `<data.frame>`s containing date and confirm
+#'   columns, as stored in an `estimate_truncation` object.
+#' @param predictions A `<data.table>` of predictions from [get_predictions()].
+#'
+#' @return A `<data.table>` with columns: date, report_date, confirm (observed),
+#'   last_confirm (from latest snapshot), and prediction columns (median, CrIs).
+#'
+#' @keywords internal
+merge_predictions_obs <- function(observations, predictions) {
+  # Get latest observations for reference
+  last_obs <- data.table::as.data.table(observations[[length(observations)]])
+  last_obs <- last_obs[, .(date, last_confirm = confirm)]
+
+  # Get truncated observations from each snapshot with report_date
+
+  obs_list <- purrr::map(observations, function(obs) {
+    obs_dt <- data.table::as.data.table(obs)
+    obs_dt[, report_date := max(date)]
+    obs_dt
+  })
+  obs_combined <- data.table::rbindlist(obs_list)
+
+  # Merge predictions with observations
+  result <- data.table::merge.data.table(
+    predictions, obs_combined[, .(date, confirm, report_date)],
+    by = c("date", "report_date")
+  )
+  data.table::merge.data.table(result, last_obs, by = "date")
+}
+
 #' Estimate Truncation of Observed Data
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -149,7 +185,7 @@ prepare_truncation_obs <- function(data, trunc_max) {
 #' )
 #'
 #' # extract the estimated truncation distribution
-#' get_delays(est)$truncation
+#' get_delay(est, "truncation")
 #' # summarise the truncation distribution parameters
 #' summary(est)
 #' # validation plot of observations vs estimates
@@ -162,7 +198,7 @@ prepare_truncation_obs <- function(data, trunc_max) {
 #' out <- epinow(
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   example_truncated[[5]],
-#'   truncation = trunc_opts(get_delays(est)$truncation)
+#'   truncation = trunc_opts(get_delay(est, "truncation"))
 #' )
 #' plot(out)
 #' options(old_opts)
@@ -276,26 +312,7 @@ estimate_truncation <- function(data,
 #' @export
 plot.estimate_truncation <- function(x, ...) {
   preds <- get_predictions(x)
-
-  # Get latest observations for reference (grey bars)
-  last_snapshot <- x$observations[[length(x$observations)]]
-  last_obs <- data.table::as.data.table(last_snapshot)
-  last_obs <- last_obs[, .(date, last_confirm = confirm)]
-
-  # Get truncated observations from each snapshot
-  obs_list <- purrr::map(x$observations, function(obs) {
-    obs_dt <- data.table::as.data.table(obs)
-    obs_dt[, report_date := max(date)]
-    obs_dt
-  })
-  obs_combined <- data.table::rbindlist(obs_list)
-
-  # Merge predictions with observations for plotting
-  plot_data <- data.table::merge.data.table(
-    preds, obs_combined[, .(date, confirm, report_date)],
-    by = c("date", "report_date")
-  )
-  plot_data <- data.table::merge.data.table(plot_data, last_obs, by = "date")
+  plot_data <- merge_predictions_obs(x$observations, preds)
 
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(
@@ -344,20 +361,7 @@ plot.estimate_truncation <- function(x, ...) {
     # Reconstruct old format: predictions merged with observations
     preds <- get_predictions(x)
     obs <- .subset2(x, "observations")
-    last_obs <- data.table::as.data.table(obs[[length(obs)]])
-    last_obs <- last_obs[, .(date, last_confirm = confirm)]
-    obs_list <- purrr::map(obs, function(o) {
-      obs_dt <- data.table::as.data.table(o)
-      obs_dt[, report_date := max(date)]
-      obs_dt
-    })
-    obs_combined <- data.table::rbindlist(obs_list)
-    result <- data.table::merge.data.table(
-      preds, obs_combined[, .(date, confirm, report_date)],
-      by = c("date", "report_date")
-    )
-    result <- data.table::merge.data.table(result, last_obs, by = "date")
-    return(result)
+    return(merge_predictions_obs(obs, preds))
   }
 
   if (name == "data") {
