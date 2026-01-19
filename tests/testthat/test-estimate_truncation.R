@@ -233,4 +233,26 @@ test_that("estimate_truncation works with zero_threshold set", {
   expect_s3_class(get_delays(out)$truncation, "dist_spec")
 })
 
+test_that("estimate_truncation recovers true truncation parameters", {
+  skip_integration()
+  # example_truncated was generated with:
+  # meanlog = Normal(0.9, 0.1), sdlog = Normal(0.6, 0.1), max = 10
+  # Use longer chains for reliable parameter recovery
+  est <- estimate_truncation(example_truncated,
+    verbose = FALSE, chains = 4, iter = 2000, warmup = 500
+  )
+
+  trunc_dist <- get_delays(est)$truncation
+
+  # Extract posterior mean estimates
+  meanlog_est <- trunc_dist$parameters$meanlog$parameters$mean
+  sdlog_est <- trunc_dist$parameters$sdlog$parameters$mean
+
+  # Check parameter recovery with reasonable tolerance
+  # True values: meanlog = 0.9, sdlog = 0.6
+
+  expect_equal(meanlog_est, 0.9, tolerance = 0.5)
+  expect_equal(sdlog_est, 0.6, tolerance = 0.3)
+})
+
 options(old_opts)
