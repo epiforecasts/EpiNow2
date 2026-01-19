@@ -79,3 +79,19 @@ jobs:
         if: always() && (github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0')
         run: find . -name 'testthat.Rout*' -exec cat '{}' \; || true
         shell: bash
+
+      - name: Create issue on failure
+        if: failure() && (github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Weekly integration tests failed ($(date +%Y-%m-%d))" \
+            --body "The weekly integration test run failed.
+
+          **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          **Triggered by:** ${{ github.event_name }}
+          **Branch:** ${{ github.ref_name }}
+
+          Please investigate the failing tests." \
+            --label "bug"
