@@ -90,8 +90,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh issue create \
-            --title "Weekly integration tests failed ($(date +%Y-%m-%d))" \
-            --body "The weekly integration test run failed.
+            --title "Integration tests failed (${{ github.event_name }}, $(date +%Y-%m-%d))" \
+            --body "The integration test run failed.
 
           **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           **Triggered by:** ${{ github.event_name }}
