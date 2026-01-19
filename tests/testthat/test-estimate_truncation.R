@@ -152,6 +152,18 @@ test_that("get_delays returns truncation distribution from estimate_truncation",
   expect_s3_class(delays$truncation, "dist_spec")
 })
 
+test_that("get_delay extracts single delay by name", {
+  est <- default_est
+
+  # get_delay should return same result as get_delays()$truncation
+  trunc_dist <- get_delay(est, "truncation")
+  expect_s3_class(trunc_dist, "dist_spec")
+  expect_equal(trunc_dist$distribution, "lognormal")
+
+  # Non-existent delay should return NULL
+  expect_null(get_delay(est, "nonexistent"))
+})
+
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_truncation can return values from simulated data with the
            cmdstanr backend", {

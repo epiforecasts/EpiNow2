@@ -653,3 +653,41 @@ get_delays.epinowfit <- function(object, ...) {
 get_delays.estimate_truncation <- function(object, ...) {
   list(truncation = reconstruct_delay(object, "truncation"))
 }
+
+#' Get a single delay distribution from a fitted model
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Convenience function to extract a single delay distribution by name.
+#' This is equivalent to `get_delays(object)[[type]]` but provides a
+#' cleaner interface.
+#'
+#' @param object A fitted model object (e.g., from `estimate_infections()`,
+#'   `estimate_secondary()`, or `estimate_truncation()`)
+#' @param type Character string specifying the delay type to extract.
+#'   Common values include `"generation_time"`, `"reporting"`, and
+#'   `"truncation"`. Use `names(get_delays(object))` to see available types.
+#' @param ... Additional arguments passed to methods
+#'
+#' @return A `dist_spec` object representing the requested delay distribution,
+#'   or `NULL` if the specified type is not found.
+#'
+#' @seealso [get_delays()] to retrieve all delay distributions as a list
+#' @export
+#' @examples
+#' \dontrun{
+#' # Get truncation delay from estimate_truncation
+#' trunc_dist <- get_delay(fit, "truncation")
+#'
+#' # Get generation time from estimate_infections
+#' gt <- get_delay(fit, "generation_time")
+#' }
+get_delay <- function(object, type, ...) {
+  UseMethod("get_delay")
+}
+
+#' @rdname get_delay
+#' @export
+get_delay.default <- function(object, type, ...) {
+  delays <- get_delays(object, ...)
+  delays[[type]]
+}

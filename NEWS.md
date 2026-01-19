@@ -47,7 +47,7 @@ The function interface remains unchanged.
   - Use `get_samples(object)` to extract posterior samples.
   - Use `summary(object)` to get parameter estimates as a data.table.
   - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_delays()$truncation` instead.
-- Added `get_delays()` generic function to extract delay distributions from fitted models as a named list of `dist_spec` objects. Works with `estimate_infections()`, `estimate_secondary()`, and `estimate_truncation()`.
+- Added `get_delays()` generic function to extract delay distributions from fitted models as a named list of `dist_spec` objects. Works with `estimate_infections()`, `estimate_secondary()`, and `estimate_truncation()`. Also added `get_delay(object, type)` as a convenience function to extract a single delay by name (e.g., `get_delay(fit, "truncation")`).
 - Added a `style` argument to `plot_estimates()` and related plot methods to display credible intervals as error bars (`"linerange"`) instead of the default ribbons (`"ribbon"`). Error bars can be clearer for weekly or aggregated data.
 - **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 - **Internal**: Stan model parameter names have been renamed for clarity (`dispersion` → `reporting_overdispersion`, `frac_obs` → `fraction_observed`). This simplifies internal code by removing post-hoc parameter renaming. This may affect users who access Stan models directly or use custom priors with the old parameter names.
