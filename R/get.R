@@ -648,12 +648,6 @@ get_delays.epinowfit <- function(object, ...) {
   delays
 }
 
-#' @rdname get_delays
-#' @export
-get_delays.estimate_truncation <- function(object, ...) {
-  list(truncation = reconstruct_delay(object, "truncation"))
-}
-
 #' Get a single delay distribution from a fitted model
 #'
 #' @description `r lifecycle::badge("experimental")`

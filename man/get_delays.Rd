@@ -3,14 +3,11 @@
 \name{get_delays}
 \alias{get_delays}
 \alias{get_delays.epinowfit}
-\alias{get_delays.estimate_truncation}
 \title{Get delay distributions from a fitted model}
 \usage{
 get_delays(object, ...)
 
 \method{get_delays}{epinowfit}(object, ...)
-
-\method{get_delays}{estimate_truncation}(object, ...)
 }
 \arguments{
 \item{object}{A fitted model object (e.g., from \code{estimate_infections()},
