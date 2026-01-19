@@ -123,7 +123,7 @@ prepare_truncation_obs <- function(data, trunc_max) {
 #'
 #' S3 methods available: [summary.estimate_truncation()],
 #' [plot.estimate_truncation()], [get_samples.estimate_truncation()],
-#' [get_delays.estimate_truncation()], [get_predictions.estimate_truncation()].
+#' [get_delays()], [get_predictions.estimate_truncation()].
 #'
 #' @export
 #' @inheritParams calc_CrIs

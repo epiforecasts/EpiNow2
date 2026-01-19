@@ -75,7 +75,7 @@ be compared to the observed data.
 
 S3 methods available: \code{\link[=summary.estimate_truncation]{summary.estimate_truncation()}},
 \code{\link[=plot.estimate_truncation]{plot.estimate_truncation()}}, \code{\link[=get_samples.estimate_truncation]{get_samples.estimate_truncation()}},
-\code{\link[=get_delays.estimate_truncation]{get_delays.estimate_truncation()}}, \code{\link[=get_predictions.estimate_truncation]{get_predictions.estimate_truncation()}}.
+\code{\link[=get_delays]{get_delays()}}, \code{\link[=get_predictions.estimate_truncation]{get_predictions.estimate_truncation()}}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
