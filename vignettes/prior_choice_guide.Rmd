@@ -460,7 +460,7 @@ truncation_estimate <- estimate_truncation(
 )
 
 # Then use in estimate_infections
-trunc_opts(truncation_estimate$dist)
+trunc_opts(get_delays(truncation_estimate)$truncation)
 ```
 
 ## Model choice in estimate_infections()

@@ -327,3 +327,52 @@ test_that("extract_parameter_samples is deprecated", {
 
   expect_equal(old_quiet, new_output)
 })
+
+test_that("get_delays returns correct delays from estimate_infections", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  # Test getting all delays as named list
+  delays <- get_delays(out)
+  expect_type(delays, "list")
+  expect_true(length(delays) >= 1)
+  expect_true("generation_time" %in% names(delays))
+
+  # All elements should be dist_spec
+  for (nm in names(delays)) {
+    expect_s3_class(delays[[nm]], "dist_spec")
+  }
+})
+
+test_that("get_delays returns correct fixed parameter values", {
+  # Use fixed delays (no uncertainty) so we can verify exact values
+  # PMF must start with 0 (generation time at day 0 is not allowed)
+  fixed_gt <- NonParametric(pmf = c(0, 0.4, 0.35, 0.25))
+  fixed_delay <- LogNormal(meanlog = 1.5, sdlog = 0.5, max = 10)
+
+  out <- suppressWarnings(estimate_infections(
+    reported_cases,
+    generation_time = gt_opts(fixed_gt),
+    delays = delay_opts(fixed_delay),
+    stan = stan_opts(chains = 2, warmup = 25, samples = 25),
+    verbose = FALSE
+  ))
+
+  delays <- get_delays(out)
+
+  # Check generation time is returned correctly
+  expect_true("generation_time" %in% names(delays))
+  gt_returned <- delays$generation_time
+  expect_s3_class(gt_returned, "dist_spec")
+  # For nonparametric, the [[1]] element is the PMF (as vector, drop dim attr)
+  expect_equal(as.vector(gt_returned[[1]]), c(0, 0.4, 0.35, 0.25))
+
+  # Check reporting delay is returned correctly
+  expect_true("reporting" %in% names(delays))
+  delay_returned <- delays$reporting
+  expect_s3_class(delay_returned, "dist_spec")
+  # Delays are discretised when passed to Stan, so returned as nonparametric
+  # Check that PMF is approximately correct (discretised LogNormal)
+  expected_pmf <- as.vector(discretise(fixed_delay)[[1]])
+  expect_equal(as.vector(delay_returned[[1]]), expected_pmf)
+})

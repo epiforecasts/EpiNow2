@@ -59,15 +59,23 @@ threshold then the zero is replaced using \code{fill}.}
 \item{obs}{Deprecated; use \code{data} instead.}
 }
 \value{
-A list containing: the summary parameters of the truncation
-distribution (\code{dist}), which could be passed to the \code{truncation} argument
-of \code{\link[=epinow]{epinow()}}, \code{\link[=regional_epinow]{regional_epinow()}}, and \code{\link[=estimate_infections]{estimate_infections()}}, the
-estimated CMF of the truncation distribution (\code{cmf}, can be used to
-adjusted new data), a \verb{<data.frame>} containing the observed truncated
-data, latest observed data and the adjusted for
-truncation observations (\code{obs}), a \verb{<data.frame>} containing the last
-observed data (\code{last_obs}, useful for plotting and validation), the data
-used for fitting (\code{data}) and the fit object (\code{fit}).
+An \verb{<estimate_truncation>} object containing:
+\itemize{
+\item \code{observations}: The input data (list of \verb{<data.frame>}s).
+\item \code{args}: A list of arguments used for fitting (stan data).
+\item \code{fit}: The stan fit object.
+}
+
+Use \code{\link[=get_delays]{get_delays()}} to extract the estimated truncation distribution as a
+\verb{<dist_spec>}, which can be passed to the \code{truncation} argument of
+\code{\link[=epinow]{epinow()}}, \code{\link[=regional_epinow]{regional_epinow()}}, and \code{\link[=estimate_infections]{estimate_infections()}}.
+
+Use \code{\link[=get_predictions]{get_predictions()}} to extract truncation-adjusted estimates that can
+be compared to the observed data.
+
+S3 methods available: \code{\link[=summary.estimate_truncation]{summary.estimate_truncation()}},
+\code{\link[=plot.estimate_truncation]{plot.estimate_truncation()}}, \code{\link[=get_samples.estimate_truncation]{get_samples.estimate_truncation()}},
+\code{\link[=get_delays]{get_delays()}}, \code{\link[=get_predictions.estimate_truncation]{get_predictions.estimate_truncation()}}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -119,12 +127,10 @@ est <- estimate_truncation(example_truncated,
   chains = 2, iter = 2000
 )
 
-# summary of the distribution
-est$dist
-# summary of the estimated truncation cmf (can be applied to new data)
-print(est$cmf)
-# observations linked to truncation adjusted estimates
-print(est$obs)
+# extract the estimated truncation distribution
+get_delay(est, "truncation")
+# summarise the truncation distribution parameters
+summary(est)
 # validation plot of observations vs estimates
 plot(est)
 
@@ -135,7 +141,7 @@ plot(est)
 out <- epinow(
   generation_time = generation_time_opts(example_generation_time),
   example_truncated[[5]],
-  truncation = trunc_opts(est$dist)
+  truncation = trunc_opts(get_delay(est, "truncation"))
 )
 plot(out)
 options(old_opts)

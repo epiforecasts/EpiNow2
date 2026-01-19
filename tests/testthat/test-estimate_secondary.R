@@ -101,22 +101,21 @@ test_that("forecast_secondary can return values from simulated data and plot
 test_that("estimate_secondary recovers scaling parameter from incidence data", {
   # Basic parameter recovery check using pre-computed fit
   # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
-  params <- c(
-    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-    "scaling" = "params[1]"
-  )
+  samples <- get_samples(default_inc)
+  delay_samples <- samples[variable == "delay_params"]
+  param_samples <- samples[variable == "params"]
 
-  inc_posterior <- get_samples(default_inc)[variable %in% params]
-  inc_summary <- inc_posterior[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
+  # Check meanlog (reporting[1]) is reasonably recovered (1.8 true value)
+  meanlog_mean <- delay_samples[parameter == "reporting[1]", mean(value)]
+  expect_equal(meanlog_mean, 1.8, tolerance = 0.2)
 
-  # Check scaling parameter is reasonably recovered (0.4 true value)
-  expect_equal(
-    inc_summary$mean, c(1.8, 0.5, 0.4),
-    tolerance = 0.15
-  )
+  # Check sdlog (reporting[2]) is reasonably recovered (0.5 true value)
+  sdlog_mean <- delay_samples[parameter == "reporting[2]", mean(value)]
+  expect_equal(sdlog_mean, 0.5, tolerance = 0.15)
+
+  # Check scaling (fraction_observed) is reasonably recovered (0.4 true value)
+  scaling_mean <- param_samples[parameter == "fraction_observed", mean(value)]
+  expect_equal(scaling_mean, 0.4, tolerance = 0.05)
 })
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false) -
@@ -389,4 +388,18 @@ test_that("estimate_secondary works with zero_threshold set", {
   )
   expect_s3_class(out, "estimate_secondary")
   expect_named(out, c("fit", "args", "observations"))
+})
+
+test_that("get_delays returns correct delays from estimate_secondary", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  # Test getting all delays as named list
+  delays <- get_delays(out)
+  expect_type(delays, "list")
+
+  # All elements should be dist_spec (if any exist)
+  for (nm in names(delays)) {
+    expect_s3_class(delays[[nm]], "dist_spec")
+  }
 })
