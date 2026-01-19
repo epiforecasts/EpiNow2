@@ -58,7 +58,7 @@ test_that("prepare_truncation_obs handles datasets with different start dates", 
   expect_equal(result$obs_sets, 2)
 })
 
-test_that("merge_predictions_obs correctly merges predictions with observations", {
+test_that("merge_truncation_predictions_obs correctly merges predictions with observations", {
   # Create simple test observations: 2 snapshots
   obs1 <- data.frame(
     date = as.Date("2020-01-01") + 0:2,
@@ -80,7 +80,7 @@ test_that("merge_predictions_obs correctly merges predictions with observations"
     median = 1:6
   )
 
-  result <- EpiNow2:::merge_predictions_obs(observations, predictions)
+  result <- EpiNow2:::merge_truncation_predictions_obs(observations, predictions)
 
   # Check structure
   expect_s3_class(result, "data.table")
