@@ -793,6 +793,14 @@ summary.epinow <- function(object,
                            target_date = NULL, params = NULL,
                            CrIs = c(0.2, 0.5, 0.9),
                            ...) {
+  # Check for failed runs
+  if (!is.null(object$error)) {
+    cli_abort(c(
+      "Cannot summarise a failed epinow run.",
+      "i" = "The run failed with error: {object$error}"
+    ))
+  }
+
   # Handle deprecated output argument
   if (!is.null(output)) {
     lifecycle::deprecate_warn(

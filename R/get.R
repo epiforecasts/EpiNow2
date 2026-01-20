@@ -267,6 +267,20 @@ get_samples.estimate_infections <- function(object, ...) {
 
 #' @rdname get_samples
 #' @export
+get_samples.epinow <- function(object, ...) {
+  # If the epinow run failed (e.g., timeout), throw an informative error
+  if (!is.null(object$error)) {
+    cli_abort(c(
+      "Cannot extract samples from a failed epinow run.",
+      "i" = "The run failed with error: {object$error}"
+    ))
+  }
+  # Otherwise delegate to the underlying estimate_infections method
+  get_samples.estimate_infections(object, ...)
+}
+
+#' @rdname get_samples
+#' @export
 get_samples.forecast_infections <- function(object, ...) {
   data.table::copy(object$samples)
 }

@@ -476,7 +476,7 @@ process_regions <- function(regional_out, regions) {
     )
   }
   sucessful_regional_out <- purrr::keep(
-    purrr::compact(regional_out), ~ is.finite(.$timing)
+    purrr::compact(regional_out), ~ is.null(.$error) && is.finite(.$timing)
   )
   list(all = regional_out, successful = sucessful_regional_out)
 }

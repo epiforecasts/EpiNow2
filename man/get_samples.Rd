@@ -3,6 +3,7 @@
 \name{get_samples}
 \alias{get_samples}
 \alias{get_samples.estimate_infections}
+\alias{get_samples.epinow}
 \alias{get_samples.forecast_infections}
 \alias{get_samples.estimate_secondary}
 \alias{get_samples.forecast_secondary}
@@ -12,6 +13,8 @@
 get_samples(object, ...)
 
 \method{get_samples}{estimate_infections}(object, ...)
+
+\method{get_samples}{epinow}(object, ...)
 
 \method{get_samples}{forecast_infections}(object, ...)
 
