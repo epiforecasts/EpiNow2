@@ -45,20 +45,19 @@ test_that("regional_epinow produces expected output when run with default settin
     c("fit", "args", "observations", "timing")
   )
   expect_s3_class(out$regional$realland$timing, "difftime")
-  lifecycle::expect_deprecated(
-    df_non_zero(out$regional$realland$estimates$samples)
-  )
-  lifecycle::expect_deprecated(
-    df_non_zero(out$regional$realland$estimates$summarised)
-  )
-  lifecycle::expect_deprecated(
+  # Test deprecated accessors still work (warnings suppressed as they may have
+
+  # already fired during regional_epinow execution)
+  suppressWarnings(df_non_zero(out$regional$realland$estimates$samples))
+  suppressWarnings(df_non_zero(out$regional$realland$estimates$summarised))
+  suppressWarnings(
     df_non_zero(out$regional$realland$estimated_reported_cases$samples)
   )
-  lifecycle::expect_deprecated(
+  suppressWarnings(
     df_non_zero(out$regional$realland$estimated_reported_cases$summarised)
   )
-  lifecycle::expect_deprecated(df_non_zero(out$regional$realland$summary))
-  lifecycle::expect_deprecated(
+  suppressWarnings(df_non_zero(out$regional$realland$summary))
+  suppressWarnings(
     expect_equal(
       names(out$regional$realland$plots),
       c("summary", "infections", "reports", "R", "growth_rate")
@@ -132,20 +131,18 @@ test_that("regional_epinow produces expected output when run with region specifi
     c("fit", "args", "observations", "timing")
   )
   expect_s3_class(out$regional$realland$timing, "difftime")
-  lifecycle::expect_deprecated(
-    df_non_zero(out$regional$realland$estimates$samples)
-  )
-  lifecycle::expect_deprecated(
-    df_non_zero(out$regional$realland$estimates$summarised)
-  )
-  lifecycle::expect_deprecated(
+  # Test deprecated accessors still work (warnings suppressed as they may have
+  # already fired during regional_epinow execution)
+  suppressWarnings(df_non_zero(out$regional$realland$estimates$samples))
+  suppressWarnings(df_non_zero(out$regional$realland$estimates$summarised))
+  suppressWarnings(
     df_non_zero(out$regional$realland$estimated_reported_cases$samples)
   )
-  lifecycle::expect_deprecated(
+  suppressWarnings(
     df_non_zero(out$regional$realland$estimated_reported_cases$summarised)
   )
-  lifecycle::expect_deprecated(df_non_zero(out$regional$realland$summary))
-  lifecycle::expect_deprecated(
+  suppressWarnings(df_non_zero(out$regional$realland$summary))
+  suppressWarnings(
     expect_equal(
       names(out$regional$realland$plots),
       c("summary", "infections", "reports", "R", "growth_rate")

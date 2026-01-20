@@ -280,17 +280,34 @@ test_that("estimate_truncation recovers true truncation parameters", {
     verbose = FALSE, chains = 4, iter = 2000, warmup = 500
   )
 
-  trunc_dist <- get_delays(est)$truncation
+  # Helper to check if true value falls within 95% credible interval
+  check_ci_coverage <- function(samples, true_value) {
+    ci <- quantile(samples, probs = c(0.025, 0.975))
+    true_value >= ci[1] && true_value <= ci[2]
+  }
 
-  # Extract posterior mean estimates
-  meanlog_est <- trunc_dist$parameters$meanlog$parameters$mean
-  sdlog_est <- trunc_dist$parameters$sdlog$parameters$mean
+  # Get posterior samples
+  samples <- get_samples(est)
 
-  # Check parameter recovery with reasonable tolerance
-  # True values: meanlog = 0.9, sdlog = 0.6
+  # Check meanlog recovery (true value = 0.9)
+  meanlog_samples <- samples[parameter == "truncation[1]", value]
+  expect_true(
+    check_ci_coverage(meanlog_samples, 0.9),
+    info = sprintf(
+      "meanlog: true=0.9 not in 95%% CI [%.2f, %.2f]",
+      quantile(meanlog_samples, 0.025), quantile(meanlog_samples, 0.975)
+    )
+  )
 
-  expect_equal(meanlog_est, 0.9, tolerance = 0.5)
-  expect_equal(sdlog_est, 0.6, tolerance = 0.3)
+  # Check sdlog recovery (true value = 0.6)
+  sdlog_samples <- samples[parameter == "truncation[2]", value]
+  expect_true(
+    check_ci_coverage(sdlog_samples, 0.6),
+    info = sprintf(
+      "sdlog: true=0.6 not in 95%% CI [%.2f, %.2f]",
+      quantile(sdlog_samples, 0.025), quantile(sdlog_samples, 0.975)
+    )
+  )
 })
 
 options(old_opts)

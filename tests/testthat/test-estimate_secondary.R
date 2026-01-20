@@ -98,24 +98,39 @@ test_that("forecast_secondary can return values from simulated data and plot
   expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
 })
 
-test_that("estimate_secondary recovers scaling parameter from incidence data", {
-  # Basic parameter recovery check using pre-computed fit
-  # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
+test_that("estimate_secondary produces valid posterior samples", {
+  # Check that get_samples returns valid data structure with expected parameters
+  # Parameter recovery is tested separately in integration tests with longer chains
   samples <- get_samples(default_inc)
+
+  # Check samples structure
+  expect_s3_class(samples, "data.table")
+  expect_true(nrow(samples) > 0)
+  expect_true(all(c("variable", "parameter", "value", "sample") %in% names(samples)))
+
+  # Check that delay parameters are present
   delay_samples <- samples[variable == "delay_params"]
+  expect_true(nrow(delay_samples) > 0)
+  expect_true("reporting[1]" %in% delay_samples$parameter)  # meanlog
+  expect_true("reporting[2]" %in% delay_samples$parameter)  # sdlog
+
+  # Check that scaling parameter is present
   param_samples <- samples[variable == "params"]
+  expect_true(nrow(param_samples) > 0)
+  expect_true("fraction_observed" %in% param_samples$parameter)
 
-  # Check meanlog (reporting[1]) is reasonably recovered (1.8 true value)
-  meanlog_mean <- delay_samples[parameter == "reporting[1]", mean(value)]
-  expect_equal(meanlog_mean, 1.8, tolerance = 0.2)
+  # Check that parameter values are in valid ranges
+  meanlog_samples <- delay_samples[parameter == "reporting[1]", value]
+  expect_true(all(is.finite(meanlog_samples)))
+  expect_true(all(meanlog_samples > 0))  # meanlog should be positive for delay
 
-  # Check sdlog (reporting[2]) is reasonably recovered (0.5 true value)
-  sdlog_mean <- delay_samples[parameter == "reporting[2]", mean(value)]
-  expect_equal(sdlog_mean, 0.5, tolerance = 0.15)
+  sdlog_samples <- delay_samples[parameter == "reporting[2]", value]
+  expect_true(all(is.finite(sdlog_samples)))
+  expect_true(all(sdlog_samples > 0))  # sdlog must be positive
 
-  # Check scaling (fraction_observed) is reasonably recovered (0.4 true value)
-  scaling_mean <- param_samples[parameter == "fraction_observed", mean(value)]
-  expect_equal(scaling_mean, 0.4, tolerance = 0.05)
+  scaling_samples <- param_samples[parameter == "fraction_observed", value]
+  expect_true(all(is.finite(scaling_samples)))
+  expect_true(all(scaling_samples >= 0 & scaling_samples <= 1))  # scaling in [0,1]
 })
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false) -
@@ -214,6 +229,12 @@ test_that("estimate_secondary can recover simulated parameters", {
     verbose = FALSE
   )
 
+  # Helper to check if true value falls within 95% credible interval
+  check_ci_coverage <- function(samples, true_value) {
+    ci <- quantile(samples, probs = c(0.025, 0.975))
+    true_value >= ci[1] && true_value <= ci[2]
+  }
+
   # extract posterior variables of interest
   params <- c(
     "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
@@ -223,32 +244,33 @@ test_that("estimate_secondary can recover simulated parameters", {
   inc_posterior <- get_samples(inc)[variable %in% params]
   prev_posterior <- get_samples(prev)[variable %in% params]
 
-  # Calculate summary statistics from raw samples
-  inc_summary <- inc_posterior[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
-  prev_summary <- prev_posterior[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
+  # Incidence model: true values meanlog=1.8, sdlog=0.5, scaling=0.4
+  inc_true <- c(1.8, 0.5, 0.4)
+  for (i in seq_along(params)) {
+    samples <- inc_posterior[variable == params[i], value]
+    expect_true(
+      check_ci_coverage(samples, inc_true[i]),
+      info = sprintf(
+        "inc %s: true=%.1f not in 95%% CI [%.2f, %.2f]",
+        names(params)[i], inc_true[i],
+        quantile(samples, 0.025), quantile(samples, 0.975)
+      )
+    )
+  }
 
-  expect_equal(
-    inc_summary$mean, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-  expect_equal(
-    inc_summary$median, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-  expect_equal(
-    prev_summary$mean, c(1.6, 0.8, 0.3),
-    tolerance = 0.2
-  )
-  expect_equal(
-    prev_summary$median, c(1.6, 0.8, 0.3),
-    tolerance = 0.2
-  )
+  # Prevalence model: true values meanlog=1.6, sdlog=0.8, scaling=0.3
+  prev_true <- c(1.6, 0.8, 0.3)
+  for (i in seq_along(params)) {
+    samples <- prev_posterior[variable == params[i], value]
+    expect_true(
+      check_ci_coverage(samples, prev_true[i]),
+      info = sprintf(
+        "prev %s: true=%.1f not in 95%% CI [%.2f, %.2f]",
+        names(params)[i], prev_true[i],
+        quantile(samples, 0.025), quantile(samples, 0.975)
+      )
+    )
+  }
 })
 
 test_that("estimate_secondary can recover simulated parameters with the
@@ -256,6 +278,12 @@ test_that("estimate_secondary can recover simulated parameters with the
   skip_integration()
   skip_on_os("windows")
   inc_cases <- setup_incidence_data()
+
+  # Helper to check if true value falls within 95% credible interval
+  check_ci_coverage <- function(samples, true_value) {
+    ci <- quantile(samples, probs = c(0.025, 0.975))
+    true_value >= ci[1] && true_value <= ci[2]
+  }
 
   # extract posterior variables of interest
   params <- c(
@@ -271,20 +299,20 @@ test_that("estimate_secondary can recover simulated parameters with the
   )))
   inc_posterior_cmdstanr <- get_samples(inc_cmdstanr)[variable %in% params]
 
-  # Calculate summary statistics from raw samples
-  inc_summary_cmdstanr <- inc_posterior_cmdstanr[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
-
-  expect_equal(
-    inc_summary_cmdstanr$mean, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-  expect_equal(
-    inc_summary_cmdstanr$median, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
+  # Check parameter recovery using credible intervals
+  # True values: meanlog=1.8, sdlog=0.5, scaling=0.4
+  inc_true <- c(1.8, 0.5, 0.4)
+  for (i in seq_along(params)) {
+    samples <- inc_posterior_cmdstanr[variable == params[i], value]
+    expect_true(
+      check_ci_coverage(samples, inc_true[i]),
+      info = sprintf(
+        "cmdstanr %s: true=%.1f not in 95%% CI [%.2f, %.2f]",
+        names(params)[i], inc_true[i],
+        quantile(samples, 0.025), quantile(samples, 0.975)
+      )
+    )
+  }
 })
 
 test_that("forecast_secondary works with fixed delays", {
