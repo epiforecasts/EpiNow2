@@ -2,8 +2,8 @@ library(EpiNow2)
 
 # Expose Stan functions to use discretised_pmf directly
 expose_stan_fns(
- "pmfs.stan",
-  target_dir = system.file("stan/functions", package = "EpiNow2")
+  "pmfs.stan",
+  target_dir = system.file("stan", "functions", package = "EpiNow2")
 )
 
 #' Apply truncation to a data set
@@ -21,7 +21,9 @@ apply_truncation <- function(index, data, dist, meanlog = NULL, sdlog = NULL) {
 
   # Only lognormal truncation is supported
   if (!identical(dist$distribution, "lognormal")) {
-    stop("apply_truncation currently supports lognormal truncation only.")
+    cli::cli_abort(
+      "apply_truncation currently supports lognormal truncation only."
+    )
   }
 
   # Use fixed parameters if provided, otherwise use prior means
@@ -33,7 +35,9 @@ apply_truncation <- function(index, data, dist, meanlog = NULL, sdlog = NULL) {
   }
 
   # Use Stan discretised_pmf directly (dist=0 for lognormal)
+  # nolint start: object_usage_linter
   pmf <- discretised_pmf(c(meanlog, sdlog), max_d + 1L, 0L)
+  # nolint end
   cmf <- cumsum(pmf)
   cmf <- rev(cmf)[-1]
 
