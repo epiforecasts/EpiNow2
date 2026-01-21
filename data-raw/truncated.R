@@ -19,6 +19,11 @@ expose_stan_fns(
 apply_truncation <- function(index, data, dist, meanlog = NULL, sdlog = NULL) {
   max_d <- max(dist)
 
+  # Only lognormal truncation is supported
+  if (!identical(dist$distribution, "lognormal")) {
+    stop("apply_truncation currently supports lognormal truncation only.")
+  }
+
   # Use fixed parameters if provided, otherwise use prior means
   if (is.null(meanlog)) {
     meanlog <- get_parameters(get_parameters(dist)$meanlog)$mean
