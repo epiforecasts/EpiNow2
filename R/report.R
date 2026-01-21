@@ -28,10 +28,10 @@ report_summary <- function(summarised_estimates,
   CrIs <- extract_CrIs(summarised_estimates)
   max_CrI <- max(CrIs)
 
-  # extract values of interest
+  # extract values of interest (exclude non-numeric columns)
   summarised_estimates <- summarised_estimates[, setdiff(
     colnames(summarised_estimates),
-    c("strat", "type", "date")
+    c("strat", "type", "date", "parameter")
   ),
   with = FALSE
   ]
