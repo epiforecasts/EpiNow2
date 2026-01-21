@@ -381,3 +381,61 @@ test_that("get_delays returns correct delays from estimate_secondary", {
     expect_s3_class(delays[[nm]], "dist_spec")
   }
 })
+
+test_that("[[ accessor handles deprecated elements", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  # Test deprecation warning for [[
+  expect_deprecated(out[["predictions"]])
+  expect_deprecated(out[["posterior"]])
+  expect_deprecated(out[["data"]])
+
+  # Test non-deprecated elements work without warning
+  expect_no_warning(out[["fit"]])
+  expect_no_warning(out[["args"]])
+  expect_no_warning(out[["observations"]])
+})
+
+test_that("$ accessor works for non-deprecated elements", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  # Test direct access to non-deprecated elements
+  expect_no_warning(out$fit)
+  expect_no_warning(out$args)
+  expect_no_warning(out$observations)
+
+  # Verify the elements are correct
+  expect_s4_class(out$fit, "stanfit")
+  expect_type(out$args, "list")
+  expect_s3_class(out$observations, "data.frame")
+})
+
+test_that("summary returns individual parameter names", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  summ <- summary(out, type = "parameters")
+
+  # Should have a parameter column with named parameters
+  expect_true("parameter" %in% names(summ))
+
+  # Should include specific parameter names
+  expect_true("fraction_observed" %in% summ$parameter)
+  expect_true(any(grepl("reporting\\[", summ$parameter)))
+})
+
+test_that("summary compact type returns key parameters", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  summ <- summary(out, type = "compact")
+
+  # Should have a parameter column
+  expect_true("parameter" %in% names(summ))
+
+  # Compact should include fraction_observed and reporting parameters
+  expect_true("fraction_observed" %in% summ$parameter)
+  expect_true(any(grepl("reporting\\[", summ$parameter)))
+})
