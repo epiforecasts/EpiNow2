@@ -53,6 +53,11 @@ The function interface remains unchanged.
 - Added a `style` argument to `plot_estimates()` and related plot methods to display credible intervals as error bars (`"linerange"`) instead of the default ribbons (`"ribbon"`). Error bars can be clearer for weekly or aggregated data.
 - **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 - **Internal**: Stan model parameter names have been renamed for clarity (`dispersion` → `reporting_overdispersion`, `frac_obs` → `fraction_observed`). This simplifies internal code by removing post-hoc parameter renaming. This may affect users who access Stan models directly or use custom priors with the old parameter names.
+- S3 class consistency improvements:
+  - Added `$` and `[[` methods for `estimate_infections` with deprecation handling for `$samples` (use `get_samples()`) and `$summarised` (use `summary()`).
+  - Added `[[` method for `estimate_secondary` for consistent element access.
+  - Internal accessor implementation standardised to use `.subset2()`.
+  - `summary()` methods now include the `parameter` column for parameter-level grouping, allowing individual parameter names (e.g., `fraction_observed`) to be shown instead of generic array names (e.g., `params`).
 
 ## Model changes
 
