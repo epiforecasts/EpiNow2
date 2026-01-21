@@ -214,41 +214,29 @@ test_that("estimate_secondary can recover simulated parameters", {
     verbose = FALSE
   )
 
-  # extract posterior variables of interest
-  params <- c(
-    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-    "scaling" = "params[1]"
-  )
+  # Extract posterior samples
+  inc_samples <- get_samples(inc)
+  prev_samples <- get_samples(prev)
 
-  inc_posterior <- get_samples(inc)[variable %in% params]
-  prev_posterior <- get_samples(prev)[variable %in% params]
+  # Check incidence model parameter recovery
+  # True values: meanlog = 1.8, sdlog = 0.5, scaling = 0.4
+  inc_meanlog <- mean(inc_samples[parameter == "reporting[1]", value])
+  inc_sdlog <- mean(inc_samples[parameter == "reporting[2]", value])
+  inc_scaling <- mean(inc_samples[parameter == "fraction_observed", value])
 
-  # Calculate summary statistics from raw samples
-  inc_summary <- inc_posterior[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
-  prev_summary <- prev_posterior[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
+  expect_equal(inc_meanlog, 1.8, tolerance = 0.1)
+  expect_equal(inc_sdlog, 0.5, tolerance = 0.1)
+  expect_equal(inc_scaling, 0.4, tolerance = 0.1)
 
-  expect_equal(
-    inc_summary$mean, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-  expect_equal(
-    inc_summary$median, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-  expect_equal(
-    prev_summary$mean, c(1.6, 0.8, 0.3),
-    tolerance = 0.2
-  )
-  expect_equal(
-    prev_summary$median, c(1.6, 0.8, 0.3),
-    tolerance = 0.2
-  )
+  # Check prevalence model parameter recovery
+  # True values: meanlog = 1.6, sdlog = 0.8, scaling = 0.3
+  prev_meanlog <- mean(prev_samples[parameter == "reporting[1]", value])
+  prev_sdlog <- mean(prev_samples[parameter == "reporting[2]", value])
+  prev_scaling <- mean(prev_samples[parameter == "fraction_observed", value])
+
+  expect_equal(prev_meanlog, 1.6, tolerance = 0.2)
+  expect_equal(prev_sdlog, 0.8, tolerance = 0.2)
+  expect_equal(prev_scaling, 0.3, tolerance = 0.2)
 })
 
 test_that("estimate_secondary can recover simulated parameters with the
@@ -257,34 +245,24 @@ test_that("estimate_secondary can recover simulated parameters with the
   skip_on_os("windows")
   inc_cases <- setup_incidence_data()
 
-  # extract posterior variables of interest
-  params <- c(
-    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-    "scaling" = "params[1]"
-  )
-
   output <- capture.output(suppressMessages(suppressWarnings(
     inc_cmdstanr <- estimate_secondary(inc_cases[1:60],
       obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
       verbose = FALSE, stan = stan_opts(backend = "cmdstanr")
     )
   )))
-  inc_posterior_cmdstanr <- get_samples(inc_cmdstanr)[variable %in% params]
 
-  # Calculate summary statistics from raw samples
-  inc_summary_cmdstanr <- inc_posterior_cmdstanr[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
+  # Extract posterior samples and check parameter recovery
+  # True values: meanlog = 1.8, sdlog = 0.5, scaling = 0.4
+  inc_samples <- get_samples(inc_cmdstanr)
 
-  expect_equal(
-    inc_summary_cmdstanr$mean, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-  expect_equal(
-    inc_summary_cmdstanr$median, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
+  inc_meanlog <- mean(inc_samples[parameter == "reporting[1]", value])
+  inc_sdlog <- mean(inc_samples[parameter == "reporting[2]", value])
+  inc_scaling <- mean(inc_samples[parameter == "fraction_observed", value])
+
+  expect_equal(inc_meanlog, 1.8, tolerance = 0.1)
+  expect_equal(inc_sdlog, 0.5, tolerance = 0.1)
+  expect_equal(inc_scaling, 0.4, tolerance = 0.1)
 })
 
 test_that("forecast_secondary works with fixed delays", {

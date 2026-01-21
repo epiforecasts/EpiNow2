@@ -58,7 +58,7 @@ test_that("prepare_truncation_obs handles datasets with different start dates", 
   expect_equal(result$obs_sets, 2)
 })
 
-test_that("merge_truncation_predictions_obs correctly merges predictions with observations", {
+test_that("merge_trunc_pred_obs correctly merges predictions with observations", {
   # Create simple test observations: 2 snapshots
   obs1 <- data.frame(
     date = as.Date("2020-01-01") + 0:2,
@@ -80,7 +80,7 @@ test_that("merge_truncation_predictions_obs correctly merges predictions with ob
     median = 1:6
   )
 
-  result <- EpiNow2:::merge_truncation_predictions_obs(observations, predictions)
+  result <- EpiNow2:::merge_trunc_pred_obs(observations, predictions)
 
   # Check structure
   expect_s3_class(result, "data.table")
@@ -261,7 +261,7 @@ test_that("estimate_truncation works with zero_threshold set", {
   skip_on_os("windows")
   # fit model to a modified version of example_data with zero leading cases
   # but with filter_leading_zeros = TRUE
-  modified_data <- example_truncated
+  modified_data <- data.table::copy(example_truncated)
   modified_data <- purrr::map(modified_data, function(x) x[sample(1:10, 6), confirm := 0])
   modified_data <- lapply(modified_data, apply_zero_threshold, threshold = 1)
   out <- estimate_truncation(modified_data,
@@ -274,23 +274,22 @@ test_that("estimate_truncation works with zero_threshold set", {
 test_that("estimate_truncation recovers true truncation parameters", {
   skip_integration()
   # example_truncated was generated with:
-  # meanlog = Normal(0.9, 0.1), sdlog = Normal(0.6, 0.1), max = 10
+  # meanlog = 0.9, sdlog = 0.6, max = 10
   # Use longer chains for reliable parameter recovery
   est <- estimate_truncation(example_truncated,
     verbose = FALSE, chains = 4, iter = 2000, warmup = 500
   )
 
-  trunc_dist <- get_delays(est)$truncation
+  # Get posterior samples
+  samples <- get_samples(est)
 
-  # Extract posterior mean estimates
-  meanlog_est <- trunc_dist$parameters$meanlog$parameters$mean
-  sdlog_est <- trunc_dist$parameters$sdlog$parameters$mean
+  # Check meanlog recovery (true value = 0.9)
+  meanlog_mean <- mean(samples[parameter == "truncation[1]", value])
+  expect_equal(meanlog_mean, 0.9, tolerance = 0.05)
 
-  # Check parameter recovery with reasonable tolerance
-  # True values: meanlog = 0.9, sdlog = 0.6
-
-  expect_equal(meanlog_est, 0.9, tolerance = 0.5)
-  expect_equal(sdlog_est, 0.6, tolerance = 0.3)
+  # Check sdlog recovery (true value = 0.6)
+  sdlog_mean <- mean(samples[parameter == "truncation[2]", value])
+  expect_equal(sdlog_mean, 0.6, tolerance = 0.05)
 })
 
 options(old_opts)

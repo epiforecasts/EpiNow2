@@ -68,7 +68,7 @@ prepare_truncation_obs <- function(data, trunc_max) {
 #'   last_confirm (from latest snapshot), and prediction columns (median, CrIs).
 #'
 #' @keywords internal
-merge_truncation_predictions_obs <- function(observations, predictions) {
+merge_trunc_pred_obs <- function(observations, predictions) {
   # Get latest observations for reference
   last_obs <- data.table::as.data.table(observations[[length(observations)]])
   last_obs <- last_obs[, .(date, last_confirm = confirm)]
@@ -312,7 +312,7 @@ estimate_truncation <- function(data,
 #' @export
 plot.estimate_truncation <- function(x, ...) {
   preds <- get_predictions(x)
-  plot_data <- merge_truncation_predictions_obs(x$observations, preds)
+  plot_data <- merge_trunc_pred_obs(x$observations, preds)
 
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = date, y = last_confirm)) +
     ggplot2::geom_col(
@@ -361,7 +361,7 @@ plot.estimate_truncation <- function(x, ...) {
     # Reconstruct old format: predictions merged with observations
     preds <- get_predictions(x)
     obs <- .subset2(x, "observations")
-    return(merge_truncation_predictions_obs(obs, preds))
+    return(merge_trunc_pred_obs(obs, preds))
   }
 
   if (name == "data") {
