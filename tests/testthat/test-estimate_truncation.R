@@ -271,35 +271,43 @@ test_that("estimate_truncation works with zero_threshold set", {
   expect_s3_class(get_delays(out)$truncation, "dist_spec")
 })
 
-test_that("estimate_truncation produces valid posterior samples with longer chains", {
+test_that("estimate_truncation recovers true truncation parameters", {
   skip_integration()
-  # Test that longer MCMC chains produce valid, well-behaved samples.
-  # Note: Parameter recovery testing is deferred pending investigation of
-  # apparent parameterisation mismatch between data generation and estimation.
+  # example_truncated was generated with:
+  # meanlog = Normal(0.9, 0.1), sdlog = Normal(0.6, 0.1), max = 10
+  # Use longer chains for reliable parameter recovery
   est <- estimate_truncation(example_truncated,
     verbose = FALSE, chains = 4, iter = 2000, warmup = 500
   )
 
+  # Helper to check if true value falls within 95% credible interval
+  check_ci_coverage <- function(samples, true_value) {
+    ci <- quantile(samples, probs = c(0.025, 0.975))
+    true_value >= ci[1] && true_value <= ci[2]
+  }
+
   # Get posterior samples
   samples <- get_samples(est)
 
-  # Check samples structure
-  expect_s3_class(samples, "data.table")
-  expect_true(nrow(samples) > 0)
-  expect_true(all(c("variable", "parameter", "value", "sample") %in% names(samples)))
-
-  # Check that truncation parameters are present
-  expect_true("truncation[1]" %in% samples$parameter)  # meanlog
-  expect_true("truncation[2]" %in% samples$parameter)  # sdlog
-
-  # Check that parameter values are finite
+  # Check meanlog recovery (true value = 0.9)
   meanlog_samples <- samples[parameter == "truncation[1]", value]
-  sdlog_samples <- samples[parameter == "truncation[2]", value]
-  expect_true(all(is.finite(meanlog_samples)))
-  expect_true(all(is.finite(sdlog_samples)))
+  expect_true(
+    check_ci_coverage(meanlog_samples, 0.9),
+    info = sprintf(
+      "meanlog: true=0.9 not in 95%% CI [%.2f, %.2f]",
+      quantile(meanlog_samples, 0.025), quantile(meanlog_samples, 0.975)
+    )
+  )
 
-  # sdlog must be positive for lognormal distribution
-  expect_true(all(sdlog_samples > 0))
+  # Check sdlog recovery (true value = 0.6)
+  sdlog_samples <- samples[parameter == "truncation[2]", value]
+  expect_true(
+    check_ci_coverage(sdlog_samples, 0.6),
+    info = sprintf(
+      "sdlog: true=0.6 not in 95%% CI [%.2f, %.2f]",
+      quantile(sdlog_samples, 0.025), quantile(sdlog_samples, 0.975)
+    )
+  )
 })
 
 options(old_opts)

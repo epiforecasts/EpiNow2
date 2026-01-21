@@ -37,15 +37,13 @@ vector discretised_pmf(vector params, int n, int dist) {
   } else {
     reject("Unknown distribution function provided.");
   }
-  // discretise
+  // discretise: compute P(i-1 < X <= i) for i = 1, 2, ..., n
+  // This matches the R discretisation in utilities.R:discretised_lognormal_pmf
   if (n > 1) {
-    lpmf[1] = upper_lcdf[1];
-    lpmf[2] = upper_lcdf[2];
-    if (n > 2) {
-      lpmf[3:n] = log_diff_exp(upper_lcdf[3:n], upper_lcdf[1:(n - 2)]);
-    }
-    // normalize
-    lpmf = lpmf - log_sum_exp(upper_lcdf[(n - 1):n]);
+    lpmf[1] = upper_lcdf[1];  // P(0 < X <= 1) = P(X <= 1)
+    lpmf[2:n] = log_diff_exp(upper_lcdf[2:n], upper_lcdf[1:(n - 1)]);
+    // normalize by P(X <= n) to handle truncation at max
+    lpmf = lpmf - upper_lcdf[n];
   } else {
     lpmf[1] = 0;
   }

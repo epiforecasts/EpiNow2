@@ -236,10 +236,19 @@ test_that("estimate_secondary can recover simulated parameters", {
     true_value >= ci[1] && true_value <= ci[2]
   }
 
-  # Check scaling parameter recovery (delay parameters have known bias in
-  # short test runs so are not checked here - scaling is well-recovered)
+  # Check parameter recovery (meanlog has known bias so is not checked)
   inc_samples <- get_samples(inc)
   prev_samples <- get_samples(prev)
+
+  # Check incidence model sdlog (true = 0.5)
+  inc_sdlog <- inc_samples[parameter == "reporting[2]", value]
+  expect_true(
+    check_ci_coverage(inc_sdlog, 0.5),
+    info = sprintf(
+      "inc sdlog: true=0.5 not in 99%% CI [%.2f, %.2f]",
+      quantile(inc_sdlog, 0.005), quantile(inc_sdlog, 0.995)
+    )
+  )
 
   # Check incidence model scaling (true = 0.4)
   inc_scaling <- inc_samples[parameter == "fraction_observed", value]
@@ -248,6 +257,16 @@ test_that("estimate_secondary can recover simulated parameters", {
     info = sprintf(
       "inc scaling: true=0.4 not in 99%% CI [%.2f, %.2f]",
       quantile(inc_scaling, 0.005), quantile(inc_scaling, 0.995)
+    )
+  )
+
+  # Check prevalence model sdlog (true = 0.8)
+  prev_sdlog <- prev_samples[parameter == "reporting[2]", value]
+  expect_true(
+    check_ci_coverage(prev_sdlog, 0.8),
+    info = sprintf(
+      "prev sdlog: true=0.8 not in 99%% CI [%.2f, %.2f]",
+      quantile(prev_sdlog, 0.005), quantile(prev_sdlog, 0.995)
     )
   )
 
@@ -282,10 +301,18 @@ test_that("estimate_secondary can recover simulated parameters with the
     )
   )))
 
-  # Check scaling parameter recovery (delay parameters have known bias in
-
-  # short test runs so are not checked here - scaling is well-recovered)
+  # Check parameter recovery (meanlog has known bias so is not checked)
   inc_samples <- get_samples(inc_cmdstanr)
+
+  # Check sdlog (true = 0.5)
+  inc_sdlog <- inc_samples[parameter == "reporting[2]", value]
+  expect_true(
+    check_ci_coverage(inc_sdlog, 0.5),
+    info = sprintf(
+      "cmdstanr sdlog: true=0.5 not in 99%% CI [%.2f, %.2f]",
+      quantile(inc_sdlog, 0.005), quantile(inc_sdlog, 0.995)
+    )
+  )
 
   # Check scaling (true = 0.4)
   inc_scaling <- inc_samples[parameter == "fraction_observed", value]

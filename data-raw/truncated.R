@@ -1,38 +1,47 @@
 library(EpiNow2)
 
+#' Discretised lognormal PMF using CDF-based discretisation
+#'
+#' Computes P(i-1 < X <= i) for i = 1, 2, ..., max_d+1
+#' This matches the discretisation used in R/utilities.R
+#'
+#' @param meanlog Mean on log scale
+#' @param sdlog SD on log scale
+#' @param max_d Maximum delay
+#' @return Normalised PMF vector
+#' @keywords internal
+discretised_lognormal_pmf <- function(meanlog, sdlog, max_d) {
+  pmf <- plnorm(1:(max_d + 1), meanlog, sdlog) -
+    plnorm(0:max_d, meanlog, sdlog)
+  pmf / plnorm(max_d + 1, meanlog, sdlog)
+}
+
 #' Apply truncation to a data set
 #'
 #' @param index Index from which to truncate
 #' @param data Data set
 #' @param dist Truncation distribution
-#' @importFrom stats dgamma dlnorm
+#' @param meanlog Fixed meanlog parameter (uses prior mean if NULL)
+#' @param sdlog Fixed sdlog parameter (uses prior mean if NULL)
 #'
 #' @return A truncated data set
 #' @keywords internal
-apply_truncation <- function(index, data, dist) {
-  set.seed(index)
-  if (get_distribution(dist) == "lognormal") {
-    dfunc <- dlnorm
-  } else {
-    dfunc <- dgamma
+apply_truncation <- function(index, data, dist, meanlog = NULL, sdlog = NULL) {
+  max_d <- max(dist)
+
+  # Use fixed parameters if provided, otherwise use prior means
+  if (is.null(meanlog)) {
+    meanlog <- get_parameters(get_parameters(dist)$meanlog)$mean
   }
-  cmf <- cumsum(
-    dfunc(
-      seq_len(max(dist) + 1),
-      rnorm(
-        1,
-        get_parameters(get_parameters(dist)$meanlog)$mean,
-        get_parameters(get_parameters(dist)$meanlog)$sd
-      ),
-      rnorm(
-        1,
-        get_parameters(get_parameters(dist)$sdlog)$mean,
-        get_parameters(get_parameters(dist)$sdlog)$sd
-      )
-    )
-  )
-  cmf <- cmf / cmf[max(dist) + 1]
+  if (is.null(sdlog)) {
+    sdlog <- get_parameters(get_parameters(dist)$sdlog)$mean
+  }
+
+  # Use CDF-based discretisation (matches R/utilities.R discretised_lognormal_pmf)
+  pmf <- discretised_lognormal_pmf(meanlog, sdlog, max_d)
+  cmf <- cumsum(pmf)
   cmf <- rev(cmf)[-1]
+
   trunc_data <- data.table::copy(data)[1:(.N - index)]
   trunc_data[
     (.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)
