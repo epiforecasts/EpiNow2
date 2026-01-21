@@ -24,6 +24,7 @@ The function interface remains unchanged.
   - Use `summary(object)` to get summarised estimates (same as before, but `type = "samples"` is now deprecated).
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
   - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
+  - **Deprecated**: `$samples` and `$summarised` accessors now issue deprecation warnings. Use `get_samples()` and `summary()` instead.
   - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
 - `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
 - `estimate_secondary()` now returns an S3 object of class `c("epinowfit", "estimate_secondary", "list")` with elements `fit`, `args`, and `observations`, matching the structure of `estimate_infections()`.
@@ -31,7 +32,7 @@ The function interface remains unchanged.
   - Use `get_predictions(object)` to get predicted secondary observations with credible intervals merged with observations.
   - Use `summary(object)` to get summarised parameter estimates. Use `type = "compact"` for key parameters only, or `type = "parameters"` with a `params` argument to select specific parameters.
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
-  - **Deprecated**: The previous return structure with `predictions`, `posterior`, and `data` elements is deprecated and will be removed in a future release. Backward compatibility is provided with deprecation warnings when accessing these elements via `$`.
+  - **Deprecated**: The previous return structure with `predictions`, `posterior`, and `data` elements is deprecated and will be removed in a future release. Backward compatibility is provided with deprecation warnings when accessing these elements via `$` or `[[`.
 - `forecast_secondary()` now returns an independent S3 class `"forecast_secondary"` instead of inheriting from `"estimate_secondary"`, with dedicated `get_samples()`, `get_predictions()`, and `plot()` methods.
 - `epinow()` now returns an S3 object that inherits from `estimate_infections`, with class `c("epinow", "epinowfit", "estimate_infections", "list")`. This provides a consistent interface with `estimate_infections()` whilst adding epinow-specific computed elements.
   - Use `get_samples(object)` to extract formatted posterior samples.
