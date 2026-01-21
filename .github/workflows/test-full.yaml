@@ -85,17 +85,28 @@ jobs:
         shell: bash
 
       - name: Create issue on failure
-        if: failure() && (github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0')
+        if: failure() && github.ref == 'refs/heads/main' && (github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh issue create \
-            --title "Integration tests failed (${{ github.event_name }}, $(date +%Y-%m-%d))" \
-            --body "The integration test run failed.
+          # Check if an open issue for integration test failures already exists
+          EXISTING=$(gh issue list --state open --label "bug" --search "Integration tests failed" --json number --jq '.[0].number')
+          if [ -n "$EXISTING" ]; then
+            echo "Adding comment to existing issue #$EXISTING"
+            gh issue comment "$EXISTING" --body "Integration tests failed again.
 
           **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           **Triggered by:** ${{ github.event_name }}
-          **Branch:** ${{ github.ref_name }}
+          **Date:** $(date +%Y-%m-%d)"
+          else
+            echo "Creating new issue"
+            gh issue create \
+              --title "Integration tests failed" \
+              --body "The integration test run failed.
+
+          **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          **Triggered by:** ${{ github.event_name }}
 
           Please investigate the failing tests." \
-            --label "bug"
+              --label "bug"
+          fi
