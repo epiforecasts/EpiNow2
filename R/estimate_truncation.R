@@ -150,7 +150,7 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' - `args`: A list of arguments used for fitting (stan data).
 #' - `fit`: The stan fit object.
 #'
-#' @seealso [get_samples()] [get_predictions()] [get_delays()]
+#' @seealso [get_samples()] [get_predictions()] [get_parameters()]
 #' @export
 #' @inheritParams calc_CrIs
 #' @inheritParams estimate_infections
@@ -175,7 +175,7 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' )
 #'
 #' # extract the estimated truncation distribution
-#' get_delay(est, "truncation")
+#' get_parameters(est, "truncation")
 #' # summarise the truncation distribution parameters
 #' summary(est)
 #' # validation plot of observations vs estimates
@@ -188,7 +188,7 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' out <- epinow(
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   example_truncated[[5]],
-#'   truncation = trunc_opts(get_delay(est, "truncation"))
+#'   truncation = trunc_opts(get_parameters(est, "truncation"))
 #' )
 #' plot(out)
 #' options(old_opts)
@@ -337,9 +337,9 @@ plot.estimate_truncation <- function(x, ...) {
     lifecycle::deprecate_warn(
       "1.8.0",
       I("estimate_truncation()$dist"),
-      I("get_delays()$truncation")
+      I("get_parameters(x, 'truncation')")
     )
-    return(get_delays(x)$truncation)
+    return(get_parameters(x, "truncation"))
   }
 
   if (name == "obs") {
@@ -378,9 +378,9 @@ plot.estimate_truncation <- function(x, ...) {
     lifecycle::deprecate_warn(
       "1.8.0",
       I("estimate_truncation()$cmf"),
-      I("get_delays()$truncation")
+      I("get_parameters(x, 'truncation')")
     )
-    trunc_dist <- get_delays(x)$truncation
+    trunc_dist <- get_parameters(x, "truncation")
     # Extract mean parameter values for discretisation
     dist_type <- get_distribution(trunc_dist)
     param_names <- natural_params(dist_type)

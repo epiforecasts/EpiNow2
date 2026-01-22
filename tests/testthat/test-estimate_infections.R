@@ -328,12 +328,12 @@ test_that("extract_parameter_samples is deprecated", {
   expect_equal(old_quiet, new_output)
 })
 
-test_that("get_delays returns correct delays from estimate_infections", {
+test_that("get_parameters returns correct delays from estimate_infections", {
   # Reuse pre-computed fit
   out <- default_fit
 
   # Test getting all delays as named list
-  delays <- get_delays(out)
+  delays <- get_parameters(out)
   expect_type(delays, "list")
   expect_true(length(delays) >= 1)
   expect_true("generation_time" %in% names(delays))
@@ -344,7 +344,7 @@ test_that("get_delays returns correct delays from estimate_infections", {
   }
 })
 
-test_that("get_delays returns correct fixed parameter values", {
+test_that("get_parameters returns correct fixed parameter values", {
   # Use fixed delays (no uncertainty) so we can verify exact values
   # PMF must start with 0 (generation time at day 0 is not allowed)
   fixed_gt <- NonParametric(pmf = c(0, 0.4, 0.35, 0.25))
@@ -358,7 +358,7 @@ test_that("get_delays returns correct fixed parameter values", {
     verbose = FALSE
   ))
 
-  delays <- get_delays(out)
+  delays <- get_parameters(out)
 
   # Check generation time is returned correctly
   expect_true("generation_time" %in% names(delays))

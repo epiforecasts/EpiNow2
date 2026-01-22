@@ -1440,25 +1440,52 @@ get_element <- function(x, id = NULL, element) {
   }
 }
 
-##' Get parameters of a parametric distribution
+##' Get parameters from distributions or fitted models
 ##'
-##' @inheritParams get_element
 ##' @description `r lifecycle::badge("experimental")`
-##' @importFrom cli cli_abort
-##' @return A list of parameters of the distribution.
+##' Generic function to extract parameters. For `dist_spec` objects, extracts
+##' the distribution parameters (e.g., shape and rate for Gamma). For fitted
+##' model objects, extracts estimated parameters and delays as `dist_spec`
+##' objects that can be used as priors.
+##'
+##' @param x A `dist_spec` object or fitted model object
+##' @param ... Additional arguments passed to methods
+##'
+##' @return For `dist_spec`: a list of distribution parameters.
+##'   For fitted models: a named list of `dist_spec` objects.
 ##' @export
 ##' @examples
+##' # For dist_spec objects
 ##' dist <- Gamma(shape = 3, rate = 2)
 ##' get_parameters(dist)
-get_parameters <- function(x, id = NULL) {
-  if (!is(x, "dist_spec")) {
-    cli_abort(
-      c(
-        "!" = "Object must be of class {.cls dist_spec}",
-        "i" = "You have supplied an object of class {.cls {class(x)}}."
-      )
+##'
+##' \dontrun{
+##' # For fitted models - extract estimated distributions
+##' dists <- get_parameters(fit)
+##' names(dists)
+##' }
+get_parameters <- function(x, ...) {
+  UseMethod("get_parameters")
+}
+
+##' @rdname get_parameters
+##' @export
+get_parameters.default <- function(x, ...) {
+  cli_abort(
+    c(
+      "!" = "Object must be of class {.cls dist_spec} or {.cls epinowfit}",
+      "i" = "You have supplied an object of class {.cls {class(x)}}."
     )
-  }
+  )
+}
+
+##' @rdname get_parameters
+##' @param id Numeric index of the distribution to extract (for multi-
+##'   component `dist_spec` objects). If `NULL` (default), extracts from
+##'   the first component.
+##' @importFrom cli cli_abort
+##' @export
+get_parameters.dist_spec <- function(x, id = NULL, ...) {
   if (get_distribution(x, id) == "nonparametric") {
     cli_abort(
       c(

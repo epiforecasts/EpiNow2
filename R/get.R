@@ -507,35 +507,6 @@ get_predictions.estimate_truncation <- function(object,
   data.table::rbindlist(predictions)
 }
 
-#' Get delay distributions from a fitted model
-#'
-#' @description `r lifecycle::badge("experimental")`
-#' Extracts the delay distributions used in a fitted model. For
-#' `estimate_infections()` this includes generation time, reporting delays,
-#' and truncation delays. For `estimate_secondary()` this includes any
-#' delays specified in the model. For `estimate_truncation()` this returns
-#' the estimated truncation distribution.
-#'
-#' @param object A fitted model object (e.g., from `estimate_infections()`,
-#'   `estimate_secondary()`, or `estimate_truncation()`)
-#' @param ... Additional arguments passed to methods
-#'
-#' @return A named list of `dist_spec` objects representing the delay
-#'   distributions. The list may be empty if no delays were specified.
-#'   Use `names()` to see available delays.
-#'
-#' @export
-#' @examples
-#' \dontrun{
-#' # Get all delays from a fitted model
-#' delays <- get_delays(fit)
-#' names(delays)
-#' # Access specific delay
-#' delays$generation_time
-#' }
-get_delays <- function(object, ...) {
-  UseMethod("get_delays")
-}
 
 #' Reconstruct a dist_spec from stored stan data and posterior
 #'
@@ -643,59 +614,80 @@ reconstruct_nonparametric <- function(stan_data, np_id) {
   NonParametric(pmf = stan_data$delay_np_pmf[pmf_idx])
 }
 
-#' @rdname get_delays
-#' @export
-get_delays.epinowfit <- function(object, ...) {
-  stan_data <- object$args
+#' Extract scalar parameters from a fitted model
+#'
+#' @description Internal helper to extract scalar parameters (e.g.,
+#' `fraction_observed`) from the params array based on `param_id_*` variables.
+#'
+#' @param x A fitted model object with `$fit` and `$args` components.
+#' @param stan_data The stan data list from `x$args`.
+#'
+#' @return A named list of `dist_spec` objects representing the posterior
+#' distributions of scalar parameters.
+#' @keywords internal
+extract_scalar_params <- function(x, stan_data) {
+  lookup <- stan_data$params_variable_lookup
+  has_params <- !is.null(lookup) && any(lookup > 0) && !is.null(x$fit)
+  if (!has_params) {
+    return(list())
+  }
 
-  # Find all delay_id_* variables in stan_data with non-zero IDs
-  id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
-  available_names <- sub("^delay_id_", "", id_vars)
-  available_names <- available_names[vapply(
-    id_vars, function(v) !is.null(stan_data[[v]]) && stan_data[[v]] > 0,
-    logical(1)
-  )]
+  posterior <- extract_stan_param(x$fit, params = "params")
+  if (is.null(posterior) || nrow(posterior) == 0) {
+    return(list())
+  }
 
-  # Return named list of all available delays (with posterior if estimated)
-  delays <- lapply(available_names, function(n) reconstruct_delay(object, n))
-  names(delays) <- available_names
-  delays
+  param_id_vars <- grep("^param_id_", names(stan_data), value = TRUE)
+  param_names <- sub("^param_id_", "", param_id_vars)
+  ids <- vapply(param_id_vars, function(v) {
+    id <- stan_data[[v]]
+    if (is.null(id) || is.na(id)) 0L else as.integer(id)
+  }, integer(1))
+
+  valid <- ids > 0
+  lookup_idxs <- rep(NA_integer_, length(ids))
+  lookup_idxs[valid] <- lookup[ids[valid]]
+  valid <- valid & !is.na(lookup_idxs) & lookup_idxs > 0 &
+    lookup_idxs <= nrow(posterior)
+
+  result <- purrr::map(which(valid), function(i) {
+    Normal(
+      mean = round(posterior$mean[lookup_idxs[i]], 3),
+      sd = round(posterior$sd[lookup_idxs[i]], 3)
+    )
+  })
+  names(result) <- param_names[valid]
+  result
 }
 
-#' Get a single delay distribution from a fitted model
-#'
-#' @description `r lifecycle::badge("experimental")`
-#' Convenience function to extract a single delay distribution by name.
-#' This is equivalent to `get_delays(object)[[type]]` but provides a
-#' cleaner interface.
-#'
-#' @param object A fitted model object (e.g., from `estimate_infections()`,
-#'   `estimate_secondary()`, or `estimate_truncation()`)
-#' @param type Character string specifying the delay type to extract.
-#'   Common values include `"generation_time"`, `"reporting"`, and
-#'   `"truncation"`. Use `names(get_delays(object))` to see available types.
-#' @param ... Additional arguments passed to methods
-#'
-#' @return A `dist_spec` object representing the requested delay distribution,
-#'   or `NULL` if the specified type is not found.
-#'
-#' @seealso [get_delays()] to retrieve all delay distributions as a list
+#' @rdname get_parameters
+#' @param name Optional character string specifying a single distribution to
+#'   extract (for fitted models). If `NULL` (default), returns all as a list.
+#'   Use `names(get_parameters(fit))` to see available names.
 #' @export
-#' @examples
-#' \dontrun{
-#' # Get truncation delay from estimate_truncation
-#' trunc_dist <- get_delay(fit, "truncation")
-#'
-#' # Get generation time from estimate_infections
-#' gt <- get_delay(fit, "generation_time")
-#' }
-get_delay <- function(object, type, ...) {
-  UseMethod("get_delay")
-}
+get_parameters.epinowfit <- function(x, name = NULL, ...) {
+  stan_data <- x$args
+  result <- list()
 
-#' @rdname get_delay
-#' @export
-get_delay.default <- function(object, type, ...) {
-  delays <- get_delays(object, ...)
-  delays[[type]]
+  # Extract delay distributions (delay_id_* variables)
+  delay_id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
+  for (id_var in delay_id_vars) {
+    delay_name <- sub("^delay_id_", "", id_var)
+    if (!is.null(stan_data[[id_var]]) && stan_data[[id_var]] > 0) {
+      delay_dist <- reconstruct_delay(x, delay_name)
+      if (!is.null(delay_dist)) {
+        result[[delay_name]] <- delay_dist
+      }
+    }
+  }
+
+  # Extract scalar parameters (param_id_* variables)
+  result <- c(result, extract_scalar_params(x, stan_data))
+
+  # Return single or all
+  if (!is.null(name)) {
+    result[[name]]
+  } else {
+    result
+  }
 }
