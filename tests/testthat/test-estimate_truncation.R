@@ -198,8 +198,8 @@ test_that("get_parameters extracts single delay by name", {
   expect_s3_class(trunc_dist, "dist_spec")
   expect_equal(trunc_dist$distribution, "lognormal")
 
-  # Non-existent delay should return NULL
-  expect_null(get_parameters(est, "nonexistent"))
+  # Non-existent parameter should error
+  expect_error(get_parameters(est, "nonexistent"), "Unknown parameter name")
 })
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)

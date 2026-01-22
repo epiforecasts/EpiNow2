@@ -614,6 +614,37 @@ reconstruct_nonparametric <- function(stan_data, np_id) {
   NonParametric(pmf = stan_data$delay_np_pmf[pmf_idx])
 }
 
+#' Extract delay distributions from a fitted model
+#'
+#' @description Internal helper to extract delay distributions from the
+#' `delay_id_*` variables in stan data.
+#'
+#' @param x A fitted model object with `$fit` and `$args` components.
+#' @param stan_data The stan data list from `x$args`.
+#'
+#' @return A named list of `dist_spec` objects representing the posterior
+#' distributions of delay parameters.
+#' @keywords internal
+extract_delay_params <- function(x, stan_data) {
+
+  delay_id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
+  result <- purrr::compact(purrr::map(delay_id_vars, function(id_var) {
+    delay_name <- sub("^delay_id_", "", id_var)
+    id <- stan_data[[id_var]]
+    if (is.null(id) || id <= 0) {
+      return(NULL)
+    }
+    reconstruct_delay(x, delay_name)
+  }))
+  names(result) <- sub("^delay_id_", "", delay_id_vars[
+    vapply(delay_id_vars, function(v) {
+      id <- stan_data[[v]]
+      !is.null(id) && id > 0
+    }, logical(1))
+  ])
+  result
+}
+
 #' Extract scalar parameters from a fitted model
 #'
 #' @description Internal helper to extract scalar parameters (e.g.,
@@ -667,25 +698,18 @@ extract_scalar_params <- function(x, stan_data) {
 #' @export
 get_parameters.epinowfit <- function(x, name = NULL, ...) {
   stan_data <- x$args
-  result <- list()
+  result <- c(
+    extract_delay_params(x, stan_data),
+    extract_scalar_params(x, stan_data)
+  )
 
-  # Extract delay distributions (delay_id_* variables)
-  delay_id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
-  for (id_var in delay_id_vars) {
-    delay_name <- sub("^delay_id_", "", id_var)
-    if (!is.null(stan_data[[id_var]]) && stan_data[[id_var]] > 0) {
-      delay_dist <- reconstruct_delay(x, delay_name)
-      if (!is.null(delay_dist)) {
-        result[[delay_name]] <- delay_dist
-      }
-    }
-  }
-
-  # Extract scalar parameters (param_id_* variables)
-  result <- c(result, extract_scalar_params(x, stan_data))
-
-  # Return single or all
   if (!is.null(name)) {
+    if (!name %in% names(result)) {
+      cli_abort(c(
+        "!" = "Unknown parameter name {.val {name}}.",
+        "i" = "Available names: {toString(names(result))}."
+      ))
+    }
     result[[name]]
   } else {
     result
