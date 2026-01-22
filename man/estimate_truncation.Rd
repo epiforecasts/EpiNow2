@@ -65,17 +65,6 @@ An \verb{<estimate_truncation>} object containing:
 \item \code{args}: A list of arguments used for fitting (stan data).
 \item \code{fit}: The stan fit object.
 }
-
-Use \code{\link[=get_delays]{get_delays()}} to extract the estimated truncation distribution as a
-\verb{<dist_spec>}, which can be passed to the \code{truncation} argument of
-\code{\link[=epinow]{epinow()}}, \code{\link[=regional_epinow]{regional_epinow()}}, and \code{\link[=estimate_infections]{estimate_infections()}}.
-
-Use \code{\link[=get_predictions]{get_predictions()}} to extract truncation-adjusted estimates that can
-be compared to the observed data.
-
-S3 methods available: \code{\link[=summary.estimate_truncation]{summary.estimate_truncation()}},
-\code{\link[=plot.estimate_truncation]{plot.estimate_truncation()}}, \code{\link[=get_samples.estimate_truncation]{get_samples.estimate_truncation()}},
-\code{\link[=get_delays]{get_delays()}}, \code{\link[=get_predictions.estimate_truncation]{get_predictions.estimate_truncation()}}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -146,4 +135,7 @@ out <- epinow(
 plot(out)
 options(old_opts)
 }
+}
+\seealso{
+\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[=get_delays]{get_delays()}}
 }

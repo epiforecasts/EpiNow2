@@ -71,14 +71,14 @@
 #' threshold then the zero is replaced using `fill`.
 #'
 #' @export
-#' @return An `<estimate_infections>` object which is a list of outputs
-#' including: the stan object (`fit`), arguments used to fit the model
-#' (`args`), and the observed data (`observations`). Use `summary()` to access
-#' estimates, `get_samples()` to extract posterior samples, and
-#' `get_predictions()` to access predicted reported cases.
+#' @return An `<estimate_infections>` object containing:
 #'
-#' @seealso [epinow()] [regional_epinow()] [forecast_infections()]
-#' [estimate_truncation()]
+#' - `fit`: The stan fit object.
+#' - `args`: A list of arguments used for fitting (stan data).
+#' - `observations`: The input data (`<data.frame>`).
+#'
+#' @seealso [get_samples()] [get_predictions()] [get_delays()] [epinow()]
+#' [regional_epinow()] [forecast_infections()] [estimate_truncation()]
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
 #' @inheritParams create_rt_data

@@ -150,17 +150,7 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' - `args`: A list of arguments used for fitting (stan data).
 #' - `fit`: The stan fit object.
 #'
-#' Use [get_delays()] to extract the estimated truncation distribution as a
-#' `<dist_spec>`, which can be passed to the `truncation` argument of
-#' [epinow()], [regional_epinow()], and [estimate_infections()].
-#'
-#' Use [get_predictions()] to extract truncation-adjusted estimates that can
-#' be compared to the observed data.
-#'
-#' S3 methods available: [summary.estimate_truncation()],
-#' [plot.estimate_truncation()], [get_samples.estimate_truncation()],
-#' [get_delays()], [get_predictions.estimate_truncation()].
-#'
+#' @seealso [get_samples()] [get_predictions()] [get_delays()]
 #' @export
 #' @inheritParams calc_CrIs
 #' @inheritParams estimate_infections

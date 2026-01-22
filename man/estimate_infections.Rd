@@ -104,11 +104,12 @@ threshold then the zero is replaced using \code{fill}.}
 horizon}
 }
 \value{
-An \verb{<estimate_infections>} object which is a list of outputs
-including: the stan object (\code{fit}), arguments used to fit the model
-(\code{args}), and the observed data (\code{observations}). Use \code{summary()} to access
-estimates, \code{get_samples()} to extract posterior samples, and
-\code{get_predictions()} to access predicted reported cases.
+An \verb{<estimate_infections>} object containing:
+\itemize{
+\item \code{fit}: The stan fit object.
+\item \code{args}: A list of arguments used for fitting (stan data).
+\item \code{observations}: The input data (\verb{<data.frame>}).
+}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
@@ -168,6 +169,6 @@ options(old_opts)
 }
 }
 \seealso{
-\code{\link[=epinow]{epinow()}} \code{\link[=regional_epinow]{regional_epinow()}} \code{\link[=forecast_infections]{forecast_infections()}}
-\code{\link[=estimate_truncation]{estimate_truncation()}}
+\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[=get_delays]{get_delays()}} \code{\link[=epinow]{epinow()}}
+\code{\link[=regional_epinow]{regional_epinow()}} \code{\link[=forecast_infections]{forecast_infections()}} \code{\link[=estimate_truncation]{estimate_truncation()}}
 }
