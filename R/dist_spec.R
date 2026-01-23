@@ -1473,7 +1473,9 @@ get_parameters <- function(x, ...) {
 get_parameters.default <- function(x, ...) {
   cli_abort(
     c(
-      "!" = "Object must be of class {.cls dist_spec} or {.cls epinowfit}",
+      "!" = "Object must be a {.cls dist_spec} or fitted model object.",
+      "i" = "Fitted models are returned by {.fn estimate_infections},
+             {.fn estimate_truncation}, or {.fn estimate_secondary}.",
       "i" = "You have supplied an object of class {.cls {class(x)}}."
     )
   )
