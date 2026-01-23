@@ -137,5 +137,5 @@ options(old_opts)
 }
 }
 \seealso{
-\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[=get_parameters]{get_parameters()}} \code{\link[=get_delays]{get_delays()}}
+\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[=get_parameters]{get_parameters()}}
 }

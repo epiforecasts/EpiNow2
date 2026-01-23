@@ -30,7 +30,7 @@
 #' - `observations`: The input data (`<data.frame>`).
 #' - `timing`: The run time (if `output` includes "timing").
 #' @export
-#' @seealso [get_samples()] [get_predictions()] [get_parameters()] [get_delays()]
+#' @seealso [get_samples()] [get_predictions()] [get_parameters()]
 #' [estimate_infections()] [forecast_infections()] [regional_epinow()]
 #' @inheritParams calc_CrIs
 #' @inheritParams setup_target_folder
