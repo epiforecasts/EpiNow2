@@ -468,7 +468,10 @@ summarise_key_measures <- function(regional_results = NULL,
     timeseries <- regional_results
   }
   summarise_variable <- function(df, dof = Inf) {
-    cols <- setdiff(names(df), c("region", "date", "type", "strat"))
+    # Exclude non-numeric columns from rounding
+    cols <- setdiff(
+      names(df), c("region", "date", "type", "strat", "variable", "parameter")
+    )
     if (!is.null(dof)) {
       df[, (cols) := round(.SD, dof), .SDcols = cols]
     }
@@ -972,23 +975,24 @@ summary.estimate_secondary <- function(object,
   # Time-varying parameters like secondary and sim_secondary have dates
   param_samples <- samples[is.na(date)]
 
-  # Calculate summary statistics
+  # Calculate summary statistics grouped by parameter (not variable)
+  # This gives individual parameter names like "fraction_observed" instead of
+  # generic array names like "params"
   out <- calc_summary_measures(
     param_samples,
-    summarise_by = "variable",
-    order_by = "variable",
+    summarise_by = "parameter",
+    order_by = "parameter",
     CrIs = CrIs
   )
 
   if (type == "compact") {
     # Return only key parameters for a compact summary
-    # Typical parameters: delay_params (distribution parameters),
-    # params (scaling factors)
-    key_vars <- c("delay_params", "params", "fraction_observed")
-    out <- out[grepl(paste(key_vars, collapse = "|"), variable)]
+    # Filter to delay distribution and scaling parameters
+    key_patterns <- c("reporting\\[", "fraction_observed")
+    out <- out[grepl(paste(key_patterns, collapse = "|"), parameter)]
   } else if (type == "parameters" && !is.null(params)) {
     # Optional filtering by parameter name
-    out <- out[variable %in% params]
+    out <- out[parameter %in% params]
   }
 
   out[]
@@ -1011,8 +1015,7 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
   # Extract delay parameters directly from fit (avoids rbindlist warning)
   raw_samples <- extract_samples(object$fit)
   param_samples <- extract_delays(raw_samples, args = object$args)
-  # Remove generic variable column; use parameter column for grouping
-  param_samples[, variable := NULL]
+  # Rename parameter to variable for grouping
   data.table::setnames(param_samples, "parameter", "variable")
 
   # Calculate summary statistics

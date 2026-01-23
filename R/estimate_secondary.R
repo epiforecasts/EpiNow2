@@ -778,7 +778,7 @@ forecast_secondary <- function(estimate,
     predictions = {
       lifecycle::deprecate_warn(
         "1.8.0",
-        "estimate_secondary()$predictions",
+        I("estimate_secondary()$predictions"),
         "get_predictions()"
       )
       get_predictions(x)
@@ -786,7 +786,7 @@ forecast_secondary <- function(estimate,
     posterior = {
       lifecycle::deprecate_warn(
         "1.8.0",
-        "estimate_secondary()$posterior",
+        I("estimate_secondary()$posterior"),
         "get_samples()"
       )
       get_samples(x)
@@ -794,12 +794,34 @@ forecast_secondary <- function(estimate,
     data = {
       lifecycle::deprecate_warn(
         "1.8.0",
-        "estimate_secondary()$data",
-        "estimate_secondary()$observations"
+        I("estimate_secondary()$data"),
+        I("estimate_secondary()$observations")
       )
-      x[["observations"]]
+      .subset2(x, "observations")
     },
-    # For other elements, use normal list extraction
-    NextMethod("$")
+    # For other elements, use .subset2 for direct list access
+    .subset2(x, name)
   )
+}
+
+#' Extract elements from estimate_secondary objects with bracket notation
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for bracket-based access to deprecated
+#' elements. See [$.estimate_secondary] for details on the deprecation.
+#'
+#' @param x An `estimate_secondary` object
+#' @param i The name or index of the element to extract
+#' @return The requested element with a deprecation warning for deprecated
+#'   elements
+#' @keywords internal
+#' @export
+#' @method [[ estimate_secondary
+`[[.estimate_secondary` <- function(x, i) {
+  deprecated_names <- c("predictions", "posterior", "data")
+  if (i %in% deprecated_names) {
+    # nolint next: object_usage_linter
+    return(`$.estimate_secondary`(x, i))
+  }
+  .subset2(x, i)
 }

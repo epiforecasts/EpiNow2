@@ -157,7 +157,7 @@ test_that("extract_delays works with delay_id_* naming", {
   result <- EpiNow2:::extract_delays(samples, args = args)
 
   expect_true(!is.null(result))
-  expect_true("variable" %in% names(result))
+  # Note: variable column is added by callers via rbindlist(idcol="variable")
   expect_true("parameter" %in% names(result))
   expect_true("sample" %in% names(result))
   expect_true("value" %in% names(result))

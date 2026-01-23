@@ -282,6 +282,7 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
   out$params <- extract_parameters(raw_samples, args = args)
 
   # Combine all parameters into single data.table
+  # idcol adds 'variable' column from list names (infections, R, params, etc.)
   combined <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
 
   # Add strat column if missing
