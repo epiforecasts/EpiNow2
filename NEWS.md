@@ -62,6 +62,7 @@ The function interface remains unchanged.
 
 ## Bug fixes
 
+- Fixed an incorrect Rt prior in vignettes (`sd = 0.1` instead of `sd = 1`) that caused divergent transitions after changing to prior-based MCMC initialisation.
 - A bug was fixed where the `report_log_lik` Stan function used the raw overdispersion parameter instead of the transformed phi value, producing incorrect pointwise log-likelihood values for model comparison (LOO, WAIC).
 - A bug was fixed where the truncation PMF vector in `estimate_secondary.stan` was declared with incorrect dimension, causing a dimension mismatch with the `get_delay_rev_pmf()` function call.
 - A bug was fixed where the `CrIs` parameter in `epinow()` was not being passed through to internal functions, causing user-specified credible intervals to be ignored in saved files and output.
