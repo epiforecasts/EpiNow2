@@ -546,12 +546,7 @@ reconstruct_delay <- function(object, delay_name) {
     if (types_p[i] == 1) {
       reconstruct_parametric(stan_data, type_id, posterior)
     } else {
-      # Nonparametric: extract PMF directly
-      pmf_idx <- seq(
-        stan_data$delay_np_pmf_groups[type_id],
-        stan_data$delay_np_pmf_groups[type_id + 1] - 1
-      )
-      NonParametric(pmf = stan_data$delay_np_pmf[pmf_idx])
+      reconstruct_nonparametric(stan_data, type_id)
     }
   })
 
@@ -615,6 +610,23 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
   names(parameters) <- param_names
 
   new_dist_spec(params = parameters, max = dist_max, distribution = dist_type)
+}
+
+#' Reconstruct a nonparametric delay distribution
+#'
+#' Helper function to reconstruct a single nonparametric delay component from
+#' Stan data. Nonparametric delays are stored as probability mass functions.
+#'
+#' @param stan_data List of Stan data containing delay specification
+#' @param np_id Integer index into the nonparametric delay PMF arrays
+#' @return A `dist_spec` object representing the nonparametric delay
+#' @keywords internal
+reconstruct_nonparametric <- function(stan_data, np_id) {
+  pmf_idx <- seq(
+    stan_data$delay_np_pmf_groups[np_id],
+    stan_data$delay_np_pmf_groups[np_id + 1] - 1
+  )
+  NonParametric(pmf = stan_data$delay_np_pmf[pmf_idx])
 }
 
 #' Extract delay distributions from a fitted model
@@ -692,25 +704,25 @@ extract_scalar_params <- function(x, stan_data) {
 }
 
 #' @rdname get_parameters
-#' @param name Optional character string specifying a single distribution to
+#' @param param Optional character string specifying a single parameter to
 #'   extract (for fitted models). If `NULL` (default), returns all as a list.
-#'   Use `names(get_parameters(fit))` to see available names.
+#'   Use `names(get_parameters(fit))` to see available parameters.
 #' @export
-get_parameters.epinowfit <- function(x, name = NULL, ...) {
+get_parameters.epinowfit <- function(x, param = NULL, ...) {
   stan_data <- x$args
   result <- c(
     extract_delay_params(x, stan_data),
     extract_scalar_params(x, stan_data)
   )
 
-  if (!is.null(name)) {
-    if (!name %in% names(result)) {
+  if (!is.null(param)) {
+    if (!param %in% names(result)) {
       cli_abort(c(
-        "!" = "Unknown parameter name {.val {name}}.",
-        "i" = "Available names: {toString(names(result))}."
+        "!" = "Unknown parameter {.val {param}}.",
+        "i" = "Available parameters: {toString(names(result))}."
       ))
     }
-    result[[name]]
+    result[[param]]
   } else {
     result
   }
