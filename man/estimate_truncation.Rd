@@ -117,7 +117,7 @@ est <- estimate_truncation(example_truncated,
 )
 
 # extract the estimated truncation distribution
-get_parameters(est, "truncation")
+get_parameters(est)[["truncation"]]
 # summarise the truncation distribution parameters
 summary(est)
 # validation plot of observations vs estimates
@@ -130,7 +130,7 @@ plot(est)
 out <- epinow(
   generation_time = generation_time_opts(example_generation_time),
   example_truncated[[5]],
-  truncation = trunc_opts(get_parameters(est, "truncation"))
+  truncation = trunc_opts(get_parameters(est)[["truncation"]])
 )
 plot(out)
 options(old_opts)
