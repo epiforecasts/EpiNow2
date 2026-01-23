@@ -95,7 +95,6 @@ extract_parameters <- function(samples, args) {
     }
 
     data.table::data.table(
-      variable = "params",
       parameter = par_name,
       sample = seq_along(param_array[, i]),
       value = param_array[, i]
@@ -209,7 +208,6 @@ extract_delays <- function(samples, args) {
     }
 
     data.table::data.table(
-      variable = "delay_params",
       parameter = par_name,
       sample = seq_along(delay_params[, i]),
       value = delay_params[, i]
