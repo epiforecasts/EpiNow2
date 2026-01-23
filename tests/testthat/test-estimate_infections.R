@@ -328,23 +328,23 @@ test_that("extract_parameter_samples is deprecated", {
   expect_equal(old_quiet, new_output)
 })
 
-test_that("get_parameters returns correct delays from estimate_infections", {
+test_that("get_parameters works as expected for estimate_infections", {
   # Reuse pre-computed fit
   out <- default_fit
 
-  # Test getting all delays as named list
-  delays <- get_parameters(out)
-  expect_type(delays, "list")
-  expect_true(length(delays) >= 1)
-  expect_true("generation_time" %in% names(delays))
+  # Test getting all parameters as named list
+  params <- get_parameters(out)
+  expect_type(params, "list")
+  expect_true(length(params) >= 1)
+  expect_true("generation_time" %in% names(params))
 
   # All elements should be dist_spec
-  for (nm in names(delays)) {
-    expect_s3_class(delays[[nm]], "dist_spec")
+  for (nm in names(params)) {
+    expect_s3_class(params[[nm]], "dist_spec")
   }
 })
 
-test_that("get_parameters returns correct fixed parameter values", {
+test_that("get_parameters works as expected with fixed parameters", {
   # Use fixed delays (no uncertainty) so we can verify exact values
   # PMF must start with 0 (generation time at day 0 is not allowed)
   fixed_gt <- NonParametric(pmf = c(0, 0.4, 0.35, 0.25))
@@ -358,18 +358,18 @@ test_that("get_parameters returns correct fixed parameter values", {
     verbose = FALSE
   ))
 
-  delays <- get_parameters(out)
+  params <- get_parameters(out)
 
   # Check generation time is returned correctly
-  expect_true("generation_time" %in% names(delays))
-  gt_returned <- delays$generation_time
+  expect_true("generation_time" %in% names(params))
+  gt_returned <- params$generation_time
   expect_s3_class(gt_returned, "dist_spec")
   # For nonparametric, the [[1]] element is the PMF (as vector, drop dim attr)
   expect_equal(as.vector(gt_returned[[1]]), c(0, 0.4, 0.35, 0.25))
 
   # Check reporting delay is returned correctly
-  expect_true("reporting" %in% names(delays))
-  delay_returned <- delays$reporting
+  expect_true("reporting" %in% names(params))
+  delay_returned <- params$reporting
   expect_s3_class(delay_returned, "dist_spec")
   # Delays are discretised when passed to Stan, so returned as nonparametric
   # Check that PMF is approximately correct (discretised LogNormal)

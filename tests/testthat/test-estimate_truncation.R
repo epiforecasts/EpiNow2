@@ -247,8 +247,8 @@ test_that("estimate_truncation works with filter_leading_zeros set", {
   )
   # Compare the results of the two fits
   expect_equal(
-    get_delays(original_data_fit)$truncation$dist,
-    get_delays(modified_data_fit)$truncation$dist
+    get_distribution(get_parameters(original_data_fit)$truncation),
+    get_distribution(get_parameters(modified_data_fit)$truncation)
   )
   expect_equal(
     original_data_fit$args$obs_dist,
@@ -268,7 +268,7 @@ test_that("estimate_truncation works with zero_threshold set", {
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250
   )
   expect_named(out, c("observations", "args", "fit"))
-  expect_s3_class(get_delays(out)$truncation, "dist_spec")
+  expect_s3_class(get_parameters(out)$truncation, "dist_spec")
 })
 
 test_that("estimate_truncation recovers true truncation parameters", {
