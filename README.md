@@ -339,7 +339,8 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3ALizaHadley">LizaHadley</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Antorresd">ntorresd</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Amicahwiesner67">micahwiesner67</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Apaigemiller">paigemiller</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Apaigemiller">paigemiller</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3AWardBrian">WardBrian</a>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
