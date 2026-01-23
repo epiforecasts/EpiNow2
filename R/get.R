@@ -558,6 +558,22 @@ reconstruct_delay <- function(object, delay_name) {
   if (length(delay_list) == 1) delay_list[[1]] else do.call(c, delay_list)
 }
 
+#' Create a Normal distribution from posterior samples
+#'
+#' Helper function to create a Normal distribution from a row of posterior
+#' summary statistics, with consistent rounding.
+#'
+#' @param posterior Data frame with `mean` and `sd` columns from Stan output
+#' @param idx Integer index into the posterior data frame
+#' @return A `Normal` distribution object
+#' @keywords internal
+posterior_to_normal <- function(posterior, idx) {
+  Normal(
+    mean = round(posterior$mean[idx], 3),
+    sd = round(posterior$sd[idx], 3)
+  )
+}
+
 #' Reconstruct a parametric delay distribution
 #'
 #' Helper function to reconstruct a single parametric delay component from
@@ -589,8 +605,7 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
   parameters <- lapply(seq_along(prior_mean), function(j) {
     estimated <- prior_sd[j] > 0 && !is.na(prior_sd[j])
     if (estimated && !is.null(posterior)) {
-      Normal(round(posterior$mean[param_idx[j]], 3),
-             round(posterior$sd[param_idx[j]], 3))
+      posterior_to_normal(posterior, param_idx[j])
     } else if (prior_sd[j] == 0 || is.na(prior_sd[j])) {
       prior_mean[j]
     } else {
@@ -670,10 +685,7 @@ extract_scalar_params <- function(x, stan_data) {
     lookup_idxs <= nrow(posterior)
 
   result <- purrr::map(which(valid), function(i) {
-    Normal(
-      mean = round(posterior$mean[lookup_idxs[i]], 3),
-      sd = round(posterior$sd[lookup_idxs[i]], 3)
-    )
+    posterior_to_normal(posterior, lookup_idxs[i])
   })
   names(result) <- param_names[valid]
   result
