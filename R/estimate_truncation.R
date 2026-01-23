@@ -337,9 +337,9 @@ plot.estimate_truncation <- function(x, ...) {
     lifecycle::deprecate_warn(
       "1.8.0",
       I("estimate_truncation()$dist"),
-      I("get_parameters(x, 'truncation')")
+      I("get_parameters(x)[['truncation']]")
     )
-    return(get_parameters(x, "truncation"))
+    return(get_parameters(x)[["truncation"]])
   }
 
   if (name == "obs") {
@@ -378,9 +378,9 @@ plot.estimate_truncation <- function(x, ...) {
     lifecycle::deprecate_warn(
       "1.8.0",
       I("estimate_truncation()$cmf"),
-      I("get_parameters(x, 'truncation')")
+      I("get_parameters(x)[['truncation']]")
     )
-    trunc_dist <- get_parameters(x, "truncation")
+    trunc_dist <- get_parameters(x)[["truncation"]]
     # Extract mean parameter values for discretisation
     dist_type <- get_distribution(trunc_dist)
     param_names <- natural_params(dist_type)

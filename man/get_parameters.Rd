@@ -13,7 +13,7 @@ get_parameters(x, ...)
 
 \method{get_parameters}{dist_spec}(x, id = NULL, ...)
 
-\method{get_parameters}{epinowfit}(x, param = NULL, ...)
+\method{get_parameters}{epinowfit}(x, ...)
 }
 \arguments{
 \item{x}{A \code{dist_spec} object or fitted model object}
@@ -23,10 +23,6 @@ get_parameters(x, ...)
 \item{id}{Numeric index of the distribution to extract (for multi-
 component \code{dist_spec} objects). If \code{NULL} (default), extracts from
 the first component.}
-
-\item{param}{Optional character string specifying a single parameter to
-extract (for fitted models). If \code{NULL} (default), returns all as a list.
-Use \code{names(get_parameters(fit))} to see available parameters.}
 }
 \value{
 For \code{dist_spec}: a list of distribution parameters.
