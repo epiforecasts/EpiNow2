@@ -150,7 +150,7 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' - `args`: A list of arguments used for fitting (stan data).
 #' - `fit`: The stan fit object.
 #'
-#' @seealso [get_samples()] [get_predictions()] [get_parameters()]
+#' @seealso [get_samples()] [get_predictions()] [get_parameters()] [get_delays()]
 #' @export
 #' @inheritParams calc_CrIs
 #' @inheritParams estimate_infections

@@ -62,7 +62,7 @@
 #' - `args`: A list of arguments used for fitting (stan data).
 #' - `observations`: The input data (`<data.frame>`).
 #'
-#' @seealso [get_samples()] [get_predictions()] [get_parameters()]
+#' @seealso [get_samples()] [get_predictions()] [get_parameters()] [get_delays()]
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams update_secondary_args
