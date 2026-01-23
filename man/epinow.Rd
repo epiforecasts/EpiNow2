@@ -128,8 +128,14 @@ threshold then the zero is replaced using \code{fill}.}
 horizon}
 }
 \value{
-A list of output from estimate_infections with additional elements
-summarising results and reporting errors if they have occurred.
+An \verb{<epinow>} object (inheriting from \verb{<estimate_infections>})
+containing:
+\itemize{
+\item \code{fit}: The stan fit object.
+\item \code{args}: A list of arguments used for fitting (stan data).
+\item \code{observations}: The input data (\verb{<data.frame>}).
+\item \code{timing}: The run time (if \code{output} includes "timing").
+}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -187,5 +193,6 @@ options(old_opts)
 }
 }
 \seealso{
+\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[=get_delays]{get_delays()}}
 \code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=forecast_infections]{forecast_infections()}} \code{\link[=regional_epinow]{regional_epinow()}}
 }

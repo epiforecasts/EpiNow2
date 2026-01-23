@@ -56,11 +56,13 @@
 #' @param verbose Logical, should model fitting progress be returned. Defaults
 #' to [interactive()].
 #'
-#' @return An `<estimate_secondary>` object which is a list of outputs
-#' including: the stan object (`fit`), arguments used to fit the model
-#' (`args`), and the observed data (`observations`). Use `summary()` to access
-#' estimates, `get_samples()` to extract posterior samples, and
-#' `get_predictions()` to access predictions.
+#' @return An `<estimate_secondary>` object containing:
+#'
+#' - `fit`: The stan fit object.
+#' - `args`: A list of arguments used for fitting (stan data).
+#' - `observations`: The input data (`<data.frame>`).
+#'
+#' @seealso [get_samples()] [get_predictions()] [get_delays()]
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams update_secondary_args
