@@ -78,7 +78,8 @@
 #' - `observations`: The input data (`<data.frame>`).
 #'
 #' @seealso [get_samples()] [get_predictions()] [get_parameters()]
-#' [epinow()] [regional_epinow()] [forecast_infections()] [estimate_truncation()]
+#' [epinow()] [regional_epinow()] [forecast_infections()]
+#' [estimate_truncation()]
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
 #' @inheritParams create_rt_data
