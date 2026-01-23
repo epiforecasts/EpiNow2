@@ -641,22 +641,20 @@ reconstruct_nonparametric <- function(stan_data, np_id) {
 #' distributions of delay parameters.
 #' @keywords internal
 extract_delay_params <- function(x, stan_data) {
-
   delay_id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
-  result <- purrr::compact(purrr::map(delay_id_vars, function(id_var) {
-    delay_name <- sub("^delay_id_", "", id_var)
-    id <- stan_data[[id_var]]
-    if (is.null(id) || id <= 0) {
-      return(NULL)
-    }
-    reconstruct_delay(x, delay_name)
-  }))
-  names(result) <- sub("^delay_id_", "", delay_id_vars[
-    vapply(delay_id_vars, function(v) {
-      id <- stan_data[[v]]
-      !is.null(id) && id > 0
-    }, logical(1))
-  ])
+
+
+  # Filter to valid delays (id > 0) and extract names upfront
+  valid <- vapply(delay_id_vars, function(v) {
+    id <- stan_data[[v]]
+    !is.null(id) && id > 0
+  }, logical(1))
+
+  delay_names <- sub("^delay_id_", "", delay_id_vars[valid])
+
+  # Build named list directly
+  result <- purrr::map(delay_names, function(name) reconstruct_delay(x, name))
+  names(result) <- delay_names
   result
 }
 
