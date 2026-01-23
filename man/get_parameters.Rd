@@ -2,14 +2,11 @@
 % Please edit documentation in R/dist_spec.R, R/get.R
 \name{get_parameters}
 \alias{get_parameters}
-\alias{get_parameters.default}
 \alias{get_parameters.dist_spec}
 \alias{get_parameters.epinowfit}
 \title{Get parameters from distributions or fitted models}
 \usage{
 get_parameters(x, ...)
-
-\method{get_parameters}{default}(x, ...)
 
 \method{get_parameters}{dist_spec}(x, id = NULL, ...)
 

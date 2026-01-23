@@ -1469,14 +1469,6 @@ get_parameters <- function(x, ...) {
 }
 
 ##' @rdname get_parameters
-##' @export
-get_parameters.default <- function(x, ...) {
-  cli_abort(
-    "{.fn get_parameters} is not implemented for class {.cls {class(x)[1]}}."
-  )
-}
-
-##' @rdname get_parameters
 ##' @param id Numeric index of the distribution to extract (for multi-
 ##'   component `dist_spec` objects). If `NULL` (default), extracts from
 ##'   the first component.
