@@ -1,4 +1,5 @@
 functions {
+#include primarycensored.stan
 #include functions/helpers.stan
 #include functions/convolve.stan
 #include functions/pmfs.stan

@@ -58,6 +58,7 @@ The function interface remains unchanged.
 
 ## Model changes
 
+- The Stan `discretised_pmf()` function now uses `primarycensored` for proper interval-censored discretisation, replacing the previous CDF difference approximation. This provides more accurate handling of daily censoring and will slightly change numerical results in all models that use parametric delay distributions.
 - MCMC runs are now initialised with parameter values drawn from a distribution that approximates their prior distributions.
 - Added an option to compute growth rates using an estimator by Parag et al. (2022) based on total infectiousness rather than new infections, see `growth_method` argument in rt_opts().
 - Added support for fitting the susceptible population size.

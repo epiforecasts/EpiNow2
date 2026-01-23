@@ -32,6 +32,9 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
     cli_inform("{.var dir} is {.file {dir}}.")
   }
 
+  # Get primarycensored Stan path for include
+  pcd_path <- primarycensored::pcd_stan_path()
+
   monitor <- suppressMessages
   if (verbose) {
     monitor <- function(x) {
@@ -40,7 +43,7 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
   }
   model <- monitor(cmdstanr::cmdstan_model(
     model_file,
-    include_paths = dir,
+    include_paths = c(pcd_path, dir),
     dir = tempdir(),
     ...
   ))

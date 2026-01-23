@@ -14,11 +14,16 @@ Rcpp::loadModule("stan_fit4simulate_secondary_mod", what = TRUE)
 # instantiate each stanmodel object
 stanmodels <- sapply(stanmodels, function(model_name) {
   # create C++ code for stan model
-  stan_file <- if(dir.exists("stan")) "stan" else file.path("inst", "stan")
-  stan_file <- file.path(stan_file, paste0(model_name, ".stan"))
+  stan_dir <- if(dir.exists("stan")) "stan" else file.path("inst", "stan")
+  stan_file <- file.path(stan_dir, paste0(model_name, ".stan"))
+
+  # Get primarycensored Stan path for include
+  pcd_path <- primarycensored::pcd_stan_path()
+
   stanfit <- rstan::stanc_builder(stan_file,
                                   allow_undefined = TRUE,
-                                  obfuscate_model_name = FALSE)
+                                  obfuscate_model_name = FALSE,
+                                  isystem = c(pcd_path, stan_dir))
   stanfit$model_cpp <- list(model_cppname = stanfit$model_name,
                             model_cppcode = stanfit$cppcode)
   # create stanmodel object
