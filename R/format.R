@@ -206,60 +206,6 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
   out
 }
 
-#' Calculate adjusted Rt accounting for susceptible depletion
-#'
-#' @description Adjusts unadjusted Rt estimates to account for depletion of the
-#'   susceptible population. Uses cumulative infections and population size to
-#'   calculate the proportion of the population still susceptible, then adjusts
-#'   Rt accordingly.
-#'
-#' @param R_unadjusted data.table with unadjusted Rt values (columns: sample,
-#'   date, value, strat)
-#' @param infections data.table with infection estimates (columns: sample, date,
-#'   value, strat)
-#' @param pop data.table with population parameter samples (columns: sample,
-#'   parameter, value)
-#' @param pop_floor Numeric minimum susceptible population for numerical
-#'   stability (from args)
-#' @param seeding_time Integer number of seeding days
-#' @param reported_dates Vector of dates corresponding to the reporting period
-#'
-#' @return data.table with adjusted Rt values in same format as R_unadjusted
-#' @keywords internal
-#' @importFrom data.table copy setorder
-calculate_adjusted_rt <- function(R_unadjusted, infections, pop, pop_floor,
-                                   seeding_time, reported_dates) {
-  # Calculate cumulative infections by sample
-  infections_copy <- data.table::copy(infections)
-  data.table::setorder(infections_copy, sample, date)
-  infections_copy[, cum_infections := cumsum(value), by = sample]
-
-  # Calculate cumulative infections up to but not including current time
-  # This matches Stan timing: at time t, susceptible uses infections before t
-  infections_copy[, cum_infections_before := cum_infections - value]
-
-  # Extract population values per sample
-  pop_values <- pop[, .(sample, pop_value = value)]
-
-  # Merge R with cumulative infections by sample and date
-  merged <- merge(
-    R_unadjusted,
-    infections_copy[, .(sample, date, cum_infections_before)],
-    by = c("sample", "date"),
-    all.x = TRUE
-  )
-
-  # Merge with population values
-  merged <- merge(merged, pop_values, by = "sample")
-
-  # Calculate susceptible population and adjust Rt
-  merged[, susceptible := pmax(pop_floor, pop_value - cum_infections_before)]
-  merged[, value := value * (susceptible / pop_value)]
-
-  # Return adjusted Rt in same format, dropping intermediate columns
-  merged[, .(sample, date, value, strat)]
-}
-
 #' Format raw Stan samples with dates and metadata
 #'
 #' @description Internal helper that extracts Stan parameters, adds dates to
@@ -287,34 +233,20 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
     "imputed_reports", raw_samples, reported_dates[args$imputed_times]
   )
 
-  # R (reproduction number) - try R first, then gen_R
+  # R (reproduction number) - try R first (renewal model), then gen_R (backcalc)
   R_unadjusted <- extract_latent_state("R", raw_samples, reported_dates)
-  if (is.null(R_unadjusted)) {
+  using_renewal_model <- !is.null(R_unadjusted)
+  if (!using_renewal_model) {
     R_unadjusted <- extract_latent_state("gen_R", raw_samples, reported_dates)
   }
 
-  # Calculate adjusted Rt if population adjustment is enabled
-  if (!is.null(R_unadjusted) && args$use_pop > 0) {
-    pop <- extract_static_parameter("pop", raw_samples)
-
-    if (!is.null(pop) && !is.null(infections)) {
-      # Calculate adjusted Rt accounting for susceptible depletion
-      out$R <- calculate_adjusted_rt(
-        R_unadjusted,
-        infections,
-        pop,
-        pop_floor = args$pop_floor,
-        seeding_time = args$seeding_time,
-        reported_dates = reported_dates
-      )
-      # Store unadjusted Rt as well
-      out$R_unadjusted <- R_unadjusted
-    } else {
-      # Fallback to unadjusted if pop or infections are missing
-      out$R <- R_unadjusted
-    }
+  # Extract adjusted Rt if population adjustment is enabled and using renewal model
+  # (R_adj is only calculated in Stan when estimate_r > 0 && use_pop > 0)
+  if (using_renewal_model && args$use_pop > 0) {
+    R_adj <- extract_latent_state("R_adj", raw_samples, reported_dates)
+    out$R <- R_adj
+    out$R_unadjusted <- R_unadjusted
   } else {
-    # No population adjustment - use unadjusted Rt
     out$R <- R_unadjusted
   }
 
