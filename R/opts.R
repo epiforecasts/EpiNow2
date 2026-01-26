@@ -371,6 +371,14 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
 
   assert_number(pop_floor, lower = 0, finite = TRUE)
 
+  if (!missing(future)) {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      "rt_opts(future)",
+      "forecast_opts(future)"
+    )
+  }
+
   if (opts$use_rt) {
     opts$prior <- prior
   } else if (!missing(prior)) {
@@ -1065,9 +1073,7 @@ stan_opts <- function(object = NULL,
 
 #' Forecast options
 #' @description `r lifecycle::badge("stable")`
-#' Defines a list specifying the arguments passed to underlying stan
-#' backend functions via [stan_sampling_opts()] and [stan_vb_opts()]. Custom
-#' settings can be supplied which override the defaults.
+#' Defines forecast settings for [estimate_infections()] and related functions.
 #'
 #' @param horizon Numeric, defaults to 7. Number of days into the future to
 #' forecast.
@@ -1075,14 +1081,21 @@ stan_opts <- function(object = NULL,
 #'   any. If not given and observations are accumulated at constant frequency in
 #'   the data used for fitting then the same accumulation will be used in
 #'   forecasts unless set explicitly here.
-#' @return A `<forecast_opts>` object of forecast setting.
+#' @param future Character string, defaults to "latest". How to handle Rt
+#'   during the forecast period. Options are:
+#'   - "latest": Use the latest estimated Rt value
+#'   - "project": Continue the Gaussian process into the future
+#' @return A `<forecast_opts>` object of forecast settings.
 #' @seealso [fill_missing()]
 #' @export
 #' @examples
 #' forecast_opts(horizon = 28, accumulate = 7)
-forecast_opts <- function(horizon = 7, accumulate) {
+#' forecast_opts(horizon = 14, future = "project")
+forecast_opts <- function(horizon = 7, accumulate, future = "latest") {
+  future <- match.arg(future, c("latest", "project"))
   opts <- list(
-    horizon = horizon
+    horizon = horizon,
+    future = future
   )
   if (!missing(accumulate)) {
     opts$accumulate <- accumulate

@@ -4,7 +4,7 @@
 \alias{forecast_opts}
 \title{Forecast options}
 \usage{
-forecast_opts(horizon = 7, accumulate)
+forecast_opts(horizon = 7, accumulate, future = "latest")
 }
 \arguments{
 \item{horizon}{Numeric, defaults to 7. Number of days into the future to
@@ -14,18 +14,24 @@ forecast.}
 any. If not given and observations are accumulated at constant frequency in
 the data used for fitting then the same accumulation will be used in
 forecasts unless set explicitly here.}
+
+\item{future}{Character string, defaults to "latest". How to handle Rt
+during the forecast period. Options are:
+\itemize{
+\item "latest": Use the latest estimated Rt value
+\item "project": Continue the Gaussian process into the future
+}}
 }
 \value{
-A \verb{<forecast_opts>} object of forecast setting.
+A \verb{<forecast_opts>} object of forecast settings.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Defines a list specifying the arguments passed to underlying stan
-backend functions via \code{\link[=stan_sampling_opts]{stan_sampling_opts()}} and \code{\link[=stan_vb_opts]{stan_vb_opts()}}. Custom
-settings can be supplied which override the defaults.
+Defines forecast settings for \code{\link[=estimate_infections]{estimate_infections()}} and related functions.
 }
 \examples{
 forecast_opts(horizon = 28, accumulate = 7)
+forecast_opts(horizon = 14, future = "project")
 }
 \seealso{
 \code{\link[=fill_missing]{fill_missing()}}

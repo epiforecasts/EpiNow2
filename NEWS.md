@@ -9,6 +9,7 @@ The function interface remains unchanged.
 
 ## Package changes
 
+- The `future` argument has been moved from `rt_opts()` to `forecast_opts()`. Using `rt_opts(future = ...)` still works but will issue a deprecation warning.
 - Fixed integration tests for `estimate_truncation` and `estimate_secondary` parameter recovery, and updated `example_truncated` data generation to use the Stan `discretised_pmf` function directly.
 - Updated `setup_future()` to use `parallelly::availableCores()` instead of the re-exported `future::availableCores()`, and removed the deprecated `earlySignal` argument from `future::plan()` calls.
 - The test suite has been reorganised into core tests (fast, always run) and integration tests (slow, run weekly), improving local development speed by 77% (from 9 minutes to 2 minutes) whilst maintaining test coverage.

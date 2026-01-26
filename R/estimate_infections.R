@@ -212,6 +212,11 @@ estimate_infections <- function(data,
     rt <- NULL
   }
 
+  # Use future setting from forecast_opts (rt_opts$future is deprecated)
+  if (!is.null(rt) && !is.null(forecast$future)) {
+    rt$future <- forecast$future
+  }
+
   # Check verbose settings and set logger to match
   if (verbose) {
     futile.logger::flog.threshold(futile.logger::DEBUG,
