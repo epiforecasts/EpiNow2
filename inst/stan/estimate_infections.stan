@@ -250,6 +250,8 @@ generated quantities {
   vector[estimate_r > 0 ? 0 : ot_h] gen_R;
   vector[ot_h - 1] r;
   vector[return_likelihood ? ot : 0] log_lik;
+  // Adjusted Rt accounting for susceptible depletion (only when use_pop > 0)
+  vector[(estimate_r > 0 && use_pop > 0) ? ot_h : 0] R_adj;
 
   profile("generated quantities") {
     real reporting_overdispersion = get_param(
@@ -294,8 +296,14 @@ generated quantities {
       r = calculate_growth(
         infections, seeding_time, gt_rev_pmf_for_growth, growth_method
         );
+
+      // Calculate adjusted Rt when population adjustment is enabled
+      // R_adj = infections / infectiousness (back-calculated from adjusted infections)
+      if (estimate_r > 0 && use_pop > 0) {
+        R_adj = calculate_Rt(infections, seeding_time, gt_rev_pmf, 0);
+      }
     }
-    
+
     // simulate reported cases
     if (any_accumulate) {
       vector[ot_h] accumulated_reports =

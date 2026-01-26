@@ -128,13 +128,13 @@ The adjustment can be applied in two ways, controlled by the `pop_period` parame
 - `"forecast"` (default): adjustment applied only to forecasts beyond the observation period
 - `"all"`: adjustment applied to both the observation period and forecasts
 
-When population adjustment is enabled, the returned reproduction number estimates (`R`) are adjusted to reflect the effective reproduction occurring given the current susceptible population:
+When population adjustment is enabled, the returned reproduction number estimates (`R`) are back-calculated from the adjusted infections to reflect the effective reproduction occurring given the current susceptible population:
 
 \begin{equation}
-    R^{\text{adjusted}}_t = R_t \times \frac{S_t}{N}
+    R^{\text{adjusted}}_t = \frac{I_t}{\lambda_t}
 \end{equation}
 
-The unadjusted reproduction number (representing transmission in a fully susceptible population) is also returned as `R_unadjusted` for reference. This adjustment approach is based on the one implemented in the `epidemia` R package [@bhattSemiMechanisticBayesianModeling].
+where $I_t$ are the adjusted infections and $\lambda_t$ is the infectiousness (force of infection). This gives an effective reproduction number that is consistent with the infection dynamics. The unadjusted reproduction number (representing transmission in a fully susceptible population) is also returned as `R_unadjusted` for reference. This adjustment approach is based on the one implemented in the `epidemia` R package [@bhattSemiMechanisticBayesianModeling].
 
 
 ## Non-Mechanistic infection model
