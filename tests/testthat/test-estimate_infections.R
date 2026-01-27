@@ -327,3 +327,120 @@ test_that("extract_parameter_samples is deprecated", {
 
   expect_equal(old_quiet, new_output)
 })
+
+test_that("get_delays returns correct delays from estimate_infections", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  # Test getting all delays as named list
+  delays <- get_delays(out)
+  expect_type(delays, "list")
+  expect_true(length(delays) >= 1)
+  expect_true("generation_time" %in% names(delays))
+
+  # All elements should be dist_spec
+  for (nm in names(delays)) {
+    expect_s3_class(delays[[nm]], "dist_spec")
+  }
+})
+
+test_that("get_delays returns correct fixed parameter values", {
+  # Use fixed delays (no uncertainty) so we can verify exact values
+  # PMF must start with 0 (generation time at day 0 is not allowed)
+  fixed_gt <- NonParametric(pmf = c(0, 0.4, 0.35, 0.25))
+  fixed_delay <- LogNormal(meanlog = 1.5, sdlog = 0.5, max = 10)
+
+  out <- suppressWarnings(estimate_infections(
+    reported_cases,
+    generation_time = gt_opts(fixed_gt),
+    delays = delay_opts(fixed_delay),
+    stan = stan_opts(chains = 2, warmup = 25, samples = 25),
+    verbose = FALSE
+  ))
+
+  delays <- get_delays(out)
+
+  # Check generation time is returned correctly
+  expect_true("generation_time" %in% names(delays))
+  gt_returned <- delays$generation_time
+  expect_s3_class(gt_returned, "dist_spec")
+  # For nonparametric, the [[1]] element is the PMF (as vector, drop dim attr)
+  expect_equal(as.vector(gt_returned[[1]]), c(0, 0.4, 0.35, 0.25))
+
+  # Check reporting delay is returned correctly
+  expect_true("reporting" %in% names(delays))
+  delay_returned <- delays$reporting
+  expect_s3_class(delay_returned, "dist_spec")
+  # Delays are discretised when passed to Stan, so returned as nonparametric
+  # Check that PMF is approximately correct (discretised LogNormal)
+  expected_pmf <- as.vector(discretise(fixed_delay)[[1]])
+  expect_equal(as.vector(delay_returned[[1]]), expected_pmf)
+})
+
+test_that("$samples accessor is deprecated", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  expect_deprecated(out$samples)
+
+  # Verify it returns the same as get_samples()
+  withr::local_options(lifecycle_verbosity = "quiet")
+  samples_dollar <- out$samples
+  samples_new <- get_samples(out)
+
+  expect_equal(samples_dollar, samples_new)
+})
+
+test_that("$summarised accessor is deprecated", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  expect_deprecated(out$summarised)
+
+  # Verify it returns the same as summary(type = "parameters")
+  withr::local_options(lifecycle_verbosity = "quiet")
+  summarised_dollar <- out$summarised
+  summarised_new <- summary(out, type = "parameters")
+
+  expect_equal(summarised_dollar, summarised_new)
+})
+
+test_that("[[ accessor handles deprecated elements", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  # Test deprecation warning for [[
+  expect_deprecated(out[["samples"]])
+  expect_deprecated(out[["summarised"]])
+
+  # Test non-deprecated elements work without warning
+  expect_no_warning(out[["fit"]])
+  expect_no_warning(out[["args"]])
+  expect_no_warning(out[["observations"]])
+})
+
+test_that("$ accessor works for non-deprecated elements", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  # Test direct access to non-deprecated elements
+  expect_no_warning(out$fit)
+  expect_no_warning(out$args)
+  expect_no_warning(out$observations)
+
+  # Verify the elements are correct
+  expect_s4_class(out$fit, "stanfit")
+  expect_type(out$args, "list")
+  expect_s3_class(out$observations, "data.frame")
+})
+
+test_that("summary with type='parameters' includes parameter column", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  summ <- summary(out, type = "parameters")
+
+  # Should have a parameter column
+
+  expect_true("parameter" %in% names(summ))
+})

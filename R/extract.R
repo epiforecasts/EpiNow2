@@ -54,10 +54,12 @@ extract_latent_state <- function(param, samples, dates) {
 #' Extract samples from all parameters
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
-#' @return A `<data.table>` containing the parameter name, sample id and sample
-#' value, or NULL if parameters don't exist in the samples
+#' @param args Stan data list containing param_id_* and params_variable_lookup
+#'   for parameter naming.
+#' @return A `<data.table>` containing variable, parameter name, sample id and
+#'   sample value, or NULL if parameters don't exist in the samples
 #' @keywords internal
-extract_parameters <- function(samples) {
+extract_parameters <- function(samples, args) {
   # Check if params exist
   if (!("params" %in% names(samples))) {
     return(NULL)
@@ -71,12 +73,12 @@ extract_parameters <- function(samples) {
   param_names <- rep(NA_character_, n_cols)
 
   # Check all param_id_* variables to build the mapping
-  id_vars <- grep("^param_id_", names(samples), value = TRUE)
+  id_vars <- grep("^param_id_", names(args), value = TRUE)
   for (id_var in id_vars) {
     param_name <- sub("^param_id_", "", id_var)
-    id <- samples[[id_var]]
+    id <- args[[id_var]]
     if (!is.na(id) && id > 0) {
-      lookup_idx <- samples[["params_variable_lookup"]][id]
+      lookup_idx <- args[["params_variable_lookup"]][id]
       if (!is.na(lookup_idx) && lookup_idx > 0 && lookup_idx <= n_cols) {
         param_names[lookup_idx] <- param_name
       }
@@ -102,6 +104,79 @@ extract_parameters <- function(samples) {
   data.table::rbindlist(samples_list)
 }
 
+#' Name delay parameters for a single delay type
+#'
+#' @param delay_names Current delay names vector (modified in place via env)
+#' @param delay_name Name prefix for this delay type
+#' @param flat_range Indices of flat delays for this type
+#' @param types_p Vector indicating parametric (1) or not (0)
+#' @param types_id Vector of parametric delay indices
+#' @param params_groups Parameter column groupings
+#' @param n_cols Total number of parameter columns
+#' @return Updated delay_names vector
+#' @keywords internal
+#' @noRd
+name_delay_type_params <- function(delay_names, delay_name, flat_range,
+                                   types_p, types_id, params_groups, n_cols) {
+  param_idx <- 1
+  for (flat_i in flat_range) {
+    if (types_p[flat_i] != 1) next
+    p_idx <- types_id[flat_i]
+    col_start <- params_groups[p_idx]
+    col_end <- params_groups[p_idx + 1] - 1
+    for (col in col_start:col_end) {
+      if (col <= n_cols) {
+        delay_names[col] <- paste0(delay_name, "[", param_idx, "]")
+        param_idx <- param_idx + 1
+      }
+    }
+  }
+  delay_names
+}
+
+#' Build delay name lookup from args
+#'
+#' Helper function to map parameter column indices to delay names.
+#'
+#' @param args Stan data list with delay lookup variables
+#' @param n_cols Number of parameter columns
+#' @return Character vector mapping column indices to delay names
+#' @keywords internal
+#' @noRd
+build_delay_name_lookup <- function(args, n_cols) {
+  delay_names <- rep(NA_character_, n_cols)
+
+  id_vars <- grep("^delay_id_", names(args), value = TRUE)
+  required <- c(
+    "delay_types_groups", "delay_types_p",
+    "delay_types_id", "delay_params_groups"
+  )
+  if (length(id_vars) == 0 || !all(required %in% names(args))) {
+    return(delay_names)
+  }
+
+  types_groups <- args[["delay_types_groups"]]
+  types_p <- args[["delay_types_p"]]
+  types_id <- args[["delay_types_id"]]
+  params_groups <- args[["delay_params_groups"]]
+
+  for (id_var in id_vars) {
+    delay_name <- sub("^delay_id_", "", id_var)
+    id_val <- args[[id_var]]
+    id <- if (length(id_val) > 1) id_val[1] else id_val
+
+    if (is.na(id) || id <= 0 || id >= length(types_groups)) next
+
+    flat_start <- types_groups[id]
+    flat_end <- types_groups[id + 1] - 1
+    delay_names <- name_delay_type_params(
+      delay_names, delay_name, flat_start:flat_end,
+      types_p, types_id, params_groups, n_cols
+    )
+  }
+  delay_names
+}
+
 #' Extract samples from all delay parameters
 #'
 #' Extracts samples from all delay parameters using the delay ID lookup system.
@@ -110,46 +185,18 @@ extract_parameters <- function(samples) {
 #' meaningful names.
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
-#' @return A `<data.table>` with columns: parameter, sample, value, or NULL if
-#'   delay parameters don't exist in the samples
+#' @param args Stan data list with delay_id_* and related lookup variables.
+#' @return A `<data.table>` with columns: variable, parameter, sample, value,
+#'   or NULL if delay parameters don't exist in the samples
 #' @keywords internal
-extract_delays <- function(samples) {
-  # Check if delay_params exist
+extract_delays <- function(samples, args) {
   if (!("delay_params" %in% names(samples))) {
     return(NULL)
   }
 
-  # Extract all delay parameters
   delay_params <- samples[["delay_params"]]
   n_cols <- ncol(delay_params)
-
-  # Build reverse lookup: column index -> delay name
-  delay_names <- rep(NA_character_, n_cols)
-
-  # Check all delay_id_* variables to build the mapping
-  id_vars <- grep("^delay_id_", names(samples), value = TRUE)
-  if (length(id_vars) > 0 && "delay_types_groups" %in% names(samples)) {
-    delay_types_groups <- samples[["delay_types_groups"]]
-
-    for (id_var in id_vars) {
-      delay_name <- sub("^delay_id_", "", id_var)
-      id <- samples[[id_var]][1]  # Take first value (same across samples)
-
-      # Check if this delay exists (ID > 0)
-      if (!is.na(id) && id > 0 && id < length(delay_types_groups)) {
-        start_idx <- delay_types_groups[id]
-        end_idx <- delay_types_groups[id + 1] - 1
-
-        # Mark columns for this delay
-        for (i in seq_along(start_idx:end_idx)) {
-          col_idx <- start_idx + i - 1
-          if (col_idx <= n_cols) {
-            delay_names[col_idx] <- paste0(delay_name, "[", i, "]")
-          }
-        }
-      }
-    }
-  }
+  delay_names <- build_delay_name_lookup(args, n_cols)
 
   # Extract all columns
   samples_list <- lapply(seq_len(n_cols), function(i) {

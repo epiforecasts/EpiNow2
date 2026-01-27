@@ -426,6 +426,13 @@ run_region <- function(target_region,
 process_region <- function(out, target_region, timing,
                            return_output = TRUE, return_timing = TRUE,
                            complete_logger = "EpiNow2.epinow") {
+
+  # Skip processing for failed runs (which have an error field)
+  # Use .subset2 to bypass S3 method dispatch
+  if (!is.null(.subset2(out, "error"))) {
+    return(out)
+  }
+
   if (!is.null(out[["estimates"]]) && !return_output) {
     out$estimates$samples <- NULL
   }
@@ -476,7 +483,7 @@ process_regions <- function(regional_out, regions) {
     )
   }
   sucessful_regional_out <- purrr::keep(
-    purrr::compact(regional_out), ~ is.finite(.$timing)
+    purrr::compact(regional_out), ~ is.null(.$error) && is.finite(.$timing)
   )
   list(all = regional_out, successful = sucessful_regional_out)
 }

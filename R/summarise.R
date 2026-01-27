@@ -468,7 +468,10 @@ summarise_key_measures <- function(regional_results = NULL,
     timeseries <- regional_results
   }
   summarise_variable <- function(df, dof = Inf) {
-    cols <- setdiff(names(df), c("region", "date", "type", "strat"))
+    # Exclude non-numeric columns from rounding
+    cols <- setdiff(
+      names(df), c("region", "date", "type", "strat", "variable", "parameter")
+    )
     if (!is.null(dof)) {
       df[, (cols) := round(.SD, dof), .SDcols = cols]
     }
@@ -793,6 +796,14 @@ summary.epinow <- function(object,
                            target_date = NULL, params = NULL,
                            CrIs = c(0.2, 0.5, 0.9),
                            ...) {
+  # Check for failed runs
+  if (!is.null(object$error)) {
+    cli_abort(c(
+      "Cannot summarise a failed epinow run.",
+      "i" = "The run failed with error: {object$error}"
+    ))
+  }
+
   # Handle deprecated output argument
   if (!is.null(output)) {
     lifecycle::deprecate_warn(
@@ -964,6 +975,49 @@ summary.estimate_secondary <- function(object,
   # Time-varying parameters like secondary and sim_secondary have dates
   param_samples <- samples[is.na(date)]
 
+  # Calculate summary statistics grouped by parameter (not variable)
+  # This gives individual parameter names like "fraction_observed" instead of
+  # generic array names like "params"
+  out <- calc_summary_measures(
+    param_samples,
+    summarise_by = "parameter",
+    order_by = "parameter",
+    CrIs = CrIs
+  )
+
+  if (type == "compact") {
+    # Return only key parameters for a compact summary
+    # Filter to delay distribution and scaling parameters
+    key_patterns <- c("reporting\\[", "fraction_observed")
+    out <- out[grepl(paste(key_patterns, collapse = "|"), parameter)]
+  } else if (type == "parameters" && !is.null(params)) {
+    # Optional filtering by parameter name
+    out <- out[parameter %in% params]
+  }
+
+  out[]
+}
+
+#' Summarise results from estimate_truncation
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Returns parameter summary statistics for the fitted truncation model.
+#'
+#' @param object A fitted model object from `estimate_truncation()`
+#' @inheritParams calc_summary_measures
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A `<data.table>` with summary statistics for the truncation
+#'   distribution parameters.
+#' @method summary estimate_truncation
+#' @export
+summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
+  # Extract delay parameters directly from fit (avoids rbindlist warning)
+  raw_samples <- extract_samples(object$fit)
+  param_samples <- extract_delays(raw_samples, args = object$args)
+  # Rename parameter to variable for grouping
+  data.table::setnames(param_samples, "parameter", "variable")
+
   # Calculate summary statistics
   out <- calc_summary_measures(
     param_samples,
@@ -972,16 +1026,37 @@ summary.estimate_secondary <- function(object,
     CrIs = CrIs
   )
 
-  if (type == "compact") {
-    # Return only key parameters for a compact summary
-    # Typical parameters: delay_params (distribution parameters),
-    # params (scaling factors)
-    key_vars <- c("delay_params", "params", "fraction_observed")
-    out <- out[grepl(paste(key_vars, collapse = "|"), variable)]
-  } else if (type == "parameters" && !is.null(params)) {
-    # Optional filtering by parameter name
-    out <- out[variable %in% params]
+  # Map generic parameter names to distribution-specific names
+  dist_idx <- object$args$delay_dist[1] + 1
+  dist_type <- dist_spec_distributions()[dist_idx]
+  param_names <- natural_params(dist_type)
+  idx <- suppressWarnings(
+    as.integer(gsub(".*\\[(\\d+)\\]", "\\1", out$variable))
+  )
+  if (anyNA(idx)) {
+    cli::cli_warn("Could not parse parameter indices from variable names")
+    return(out)
   }
+  out[, variable := param_names[idx]]
 
-  out[]
+  # Add distribution info as attribute
+  attr(out, "distribution") <- dist_type
+  attr(out, "max") <- object$args$delay_max[1]
+  class(out) <- c("summary.estimate_truncation", class(out))
+
+  out
+}
+
+#' @export
+print.summary.estimate_truncation <- function(x, ...) {
+  dist_type <- attr(x, "distribution")
+  dist_max <- attr(x, "max")
+  cat(
+    "Truncation distribution:", dist_type,
+    paste0("(max: ", dist_max, ")"), "\n\n"
+  )
+  cat("Parameter estimates:\n")
+  # Print as regular data.table
+  print(as.data.table(x), ...)
+  invisible(x)
 }

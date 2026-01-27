@@ -56,11 +56,13 @@
 #' @param verbose Logical, should model fitting progress be returned. Defaults
 #' to [interactive()].
 #'
-#' @return An `<estimate_secondary>` object which is a list of outputs
-#' including: the stan object (`fit`), arguments used to fit the model
-#' (`args`), and the observed data (`observations`). Use `summary()` to access
-#' estimates, `get_samples()` to extract posterior samples, and
-#' `get_predictions()` to access predictions.
+#' @return An `<estimate_secondary>` object containing:
+#'
+#' - `fit`: The stan fit object.
+#' - `args`: A list of arguments used for fitting (stan data).
+#' - `observations`: The input data (`<data.frame>`).
+#'
+#' @seealso [get_samples()] [get_predictions()] [get_delays()]
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams update_secondary_args
@@ -273,7 +275,7 @@ estimate_secondary <- function(data,
     observations = reports
   )
 
-  class(ret) <- c("epinowfit", "estimate_secondary", class(ret))
+  class(ret) <- c("estimate_secondary", "epinowfit", class(ret))
   ret
 }
 
@@ -776,7 +778,7 @@ forecast_secondary <- function(estimate,
     predictions = {
       lifecycle::deprecate_warn(
         "1.8.0",
-        "estimate_secondary()$predictions",
+        I("estimate_secondary()$predictions"),
         "get_predictions()"
       )
       get_predictions(x)
@@ -784,7 +786,7 @@ forecast_secondary <- function(estimate,
     posterior = {
       lifecycle::deprecate_warn(
         "1.8.0",
-        "estimate_secondary()$posterior",
+        I("estimate_secondary()$posterior"),
         "get_samples()"
       )
       get_samples(x)
@@ -792,12 +794,34 @@ forecast_secondary <- function(estimate,
     data = {
       lifecycle::deprecate_warn(
         "1.8.0",
-        "estimate_secondary()$data",
-        "estimate_secondary()$observations"
+        I("estimate_secondary()$data"),
+        I("estimate_secondary()$observations")
       )
-      x[["observations"]]
+      .subset2(x, "observations")
     },
-    # For other elements, use normal list extraction
-    NextMethod("$")
+    # For other elements, use .subset2 for direct list access
+    .subset2(x, name)
   )
+}
+
+#' Extract elements from estimate_secondary objects with bracket notation
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for bracket-based access to deprecated
+#' elements. See [$.estimate_secondary] for details on the deprecation.
+#'
+#' @param x An `estimate_secondary` object
+#' @param i The name or index of the element to extract
+#' @return The requested element with a deprecation warning for deprecated
+#'   elements
+#' @keywords internal
+#' @export
+#' @method [[ estimate_secondary
+`[[.estimate_secondary` <- function(x, i) {
+  deprecated_names <- c("predictions", "posterior", "data")
+  if (i %in% deprecated_names) {
+    # nolint next: object_usage_linter
+    return(`$.estimate_secondary`(x, i))
+  }
+  .subset2(x, i)
 }

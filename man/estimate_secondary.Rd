@@ -91,11 +91,12 @@ number of cases based on the 7-day average. If the average is above this
 threshold then the zero is replaced using \code{fill}.}
 }
 \value{
-An \verb{<estimate_secondary>} object which is a list of outputs
-including: the stan object (\code{fit}), arguments used to fit the model
-(\code{args}), and the observed data (\code{observations}). Use \code{summary()} to access
-estimates, \code{get_samples()} to extract posterior samples, and
-\code{get_predictions()} to access predictions.
+An \verb{<estimate_secondary>} object containing:
+\itemize{
+\item \code{fit}: The stan fit object.
+\item \code{args}: A list of arguments used for fitting (stan data).
+\item \code{observations}: The input data (\verb{<data.frame>}).
+}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -178,4 +179,7 @@ plot(prev_preds, new_obs = cases, from = "2020-06-01")
 
 options(old_opts)
 }
+}
+\seealso{
+\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[=get_delays]{get_delays()}}
 }

@@ -775,7 +775,7 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$weight <- array(rep(1, ret$n_p))
   ret$weight[weight_priors] <- time_points
   ## assign distribution
-  ret$dist <- array(match(distributions, c("lognormal", "gamma")) - 1L)
+  ret$dist <- array(match(distributions, dist_spec_distributions()) - 1L)
 
   names(ret) <- paste("delay", names(ret), sep = "_")
   ret <- c(ret, as.list(delay_ids))
@@ -921,8 +921,8 @@ create_infection_summary <- function(object,
 
   summarised <- calc_summary_measures(
     samples,
-    summarise_by = c("date", "variable", "strat", "type"),
-    order_by = c("variable", "date"),
+    summarise_by = c("date", "variable", "parameter", "strat", "type"),
+    order_by = c("variable", "parameter", "date"),
     CrIs = CrIs
   )
 

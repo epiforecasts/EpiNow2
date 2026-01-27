@@ -71,14 +71,14 @@
 #' threshold then the zero is replaced using `fill`.
 #'
 #' @export
-#' @return An `<estimate_infections>` object which is a list of outputs
-#' including: the stan object (`fit`), arguments used to fit the model
-#' (`args`), and the observed data (`observations`). Use `summary()` to access
-#' estimates, `get_samples()` to extract posterior samples, and
-#' `get_predictions()` to access predicted reported cases.
+#' @return An `<estimate_infections>` object containing:
 #'
-#' @seealso [epinow()] [regional_epinow()] [forecast_infections()]
-#' [estimate_truncation()]
+#' - `fit`: The stan fit object.
+#' - `args`: A list of arguments used for fitting (stan data).
+#' - `observations`: The input data (`<data.frame>`).
+#'
+#' @seealso [get_samples()] [get_predictions()] [get_delays()] [epinow()]
+#' [regional_epinow()] [forecast_infections()] [estimate_truncation()]
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
 #' @inheritParams create_rt_data
@@ -295,6 +295,66 @@ estimate_infections <- function(data,
   )
 
   ## Join stan fit if required
-  class(ret) <- c("epinowfit", "estimate_infections", class(ret))
+  class(ret) <- c("estimate_infections", "epinowfit", class(ret))
   ret
+}
+
+#' Extract elements from estimate_infections objects with deprecated warnings
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for the old return structure. The previous
+#' structure with \code{samples} and \code{summarised} elements is deprecated.
+#' Use the accessor methods instead:
+#' \itemize{
+#'   \item \code{samples} - use \code{get_samples(object)}
+#'   \item \code{summarised} - use \code{summary(object, type = "parameters")}
+#' }
+#'
+#' @param x An \code{estimate_infections} object
+#' @param name The name of the element to extract
+#' @return The requested element with a deprecation warning for deprecated
+#'   elements
+#' @keywords internal
+#' @export
+#' @method $ estimate_infections
+`$.estimate_infections` <- function(x, name) {
+  if (name == "samples") {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      I("estimate_infections()$samples"),
+      "get_samples()"
+    )
+    return(get_samples(x))
+  }
+  if (name == "summarised") {
+    lifecycle::deprecate_warn(
+      "1.8.0",
+      I("estimate_infections()$summarised"),
+      I("summary(type = 'parameters')")
+    )
+    return(summary(x, type = "parameters"))
+  }
+  .subset2(x, name)
+}
+
+#' Extract elements from estimate_infections objects with bracket notation
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for bracket-based access to deprecated
+#' elements. See [$.estimate_infections] for details on the deprecation.
+#'
+#' @param x An `estimate_infections` object
+#' @param i The name or index of the element to extract
+#' @return The requested element with a deprecation warning for deprecated
+#'   elements
+#' @keywords internal
+#' @export
+#' @method [[ estimate_infections
+`[[.estimate_infections` <- function(x, i) {
+  deprecated_names <- c("samples", "summarised")
+  if (i %in% deprecated_names) {
+    # nolint next: object_usage_linter
+    return(`$.estimate_infections`(x, i))
+  }
+  .subset2(x, i)
 }

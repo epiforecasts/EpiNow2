@@ -9,6 +9,7 @@ The function interface remains unchanged.
 
 ## Package changes
 
+- Fixed integration tests for `estimate_truncation` and `estimate_secondary` parameter recovery, and updated `example_truncated` data generation to use the Stan `discretised_pmf` function directly.
 - Updated `setup_future()` to use `parallelly::availableCores()` instead of the re-exported `future::availableCores()`, and removed the deprecated `earlySignal` argument from `future::plan()` calls.
 - The test suite has been reorganised into core tests (fast, always run) and integration tests (slow, run weekly), improving local development speed by 77% (from 9 minutes to 2 minutes) whilst maintaining test coverage.
 - Added comprehensive unit tests for Stan functions including `discretised_pmf`, `get_delay_rev_pmf`, `convolve_to_report`, and `deconvolve_infections`.
@@ -23,6 +24,7 @@ The function interface remains unchanged.
   - Use `summary(object)` to get summarised estimates (same as before, but `type = "samples"` is now deprecated).
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
   - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
+  - **Deprecated**: `$samples` and `$summarised` accessors now issue deprecation warnings. Use `get_samples()` and `summary()` instead.
   - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
 - `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
 - `estimate_secondary()` now returns an S3 object of class `c("epinowfit", "estimate_secondary", "list")` with elements `fit`, `args`, and `observations`, matching the structure of `estimate_infections()`.
@@ -30,7 +32,7 @@ The function interface remains unchanged.
   - Use `get_predictions(object)` to get predicted secondary observations with credible intervals merged with observations.
   - Use `summary(object)` to get summarised parameter estimates. Use `type = "compact"` for key parameters only, or `type = "parameters"` with a `params` argument to select specific parameters.
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
-  - **Deprecated**: The previous return structure with `predictions`, `posterior`, and `data` elements is deprecated and will be removed in a future release. Backward compatibility is provided with deprecation warnings when accessing these elements via `$`.
+  - **Deprecated**: The previous return structure with `predictions`, `posterior`, and `data` elements is deprecated and will be removed in a future release. Backward compatibility is provided with deprecation warnings when accessing these elements via `$` or `[[`.
 - `forecast_secondary()` now returns an independent S3 class `"forecast_secondary"` instead of inheriting from `"estimate_secondary"`, with dedicated `get_samples()`, `get_predictions()`, and `plot()` methods.
 - `epinow()` now returns an S3 object that inherits from `estimate_infections`, with class `c("epinow", "epinowfit", "estimate_infections", "list")`. This provides a consistent interface with `estimate_infections()` whilst adding epinow-specific computed elements.
   - Use `get_samples(object)` to extract formatted posterior samples.
@@ -40,6 +42,15 @@ The function interface remains unchanged.
   - The `output` argument now controls what is saved to disk, not the return structure.
   - **Deprecated**: The previous return structure with `$estimates`, `$estimated_reported_cases`, `$summary`, `$plots`, and `$estimate_infections` elements is deprecated. Backward compatibility is provided via `$` and `[[` operators with deprecation warnings.
 - `plot.estimate_infections()` and `plot.forecast_infections()` now accept a `CrIs` argument to control which credible intervals are displayed.
+- Refactored `estimate_truncation()` to return a proper S3 object with a simplified structure.
+  - Renamed return elements: `obs` → `observations`, `data` → `args`.
+  - Removed elements: `last_obs` (now included in `observations`), `cmf` and `dist`.
+  - Use `get_delays(object)$truncation` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
+  - Use `get_predictions(object)` to extract truncation-adjusted (nowcast) estimates that can be compared to observed data.
+  - Use `get_samples(object)` to extract posterior samples.
+  - Use `summary(object)` to get parameter estimates as a data.table.
+  - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_delays()$truncation` instead.
+- Added `get_delays()` generic function to extract delay distributions from fitted models as a named list of `dist_spec` objects. Works with `estimate_infections()`, `estimate_secondary()`, and `estimate_truncation()`. Also added `get_delay(object, type)` as a convenience function to extract a single delay by name (e.g., `get_delay(fit, "truncation")`).
 - Added a `style` argument to `plot_estimates()` and related plot methods to display credible intervals as error bars (`"linerange"`) instead of the default ribbons (`"ribbon"`). Error bars can be clearer for weekly or aggregated data.
 - **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 - **Internal**: Stan model parameter names have been renamed for clarity (`dispersion` → `reporting_overdispersion`, `frac_obs` → `fraction_observed`). This simplifies internal code by removing post-hoc parameter renaming. This may affect users who access Stan models directly or use custom priors with the old parameter names.

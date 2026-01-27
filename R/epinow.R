@@ -22,10 +22,16 @@
 #' @param plot_args A list of optional arguments passed to
 #' [plot.estimate_infections()].
 #'
-#' @return A list of output from estimate_infections with additional elements
-#'   summarising results and reporting errors if they have occurred.
+#' @return An `<epinow>` object (inheriting from `<estimate_infections>`)
+#' containing:
+#'
+#' - `fit`: The stan fit object.
+#' - `args`: A list of arguments used for fitting (stan data).
+#' - `observations`: The input data (`<data.frame>`).
+#' - `timing`: The run time (if `output` includes "timing").
 #' @export
-#' @seealso [estimate_infections()] [forecast_infections()] [regional_epinow()]
+#' @seealso [get_samples()] [get_predictions()] [get_delays()]
+#' [estimate_infections()] [forecast_infections()] [regional_epinow()]
 #' @inheritParams calc_CrIs
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
@@ -418,7 +424,7 @@ epinow_compat_extract <- function(x, name) {
   if (!is.null(result) || name %in% deprecated_names) {
     return(result)
   }
-  NextMethod("$")
+  .subset2(x, name)
 }
 
 #' Extract elements from epinow objects with bracket notation
@@ -443,5 +449,5 @@ epinow_compat_extract <- function(x, name) {
   if (!is.null(result) || i %in% deprecated_names) {
     return(result)
   }
-  NextMethod("[[")
+  .subset2(x, i)
 }

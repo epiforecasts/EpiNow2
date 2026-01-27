@@ -101,22 +101,21 @@ test_that("forecast_secondary can return values from simulated data and plot
 test_that("estimate_secondary recovers scaling parameter from incidence data", {
   # Basic parameter recovery check using pre-computed fit
   # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
-  params <- c(
-    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-    "scaling" = "params[1]"
-  )
+  samples <- get_samples(default_inc)
+  delay_samples <- samples[variable == "delay_params"]
+  param_samples <- samples[variable == "params"]
 
-  inc_posterior <- get_samples(default_inc)[variable %in% params]
-  inc_summary <- inc_posterior[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
+  # Check meanlog (reporting[1]) is reasonably recovered (1.8 true value)
+  meanlog_mean <- delay_samples[parameter == "reporting[1]", mean(value)]
+  expect_equal(meanlog_mean, 1.8, tolerance = 0.2)
 
-  # Check scaling parameter is reasonably recovered (0.4 true value)
-  expect_equal(
-    inc_summary$mean, c(1.8, 0.5, 0.4),
-    tolerance = 0.15
-  )
+  # Check sdlog (reporting[2]) is reasonably recovered (0.5 true value)
+  sdlog_mean <- delay_samples[parameter == "reporting[2]", mean(value)]
+  expect_equal(sdlog_mean, 0.5, tolerance = 0.15)
+
+  # Check scaling (fraction_observed) is reasonably recovered (0.4 true value)
+  scaling_mean <- param_samples[parameter == "fraction_observed", mean(value)]
+  expect_equal(scaling_mean, 0.4, tolerance = 0.05)
 })
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false) -
@@ -215,41 +214,29 @@ test_that("estimate_secondary can recover simulated parameters", {
     verbose = FALSE
   )
 
-  # extract posterior variables of interest
-  params <- c(
-    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-    "scaling" = "params[1]"
-  )
+  # Extract posterior samples
+  inc_samples <- get_samples(inc)
+  prev_samples <- get_samples(prev)
 
-  inc_posterior <- get_samples(inc)[variable %in% params]
-  prev_posterior <- get_samples(prev)[variable %in% params]
+  # Check incidence model parameter recovery
+  # True values: meanlog = 1.8, sdlog = 0.5, scaling = 0.4
+  inc_meanlog <- mean(inc_samples[parameter == "reporting[1]", value])
+  inc_sdlog <- mean(inc_samples[parameter == "reporting[2]", value])
+  inc_scaling <- mean(inc_samples[parameter == "fraction_observed", value])
 
-  # Calculate summary statistics from raw samples
-  inc_summary <- inc_posterior[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
-  prev_summary <- prev_posterior[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
+  expect_equal(inc_meanlog, 1.8, tolerance = 0.1)
+  expect_equal(inc_sdlog, 0.5, tolerance = 0.1)
+  expect_equal(inc_scaling, 0.4, tolerance = 0.1)
 
-  expect_equal(
-    inc_summary$mean, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-  expect_equal(
-    inc_summary$median, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-  expect_equal(
-    prev_summary$mean, c(1.6, 0.8, 0.3),
-    tolerance = 0.2
-  )
-  expect_equal(
-    prev_summary$median, c(1.6, 0.8, 0.3),
-    tolerance = 0.2
-  )
+  # Check prevalence model parameter recovery
+  # True values: meanlog = 1.6, sdlog = 0.8, scaling = 0.3
+  prev_meanlog <- mean(prev_samples[parameter == "reporting[1]", value])
+  prev_sdlog <- mean(prev_samples[parameter == "reporting[2]", value])
+  prev_scaling <- mean(prev_samples[parameter == "fraction_observed", value])
+
+  expect_equal(prev_meanlog, 1.6, tolerance = 0.2)
+  expect_equal(prev_sdlog, 0.8, tolerance = 0.2)
+  expect_equal(prev_scaling, 0.3, tolerance = 0.2)
 })
 
 test_that("estimate_secondary can recover simulated parameters with the
@@ -258,34 +245,24 @@ test_that("estimate_secondary can recover simulated parameters with the
   skip_on_os("windows")
   inc_cases <- setup_incidence_data()
 
-  # extract posterior variables of interest
-  params <- c(
-    "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-    "scaling" = "params[1]"
-  )
-
   output <- capture.output(suppressMessages(suppressWarnings(
     inc_cmdstanr <- estimate_secondary(inc_cases[1:60],
       obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
       verbose = FALSE, stan = stan_opts(backend = "cmdstanr")
     )
   )))
-  inc_posterior_cmdstanr <- get_samples(inc_cmdstanr)[variable %in% params]
 
-  # Calculate summary statistics from raw samples
-  inc_summary_cmdstanr <- inc_posterior_cmdstanr[, .(
-    mean = mean(value),
-    median = stats::median(value)
-  ), by = variable]
+  # Extract posterior samples and check parameter recovery
+  # True values: meanlog = 1.8, sdlog = 0.5, scaling = 0.4
+  inc_samples <- get_samples(inc_cmdstanr)
 
-  expect_equal(
-    inc_summary_cmdstanr$mean, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-  expect_equal(
-    inc_summary_cmdstanr$median, c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
+  inc_meanlog <- mean(inc_samples[parameter == "reporting[1]", value])
+  inc_sdlog <- mean(inc_samples[parameter == "reporting[2]", value])
+  inc_scaling <- mean(inc_samples[parameter == "fraction_observed", value])
+
+  expect_equal(inc_meanlog, 1.8, tolerance = 0.1)
+  expect_equal(inc_sdlog, 0.5, tolerance = 0.1)
+  expect_equal(inc_scaling, 0.4, tolerance = 0.1)
 })
 
 test_that("forecast_secondary works with fixed delays", {
@@ -389,4 +366,76 @@ test_that("estimate_secondary works with zero_threshold set", {
   )
   expect_s3_class(out, "estimate_secondary")
   expect_named(out, c("fit", "args", "observations"))
+})
+
+test_that("get_delays returns correct delays from estimate_secondary", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  # Test getting all delays as named list
+  delays <- get_delays(out)
+  expect_type(delays, "list")
+
+  # All elements should be dist_spec (if any exist)
+  for (nm in names(delays)) {
+    expect_s3_class(delays[[nm]], "dist_spec")
+  }
+})
+
+test_that("[[ accessor handles deprecated elements", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  # Test deprecation warning for [[
+  expect_deprecated(out[["predictions"]])
+  expect_deprecated(out[["posterior"]])
+  expect_deprecated(out[["data"]])
+
+  # Test non-deprecated elements work without warning
+  expect_no_warning(out[["fit"]])
+  expect_no_warning(out[["args"]])
+  expect_no_warning(out[["observations"]])
+})
+
+test_that("$ accessor works for non-deprecated elements", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  # Test direct access to non-deprecated elements
+  expect_no_warning(out$fit)
+  expect_no_warning(out$args)
+  expect_no_warning(out$observations)
+
+  # Verify the elements are correct
+  expect_s4_class(out$fit, "stanfit")
+  expect_type(out$args, "list")
+  expect_s3_class(out$observations, "data.frame")
+})
+
+test_that("summary returns individual parameter names", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  summ <- summary(out, type = "parameters")
+
+  # Should have a parameter column with named parameters
+  expect_true("parameter" %in% names(summ))
+
+  # Should include specific parameter names
+  expect_true("fraction_observed" %in% summ$parameter)
+  expect_true(any(grepl("reporting\\[", summ$parameter)))
+})
+
+test_that("summary compact type returns key parameters", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  summ <- summary(out, type = "compact")
+
+  # Should have a parameter column
+  expect_true("parameter" %in% names(summ))
+
+  # Compact should include fraction_observed and reporting parameters
+  expect_true("fraction_observed" %in% summ$parameter)
+  expect_true(any(grepl("reporting\\[", summ$parameter)))
 })

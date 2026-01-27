@@ -191,7 +191,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
       ]
   }
   # Auto-detect and extract all static parameters from params matrix
-  all_params <- extract_parameters(samples)
+  all_params <- extract_parameters(samples, args = data)
   if (!is.null(all_params)) {
     # Get unique parameter names
     param_names <- unique(all_params$parameter)
@@ -275,13 +275,14 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
 
   # Delay parameters
   if (args$delay_params_length > 0) {
-    out$delay_params <- extract_delays(raw_samples)
+    out$delay_params <- extract_delays(raw_samples, args = args)
   }
 
   # Params matrix
-  out$params <- extract_parameters(raw_samples)
+  out$params <- extract_parameters(raw_samples, args = args)
 
   # Combine all parameters into single data.table
+  # idcol adds 'variable' column from list names (infections, R, params, etc.)
   combined <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
 
   # Add strat column if missing

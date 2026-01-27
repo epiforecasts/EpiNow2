@@ -18,6 +18,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   test-full:
     runs-on: macos-latest
@@ -79,3 +83,30 @@ jobs:
         if: always() && (github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0')
         run: find . -name 'testthat.Rout*' -exec cat '{}' \; || true
         shell: bash
+
+      - name: Create issue on failure
+        if: failure() && github.ref == 'refs/heads/main' && (github.event_name != 'schedule' || steps.check_changes.outputs.changes != '0')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if an open issue for integration test failures already exists
+          EXISTING=$(gh issue list --state open --label "bug" --search "Integration tests failed" --json number --jq '.[0].number')
+          if [ -n "$EXISTING" ]; then
+            echo "Adding comment to existing issue #$EXISTING"
+            gh issue comment "$EXISTING" --body "Integration tests failed again.
+
+          **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          **Triggered by:** ${{ github.event_name }}
+          **Date:** $(date +%Y-%m-%d)"
+          else
+            echo "Creating new issue"
+            gh issue create \
+              --title "Integration tests failed" \
+              --body "The integration test run failed.
+
+          **Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          **Triggered by:** ${{ github.event_name }}
+
+          Please investigate the failing tests." \
+              --label "bug"
+          fi
