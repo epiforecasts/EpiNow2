@@ -32,16 +32,11 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: NA
           install-pandoc: false
           extra-packages: |
             here
             scoringutils
             loo
-            data.table
-            rstan
-            any::rmarkdown
-            matrixStats
             local::.
       - name: Run synthetic validation
         run: |
