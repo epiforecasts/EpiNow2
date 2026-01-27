@@ -240,7 +240,7 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
     R_unadjusted <- extract_latent_state("gen_R", raw_samples, reported_dates)
   }
 
-  # Extract adjusted Rt if population adjustment is enabled and using renewal model
+  # Extract adjusted Rt if pop adjustment is enabled and renewal model
   # (R_adj is only calculated in Stan when estimate_r > 0 && use_pop > 0)
   if (using_renewal_model && args$use_pop > 0) {
     R_adj <- extract_latent_state("R_adj", raw_samples, reported_dates)
