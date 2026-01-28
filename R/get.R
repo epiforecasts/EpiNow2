@@ -507,35 +507,6 @@ get_predictions.estimate_truncation <- function(object,
   data.table::rbindlist(predictions)
 }
 
-#' Get delay distributions from a fitted model
-#'
-#' @description `r lifecycle::badge("experimental")`
-#' Extracts the delay distributions used in a fitted model. For
-#' `estimate_infections()` this includes generation time, reporting delays,
-#' and truncation delays. For `estimate_secondary()` this includes any
-#' delays specified in the model. For `estimate_truncation()` this returns
-#' the estimated truncation distribution.
-#'
-#' @param object A fitted model object (e.g., from `estimate_infections()`,
-#'   `estimate_secondary()`, or `estimate_truncation()`)
-#' @param ... Additional arguments passed to methods
-#'
-#' @return A named list of `dist_spec` objects representing the delay
-#'   distributions. The list may be empty if no delays were specified.
-#'   Use `names()` to see available delays.
-#'
-#' @export
-#' @examples
-#' \dontrun{
-#' # Get all delays from a fitted model
-#' delays <- get_delays(fit)
-#' names(delays)
-#' # Access specific delay
-#' delays$generation_time
-#' }
-get_delays <- function(object, ...) {
-  UseMethod("get_delays")
-}
 
 #' Reconstruct a dist_spec from stored stan data and posterior
 #'
@@ -582,6 +553,22 @@ reconstruct_delay <- function(object, delay_name) {
   if (length(delay_list) == 1) delay_list[[1]] else do.call(c, delay_list)
 }
 
+#' Create a Normal distribution from posterior samples
+#'
+#' Helper function to create a Normal distribution from a row of posterior
+#' summary statistics, with consistent rounding.
+#'
+#' @param posterior Data frame with `mean` and `sd` columns from Stan output
+#' @param idx Integer index into the posterior data frame
+#' @return A `Normal` distribution object
+#' @keywords internal
+posterior_to_normal <- function(posterior, idx) {
+  Normal(
+    mean = round(posterior$mean[idx], 3),
+    sd = round(posterior$sd[idx], 3)
+  )
+}
+
 #' Reconstruct a parametric delay distribution
 #'
 #' Helper function to reconstruct a single parametric delay component from
@@ -613,8 +600,7 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
   parameters <- lapply(seq_along(prior_mean), function(j) {
     estimated <- prior_sd[j] > 0 && !is.na(prior_sd[j])
     if (estimated && !is.null(posterior)) {
-      Normal(round(posterior$mean[param_idx[j]], 3),
-             round(posterior$sd[param_idx[j]], 3))
+      posterior_to_normal(posterior, param_idx[j])
     } else if (prior_sd[j] == 0 || is.na(prior_sd[j])) {
       prior_mean[j]
     } else {
@@ -643,59 +629,84 @@ reconstruct_nonparametric <- function(stan_data, np_id) {
   NonParametric(pmf = stan_data$delay_np_pmf[pmf_idx])
 }
 
-#' @rdname get_delays
-#' @export
-get_delays.epinowfit <- function(object, ...) {
-  stan_data <- object$args
+#' Extract delay distributions from a fitted model
+#'
+#' @description Internal helper to extract delay distributions from the
+#' `delay_id_*` variables in stan data.
+#'
+#' @param x A fitted model object with `$fit` and `$args` components.
+#' @param stan_data The stan data list from `x$args`.
+#'
+#' @return A named list of `dist_spec` objects representing the posterior
+#' distributions of delay parameters.
+#' @keywords internal
+extract_delay_params <- function(x, stan_data) {
+  delay_id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
 
-  # Find all delay_id_* variables in stan_data with non-zero IDs
-  id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
-  available_names <- sub("^delay_id_", "", id_vars)
-  available_names <- available_names[vapply(
-    id_vars, function(v) !is.null(stan_data[[v]]) && stan_data[[v]] > 0,
-    logical(1)
-  )]
 
-  # Return named list of all available delays (with posterior if estimated)
-  delays <- lapply(available_names, function(n) reconstruct_delay(object, n))
-  names(delays) <- available_names
-  delays
+  # Filter to valid delays (id > 0) and extract names upfront
+  valid <- vapply(delay_id_vars, function(v) {
+    id <- stan_data[[v]]
+    !is.null(id) && id > 0
+  }, logical(1))
+
+  delay_names <- sub("^delay_id_", "", delay_id_vars[valid])
+
+  # Build named list directly
+  result <- purrr::map(delay_names, function(name) reconstruct_delay(x, name))
+  names(result) <- delay_names
+  result
 }
 
-#' Get a single delay distribution from a fitted model
+#' Extract scalar parameters from a fitted model
 #'
-#' @description `r lifecycle::badge("experimental")`
-#' Convenience function to extract a single delay distribution by name.
-#' This is equivalent to `get_delays(object)[[type]]` but provides a
-#' cleaner interface.
+#' @description Internal helper to extract scalar parameters (e.g.,
+#' `fraction_observed`) from the params array based on `param_id_*` variables.
 #'
-#' @param object A fitted model object (e.g., from `estimate_infections()`,
-#'   `estimate_secondary()`, or `estimate_truncation()`)
-#' @param type Character string specifying the delay type to extract.
-#'   Common values include `"generation_time"`, `"reporting"`, and
-#'   `"truncation"`. Use `names(get_delays(object))` to see available types.
-#' @param ... Additional arguments passed to methods
+#' @param x A fitted model object with `$fit` and `$args` components.
+#' @param stan_data The stan data list from `x$args`.
 #'
-#' @return A `dist_spec` object representing the requested delay distribution,
-#'   or `NULL` if the specified type is not found.
-#'
-#' @seealso [get_delays()] to retrieve all delay distributions as a list
-#' @export
-#' @examples
-#' \dontrun{
-#' # Get truncation delay from estimate_truncation
-#' trunc_dist <- get_delay(fit, "truncation")
-#'
-#' # Get generation time from estimate_infections
-#' gt <- get_delay(fit, "generation_time")
-#' }
-get_delay <- function(object, type, ...) {
-  UseMethod("get_delay")
+#' @return A named list of `dist_spec` objects representing the posterior
+#' distributions of scalar parameters.
+#' @keywords internal
+extract_scalar_params <- function(x, stan_data) {
+  lookup <- stan_data$params_variable_lookup
+  has_params <- !is.null(lookup) && any(lookup > 0) && !is.null(x$fit)
+  if (!has_params) {
+    return(list())
+  }
+
+  posterior <- extract_stan_param(x$fit, params = "params")
+  if (is.null(posterior) || nrow(posterior) == 0) {
+    return(list())
+  }
+
+  param_id_vars <- grep("^param_id_", names(stan_data), value = TRUE)
+  param_names <- sub("^param_id_", "", param_id_vars)
+  ids <- vapply(param_id_vars, function(v) {
+    id <- stan_data[[v]]
+    if (is.null(id) || is.na(id)) 0L else as.integer(id)
+  }, integer(1))
+
+  valid <- ids > 0
+  lookup_idxs <- rep(NA_integer_, length(ids))
+  lookup_idxs[valid] <- lookup[ids[valid]]
+  valid <- valid & !is.na(lookup_idxs) & lookup_idxs > 0 &
+    lookup_idxs <= nrow(posterior)
+
+  result <- purrr::map(which(valid), function(i) {
+    posterior_to_normal(posterior, lookup_idxs[i])
+  })
+  names(result) <- param_names[valid]
+  result
 }
 
-#' @rdname get_delay
+#' @rdname get_parameters
 #' @export
-get_delay.default <- function(object, type, ...) {
-  delays <- get_delays(object, ...)
-  delays[[type]]
+get_parameters.epinowfit <- function(x, ...) {
+  stan_data <- x$args
+  c(
+    extract_delay_params(x, stan_data),
+    extract_scalar_params(x, stan_data)
+  )
 }

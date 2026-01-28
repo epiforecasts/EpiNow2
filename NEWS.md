@@ -46,12 +46,12 @@ The function interface remains unchanged.
 - Refactored `estimate_truncation()` to return a proper S3 object with a simplified structure.
   - Renamed return elements: `obs` → `observations`, `data` → `args`.
   - Removed elements: `last_obs` (now included in `observations`), `cmf` and `dist`.
-  - Use `get_delays(object)$truncation` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
+  - Use `get_parameters(object)[["truncation"]]` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
   - Use `get_predictions(object)` to extract truncation-adjusted (nowcast) estimates that can be compared to observed data.
   - Use `get_samples(object)` to extract posterior samples.
   - Use `summary(object)` to get parameter estimates as a data.table.
-  - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_delays()$truncation` instead.
-- Added `get_delays()` generic function to extract delay distributions from fitted models as a named list of `dist_spec` objects. Works with `estimate_infections()`, `estimate_secondary()`, and `estimate_truncation()`. Also added `get_delay(object, type)` as a convenience function to extract a single delay by name (e.g., `get_delay(fit, "truncation")`).
+  - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_parameters(x)[["truncation"]]` instead.
+- Updated `get_parameters()` to an S3 generic that works with both `dist_spec` objects (to extract fixed parameter values) and fitted model objects from `estimate_infections()`, `estimate_secondary()`, and `estimate_truncation()`. For fitted models, it returns posterior distributions as `dist_spec` objects, allowing estimated parameters to be used directly as priors in subsequent model fits. Use `get_parameters(fit)` to extract all parameters as a named list, or `get_parameters(fit)[["truncation"]]` for a single parameter.
 - Added a `style` argument to `plot_estimates()` and related plot methods to display credible intervals as error bars (`"linerange"`) instead of the default ribbons (`"ribbon"`). Error bars can be clearer for weekly or aggregated data.
 - **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 - **Internal**: Stan model parameter names have been renamed for clarity (`dispersion` → `reporting_overdispersion`, `frac_obs` → `fraction_observed`). This simplifies internal code by removing post-hoc parameter renaming. This may affect users who access Stan models directly or use custom priors with the old parameter names.

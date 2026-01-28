@@ -368,17 +368,17 @@ test_that("estimate_secondary works with zero_threshold set", {
   expect_named(out, c("fit", "args", "observations"))
 })
 
-test_that("get_delays returns correct delays from estimate_secondary", {
+test_that("get_parameters works as expected for estimate_secondary", {
   # Reuse pre-computed fit
   out <- default_inc
 
-  # Test getting all delays as named list
-  delays <- get_delays(out)
-  expect_type(delays, "list")
+  # Test getting all parameters as named list
+  params <- get_parameters(out)
+  expect_type(params, "list")
 
   # All elements should be dist_spec (if any exist)
-  for (nm in names(delays)) {
-    expect_s3_class(delays[[nm]], "dist_spec")
+  for (nm in names(params)) {
+    expect_s3_class(params[[nm]], "dist_spec")
   }
 })
 

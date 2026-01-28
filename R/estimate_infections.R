@@ -77,8 +77,9 @@
 #' - `args`: A list of arguments used for fitting (stan data).
 #' - `observations`: The input data (`<data.frame>`).
 #'
-#' @seealso [get_samples()] [get_predictions()] [get_delays()] [epinow()]
-#' [regional_epinow()] [forecast_infections()] [estimate_truncation()]
+#' @seealso [get_samples()] [get_predictions()] [get_parameters()]
+#' [epinow()] [regional_epinow()] [forecast_infections()]
+#' [estimate_truncation()]
 #' @inheritParams create_stan_args
 #' @inheritParams create_stan_data
 #' @inheritParams create_rt_data
