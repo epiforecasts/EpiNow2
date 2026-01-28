@@ -376,3 +376,71 @@ test_that("get_delays returns correct fixed parameter values", {
   expected_pmf <- as.vector(discretise(fixed_delay)[[1]])
   expect_equal(as.vector(delay_returned[[1]]), expected_pmf)
 })
+
+test_that("$samples accessor is deprecated", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  expect_deprecated(out$samples)
+
+  # Verify it returns the same as get_samples()
+  withr::local_options(lifecycle_verbosity = "quiet")
+  samples_dollar <- out$samples
+  samples_new <- get_samples(out)
+
+  expect_equal(samples_dollar, samples_new)
+})
+
+test_that("$summarised accessor is deprecated", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  expect_deprecated(out$summarised)
+
+  # Verify it returns the same as summary(type = "parameters")
+  withr::local_options(lifecycle_verbosity = "quiet")
+  summarised_dollar <- out$summarised
+  summarised_new <- summary(out, type = "parameters")
+
+  expect_equal(summarised_dollar, summarised_new)
+})
+
+test_that("[[ accessor handles deprecated elements", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  # Test deprecation warning for [[
+  expect_deprecated(out[["samples"]])
+  expect_deprecated(out[["summarised"]])
+
+  # Test non-deprecated elements work without warning
+  expect_no_warning(out[["fit"]])
+  expect_no_warning(out[["args"]])
+  expect_no_warning(out[["observations"]])
+})
+
+test_that("$ accessor works for non-deprecated elements", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  # Test direct access to non-deprecated elements
+  expect_no_warning(out$fit)
+  expect_no_warning(out$args)
+  expect_no_warning(out$observations)
+
+  # Verify the elements are correct
+  expect_s4_class(out$fit, "stanfit")
+  expect_type(out$args, "list")
+  expect_s3_class(out$observations, "data.frame")
+})
+
+test_that("summary with type='parameters' includes parameter column", {
+  # Reuse pre-computed fit
+  out <- default_fit
+
+  summ <- summary(out, type = "parameters")
+
+  # Should have a parameter column
+
+  expect_true("parameter" %in% names(summ))
+})

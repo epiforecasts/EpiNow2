@@ -424,7 +424,7 @@ epinow_compat_extract <- function(x, name) {
   if (!is.null(result) || name %in% deprecated_names) {
     return(result)
   }
-  NextMethod("$")
+  .subset2(x, name)
 }
 
 #' Extract elements from epinow objects with bracket notation
@@ -449,5 +449,5 @@ epinow_compat_extract <- function(x, name) {
   if (!is.null(result) || i %in% deprecated_names) {
     return(result)
   }
-  NextMethod("[[")
+  .subset2(x, i)
 }

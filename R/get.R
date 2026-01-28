@@ -291,27 +291,26 @@ get_samples.estimate_secondary <- function(object, ...) {
   # Extract raw posterior samples from the fit
   raw_samples <- extract_samples(object$fit)
 
-  # Extract parameters (delays and params) - variable column added by extract_*
-  delay_samples <- extract_delays(raw_samples, args = object$args)
-  param_samples <- extract_parameters(raw_samples, args = object$args)
-  samples_list <- list(delay_samples, param_samples)
+  # Build named list - names become 'variable' column via rbindlist idcol
+  out <- list()
+
+  # Extract delay and scalar parameters
+  out$delay_params <- extract_delays(raw_samples, args = object$args)
+  out$params <- extract_parameters(raw_samples, args = object$args)
 
   # Extract time-varying generated quantities
   # Get dates for time-indexed parameters (post burn-in)
+
   burn_in <- object$args$burn_in
   dates <- object$observations[(burn_in + 1):.N]$date
 
   # Extract sim_secondary (generated quantity, post burn-in) if available
-  sim_secondary_samples <- extract_latent_state(
+  out$sim_secondary <- extract_latent_state(
     "sim_secondary", raw_samples, dates
   )
-  if (!is.null(sim_secondary_samples)) {
-    sim_secondary_samples[, variable := "sim_secondary"]
-    samples_list <- c(samples_list, list(sim_secondary_samples))
-  }
 
-  # Combine all samples
-  samples <- data.table::rbindlist(samples_list, fill = TRUE)
+  # Combine all samples - idcol adds 'variable' from list names
+  samples <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
 
   # Add placeholder columns for consistency with estimate_infections format
   if (!"date" %in% names(samples)) samples[, date := as.Date(NA)]
@@ -341,8 +340,9 @@ get_samples.estimate_truncation <- function(object, ...) {
   raw_samples <- extract_samples(object$fit)
 
   # Extract delay parameters (truncation distribution)
-  # variable column is added by extract_delays()
-  samples <- extract_delays(raw_samples, args = object$args)
+  # Use named list + rbindlist to add variable column consistently
+  out <- list(delay_params = extract_delays(raw_samples, args = object$args))
+  samples <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
 
   samples[]
 }
