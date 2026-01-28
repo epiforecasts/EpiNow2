@@ -65,7 +65,7 @@ vector calculate_Rt(vector infections, int seeding_time,
  * @ingroup rt_estimation
  */
 vector calculate_growth(vector infections, int seeding_time, 
-                        vector gt_rev_pmf, int growth_method) {
+                        data vector gt_rev_pmf, int growth_method) {
   if (growth_method == 0) {
     return(calculate_growth_infections(infections, seeding_time));
   } else if (growth_method == 1) {
@@ -114,7 +114,7 @@ vector calculate_growth_infections(vector infections, int seeding_time) {
  * @ingroup rt_estimation
  */
 vector calculate_growth_infness(vector infections, int seeding_time, 
-                                       vector gt_rev_pmf) {
+                                       data vector gt_rev_pmf) {
   int t = num_elements(infections);
   int ot = t - seeding_time;
   int start = 1 + seeding_time;
@@ -130,9 +130,9 @@ vector calculate_growth_infness(vector infections, int seeding_time,
   }
   // mean generation time, will always be >= 1
   int gt_length = num_elements(gt_rev_pmf);
-  int mean_gen = to_next_int_index( // round weighted mean to next int
+  int mean_gen = to_int(round( // round weighted mean to next int
     dot_product(reverse(linspaced_vector(gt_length, 1, gt_length)), gt_rev_pmf)
-    );
+    ));
   // growth rate
   vector[ot - 1] growth = infness_log[2:ot] - infness_log[1:(ot - 1)];  
   // shift by mean_gen (most recent growth rates remain undefined)
