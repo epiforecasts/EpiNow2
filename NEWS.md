@@ -80,6 +80,7 @@ The function interface remains unchanged.
 
 ## Documentation
 
+- Added guidelines for AI-assisted contributions to the CONTRIBUTING guide, including transparency requirements, contributor responsibilities, and AI-assisted code reviews.
 - Added a comprehensive prior choice and specification guide vignette covering all three main modelling functions with practical guidance on when and how to modify priors.
 - Fixed broken `@seealso` links in roxygen2 documentation by converting plain text function references to proper link syntax.
 - Added documentation about doing prior predictive checks.
