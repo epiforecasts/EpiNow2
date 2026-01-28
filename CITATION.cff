@@ -7,17 +7,21 @@ cff-version: 1.2.0
 message: 'To cite package "EpiNow2" in publications use:'
 type: software
 license: MIT
-title: 'EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters'
+title: 'EpiNow2: Estimate and Forecast Real-Time Infection Dynamics'
 version: 1.7.1.9000
 doi: 10.32614/CRAN.package.EpiNow2
 identifiers:
 - type: url
   value: https://epiforecasts.io/EpiNow2/dev/
 abstract: Estimates the time-varying reproduction number, rate of spread, and doubling
-  time using a range of open-source tools (Abbott et al. (2020) <https://doi.org/10.12688/wellcomeopenres.16006.1>),
-  and current best practices (Gostic et al. (2020) <https://doi.org/10.1101/2020.06.18.20134858>).
-  It aims to help users avoid some of the limitations of naive implementations in
-  a framework that is informed by community feedback and is actively supported.
+  time using a renewal equation approach combined with Bayesian inference via Stan.
+  Supports Gaussian process and random walk priors for modelling changes in transmission
+  over time. Accounts for delays between infection and observation (incubation period,
+  reporting delays), right-truncation in recent data, day-of-week effects, and observation
+  overdispersion. Can estimate relationships between primary and secondary outcomes
+  (e.g., cases to hospitalisations or deaths) and forecast both. Runs across multiple
+  regions in parallel. Based on Abbott et al. (2020) <https://doi.org/10.12688/wellcomeopenres.16006.1>
+  and Gostic et al. (2020) <https://doi.org/10.1101/2020.06.18.20134858>.
 authors:
 - family-names: Abbott
   given-names: Sam
@@ -52,7 +56,6 @@ authors:
   given-names: Adrian
   email: adrian.lison@bsse.ethz.ch
   orcid: https://orcid.org/0000-0002-6822-8437
-- name: EpiForecasts
 - family-names: Funk
   given-names: Sebastian
   email: sebastian.funk@lshtm.ac.uk
