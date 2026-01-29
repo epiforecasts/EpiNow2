@@ -813,7 +813,7 @@ summary.epinow <- function(object,
       details = paste(
         "The epinow object now inherits from estimate_infections.",
         "Use type = 'snapshot' or type = 'parameters'.",
-        "For estimated_reported_cases, use estimates_by_report_date()."
+        "For predictions, use get_predictions()."
       )
     )
     # Provide backward compatibility
