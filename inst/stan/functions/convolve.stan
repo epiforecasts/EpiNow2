@@ -72,11 +72,17 @@ vector convolve_with_rev_pmf(vector x, vector y, int len) {
   }
 
   vector[len] z;
-  int ub = max(len, xlen);
-  for (s in 1:ub) {
+
+  for (s in 1:xlen) {
     array[4] int indices = calc_conv_indices_xlen(s, xlen, ylen);
     z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
   }
+
+  for (s in (xlen + 1):len) {  // zero iterations unless len > xlen
+    array[4] int indices = calc_conv_indices_len(s, xlen, ylen);
+    z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
+  }
+
   return z;
 }
 

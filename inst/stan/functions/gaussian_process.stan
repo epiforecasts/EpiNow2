@@ -33,7 +33,7 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
  * @param M Number of basis functions
  * @return Linearly spaced M-vector
  */
-vector matern_indices(int M, int L) {
+vector matern_indices(int M, real L) {
   real factor = pi() / (2 * L);
   return square(linspaced_vector(M, factor, factor * M));
 }
@@ -66,7 +66,7 @@ vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
   * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
-  real factor1 = 2 * alpha * (sqrt(3) / rho)^1.5;
+  real factor = 2 * alpha * (sqrt(3) / rho)^1.5;
   vector[M] denom = 3 / square(rho) + matern_indices(M, L);
   return factor ./ denom;
 }
@@ -83,7 +83,6 @@ vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
   * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
-  vector[M] indices = linspaced_vector(M, 1, M);
   real factor = 16 * pow(sqrt(5) / rho, 5);
   vector[M] denom = 3 * pow(5 / square(rho) + matern_indices(M, L), 3);
   return alpha * sqrt(factor ./ denom);
