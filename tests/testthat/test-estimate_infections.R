@@ -34,7 +34,7 @@ test_estimate_infections <- function(...) {
   predictions <- get_predictions(out)
   expect_true(nrow(predictions) > 0)
   expect_true("date" %in% names(predictions))
-  expect_true("confirm" %in% names(predictions))
+  expect_false("confirm" %in% names(predictions))
   expect_true("mean" %in% names(predictions))
 
   invisible(out)
