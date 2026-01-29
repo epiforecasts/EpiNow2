@@ -292,7 +292,7 @@ estimate_infections <- function(data,
   ret <- list(
     fit = fit,
     args = stan_data,
-    observations = reported_cases
+    observations = data
   )
 
   ## Join stan fit if required

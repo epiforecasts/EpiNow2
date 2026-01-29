@@ -507,6 +507,7 @@ globalVariables(
     "report_date", "secondary", "id", "conv", "meanlog", "primary", "scaled",
     "scaling", "sdlog", "lookup", "new_draw", ".draw", "p", "distribution",
     "accumulate", "..present", "reported_cases", "counter", "future_accumulate",
-    "parameter", "idx"
+    "parameter", "idx", "horizon", "obs_idx", "predicted", "quantile_level",
+    "forecast_date"
   )
 )
