@@ -24,6 +24,21 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
 }
 
 /**
+ * Index set for M basis functions of length L for Matern kernel.  
+ *
+ * The function returns pow(pi() / 2 / L * linspaced_vector(M, 1, M), 2),
+ * or equivalently, square(pi() / (2 * L) * linspaced_vector(M, 1, M)).
+ *
+ * @param L Length of the interval
+ * @param M Number of basis functions
+ * @return Linearly spaced M-vector
+ */
+vector matern_indices(int M, int L) {
+  real factor = pi() / (2 * L);
+  return square(linspaced_vector(M, factor, factor * M));
+}
+
+/**
   * Spectral density for 1/2 Matern (Ornstein-Uhlenbeck) kernel
   *
   * @param alpha Scaling parameter
@@ -35,10 +50,8 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
   * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
-  vector[M] indices = linspaced_vector(M, 1, M);
-  real factor = 2;
-  vector[M] denom = rho * ((1 / rho)^2 + pow(pi() / 2 / L * indices, 2));
-  return alpha * sqrt(factor * inv(denom));
+  vector[M] denom = 1 / rho + rho * matern_indices(M, L);
+  return alpha * sqrt(2 ./ denom);
 }
 
 /**
@@ -53,10 +66,9 @@ vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
   * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
-  vector[M] indices = linspaced_vector(M, 1, M);
-  real factor = 2 * alpha * pow(sqrt(3) / rho, 1.5);
-  vector[M] denom = (sqrt(3) / rho)^2 + pow((pi() / 2 / L) * indices, 2);
-  return factor * inv(denom);
+  real factor1 = 2 * alpha * (sqrt(3) / rho)^1.5;
+  vector[M] denom = 3 / square(rho) + matern_indices(M, L);
+  return factor ./ denom;
 }
 
 /**
@@ -73,9 +85,8 @@ vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
 vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
   vector[M] indices = linspaced_vector(M, 1, M);
   real factor = 16 * pow(sqrt(5) / rho, 5);
-  vector[M] denom =
-    3 * pow((sqrt(5) / rho)^2 + pow((pi() / 2 / L) * indices, 2), 3);
-  return alpha * sqrt(factor * inv(denom));
+  vector[M] denom = 3 * pow(5 / square(rho) + matern_indices(M, L), 3);
+  return alpha * sqrt(factor ./ denom);
 }
 
 /**
@@ -92,10 +103,11 @@ vector diagSPD_Periodic(real alpha, real rho, int M) {
   real a = inv_square(rho);
   vector[M] indices = linspaced_vector(M, 1, M);
   vector[M] q = exp(
-    log(alpha) + 0.5 *
-      (log(2) - a + to_vector(log_modified_bessel_first_kind(indices, a)))
+      log(alpha) +
+      0.5 * (log2() - a + log_modified_bessel_first_kind(indices, a))
   );
   return append_row(q, q);
+
 }
 
 /**
@@ -129,11 +141,11 @@ matrix PHI(int N, int M, real L, vector x) {
   *
   * @ingroup estimates_smoothing
   */
+
 matrix PHI_periodic(int N, int M, real w0, vector x) {
-  matrix[N, M] mw0x = diag_post_multiply(
-    rep_matrix(w0 * x, M), linspaced_vector(M, 1, M)
-  );
-  return append_col(cos(mw0x), sin(mw0x));
+  row_vector[M] k = linspaced_row_vector(M, 1, M);
+  matrix[N, M] w0xk = (w0 * x) * k;
+  return append_col(cos(w0xk), sin(w0xk));
 }
 
 /**
@@ -153,9 +165,7 @@ matrix PHI_periodic(int N, int M, real w0, vector x) {
 int setup_noise(int ot_h, int t, int horizon, int estimate_r,
                 int stationary, int future_fixed, int fixed_from) {
   int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h - 1) : t;
-  int noise_terms =
-    future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
-  return noise_terms;
+  return future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
 }
 
 /**
@@ -210,7 +220,7 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
     } else if (nu == 2.5) {
       diagSPD = diagSPD_Matern52(alpha, rho, L, M);
     } else {
-      reject("nu must be one of 1/2, 3/2 or 5/2; found nu=", nu);
+      reject("nu must be one of 0.5, 1.5, or 2.5; found nu=", nu);
     }
   }
   return PHI * (diagSPD .* eta);
