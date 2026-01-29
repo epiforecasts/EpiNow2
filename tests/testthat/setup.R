@@ -5,8 +5,7 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
   files <- c(
     "convolve.stan", "gaussian_process.stan", "pmfs.stan",
     "observation_model.stan", "secondary.stan",
-    "rt.stan", "infections.stan", "delays.stan", "generated_quantities.stan", 
-    "helpers.stan"
+    "rt.stan", "infections.stan", "delays.stan", "generated_quantities.stan"
   )
   if (!(tolower(Sys.info()[["sysname"]]) %in% "windows")) {
     suppressMessages(
