@@ -130,7 +130,7 @@ vector calculate_growth_infness(vector infections, int seeding_time,
   }
   // mean generation time, will always be >= 1
   int gt_length = num_elements(gt_rev_pmf);
-  int mean_gen = to_int(round( // round weighted mean to next int
+  int mean_gen = to_int(round( // round weighted mean to nearest int
     dot_product(reverse(linspaced_vector(gt_length, 1, gt_length)), gt_rev_pmf)
     ));
   // growth rate
