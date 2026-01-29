@@ -347,7 +347,7 @@ get_samples.estimate_truncation <- function(object, ...) {
   samples[]
 }
 
-#' Format samples for scoringutils
+#' Format sample predictions
 #'
 #' Helper function to format posterior samples into the structure expected by
 #' [scoringutils::as_forecast_sample()].
@@ -357,7 +357,7 @@ get_samples.estimate_truncation <- function(object, ...) {
 #' @return Data.table with columns: forecast_date, date, horizon, sample,
 #'   predicted
 #' @keywords internal
-format_samples_scoringutils <- function(samples, forecast_date) {
+format_sample_predictions <- function(samples, forecast_date) {
   predictions <- samples[, .(date, sample, predicted = value)]
   predictions[, forecast_date := forecast_date]
   predictions[, horizon := as.numeric(date - forecast_date)]
@@ -368,7 +368,7 @@ format_samples_scoringutils <- function(samples, forecast_date) {
   predictions[]
 }
 
-#' Format quantiles for scoringutils
+#' Format quantile predictions
 #'
 #' Helper function to format posterior samples into quantiles in the structure
 #' expected by [scoringutils::as_forecast_quantile()].
@@ -379,7 +379,7 @@ format_samples_scoringutils <- function(samples, forecast_date) {
 #' @return Data.table with columns: forecast_date, date, horizon,
 #'   quantile_level, predicted
 #' @keywords internal
-format_quantiles_scoringutils <- function(samples, quantiles, forecast_date) {
+format_quantile_predictions <- function(samples, quantiles, forecast_date) {
   predictions <- samples[
     ,
     .(predicted = quantile(value, probs = quantiles)),
@@ -462,8 +462,8 @@ get_predictions.estimate_infections <- function(
       order_by = "date",
       CrIs = CrIs
     ),
-    sample = format_samples_scoringutils(reported_samples, forecast_date),
-    quantile = format_quantiles_scoringutils(
+    sample = format_sample_predictions(reported_samples, forecast_date),
+    quantile = format_quantile_predictions(
       reported_samples, quantiles, forecast_date
     )
   )
@@ -491,8 +491,8 @@ get_predictions.estimate_secondary <- function(
       order_by = "date",
       CrIs = CrIs
     ),
-    sample = format_samples_scoringutils(sim_secondary_samples, forecast_date),
-    quantile = format_quantiles_scoringutils(
+    sample = format_sample_predictions(sim_secondary_samples, forecast_date),
+    quantile = format_quantile_predictions(
       sim_secondary_samples, quantiles, forecast_date
     )
   )
@@ -516,8 +516,8 @@ get_predictions.forecast_infections <- function(
       predictions <- object$summarised[variable == "reported_cases"]
       predictions[, !"variable"]
     },
-    sample = format_samples_scoringutils(samples, forecast_date),
-    quantile = format_quantiles_scoringutils(samples, quantiles, forecast_date)
+    sample = format_sample_predictions(samples, forecast_date),
+    quantile = format_quantile_predictions(samples, quantiles, forecast_date)
   )
 }
 
@@ -545,8 +545,8 @@ get_predictions.forecast_secondary <- function(
       preds[, c("primary", "secondary") := NULL]
       preds
     },
-    sample = format_samples_scoringutils(samples, forecast_date),
-    quantile = format_quantiles_scoringutils(samples, quantiles, forecast_date)
+    sample = format_sample_predictions(samples, forecast_date),
+    quantile = format_quantile_predictions(samples, quantiles, forecast_date)
   )
 }
 
