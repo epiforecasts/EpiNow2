@@ -347,6 +347,54 @@ get_samples.estimate_truncation <- function(object, ...) {
   samples[]
 }
 
+#' Format samples for scoringutils
+#'
+#' Helper function to format posterior samples into the structure expected by
+#' [scoringutils::as_forecast_sample()].
+#'
+#' @param samples Data.table with date, sample, and value columns
+#' @param forecast_date Date when the forecast was made
+#' @return Data.table with columns: forecast_date, date, horizon, sample,
+#'   predicted
+#' @keywords internal
+format_samples_scoringutils <- function(samples, forecast_date) {
+  predictions <- samples[, .(date, sample, predicted = value)]
+  predictions[, forecast_date := forecast_date]
+  predictions[, horizon := as.numeric(date - forecast_date)]
+  data.table::setcolorder(
+    predictions,
+    c("forecast_date", "date", "horizon", "sample", "predicted")
+  )
+  predictions[]
+}
+
+#' Format quantiles for scoringutils
+#'
+#' Helper function to format posterior samples into quantiles in the structure
+#' expected by [scoringutils::as_forecast_quantile()].
+#'
+#' @param samples Data.table with date and value columns
+#' @param quantiles Numeric vector of quantile levels
+#' @param forecast_date Date when the forecast was made
+#' @return Data.table with columns: forecast_date, date, horizon,
+#'   quantile_level, predicted
+#' @keywords internal
+format_quantiles_scoringutils <- function(samples, quantiles, forecast_date) {
+  predictions <- samples[
+    ,
+    .(predicted = quantile(value, probs = quantiles)),
+    by = date
+  ]
+  predictions[, quantile_level := rep(quantiles, .N / length(quantiles))]
+  predictions[, forecast_date := forecast_date]
+  predictions[, horizon := as.numeric(date - forecast_date)]
+  data.table::setcolorder(
+    predictions,
+    c("forecast_date", "date", "horizon", "quantile_level", "predicted")
+  )
+  predictions[]
+}
+
 #' Get predictions from a fitted model
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -407,40 +455,18 @@ get_predictions.estimate_infections <- function(
   reported_samples <- samples[variable == "reported_cases"]
   forecast_date <- max(object$observations$date, na.rm = TRUE)
 
-  if (format == "summary") {
-    # Wide format with summary statistics
-    predictions <- calc_summary_measures(
+  switch(format,
+    summary = calc_summary_measures(
       reported_samples,
       summarise_by = "date",
       order_by = "date",
       CrIs = CrIs
+    ),
+    sample = format_samples_scoringutils(reported_samples, forecast_date),
+    quantile = format_quantiles_scoringutils(
+      reported_samples, quantiles, forecast_date
     )
-  } else if (format == "sample") {
-    # Raw samples for scoringutils::as_forecast_sample()
-    predictions <- reported_samples[, .(date, sample, predicted = value)]
-    predictions[, forecast_date := forecast_date]
-    predictions[, horizon := as.numeric(date - forecast_date)]
-    data.table::setcolorder(
-      predictions,
-      c("forecast_date", "date", "horizon", "sample", "predicted")
-    )
-  } else {
-    # format == "quantile": for scoringutils::as_forecast_quantile()
-    predictions <- reported_samples[
-      ,
-      .(predicted = quantile(value, probs = quantiles)),
-      by = date
-    ]
-    predictions[, quantile_level := rep(quantiles, .N / length(quantiles))]
-    predictions[, forecast_date := forecast_date]
-    predictions[, horizon := as.numeric(date - forecast_date)]
-    data.table::setcolorder(
-      predictions,
-      c("forecast_date", "date", "horizon", "quantile_level", "predicted")
-    )
-  }
-
-  predictions[]
+  )
 }
 
 #' @rdname get_predictions
@@ -458,42 +484,18 @@ get_predictions.estimate_secondary <- function(
   sim_secondary_samples <- samples[variable == "sim_secondary"]
   forecast_date <- max(object$observations$date, na.rm = TRUE)
 
-  if (format == "summary") {
-    # Calculate summary measures
-    predictions <- calc_summary_measures(
+  switch(format,
+    summary = calc_summary_measures(
       sim_secondary_samples,
       summarise_by = "date",
       order_by = "date",
       CrIs = CrIs
+    ),
+    sample = format_samples_scoringutils(sim_secondary_samples, forecast_date),
+    quantile = format_quantiles_scoringutils(
+      sim_secondary_samples, quantiles, forecast_date
     )
-  } else if (format == "sample") {
-    # Raw samples for scoringutils::as_forecast_sample()
-    predictions <- sim_secondary_samples[
-      , .(date, sample, predicted = value)
-    ]
-    predictions[, forecast_date := forecast_date]
-    predictions[, horizon := as.numeric(date - forecast_date)]
-    data.table::setcolorder(
-      predictions,
-      c("forecast_date", "date", "horizon", "sample", "predicted")
-    )
-  } else {
-    # format == "quantile": for scoringutils::as_forecast_quantile()
-    predictions <- sim_secondary_samples[
-      ,
-      .(predicted = quantile(value, probs = quantiles)),
-      by = date
-    ]
-    predictions[, quantile_level := rep(quantiles, .N / length(quantiles))]
-    predictions[, forecast_date := forecast_date]
-    predictions[, horizon := as.numeric(date - forecast_date)]
-    data.table::setcolorder(
-      predictions,
-      c("forecast_date", "date", "horizon", "quantile_level", "predicted")
-    )
-  }
-
-  predictions[]
+  )
 }
 
 #' @rdname get_predictions
@@ -509,36 +511,14 @@ get_predictions.forecast_infections <- function(
   samples <- object$samples[variable == "reported_cases"]
   forecast_date <- max(object$observations$date, na.rm = TRUE)
 
-  if (format == "summary") {
-    # Return summarised predictions
-    predictions <- object$summarised[variable == "reported_cases"]
-    predictions <- predictions[, !"variable"]
-  } else if (format == "sample") {
-    # Raw samples for scoringutils::as_forecast_sample()
-    predictions <- samples[, .(date, sample, predicted = value)]
-    predictions[, forecast_date := forecast_date]
-    predictions[, horizon := as.numeric(date - forecast_date)]
-    data.table::setcolorder(
-      predictions,
-      c("forecast_date", "date", "horizon", "sample", "predicted")
-    )
-  } else {
-    # format == "quantile": for scoringutils::as_forecast_quantile()
-    predictions <- samples[
-      ,
-      .(predicted = quantile(value, probs = quantiles)),
-      by = date
-    ]
-    predictions[, quantile_level := rep(quantiles, .N / length(quantiles))]
-    predictions[, forecast_date := forecast_date]
-    predictions[, horizon := as.numeric(date - forecast_date)]
-    data.table::setcolorder(
-      predictions,
-      c("forecast_date", "date", "horizon", "quantile_level", "predicted")
-    )
-  }
-
-  predictions[]
+  switch(format,
+    summary = {
+      predictions <- object$summarised[variable == "reported_cases"]
+      predictions[, !"variable"]
+    },
+    sample = format_samples_scoringutils(samples, forecast_date),
+    quantile = format_quantiles_scoringutils(samples, quantiles, forecast_date)
+  )
 }
 
 #' @rdname get_predictions
@@ -559,38 +539,15 @@ get_predictions.forecast_secondary <- function(
     na.rm = TRUE
   )
 
-  if (format == "summary") {
-    # Return predictions without observations
-    # (consistent with estimate_secondary)
-    preds <- data.table::copy(object$predictions)
-    preds[, c("primary", "secondary") := NULL]
-    preds
-  } else if (format == "sample") {
-    # Raw samples for scoringutils::as_forecast_sample()
-    predictions <- samples[, .(date, sample, predicted = value)]
-    predictions[, forecast_date := forecast_date]
-    predictions[, horizon := as.numeric(date - forecast_date)]
-    data.table::setcolorder(
-      predictions,
-      c("forecast_date", "date", "horizon", "sample", "predicted")
-    )
-    predictions[]
-  } else {
-    # format == "quantile": for scoringutils::as_forecast_quantile()
-    predictions <- samples[
-      ,
-      .(predicted = quantile(value, probs = quantiles)),
-      by = date
-    ]
-    predictions[, quantile_level := rep(quantiles, .N / length(quantiles))]
-    predictions[, forecast_date := forecast_date]
-    predictions[, horizon := as.numeric(date - forecast_date)]
-    data.table::setcolorder(
-      predictions,
-      c("forecast_date", "date", "horizon", "quantile_level", "predicted")
-    )
-    predictions[]
-  }
+  switch(format,
+    summary = {
+      preds <- data.table::copy(object$predictions)
+      preds[, c("primary", "secondary") := NULL]
+      preds
+    },
+    sample = format_samples_scoringutils(samples, forecast_date),
+    quantile = format_quantiles_scoringutils(samples, quantiles, forecast_date)
+  )
 }
 
 #' @rdname get_predictions
