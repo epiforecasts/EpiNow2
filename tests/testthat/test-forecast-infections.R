@@ -148,7 +148,7 @@ test_that("forecast_infections works with samples of Rt in a data frame", {
   expect_equal(names(sims_sample), c("samples", "summarised", "observations"))
 })
 
-test_that("get_predictions works with format='sample' for forecast_infections", {
+test_that("get_predictions produces expected output with format = 'sample'", {
   fixtures <- get_test_fixtures()
   forecast <- forecast_infections(fixtures$estimate_infections)
 
@@ -162,7 +162,7 @@ test_that("get_predictions works with format='sample' for forecast_infections", 
   expect_true(nrow(preds) > 0)
 })
 
-test_that("get_predictions works with format='summary' for forecast_infections", {
+test_that("get_predictions produces expected output with format = 'summary'", {
   fixtures <- get_test_fixtures()
   forecast <- forecast_infections(fixtures$estimate_infections)
 
