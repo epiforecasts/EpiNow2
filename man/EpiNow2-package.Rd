@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Estimates the time-varying reproduction number, rate of spread, and doubling time using a range of open-source tools (Abbott et al. (2020) \doi{10.12688/wellcomeopenres.16006.1}), and current best practices (Gostic et al. (2020) \doi{10.1101/2020.06.18.20134858}). It supports forecasting cases and adjusting for reporting delays.
+Estimates the time-varying reproduction number, rate of spread, and doubling time using a renewal equation approach combined with Bayesian inference via Stan. Supports Gaussian process and random walk priors for modelling changes in transmission over time. Accounts for delays between infection and observation (incubation period, reporting delays), right-truncation in recent data, day-of-week effects, and observation overdispersion. Can estimate relationships between primary and secondary outcomes (e.g., cases to hospitalisations or deaths) and forecast both. Runs across multiple regions in parallel. Based on Abbott et al. (2020) \doi{10.12688/wellcomeopenres.16006.1} and Gostic et al. (2020) \doi{10.1101/2020.06.18.20134858}.
 }
 \seealso{
 Useful links:
