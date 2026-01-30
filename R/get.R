@@ -534,10 +534,11 @@ get_predictions.forecast_secondary <- function(
   # forecast_secondary$samples only contains sim_secondary, no filtering needed
   samples <- object$samples
   # forecast_date is the last date with observed secondary (training period end)
-  forecast_date <- max(
-    object$observations[!is.na(secondary)]$date,
-    na.rm = TRUE
-  )
+  obs_dates <- object$observations[!is.na(secondary)]$date
+  if (length(obs_dates) == 0L) {
+    obs_dates <- object$observations$date
+  }
+  forecast_date <- max(obs_dates, na.rm = TRUE)
 
   switch(format,
     summary = {
