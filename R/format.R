@@ -219,8 +219,18 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
 #' @importFrom rlang %||%
 #' @keywords internal
 format_samples_with_dates <- function(raw_samples, args, observations) {
-  dates <- observations$date
-  reported_dates <- dates[-(1:args$seeding_time)]
+  # Reported dates cover the observation period plus any forecast horizon
+  reported_dates <- seq(
+    min(observations$date),
+    max(observations$date) + args$horizon,
+    by = "days"
+  )
+  # Full dates include the seeding period before observations
+  dates <- seq(
+    min(observations$date) - args$seeding_time,
+    max(reported_dates),
+    by = "days"
+  )
 
   # Extract each parameter into a data.table
   out <- list()

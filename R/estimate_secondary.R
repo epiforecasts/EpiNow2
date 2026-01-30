@@ -381,6 +381,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
                                     new_obs = NULL,
                                     ...) {
   predictions <- get_predictions(x)
+  predictions <- merge(predictions, x$observations, by = "date", all = TRUE)
 
   if (!is.null(new_obs)) {
     new_obs <- data.table::as.data.table(new_obs)
@@ -439,9 +440,7 @@ plot.forecast_secondary <- function(x, primary = FALSE,
                                     from = NULL, to = NULL,
                                     new_obs = NULL,
                                     ...) {
-  plot.estimate_secondary(
-    x, primary = primary, from = from, to = to, new_obs = new_obs, ...
-  )
+  plot.estimate_secondary(x, primary, from, to, new_obs, ...)
 }
 
 #' Convolve and scale a time series
@@ -660,7 +659,11 @@ forecast_secondary <- function(estimate,
   stan_data <- estimate$args
 
   # combined primary from data and input primary
-  primary_fit <- get_predictions(estimate)[
+  predictions <- get_predictions(estimate)
+  predictions <- merge(
+    predictions, estimate$observations, by = "date", all = TRUE
+  )
+  primary_fit <- predictions[
     ,
     .(date, value = primary, sample = list(unique(updated_primary$sample)))
   ]
@@ -735,9 +738,12 @@ forecast_secondary <- function(estimate,
   out$samples <- samples
   out$forecast <- summarised
   # link previous prediction observations with forecast observations
+  preds_with_obs <- merge(
+    get_predictions(estimate), estimate$observations, by = "date"
+  )
   forecast_obs <- data.table::rbindlist(
     list(
-      get_predictions(estimate)[, .(date, primary, secondary)],
+      preds_with_obs[, .(date, primary, secondary)],
       data.table::copy(primary)[, .(primary = median(value)), by = "date"]
     ),
     use.names = TRUE, fill = TRUE
@@ -751,6 +757,8 @@ forecast_secondary <- function(estimate,
   data.table::setcolorder(
     out$predictions, c("date", "primary", "secondary", "mean", "sd")
   )
+  # Store observations for compatibility with estimate_secondary methods
+  out$observations <- forecast_obs[, .(date, primary, secondary)]
   class(out) <- c("forecast_secondary", class(out))
   out
 }

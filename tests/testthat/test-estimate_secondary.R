@@ -71,7 +71,7 @@ test_that("estimate_secondary can return values from simulated data and plot
   expect_equal(
     names(predictions),
     c(
-      "date", "primary", "secondary", "accumulate", "median", "mean", "sd",
+      "date", "median", "mean", "sd",
       "lower_90", "lower_50", "lower_20", "upper_20", "upper_50", "upper_90"
     )
   )
@@ -93,7 +93,9 @@ test_that("forecast_secondary can return values from simulated data and plot
   inc_preds <- forecast_secondary(
     inc, inc_cases[seq(61, .N)][, value := primary]
   )
-  expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
+  expect_equal(
+    names(inc_preds), c("samples", "forecast", "predictions", "observations")
+  )
   # validation plot of observations vs estimates
   expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
 })
@@ -278,7 +280,9 @@ test_that("forecast_secondary works with fixed delays", {
   inc_preds <- forecast_secondary(
     inc_fixed, inc_cases[seq(61, .N)][, value := primary]
   )
-  expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
+  expect_equal(
+    names(inc_preds), c("samples", "forecast", "predictions", "observations")
+  )
   # validation plot of observations vs estimates
   expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
 })
@@ -303,7 +307,9 @@ test_that("forecast_secondary can return values from simulated data when using
       backend = "cmdstanr"
     )
   )))
-  expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
+  expect_equal(
+    names(inc_preds), c("samples", "forecast", "predictions", "observations")
+  )
 })
 
 test_that("estimate_secondary works with weigh_delay_priors = TRUE", {

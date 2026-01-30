@@ -22,6 +22,7 @@ The function interface remains unchanged.
 - Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now have to do `param_id_[parameter_name]`, for example, `fraction_observed_id` is now `param_id_fraction_observed`.
 - `estimate_infections()` now returns an S3 object of class `c("epinowfit", "estimate_infections", "list")` with elements `fit`, `args`, and `observations`.
   - Use `get_samples(object)` to extract formatted posterior samples (replaces `summary(object, type = "samples")`).
+  - Use `get_predictions(object)` to get predicted reported cases. Supports three output formats: `"summary"` (default) for summary statistics, `"sample"` for raw posterior samples compatible with [scoringutils::as_forecast_sample()], and `"quantile"` for quantile predictions compatible with [scoringutils::as_forecast_quantile()].
   - Use `summary(object)` to get summarised estimates (same as before, but `type = "samples"` is now deprecated).
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
   - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
@@ -30,7 +31,7 @@ The function interface remains unchanged.
 - `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
 - `estimate_secondary()` now returns an S3 object of class `c("epinowfit", "estimate_secondary", "list")` with elements `fit`, `args`, and `observations`, matching the structure of `estimate_infections()`.
   - Use `get_samples(object)` to extract formatted posterior samples for delay and scaling parameters.
-  - Use `get_predictions(object)` to get predicted secondary observations with credible intervals merged with observations.
+  - Use `get_predictions(object)` to get predicted secondary observations. Supports three output formats: `"summary"` (default), `"sample"`, and `"quantile"` for [scoringutils](https://epiforecasts.io/scoringutils/) integration.
   - Use `summary(object)` to get summarised parameter estimates. Use `type = "compact"` for key parameters only, or `type = "parameters"` with a `params` argument to select specific parameters.
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
   - **Deprecated**: The previous return structure with `predictions`, `posterior`, and `data` elements is deprecated and will be removed in a future release. Backward compatibility is provided with deprecation warnings when accessing these elements via `$` or `[[`.
@@ -47,7 +48,7 @@ The function interface remains unchanged.
   - Renamed return elements: `obs` → `observations`, `data` → `args`.
   - Removed elements: `last_obs` (now included in `observations`), `cmf` and `dist`.
   - Use `get_parameters(object)[["truncation"]]` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
-  - Use `get_predictions(object)` to extract truncation-adjusted (nowcast) estimates that can be compared to observed data.
+  - Use `get_predictions(object)` to extract truncation-adjusted (nowcast) estimates. Supports `"summary"`, `"sample"`, and `"quantile"` formats for [scoringutils](https://epiforecasts.io/scoringutils/) integration.
   - Use `get_samples(object)` to extract posterior samples.
   - Use `summary(object)` to get parameter estimates as a data.table.
   - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_parameters(x)[["truncation"]]` instead.

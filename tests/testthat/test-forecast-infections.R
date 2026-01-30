@@ -147,3 +147,29 @@ test_that("forecast_infections works with samples of Rt in a data frame", {
   sims_sample <- forecast_infections(fixtures$estimate_infections, R_samples)
   expect_equal(names(sims_sample), c("samples", "summarised", "observations"))
 })
+
+test_that("get_predictions produces expected output with format = 'sample'", {
+  fixtures <- get_test_fixtures()
+  forecast <- forecast_infections(fixtures$estimate_infections)
+
+  preds <- get_predictions(forecast, format = "sample")
+
+  expect_s3_class(preds, "data.table")
+  expect_true(all(c(
+    "forecast_date", "date", "horizon", "sample", "predicted"
+  ) %in% names(preds)))
+  expect_false("observed" %in% names(preds))
+  expect_true(nrow(preds) > 0)
+})
+
+test_that("get_predictions produces expected output with format = 'summary'", {
+  fixtures <- get_test_fixtures()
+  forecast <- forecast_infections(fixtures$estimate_infections)
+
+  preds <- get_predictions(forecast, format = "summary")
+
+  expect_s3_class(preds, "data.table")
+  expect_true("date" %in% names(preds))
+  expect_true("mean" %in% names(preds))
+  expect_false("confirm" %in% names(preds))
+})

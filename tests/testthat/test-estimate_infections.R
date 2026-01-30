@@ -34,7 +34,7 @@ test_estimate_infections <- function(...) {
   predictions <- get_predictions(out)
   expect_true(nrow(predictions) > 0)
   expect_true("date" %in% names(predictions))
-  expect_true("confirm" %in% names(predictions))
+  expect_false("confirm" %in% names(predictions))
   expect_true("mean" %in% names(predictions))
 
   invisible(out)
@@ -289,8 +289,19 @@ test_that("extract_parameter_samples is deprecated", {
   # Reuse pre-computed fit
   out <- default_fit
 
-  dates <- out$observations$date
-  reported_dates <- dates[-(1:out$args$seeding_time)]
+  # Reconstruct full date vector from unpadded observations + args
+  # (observations is now unpadded, but Stan generates samples for full period)
+  obs_dates <- out$observations$date
+  seeding_time <- out$args$seeding_time
+  horizon <- out$args$horizon
+
+  # Full dates: seeding period + observation period + forecast horizon
+  dates <- seq(
+    min(obs_dates) - seeding_time,
+    max(obs_dates) + horizon,
+    by = "days"
+  )
+  reported_dates <- dates[-(1:seeding_time)]
 
   # Lifecycle warnings need special handling
   expect_deprecated(extract_parameter_samples(
@@ -443,4 +454,153 @@ test_that("summary with type='parameters' includes parameter column", {
   # Should have a parameter column
 
   expect_true("parameter" %in% names(summ))
+})
+
+test_that("get_predictions works with format='summary'", {
+  out <- default_fit
+
+  preds <- get_predictions(out, format = "summary")
+
+  expect_s3_class(preds, "data.table")
+  expect_true("date" %in% names(preds))
+  expect_true("mean" %in% names(preds))
+  expect_true("median" %in% names(preds))
+  expect_false("confirm" %in% names(preds))
+})
+
+test_that("get_predictions works with format='sample'", {
+  out <- default_fit
+
+  preds <- get_predictions(out, format = "sample")
+
+  expect_s3_class(preds, "data.table")
+  expect_true(all(c(
+    "forecast_date", "date", "horizon", "sample", "predicted"
+  ) %in% names(preds)))
+  expect_false("observed" %in% names(preds))
+  expect_true(nrow(preds) > 0)
+  expect_true(is.numeric(preds$predicted))
+  expect_true(is.integer(preds$sample))
+  expect_true(is.numeric(preds$horizon))
+})
+
+test_that("get_predictions works with format='quantile'", {
+  out <- default_fit
+
+  preds <- get_predictions(out, format = "quantile")
+
+  expect_s3_class(preds, "data.table")
+  expect_true(all(c(
+    "forecast_date", "date", "horizon", "quantile_level", "predicted"
+  ) %in% names(preds)))
+  expect_true(all(c(0.05, 0.25, 0.5, 0.75, 0.95) %in% preds$quantile_level))
+})
+
+test_that("get_predictions default format is 'summary'", {
+  out <- default_fit
+
+  preds_default <- get_predictions(out)
+  preds_explicit <- get_predictions(out, format = "summary")
+
+  expect_equal(names(preds_default), names(preds_explicit))
+  expect_equal(preds_default, preds_explicit)
+})
+
+test_that("get_predictions forecast_date equals last observation date", {
+  out <- default_fit
+
+  preds <- get_predictions(out, format = "sample")
+
+  expected_forecast_date <- max(out$observations$date, na.rm = TRUE)
+  expect_equal(unique(preds$forecast_date), expected_forecast_date)
+})
+
+test_that("get_predictions horizon is correctly calculated", {
+  out <- default_fit
+
+  preds <- get_predictions(out, format = "sample")
+
+  expected_horizon <- as.numeric(preds$date - preds$forecast_date)
+  expect_equal(preds$horizon, expected_horizon)
+})
+
+test_that("get_predictions format='sample' compatible with scoringutils", {
+
+  skip_integration()
+  skip_if_not_installed("scoringutils")
+
+  reported_cases <- example_confirmed[1:30]
+  fit <- estimate_infections(
+    reported_cases,
+    generation_time = gt_opts(example_generation_time),
+    delays = delay_opts(
+      example_incubation_period + example_reporting_delay
+    ),
+    rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+    stan = stan_opts(
+      samples = 25, warmup = 25,
+      chains = 2, cores = 1,
+      control = list(adapt_delta = 0.8)
+    ),
+    forecast = forecast_opts(horizon = 7),
+    verbose = FALSE
+  )
+
+  preds <- get_predictions(fit, format = "sample")
+  forecasts <- preds[horizon > 0]
+  forecasts <- merge(
+    forecasts, data.table::as.data.table(example_confirmed), by = "date"
+  )
+
+  forecast_obj <- scoringutils::as_forecast_sample(
+    forecasts,
+    forecast_unit = "horizon",
+    observed = "confirm",
+    sample_id = "sample"
+  )
+  expect_s3_class(forecast_obj, "forecast_sample")
+
+  scores <- scoringutils::score(forecast_obj)
+  expect_s3_class(scores, "data.table")
+  expect_true("crps" %in% names(scores))
+})
+
+test_that("get_predictions format='quantile' compatible with scoringutils", {
+  skip_integration()
+  skip_if_not_installed("scoringutils")
+
+  reported_cases <- example_confirmed[1:30]
+  fit <- estimate_infections(
+    reported_cases,
+    generation_time = gt_opts(example_generation_time),
+    delays = delay_opts(
+      example_incubation_period + example_reporting_delay
+    ),
+    rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+    stan = stan_opts(
+      samples = 25, warmup = 25,
+      chains = 2, cores = 1,
+      control = list(adapt_delta = 0.8)
+    ),
+    forecast = forecast_opts(horizon = 7),
+    verbose = FALSE
+  )
+
+  preds <- get_predictions(fit, format = "quantile")
+  forecasts <- preds[horizon > 0]
+  forecasts <- merge(
+    forecasts, data.table::as.data.table(example_confirmed), by = "date"
+  )
+
+  forecast_obj <- scoringutils::as_forecast_quantile(
+    forecasts,
+    forecast_unit = "horizon",
+    observed = "confirm",
+    quantile_level = "quantile_level"
+  )
+  expect_s3_class(forecast_obj, "forecast_quantile")
+
+  scores <- scoringutils::score(forecast_obj)
+  expect_s3_class(scores, "data.table")
+  expect_true("wis" %in% names(scores))
 })
