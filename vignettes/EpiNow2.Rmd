@@ -136,9 +136,7 @@ estimates <- epinow(
   verbose = interactive()
 )
 names(estimates)
-#> [1] "estimates"                "estimated_reported_cases"
-#> [3] "summary"                  "plots"                   
-#> [5] "timing"
+#> [1] "fit"          "args"         "observations" "timing"
 ```
 
 Both summary measures and posterior samples are returned for all parameters in an easily explored format which can be accessed using `summary`. The default is to return a summary table of estimates for key parameters at the latest date partially supported by data. 
@@ -152,11 +150,11 @@ knitr::kable(summary(estimates))
 
 |measure                      |estimate                 |
 |:----------------------------|:------------------------|
-|New infections per day       |2246 (1345 -- 3712)      |
+|New infections per day       |1813 (765 -- 4538)       |
 |Expected change in reports   |Likely decreasing        |
-|Effective reproduction no.   |0.9 (0.71 -- 1.1)        |
-|Rate of growth               |-0.028 (-0.097 -- 0.037) |
-|Doubling/halving time (days) |-25 (19 -- -7.1)         |
+|Effective reproduction no.   |0.89 (0.71 -- 1.1)       |
+|Rate of growth               |-0.029 (-0.086 -- 0.027) |
+|Doubling/halving time (days) |-24 (26 -- -8.1)         |
 
 
 
@@ -165,22 +163,22 @@ Summarised parameter estimates can also easily be returned, either filtered for 
 
 ``` r
 head(summary(estimates, type = "parameters", params = "R"))
-#>          date variable  strat     type   median     mean         sd lower_90
-#>        <Date>   <char> <char>   <char>    <num>    <num>      <num>    <num>
-#> 1: 2020-02-22        R   <NA> estimate 2.192146 2.198985 0.11444472 2.024200
-#> 2: 2020-02-23        R   <NA> estimate 2.155321 2.161326 0.10485587 2.002736
-#> 3: 2020-02-24        R   <NA> estimate 2.116282 2.122057 0.09752376 1.973624
-#> 4: 2020-02-25        R   <NA> estimate 2.076851 2.081412 0.09208487 1.944169
-#> 5: 2020-02-26        R   <NA> estimate 2.034924 2.039632 0.08807288 1.907857
-#> 6: 2020-02-27        R   <NA> estimate 1.991849 1.996950 0.08500839 1.867559
-#>    lower_50 lower_20 upper_20 upper_50 upper_90
-#>       <num>    <num>    <num>    <num>    <num>
-#> 1: 2.117945 2.163831 2.223016 2.273580 2.398886
-#> 2: 2.086968 2.130249 2.182448 2.231471 2.342141
-#> 3: 2.053489 2.091872 2.140538 2.184986 2.295274
-#> 4: 2.015866 2.053039 2.099319 2.140357 2.242094
-#> 5: 1.976725 2.012561 2.056509 2.095363 2.195281
-#> 6: 1.936513 1.970944 2.012702 2.051563 2.153084
+#>          date variable parameter strat     type   median     mean         sd
+#>        <Date>   <char>    <char> <int>   <char>    <num>    <num>      <num>
+#> 1: 2020-02-22        R         R    NA estimate 2.189648 2.196213 0.11336185
+#> 2: 2020-02-23        R         R    NA estimate 2.153710 2.159198 0.10259863
+#> 3: 2020-02-24        R         R    NA estimate 2.118107 2.120663 0.09411365
+#> 4: 2020-02-25        R         R    NA estimate 2.078305 2.080785 0.08768269
+#> 5: 2020-02-26        R         R    NA estimate 2.037962 2.039743 0.08296362
+#> 6: 2020-02-27        R         R    NA estimate 1.995351 1.997715 0.07954817
+#>    lower_90 lower_50 lower_20 upper_20 upper_50 upper_90
+#>       <num>    <num>    <num>    <num>    <num>    <num>
+#> 1: 2.023501 2.116083 2.163518 2.221263 2.267635 2.391763
+#> 2: 1.998873 2.086574 2.128094 2.182408 2.224640 2.333380
+#> 3: 1.974120 2.054704 2.092117 2.140637 2.180685 2.279482
+#> 4: 1.941711 2.019448 2.055093 2.099769 2.136280 2.230685
+#> 5: 1.909825 1.981584 2.015820 2.057302 2.089886 2.182033
+#> 6: 1.874942 1.941424 1.975040 2.014929 2.046460 2.135327
 ```
 
 Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation.
@@ -188,22 +186,171 @@ Reported cases are returned in a separate data frame in order to streamline the 
 
 ``` r
 head(summary(estimates, output = "estimated_reported_cases"))
-#>          date   type median     mean        sd lower_90 lower_50 lower_20
-#>        <Date> <char>  <num>    <num>     <num>    <num>    <num>    <num>
-#> 1: 2020-02-22  gp_rt     36  36.2210  9.597511    22.00       30       33
-#> 2: 2020-02-23  gp_rt     52  53.4375 13.289635    34.00       44       50
-#> 3: 2020-02-24  gp_rt     64  65.6005 15.262941    42.00       55       61
-#> 4: 2020-02-25  gp_rt     72  73.3265 16.283718    48.95       62       68
-#> 5: 2020-02-26  gp_rt     82  83.0275 19.168972    54.00       70       77
-#> 6: 2020-02-27  gp_rt    119 121.2740 25.328851    83.00      103      113
-#>    upper_20 upper_50 upper_90
-#>       <num>    <num>    <num>
-#> 1:       38       42    53.00
-#> 2:       56       61    77.00
-#> 3:       68       75    92.05
-#> 4:       76       83   102.00
-#> 5:       87       94   116.05
-#> 6:      126      136   167.00
+#> Warning: The `output` argument of `summary.epinow()` is deprecated as of EpiNow2 1.8.0.
+#> ℹ Please use the `type` argument instead.
+#> ℹ The epinow object now inherits from estimate_infections. Use type =
+#>   'snapshot' or type = 'parameters'. For predictions, use get_predictions().
+#> This warning is displayed once per session.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
+#> $samples
+#>               date sample cases   type
+#>             <Date>  <int> <num> <char>
+#>      1: 2020-02-22      1    42  gp_rt
+#>      2: 2020-02-23      1    56  gp_rt
+#>      3: 2020-02-24      1    50  gp_rt
+#>      4: 2020-02-25      1    58  gp_rt
+#>      5: 2020-02-26      1    59  gp_rt
+#>     ---                               
+#> 133996: 2020-04-24   2000  2086  gp_rt
+#> 133997: 2020-04-25   2000  2206  gp_rt
+#> 133998: 2020-04-26   2000  2838  gp_rt
+#> 133999: 2020-04-27   2000  2960  gp_rt
+#> 134000: 2020-04-28   2000  1502  gp_rt
+#> 
+#> $summarised
+#>           date       parameter   type median      mean         sd lower_90
+#>         <Date>          <char> <char>  <num>     <num>      <num>    <num>
+#>  1: 2020-02-22 imputed_reports  gp_rt   35.0   36.3825    9.99996    22.00
+#>  2: 2020-02-23 imputed_reports  gp_rt   52.0   53.0555   13.09439    34.00
+#>  3: 2020-02-24 imputed_reports  gp_rt   65.0   65.6955   15.56759    42.00
+#>  4: 2020-02-25 imputed_reports  gp_rt   72.0   72.8700   16.93146    48.00
+#>  5: 2020-02-26 imputed_reports  gp_rt   83.0   83.5495   18.01854    54.00
+#>  6: 2020-02-27 imputed_reports  gp_rt  120.0  121.3125   25.71222    82.00
+#>  7: 2020-02-28 imputed_reports  gp_rt  187.5  189.9340   38.37981   131.00
+#>  8: 2020-02-29 imputed_reports  gp_rt  213.0  215.4205   42.64826   151.00
+#>  9: 2020-03-01 imputed_reports  gp_rt  308.0  314.1360   63.21700   219.00
+#> 10: 2020-03-02 imputed_reports  gp_rt  365.0  371.1340   71.86744   267.95
+#> 11: 2020-03-03 imputed_reports  gp_rt  397.0  402.8820   77.69250   281.00
+#> 12: 2020-03-04 imputed_reports  gp_rt  435.0  440.2290   82.11203   316.00
+#> 13: 2020-03-05 imputed_reports  gp_rt  596.0  606.4675  117.37716   432.95
+#> 14: 2020-03-06 imputed_reports  gp_rt  890.0  904.8815  167.34007   655.95
+#> 15: 2020-03-07 imputed_reports  gp_rt  960.5  975.4975  182.57875   703.95
+#> 16: 2020-03-08 imputed_reports  gp_rt 1307.5 1323.8295  248.04267   944.90
+#> 17: 2020-03-09 imputed_reports  gp_rt 1462.0 1484.9355  266.92898  1091.00
+#> 18: 2020-03-10 imputed_reports  gp_rt 1475.0 1508.4225  283.02982  1076.95
+#> 19: 2020-03-11 imputed_reports  gp_rt 1512.0 1529.2705  284.15421  1102.00
+#> 20: 2020-03-12 imputed_reports  gp_rt 1960.0 1984.6145  377.94396  1420.95
+#> 21: 2020-03-13 imputed_reports  gp_rt 2765.0 2786.6305  525.46093  2002.95
+#> 22: 2020-03-14 imputed_reports  gp_rt 2757.0 2793.9620  528.34585  1968.00
+#> 23: 2020-03-15 imputed_reports  gp_rt 3520.0 3562.4225  659.28201  2549.95
+#> 24: 2020-03-16 imputed_reports  gp_rt 3639.5 3688.6975  681.53165  2680.95
+#> 25: 2020-03-17 imputed_reports  gp_rt 3457.0 3504.5270  670.20315  2504.70
+#> 26: 2020-03-18 imputed_reports  gp_rt 3291.0 3326.9175  621.47094  2390.00
+#> 27: 2020-03-19 imputed_reports  gp_rt 3916.5 3979.6645  744.96939  2854.70
+#> 28: 2020-03-20 imputed_reports  gp_rt 5135.5 5201.5965  953.95704  3783.95
+#> 29: 2020-03-21 imputed_reports  gp_rt 4820.0 4889.7455  900.18043  3529.95
+#> 30: 2020-03-22 imputed_reports  gp_rt 5718.0 5818.1865 1112.53741  4167.00
+#> 31: 2020-03-23 imputed_reports  gp_rt 5577.0 5617.2715 1021.26254  4044.00
+#> 32: 2020-03-24 imputed_reports  gp_rt 4954.0 4995.0625  917.16853  3559.85
+#> 33: 2020-03-25 imputed_reports  gp_rt 4371.5 4430.9255  806.64303  3204.90
+#> 34: 2020-03-26 imputed_reports  gp_rt 4970.0 5037.7730  911.97679  3664.85
+#> 35: 2020-03-27 imputed_reports  gp_rt 6104.5 6176.9335 1150.14752  4431.00
+#> 36: 2020-03-28 imputed_reports  gp_rt 5423.0 5490.0620 1037.65629  3977.75
+#> 37: 2020-03-29 imputed_reports  gp_rt 6105.5 6181.5710 1124.52352  4479.80
+#> 38: 2020-03-30 imputed_reports  gp_rt 5654.5 5747.8200 1050.84079  4143.90
+#> 39: 2020-03-31 imputed_reports  gp_rt 4803.5 4858.1930  914.07023  3426.55
+#> 40: 2020-04-01 imputed_reports  gp_rt 4162.5 4197.0495  750.87721  3038.90
+#> 41: 2020-04-02 imputed_reports  gp_rt 4513.5 4585.5515  841.72216  3304.90
+#> 42: 2020-04-03 imputed_reports  gp_rt 5379.5 5462.5230 1072.54499  3890.90
+#> 43: 2020-04-04 imputed_reports  gp_rt 4661.5 4712.9220  897.19177  3371.95
+#> 44: 2020-04-05 imputed_reports  gp_rt 5166.0 5247.2355  994.46811  3786.85
+#> 45: 2020-04-06 imputed_reports  gp_rt 4713.0 4773.6135  842.97775  3473.95
+#> 46: 2020-04-07 imputed_reports  gp_rt 3924.5 3990.1530  741.58948  2890.95
+#> 47: 2020-04-08 imputed_reports  gp_rt 3344.5 3412.9440  626.68011  2459.95
+#> 48: 2020-04-09 imputed_reports  gp_rt 3652.5 3701.0755  686.19479  2667.00
+#> 49: 2020-04-10 imputed_reports  gp_rt 4334.0 4399.3240  824.14446  3194.40
+#> 50: 2020-04-11 imputed_reports  gp_rt 3759.0 3813.1660  697.21342  2769.85
+#> 51: 2020-04-12 imputed_reports  gp_rt 4162.5 4219.8485  789.78256  3060.95
+#> 52: 2020-04-13 imputed_reports  gp_rt 3778.5 3810.6615  698.97734  2741.95
+#> 53: 2020-04-14 imputed_reports  gp_rt 3164.0 3218.6810  595.89220  2313.95
+#> 54: 2020-04-15 imputed_reports  gp_rt 2684.5 2725.8830  504.74088  1980.95
+#> 55: 2020-04-16 imputed_reports  gp_rt 2966.5 3001.0820  538.79523  2155.00
+#> 56: 2020-04-17 imputed_reports  gp_rt 3508.0 3539.9255  658.54506  2525.75
+#> 57: 2020-04-18 imputed_reports  gp_rt 3033.0 3070.6635  579.04568  2180.80
+#> 58: 2020-04-19 imputed_reports  gp_rt 3329.0 3390.4295  642.99674  2395.95
+#> 59: 2020-04-20 imputed_reports  gp_rt 3087.0 3137.3765  615.57993  2202.70
+#> 60: 2020-04-21 imputed_reports  gp_rt 2561.5 2611.8980  523.06330  1846.90
+#> 61: 2020-04-22 imputed_reports  gp_rt 2191.5 2240.0405  480.89083  1532.95
+#> 62: 2020-04-23 imputed_reports  gp_rt 2373.5 2440.2250  558.80685  1638.90
+#> 63: 2020-04-24 imputed_reports  gp_rt 2814.0 2903.6860  706.57311  1867.90
+#> 64: 2020-04-25 imputed_reports  gp_rt 2434.0 2536.0710  695.79867  1593.00
+#> 65: 2020-04-26 imputed_reports  gp_rt 2698.5 2813.6895  790.78334  1698.90
+#> 66: 2020-04-27 imputed_reports  gp_rt 2478.5 2611.3855  822.32565  1541.00
+#> 67: 2020-04-28 imputed_reports  gp_rt 2086.0 2214.4985  784.21066  1200.90
+#>           date       parameter   type median      mean         sd lower_90
+#>         <Date>          <char> <char>  <num>     <num>      <num>    <num>
+#>     lower_50 lower_20 upper_20 upper_50 upper_90
+#>        <num>    <num>    <num>    <num>    <num>
+#>  1:    29.75     33.0     38.0    42.00    54.00
+#>  2:    44.00     49.0     55.0    61.00    77.00
+#>  3:    55.00     60.0     69.0    75.00    93.00
+#>  4:    61.00     68.0     76.0    83.00   104.00
+#>  5:    72.00     78.0     87.0    95.00   115.00
+#>  6:   103.00    113.0    126.0   137.00   167.00
+#>  7:   163.00    178.0    196.0   213.00   257.00
+#>  8:   186.00    202.0    223.0   241.00   290.00
+#>  9:   270.75    292.6    326.0   353.00   426.00
+#> 10:   321.00    347.0    382.4   413.00   498.05
+#> 11:   350.00    379.0    418.0   453.00   533.00
+#> 12:   380.00    415.0    457.0   492.00   587.00
+#> 13:   524.00    570.0    625.4   676.00   822.00
+#> 14:   787.00    854.0    933.0  1010.00  1203.05
+#> 15:   854.75    920.0   1003.0  1084.00  1303.20
+#> 16:  1155.00   1250.0   1365.4  1465.25  1760.05
+#> 17:  1293.00   1397.0   1533.0  1648.25  1955.00
+#> 18:  1311.00   1416.0   1561.0  1690.00  2014.10
+#> 19:  1328.00   1440.0   1577.4  1710.00  2027.15
+#> 20:  1722.00   1872.6   2051.4  2211.00  2632.05
+#> 21:  2425.50   2627.6   2881.4  3090.25  3723.25
+#> 22:  2441.00   2627.6   2896.4  3120.25  3710.10
+#> 23:  3109.75   3370.0   3676.2  3963.25  4682.40
+#> 24:  3196.00   3485.0   3812.8  4102.00  4899.10
+#> 25:  3036.75   3294.6   3614.4  3904.25  4668.15
+#> 26:  2881.00   3133.0   3436.0  3724.25  4373.05
+#> 27:  3453.00   3743.0   4118.4  4450.25  5255.35
+#> 28:  4522.75   4902.8   5380.4  5804.00  6904.15
+#> 29:  4246.00   4593.6   5060.0  5464.25  6497.20
+#> 30:  5057.00   5452.8   6007.2  6514.00  7763.15
+#> 31:  4901.75   5321.0   5828.4  6275.00  7315.50
+#> 32:  4361.00   4745.4   5185.8  5559.25  6587.10
+#> 33:  3865.00   4175.6   4559.8  4936.25  5837.10
+#> 34:  4414.75   4764.0   5194.0  5615.50  6582.70
+#> 35:  5367.75   5813.0   6378.4  6911.00  8130.25
+#> 36:  4768.75   5148.6   5652.4  6110.50  7282.00
+#> 37:  5417.50   5837.6   6366.0  6865.25  8185.30
+#> 38:  5035.75   5417.6   5941.0  6423.00  7592.05
+#> 39:  4247.75   4597.6   5024.4  5435.50  6410.30
+#> 40:  3676.00   3970.6   4348.4  4673.50  5487.00
+#> 41:  4001.25   4323.6   4718.4  5096.25  6059.10
+#> 42:  4735.75   5112.6   5626.4  6098.50  7394.15
+#> 43:  4067.50   4456.2   4873.0  5319.00  6271.50
+#> 44:  4566.50   4930.0   5402.0  5834.25  7011.30
+#> 45:  4205.50   4508.0   4939.0  5305.25  6213.15
+#> 46:  3485.00   3753.2   4113.4  4440.25  5296.55
+#> 47:  3006.00   3209.0   3525.0  3823.00  4497.20
+#> 48:  3225.00   3484.6   3808.8  4122.00  4904.05
+#> 49:  3831.75   4152.0   4541.0  4893.00  5845.15
+#> 50:  3334.00   3594.0   3936.0  4218.50  5043.10
+#> 51:  3657.75   3949.0   4353.4  4699.50  5629.05
+#> 52:  3319.00   3604.0   3955.4  4246.00  5027.10
+#> 53:  2822.75   3036.6   3323.4  3568.00  4277.00
+#> 54:  2385.00   2560.6   2803.0  3033.00  3596.35
+#> 55:  2623.00   2830.6   3097.0  3350.00  3930.00
+#> 56:  3087.75   3344.8   3669.4  3930.00  4706.25
+#> 57:  2677.00   2893.0   3177.8  3429.25  4086.20
+#> 58:  2943.00   3174.0   3499.0  3792.00  4545.10
+#> 59:  2712.75   2944.0   3243.0  3513.75  4218.10
+#> 60:  2249.00   2444.6   2688.0  2936.00  3548.25
+#> 61:  1893.00   2082.0   2324.4  2524.00  3096.45
+#> 62:  2054.75   2247.2   2510.0  2766.25  3452.20
+#> 63:  2410.00   2663.0   2986.8  3329.00  4152.30
+#> 64:  2072.75   2284.0   2603.2  2877.25  3824.80
+#> 65:  2258.75   2525.6   2914.4  3255.50  4289.05
+#> 66:  2045.75   2304.6   2672.0  3041.00  4145.35
+#> 67:  1675.75   1913.0   2265.6  2589.25  3700.10
+#>     lower_50 lower_20 upper_20 upper_50 upper_90
+#>        <num>    <num>    <num>    <num>    <num>
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
@@ -259,19 +406,6 @@ estimates <- regional_epinow(
   gp = NULL,
   stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
 )
-#> INFO [2025-06-01 00:26:04] Producing following optional outputs: regions, summary, samples, plots, latest
-#> INFO [2025-06-01 00:26:04] Reporting estimates using data up to: 2020-04-21
-#> INFO [2025-06-01 00:26:04] No target directory specified so returning output
-#> INFO [2025-06-01 00:26:04] Producing estimates for: testland, realland
-#> INFO [2025-06-01 00:26:04] Regions excluded: none
-#> INFO [2025-06-01 00:26:24] Completed estimates for: testland
-#> INFO [2025-06-01 00:26:44] Completed estimates for: realland
-#> INFO [2025-06-01 00:26:44] Completed regional estimates
-#> INFO [2025-06-01 00:26:44] Regions with estimates: 2
-#> INFO [2025-06-01 00:26:44] Regions with runtime errors: 0
-#> INFO [2025-06-01 00:26:44] Producing summary
-#> INFO [2025-06-01 00:26:44] No summary directory specified so returning summary output
-#> INFO [2025-06-01 00:26:45] No target directory specified so returning timings
 ```
 
 Results from each region are stored in a `regional` list with across region summary measures and plots stored in a `summary` list. All results can be set to be internally saved by setting the `target_folder` and `summary_dir` arguments. Each region can be estimated in parallel using the `{future}` package (when in most scenarios `cores` should be set to 1). For routine use each MCMC chain can also be run in parallel (with `future` = `TRUE`) with a time out (`max_execution_time`) allowing for partial results to be returned if a subset of chains is running longer than expected. See the documentation for the [`{future}`](https://future.futureverse.org/) package for details on nested futures.
@@ -287,8 +421,8 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 |Region   |New infections per day |Expected change in reports |Effective reproduction no. |Rate of growth          |Doubling/halving time (days) |
 |:--------|:----------------------|:--------------------------|:--------------------------|:-----------------------|:----------------------------|
-|realland |2017 (1029 -- 3866)    |Likely decreasing          |0.85 (0.6 -- 1.1)          |-0.042 (-0.11 -- 0.036) |-17 (19 -- -6.1)             |
-|testland |4052 (2052 -- 8445)    |Likely decreasing          |0.86 (0.6 -- 1.2)          |-0.04 (-0.12 -- 0.042)  |-17 (17 -- -5.9)             |
+|realland |1491 (496 -- 4809)     |Likely decreasing          |0.85 (0.63 -- 1.1)         |-0.042 (-0.11 -- 0.036) |-17 (19 -- -6.1)             |
+|testland |2934 (929 -- 10558)    |Likely decreasing          |0.85 (0.61 -- 1.2)         |-0.043 (-0.12 -- 0.043) |-16 (16 -- -5.9)             |
 
 
 
