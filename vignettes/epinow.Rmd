@@ -37,7 +37,7 @@ options(mc.cores = 4)
 reported_cases <- example_confirmed[1:60]
 reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 delay <- example_incubation_period + reporting_delay
-rt_prior <- LogNormal(mean = 2, sd = 1)
+rt_prior <- LogNormal(mean = 2, sd = 0.1)
 ```
 
 We can then run the `epinow()` function with the same arguments as `estimate_infections()`.
@@ -51,11 +51,18 @@ res <- epinow(reported_cases,
 )
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2 logs to the console and:
-#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> '/tmp/Rtmpd8yKjK/regional-epinow/2020-04-21.log'.
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2.epinow logs to the console and:
-#> '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
+#> '/tmp/Rtmpd8yKjK/epinow/2020-04-21.log'.
 res$plots$R
+#> Warning: epinow()$plots was deprecated in EpiNow2 1.8.0.
+#> ℹ Please use `plot()` instead.
+#> ℹ The deprecated feature was likely used in the EpiNow2 package.
+#>   Please report the issue at <https://github.com/epiforecasts/EpiNow2/issues>.
+#> This warning is displayed once per session.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
 ```
 
 ![plot of chunk epinow](epinow-epinow-1.png)
@@ -89,38 +96,63 @@ region_rt <- regional_epinow(
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
 )
-#> INFO [2025-02-04 19:51:23] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2026-02-01 00:42:28] Producing following optional outputs: regions, summary, samples, plots, latest
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2 logs to the console and:
-#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> '/tmp/Rtmpd8yKjK/regional-epinow/2020-04-21.log'.
 #> Logging threshold set at INFO for the name logger
-#> Writing EpiNow2.epinow logs to: '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
-#> INFO [2025-02-04 19:51:23] Reporting estimates using data up to: 2020-04-21
-#> INFO [2025-02-04 19:51:23] No target directory specified so returning output
-#> INFO [2025-02-04 19:51:23] Producing estimates for: testland, realland
-#> INFO [2025-02-04 19:51:23] Regions excluded: none
-#> INFO [2025-02-04 19:54:18] Completed estimates for: testland
-#> INFO [2025-02-04 19:55:24] Completed estimates for: realland
-#> INFO [2025-02-04 19:55:24] Completed regional estimates
-#> INFO [2025-02-04 19:55:24] Regions with estimates: 2
-#> INFO [2025-02-04 19:55:24] Regions with runtime errors: 0
-#> INFO [2025-02-04 19:55:24] Producing summary
-#> INFO [2025-02-04 19:55:24] No summary directory specified so returning summary output
-#> INFO [2025-02-04 19:55:24] No target directory specified so returning timings
+#> Writing EpiNow2.epinow logs to: '/tmp/Rtmpd8yKjK/epinow/2020-04-21.log'.
+#> INFO [2026-02-01 00:42:28] Reporting estimates using data up to: 2020-04-21
+#> 
+#> INFO [2026-02-01 00:42:28] No target directory specified so returning output
+#> 
+#> INFO [2026-02-01 00:42:28] Producing estimates for: testland, realland
+#> 
+#> INFO [2026-02-01 00:42:28] Regions excluded: none
+#> Warning: epinow()$estimates was deprecated in EpiNow2 1.8.0.
+#> ℹ Use `get_samples()` for samples, `summary(x, type = 'parameters')` for
+#>   summarised estimates.
+#> ℹ The deprecated feature was likely used in the EpiNow2 package.
+#>   Please report the issue at <https://github.com/epiforecasts/EpiNow2/issues>.
+#> This warning is displayed once per session.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
+#> Warning: epinow()$estimated_reported_cases was deprecated in EpiNow2 1.8.0.
+#> ℹ Please use `estimates_by_report_date()` instead.
+#> ℹ The deprecated feature was likely used in the EpiNow2 package.
+#>   Please report the issue at <https://github.com/epiforecasts/EpiNow2/issues>.
+#> This warning is displayed once per session.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
+#> Warning: epinow()$summary was deprecated in EpiNow2 1.8.0.
+#> ℹ Please use `summary()` instead.
+#> ℹ The deprecated feature was likely used in the EpiNow2 package.
+#>   Please report the issue at <https://github.com/epiforecasts/EpiNow2/issues>.
+#> This warning is displayed once per session.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
+#> INFO [2026-02-01 00:43:38] Completed estimates for: testland
+#> INFO [2026-02-01 00:44:39] Completed estimates for: realland
+#> INFO [2026-02-01 00:44:39] Completed regional estimates
+#> INFO [2026-02-01 00:44:39] Regions with estimates: 2
+#> INFO [2026-02-01 00:44:39] Regions with runtime errors: 0
+#> INFO [2026-02-01 00:44:39] Producing summary
+#> INFO [2026-02-01 00:44:39] No summary directory specified so returning summary output
+#> INFO [2026-02-01 00:44:42] No target directory specified so returning timings
 ## summary
 region_rt$summary$summarised_results$table
 #>      Region New infections per day Expected change in reports
 #>      <char>                 <char>                     <fctr>
-#> 1: realland    2284 (1405 -- 3710)          Likely decreasing
-#> 2: testland    2237 (1344 -- 3795)          Likely decreasing
+#> 1: realland     1817 (786 -- 4531)          Likely decreasing
+#> 2: testland     1832 (760 -- 4394)          Likely decreasing
 #>    Effective reproduction no.           Rate of growth
 #>                        <char>                   <char>
-#> 1:         0.91 (0.73 -- 1.1)  -0.026 (-0.093 -- 0.04)
-#> 2:          0.9 (0.71 -- 1.1) -0.028 (-0.099 -- 0.041)
+#> 1:          0.9 (0.72 -- 1.1)   -0.03 (-0.083 -- 0.03)
+#> 2:          0.9 (0.72 -- 1.1) -0.029 (-0.085 -- 0.027)
 #>    Doubling/halving time (days)
 #>                          <char>
-#> 1:             -27 (17 -- -7.4)
-#> 2:               -25 (17 -- -7)
+#> 1:             -23 (23 -- -8.4)
+#> 2:             -24 (26 -- -8.2)
 ## plot
 region_rt$summary$plots$R
 ```
@@ -140,38 +172,49 @@ region_separate_rt <- regional_epinow(
   delays = delay_opts(delay),
   rt = rt, gp = gp,
 )
-#> INFO [2025-02-04 19:55:25] Producing following optional outputs: regions, summary, samples, plots, latest
+#> INFO [2026-02-01 00:44:43] Producing following optional outputs: regions, summary, samples, plots, latest
 #> Logging threshold set at INFO for the name logger
 #> Writing EpiNow2 logs to the console and:
-#> '/tmp/RtmpTIgwPA/regional-epinow/2020-04-21.log'.
+#> '/tmp/Rtmpd8yKjK/regional-epinow/2020-04-21.log'.
 #> Logging threshold set at INFO for the name logger
-#> Writing EpiNow2.epinow logs to: '/tmp/RtmpTIgwPA/epinow/2020-04-21.log'.
-#> INFO [2025-02-04 19:55:25] Reporting estimates using data up to: 2020-04-21
-#> INFO [2025-02-04 19:55:25] No target directory specified so returning output
-#> INFO [2025-02-04 19:55:25] Producing estimates for: testland, realland
-#> INFO [2025-02-04 19:55:25] Regions excluded: none
-#> INFO [2025-02-04 19:56:30] Completed estimates for: testland
-#> INFO [2025-02-04 19:56:59] Completed estimates for: realland
-#> INFO [2025-02-04 19:56:59] Completed regional estimates
-#> INFO [2025-02-04 19:56:59] Regions with estimates: 2
-#> INFO [2025-02-04 19:56:59] Regions with runtime errors: 0
-#> INFO [2025-02-04 19:56:59] Producing summary
-#> INFO [2025-02-04 19:56:59] No summary directory specified so returning summary output
-#> INFO [2025-02-04 19:57:00] No target directory specified so returning timings
+#> Writing EpiNow2.epinow logs to: '/tmp/Rtmpd8yKjK/epinow/2020-04-21.log'.
+#> INFO [2026-02-01 00:44:43] Reporting estimates using data up to: 2020-04-21
+#> 
+#> INFO [2026-02-01 00:44:43] No target directory specified so returning output
+#> 
+#> INFO [2026-02-01 00:44:43] Producing estimates for: testland, realland
+#> 
+#> INFO [2026-02-01 00:44:43] Regions excluded: none
+#> 
+#> INFO [2026-02-01 00:45:50] Completed estimates for: testland
+#> 
+#> INFO [2026-02-01 00:47:02] Completed estimates for: realland
+#> 
+#> INFO [2026-02-01 00:47:02] Completed regional estimates
+#> 
+#> INFO [2026-02-01 00:47:02] Regions with estimates: 2
+#> 
+#> INFO [2026-02-01 00:47:02] Regions with runtime errors: 0
+#> 
+#> INFO [2026-02-01 00:47:02] Producing summary
+#> 
+#> INFO [2026-02-01 00:47:02] No summary directory specified so returning summary output
+#> 
+#> INFO [2026-02-01 00:47:05] No target directory specified so returning timings
 ## summary
 region_separate_rt$summary$summarised_results$table
 #>      Region New infections per day Expected change in reports
 #>      <char>                 <char>                     <fctr>
-#> 1: realland    2017 (1042 -- 3839)          Likely decreasing
-#> 2: testland    2266 (1356 -- 3666)          Likely decreasing
+#> 1: realland     1503 (489 -- 5364)          Likely decreasing
+#> 2: testland     1846 (831 -- 4458)          Likely decreasing
 #>    Effective reproduction no.           Rate of growth
 #>                        <char>                   <char>
-#> 1:          0.84 (0.6 -- 1.2)  -0.042 (-0.11 -- 0.038)
-#> 2:          0.9 (0.71 -- 1.1) -0.028 (-0.098 -- 0.039)
+#> 1:         0.85 (0.61 -- 1.2)  -0.042 (-0.11 -- 0.045)
+#> 2:          0.9 (0.72 -- 1.1) -0.028 (-0.079 -- 0.026)
 #>    Doubling/halving time (days)
 #>                          <char>
-#> 1:             -16 (18 -- -6.2)
-#> 2:             -25 (18 -- -7.1)
+#> 1:               -17 (16 -- -6)
+#> 2:             -24 (27 -- -8.8)
 ## plot
 region_separate_rt$summary$plots$R
 ```
