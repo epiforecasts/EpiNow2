@@ -6,6 +6,9 @@
 This provides more accurate discretisation but will change the exact numerical values returned every time a distribution without uncertainty is discretised.
 Code that depends on the specific numerical output of `discretise()` may produce different results, though the differences should be small and represent improvements in accuracy.
 The function interface remains unchanged.
+- When population adjustment is enabled (via `pop` in `rt_opts()`), returned reproduction number estimates are now adjusted to account for susceptible depletion.
+If you previously used `pop` in `rt_opts()` for forecasting only, the returned `R` estimates now reflect the adjusted values rather than unadjusted.
+Unadjusted estimates are provided in a separate `R_unadjusted` output variable.
 
 ## Package changes
 
@@ -60,7 +63,8 @@ The function interface remains unchanged.
 
 - MCMC runs are now initialised with parameter values drawn from a distribution that approximates their prior distributions.
 - Added an option to compute growth rates using an estimator by Parag et al. (2022) based on total infectiousness rather than new infections, see `growth_method` argument in rt_opts().
-- Added support for fitting the susceptible population size. When population adjustment is enabled (via `pop` in `rt_opts()`), returned reproduction number estimates are now adjusted to account for susceptible depletion. Unadjusted estimates are also provided in a separate `R_unadjusted` output variable. Adjusted Rt represents the effective reproduction number given the current susceptible population, whilst unadjusted Rt represents transmission in a fully susceptible population. **Breaking**: if you previously used `pop` in `rt_opts()` for forecasting only, the returned `R` estimates now reflect the adjusted values rather than unadjusted.
+- Added support for fitting the susceptible population size.
+Adjusted Rt represents the effective reproduction number given the current susceptible population, whilst unadjusted Rt represents transmission in a fully susceptible population.
 
 ## Bug fixes
 
