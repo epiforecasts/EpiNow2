@@ -81,6 +81,7 @@ The function interface remains unchanged.
 
 ## Documentation
 
+- Updated vignettes to use the current API, removing deprecated argument usage (`output = "estimated_reported_cases"`, `$plots$R`) and replacing with `estimates_by_report_date()` and `plot()`. Also removed log and timing output that changes between runs.
 - Added guidelines for AI-assisted contributions to the CONTRIBUTING guide, including transparency requirements, contributor responsibilities, and AI-assisted code reviews.
 - Added a comprehensive prior choice and specification guide vignette covering all three main modelling functions with practical guidance on when and how to modify priors.
 - Fixed broken `@seealso` links in roxygen2 documentation by converting plain text function references to proper link syntax.
