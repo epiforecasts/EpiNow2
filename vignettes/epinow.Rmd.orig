@@ -47,15 +47,15 @@ We can then run the `epinow()` function with the same arguments as `estimate_inf
 
 ```{r epinow}
 res <- epinow(reported_cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior)
+  rt = rt_opts(prior = rt_prior),
+  logs = NULL
 )
-res$plots$R
+plot(res)
 ```
 
-The initial messages here indicate where log files can be found.
-If you want summarised results and plots to be written out where they can be accessed later you can use the `target_folder` argument.
+By default, logging messages are printed to the console indicating the progress of the model fitting and where log files can be found. Here we have set `logs = NULL` to suppress these messages. If you want summarised results and plots to be written out where they can be accessed later you can use the `target_folder` argument.
 
 # Running the model simultaneously on multiple regions
 
@@ -77,9 +77,10 @@ To then run this on multiple regions using the default options above, we could u
 ```{r regional_epinow, fig.width = 8}
 region_rt <- regional_epinow(
   data = cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
+  logs = NULL
 )
 ## summary
 region_rt$summary$summarised_results$table
@@ -95,9 +96,10 @@ gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
 rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
 region_separate_rt <- regional_epinow(
   data = cases,
-  generation_time = generation_time_opts(example_generation_time),
+  generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt, gp = gp,
+  logs = NULL
 )
 ## summary
 region_separate_rt$summary$summarised_results$table
