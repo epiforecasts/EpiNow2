@@ -235,21 +235,34 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
   # Extract each parameter into a data.table
   out <- list()
 
-  # Infections (for estimate_infections)
+  # Infections (for estimate_infections) - extract full time series first
   infections <- extract_latent_state("infections", raw_samples, dates)
-  if (!is.null(infections)) {
-    out$infections <- infections[date >= min(reported_dates)]
-  }
 
   # Reported cases (for estimate_infections)
   out$reported_cases <- extract_latent_state(
     "imputed_reports", raw_samples, reported_dates[args$imputed_times]
   )
 
-  # R (reproduction number) - try R first, then gen_R
-  out$R <- extract_latent_state("R", raw_samples, reported_dates)
-  if (is.null(out$R)) {
-    out$R <- extract_latent_state("gen_R", raw_samples, reported_dates)
+  # R (reproduction number) - try R first (renewal model), then gen_R (backcalc)
+  R_unadjusted <- extract_latent_state("R", raw_samples, reported_dates)
+  using_renewal_model <- !is.null(R_unadjusted)
+  if (!using_renewal_model) {
+    R_unadjusted <- extract_latent_state("gen_R", raw_samples, reported_dates)
+  }
+
+  # Extract adjusted Rt if pop adjustment enabled and using renewal model
+  # (R_adj only calculated in Stan when estimate_r > 0 && use_pop > 0)
+  if (using_renewal_model && args$use_pop > 0) {
+    R_adj <- extract_latent_state("R_adj", raw_samples, reported_dates)
+    out$R <- R_adj
+    out$R_unadjusted <- R_unadjusted
+  } else {
+    out$R <- R_unadjusted
+  }
+
+  # Trim infections to reported dates
+  if (!is.null(infections)) {
+    out$infections <- infections[date >= min(reported_dates)]
   }
 
   # Breakpoints (if present in model)

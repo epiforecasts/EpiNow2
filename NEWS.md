@@ -6,6 +6,9 @@
 This provides more accurate discretisation but will change the exact numerical values returned every time a distribution without uncertainty is discretised.
 Code that depends on the specific numerical output of `discretise()` may produce different results, though the differences should be small and represent improvements in accuracy.
 The function interface remains unchanged.
+- When population adjustment is enabled (via `pop` in `rt_opts()`), returned reproduction number estimates are now adjusted to account for susceptible depletion. Adjusted Rt represents the effective reproduction number given the current susceptible population, whilst unadjusted Rt represents transmission in a fully susceptible population.
+If you previously used `pop` in `rt_opts()` for forecasting only, the returned `R` estimates now reflect the adjusted values rather than unadjusted.
+Unadjusted estimates are provided in a separate `R_unadjusted` output variable.
 
 ## Package changes
 

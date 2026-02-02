@@ -62,10 +62,10 @@ is the moment generating function of the discretised generation time distributio
 For the time window of the observed data and beyond infections are then modelled by weighting previous infections with the generation time and scaling by the instantaneous reproduction number:
 
 \begin{equation}
-  I_t = R_t \sum_{\tau = 1}^{g_\mathrm{max}} g(\tau | \theta_g) I_{t - \tau}
+  I_t = R_t \sum_{\tau = 1}^{g_\mathrm{max}} g(\tau | \theta_g) I_{t - \tau} = R_t \lambda_t
 \end{equation}
 
-where $g_\tau = g(\tau | \theta_g)$ is the discretised distribution of generation times with parameters $\theta_g$ and maximum $g_\mathrm{max}$.
+where $g_\tau = g(\tau | \theta_g)$ is the discretised distribution of generation times with parameters $\theta_g$ and maximum $g_\mathrm{max}$, and $\lambda_t = \sum_{\tau = 1}^{g_\mathrm{max}} g(\tau | \theta_g) I_{t - \tau}$ is the total infectiousness at time $t$.
 Generation times can be specified as coming from a distribution with uncertainty by giving mean and standard deviations of normal priors of the distributional parameters.
 By default this prior is weighted by default by the number of observations although this can be changed by the user.
 It is truncated to be positive where relevant for the given distribution.
@@ -110,13 +110,31 @@ The simplest possible process model option is to use no time-varying prior and r
 
 ### Beyond the end of the observation period
 
-Beyond the end of the observation period ($T$), by default, the Gaussian process is assumed to continue. However, here again there are a range of options. These included fixing transmission dynamics (optionally this can also be done before the end of the observation period), and scaling $R_t$ based on the proportion of the population that remain susceptible. This is defined as followed,
+Beyond the end of the observation period ($T$), by default, the Gaussian process is assumed to continue. However, here again there are a range of options. These include fixing transmission dynamics (optionally this can also be done before the end of the observation period), and adjusting for depletion of the susceptible population.
+
+### Adjusting for susceptible population depletion
+
+The model can account for the depletion of susceptible individuals over time, which reduces transmission potential even if the intrinsic reproduction number remains constant. This is controlled via the `pop`, `pop_period`, and `pop_floor` parameters in `rt_opts()`.
+
+When a population size is specified (via the `pop` parameter), the model adjusts both infections and the reproduction number estimates to account for susceptible depletion. The adjustment uses the following formula for infections:
 
 \begin{equation}
-    I_t = (N - I^c_{t-1}) \left(1 - \exp \left(\frac{-I'_t}{N - I^c_{T}}\right)\right),
+    I_t = S_t \left(1 - \exp \left(\frac{-R_t \lambda_t}{S_t}\right)\right),
 \end{equation}
 
-where $I^c_t = \sum_{s< t} I_s$ are cumulative infections by $t-1$ and $I'_t$ are the unadjusted infections defined above. This adjustment is based on the one implemented in the `epidemia` R package [@bhattSemiMechanisticBayesianModeling].
+where $S_t = \max(N_{\text{floor}}, N - I^c_{t-1})$ is the susceptible population at time $t$, $N$ is the initial population size, $I^c_t = \sum_{s< t} I_s$ are cumulative infections by $t-1$, $R_t$ is the unadjusted reproduction number, and $\lambda_t$ is the total infectiousness. The parameter $N_{\text{floor}}$ (controlled by `pop_floor`, default 1.0) provides a numerical stability floor and can be interpreted as representing ongoing importation.
+
+The adjustment can be applied in two ways, controlled by the `pop_period` parameter:
+- `"forecast"` (default): adjustment applied only to forecasts beyond the observation period
+- `"all"`: adjustment applied to both the observation period and forecasts
+
+When population adjustment is enabled, the returned reproduction number estimates (`R`) are back-calculated from the adjusted infections to reflect the effective reproduction occurring given the current susceptible population:
+
+\begin{equation}
+    R^{\text{adjusted}}_t = \frac{I_t}{\lambda_t}
+\end{equation}
+
+where $I_t$ are the adjusted infections and $\lambda_t$ is the total infectiousness. This gives an effective reproduction number that is consistent with the infection dynamics. The unadjusted reproduction number (representing transmission in a fully susceptible population) is also returned as `R_unadjusted` for reference. This adjustment approach is based on the one implemented in the `epidemia` R package [@bhattSemiMechanisticBayesianModeling].
 
 
 ## Non-Mechanistic infection model
