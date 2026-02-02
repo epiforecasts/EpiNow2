@@ -9,6 +9,7 @@ The function interface remains unchanged.
 
 ## Package changes
 
+- Updated DESCRIPTION: removed "EpiForecasts" from authors, revised package description, and added `lintr` and `styler` to development dependencies.
 - Fixed integration tests for `estimate_truncation` and `estimate_secondary` parameter recovery, and updated `example_truncated` data generation to use the Stan `discretised_pmf` function directly.
 - Updated `setup_future()` to use `parallelly::availableCores()` instead of the re-exported `future::availableCores()`, and removed the deprecated `earlySignal` argument from `future::plan()` calls.
 - The test suite has been reorganised into core tests (fast, always run) and integration tests (slow, run weekly), improving local development speed by 77% (from 9 minutes to 2 minutes) whilst maintaining test coverage.
@@ -45,12 +46,12 @@ The function interface remains unchanged.
 - Refactored `estimate_truncation()` to return a proper S3 object with a simplified structure.
   - Renamed return elements: `obs` → `observations`, `data` → `args`.
   - Removed elements: `last_obs` (now included in `observations`), `cmf` and `dist`.
-  - Use `get_delays(object)$truncation` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
+  - Use `get_parameters(object)[["truncation"]]` to extract the estimated truncation distribution for use in `epinow()` or `estimate_infections()`.
   - Use `get_predictions(object)` to extract truncation-adjusted (nowcast) estimates that can be compared to observed data.
   - Use `get_samples(object)` to extract posterior samples.
   - Use `summary(object)` to get parameter estimates as a data.table.
-  - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_delays()$truncation` instead.
-- Added `get_delays()` generic function to extract delay distributions from fitted models as a named list of `dist_spec` objects. Works with `estimate_infections()`, `estimate_secondary()`, and `estimate_truncation()`. Also added `get_delay(object, type)` as a convenience function to extract a single delay by name (e.g., `get_delay(fit, "truncation")`).
+  - **Deprecated**: Accessing `$dist` via `$` or `[[` triggers deprecation warnings. Use `get_parameters(x)[["truncation"]]` instead.
+- Updated `get_parameters()` to an S3 generic that works with both `dist_spec` objects (to extract fixed parameter values) and fitted model objects from `estimate_infections()`, `estimate_secondary()`, and `estimate_truncation()`. For fitted models, it returns posterior distributions as `dist_spec` objects, allowing estimated parameters to be used directly as priors in subsequent model fits. Use `get_parameters(fit)` to extract all parameters as a named list, or `get_parameters(fit)[["truncation"]]` for a single parameter.
 - Added a `style` argument to `plot_estimates()` and related plot methods to display credible intervals as error bars (`"linerange"`) instead of the default ribbons (`"ribbon"`). Error bars can be clearer for weekly or aggregated data.
 - **Internal**: Stan model delay identifiers have been renamed for semantic clarity (`delay_id` → `delay_id_reporting`, `gt_id` → `delay_id_generation_time`, `trunc_id` → `delay_id_truncation`). This may affect users who access Stan models directly.
 - **Internal**: Stan model parameter names have been renamed for clarity (`dispersion` → `reporting_overdispersion`, `frac_obs` → `fraction_observed`). This simplifies internal code by removing post-hoc parameter renaming. This may affect users who access Stan models directly or use custom priors with the old parameter names.
@@ -63,6 +64,7 @@ The function interface remains unchanged.
 
 ## Bug fixes
 
+- Fixed an incorrect Rt prior in vignettes (`sd = 0.1` instead of `sd = 1`) that caused divergent transitions after changing to prior-based MCMC initialisation.
 - A bug was fixed where the `report_log_lik` Stan function used the raw overdispersion parameter instead of the transformed phi value, producing incorrect pointwise log-likelihood values for model comparison (LOO, WAIC).
 - A bug was fixed where the truncation PMF vector in `estimate_secondary.stan` was declared with incorrect dimension, causing a dimension mismatch with the `get_delay_rev_pmf()` function call.
 - A bug was fixed where the `CrIs` parameter in `epinow()` was not being passed through to internal functions, causing user-specified credible intervals to be ignored in saved files and output.
@@ -78,6 +80,7 @@ The function interface remains unchanged.
 
 ## Documentation
 
+- Added guidelines for AI-assisted contributions to the CONTRIBUTING guide, including transparency requirements, contributor responsibilities, and AI-assisted code reviews.
 - Added a comprehensive prior choice and specification guide vignette covering all three main modelling functions with practical guidance on when and how to modify priors.
 - Fixed broken `@seealso` links in roxygen2 documentation by converting plain text function references to proper link syntax.
 - Added documentation about doing prior predictive checks.
@@ -85,6 +88,7 @@ The function interface remains unchanged.
 - Fixed an issue with the pkgdown website where the Reference tab was not appearing as a dropdown menu for the R and Stan Reference tabs.
 - Enhanced the stan documentation with a doxygen-awesome theme and added a license badge.
 - Clarified when the population adjustment is done when `pop` is specified.
+- Updated workflow vignette to reference `{epidist}` instead of the outdated `{dynamicaltruncation}` reference.
 
 # EpiNow2 1.7.1
 

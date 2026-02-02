@@ -119,18 +119,18 @@ test_that("estimate_truncation can return values from simulated data and plot
     names(est),
     c("observations", "args", "fit")
   )
-  expect_s3_class(get_delays(est)$truncation, "dist_spec")
+  expect_s3_class(get_parameters(est)$truncation, "dist_spec")
   expect_s3_class(summary(est), "data.table")
   expect_type(est$observations, "list")
   expect_s3_class(get_predictions(est), "data.table")
   expect_error(plot(est), NA)
 })
 
-test_that("get_delays returns valid truncation distribution", {
+test_that("get_parameters returns valid truncation distribution", {
   est <- default_est
 
   # Extract the estimated truncation distribution
-  trunc_dist <- get_delays(est)$truncation
+  trunc_dist <- get_parameters(est)$truncation
 
   # Check structure: should be a dist_spec with lognormal distribution
   expect_s3_class(trunc_dist, "dist_spec")
@@ -180,26 +180,26 @@ test_that("deprecated accessors return correct values with warnings", {
   expect_true("confirm" %in% names(obs_bracket))
 })
 
-test_that("get_delays returns truncation distribution from estimate_truncation", {
+test_that("get_parameters returns truncation distribution from estimate_truncation", {
   est <- default_est
 
   # Test getting all delays as named list
-  delays <- get_delays(est)
+  delays <- get_parameters(est)
   expect_type(delays, "list")
   expect_named(delays, "truncation")
   expect_s3_class(delays$truncation, "dist_spec")
 })
 
-test_that("get_delay extracts single delay by name", {
+test_that("get_parameters extracts single delay via list subsetting", {
   est <- default_est
 
-  # get_delay should return same result as get_delays()$truncation
-  trunc_dist <- get_delay(est, "truncation")
+  # Extract single parameter using standard R idiom
+  trunc_dist <- get_parameters(est)[["truncation"]]
   expect_s3_class(trunc_dist, "dist_spec")
   expect_equal(trunc_dist$distribution, "lognormal")
 
-  # Non-existent delay should return NULL
-  expect_null(get_delay(est, "nonexistent"))
+  # Non-existent parameter returns NULL (standard list behaviour)
+  expect_null(get_parameters(est)[["nonexistent"]])
 })
 
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
@@ -218,7 +218,7 @@ test_that("estimate_truncation can return values from simulated data with the
     names(est),
     c("observations", "args", "fit")
   )
-  expect_s3_class(get_delays(est)$truncation, "dist_spec")
+  expect_s3_class(get_parameters(est)$truncation, "dist_spec")
   expect_error(plot(est), NA)
 })
 
@@ -247,8 +247,8 @@ test_that("estimate_truncation works with filter_leading_zeros set", {
   )
   # Compare the results of the two fits
   expect_equal(
-    get_delays(original_data_fit)$truncation$dist,
-    get_delays(modified_data_fit)$truncation$dist
+    get_distribution(get_parameters(original_data_fit)$truncation),
+    get_distribution(get_parameters(modified_data_fit)$truncation)
   )
   expect_equal(
     original_data_fit$args$obs_dist,
@@ -268,7 +268,7 @@ test_that("estimate_truncation works with zero_threshold set", {
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250
   )
   expect_named(out, c("observations", "args", "fit"))
-  expect_s3_class(get_delays(out)$truncation, "dist_spec")
+  expect_s3_class(get_parameters(out)$truncation, "dist_spec")
 })
 
 test_that("estimate_truncation recovers true truncation parameters", {

@@ -163,7 +163,7 @@ Lastly we need to choose a prior for the initial value of the reproduction numbe
 
 
 ``` r
-rt_prior <- LogNormal(mean = 2, sd = 0.1)
+rt_prior <- LogNormal(mean = 2, sd = 1)
 ```
 
 # Running the model
