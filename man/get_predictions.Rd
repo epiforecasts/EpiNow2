@@ -11,15 +11,45 @@
 \usage{
 get_predictions(object, ...)
 
-\method{get_predictions}{estimate_infections}(object, CrIs = c(0.2, 0.5, 0.9), ...)
+\method{get_predictions}{estimate_infections}(
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...
+)
 
-\method{get_predictions}{estimate_secondary}(object, CrIs = c(0.2, 0.5, 0.9), ...)
+\method{get_predictions}{estimate_secondary}(
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...
+)
 
-\method{get_predictions}{forecast_infections}(object, ...)
+\method{get_predictions}{forecast_infections}(
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...
+)
 
-\method{get_predictions}{forecast_secondary}(object, ...)
+\method{get_predictions}{forecast_secondary}(
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...
+)
 
-\method{get_predictions}{estimate_truncation}(object, CrIs = c(0.2, 0.5, 0.9), ...)
+\method{get_predictions}{estimate_truncation}(
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...
+)
 }
 \arguments{
 \item{object}{A fitted model object (e.g., from \code{estimate_infections()},
@@ -27,24 +57,47 @@ get_predictions(object, ...)
 
 \item{...}{Additional arguments (currently unused)}
 
+\item{format}{Character string specifying the output format:
+\itemize{
+\item \code{"summary"} (default): summary statistics (mean, sd, median, CrIs)
+\item \code{"sample"}: raw posterior samples for
+\code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}}
+\item \code{"quantile"}: quantile predictions for
+\code{\link[scoringutils:as_forecast_quantile]{scoringutils::as_forecast_quantile()}}
+}}
+
 \item{CrIs}{Numeric vector of credible intervals to return. Defaults to
-c(0.2, 0.5, 0.9).}
+c(0.2, 0.5, 0.9). Only used when \code{format = "summary"}.}
+
+\item{quantiles}{Numeric vector of quantile levels to return. Defaults to
+c(0.05, 0.25, 0.5, 0.75, 0.95). Only used when \code{format = "quantile"}.}
 }
 \value{
-A \code{data.table} with columns including date and summary statistics
-(mean, sd, credible intervals) for the model predictions.
+A \code{data.table} with columns depending on \code{format}:
+\itemize{
+\item \code{format = "summary"}: date, mean, sd, median, and credible intervals
+\item \code{format = "sample"}: forecast_date, date, horizon, sample, predicted
+\item \code{format = "quantile"}: forecast_date, date, horizon, quantile_level,
+predicted
+}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Extracts predictions from a fitted model, combining observations with model
-estimates. For \code{estimate_infections()} returns predicted reported cases, for
-\code{estimate_secondary()} returns predicted secondary observations. For
-\code{estimate_truncation()} returns reconstructed observations adjusted for
-truncation.
+Extracts predictions from a fitted model. For \code{estimate_infections()} returns
+predicted reported cases, for \code{estimate_secondary()} returns predicted
+secondary observations. For \code{estimate_truncation()} returns reconstructed
+observations adjusted for truncation.
 }
 \examples{
 \dontrun{
 # After fitting a model
+# Get summary predictions (default)
 predictions <- get_predictions(fit)
+
+# Get sample-level predictions for scoringutils
+samples <- get_predictions(fit, format = "sample")
+
+# Get quantile predictions for scoringutils
+quantiles <- get_predictions(fit, format = "quantile")
 }
 }

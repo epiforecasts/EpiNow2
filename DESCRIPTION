@@ -146,6 +146,7 @@ Suggests:
     parallelly,
     progressr,
     rmarkdown,
+    scoringutils,
     spelling,
     testthat,
     withr

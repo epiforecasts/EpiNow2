@@ -347,29 +347,94 @@ get_samples.estimate_truncation <- function(object, ...) {
   samples[]
 }
 
+#' Format sample predictions
+#'
+#' Helper function to format posterior samples into the structure expected by
+#' [scoringutils::as_forecast_sample()].
+#'
+#' @param samples Data.table with date, sample, and value columns
+#' @param forecast_date Date when the forecast was made
+#' @return Data.table with columns: forecast_date, date, horizon, sample,
+#'   predicted
+#' @keywords internal
+format_sample_predictions <- function(samples, forecast_date) {
+  predictions <- samples[, .(date, sample, predicted = value)]
+  predictions[, forecast_date := forecast_date]
+  predictions[, horizon := as.numeric(date - forecast_date)]
+  data.table::setcolorder(
+    predictions,
+    c("forecast_date", "date", "horizon", "sample", "predicted")
+  )
+  predictions[]
+}
+
+#' Format quantile predictions
+#'
+#' Helper function to format posterior samples into quantiles in the structure
+#' expected by [scoringutils::as_forecast_quantile()].
+#'
+#' @param samples Data.table with date and value columns
+#' @param quantiles Numeric vector of quantile levels
+#' @param forecast_date Date when the forecast was made
+#' @return Data.table with columns: forecast_date, date, horizon,
+#'   quantile_level, predicted
+#' @keywords internal
+format_quantile_predictions <- function(samples, quantiles, forecast_date) {
+  predictions <- samples[
+    ,
+    .(predicted = quantile(value, probs = quantiles)),
+    by = date
+  ]
+  predictions[, quantile_level := rep(quantiles, .N / length(quantiles))]
+  predictions[, forecast_date := forecast_date]
+  predictions[, horizon := as.numeric(date - forecast_date)]
+  data.table::setcolorder(
+    predictions,
+    c("forecast_date", "date", "horizon", "quantile_level", "predicted")
+  )
+  predictions[]
+}
+
 #' Get predictions from a fitted model
 #'
 #' @description `r lifecycle::badge("stable")`
-#' Extracts predictions from a fitted model, combining observations with model
-#' estimates. For `estimate_infections()` returns predicted reported cases, for
-#' `estimate_secondary()` returns predicted secondary observations. For
-#' `estimate_truncation()` returns reconstructed observations adjusted for
-#' truncation.
+#' Extracts predictions from a fitted model. For `estimate_infections()` returns
+#' predicted reported cases, for `estimate_secondary()` returns predicted
+#' secondary observations. For `estimate_truncation()` returns reconstructed
+#' observations adjusted for truncation.
 #'
 #' @param object A fitted model object (e.g., from `estimate_infections()`,
 #'   `estimate_secondary()`, or `estimate_truncation()`)
+#' @param format Character string specifying the output format:
+#'   - `"summary"` (default): summary statistics (mean, sd, median, CrIs)
+#'   - `"sample"`: raw posterior samples for
+#'     [scoringutils::as_forecast_sample()]
+#'   - `"quantile"`: quantile predictions for
+#'     [scoringutils::as_forecast_quantile()]
 #' @param CrIs Numeric vector of credible intervals to return. Defaults to
-#'   c(0.2, 0.5, 0.9).
+#'   c(0.2, 0.5, 0.9). Only used when `format = "summary"`.
+#' @param quantiles Numeric vector of quantile levels to return. Defaults to
+#'   c(0.05, 0.25, 0.5, 0.75, 0.95). Only used when `format = "quantile"`.
 #' @param ... Additional arguments (currently unused)
 #'
-#' @return A `data.table` with columns including date and summary statistics
-#'   (mean, sd, credible intervals) for the model predictions.
+#' @return A `data.table` with columns depending on `format`:
+#'   - `format = "summary"`: date, mean, sd, median, and credible intervals
+#'   - `format = "sample"`: forecast_date, date, horizon, sample, predicted
+#'   - `format = "quantile"`: forecast_date, date, horizon, quantile_level,
+#'     predicted
 #'
 #' @export
 #' @examples
 #' \dontrun{
 #' # After fitting a model
+#' # Get summary predictions (default)
 #' predictions <- get_predictions(fit)
+#'
+#' # Get sample-level predictions for scoringutils
+#' samples <- get_predictions(fit, format = "sample")
+#'
+#' # Get quantile predictions for scoringutils
+#' quantiles <- get_predictions(fit, format = "quantile")
 #' }
 get_predictions <- function(object, ...) {
   UseMethod("get_predictions")
@@ -377,90 +442,124 @@ get_predictions <- function(object, ...) {
 
 #' @rdname get_predictions
 #' @export
-get_predictions.estimate_infections <- function(object,
-                                                CrIs = c(0.2, 0.5, 0.9),
-                                                ...) {
+get_predictions.estimate_infections <- function(
+    object,
+    format = c("summary", "sample", "quantile"),
+    CrIs = c(0.2, 0.5, 0.9),
+    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+    ...) {
+  format <- rlang::arg_match(format)
+
   # Get samples for reported cases
   samples <- get_samples(object)
   reported_samples <- samples[variable == "reported_cases"]
+  forecast_date <- max(object$observations$date, na.rm = TRUE)
 
-  # Calculate summary measures
-  predictions <- calc_summary_measures(
-    reported_samples,
-    summarise_by = "date",
-    order_by = "date",
-    CrIs = CrIs
+  switch(format,
+    summary = calc_summary_measures(
+      reported_samples,
+      summarise_by = "date",
+      order_by = "date",
+      CrIs = CrIs
+    ),
+    sample = format_sample_predictions(reported_samples, forecast_date),
+    quantile = format_quantile_predictions(
+      reported_samples, quantiles, forecast_date
+    )
   )
-
-  # Merge with observations
-  predictions <- data.table::merge.data.table(
-    object$observations[, .(date, confirm)],
-    predictions,
-    by = "date",
-    all = TRUE
-  )
-
-  predictions
 }
 
 #' @rdname get_predictions
 #' @export
-get_predictions.estimate_secondary <- function(object,
-                                               CrIs = c(0.2, 0.5, 0.9),
-                                               ...) {
+get_predictions.estimate_secondary <- function(
+    object,
+    format = c("summary", "sample", "quantile"),
+    CrIs = c(0.2, 0.5, 0.9),
+    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+    ...) {
+  format <- rlang::arg_match(format)
+
   # Get samples for simulated secondary observations
   samples <- get_samples(object)
   sim_secondary_samples <- samples[variable == "sim_secondary"]
+  forecast_date <- max(object$observations$date, na.rm = TRUE)
 
-  # Calculate summary measures
-  predictions <- calc_summary_measures(
-    sim_secondary_samples,
-    summarise_by = "date",
-    order_by = "date",
-    CrIs = CrIs
+  switch(format,
+    summary = calc_summary_measures(
+      sim_secondary_samples,
+      summarise_by = "date",
+      order_by = "date",
+      CrIs = CrIs
+    ),
+    sample = format_sample_predictions(sim_secondary_samples, forecast_date),
+    quantile = format_quantile_predictions(
+      sim_secondary_samples, quantiles, forecast_date
+    )
   )
-
-  # Merge with observations
-  predictions <- data.table::merge.data.table(
-    object$observations, predictions,
-    all = TRUE, by = "date"
-  )
-
-  predictions
 }
 
 #' @rdname get_predictions
 #' @export
-get_predictions.forecast_infections <- function(object, ...) {
-  data.table::copy(object$predictions)
-}
+get_predictions.forecast_infections <- function(
+    object,
+    format = c("summary", "sample", "quantile"),
+    CrIs = c(0.2, 0.5, 0.9),
+    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+    ...) {
+  format <- rlang::arg_match(format)
 
-#' @rdname get_predictions
-#' @export
-get_predictions.forecast_secondary <- function(object, ...) {
-  data.table::copy(object$predictions)
-}
+  samples <- object$samples[variable == "reported_cases"]
+  forecast_date <- max(object$observations$date, na.rm = TRUE)
 
-#' @rdname get_predictions
-#' @export
-get_predictions.estimate_truncation <- function(object,
-                                                CrIs = c(0.2, 0.5, 0.9),
-                                                ...) {
-  # Extract reconstructed observations from fit
-  recon_obs <- extract_stan_param(object$fit, "recon_obs",
-    CrIs = CrIs,
-    var_names = TRUE
+  switch(format,
+    summary = {
+      predictions <- object$summarised[variable == "reported_cases"]
+      predictions[, !"variable"]
+    },
+    sample = format_sample_predictions(samples, forecast_date),
+    quantile = format_quantile_predictions(samples, quantiles, forecast_date)
   )
-  recon_obs <- recon_obs[, id := variable][, variable := NULL]
-  obs_sets <- object$args$obs_sets
-  # Assign dataset index using modulo: rows cycle through 1..obs_sets
-  # e.g., with obs_sets=3: row 1->1, row 2->2, row 3->3, row 4->1, ...
-  recon_obs <- recon_obs[, dataset := seq_len(.N)][
-    ,
-    dataset := dataset %% obs_sets
-  ][
-    dataset == 0, dataset := obs_sets
-  ]
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.forecast_secondary <- function(
+    object,
+    format = c("summary", "sample", "quantile"),
+    CrIs = c(0.2, 0.5, 0.9),
+    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+    ...) {
+  format <- rlang::arg_match(format)
+
+  # forecast_secondary$samples only contains sim_secondary, no filtering needed
+  samples <- object$samples
+  # forecast_date is the last date with observed secondary (training period end)
+  obs_dates <- object$observations[!is.na(secondary)]$date
+  if (length(obs_dates) == 0L) {
+    obs_dates <- object$observations$date
+  }
+  forecast_date <- max(obs_dates, na.rm = TRUE)
+
+  switch(format,
+    summary = {
+      preds <- data.table::copy(object$predictions)
+      preds[, c("primary", "secondary") := NULL]
+      preds
+    },
+    sample = format_sample_predictions(samples, forecast_date),
+    quantile = format_quantile_predictions(samples, quantiles, forecast_date)
+  )
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.estimate_truncation <- function(
+    object,
+    format = c("summary", "sample", "quantile"),
+    CrIs = c(0.2, 0.5, 0.9),
+    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+    ...) {
+  format <- rlang::arg_match(format)
 
   # Process input observations to get dates
   dirty_obs <- purrr::map(object$observations, data.table::as.data.table)
@@ -473,38 +572,109 @@ get_predictions.estimate_truncation <- function(object,
   nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
 
-  # Get truncation max from args
+  obs_sets <- object$args$obs_sets
   trunc_max <- object$args$delay_max[1]
 
-  # Link predictions to dates
-  link_preds <- function(index) {
-    target_obs <- dirty_obs[[index]][, idx := .N - 0:(.N - 1)]
-    target_obs <- target_obs[idx < trunc_max]
-    estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
-    # Convert to integer: reconstructed observations are counts, so integer
-    # representation is appropriate. CrI columns are also converted for
-    # consistency since fractional counts are not meaningful.
-    estimates <- estimates[, lapply(.SD, as.integer)]
-    estimates <- estimates[, idx := .N - 0:(.N - 1)]
-    if (!is.null(estimates$n_eff)) {
-      estimates[, "n_eff" := NULL]
-    }
-    if (!is.null(estimates$Rhat)) {
-      estimates[, "Rhat" := NULL]
-    }
-
-    # Merge predictions with date only (no observations)
-    result <- data.table::merge.data.table(
-      target_obs[, .(date, idx)],
-      estimates,
-      by = "idx", all.x = TRUE
+  if (format == "summary") {
+    # Extract reconstructed observations summary statistics
+    recon_obs <- extract_stan_param(object$fit, "recon_obs",
+      CrIs = CrIs,
+      var_names = TRUE
     )
-    result[, report_date := max(target_obs$date)]
-    result[order(date)][, idx := NULL]
-  }
+    recon_obs <- recon_obs[, id := variable][, variable := NULL]
 
-  predictions <- purrr::map(seq_len(obs_sets), link_preds)
-  data.table::rbindlist(predictions)
+    # Assign dataset index using modulo
+    recon_obs <- recon_obs[, dataset := seq_len(.N)][
+      ,
+      dataset := dataset %% obs_sets
+    ][
+      dataset == 0, dataset := obs_sets
+    ]
+
+    # Link predictions to dates
+    link_preds <- function(index) {
+      target_obs <- dirty_obs[[index]][, idx := .N - 0:(.N - 1)]
+      target_obs <- target_obs[idx < trunc_max]
+      estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
+      estimates <- estimates[, lapply(.SD, as.integer)]
+      estimates <- estimates[, idx := .N - 0:(.N - 1)]
+      if (!is.null(estimates$n_eff)) estimates[, "n_eff" := NULL]
+      if (!is.null(estimates$Rhat)) estimates[, "Rhat" := NULL]
+
+      result <- data.table::merge.data.table(
+        target_obs[, .(date, idx)],
+        estimates,
+        by = "idx", all.x = TRUE
+      )
+      result[, report_date := max(target_obs$date)]
+      result[order(date)][, idx := NULL]
+    }
+
+    predictions <- purrr::map(seq_len(obs_sets), link_preds)
+    data.table::rbindlist(predictions)
+  } else {
+    # Both "sample" and "quantile" need raw samples first
+    raw_samples <- extract_samples(object$fit, pars = "recon_obs")
+    recon_samples <- data.table::as.data.table(raw_samples$recon_obs)
+    recon_samples <- data.table::melt(recon_samples,
+      measure.vars = seq_len(ncol(recon_samples)),
+      variable.name = "obs_idx",
+      value.name = "predicted"
+    )
+    recon_samples[, obs_idx := as.integer(obs_idx)]
+    recon_samples[, sample := seq_len(.N), by = obs_idx]
+    recon_samples[, dataset := ((obs_idx - 1) %% obs_sets) + 1]
+
+    # Link samples to dates
+    link_samples <- function(index) {
+      target_obs <- dirty_obs[[index]][, idx := .N - 0:(.N - 1)]
+      target_obs <- target_obs[idx < trunc_max]
+      target_obs[, obs_idx := seq_len(.N)]
+
+      samples_subset <- recon_samples[dataset == index]
+      result <- data.table::merge.data.table(
+        target_obs[, .(date, obs_idx)],
+        samples_subset[, .(obs_idx, sample, predicted)],
+        by = "obs_idx"
+      )[, obs_idx := NULL]
+
+      # Add forecast metadata
+      forecast_date <- max(target_obs$date, na.rm = TRUE)
+      result[, forecast_date := forecast_date]
+      result[, horizon := as.numeric(date - forecast_date)]
+      result[, dataset := index]
+
+      result
+    }
+
+    predictions <- purrr::map(seq_len(obs_sets), link_samples)
+    predictions <- data.table::rbindlist(predictions)
+
+    if (format == "sample") {
+      # Reorder columns for sample format
+      data.table::setcolorder(
+        predictions,
+        c("dataset", "forecast_date", "date", "horizon", "sample", "predicted")
+      )
+    } else {
+      # format == "quantile": aggregate to quantiles
+      predictions <- predictions[
+        ,
+        .(predicted = quantile(predicted, probs = quantiles)),
+        by = .(dataset, forecast_date, date, horizon)
+      ]
+      predictions[
+        , quantile_level := rep(quantiles, .N / length(quantiles))
+      ]
+      data.table::setcolorder(
+        predictions,
+        c("dataset", "forecast_date", "date", "horizon",
+          "quantile_level", "predicted")
+      )
+    }
+
+    predictions[]
+  }
 }
 
 
