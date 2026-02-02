@@ -485,9 +485,6 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' to "ou", `matern_order` will be automatically set to 1/2. Only used if
 #' the kernel is set to "matern".
 #'
-#' @param matern_type Deprecated; Numeric, defaults to 3/2. Order of Matérn
-#' Kernel to use. Currently, the orders 1/2, 3/2, 5/2 and Inf are supported.
-#'
 #' @param basis_prop Numeric, the proportion of time points to use as basis
 #' functions. Defaults to 0.2. Decreasing this value results in a decrease in
 #' accuracy but a faster compute time (with increasing it having the first
@@ -525,14 +522,8 @@ gp_opts <- function(basis_prop = 0.2,
                     alpha = Normal(mean = 0, sd = 0.01),
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
-                    matern_type,
                     w0 = 1.0,
                     alpha_mean, alpha_sd) {
-  if (!missing(matern_type)) {
-    lifecycle::deprecate_stop(
-      "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
-    )
-  }
   if (!missing(alpha_mean)) {
     lifecycle::deprecate_stop(
       "1.7.0", "gp_opts(alpha_mean)", "gp_opts(alpha)"
@@ -570,19 +561,6 @@ gp_opts <- function(basis_prop = 0.2,
       )
     }
     ls <- LogNormal(mean = ls_mean, sd = ls_sd, max = ls_max)
-  }
-
-  if (!missing(matern_type)) {
-    if (!missing(matern_order) && matern_type != matern_order) {
-      cli_abort(
-        c(
-          "!" = "{.var matern_order} and {.var matern_type} must be the same, if
-          both are supplied.",
-          "i" = "Rather only use {.var matern_order} only."
-        )
-      )
-    }
-    matern_order <- matern_type
   }
 
   kernel <- arg_match(kernel)

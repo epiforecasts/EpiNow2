@@ -132,14 +132,6 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' of the reported data over time. All data sets must contain a complete vector
 #' of dates.
 #'
-#' @param obs Deprecated; use `data` instead.
-#'
-#' @param model A compiled stan model to override the default model. May be
-#' useful for package developers or those developing extensions.
-#'
-#' @param weigh_delay_priors Deprecated; use the `weight_prior` option in
-#'   [trunc_opts()] instead.
-#'
 #' @param verbose Logical, should model fitting progress be returned.
 #'
 #' @param ... Additional parameters to pass to [rstan::sampling()].
@@ -201,44 +193,18 @@ estimate_truncation <- function(data,
                                     max = 10
                                   )
                                 ),
-                                model = NULL,
                                 stan = stan_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
                                 filter_leading_zeros = FALSE,
                                 zero_threshold = Inf,
-                                weigh_delay_priors = FALSE,
                                 verbose = TRUE,
-                                ...,
-                                obs) {
-  if (!missing(obs)) {
-    lifecycle::deprecate_stop(
-      "1.5.0",
-      "estimate_truncation(obs)",
-      "estimate_truncation(data)"
-    )
-  }
-  if (!is.null(model)) {
-    lifecycle::deprecate_stop(
-      "1.5.0",
-      "estimate_truncation(model)",
-      "estimate_truncation(stan)"
-    )
-  }
-  if (!missing(weigh_delay_priors)) {
-    lifecycle::deprecate_stop(
-      "1.5.0",
-      "estimate_truncation(weigh_delay_priors)",
-      "trunc_opts(weight_prior)"
-    )
-  }
+                                ...) {
   # Validate inputs
   walk(data, check_reports_valid, model = "estimate_infections")
   assert_class(truncation, "dist_spec")
-  assert_class(model, "stanfit", null.ok = TRUE)
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(filter_leading_zeros)
   assert_numeric(zero_threshold, lower = 0)
-  assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
   # Prepare observation matrix for Stan
