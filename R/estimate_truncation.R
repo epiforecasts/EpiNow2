@@ -142,6 +142,9 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' - `args`: A list of arguments used for fitting (stan data).
 #' - `fit`: The stan fit object.
 #'
+#' @param filter_leading_zeros Logical, defaults to FALSE. Should zeros at the
+#'   start of the time series be filtered out.
+#'
 #' @seealso [get_samples()] [get_predictions()] [get_parameters()]
 #' @export
 #' @inheritParams calc_CrIs

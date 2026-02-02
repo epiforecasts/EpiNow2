@@ -35,7 +35,7 @@ settings if desired.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
-\item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
+\item{filter_leading_zeros}{Logical, defaults to FALSE. Should zeros at the
 start of the time series be filtered out.}
 
 \item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
