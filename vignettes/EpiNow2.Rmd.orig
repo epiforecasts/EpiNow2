@@ -113,10 +113,10 @@ Summarised parameter estimates can also easily be returned, either filtered for 
 head(summary(estimates, type = "parameters", params = "R"))
 ```
 
-Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation.
+Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation using `estimates_by_report_date()`.
 
 ```{r}
-head(summary(estimates, output = "estimated_reported_cases"))
+head(estimates_by_report_date(estimates))
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
@@ -157,7 +157,8 @@ estimates <- regional_epinow(
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2), rw = 7),
   obs = obs,
   gp = NULL,
-  stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
+  stan = stan_opts(cores = 4, warmup = 250, samples = 1000),
+  logs = NULL
 )
 ```
 

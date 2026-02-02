@@ -81,6 +81,7 @@ The function interface remains unchanged.
 
 ## Documentation
 
+- Updated vignettes to use the current API (`gt_opts()` instead of `generation_time_opts()`, `plot()` instead of `$plots$R`, `estimates_by_report_date()` instead of deprecated `output` argument) and disabled logging output with `logs = NULL` to prevent output changing between runs.
 - Added guidelines for AI-assisted contributions to the CONTRIBUTING guide, including transparency requirements, contributor responsibilities, and AI-assisted code reviews.
 - Added a comprehensive prior choice and specification guide vignette covering all three main modelling functions with practical guidance on when and how to modify priors.
 - Fixed broken `@seealso` links in roxygen2 documentation by converting plain text function references to proper link syntax.
