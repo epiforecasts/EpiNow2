@@ -1,5 +1,4 @@
 functions {
-#include functions/helpers.stan
 #include functions/convolve.stan
 #include functions/pmfs.stan
 #include functions/delays.stan

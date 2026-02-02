@@ -61,6 +61,7 @@ The function interface remains unchanged.
 - MCMC runs are now initialised with parameter values drawn from a distribution that approximates their prior distributions.
 - Added an option to compute growth rates using an estimator by Parag et al. (2022) based on total infectiousness rather than new infections, see `growth_method` argument in rt_opts().
 - Added support for fitting the susceptible population size.
+- Replaced custom rounding function in generated quantities by native stan version.
 
 ## Bug fixes
 
