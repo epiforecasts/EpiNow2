@@ -433,17 +433,18 @@ process_region <- function(out, target_region, timing,
     return(out)
   }
 
-  if (!is.null(out[["estimates"]]) && !return_output) {
-    out$estimates$samples <- NULL
+  # Use names() and [[ to avoid triggering $.epinow deprecation warnings
+  if ("estimates" %in% names(out) && !return_output) {
+    out[["estimates"]][["samples"]] <- NULL
   }
-  if (!is.null(out[["estimated_reported_cases"]]) && !return_output) {
-    out$estimated_reported_cases$samples <- NULL
+  if ("estimated_reported_cases" %in% names(out) && !return_output) {
+    out[["estimated_reported_cases"]][["samples"]] <- NULL
   }
-  if (!is.null(out[["plots"]]) && !return_output) {
-    out$estimated_reported_cases$plots <- NULL
+  if ("plots" %in% names(out) && !return_output) {
+    out[["estimated_reported_cases"]][["plots"]] <- NULL
   }
 
-  if (!is.null(out[["summary"]])) {
+  if ("summary" %in% names(out)) {
     futile.logger::flog.info("Completed estimates for: %s", target_region,
       name = complete_logger
     )
