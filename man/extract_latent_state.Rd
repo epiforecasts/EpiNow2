@@ -17,7 +17,6 @@ extract. Generally this will be a date.}
 \value{
 A \verb{<data.frame>} containing the following columns:
 \describe{
-\item{parameter}{Character string, the name of the extracted parameter}
 \item{time}{Integer index (1..N) corresponding to the position in the
 supplied dates vector. This is the row/time-step index that maps to the
 date column}

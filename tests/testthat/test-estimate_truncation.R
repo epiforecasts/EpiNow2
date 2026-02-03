@@ -284,11 +284,11 @@ test_that("estimate_truncation recovers true truncation parameters", {
   samples <- get_samples(est)
 
   # Check meanlog recovery (true value = 0.9)
-  meanlog_mean <- mean(samples[parameter == "truncation[1]", value])
+  meanlog_mean <- mean(samples[variable == "truncation[1]", value])
   expect_equal(meanlog_mean, 0.9, tolerance = 0.05)
 
   # Check sdlog recovery (true value = 0.6)
-  sdlog_mean <- mean(samples[parameter == "truncation[2]", value])
+  sdlog_mean <- mean(samples[variable == "truncation[2]", value])
   expect_equal(sdlog_mean, 0.6, tolerance = 0.05)
 })
 

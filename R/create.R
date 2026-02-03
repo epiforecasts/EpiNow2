@@ -921,8 +921,8 @@ create_infection_summary <- function(object,
 
   summarised <- calc_summary_measures(
     samples,
-    summarise_by = c("date", "variable", "parameter", "strat", "type"),
-    order_by = c("variable", "parameter", "date"),
+    summarise_by = c("date", "variable", "strat", "type"),
+    order_by = c("variable", "date"),
     CrIs = CrIs
   )
 

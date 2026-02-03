@@ -12,7 +12,7 @@ extract_delays(samples, args)
 \item{args}{Stan data list with delay_id_* and related lookup variables.}
 }
 \value{
-A \verb{<data.table>} with columns: variable, parameter, sample, value,
+A \verb{<data.table>} with columns: variable, sample, value,
 or NULL if delay parameters don't exist in the samples
 }
 \description{

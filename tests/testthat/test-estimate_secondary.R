@@ -104,19 +104,17 @@ test_that("estimate_secondary recovers scaling parameter from incidence data", {
   # Basic parameter recovery check using pre-computed fit
   # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
   samples <- get_samples(default_inc)
-  delay_samples <- samples[variable == "delay_params"]
-  param_samples <- samples[variable == "params"]
 
   # Check meanlog (reporting[1]) is reasonably recovered (1.8 true value)
-  meanlog_mean <- delay_samples[parameter == "reporting[1]", mean(value)]
+  meanlog_mean <- samples[variable == "reporting[1]", mean(value)]
   expect_equal(meanlog_mean, 1.8, tolerance = 0.2)
 
   # Check sdlog (reporting[2]) is reasonably recovered (0.5 true value)
-  sdlog_mean <- delay_samples[parameter == "reporting[2]", mean(value)]
+  sdlog_mean <- samples[variable == "reporting[2]", mean(value)]
   expect_equal(sdlog_mean, 0.5, tolerance = 0.15)
 
   # Check scaling (fraction_observed) is reasonably recovered (0.4 true value)
-  scaling_mean <- param_samples[parameter == "fraction_observed", mean(value)]
+  scaling_mean <- samples[variable == "fraction_observed", mean(value)]
   expect_equal(scaling_mean, 0.4, tolerance = 0.05)
 })
 
@@ -222,9 +220,9 @@ test_that("estimate_secondary can recover simulated parameters", {
 
   # Check incidence model parameter recovery
   # True values: meanlog = 1.8, sdlog = 0.5, scaling = 0.4
-  inc_meanlog <- mean(inc_samples[parameter == "reporting[1]", value])
-  inc_sdlog <- mean(inc_samples[parameter == "reporting[2]", value])
-  inc_scaling <- mean(inc_samples[parameter == "fraction_observed", value])
+  inc_meanlog <- mean(inc_samples[variable == "reporting[1]", value])
+  inc_sdlog <- mean(inc_samples[variable == "reporting[2]", value])
+  inc_scaling <- mean(inc_samples[variable == "fraction_observed", value])
 
   expect_equal(inc_meanlog, 1.8, tolerance = 0.1)
   expect_equal(inc_sdlog, 0.5, tolerance = 0.1)
@@ -232,9 +230,9 @@ test_that("estimate_secondary can recover simulated parameters", {
 
   # Check prevalence model parameter recovery
   # True values: meanlog = 1.6, sdlog = 0.8, scaling = 0.3
-  prev_meanlog <- mean(prev_samples[parameter == "reporting[1]", value])
-  prev_sdlog <- mean(prev_samples[parameter == "reporting[2]", value])
-  prev_scaling <- mean(prev_samples[parameter == "fraction_observed", value])
+  prev_meanlog <- mean(prev_samples[variable == "reporting[1]", value])
+  prev_sdlog <- mean(prev_samples[variable == "reporting[2]", value])
+  prev_scaling <- mean(prev_samples[variable == "fraction_observed", value])
 
   expect_equal(prev_meanlog, 1.6, tolerance = 0.2)
   expect_equal(prev_sdlog, 0.8, tolerance = 0.2)
@@ -258,9 +256,9 @@ test_that("estimate_secondary can recover simulated parameters with the
   # True values: meanlog = 1.8, sdlog = 0.5, scaling = 0.4
   inc_samples <- get_samples(inc_cmdstanr)
 
-  inc_meanlog <- mean(inc_samples[parameter == "reporting[1]", value])
-  inc_sdlog <- mean(inc_samples[parameter == "reporting[2]", value])
-  inc_scaling <- mean(inc_samples[parameter == "fraction_observed", value])
+  inc_meanlog <- mean(inc_samples[variable == "reporting[1]", value])
+  inc_sdlog <- mean(inc_samples[variable == "reporting[2]", value])
+  inc_scaling <- mean(inc_samples[variable == "fraction_observed", value])
 
   expect_equal(inc_meanlog, 1.8, tolerance = 0.1)
   expect_equal(inc_sdlog, 0.5, tolerance = 0.1)
@@ -348,7 +346,8 @@ test_that("estimate_secondary works with filter_leading_zeros set", {
   ))
   expect_s3_class(out, "estimate_secondary")
   expect_named(out, c("fit", "args", "observations"))
-  expect_equal(get_predictions(out)$primary, modified_data$primary)
+  # Check that observations match filtered input data
+  expect_equal(out$observations$primary, modified_data$primary)
 })
 
 test_that("estimate_secondary works with zero_threshold set", {
@@ -418,18 +417,20 @@ test_that("$ accessor works for non-deprecated elements", {
   expect_s3_class(out$observations, "data.frame")
 })
 
-test_that("summary returns individual parameter names", {
+test_that("summary returns individual parameter names in variable column", {
   # Reuse pre-computed fit
   out <- default_inc
 
   summ <- summary(out, type = "parameters")
 
-  # Should have a parameter column with named parameters
-  expect_true("parameter" %in% names(summ))
+  # Should have a variable column with semantic parameter names
+  expect_true("variable" %in% names(summ))
+  # Should not have a separate parameter column
+  expect_false("parameter" %in% names(summ))
 
-  # Should include specific parameter names
-  expect_true("fraction_observed" %in% summ$parameter)
-  expect_true(any(grepl("reporting\\[", summ$parameter)))
+  # Should include specific parameter names in variable column
+  expect_true("fraction_observed" %in% summ$variable)
+  expect_true(any(grepl("reporting\\[", summ$variable)))
 })
 
 test_that("summary compact type returns key parameters", {
@@ -438,10 +439,12 @@ test_that("summary compact type returns key parameters", {
 
   summ <- summary(out, type = "compact")
 
-  # Should have a parameter column
-  expect_true("parameter" %in% names(summ))
+  # Should have a variable column with semantic parameter names
+  expect_true("variable" %in% names(summ))
+  # Should not have a separate parameter column
+  expect_false("parameter" %in% names(summ))
 
   # Compact should include fraction_observed and reporting parameters
-  expect_true("fraction_observed" %in% summ$parameter)
-  expect_true(any(grepl("reporting\\[", summ$parameter)))
+  expect_true("fraction_observed" %in% summ$variable)
+  expect_true(any(grepl("reporting\\[", summ$variable)))
 })

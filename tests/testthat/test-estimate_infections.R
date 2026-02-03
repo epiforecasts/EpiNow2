@@ -205,7 +205,8 @@ test_that("estimate_infections works as expected with failing chains", {
 test_that("estimate_infections produces no forecasts when forecast = NULL", {
   skip_integration()
   out <- test_estimate_infections(data = reported_cases, forecast = NULL)
-  expect_true(!"forecast" %in% unique(out$summarised$type))
+  samples <- get_samples(out)
+  expect_true(!"forecast" %in% unique(samples$type))
   expect_true(out$args$horizon == 0)
 })
 
@@ -214,7 +215,8 @@ test_that("estimate_infections produces no forecasts when forecast_opts horizon 
   out <- test_estimate_infections(
     data = reported_cases, forecast = forecast_opts(horizon = 0)
   )
-  expect_true(!"forecast" %in% unique(out$summarised$type))
+  samples <- get_samples(out)
+  expect_true(!"forecast" %in% unique(samples$type))
   expect_true(out$args$horizon == 0)
 })
 
@@ -445,15 +447,18 @@ test_that("$ accessor works for non-deprecated elements", {
   expect_s3_class(out$observations, "data.frame")
 })
 
-test_that("summary with type='parameters' includes parameter column", {
+test_that("summary with type='parameters' has variable with semantic names", {
   # Reuse pre-computed fit
   out <- default_fit
 
   summ <- summary(out, type = "parameters")
 
-  # Should have a parameter column
-
-  expect_true("parameter" %in% names(summ))
+  # Should have a variable column with semantic parameter names
+  expect_true("variable" %in% names(summ))
+  # Should not have a separate parameter column (merged into variable)
+  expect_false("parameter" %in% names(summ))
+  # Check that we have semantic names like R, not generic category names
+  expect_true("R" %in% summ$variable)
 })
 
 test_that("get_predictions works with format='summary'", {

@@ -157,14 +157,13 @@ test_that("extract_delays works with delay_id_* naming", {
   result <- EpiNow2:::extract_delays(samples, args = args)
 
   expect_true(!is.null(result))
-  # Note: variable column is added by callers via rbindlist(idcol="variable")
-  expect_true("parameter" %in% names(result))
+  expect_true("variable" %in% names(result))
   expect_true("sample" %in% names(result))
   expect_true("value" %in% names(result))
 
   # Check that generation_time parameters are named correctly
-  expect_true(any(grepl("generation_time\\[1\\]", result$parameter)))
-  expect_true(any(grepl("generation_time\\[2\\]", result$parameter)))
+  expect_true(any(grepl("generation_time\\[1\\]", result$variable)))
+  expect_true(any(grepl("generation_time\\[2\\]", result$variable)))
 })
 
 test_that("extract_delays returns NULL when delay_params don't exist", {
@@ -185,7 +184,7 @@ test_that("extract_delays handles delays with no ID lookup gracefully", {
 
   expect_true(!is.null(result))
   # Should fall back to indexed naming
-  expect_true(any(grepl("delay_params\\[", result$parameter)))
+  expect_true(any(grepl("delay_params\\[", result$variable)))
 })
 
 test_that("build_delay_name_lookup correctly names parameters", {

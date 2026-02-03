@@ -10,6 +10,7 @@ The function interface remains unchanged.
 If you previously used `pop` in `rt_opts()` for forecasting only, the returned `R` estimates now reflect the adjusted values rather than unadjusted.
 Unadjusted estimates are provided in a separate `R_unadjusted` output variable.
 - Removed deprecated functions and arguments that have been erroring since v1.5.0/v1.6.0: `dist_skel()`, `apply_tolerance()`, `fix_dist()`, `gp_opts(matern_type)`, and `estimate_truncation(obs, model, weigh_delay_priors)`.
+- The `variable` column in `get_samples()` and `summary()` output now contains semantic parameter names (e.g., `"generation_time[1]"`, `"fraction_observed"`) instead of generic category names like `"delay_params"` or `"params"`. Existing code filtering by `variable == "R"` or similar continues to work unchanged.
 
 ## Package changes
 
