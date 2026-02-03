@@ -114,6 +114,10 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
       mirror_to_console = mirror_epinow,
       name = "EpiNow2.epinow"
     )
+  } else {
+    # Suppress logging by setting threshold to FATAL
+    futile.logger::flog.threshold(futile.logger::FATAL)
+    futile.logger::flog.threshold(futile.logger::FATAL, name = "EpiNow2.epinow")
   }
   invisible(NULL)
 }
