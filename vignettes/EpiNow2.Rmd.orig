@@ -113,10 +113,10 @@ Summarised parameter estimates can also easily be returned, either filtered for 
 head(summary(estimates, type = "parameters", params = "R"))
 ```
 
-Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation using `estimates_by_report_date()`.
+Reported cases can be extracted using `get_predictions()` which returns summarised estimates by default.
 
 ```{r}
-head(estimates_by_report_date(estimates))
+head(get_predictions(estimates))
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
