@@ -232,7 +232,7 @@ simulate_infections <- function(R,
   )
 
   out <- rbindlist(out[c("infections", "reported_cases")], idcol = "variable")
-  out <- out[, c("sample", "parameter", "time") := NULL]
+  out <- out[, c("sample", "time") := NULL]
 
   out[]
 }

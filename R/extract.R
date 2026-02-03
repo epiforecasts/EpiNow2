@@ -13,7 +13,6 @@
 #'
 #' @return A `<data.frame>` containing the following columns:
 #' \describe{
-#'   \item{parameter}{Character string, the name of the extracted parameter}
 #'   \item{time}{Integer index (1..N) corresponding to the position in the
 #'     supplied dates vector. This is the row/time-step index that maps to the
 #'     date column}
@@ -44,10 +43,7 @@ extract_latent_state <- function(param, samples, dates) {
 
   param_df <- param_df[, var := NULL][, sample := seq_len(.N), by = .(time)]
   param_df <- param_df[, date := dates, by = .(sample)]
-  param_df[, .(
-    parameter = param, time, date,
-    sample, value
-  )]
+  param_df[, .(time, date, sample, value)]
 }
 
 
@@ -56,8 +52,8 @@ extract_latent_state <- function(param, samples, dates) {
 #' @param samples Extracted stan model (using [rstan::extract()])
 #' @param args Stan data list containing param_id_* and params_variable_lookup
 #'   for parameter naming.
-#' @return A `<data.table>` containing variable, parameter name, sample id and
-#'   sample value, or NULL if parameters don't exist in the samples
+#' @return A `<data.table>` with columns: variable, sample, value,
+#'   or NULL if parameters don't exist in the samples
 #' @keywords internal
 extract_parameters <- function(samples, args) {
   # Check if params exist
@@ -95,7 +91,7 @@ extract_parameters <- function(samples, args) {
     }
 
     data.table::data.table(
-      parameter = par_name,
+      variable = par_name,
       sample = seq_along(param_array[, i]),
       value = param_array[, i]
     )
@@ -186,7 +182,7 @@ build_delay_name_lookup <- function(args, n_cols) {
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
 #' @param args Stan data list with delay_id_* and related lookup variables.
-#' @return A `<data.table>` with columns: variable, parameter, sample, value,
+#' @return A `<data.table>` with columns: variable, sample, value,
 #'   or NULL if delay parameters don't exist in the samples
 #' @keywords internal
 extract_delays <- function(samples, args) {
@@ -208,7 +204,7 @@ extract_delays <- function(samples, args) {
     }
 
     data.table::data.table(
-      parameter = par_name,
+      variable = par_name,
       sample = seq_along(delay_params[, i]),
       value = delay_params[, i]
     )

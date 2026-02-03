@@ -205,7 +205,8 @@ test_that("estimate_infections works as expected with failing chains", {
 test_that("estimate_infections produces no forecasts when forecast = NULL", {
   skip_integration()
   out <- test_estimate_infections(data = reported_cases, forecast = NULL)
-  expect_true(!"forecast" %in% unique(out$summarised$type))
+  samples <- get_samples(out)
+  expect_true(!"forecast" %in% unique(samples$type))
   expect_true(out$args$horizon == 0)
 })
 
@@ -214,7 +215,8 @@ test_that("estimate_infections produces no forecasts when forecast_opts horizon 
   out <- test_estimate_infections(
     data = reported_cases, forecast = forecast_opts(horizon = 0)
   )
-  expect_true(!"forecast" %in% unique(out$summarised$type))
+  samples <- get_samples(out)
+  expect_true(!"forecast" %in% unique(samples$type))
   expect_true(out$args$horizon == 0)
 })
 

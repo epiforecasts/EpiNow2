@@ -1013,8 +1013,6 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
   # Extract delay parameters directly from fit (avoids rbindlist warning)
   raw_samples <- extract_samples(object$fit)
   param_samples <- extract_delays(raw_samples, args = object$args)
-  # Rename parameter to variable for grouping
-  data.table::setnames(param_samples, "parameter", "variable")
 
   # Calculate summary statistics
   out <- calc_summary_measures(

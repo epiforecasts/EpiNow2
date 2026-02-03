@@ -13,8 +13,8 @@ extract_parameters(samples, args)
 for parameter naming.}
 }
 \value{
-A \verb{<data.table>} containing variable, parameter name, sample id and
-sample value, or NULL if parameters don't exist in the samples
+A \verb{<data.table>} with columns: variable, sample, value,
+or NULL if parameters don't exist in the samples
 }
 \description{
 Extract samples from all parameters

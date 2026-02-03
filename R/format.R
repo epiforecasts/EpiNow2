@@ -193,17 +193,41 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
   # Auto-detect and extract all static parameters from params matrix
   all_params <- extract_parameters(samples, args = data)
   if (!is.null(all_params)) {
-    # Get unique parameter names
-    param_names <- unique(all_params$parameter)
+    # Get unique variable names
+    var_names <- unique(all_params$variable)
 
-    for (param in param_names) {
-      result <- all_params[parameter == param]
+    for (var in var_names) {
+      result <- all_params[variable == var]
       if (nrow(result) > 0) {
-        out[[param]] <- result
+        out[[var]] <- result
       }
     }
   }
   out
+}
+
+#' Combine time-varying and static parameters
+#'
+#' @description Internal helper that combines time-varying parameters (which
+#'   get their variable name from list keys) with static parameters (which
+#'   already have a variable column from extractors).
+#'
+#' @param time_varying_list Named list of time-varying parameter data.tables
+#' @param raw_samples Raw samples from extract_samples()
+#' @param args Model arguments containing delay and parameter specifications
+#'
+#' @return A `data.table` combining all parameters with variable column
+#' @keywords internal
+combine_tv_and_static_params <- function(time_varying_list, raw_samples, args) {
+  combined_tv <- data.table::rbindlist(
+    time_varying_list, fill = TRUE, idcol = "variable"
+  )
+
+  static_params <- list(
+    extract_delays(raw_samples, args = args),
+    extract_parameters(raw_samples, args = args)
+  )
+  data.table::rbindlist(c(list(combined_tv), static_params), fill = TRUE)
 }
 
 #' Format raw Stan samples with dates and metadata
@@ -296,24 +320,9 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
     }
   }
 
-  # Delay parameters
-  if (args$delay_params_length > 0) {
-    out$delay_params <- extract_delays(raw_samples, args = args)
-  }
 
-  # Params matrix
-  out$params <- extract_parameters(raw_samples, args = args)
-
-  # Combine all parameters into single data.table
-  # idcol adds 'variable' column from list names (infections, R, params, etc.)
-  combined <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
-
-  # Use semantic parameter names in variable column (e.g. "incubation_meanlog"
-  # instead of generic "delay_params" category)
-  if ("parameter" %in% names(combined)) {
-    combined[!is.na(parameter), variable := parameter]
-    combined[, parameter := NULL]
-  }
+  # Combine time-varying and static parameters
+  combined <- combine_tv_and_static_params(out, raw_samples, args)
 
   # Add strat column if missing
   if (is.null(combined$strat)) {
