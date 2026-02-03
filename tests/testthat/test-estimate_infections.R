@@ -445,15 +445,18 @@ test_that("$ accessor works for non-deprecated elements", {
   expect_s3_class(out$observations, "data.frame")
 })
 
-test_that("summary with type='parameters' includes parameter column", {
+test_that("summary with type='parameters' has variable with semantic names", {
   # Reuse pre-computed fit
   out <- default_fit
 
   summ <- summary(out, type = "parameters")
 
-  # Should have a parameter column
-
-  expect_true("parameter" %in% names(summ))
+  # Should have a variable column with semantic parameter names
+  expect_true("variable" %in% names(summ))
+  # Should not have a separate parameter column (merged into variable)
+  expect_false("parameter" %in% names(summ))
+  # Check that we have semantic names like R, not generic category names
+  expect_true("R" %in% summ$variable)
 })
 
 test_that("get_predictions works with format='summary'", {

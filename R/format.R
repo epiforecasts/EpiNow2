@@ -308,6 +308,13 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
   # idcol adds 'variable' column from list names (infections, R, params, etc.)
   combined <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
 
+  # Use semantic parameter names in variable column (e.g. "incubation_meanlog"
+  # instead of generic "delay_params" category)
+  if ("parameter" %in% names(combined)) {
+    combined[!is.na(parameter), variable := parameter]
+    combined[, parameter := NULL]
+  }
+
   # Add strat column if missing
   if (is.null(combined$strat)) {
     combined <- combined[, strat := NA]

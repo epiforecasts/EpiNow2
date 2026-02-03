@@ -312,6 +312,12 @@ get_samples.estimate_secondary <- function(object, ...) {
   # Combine all samples - idcol adds 'variable' from list names
   samples <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
 
+  # Use semantic parameter names in variable column
+  if ("parameter" %in% names(samples)) {
+    samples[!is.na(parameter), variable := parameter]
+    samples[, parameter := NULL]
+  }
+
   # Add placeholder columns for consistency with estimate_infections format
   if (!"date" %in% names(samples)) samples[, date := as.Date(NA)]
   if (!"strat" %in% names(samples)) samples[, strat := NA_character_]
@@ -321,8 +327,7 @@ get_samples.estimate_secondary <- function(object, ...) {
   # Reorder columns to match estimate_infections format
   data.table::setcolorder(
     samples,
-    c("variable", "parameter", "time", "date", "sample", "value", "strat",
-      "type")
+    c("variable", "time", "date", "sample", "value", "strat", "type")
   )
 
   samples[]
@@ -343,6 +348,12 @@ get_samples.estimate_truncation <- function(object, ...) {
   # Use named list + rbindlist to add variable column consistently
   out <- list(delay_params = extract_delays(raw_samples, args = object$args))
   samples <- data.table::rbindlist(out, fill = TRUE, idcol = "variable")
+
+  # Use semantic parameter names in variable column
+  if ("parameter" %in% names(samples)) {
+    samples[!is.na(parameter), variable := parameter]
+    samples[, parameter := NULL]
+  }
 
   samples[]
 }
