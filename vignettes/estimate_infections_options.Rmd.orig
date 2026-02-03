@@ -20,7 +20,6 @@ knitr::opts_chunk$set(
   fig.height = 6.5,
   fig.path = "estimate_infections_options-"
 )
-set.seed(9876)
 ```
 
 The `estimate_infections()` function encodes a range of different model options.
@@ -97,7 +96,7 @@ example_generation_time
 Lastly we need to choose a prior for the initial value of the reproduction number. This is assumed by the model to be normally distributed and we can set the mean and the standard deviation. We decide to set the mean to 2 and the standard deviation to 1.
 
 ```{r initial_r}
-rt_prior <- LogNormal(mean = 2, sd = 0.1)
+rt_prior <- LogNormal(mean = 2, sd = 1)
 ```
 
 # Running the model
