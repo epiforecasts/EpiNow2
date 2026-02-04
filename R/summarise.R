@@ -176,8 +176,7 @@ summarise_results <- function(regions,
 #'
 #' summary <- regional_summary(
 #'   regional_output = regional_out$regional,
-#'   data = regional_out$summary$reported_cases,
-#'   plot = FALSE
+#'   data = regional_out$summary$reported_cases
 #' )
 #' names(summary)
 regional_summary <- function(regional_output = NULL,

@@ -69,8 +69,7 @@ regional_out <- readRDS(system.file(
 
 summary <- regional_summary(
   regional_output = regional_out$regional,
-  data = regional_out$summary$reported_cases,
-  plot = FALSE
+  data = regional_out$summary$reported_cases
 )
 names(summary)
 }

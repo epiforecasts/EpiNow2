@@ -4,8 +4,9 @@
 
 This is a resubmission. In this version:
 
-- Reduced example data size (fewer MCMC samples) to speed up examples that
-  were flagged for slow runtime on Debian
+- Reduced example data size to speed up examples flagged for slow runtime:
+  fewer MCMC samples, removed pre-generated plots, switched from xz to gzip
+  compression for faster loading
 
 ## R CMD check results
 
