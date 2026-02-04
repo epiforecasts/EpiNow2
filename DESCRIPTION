@@ -158,7 +158,7 @@ LinkingTo:
     rstan (>= 2.26.0),
     StanHeaders (>= 2.26.0)
 Additional_repositories:
-    https://production.r-multiverse.org/2025-09-15
+    https://production.r-multiverse.org/2025-12-15
 Biarch: true
 Config/testthat/edition: 3
 Config/Needs/dev:
