@@ -39,17 +39,15 @@ example_regional_epinow <- regional_epinow(
 
 saveRDS(
   example_estimate_infections,
-  here("inst", "extdata", "example_estimate_infections.rds"),
-  compress = "xz"
+  here("inst", "extdata", "example_estimate_infections.rds")
 )
 
-# Remove plots from summary to reduce file size (saves ~3.8 MB)
+# Remove plots from summary to reduce file size
 example_regional_epinow$summary$high_plots <- NULL
 example_regional_epinow$summary$plots <- NULL
 example_regional_epinow$summary$summary_plot <- NULL
 
 saveRDS(
   example_regional_epinow,
-  here("inst", "extdata", "example_regional_epinow.rds"),
-  compress = "gzip"
+  here("inst", "extdata", "example_regional_epinow.rds")
 )
