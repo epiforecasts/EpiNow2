@@ -174,10 +174,12 @@ summarise_results <- function(regions,
 #'   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 #' ))
 #'
-#' regional_summary(
+#' summary <- regional_summary(
 #'   regional_output = regional_out$regional,
-#'   data = regional_out$summary$reported_cases
+#'   data = regional_out$summary$reported_cases,
+#'   plot = FALSE
 #' )
+#' names(summary)
 regional_summary <- function(regional_output = NULL,
                              data,
                              results_dir = NULL,
