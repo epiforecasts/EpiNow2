@@ -305,29 +305,9 @@ simulate_infections <- function(R,
 #' )
 #'
 #' # update Rt trajectory and simulate new infections using it
-#' R <- c(rep(NA_real_, 26), rep(0.5, 10), rep(0.8, 14))
+#' # keeping the first 30 days' estimates and adding a 10-day forecast
+#' R <- c(rep(NA_real_, 30), rep(0.8, 10))
 #' sims <- forecast_infections(est, R)
-#' plot(sims)
-#'
-#' # with a data.frame input of samples
-#' R_dt <- data.frame(
-#'   date = seq(
-#'     min(summary(est, type = "parameters", param = "R")$date),
-#'     by = "day", length.out = length(R)
-#'   ),
-#'   value = R
-#' )
-#' sims <- forecast_infections(est, R_dt)
-#' plot(sims)
-#'
-#' #' # with a data.frame input of samples
-#' R_samples <- get_samples(est)[variable == "R"]
-#' R_samples <- R_samples[
-#'   ,
-#'   .(date, sample, value)
-#' ][sample <= 1000][date <= "2020-04-10"]
-#' R_samples <- R_samples[date >= "2020-04-01", value := 1.1]
-#' sims <- forecast_infections(est, R_samples)
 #' plot(sims)
 #'
 #' options(old_opts)
