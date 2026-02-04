@@ -62,7 +62,6 @@ Used to produce summary output either internally in \code{regional_epinow} or
 externally.
 }
 \examples{
-\donttest{
 # get example output from regional_epinow model
 regional_out <- readRDS(system.file(
   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
@@ -74,7 +73,6 @@ summary <- regional_summary(
   plot = FALSE
 )
 names(summary)
-}
 }
 \seealso{
 \code{\link[=regional_epinow]{regional_epinow()}}

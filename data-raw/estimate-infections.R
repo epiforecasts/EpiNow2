@@ -32,7 +32,7 @@ example_regional_epinow <- regional_epinow(
   delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
   stan = stan_opts(
-    samples = 200, control = list(adapt_delta = 0.95), return_fit = FALSE
+    samples = 100, control = list(adapt_delta = 0.95), return_fit = FALSE
   ),
   output = c("regions", "summary", "samples")
 )

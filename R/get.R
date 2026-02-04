@@ -67,7 +67,6 @@ get_raw_result <- function(file, region, date,
 #' @importFrom purrr map safely
 #' @importFrom data.table rbindlist
 #' @examples
-#' \donttest{
 #' # get example multiregion estimates
 #' regional_out <- readRDS(system.file(
 #'   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
@@ -75,7 +74,6 @@ get_raw_result <- function(file, region, date,
 #'
 #' # from output
 #' results <- get_regional_results(regional_out$regional, samples = FALSE)
-#' }
 get_regional_results <- function(regional_output,
                                  results_dir, date,
                                  samples = TRUE,

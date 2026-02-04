@@ -4,8 +4,8 @@
 
 This is a resubmission. In this version:
 
-- Wrapped slow examples (regional_summary, regional_runtimes,
-  get_regional_results) in `\donttest{}` to address Debian example timing NOTE
+- Reduced example data size (fewer MCMC samples) to speed up examples that
+  were flagged for slow runtime on Debian
 
 ## R CMD check results
 
