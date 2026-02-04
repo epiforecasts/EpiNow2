@@ -8,14 +8,6 @@ This is a resubmission. In this version:
   fewer MCMC samples, removed pre-generated plots, switched from xz to gzip
   compression for faster loading
 
-## R CMD check results
-
-0 errors | 0 warnings | 1 note
-
-The NOTE about overall checktime (16 min > 10 min) on Windows is due to the
-package's extensive test suite and Stan model compilation. This is expected
-for a package that interfaces with Stan.
-
 ## Test environments
 
 - Local: macOS (aarch64-apple-darwin), R 4.4.2
