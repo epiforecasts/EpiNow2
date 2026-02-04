@@ -214,4 +214,4 @@ ggplot(df_long, aes(x = date, colour = variable, fill = variable)) +
   theme(legend.position = "bottom")
 ```
 
-![plot of chunk combined plot](forecasting_multiple_data_streams-combined plot-1.png)
+![plot of chunk combined-plot](forecasting_multiple_data_streams-combined-plot-1.png)

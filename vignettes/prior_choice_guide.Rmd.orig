@@ -17,7 +17,8 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = TRUE
+  eval = TRUE,
+  fig.path = "prior_choice_guide-"
 )
 ```
 
