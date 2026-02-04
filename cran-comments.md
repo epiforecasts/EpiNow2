@@ -4,9 +4,8 @@
 
 This is a resubmission. In this version:
 
-- Reduced example data size to speed up examples flagged for slow runtime:
-  fewer MCMC samples, removed pre-generated plots, switched from xz to gzip
-  compression for faster loading
+- Precompiled slow vignettes (forecasting_multiple_data_streams,
+  prior_choice_guide) to reduce overall check time
 
 ## Test environments
 
