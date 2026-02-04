@@ -60,7 +60,7 @@ old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
 # get example case counts
-reported_cases <- example_confirmed[1:50]
+reported_cases <- example_confirmed[1:40]
 
 # fit model to data to recover Rt estimates
 # samples and calculation time have been reduced for this example

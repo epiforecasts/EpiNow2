@@ -135,7 +135,7 @@ old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
 # get example case counts
-reported_cases <- example_confirmed[1:60]
+reported_cases <- example_confirmed[1:40]
 
 # set an example generation time. In practice this should use an estimate
 # from the literature or be estimated from data

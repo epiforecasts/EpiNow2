@@ -65,7 +65,7 @@
 #' options(mc.cores = ifelse(interactive(), 4, 1))
 #'
 #' # uses example case vector
-#' cases <- example_confirmed[1:60]
+#' cases <- example_confirmed[1:40]
 #' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]
