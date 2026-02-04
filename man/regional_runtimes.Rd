@@ -33,10 +33,12 @@ A data.table of region run times
 Used internally by \code{regional_epinow} to summarise region run times.
 }
 \examples{
+\donttest{
 regional_out <- readRDS(system.file(
   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 ))
 regional_runtimes(regional_output = regional_out$regional)
+}
 }
 \seealso{
 \code{\link[=regional_summary]{regional_summary()}} \code{\link[=regional_epinow]{regional_epinow()}}
