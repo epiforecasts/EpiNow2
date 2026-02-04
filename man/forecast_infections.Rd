@@ -63,13 +63,16 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 reported_cases <- example_confirmed[1:50]
 
 # fit model to data to recover Rt estimates
+# samples and calculation time have been reduced for this example
+# for real analyses, use at least samples = 2000
 est <- estimate_infections(reported_cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + example_reporting_delay),
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1), rw = 7),
   obs = obs_opts(scale = Normal(mean = 0.1, sd = 0.01)),
   gp = NULL,
-  forecast = forecast_opts(horizon = 0)
+  forecast = forecast_opts(horizon = 0),
+  stan = stan_opts(samples = 100, warmup = 200)
 )
 
 # update Rt trajectory and simulate new infections using it
