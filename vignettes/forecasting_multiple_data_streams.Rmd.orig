@@ -12,7 +12,15 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6.5,
+  fig.height = 6.5,
+  fig.path = "forecasting_multiple_data_streams-"
+)
+```
 
 # Background
 
@@ -27,14 +35,8 @@ We first load the _EpiNow2_ package.
 We also load `data.table` and `ggplot2` which we'll use later for data manipulation and plotting.
 Lastly, we set a seed for reproducibility.
 
-
-``` r
+```{r packages}
 library(EpiNow2)
-#> 
-#> Attaching package: 'EpiNow2'
-#> The following object is masked from 'package:stats':
-#> 
-#>     Gamma
 library(data.table)
 library(ggplot2)
 set.seed(6789)
@@ -42,8 +44,7 @@ set.seed(6789)
 
 To speed up compuation you can set the number of cores to use. We will want to run 4 MCMC chains in parallel so if this is available it would make sense to set:
 
-
-``` r
+```{r cores, eval = FALSE}
 options(mc.cores = 4)
 ```
 
@@ -55,23 +56,20 @@ We first simulate a data set that we will use as an example.
 
 <details><summary> Simulation code</summary>
 
-
-``` r
+```{r cases}
 cases <- example_confirmed[1:60]
 ```
 
 We then generate another data set of hospitalisations, assuming that 10% of confirmed cases become hospitalised with a delay from case confirmation that is given by a lognormal distribution with mean of 7 days and standard deviation of 3 days.
 
-
-``` r
+```{r}
 admission_delay <- LogNormal(mean = 7, sd = 3)
 admission_scale <- Fixed(0.1)
 ```
 
 We use the `simulate_secondary` function to generate a time series of hospitalisations
 
-
-``` r
+```{r simulate}
 ## first, rename the column to what is expected by `simulate_secondary`
 primary <- cases[, list(date, primary = confirm)]
 ## generate hospitalisation data
@@ -80,16 +78,11 @@ hosp <- simulate_secondary(
   delays = delay_opts(admission_delay),
   obs = obs_opts(family = "poisson", scale = admission_scale)
 )
-#> ℹ Unconstrained distributon passed as a delay.
-#> ℹ Constraining with default CDF cutoff 0.001.
-#> ℹ To silence this message, specify delay distributions with `max` or
-#>   `default_cdf_cutoff`.
 ```
 
 Using this we then create a combined data set:
 
-
-``` r
+```{r combined}
 df <- merge(primary, hosp, by = "date")
 setnames(
   df,
@@ -101,18 +94,8 @@ setnames(
 
 The simulated data set looks like this:
 
-
-``` r
+```{r show-data}
 head(df)
-#> Key: <date>
-#>          date cases hospitalisations
-#>        <Date> <num>            <num>
-#> 1: 2020-02-22    14                0
-#> 2: 2020-02-23    62                0
-#> 3: 2020-02-24    53                0
-#> 4: 2020-02-25    97                0
-#> 5: 2020-02-26    93                1
-#> 6: 2020-02-27    78                2
 
 df_long <- melt(df, id.vars = "date")
 ggplot(df_long, aes(x = date, y = value, colour = variable)) +
@@ -122,8 +105,6 @@ ggplot(df_long, aes(x = date, y = value, colour = variable)) +
   theme(legend.position = "bottom")
 ```
 
-![plot of chunk show-data](forecasting_multiple_data_streams-show-data-1.png)
-
 ## Estimating infections
 
 We first use one of the two data streams to estimate the number of infections and make a forecast.
@@ -132,8 +113,7 @@ In order to do so, we would usually specify a number generation time and any del
 This should be done based on insight on the disease and reporting set up.
 Here we use some example parameters, the same as in the [workflow vignette](estimate_infections_workflow.html):
 
-
-``` r
+```{r parameters}
 generation_time <- Gamma(
   shape = Normal(9, 2.5), rate = Normal(3, 1.4), max = 10
 )
@@ -148,8 +128,7 @@ combined_delays <- incubation_period + reporting_delay
 
 We then estimate infections and produce a 2-week forecast.
 
-
-``` r
+```{r estimate_infections, message = FALSE, warning = FALSE}
 est <- estimate_infections(
   df[, list(date, confirm = cases)],
   generation_time = gt_opts(generation_time),
@@ -163,8 +142,7 @@ est <- estimate_infections(
 We next use our data sets of cases and admissions to estimate the delay and scaling between the two (both of which assumed to be constant over time).
 This is done using the `estimate_secondary()` function.
 
-
-``` r
+```{r estimate_secondary, message = FALSE, warn = FALSE}
 sec <- estimate_secondary(
   df[, list(date, primary = cases, secondary = hospitalisations)],
   obs = obs_opts(scale = Normal(0, 1))
@@ -176,8 +154,7 @@ sec <- estimate_secondary(
 We can now combine our case forecast with the estimated delay and scaling to make forecasts of the number of hospitalisations.
 In order to do so we use the `forecast_secondary` function.
 
-
-``` r
+```{r forecast_secondary, message = FALSE, warn = FALSE}
 forecast <- forecast_secondary(
   sec, est
 )
@@ -185,8 +162,7 @@ forecast <- forecast_secondary(
 
 We can now combine all our forecasts into one plot:
 
-
-``` r
+```{r combined plot}
 case_forecast <- summary(est, type = "parameters")[
   variable == "reported_cases" & type == "forecast"
 ][, variable := "cases"]
@@ -213,5 +189,3 @@ ggplot(df_long, aes(x = date, colour = variable, fill = variable)) +
   theme_bw() +
   theme(legend.position = "bottom")
 ```
-
-![plot of chunk combined plot](forecasting_multiple_data_streams-combined plot-1.png)
