@@ -67,10 +67,11 @@ regional_out <- readRDS(system.file(
   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 ))
 
-regional_summary(
+summary <- regional_summary(
   regional_output = regional_out$regional,
   data = regional_out$summary$reported_cases
 )
+names(summary)
 }
 \seealso{
 \code{\link[=regional_epinow]{regional_epinow()}}

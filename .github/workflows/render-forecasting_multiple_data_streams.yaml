@@ -1,0 +1,63 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  push:
+    paths:
+      - 'vignettes/forecasting_multiple_data_streams.Rmd.orig'
+    branches: [main]
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+name: render-forecasting_multiple_data_streams
+
+jobs:
+  forecasting_multiple_data_streams:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: NA
+          extra-packages: local::.
+
+      - name: Render vignette
+        run: |
+            setwd("vignettes")
+            knitr::knit(
+              "forecasting_multiple_data_streams.Rmd.orig",
+              "forecasting_multiple_data_streams.Rmd"
+            )
+        shell: Rscript {0}
+
+      - name: Upload vignette as an artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: vignettes
+          path: vignettes
+
+      - name: Create Pull Request
+        if: github.ref == 'refs/heads/main'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: "Automatic Vignette update"
+          title: "Update forecasting_multiple_data_streams vignette"
+          body: "This is an automated pull request to update the forecasting_multiple_data_streams vignette."
+          branch: "update-forecasting_multiple_data_streams-${{ github.run_number }}"
+          labels: "documentation"
+          add-paths: |
+            vignettes
+          token: ${{ secrets.GITHUB_TOKEN }}

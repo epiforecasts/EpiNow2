@@ -2,27 +2,21 @@
 
 ## Breaking changes
 
-- The `discretise()` function now uses the `primarycensored` package for double censored PMF calculations, replacing the previous CDF difference approximation.
-This provides more accurate discretisation but will change the exact numerical values returned every time a distribution without uncertainty is discretised.
-Code that depends on the specific numerical output of `discretise()` may produce different results, though the differences should be small and represent improvements in accuracy.
-The function interface remains unchanged.
-- When population adjustment is enabled (via `pop` in `rt_opts()`), returned reproduction number estimates are now adjusted to account for susceptible depletion. Adjusted Rt represents the effective reproduction number given the current susceptible population, whilst unadjusted Rt represents transmission in a fully susceptible population.
-If you previously used `pop` in `rt_opts()` for forecasting only, the returned `R` estimates now reflect the adjusted values rather than unadjusted.
-Unadjusted estimates are provided in a separate `R_unadjusted` output variable.
+- Changed `discretise()` to use the `primarycensored` package for double censored PMF calculations, replacing the previous CDF difference approximation. This provides more accurate discretisation but will change the exact numerical values returned every time a distribution without uncertainty is discretised. Code that depends on the specific numerical output of `discretise()` may produce different results, though the differences should be small and represent improvements in accuracy. The function interface remains unchanged.
+- Changed population-adjusted Rt estimates (via `pop` in `rt_opts()`) to account for susceptible depletion. Adjusted Rt represents the effective reproduction number given the current susceptible population, whilst unadjusted Rt represents transmission in a fully susceptible population. If you previously used `pop` in `rt_opts()` for forecasting only, the returned `R` estimates now reflect the adjusted values rather than unadjusted. Unadjusted estimates are provided in a separate `R_unadjusted` output variable.
 - Removed deprecated functions and arguments that have been erroring since v1.5.0/v1.6.0: `dist_skel()`, `apply_tolerance()`, `fix_dist()`, `gp_opts(matern_type)`, and `estimate_truncation(obs, model, weigh_delay_priors)`.
 - The `variable` column in `get_samples()` and `summary()` output now contains semantic parameter names (e.g., `"generation_time[1]"`, `"fraction_observed"`) instead of generic category names like `"delay_params"` or `"params"`. Existing code filtering by `variable == "R"` or similar continues to work unchanged.
 
 ## Package changes
 
 - Updated DESCRIPTION: removed "EpiForecasts" from authors, revised package description, and added `lintr` and `styler` to development dependencies.
-- Fixed integration tests for `estimate_truncation` and `estimate_secondary` parameter recovery, and updated `example_truncated` data generation to use the Stan `discretised_pmf` function directly.
+- Fixed integration tests for `estimate_truncation()` and `estimate_secondary()` parameter recovery, and updated `example_truncated` data generation to use the Stan `discretised_pmf` function directly.
 - Updated `setup_future()` to use `parallelly::availableCores()` instead of the re-exported `future::availableCores()`, and removed the deprecated `earlySignal` argument from `future::plan()` calls.
 - The test suite has been reorganised into core tests (fast, always run) and integration tests (slow, run weekly), improving local development speed by 77% (from 9 minutes to 2 minutes) whilst maintaining test coverage.
 - Added comprehensive unit tests for Stan functions including `discretised_pmf`, `get_delay_rev_pmf`, `convolve_to_report`, and `deconvolve_infections`.
 - Development-only dependencies (`covr`, `here`, `hexSticker`, `magick`, `pkgdown`, `precommit`, `usethis`) have been moved from `Suggests` to `Config/Needs/dev`.
   This reduces the dependency burden for end users while maintaining full functionality for package developers.
   Developers should use `pak::pak(".", dependencies = TRUE)` to install all dependencies including dev tools.
-  Fixes #1067.
 - The package now has a hex logo.
 - Parameter IDs are now prefixed with `param_id_parameter_name` to make them easier to discover. If you were previously extracting parameter posteriors with the pattern `[parameter_name]_id`, you now have to do `param_id_[parameter_name]`, for example, `fraction_observed_id` is now `param_id_fraction_observed`.
 - `estimate_infections()` now returns an S3 object of class `c("epinowfit", "estimate_infections", "list")` with elements `fit`, `args`, and `observations`.
@@ -65,25 +59,25 @@ Unadjusted estimates are provided in a separate `R_unadjusted` output variable.
 ## Model changes
 
 - MCMC runs are now initialised with parameter values drawn from a distribution that approximates their prior distributions.
-- Added an option to compute growth rates using an estimator by Parag et al. (2022) based on total infectiousness rather than new infections, see `growth_method` argument in rt_opts().
+- Added an option to compute growth rates using an estimator by Parag et al. (2022) based on total infectiousness rather than new infections, see `growth_method` argument in `rt_opts()`.
 - Added support for fitting the susceptible population size.
-- Replaced custom rounding function in generated quantities by native stan version.
+- Replaced custom rounding function in generated quantities by native Stan version.
 
 ## Bug fixes
 
 - Fixed an incorrect Rt prior in vignettes (`sd = 0.1` instead of `sd = 1`) that caused divergent transitions after changing to prior-based MCMC initialisation.
-- A bug was fixed where the `report_log_lik` Stan function used the raw overdispersion parameter instead of the transformed phi value, producing incorrect pointwise log-likelihood values for model comparison (LOO, WAIC).
-- A bug was fixed where the truncation PMF vector in `estimate_secondary.stan` was declared with incorrect dimension, causing a dimension mismatch with the `get_delay_rev_pmf()` function call.
-- A bug was fixed where the `CrIs` parameter in `epinow()` was not being passed through to internal functions, causing user-specified credible intervals to be ignored in saved files and output.
-- A bug was fixed where `forecast_infections` would fail with `samples = 1`.
-- A bug was fixed where `opts_list()` recursed lists which it shouldn't.
-- A bug was fixed where shifted cases for the deconvolution model did not reflect accumulation settings.
-- A bug was fixed where `estimate_infection()` threw an error if there were too many consecutive `NA` observations.
-- A bug was fixed where an error was thrown when convolving delay distributions with very small values.
-- A bug was fixed where various log variables (time steps, horizon, samples, chains, and iterations) were not being reported correctly especially when using the `cmdstanr` backend and `estimate_delays()` function.
-- A bug was fixed where a cli warning was broken due to bad syntax.
-- A bug was fixed where intermediate data was being bound together by column position instead of column name, leading to erroneous results.
-- A bug was fixed in the implementation of the Matern 5/2 Gaussian process kernel spectral density. See discussion at https://discourse.mc-stan.org/t/diagspd-for-matern-gp-kernels-other-than-3-2/37011/12
+- Fixed `report_log_lik` Stan function using the raw overdispersion parameter instead of the transformed phi value, producing incorrect pointwise log-likelihood values for model comparison (LOO, WAIC).
+- Fixed truncation PMF vector in `estimate_secondary.stan` being declared with incorrect dimension, causing a dimension mismatch with the `get_delay_rev_pmf()` function call.
+- Fixed `CrIs` parameter in `epinow()` not being passed through to internal functions, causing user-specified credible intervals to be ignored in saved files and output.
+- Fixed `forecast_infections()` failing with `samples = 1`.
+- Fixed `opts_list()` incorrectly recursing lists.
+- Fixed shifted cases for the deconvolution model not reflecting accumulation settings.
+- Fixed `estimate_infections()` throwing an error with too many consecutive `NA` observations.
+- Fixed error when convolving delay distributions with very small values.
+- Fixed various log variables (time steps, horizon, samples, chains, and iterations) not being reported correctly, especially when using the `cmdstanr` backend and `estimate_delays()` function.
+- Fixed broken cli warning due to bad syntax.
+- Fixed intermediate data being bound together by column position instead of column name, leading to erroneous results.
+- Fixed Matern 5/2 Gaussian process kernel spectral density implementation.
 
 ## Documentation
 
@@ -92,9 +86,9 @@ Unadjusted estimates are provided in a separate `R_unadjusted` output variable.
 - Added a comprehensive prior choice and specification guide vignette covering all three main modelling functions with practical guidance on when and how to modify priors.
 - Fixed broken `@seealso` links in roxygen2 documentation by converting plain text function references to proper link syntax.
 - Added documentation about doing prior predictive checks.
-- The stan code is now fulled documented and can be accessed on the website under the Reference tab.
+- Added full documentation for the Stan code, accessible on the website under the Reference tab.
 - Fixed an issue with the pkgdown website where the Reference tab was not appearing as a dropdown menu for the R and Stan Reference tabs.
-- Enhanced the stan documentation with a doxygen-awesome theme and added a license badge.
+- Enhanced the Stan documentation with a doxygen-awesome theme and added a licence badge.
 - Clarified when the population adjustment is done when `pop` is specified.
 - Updated workflow vignette to reference `{epidist}` instead of the outdated `{dynamicaltruncation}` reference.
 

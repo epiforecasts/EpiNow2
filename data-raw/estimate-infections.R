@@ -32,18 +32,22 @@ example_regional_epinow <- regional_epinow(
   delays = delay_opts(example_incubation_period + reporting_delay),
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
   stan = stan_opts(
-    samples = 200, control = list(adapt_delta = 0.95), return_fit = FALSE
+    samples = 100, control = list(adapt_delta = 0.95), return_fit = FALSE
   ),
   output = c("regions", "summary", "samples")
 )
 
 saveRDS(
   example_estimate_infections,
-  here("inst", "extdata", "example_estimate_infections.rds"),
-  compress = "xz"
+  here("inst", "extdata", "example_estimate_infections.rds")
 )
+
+# Remove plots from summary to reduce file size
+example_regional_epinow$summary$high_plots <- NULL
+example_regional_epinow$summary$plots <- NULL
+example_regional_epinow$summary$summary_plot <- NULL
+
 saveRDS(
   example_regional_epinow,
-  here("inst", "extdata", "example_regional_epinow.rds"),
-  compress = "xz"
+  here("inst", "extdata", "example_regional_epinow.rds")
 )

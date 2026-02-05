@@ -1,10 +1,21 @@
-# Resubmission comment
+# cran-comments
 
-The `utils` package is now imported, addressing a NOTE in the previous submission.
+## Resubmission
 
-The errors in CRAN checks are hopefully fixed in this patch version.
+This is a resubmission. In this version:
 
-# Rationale for submission
+- Precompiled slow vignettes (forecasting_multiple_data_streams,
+  prior_choice_guide) to reduce overall check time
+- Reduced samples/iterations in examples to speed up example checks
 
-This is a patch release in response to an upstream issue in `rstan`, as flagged in CRAN checks.
+## Test environments
 
+- Local: macOS (aarch64-apple-darwin), R 4.4.2
+- GitHub Actions: ubuntu-latest, R release
+- GitHub Actions: ubuntu-latest, R devel
+- win-builder: R devel (Windows)
+- win-builder: R devel (Debian)
+
+## Downstream dependencies
+
+No reverse dependencies on CRAN.

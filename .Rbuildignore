@@ -27,3 +27,9 @@
 ^\.benchmark$
 ^CITATION\.cff$
 ^CLAUDE\.md$
+^CLAUDE\.local\.md$
+^\.aider.*
+^\.claude
+^docs-book
+^revdep
+^pkgdown$

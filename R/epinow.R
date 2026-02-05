@@ -71,11 +71,14 @@
 #' reported_cases <- example_confirmed[1:40]
 #'
 #' # estimate Rt and nowcast/forecast cases by date of infection
+#' # samples and calculation time have been reduced for this example
+#' # for real analyses, use at least samples = 2000
 #' out <- epinow(
 #'   data = reported_cases,
 #'   generation_time = gt_opts(generation_time),
 #'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1)),
-#'   delays = delay_opts(incubation_period + reporting_delay)
+#'   delays = delay_opts(incubation_period + reporting_delay),
+#'   stan = stan_opts(samples = 100, warmup = 200)
 #' )
 #' # summary of the latest estimates
 #' summary(out)

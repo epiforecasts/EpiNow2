@@ -1,14 +1,7 @@
 # Update R-multiverse Production Snapshot
 #
-# This workflow automatically updates the R-multiverse snapshot date in both
+# This workflow automatically updates the R-multiverse snapshot date in
 # DESCRIPTION and all workflow files that use extra-repositories.
-#
-# IMPORTANT: When creating new workflows that need cmdstanr, add:
-#   - uses: r-lib/actions/setup-r@v2
-#     with:
-#       extra-repositories: https://production.r-multiverse.org/YYYY-MM-DD
-# where YYYY-MM-DD matches the date in DESCRIPTION's Additional_repositories.
-# This workflow will automatically update the date when new snapshots are released.
 
 name: Update R-multiverse Production Snapshot
 
@@ -20,13 +13,19 @@ on:
 jobs:
   check-update:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
 
     steps:
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
 
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
@@ -125,14 +124,13 @@ jobs:
           echo "Updated workflow files"
 
           # Show changes
-          git diff DESCRIPTION
-          git diff .github/workflows/
+          git diff
 
       - name: Create Pull Request
         if: steps.compare.outputs.needs_update == 'true' && steps.verify.outputs.available == 'true'
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.generate_token.outputs.token }}
           commit-message: "chore: update R-multiverse production snapshot to ${{ steps.latest.outputs.date }}"
           branch: update-r-multiverse-${{ steps.latest.outputs.date }}
           delete-branch: true
@@ -143,20 +141,8 @@ jobs:
             **Changes:**
             - Update from `${{ steps.current.outputs.date }}` to `${{ steps.latest.outputs.date }}`
             - Updated `DESCRIPTION` file
-            - Updated all GitHub Actions workflow files (`.github/workflows/*.yaml`)
+            - Updated all GitHub Actions workflow files
             - Verified cmdstanr ${{ steps.verify.outputs.version }} is available in the new snapshot
-
-            **About R-multiverse production snapshots:**
-            - Released approximately quarterly
-            - Old snapshots remain available for 1 year
-            - All packages tested for quality, security, and mutual compatibility
-
-            **Note:** There's no urgency to merge immediately since old snapshots remain available for 1 year.
-
-            Please review and merge when convenient. Consider running full package checks before merging.
-
-            ---
-            *This PR was created automatically by the [update-r-multiverse workflow](.github/workflows/update-r-multiverse.yaml)*
           labels: |
             dependencies
             automated-pr

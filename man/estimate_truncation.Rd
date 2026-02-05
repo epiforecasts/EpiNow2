@@ -100,9 +100,11 @@ options(mc.cores = ifelse(interactive(), 4, 1))
 
 # fit model to example data
 # See [example_truncated] for more details
+# iterations and calculation time have been reduced for this example
+# for real analyses, use more
 est <- estimate_truncation(example_truncated,
   verbose = interactive(),
-  chains = 2, iter = 2000
+  chains = 2, iter = 200
 )
 
 # extract the estimated truncation distribution

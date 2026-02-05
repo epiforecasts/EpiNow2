@@ -53,9 +53,11 @@ current case load.
 \examples{
 \donttest{
 # lognormal
+# bootstraps and samples have been reduced for this example
+# for real analyses, use more
 delays <- rlnorm(500, log(5), 1)
 out <- bootstrapped_dist_fit(delays,
-  samples = 1000, bootstraps = 10,
+  samples = 500, bootstraps = 2,
   dist = "lognormal"
 )
 out

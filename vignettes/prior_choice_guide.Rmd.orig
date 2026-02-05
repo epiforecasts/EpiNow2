@@ -13,7 +13,14 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = TRUE,
+  fig.path = "prior_choice_guide-"
+)
+```
 
 # Introduction
 
@@ -47,31 +54,15 @@ This guide covers priors for the three main modelling functions:
 
 We load the _EpiNow2_ package and the _posterior_ and _data.table_ packages which we will use for convergence diagnostics and data wrangling, respectively.
 
-
-``` r
+```{r libraries}
 library(EpiNow2)
-#> 
-#> Attaching package: 'EpiNow2'
-#> The following object is masked from 'package:stats':
-#> 
-#>     Gamma
 library(posterior)
-#> This is posterior version 1.6.1.9000
-#> 
-#> Attaching package: 'posterior'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     mad, sd, var
-#> The following objects are masked from 'package:base':
-#> 
-#>     %in%, match
 library(data.table)
 ```
 
 We also set up example data and parameters that will be used in code examples throughout this vignette.
 
-
-``` r
+```{r data-setup}
 # Example data for estimate_infections
 reported_cases <- example_confirmed[1:60]
 
@@ -179,130 +170,18 @@ This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probabi
 
 **Example:**
 
-
-``` r
+```{r r0-prior-examples}
 # For a measles outbreak with strong prior knowledge
 rt_opts(prior = LogNormal(mean = 15, sd = 2))
-#> $use_rt
-#> [1] TRUE
-#> 
-#> $rw
-#> [1] 0
-#> 
-#> $use_breakpoints
-#> [1] TRUE
-#> 
-#> $future
-#> [1] "latest"
-#> 
-#> $gp_on
-#> [1] "R_t-1"
-#> 
-#> $pop_period
-#> [1] "forecast"
-#> 
-#> $pop_floor
-#> [1] 1
-#> 
-#> $growth_method
-#> [1] "infections"
-#> 
-#> $pop
-#> - fixed value:
-#>   0
-#> 
-#> $prior
-#> - lognormal distribution:
-#>   meanlog:
-#>     2.7
-#>   sdlog:
-#>     0.13
-#> 
-#> attr(,"class")
-#> [1] "rt_opts" "list"
 
 # For uncertain but likely growing outbreak
 rt_opts(prior = LogNormal(mean = 2, sd = 1))
-#> $use_rt
-#> [1] TRUE
-#> 
-#> $rw
-#> [1] 0
-#> 
-#> $use_breakpoints
-#> [1] TRUE
-#> 
-#> $future
-#> [1] "latest"
-#> 
-#> $gp_on
-#> [1] "R_t-1"
-#> 
-#> $pop_period
-#> [1] "forecast"
-#> 
-#> $pop_floor
-#> [1] 1
-#> 
-#> $growth_method
-#> [1] "infections"
-#> 
-#> $pop
-#> - fixed value:
-#>   0
-#> 
-#> $prior
-#> - lognormal distribution:
-#>   meanlog:
-#>     0.58
-#>   sdlog:
-#>     0.47
-#> 
-#> attr(,"class")
-#> [1] "rt_opts" "list"
 
 # Stationary GP reverting to R_t = 2 when no data
 rt_opts(
   prior = LogNormal(mean = 2, sd = 0.5),
   gp_on = "R0"
 )
-#> $use_rt
-#> [1] TRUE
-#> 
-#> $rw
-#> [1] 0
-#> 
-#> $use_breakpoints
-#> [1] TRUE
-#> 
-#> $future
-#> [1] "latest"
-#> 
-#> $gp_on
-#> [1] "R0"
-#> 
-#> $pop_period
-#> [1] "forecast"
-#> 
-#> $pop_floor
-#> [1] 1
-#> 
-#> $growth_method
-#> [1] "infections"
-#> 
-#> $pop
-#> - fixed value:
-#>   0
-#> 
-#> $prior
-#> - lognormal distribution:
-#>   meanlog:
-#>     0.66
-#>   sdlog:
-#>     0.25
-#> 
-#> attr(,"class")
-#> [1] "rt_opts" "list"
 ```
 
 ## Gaussian Process length scale
@@ -326,75 +205,12 @@ This corresponds to a median of 21 days (range 9 to 36 days at 95% prior probabi
 - **Maximum adjustment**: Set `max` lower if working with short time series (e.g., `max=30` for 60-day outbreak)
 
 **Example:**
-
-``` r
+```{r gp-length-scale-examples}
 # For outbreak with weekly policy changes
 gp_opts(ls = LogNormal(mean = 7, sd = 3, max = 30))
-#> $basis_prop
-#> [1] 0.2
-#> 
-#> $boundary_scale
-#> [1] 1.5
-#> 
-#> $ls
-#> - lognormal distribution (max: 30):
-#>   meanlog:
-#>     1.9
-#>   sdlog:
-#>     0.41
-#> 
-#> $alpha
-#> - normal distribution:
-#>   mean:
-#>     0
-#>   sd:
-#>     0.01
-#> 
-#> $kernel
-#> [1] "matern"
-#> 
-#> $matern_order
-#> [1] 1.5
-#> 
-#> $w0
-#> [1] 1
-#> 
-#> attr(,"class")
-#> [1] "gp_opts" "list"
 
 # For gradually evolving endemic disease
 gp_opts(ls = LogNormal(mean = 28, sd = 10, max = 90))
-#> $basis_prop
-#> [1] 0.2
-#> 
-#> $boundary_scale
-#> [1] 1.5
-#> 
-#> $ls
-#> - lognormal distribution (max: 90):
-#>   meanlog:
-#>     3.3
-#>   sdlog:
-#>     0.35
-#> 
-#> $alpha
-#> - normal distribution:
-#>   mean:
-#>     0
-#>   sd:
-#>     0.01
-#> 
-#> $kernel
-#> [1] "matern"
-#> 
-#> $matern_order
-#> [1] 1.5
-#> 
-#> $w0
-#> [1] 1
-#> 
-#> attr(,"class")
-#> [1] "gp_opts" "list"
 ```
 
 ## Gaussian Process magnitude
@@ -420,75 +236,12 @@ For the renewal equation model, this corresponds to a half-normal (since negativ
 - **Note**: The default works well for the renewal equation model in most scenarios, but may need adjustment for the non-mechanistic model
 
 **Example:**
-
-``` r
+```{r gp-magnitude-examples}
 # For outbreak with major interventions
 gp_opts(alpha = Normal(mean = 0, sd = 0.05))
-#> $basis_prop
-#> [1] 0.2
-#> 
-#> $boundary_scale
-#> [1] 1.5
-#> 
-#> $ls
-#> - lognormal distribution (max: 60):
-#>   meanlog:
-#>     3
-#>   sdlog:
-#>     0.32
-#> 
-#> $alpha
-#> - normal distribution:
-#>   mean:
-#>     0
-#>   sd:
-#>     0.05
-#> 
-#> $kernel
-#> [1] "matern"
-#> 
-#> $matern_order
-#> [1] 1.5
-#> 
-#> $w0
-#> [1] 1
-#> 
-#> attr(,"class")
-#> [1] "gp_opts" "list"
 
 # For very stable transmission
 gp_opts(alpha = Normal(mean = 0, sd = 0.005))
-#> $basis_prop
-#> [1] 0.2
-#> 
-#> $boundary_scale
-#> [1] 1.5
-#> 
-#> $ls
-#> - lognormal distribution (max: 60):
-#>   meanlog:
-#>     3
-#>   sdlog:
-#>     0.32
-#> 
-#> $alpha
-#> - normal distribution:
-#>   mean:
-#>     0
-#>   sd:
-#>     0.005
-#> 
-#> $kernel
-#> [1] "matern"
-#> 
-#> $matern_order
-#> [1] 1.5
-#> 
-#> $w0
-#> [1] 1
-#> 
-#> attr(,"class")
-#> [1] "gp_opts" "list"
 ```
 
 ## Random walk for $R_t$ (alternative to GP)
@@ -509,8 +262,7 @@ gp_opts(alpha = Normal(mean = 0, sd = 0.005))
 - Use daily (`rw = 1`) for maximum flexibility with fast computation (but risk overfitting)
 
 **Example:**
-
-``` r
+```{r random-walk-example}
 # Weekly step changes
 fit_rw <- estimate_infections(
   reported_cases,
@@ -520,15 +272,6 @@ fit_rw <- estimate_infections(
   gp = NULL,  # Disable GP when using random walk
   stan = stan
 )
-#> Warning: The largest R-hat is NA, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat
-#> Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess
-#> Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess
 ```
 
 ## Observation model: overdispersion
@@ -552,87 +295,12 @@ With truncation at 0, this half-normal has 95% prior mass below 0.5, correspondi
 - **Switch to Poisson**: Very large counts (>1000s daily) from stable reporting systems and when confident in model specification. Note that negative binomial overdispersion can absorb model misspecification, so switching to Poisson requires both high-quality data and confidence that the model structure is appropriate.
 
 **Example:**
-
-``` r
+```{r overdispersion-examples}
 # For highly variable reporting
 obs_opts(dispersion = Normal(mean = 0, sd = 0.5))
-#> $family
-#> [1] "negbin"
-#> 
-#> $dispersion
-#> - normal distribution:
-#>   mean:
-#>     0
-#>   sd:
-#>     0.5
-#> 
-#> $weight
-#> [1] 1
-#> 
-#> $week_effect
-#> [1] TRUE
-#> 
-#> $week_length
-#> [1] 7
-#> 
-#> $scale
-#> - fixed value:
-#>   1
-#> 
-#> $accumulate
-#> [1] 0
-#> 
-#> $likelihood
-#> [1] TRUE
-#> 
-#> $return_likelihood
-#> [1] FALSE
-#> 
-#> $na_as_missing_default_used
-#> [1] TRUE
-#> 
-#> attr(,"class")
-#> [1] "obs_opts" "list"
 
 # For stable, high-quality surveillance
 obs_opts(family = "poisson")  # No dispersion parameter needed
-#> $family
-#> [1] "poisson"
-#> 
-#> $dispersion
-#> - normal distribution:
-#>   mean:
-#>     0
-#>   sd:
-#>     0.25
-#> 
-#> $weight
-#> [1] 1
-#> 
-#> $week_effect
-#> [1] TRUE
-#> 
-#> $week_length
-#> [1] 7
-#> 
-#> $scale
-#> - fixed value:
-#>   1
-#> 
-#> $accumulate
-#> [1] 0
-#> 
-#> $likelihood
-#> [1] TRUE
-#> 
-#> $return_likelihood
-#> [1] FALSE
-#> 
-#> $na_as_missing_default_used
-#> [1] TRUE
-#> 
-#> attr(,"class")
-#> [1] "obs_opts" "list"
 ```
 
 ## Observation model: scaling
@@ -672,133 +340,15 @@ For `estimate_infections()`, this assumes all infections are reported. For `esti
 - Use tighter priors with external estimates (e.g., infection fatality rate from serology studies)
 
 **Example:**
-
-``` r
+```{r scaling-examples}
 # estimate_infections(): Estimating with informative prior from serology
 obs_opts(scale = Normal(mean = 0.2, sd = 0.05, max = 1))
-#> $family
-#> [1] "negbin"
-#> 
-#> $dispersion
-#> - normal distribution:
-#>   mean:
-#>     0
-#>   sd:
-#>     0.25
-#> 
-#> $weight
-#> [1] 1
-#> 
-#> $week_effect
-#> [1] TRUE
-#> 
-#> $week_length
-#> [1] 7
-#> 
-#> $scale
-#> - normal distribution (max: 1):
-#>   mean:
-#>     0.2
-#>   sd:
-#>     0.05
-#> 
-#> $accumulate
-#> [1] 0
-#> 
-#> $likelihood
-#> [1] TRUE
-#> 
-#> $return_likelihood
-#> [1] FALSE
-#> 
-#> $na_as_missing_default_used
-#> [1] TRUE
-#> 
-#> attr(,"class")
-#> [1] "obs_opts" "list"
 
 # estimate_infections(): Fixed known ascertainment (rarely used)
 obs_opts(scale = Fixed(0.3))
-#> $family
-#> [1] "negbin"
-#> 
-#> $dispersion
-#> - normal distribution:
-#>   mean:
-#>     0
-#>   sd:
-#>     0.25
-#> 
-#> $weight
-#> [1] 1
-#> 
-#> $week_effect
-#> [1] TRUE
-#> 
-#> $week_length
-#> [1] 7
-#> 
-#> $scale
-#> - fixed value:
-#>   0.3
-#> 
-#> $accumulate
-#> [1] 0
-#> 
-#> $likelihood
-#> [1] TRUE
-#> 
-#> $return_likelihood
-#> [1] FALSE
-#> 
-#> $na_as_missing_default_used
-#> [1] TRUE
-#> 
-#> attr(,"class")
-#> [1] "obs_opts" "list"
 
 # estimate_secondary(): Case fatality rate ~1% with uncertainty
 obs_opts(scale = Normal(mean = 0.01, sd = 0.005, max = 1))
-#> $family
-#> [1] "negbin"
-#> 
-#> $dispersion
-#> - normal distribution:
-#>   mean:
-#>     0
-#>   sd:
-#>     0.25
-#> 
-#> $weight
-#> [1] 1
-#> 
-#> $week_effect
-#> [1] TRUE
-#> 
-#> $week_length
-#> [1] 7
-#> 
-#> $scale
-#> - normal distribution (max: 1):
-#>   mean:
-#>     0.01
-#>   sd:
-#>     0.005
-#> 
-#> $accumulate
-#> [1] 0
-#> 
-#> $likelihood
-#> [1] TRUE
-#> 
-#> $return_likelihood
-#> [1] FALSE
-#> 
-#> $na_as_missing_default_used
-#> [1] TRUE
-#> 
-#> attr(,"class")
-#> [1] "obs_opts" "list"
 ```
 
 ## Generation time distribution
@@ -821,23 +371,9 @@ obs_opts(scale = Normal(mean = 0.01, sd = 0.005, max = 1))
 - **`weight_prior = FALSE`** can be tried if you believe the generation time should be learned from data, though results may vary
 
 **Example:**
-
-``` r
+```{r generation-time-examples}
 # Well-established generation time (COVID-19 example)
 gt_opts(example_generation_time)  # Uses package data
-#> - gamma distribution (max: 14):
-#>   shape:
-#>     - normal distribution:
-#>       mean:
-#>         1.4
-#>       sd:
-#>         0.48
-#>   rate:
-#>     - normal distribution:
-#>       mean:
-#>         0.38
-#>       sd:
-#>         0.25
 
 # Custom uncertain generation time
 gt_opts(
@@ -847,27 +383,9 @@ gt_opts(
     max = 14
   )
 )
-#> - gamma distribution (max: 14):
-#>   shape:
-#>     - normal distribution:
-#>       mean:
-#>         3
-#>       sd:
-#>         0.5
-#>   rate:
-#>     - normal distribution:
-#>       mean:
-#>         2
-#>       sd:
-#>         0.3
 
 # Custom fixed generation time
 gt_opts(Gamma(shape = 2.5, rate = 1.5, max = 10))
-#> - gamma distribution (max: 10):
-#>   shape:
-#>     2.5
-#>   rate:
-#>     1.5
 ```
 
 ## Delays (incubation and reporting)
@@ -889,31 +407,14 @@ gt_opts(Gamma(shape = 2.5, rate = 1.5, max = 10))
 - **Use fixed parameters** (recommended) when delays are known from external studies
 
 **Example:**
-
-``` r
+```{r delays-examples}
 # Simple fixed delay
 delay_opts(LogNormal(meanlog = 1.6, sdlog = 0.5, max = 10))
-#> - lognormal distribution (max: 10):
-#>   meanlog:
-#>     1.6
-#>   sdlog:
-#>     0.5
 
 # Combined incubation + reporting delay (additive)
 incubation <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 10)
 reporting <- LogNormal(meanlog = 0.5, sdlog = 0.5, max = 5)
 delay_opts(incubation + reporting)
-#> Composite distribution:
-#> - lognormal distribution (max: 10):
-#>   meanlog:
-#>     1.6
-#>   sdlog:
-#>     0.5
-#> - lognormal distribution (max: 5):
-#>   meanlog:
-#>     0.5
-#>   sdlog:
-#>     0.5
 
 # Uncertain delay (advanced)
 delay_opts(
@@ -923,19 +424,6 @@ delay_opts(
     max = 10
   )
 )
-#> - lognormal distribution (max: 10):
-#>   meanlog:
-#>     - normal distribution:
-#>       mean:
-#>         1.6
-#>       sd:
-#>         0.1
-#>   sdlog:
-#>     - normal distribution:
-#>       mean:
-#>         0.5
-#>       sd:
-#>         0.1
 ```
 
 ## Truncation
@@ -956,15 +444,9 @@ delay_opts(
 - **Use informed prior** from data with known revisions if available
 
 **Example:**
-
-``` r
+```{r truncation-examples}
 # Known truncation from external analysis
 trunc_opts(LogNormal(mean = 0.5, sd = 0.5, max = 3))
-#> - lognormal distribution (max: 3):
-#>   meanlog:
-#>     -1
-#>   sdlog:
-#>     0.83
 
 # Estimated truncation (run separately first)
 truncation_estimate <- estimate_truncation(
@@ -980,19 +462,6 @@ truncation_estimate <- estimate_truncation(
 
 # Then use in estimate_infections
 trunc_opts(get_parameters(truncation_estimate)[["truncation"]])
-#> - lognormal distribution (max: 10):
-#>   meanlog:
-#>     - normal distribution:
-#>       mean:
-#>         0.9
-#>       sd:
-#>         0.005
-#>   sdlog:
-#>     - normal distribution:
-#>       mean:
-#>         0.6
-#>       sd:
-#>         0.007
 ```
 
 ## Model choice in estimate_infections()
@@ -1015,8 +484,7 @@ trunc_opts(get_parameters(truncation_estimate)[["truncation"]])
 - **Warning**: This is a less epidemiologically informed model than the renewal equation model and may lead to undesired behaviour, particularly when extrapolating or forecasting
 
 **Example:**
-
-``` r
+```{r model-choice-examples}
 # Renewal equation model (default)
 fit_renewal <- estimate_infections(
   reported_cases,
@@ -1025,18 +493,6 @@ fit_renewal <- estimate_infections(
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.5)),
   stan = stan
 )
-#> Warning: There were 1 chains where the estimated Bayesian Fraction of Missing Information was low. See
-#> https://mc-stan.org/misc/warnings.html#bfmi-low
-#> Warning: Examine the pairs() plot to diagnose sampling problems
-#> Warning: The largest R-hat is NA, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat
-#> Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess
-#> Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess
 
 # Non-mechanistic model
 fit_nonmech <- estimate_infections(
@@ -1046,19 +502,6 @@ fit_nonmech <- estimate_infections(
   backcalc = backcalc_opts(prior = "reports"),
   stan = stan
 )
-#> Warning: ! No generation time distribution given. Using a fixed generation time of 1
-#>   day, i.e. the reproduction number is the same as the daily growth rate.
-#> ℹ If this was intended then this warning can be silenced by setting `dist =
-#>   Fixed(1)`'.
-#> Warning: The largest R-hat is 1.15, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat
-#> Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess
-#> Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess
 ```
 
 ## Priors for estimate_secondary()
@@ -1085,32 +528,13 @@ from primary observations (cases, admissions) with a delay and scaling.
 - Make uncertain only with long time series and uncertain external estimates
 
 **Example:**
-
-``` r
+```{r secondary-delay-examples}
 # Fixed delay from literature
 fit_secondary_fixed <- estimate_secondary(
   secondary_data,
   delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30)),
   stan = stan
 )
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): The largest R-hat is 1.07, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): The largest R-hat is 1.07, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat -
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess -
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess -
 
 # Uncertain delay (long time series)
 fit_secondary_uncertain <- estimate_secondary(
@@ -1124,24 +548,6 @@ fit_secondary_uncertain <- estimate_secondary(
   ),
   stan = stan
 )
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): The largest R-hat is 1.52, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): The largest R-hat is 1.52, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat -
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess -
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess -
 ```
 
 ## Priors for estimate_truncation()
@@ -1168,8 +574,7 @@ cause recent data to be revised upward over time.
 - Common reporting delays: 1-3 days (test results), 7-14 days (death reporting)
 
 **Example:**
-
-``` r
+```{r truncation-distribution-examples}
 # Quick turnaround testing (1-3 days typical delay)
 fit_trunc_fast <- estimate_truncation(
   truncation_data,
@@ -1182,24 +587,6 @@ fit_trunc_fast <- estimate_truncation(
   ),
   stan = stan
 )
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 1): The largest R-hat is NA, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat - 
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 2): The largest R-hat is NA, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat -
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess - 
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess -
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess - 
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess -
 
 # Slower reporting (e.g., deaths, 7-14 days)
 fit_trunc_slow <- estimate_truncation(
@@ -1213,24 +600,6 @@ fit_trunc_slow <- estimate_truncation(
   ),
   stan = stan
 )
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 1): The largest R-hat is NA, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat - 
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 2): The largest R-hat is NA, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat -
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess - 
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess -
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess - 
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess -
 ```
 
 # Practical workflow for prior specification
@@ -1239,8 +608,7 @@ fit_trunc_slow <- estimate_truncation(
 
 Always begin with default priors to check the model runs and produces reasonable results.
 
-
-``` r
+```{r workflow-step1}
 # Minimal specification
 estimates <- estimate_infections(
   reported_cases,
@@ -1248,15 +616,6 @@ estimates <- estimate_infections(
   delays = delay_opts(example_incubation_period + reporting_delay),
   stan = stan
 )
-#> Warning: The largest R-hat is NA, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat
-#> Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess
-#> Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess
 ```
 
 ## Step 2: Identify candidates for modification
@@ -1273,8 +632,7 @@ Ask these questions:
 
 Make incremental changes and check sensitivity:
 
-
-``` r
+```{r workflow-step3}
 # Modify R0 prior based on literature
 estimates_r0 <- estimate_infections(
   reported_cases,
@@ -1283,40 +641,21 @@ estimates_r0 <- estimate_infections(
   rt = rt_opts(prior = LogNormal(mean = 2.5, sd = 0.5)),
   stan = stan
 )
-#> Warning: The largest R-hat is NA, indicating chains have not mixed.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#r-hat
-#> Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#bulk-ess
-#> Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-#> Running the chains for more iterations may help. See
-#> https://mc-stan.org/misc/warnings.html#tail-ess
 
 # Compare results
 plot(estimates)
-```
-
-![plot of chunk workflow-step3](prior_choice_guide-workflow-step3-1.png)
-
-``` r
 plot(estimates_r0)
 ```
-
-![plot of chunk workflow-step3](prior_choice_guide-workflow-step3-2.png)
 
 ## Step 4: Check prior predictive distributions
 
 It is good practice to check if your priors generate reasonable trajectories before seeing data:
 
-
-``` r
+```{r workflow-step4}
 # You can visualise prior choices using EpiNow2's distribution objects
 prior_r0 <- LogNormal(mean = 2, sd = 0.5, max = 10)
 plot(prior_r0)
 ```
-
-![plot of chunk workflow-step4](prior_choice_guide-workflow-step4-1.png)
 
 This shows the probability density of your prior. Check if this range is sensible for your application. For example, does it put reasonable mass on plausible $R_0$ values for your pathogen?
 
@@ -1326,57 +665,19 @@ Note: Full prior predictive checks (simulating complete epidemic trajectories) r
 
 After modifying priors, always check that the model has converged properly. Poor prior choices can lead to convergence problems.
 
-
-``` r
+```{r workflow-step5}
 # Check convergence diagnostics
 # Extract the Stan fit object
 fit <- estimates_r0$fit
 
 # Check Rhat (should be < 1.01)
 summarise_draws(fit, "rhat")
-#> # A tibble: 511 × 2
-#>    variable   rhat
-#>    <chr>     <dbl>
-#>  1 params[1] 1.05 
-#>  2 params[2] 1.01 
-#>  3 params[3] 1.05 
-#>  4 params[4] 1.01 
-#>  5 eta[1]    1.06 
-#>  6 eta[2]    1.03 
-#>  7 eta[3]    0.999
-#>  8 eta[4]    0.982
-#>  9 eta[5]    1.02 
-#> 10 eta[6]    1.03 
-#> # ℹ 501 more rows
 
 # Check effective sample size (should be > 400 for reliable inference)
 summarise_draws(fit, "ess_bulk", "ess_tail")
-#> Warning: The ESS has been capped to avoid unstable estimates.
-#> Warning: The ESS has been capped to avoid unstable estimates.
-#> # A tibble: 511 × 3
-#>    variable  ess_bulk ess_tail
-#>    <chr>        <dbl>    <dbl>
-#>  1 params[1]    102.      85.9
-#>  2 params[2]    112.      75.9
-#>  3 params[3]     35.4     27.1
-#>  4 params[4]     60.6    113. 
-#>  5 eta[1]       170.      54.6
-#>  6 eta[2]       115.      77.8
-#>  7 eta[3]       105.      71.9
-#>  8 eta[4]       117.      81.2
-#>  9 eta[5]        78.4     55.3
-#> 10 eta[6]       130.     119. 
-#> # ℹ 501 more rows
 
 # You can also use the summary method which includes these diagnostics
 summary(estimates_r0)
-#>                         measure                estimate
-#>                          <char>                  <char>
-#> 1:       New infections per day     2125 (1306 -- 3337)
-#> 2:   Expected change in reports       Likely decreasing
-#> 3:   Effective reproduction no.      0.87 (0.67 -- 1.1)
-#> 4:               Rate of growth -0.035 (-0.11 -- 0.024)
-#> 5: Doubling/halving time (days)        -20 (29 -- -6.4)
 ```
 
 Key diagnostics to check:

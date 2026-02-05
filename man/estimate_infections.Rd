@@ -135,7 +135,7 @@ old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
 # get example case counts
-reported_cases <- example_confirmed[1:60]
+reported_cases <- example_confirmed[1:40]
 
 # set an example generation time. In practice this should use an estimate
 # from the literature or be estimated from data
@@ -156,10 +156,13 @@ incubation_period <- LogNormal(
 reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 
 # for more examples, see the "estimate_infections examples" vignette
+# samples and calculation time have been reduced for this example
+# for real analyses, use at least samples = 2000
 def <- estimate_infections(reported_cases,
   generation_time = gt_opts(generation_time),
   delays = delay_opts(incubation_period + reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1))
+  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1)),
+  stan = stan_opts(samples = 100, warmup = 200)
 )
 # real time estimates
 summary(def)

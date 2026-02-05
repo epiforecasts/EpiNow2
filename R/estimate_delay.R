@@ -151,9 +151,11 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #' @examples
 #' \donttest{
 #' # lognormal
+#' # bootstraps and samples have been reduced for this example
+#' # for real analyses, use more
 #' delays <- rlnorm(500, log(5), 1)
 #' out <- bootstrapped_dist_fit(delays,
-#'   samples = 1000, bootstraps = 10,
+#'   samples = 500, bootstraps = 2,
 #'   dist = "lognormal"
 #' )
 #' out
@@ -254,8 +256,9 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' @seealso [bootstrapped_dist_fit()]
 #' @examples
 #' \donttest{
+#' # bootstraps and samples have been reduced for this example
 #' delays <- rlnorm(500, log(5), 1)
-#' estimate_delay(delays, samples = 1000, bootstraps = 10)
+#' estimate_delay(delays, samples = 500, bootstraps = 2)
 #' }
 estimate_delay <- function(delays, ...) {
   bootstrapped_dist_fit(
