@@ -1,7 +1,7 @@
 Type: Package
 Package: EpiNow2
 Title: Estimate and Forecast Real-Time Infection Dynamics
-Version: 1.8.0
+Version: 1.8.0.9000
 Authors@R:
     c(person(given = "Sam",
              family = "Abbott",

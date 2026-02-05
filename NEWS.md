@@ -1,3 +1,5 @@
+# EpiNow2 (development version)
+
 # EpiNow2 1.8.0
 
 ## Breaking changes
