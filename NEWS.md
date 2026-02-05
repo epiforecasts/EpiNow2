@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Deprecations
+
+- The `pop` argument in `rt_opts()` and `simulate_infections()` now errors when passed a numeric value. Use `Fixed(pop)` instead.
+
 # EpiNow2 1.8.0
 
 ## Breaking changes

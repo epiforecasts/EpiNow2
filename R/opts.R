@@ -356,12 +356,11 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
   }
 
   if (is.numeric(pop)) {
-    lifecycle::deprecate_warn(
-      "1.7.0",
+    lifecycle::deprecate_stop(
+      "1.9.0",
       "rt_opts(pop = 'must be a `<dist_spec>`')",
       details = "For specifying a fixed population size, use `Fixed(pop)`"
     )
-    pop <- Fixed(pop)
   }
   opts$pop <- pop
   if (opts$pop_period == "all" && pop == Fixed(0)) {
