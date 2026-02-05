@@ -8,7 +8,7 @@ message: 'To cite package "EpiNow2" in publications use:'
 type: software
 license: MIT
 title: 'EpiNow2: Estimate and Forecast Real-Time Infection Dynamics'
-version: 1.7.1.9000
+version: 1.8.0.9000
 doi: 10.32614/CRAN.package.EpiNow2
 identifiers:
 - type: url
@@ -642,6 +642,30 @@ references:
     orcid: https://orcid.org/0000-0003-3925-190X
   year: '2026'
   doi: 10.32614/CRAN.package.rmarkdown
+- type: software
+  title: scoringutils
+  abstract: 'scoringutils: Utilities for Scoring and Assessing Predictions'
+  notes: Suggests
+  url: https://doi.org/10.48550/arXiv.2205.07090
+  repository: https://CRAN.R-project.org/package=scoringutils
+  authors:
+  - family-names: Bosse
+    given-names: Nikos
+    email: nikosbosse@gmail.com
+    orcid: https://orcid.org/0000-0002-7750-5280
+  - family-names: Abbott
+    given-names: Sam
+    email: contact@samabbott.co.uk
+    orcid: https://orcid.org/0000-0001-8057-8037
+  - family-names: Gruson
+    given-names: Hugo
+    email: hugo.gruson+R@normalesup.org
+    orcid: https://orcid.org/0000-0002-4094-1476
+  - family-names: Funk
+    given-names: Sebastian
+    email: sebastian.funk@lshtm.ac.uk
+  year: '2026'
+  doi: 10.32614/CRAN.package.scoringutils
 - type: software
   title: spelling
   abstract: 'spelling: Tools for Spell Checking in R'
