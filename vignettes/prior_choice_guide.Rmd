@@ -56,7 +56,7 @@ library(EpiNow2)
 #> 
 #>     Gamma
 library(posterior)
-#> This is posterior version 1.6.1.9000
+#> This is posterior version 1.6.1
 #> 
 #> Attaching package: 'posterior'
 #> The following objects are masked from 'package:stats':
@@ -986,7 +986,7 @@ trunc_opts(get_parameters(truncation_estimate)[["truncation"]])
 #>       mean:
 #>         0.9
 #>       sd:
-#>         0.005
+#>         0.006
 #>   sdlog:
 #>     - normal distribution:
 #>       mean:
@@ -1025,9 +1025,6 @@ fit_renewal <- estimate_infections(
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.5)),
   stan = stan
 )
-#> Warning: There were 1 chains where the estimated Bayesian Fraction of Missing Information was low. See
-#> https://mc-stan.org/misc/warnings.html#bfmi-low
-#> Warning: Examine the pairs() plot to diagnose sampling problems
 #> Warning: The largest R-hat is NA, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat
@@ -1050,7 +1047,7 @@ fit_nonmech <- estimate_infections(
 #>   day, i.e. the reproduction number is the same as the daily growth rate.
 #> ℹ If this was intended then this warning can be silenced by setting `dist =
 #>   Fixed(1)`'.
-#> Warning: The largest R-hat is 1.15, indicating chains have not mixed.
+#> Warning: The largest R-hat is 1.09, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat
 #> Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
@@ -1093,22 +1090,22 @@ fit_secondary_fixed <- estimate_secondary(
   delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30)),
   stan = stan
 )
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): The largest R-hat is 1.07, indicating chains have not mixed.
+#> WARN [2026-02-05 09:06:57] estimate_secondary (chain: 1): The largest R-hat is 1.06, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): The largest R-hat is 1.07, indicating chains have not mixed.
+#> WARN [2026-02-05 09:06:57] estimate_secondary (chain: 2): The largest R-hat is 1.06, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat -
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> WARN [2026-02-05 09:06:58] estimate_secondary (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#bulk-ess - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> WARN [2026-02-05 09:06:58] estimate_secondary (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#bulk-ess -
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> WARN [2026-02-05 09:06:58] estimate_secondary (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#tail-ess - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> WARN [2026-02-05 09:06:58] estimate_secondary (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#tail-ess -
 
@@ -1124,22 +1121,22 @@ fit_secondary_uncertain <- estimate_secondary(
   ),
   stan = stan
 )
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): The largest R-hat is 1.52, indicating chains have not mixed.
+#> WARN [2026-02-05 09:06:58] estimate_secondary (chain: 1): The largest R-hat is 1.31, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): The largest R-hat is 1.52, indicating chains have not mixed.
+#> WARN [2026-02-05 09:06:58] estimate_secondary (chain: 2): The largest R-hat is 1.31, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat -
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> WARN [2026-02-05 09:06:58] estimate_secondary (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#bulk-ess - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> WARN [2026-02-05 09:06:58] estimate_secondary (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#bulk-ess -
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> WARN [2026-02-05 09:06:58] estimate_secondary (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#tail-ess - 
-#> WARN [2026-02-04 18:29:48] estimate_secondary (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> WARN [2026-02-05 09:06:58] estimate_secondary (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#tail-ess -
 ```
@@ -1182,22 +1179,22 @@ fit_trunc_fast <- estimate_truncation(
   ),
   stan = stan
 )
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 1): The largest R-hat is NA, indicating chains have not mixed.
+#> WARN [2026-02-05 09:06:59] estimate_truncation (chain: 1): The largest R-hat is NA, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat - 
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 2): The largest R-hat is NA, indicating chains have not mixed.
+#> WARN [2026-02-05 09:06:59] estimate_truncation (chain: 2): The largest R-hat is NA, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat -
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> WARN [2026-02-05 09:06:59] estimate_truncation (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#bulk-ess - 
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> WARN [2026-02-05 09:06:59] estimate_truncation (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#bulk-ess -
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> WARN [2026-02-05 09:06:59] estimate_truncation (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#tail-ess - 
-#> WARN [2026-02-04 18:29:49] estimate_truncation (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> WARN [2026-02-05 09:06:59] estimate_truncation (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#tail-ess -
 
@@ -1213,22 +1210,22 @@ fit_trunc_slow <- estimate_truncation(
   ),
   stan = stan
 )
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 1): The largest R-hat is NA, indicating chains have not mixed.
+#> WARN [2026-02-05 09:07:03] estimate_truncation (chain: 1): The largest R-hat is NA, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat - 
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 2): The largest R-hat is NA, indicating chains have not mixed.
+#> WARN [2026-02-05 09:07:03] estimate_truncation (chain: 2): The largest R-hat is NA, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat -
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> WARN [2026-02-05 09:07:03] estimate_truncation (chain: 1): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#bulk-ess - 
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> WARN [2026-02-05 09:07:03] estimate_truncation (chain: 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#bulk-ess -
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> WARN [2026-02-05 09:07:03] estimate_truncation (chain: 1): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#tail-ess - 
-#> WARN [2026-02-04 18:29:50] estimate_truncation (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> WARN [2026-02-05 09:07:03] estimate_truncation (chain: 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#tail-ess -
 ```
@@ -1337,46 +1334,47 @@ summarise_draws(fit, "rhat")
 #> # A tibble: 511 × 2
 #>    variable   rhat
 #>    <chr>     <dbl>
-#>  1 params[1] 1.05 
-#>  2 params[2] 1.01 
-#>  3 params[3] 1.05 
-#>  4 params[4] 1.01 
-#>  5 eta[1]    1.06 
-#>  6 eta[2]    1.03 
-#>  7 eta[3]    0.999
-#>  8 eta[4]    0.982
-#>  9 eta[5]    1.02 
-#> 10 eta[6]    1.03 
+#>  1 params[1]  1.03
+#>  2 params[2]  1.04
+#>  3 params[3]  1.01
+#>  4 params[4]  1.01
+#>  5 eta[1]     1.01
+#>  6 eta[2]     1.03
+#>  7 eta[3]     1.01
+#>  8 eta[4]     1.00
+#>  9 eta[5]     1.02
+#> 10 eta[6]     1.02
 #> # ℹ 501 more rows
 
 # Check effective sample size (should be > 400 for reliable inference)
 summarise_draws(fit, "ess_bulk", "ess_tail")
 #> Warning: The ESS has been capped to avoid unstable estimates.
 #> Warning: The ESS has been capped to avoid unstable estimates.
+#> Warning: The ESS has been capped to avoid unstable estimates.
 #> # A tibble: 511 × 3
 #>    variable  ess_bulk ess_tail
 #>    <chr>        <dbl>    <dbl>
-#>  1 params[1]    102.      85.9
-#>  2 params[2]    112.      75.9
-#>  3 params[3]     35.4     27.1
-#>  4 params[4]     60.6    113. 
-#>  5 eta[1]       170.      54.6
-#>  6 eta[2]       115.      77.8
-#>  7 eta[3]       105.      71.9
-#>  8 eta[4]       117.      81.2
-#>  9 eta[5]        78.4     55.3
-#> 10 eta[6]       130.     119. 
+#>  1 params[1]    110.      51.6
+#>  2 params[2]     56.3     29.6
+#>  3 params[3]     83.1     66.4
+#>  4 params[4]     66.8     57.7
+#>  5 eta[1]       102.      60.3
+#>  6 eta[2]       106.      32.4
+#>  7 eta[3]       109.      79.3
+#>  8 eta[4]       102.     114. 
+#>  9 eta[5]       122.      88.2
+#> 10 eta[6]        72.5     57.7
 #> # ℹ 501 more rows
 
 # You can also use the summary method which includes these diagnostics
 summary(estimates_r0)
-#>                         measure                estimate
-#>                          <char>                  <char>
-#> 1:       New infections per day     2125 (1306 -- 3337)
-#> 2:   Expected change in reports       Likely decreasing
-#> 3:   Effective reproduction no.      0.87 (0.67 -- 1.1)
-#> 4:               Rate of growth -0.035 (-0.11 -- 0.024)
-#> 5: Doubling/halving time (days)        -20 (29 -- -6.4)
+#>                         measure                 estimate
+#>                          <char>                   <char>
+#> 1:       New infections per day      2342 (1264 -- 3747)
+#> 2:   Expected change in reports        Likely decreasing
+#> 3:   Effective reproduction no.         0.9 (0.7 -- 1.1)
+#> 4:               Rate of growth -0.023 (-0.091 -- 0.037)
+#> 5: Doubling/halving time (days)         -30 (19 -- -7.6)
 ```
 
 Key diagnostics to check:
