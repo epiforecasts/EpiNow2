@@ -127,7 +127,6 @@ check_stan_delay <- function(dist) {
 #' does all the checks in`check_stan_delay()` and additionally makes sure
 #' that if `dist` is nonparametric,  its first element is zero.
 #'
-#' @importFrom lifecycle deprecate_warn
 #' @inheritParams check_stan_delay
 #' @return Called for its side effects.
 #' @keywords internal
@@ -139,18 +138,10 @@ check_generation_time <- function(dist) {
     get_distribution(dist, i) == "nonparametric" && get_pmf(dist, i)[1] > 0
   }, logical(1))
   if (all(nonzero_first_element)) {
-    deprecate_stop(
-      "1.6.0",
-      I(
-        "Specifying nonparametric generation times with nonzero first element"
-      ),
-      details = c(
-        "Since zero generation times are not supported by the model, the
-         generation time will be left-truncated at one. ",
-        "In future versions this will cause an error. Please ensure that the
-         first element of the nonparametric generation interval is zero."
-      )
-    )
+    cli_abort(c(
+      "!" = "Nonparametric generation times must have zero as first element.",
+      "i" = "Zero generation times are not supported by the model."
+    ))
   }
 }
 

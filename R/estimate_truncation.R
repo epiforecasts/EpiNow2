@@ -145,6 +145,9 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' @param filter_leading_zeros Logical, defaults to FALSE. Should zeros at the
 #'   start of the time series be filtered out.
 #'
+#' @param zero_threshold Numeric, defaults to Inf. Observations with a
+#'   primary count less than this threshold are set to zero.
+#'
 #' @seealso [get_samples()] [get_predictions()] [get_parameters()]
 #' @export
 #' @inheritParams calc_CrIs
@@ -303,69 +306,44 @@ plot.estimate_truncation <- function(x, ...) {
 #' @export
 #' @method $ estimate_truncation
 `$.estimate_truncation` <- function(x, name) {
-  # Handle $dist with deprecation warning
   if (name == "dist") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
+    lifecycle::deprecate_stop(
+      "1.9.0",
       I("estimate_truncation()$dist"),
       I("get_parameters(x)[['truncation']]")
     )
-    return(get_parameters(x)[["truncation"]])
   }
 
   if (name == "obs") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
+    lifecycle::deprecate_stop(
+      "1.9.0",
       I("estimate_truncation()$obs"),
       I("get_predictions() and observations")
     )
-    # Reconstruct old format: predictions merged with observations
-    preds <- get_predictions(x)
-    obs <- .subset2(x, "observations")
-    return(merge_trunc_pred_obs(obs, preds))
   }
 
   if (name == "data") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
+    lifecycle::deprecate_stop(
+      "1.9.0",
       I("estimate_truncation()$data"),
       I("estimate_truncation()$args")
     )
-    return(.subset2(x, "args"))
   }
 
   if (name == "last_obs") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
+    lifecycle::deprecate_stop(
+      "1.9.0",
       I("estimate_truncation()$last_obs"),
       details = "Use the last element of `observations` instead."
     )
-    obs <- .subset2(x, "observations")
-    last <- data.table::as.data.table(obs[[length(obs)]])
-    return(last[, .(date, confirm)])
   }
 
   if (name == "cmf") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
+    lifecycle::deprecate_stop(
+      "1.9.0",
       I("estimate_truncation()$cmf"),
       I("get_parameters(x)[['truncation']]")
     )
-    trunc_dist <- get_parameters(x)[["truncation"]]
-    # Extract mean parameter values for discretisation
-    dist_type <- get_distribution(trunc_dist)
-    param_names <- natural_params(dist_type)
-    params <- lapply(param_names, function(p) {
-      trunc_dist[[1]][[p]]$parameters$mean
-    })
-    names(params) <- param_names
-    fixed_dist <- new_dist_spec(
-      params = params,
-      max = max(trunc_dist),
-      distribution = dist_type
-    )
-    pmf <- discretise(fixed_dist)[[1]]
-    return(cumsum(pmf))
   }
 
   # Use .subset2 instead of NextMethod for list-based S3 objects

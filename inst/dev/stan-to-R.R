@@ -24,7 +24,7 @@ simulate <- function(data,
 
   seeding_time <- get_seeding_time(delays, generation_time, rt)
 
-  reported_cases <- default_fill_missing_obs(data, obs, "confirm")
+  reported_cases <- data
 
   ## add forecast horizon if forecasting is required
   if (forecast$horizon > 0) {
