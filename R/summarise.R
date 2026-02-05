@@ -807,8 +807,8 @@ summary.epinow <- function(object,
 
   # Handle deprecated output argument
   if (!is.null(output)) {
-    lifecycle::deprecate_warn(
-      "1.8.0",
+    lifecycle::deprecate_stop(
+      "1.9.0",
       "summary.epinow(output)",
       "summary.epinow(type)",
       details = paste(
@@ -817,40 +817,6 @@ summary.epinow <- function(object,
         "For predictions, use get_predictions()."
       )
     )
-    # Provide backward compatibility
-    out <- switch(output,
-      estimates = {
-        # Compute on-the-fly like the deprecated $summary accessor
-        latest_date <- max(object$observations$date, na.rm = TRUE)
-        summarised <- summary(object, type = "parameters", CrIs = CrIs)
-        summarised <- summarised[date == latest_date]
-        rt_samples <- get_samples(object)[variable == "R" & date == latest_date]
-        report_summary(summarised, rt_samples, return_numeric = TRUE)
-      },
-      forecast = {
-        out <- summary(object, type = "parameters", CrIs = CrIs)
-        if (!is.null(target_date)) {
-          out <- out[date == as.Date(target_date)]
-        }
-        if (!is.null(params)) {
-          out <- out[variable == params]
-        }
-        out
-      },
-      estimated_reported_cases = {
-        out <- estimates_by_report_date(object, CrIs = CrIs)
-        if (!is.null(out)) {
-          if (!is.null(target_date)) {
-            out <- out[date == as.Date(target_date)]
-          }
-          if (!is.null(params)) {
-            out <- out[variable == params]
-          }
-        }
-        out
-      }
-    )
-    return(out)
   }
 
   # Forward to estimate_infections summary
@@ -890,12 +856,11 @@ summary.estimate_infections <- function(object,
                                         CrIs = c(0.2, 0.5, 0.9), ...) {
   # Handle deprecated type = "samples" before arg_match
   if (length(type) == 1 && type == "samples") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
+    lifecycle::deprecate_stop(
+      "1.9.0",
       "summary.estimate_infections(type = 'samples')",
       "get_samples()"
     )
-    return(get_samples(object))
   }
 
   create_infection_summary(object, type, target_date, params, CrIs, ...)

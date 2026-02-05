@@ -74,12 +74,11 @@ simulate_infections <- function(R,
                                 growth_method = c("infections",
                                                   "infectiousness")) {
   if (is.numeric(pop)) {
-    lifecycle::deprecate_warn(
-      "1.7.0",
+    lifecycle::deprecate_stop(
+      "1.9.0",
       "simulate_infections(pop = 'must be a `<dist_spec>`')",
       details = "For specifying a fixed population size, use `Fixed(pop)`"
     )
-    pop <- Fixed(pop)
   }
   pop_period <- arg_match(pop_period)
   if (pop_period == "all" && pop == Fixed(0)) {

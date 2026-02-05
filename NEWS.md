@@ -1,5 +1,27 @@
 # EpiNow2 (development version)
 
+## Breaking changes
+
+- Removed deprecated arguments that have been erroring since v1.7.0/v1.8.0:
+  - `gp_opts(ls_mean, ls_sd, ls_min, ls_max)` - use `ls` instead
+  - `gp_opts(alpha_mean, alpha_sd)` - use `alpha` instead
+  - `obs_opts(phi)` - use `dispersion` instead
+  - `obs_opts(na)` - use `fill_missing()` instead
+  - `estimate_infections(filter_leading_zeros, zero_threshold, horizon)`
+  - `estimate_secondary(filter_leading_zeros, zero_threshold)`
+  - `epinow(filter_leading_zeros, zero_threshold, horizon)`
+  - `regional_epinow(horizon)`
+  - `format_fit(burn_in, start_date)`
+- Removed the internal function `default_fill_missing_obs()`.
+- The `pop` argument in `rt_opts()` and `simulate_infections()` now errors when passed a numeric value. Use `Fixed(pop)` instead.
+- Deprecated accessors on model objects now error instead of warning:
+  - `estimate_infections()`: `$samples`, `$summarised`
+  - `estimate_secondary()`: `$predictions`, `$posterior`, `$data`
+  - `estimate_truncation()`: `$dist`, `$obs`, `$data`, `$last_obs`, `$cmf`
+  - `epinow()`: `$estimates`, `$estimated_reported_cases`, `$summary`, `$plots`, `$estimate_infections`
+- `summary.epinow(output)` and `summary.estimate_infections(type = 'samples')` now error.
+- `extract_parameter_samples()` now errors. Use `format_simulation_output()` instead.
+
 # EpiNow2 1.8.0
 
 ## Breaking changes

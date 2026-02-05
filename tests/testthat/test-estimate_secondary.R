@@ -388,28 +388,25 @@ test_that("get_parameters works as expected for estimate_secondary", {
 })
 
 test_that("[[ accessor handles deprecated elements", {
-  # Reuse pre-computed fit
   out <- default_inc
 
-  # Test deprecation warning for [[
-  expect_deprecated(out[["predictions"]])
-  expect_deprecated(out[["posterior"]])
-  expect_deprecated(out[["data"]])
+  expect_error(out[["predictions"]], "get_predictions")
+  expect_error(out[["posterior"]], "get_samples")
+  expect_error(out[["data"]], "observations")
 
-  # Test non-deprecated elements work without warning
-  expect_no_warning(out[["fit"]])
-  expect_no_warning(out[["args"]])
-  expect_no_warning(out[["observations"]])
+  # Test non-deprecated elements work without error
+  expect_no_error(out[["fit"]])
+  expect_no_error(out[["args"]])
+  expect_no_error(out[["observations"]])
 })
 
 test_that("$ accessor works for non-deprecated elements", {
-  # Reuse pre-computed fit
   out <- default_inc
 
   # Test direct access to non-deprecated elements
-  expect_no_warning(out$fit)
-  expect_no_warning(out$args)
-  expect_no_warning(out$observations)
+  expect_no_error(out$fit)
+  expect_no_error(out$args)
+  expect_no_error(out$observations)
 
   # Verify the elements are correct
   expect_s4_class(out$fit, "stanfit")

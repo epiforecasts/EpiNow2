@@ -273,31 +273,16 @@ test_that("summary with type='parameters' returns all dates by default", {
 
 # Deprecation tests -------------------------------------------------------
 
-test_that("summary.estimate_infections with type = 'samples' is deprecated", {
-  # Reuse pre-computed fit
+test_that("summary.estimate_infections with type = 'samples' errors", {
   out <- default_fit
-
-  expect_deprecated(summary(out, type = "samples"))
-
-  # Verify it returns the same as get_samples()
-  withr::local_options(lifecycle_verbosity = "quiet")
-  samples_quiet <- summary(out, type = "samples")
-  samples_new <- get_samples(out)
-
-  expect_equal(samples_quiet, samples_new)
+  expect_error(summary(out, type = "samples"), "get_samples")
 })
 
-test_that("extract_parameter_samples is deprecated", {
-  # Reuse pre-computed fit
+test_that("extract_parameter_samples errors", {
   out <- default_fit
-
-  # Reconstruct full date vector from unpadded observations + args
-  # (observations is now unpadded, but Stan generates samples for full period)
   obs_dates <- out$observations$date
   seeding_time <- out$args$seeding_time
   horizon <- out$args$horizon
-
-  # Full dates: seeding period + observation period + forecast horizon
   dates <- seq(
     min(obs_dates) - seeding_time,
     max(obs_dates) + horizon,
@@ -305,8 +290,7 @@ test_that("extract_parameter_samples is deprecated", {
   )
   reported_dates <- dates[-(1:seeding_time)]
 
-  # Lifecycle warnings need special handling
-  expect_deprecated(extract_parameter_samples(
+  expect_error(extract_parameter_samples(
     out$fit,
     out$args,
     reported_dates = reported_dates,
@@ -314,31 +298,7 @@ test_that("extract_parameter_samples is deprecated", {
     reported_inf_dates = dates,
     drop_length_1 = FALSE,
     merge = FALSE
-  ))
-
-  # Verify it returns the same as format_simulation_output()
-  withr::local_options(lifecycle_verbosity = "quiet")
-  old_quiet <- extract_parameter_samples(
-    out$fit,
-    out$args,
-    reported_dates = reported_dates,
-    imputed_dates = reported_dates[out$args$imputed_times],
-    reported_inf_dates = dates,
-    drop_length_1 = FALSE,
-    merge = FALSE
-  )
-
-  new_output <- format_simulation_output(
-    out$fit,
-    out$args,
-    reported_dates = reported_dates,
-    imputed_dates = reported_dates[out$args$imputed_times],
-    reported_inf_dates = dates,
-    drop_length_1 = FALSE,
-    merge = FALSE
-  )
-
-  expect_equal(old_quiet, new_output)
+  ), "format_simulation_output")
 })
 
 test_that("get_parameters works as expected for estimate_infections", {
@@ -390,46 +350,25 @@ test_that("get_parameters works as expected with fixed parameters", {
   expect_equal(as.vector(delay_returned[[1]]), expected_pmf)
 })
 
-test_that("$samples accessor is deprecated", {
-  # Reuse pre-computed fit
+test_that("$samples accessor errors", {
   out <- default_fit
-
-  expect_deprecated(out$samples)
-
-  # Verify it returns the same as get_samples()
-  withr::local_options(lifecycle_verbosity = "quiet")
-  samples_dollar <- out$samples
-  samples_new <- get_samples(out)
-
-  expect_equal(samples_dollar, samples_new)
+  expect_error(out$samples, "get_samples")
 })
 
-test_that("$summarised accessor is deprecated", {
-  # Reuse pre-computed fit
+test_that("$summarised accessor errors", {
   out <- default_fit
-
-  expect_deprecated(out$summarised)
-
-  # Verify it returns the same as summary(type = "parameters")
-  withr::local_options(lifecycle_verbosity = "quiet")
-  summarised_dollar <- out$summarised
-  summarised_new <- summary(out, type = "parameters")
-
-  expect_equal(summarised_dollar, summarised_new)
+  expect_error(out$summarised, "summary")
 })
 
 test_that("[[ accessor handles deprecated elements", {
-  # Reuse pre-computed fit
   out <- default_fit
+  expect_error(out[["samples"]], "get_samples")
+  expect_error(out[["summarised"]], "summary")
 
-  # Test deprecation warning for [[
-  expect_deprecated(out[["samples"]])
-  expect_deprecated(out[["summarised"]])
-
-  # Test non-deprecated elements work without warning
-  expect_no_warning(out[["fit"]])
-  expect_no_warning(out[["args"]])
-  expect_no_warning(out[["observations"]])
+  # Test non-deprecated elements work without error
+  expect_no_error(out[["fit"]])
+  expect_no_error(out[["args"]])
+  expect_no_error(out[["observations"]])
 })
 
 test_that("$ accessor works for non-deprecated elements", {

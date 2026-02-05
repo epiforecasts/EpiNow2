@@ -16,13 +16,8 @@ estimate_infections(
   obs = obs_opts(),
   forecast = forecast_opts(),
   stan = stan_opts(),
-  CrIs = c(0.2, 0.5, 0.9),
-  weigh_delay_priors = TRUE,
   id = "estimate_infections",
-  verbose = interactive(),
-  filter_leading_zeros = TRUE,
-  zero_threshold = Inf,
-  horizon
+  verbose = interactive()
 )
 }
 \arguments{
@@ -76,13 +71,6 @@ forecasting will be done.}
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
-\item{CrIs}{Deprecated; specify credible intervals when using \code{\link[=summary]{summary()}} or
-\code{\link[=plot]{plot()}}}
-
-\item{weigh_delay_priors}{Deprecated; this is now specified at the
-distribution level in \code{generation_time_opts()}, \code{delay_opts()} and
-\code{trunc_opts()} using the \code{weight_prior} argument.}
-
 \item{id}{A character string used to assign logging information on error.
 Used by \code{\link[=regional_epinow]{regional_epinow()}} to assign errors to regions. Alter the default to
 run with error catching.}
@@ -91,17 +79,6 @@ run with error catching.}
 otherwise \code{FALSE}. Should verbose debug progress messages be printed.
 Corresponds to the "DEBUG" level from \code{futile.logger}. See \code{setup_logging}
 for more detailed logging options.}
-
-\item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
-start of the time series be filtered out.}
-
-\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
-to Inf. Indicates if detected zero cases are meaningful by using a threshold
-number of cases based on the 7-day average. If the average is above this
-threshold then the zero is replaced using \code{fill}.}
-
-\item{horizon}{Deprecated; use \code{forecast} instead to specify the predictive
-horizon}
 }
 \value{
 An \verb{<estimate_infections>} object containing:

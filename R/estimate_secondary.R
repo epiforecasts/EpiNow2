@@ -158,23 +158,7 @@ estimate_secondary <- function(data,
                                priors = NULL,
                                model = NULL,
                                weigh_delay_priors = FALSE,
-                               verbose = interactive(),
-                               filter_leading_zeros = FALSE,
-                               zero_threshold = Inf) {
-  if (!missing(filter_leading_zeros)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_secondary(filter_leading_zeros)",
-      "filter_leading_zeros()"
-    )
-  }
-  if (!missing(zero_threshold)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_secondary(zero_threshold)",
-      "apply_zero_threshold()"
-    )
-  }
+                               verbose = interactive()) {
   # Validate the inputs
   check_reports_valid(data, model = "estimate_secondary")
   assert_class(secondary, "secondary_opts")
@@ -189,8 +173,6 @@ estimate_secondary <- function(data,
   assert_logical(verbose)
 
   reports <- data.table::as.data.table(data)
-
-  reports <- default_fill_missing_obs(reports, obs, "secondary")
 
   secondary_reports <-
     reports[, list(date, confirm = secondary, accumulate)]
@@ -784,28 +766,25 @@ forecast_secondary <- function(estimate,
 `$.estimate_secondary` <- function(x, name) {
   switch(name,
     predictions = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("estimate_secondary()$predictions"),
         "get_predictions()"
       )
-      get_predictions(x)
     },
     posterior = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("estimate_secondary()$posterior"),
         "get_samples()"
       )
-      get_samples(x)
     },
     data = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("estimate_secondary()$data"),
         I("estimate_secondary()$observations")
       )
-      .subset2(x, "observations")
     },
     # For other elements, use .subset2 for direct list access
     .subset2(x, name)

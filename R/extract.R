@@ -302,19 +302,10 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
 extract_parameter_samples <- function(stan_fit, data, reported_dates,
                                       imputed_dates, reported_inf_dates,
                                       drop_length_1 = FALSE, merge = FALSE) {
-  lifecycle::deprecate_warn(
-    "1.8.0",
+  lifecycle::deprecate_stop(
+    "1.9.0",
     "extract_parameter_samples()",
     "format_simulation_output()"
-  )
-  format_simulation_output(
-    stan_fit = stan_fit,
-    data = data,
-    reported_dates = reported_dates,
-    imputed_dates = imputed_dates,
-    reported_inf_dates = reported_inf_dates,
-    drop_length_1 = drop_length_1,
-    merge = merge
   )
 }
 
