@@ -347,7 +347,7 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
 #' create_gp_data(NULL, data)
 #'
 #' # custom lengthscale
-#' create_gp_data(gp_opts(ls_mean = 14), data)
+#' create_gp_data(gp_opts(ls = LogNormal(mean = 14, sd = 7)), data)
 #' }
 create_gp_data <- function(gp = gp_opts(), data) {
   # Define if GP is on or off
