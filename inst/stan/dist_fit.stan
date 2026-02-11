@@ -3,13 +3,16 @@ data {
   int N;
   vector[N] low;
   vector[N] up;
-  array[dist == 0] real<lower=0> lam_mean;
+  array[dist == 0] real<lower=0> lam_mean;  // should not be exactly 0
   array[dist > 0] real<lower=0> prior_mean;
   array[dist > 0] real<lower=0> prior_sd;
   array[dist == 2] real<lower = 0> par_sigma;
 }
 
 transformed data {
+  if (dist == 0 && lam_mean[1] == 0) {
+    reject("lam_mean must be strictly positive, but found 0");
+  }
   array[dist == 2] real prior_alpha;
   array[dist == 2] real prior_beta;
 
@@ -42,8 +45,9 @@ transformed parameters{
   if (dist == 2) {
     alpha[1] = prior_alpha[1] + par_sigma[1] * alpha_raw[1];
     beta[1] = prior_beta[1] + par_sigma[1] * beta_raw[1];
-    // implies: alpha[1] ~ normal(prior_alpha[1], par_sigma[1])
-    // implies: beta[1] ~ normal(prior_beta[1], par_sigma[1])
+    // implies:
+    // alpha[1] ~ normal(prior_alpha[1], par_sigma[1]) T[prior_alpha[1],]
+    // beta[1] ~ normal(prior_beta[1], par_sigma[1]) T[prior_beta[2],]
   }
 }
 
@@ -55,7 +59,7 @@ model {
     }
   } else if (dist == 1) {
     mu[1] ~ normal(prior_mean[1], 10);
-    // T[0, ] only needed if loc or scale arguments are params
+    // T[0, ] omitted in following: it's constant with data args
     sigma[1] ~ normal(prior_sd[1], 10);
     for (i in 1:N) {
       target += log_diff_exp(lognormal_lcdf(up[i] | mu, sigma),
