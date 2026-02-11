@@ -306,58 +306,38 @@ plot.estimate_truncation <- function(x, ...) {
 #' @export
 #' @method $ estimate_truncation
 `$.estimate_truncation` <- function(x, name) {
-  if (name == "dist") {
-    lifecycle::deprecate_stop(
+  switch(name,
+    dist = lifecycle::deprecate_stop(
       "1.9.0",
       I("estimate_truncation()$dist"),
       I("get_parameters(x)[['truncation']]")
-    )
-  }
-
-  if (name == "obs") {
-    lifecycle::deprecate_stop(
+    ),
+    obs = lifecycle::deprecate_stop(
       "1.9.0",
       I("estimate_truncation()$obs"),
       I("get_predictions() and observations")
-    )
-  }
-
-  if (name == "data") {
-    lifecycle::deprecate_stop(
+    ),
+    data = lifecycle::deprecate_stop(
       "1.9.0",
       I("estimate_truncation()$data"),
       I("estimate_truncation()$args")
-    )
-  }
-
-  if (name == "last_obs") {
-    lifecycle::deprecate_stop(
+    ),
+    last_obs = lifecycle::deprecate_stop(
       "1.9.0",
       I("estimate_truncation()$last_obs"),
       details = "Use the last element of `observations` instead."
-    )
-  }
-
-  if (name == "cmf") {
-    lifecycle::deprecate_stop(
+    ),
+    cmf = lifecycle::deprecate_stop(
       "1.9.0",
       I("estimate_truncation()$cmf"),
       I("get_parameters(x)[['truncation']]")
     )
-  }
-
-  # Use .subset2 instead of NextMethod for list-based S3 objects
+  )
   .subset2(x, name)
 }
 
 #' @export
 #' @method [[ estimate_truncation
 `[[.estimate_truncation` <- function(x, name) {
-  # Delegate to $ method for deprecated element handling
-  deprecated_names <- c("dist", "obs", "data", "last_obs", "cmf")
-  if (name %in% deprecated_names) {
-    return(`$.estimate_truncation`(x, name))
-  }
-  # Use .subset2 instead of NextMethod for list-based S3 objects
-  .subset2(x, name)
+  `$.estimate_truncation`(x, name)
 }

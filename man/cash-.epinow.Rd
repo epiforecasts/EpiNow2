@@ -2,7 +2,7 @@
 % Please edit documentation in R/epinow.R
 \name{$.epinow}
 \alias{$.epinow}
-\title{Extract elements from epinow objects with deprecated warnings}
+\title{Extract elements from epinow objects with deprecation errors}
 \usage{
 \method{$}{epinow}(x, name)
 }
@@ -12,8 +12,7 @@
 \item{name}{The name of the element to extract}
 }
 \value{
-The requested element with a deprecation warning for deprecated
-elements
+The requested element. Errors for deprecated element names.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}

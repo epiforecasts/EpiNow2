@@ -760,7 +760,7 @@ forecast_secondary <- function(estimate,
 #'
 #' @param x An \code{estimate_secondary} object
 #' @param name The name of the element to extract
-#' @return The requested element with a deprecation warning
+#' @return The requested element. Errors for deprecated element names.
 #' @keywords internal
 #' @export
 #' @method $ estimate_secondary
@@ -800,16 +800,10 @@ forecast_secondary <- function(estimate,
 #'
 #' @param x An `estimate_secondary` object
 #' @param i The name or index of the element to extract
-#' @return The requested element with a deprecation warning for deprecated
-#'   elements
+#' @return The requested element. Errors for deprecated element names.
 #' @keywords internal
 #' @export
 #' @method [[ estimate_secondary
 `[[.estimate_secondary` <- function(x, i) {
-  deprecated_names <- c("predictions", "posterior", "data")
-  if (i %in% deprecated_names) {
-    # nolint next: object_usage_linter
-    return(`$.estimate_secondary`(x, i))
-  }
-  .subset2(x, i)
+  `$.estimate_secondary`(x, i)
 }

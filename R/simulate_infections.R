@@ -78,7 +78,11 @@ simulate_infections <- function(R,
     lifecycle::deprecate_stop(
       "1.9.0",
       "simulate_infections(pop = 'must be a `<dist_spec>`')",
-      details = "For specifying a fixed population size, use `Fixed(pop)`"
+      details = paste(
+        "Population size must now be specified as a distribution.",
+        "For a fixed known population, wrap the value with `Fixed()`.",
+        "For example: `simulate_infections(..., pop = Fixed(1000000))`."
+      )
     )
   }
   pop_period <- arg_match(pop_period)

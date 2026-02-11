@@ -349,7 +349,7 @@ epinow_compat_extract <- function(x, name) {
   )
 }
 
-#' Extract elements from epinow objects with deprecated warnings
+#' Extract elements from epinow objects with deprecation errors
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #' Provides backward compatibility for the old return structure. The previous
@@ -371,20 +371,12 @@ epinow_compat_extract <- function(x, name) {
 #'
 #' @param x An \code{epinow} object
 #' @param name The name of the element to extract
-#' @return The requested element with a deprecation warning for deprecated
-#'   elements
+#' @return The requested element. Errors for deprecated element names.
 #' @keywords internal
 #' @export
 #' @method $ epinow
 `$.epinow` <- function(x, name) {
-  deprecated_names <- c(
-    "estimates", "estimated_reported_cases", "summary", "plots",
-    "estimate_infections"
-  )
-  result <- epinow_compat_extract(x, name)
-  if (!is.null(result) || name %in% deprecated_names) {
-    return(result)
-  }
+  epinow_compat_extract(x, name)
   .subset2(x, name)
 }
 
@@ -396,19 +388,11 @@ epinow_compat_extract <- function(x, name) {
 #'
 #' @param x An `epinow` object
 #' @param i The name or index of the element to extract
-#' @return The requested element with a deprecation warning for deprecated
-#'   elements
+#' @return The requested element. Errors for deprecated element names.
 #' @keywords internal
 #' @export
 #' @method [[ epinow
 `[[.epinow` <- function(x, i) {
-  deprecated_names <- c(
-    "estimates", "estimated_reported_cases", "summary", "plots",
-    "estimate_infections"
-  )
-  result <- epinow_compat_extract(x, i)
-  if (!is.null(result) || i %in% deprecated_names) {
-    return(result)
-  }
+  epinow_compat_extract(x, i)
   .subset2(x, i)
 }

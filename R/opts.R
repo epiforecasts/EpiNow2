@@ -352,7 +352,11 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     lifecycle::deprecate_stop(
       "1.9.0",
       "rt_opts(pop = 'must be a `<dist_spec>`')",
-      details = "For specifying a fixed population size, use `Fixed(pop)`"
+      details = paste(
+        "Population size must now be specified as a distribution.",
+        "For a fixed known population, wrap the value with `Fixed()`.",
+        "For example: `rt_opts(pop = Fixed(1000000))`."
+      )
     )
   }
   opts$pop <- pop
