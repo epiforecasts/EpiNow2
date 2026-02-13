@@ -143,41 +143,15 @@ test_that("get_parameters returns valid truncation distribution", {
   expect_equal(trunc_dist$parameters$sdlog$distribution, "normal")
 })
 
-test_that("deprecated accessors return correct values with warnings", {
+test_that("deprecated accessors error", {
   est <- default_est
 
-  # $obs returns merged predictions+observations with deprecation warning
-  lifecycle::expect_deprecated(obs_result <- est$obs)
-  expect_s3_class(obs_result, "data.table")
-  expect_true("confirm" %in% names(obs_result))
-  expect_true("last_confirm" %in% names(obs_result))
-  expect_true("median" %in% names(obs_result))
-
-  # $data returns args with deprecation warning
-  lifecycle::expect_deprecated(data_result <- est$data)
-  expect_equal(data_result, est$args)
-
-  # $dist returns dist_spec with deprecation warning
-  lifecycle::expect_deprecated(dist_result <- est$dist)
-  expect_s3_class(dist_result, "dist_spec")
-
-  # $last_obs returns data.table with deprecation warning
-  lifecycle::expect_deprecated(last_obs_result <- est$last_obs)
-  expect_s3_class(last_obs_result, "data.table")
-  expect_true("date" %in% names(last_obs_result))
-  expect_true("confirm" %in% names(last_obs_result))
-
-  # $cmf returns numeric vector with deprecation warning
-  lifecycle::expect_deprecated(cmf_result <- est$cmf)
-  expect_type(cmf_result, "double")
-  # Use tolerance for floating point comparison
-  expect_true(all(cmf_result >= -1e-10 & cmf_result <= 1 + 1e-10))
-
-  # [[ accessor delegates to $ (deprecation warnings already fired above)
-  # Just verify it returns the correct result
-  suppressWarnings(obs_bracket <- est[["obs"]])
-  expect_s3_class(obs_bracket, "data.table")
-  expect_true("confirm" %in% names(obs_bracket))
+  expect_error(est$obs, "get_predictions")
+  expect_error(est$data, "args")
+  expect_error(est$dist, "get_parameters")
+  expect_error(est$last_obs, "observations")
+  expect_error(est$cmf, "get_parameters")
+  expect_error(est[["obs"]], "get_predictions")
 })
 
 test_that("get_parameters returns truncation distribution from estimate_truncation", {

@@ -109,32 +109,7 @@ epinow <- function(data,
                    ),
                    plot_args = list(),
                    target_folder = NULL, target_date,
-                   logs = tempdir(), id = "epinow", verbose = interactive(),
-                   filter_leading_zeros = TRUE, zero_threshold = Inf, horizon
-                   ) {
-  if (!missing(filter_leading_zeros)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_infections(filter_leading_zeros)",
-      "filter_leading_zeros()"
-    )
-  }
-  if (!missing(zero_threshold)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_infections(zero_threshold)",
-      "apply_zero_threshold()"
-    )
-  }
-  if (!missing(horizon)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "epinow(horizon)",
-      "epinow(forecast)",
-      details = "The `horizon` argument passed to `epinow()` will
-        override any `horizon` argument passed via `forecast_opts()`."
-    )
-  }
+                   logs = tempdir(), id = "epinow", verbose = interactive()) {
   # Check inputs
   assert_logical(return_output)
   stopifnot(
@@ -330,68 +305,51 @@ epinow <- function(data,
 epinow_compat_extract <- function(x, name) {
   switch(name,
     estimates = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("epinow()$estimates"),
         details = paste(
           "Use `get_samples()` for samples,",
           "`summary(x, type = 'parameters')` for summarised estimates."
         )
       )
-      list(
-        samples = get_samples(x),
-        summarised = summary(x, type = "parameters"),
-        fit = x$fit,
-        args = x$args,
-        observations = x$observations
-      )
     },
     estimated_reported_cases = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("epinow()$estimated_reported_cases"),
         "estimates_by_report_date()"
       )
-      estimates_by_report_date(x)
     },
     summary = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("epinow()$summary"),
         "summary()"
       )
-      latest_date <- max(x$observations$date, na.rm = TRUE)
-      summarised <- summary(x, type = "parameters")
-      summarised <- summarised[date == latest_date]
-      rt_samples <- get_samples(x)[variable == "R" & date == latest_date]
-      report_summary(summarised, rt_samples, return_numeric = TRUE)
     },
     plots = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("epinow()$plots"),
         "plot()"
       )
-      plot(x, type = "all")
     },
     estimate_infections = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("epinow()$estimate_infections"),
         details = paste(
           "The epinow object now inherits from estimate_infections.",
           "Use the object directly."
         )
       )
-      out <- x
-      class(out) <- setdiff(class(out), "epinow")
-      out
     },
     NULL
   )
 }
 
-#' Extract elements from epinow objects with deprecated warnings
+#' Extract elements from epinow objects with deprecation errors
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #' Provides backward compatibility for the old return structure. The previous
@@ -413,20 +371,12 @@ epinow_compat_extract <- function(x, name) {
 #'
 #' @param x An \code{epinow} object
 #' @param name The name of the element to extract
-#' @return The requested element with a deprecation warning for deprecated
-#'   elements
+#' @return The requested element. Errors for deprecated element names.
 #' @keywords internal
 #' @export
 #' @method $ epinow
 `$.epinow` <- function(x, name) {
-  deprecated_names <- c(
-    "estimates", "estimated_reported_cases", "summary", "plots",
-    "estimate_infections"
-  )
-  result <- epinow_compat_extract(x, name)
-  if (!is.null(result) || name %in% deprecated_names) {
-    return(result)
-  }
+  epinow_compat_extract(x, name)
   .subset2(x, name)
 }
 
@@ -438,19 +388,11 @@ epinow_compat_extract <- function(x, name) {
 #'
 #' @param x An `epinow` object
 #' @param i The name or index of the element to extract
-#' @return The requested element with a deprecation warning for deprecated
-#'   elements
+#' @return The requested element. Errors for deprecated element names.
 #' @keywords internal
 #' @export
 #' @method [[ epinow
 `[[.epinow` <- function(x, i) {
-  deprecated_names <- c(
-    "estimates", "estimated_reported_cases", "summary", "plots",
-    "estimate_infections"
-  )
-  result <- epinow_compat_extract(x, i)
-  if (!is.null(result) || i %in% deprecated_names) {
-    return(result)
-  }
+  epinow_compat_extract(x, i)
   .subset2(x, i)
 }

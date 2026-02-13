@@ -96,7 +96,6 @@ regional_epinow <- function(data,
                             obs = obs_opts(),
                             forecast = forecast_opts(),
                             stan = stan_opts(),
-                            horizon,
                             CrIs = c(0.2, 0.5, 0.9),
                             target_folder = NULL,
                             target_date,
@@ -110,15 +109,6 @@ regional_epinow <- function(data,
                             verbose = FALSE,
                             logs = tempdir(check = TRUE),
                             ...) {
-  if (!missing(horizon)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "regional_epinow(horizon)",
-      "regional_epinow(forecast)",
-      details = "The `horizon` argument passed to `regional_epinow()` will
-        override any `horizon` argument passed via `forecast_opts()`."
-    )
-  }
 
   # supported output
   output <- match_output_arguments(output,
@@ -342,7 +332,6 @@ run_region <- function(target_region,
                        gp,
                        obs,
                        stan,
-                       horizon,
                        CrIs,
                        data,
                        target_folder,
@@ -381,7 +370,6 @@ run_region <- function(target_region,
     gp = filter_opts(gp, target_region),
     obs = filter_opts(obs, target_region),
     stan = filter_opts(stan, target_region),
-    horizon = horizon,
     CrIs = CrIs,
     data = regional_cases,
     target_folder = target_folder,

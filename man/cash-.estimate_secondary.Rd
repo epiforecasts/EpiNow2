@@ -12,7 +12,7 @@
 \item{name}{The name of the element to extract}
 }
 \value{
-The requested element with a deprecation warning
+The requested element. Errors for deprecated element names.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
