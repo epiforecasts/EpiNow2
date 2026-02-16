@@ -595,7 +595,6 @@ obs_opts <- function(family = c("negbin", "poisson"),
     week_effect = week_effect,
     week_length = week_length,
     scale = scale,
-    accumulate = 0L,
     likelihood = likelihood,
     return_likelihood = return_likelihood
   )

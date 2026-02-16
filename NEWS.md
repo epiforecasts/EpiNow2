@@ -20,7 +20,7 @@
   - `estimate_truncation()`: `$dist`, `$obs`, `$data`, `$last_obs`, `$cmf`
   - `epinow()`: `$estimates`, `$estimated_reported_cases`, `$summary`, `$plots`, `$estimate_infections`
 - `summary.epinow(output)` and `summary.estimate_infections(type = 'samples')` now error.
-- `extract_parameter_samples()` now errors. Use `format_simulation_output()` instead.
+- Removed internal function `extract_parameter_samples()`. Use `format_simulation_output()` instead.
 
 # EpiNow2 1.8.0
 
@@ -50,7 +50,6 @@
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
   - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
   - **Deprecated**: `$samples` and `$summarised` accessors now issue deprecation warnings. Use `get_samples()` and `summary()` instead.
-  - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
 - `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
 - `estimate_secondary()` now returns an S3 object of class `c("epinowfit", "estimate_secondary", "list")` with elements `fit`, `args`, and `observations`, matching the structure of `estimate_infections()`.
   - Use `get_samples(object)` to extract formatted posterior samples for delay and scaling parameters.

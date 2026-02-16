@@ -278,29 +278,6 @@ test_that("summary.estimate_infections with type = 'samples' errors", {
   expect_error(summary(out, type = "samples"), "get_samples")
 })
 
-test_that("extract_parameter_samples errors", {
-  out <- default_fit
-  obs_dates <- out$observations$date
-  seeding_time <- out$args$seeding_time
-  horizon <- out$args$horizon
-  dates <- seq(
-    min(obs_dates) - seeding_time,
-    max(obs_dates) + horizon,
-    by = "days"
-  )
-  reported_dates <- dates[-(1:seeding_time)]
-
-  expect_error(extract_parameter_samples(
-    out$fit,
-    out$args,
-    reported_dates = reported_dates,
-    imputed_dates = reported_dates[out$args$imputed_times],
-    reported_inf_dates = dates,
-    drop_length_1 = FALSE,
-    merge = FALSE
-  ), "format_simulation_output")
-})
-
 test_that("get_parameters works as expected for estimate_infections", {
   # Reuse pre-computed fit
   out <- default_fit
