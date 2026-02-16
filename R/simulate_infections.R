@@ -85,6 +85,7 @@ simulate_infections <- function(R,
       )
     )
   }
+  assert_class(pop, "dist_spec")
   pop_period <- arg_match(pop_period)
   if (pop_period == "all" && pop == Fixed(0)) {
     cli_abort(

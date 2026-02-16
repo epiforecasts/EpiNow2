@@ -359,6 +359,7 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
       )
     )
   }
+  assert_class(pop, "dist_spec")
   opts$pop <- pop
   if (opts$pop_period == "all" && pop == Fixed(0)) {
     cli_abort(
