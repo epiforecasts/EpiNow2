@@ -159,28 +159,27 @@ estimate_infections <- function(data,
     )
   }
 
-  observations <- data
-
   ## add forecast horizon if forecasting is required
+  model_data <- data
   if (forecast$horizon > 0) {
     horizon_args <- list(
-      data = data,
+      data = model_data,
       horizon = forecast$horizon
     )
     if (!is.null(forecast$accumulate)) {
       horizon_args$accumulate <- forecast$accumulate
     }
-    data <- do.call(add_horizon, horizon_args)
+    model_data <- do.call(add_horizon, horizon_args)
   }
 
   # Add breakpoints column
-  data <- add_breakpoints(data)
+  model_data <- add_breakpoints(model_data)
 
   # Determine seeding time
   seeding_time <- get_seeding_time(delays, generation_time, rt)
 
   # Add initial zeroes
-  data <- pad_reported_cases(data, seeding_time)
+  model_data <- pad_reported_cases(model_data, seeding_time)
 
   params <- list(
     make_param("alpha", gp$alpha, lower_bound = 0),
@@ -193,7 +192,7 @@ estimate_infections <- function(data,
 
   # Define stan model parameters
   stan_data <- create_stan_data(
-    data,
+    model_data,
     seeding_time = seeding_time,
     rt = rt,
     gp = gp,
@@ -230,7 +229,7 @@ estimate_infections <- function(data,
   ret <- list(
     fit = fit,
     args = stan_data,
-    observations = observations
+    observations = data
   )
 
   ## Join stan fit if required
