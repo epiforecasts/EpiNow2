@@ -746,7 +746,7 @@ forecast_secondary <- function(estimate,
   out
 }
 
-#' Extract elements from estimate_secondary objects with deprecated warnings
+#' Extract elements from estimate_secondary objects with deprecation errors
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #' Provides backward compatibility for the old return structure. The previous

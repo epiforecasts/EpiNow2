@@ -64,7 +64,7 @@ model. Custom settings can be supplied which override the defaults.
 obs_opts()
 
 # Turn off day of the week effect
-obs_opts(week_effect = TRUE)
+obs_opts(week_effect = FALSE)
 
 # Scale reported data
 obs_opts(scale = Normal(mean = 0.2, sd = 0.02))

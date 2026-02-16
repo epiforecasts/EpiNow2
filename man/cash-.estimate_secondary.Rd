@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate_secondary.R
 \name{$.estimate_secondary}
 \alias{$.estimate_secondary}
-\title{Extract elements from estimate_secondary objects with deprecated warnings}
+\title{Extract elements from estimate_secondary objects with deprecation errors}
 \usage{
 \method{$}{estimate_secondary}(x, name)
 }
