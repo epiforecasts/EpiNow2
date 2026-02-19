@@ -1,3 +1,18 @@
+#' Get accumulation flags from data
+#'
+#' @description Returns the `accumulate` column if present, otherwise
+#'   a vector of `FALSE` (no accumulation).
+#' @param data A data.table that may contain an `accumulate` column.
+#' @return A logical vector of length `nrow(data)`.
+#' @keywords internal
+get_accumulate <- function(data) {
+  if ("accumulate" %in% colnames(data)) {
+    data$accumulate
+  } else {
+    rep(FALSE, nrow(data))
+  }
+}
+
 #' Create Delay Shifted Cases
 #'
 #' @description `r lifecycle::badge("stable")`
@@ -332,7 +347,7 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
 #' create_gp_data(NULL, data)
 #'
 #' # custom lengthscale
-#' create_gp_data(gp_opts(ls_mean = 14), data)
+#' create_gp_data(gp_opts(ls = LogNormal(mean = 14, sd = 7)), data)
 #' }
 create_gp_data <- function(gp = gp_opts(), data) {
   # Define if GP is on or off
@@ -452,8 +467,8 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   cases <- data[(seeding_time + 1):.N]
   cases[, lookup := seq_len(.N)]
   case_times <- cases[!is.na(confirm), lookup]
-  imputed_times <- cases[!(accumulate), lookup]
-  accumulate <- cases$accumulate
+  accumulate <- get_accumulate(cases)
+  imputed_times <- cases[!accumulate, lookup]
   confirmed_cases <- cases[1:(.N - forecast$horizon)]$confirm
   if (is.null(rt)) {
     shifted_cases <- create_shifted_cases(

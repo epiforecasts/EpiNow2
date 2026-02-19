@@ -158,23 +158,7 @@ estimate_secondary <- function(data,
                                priors = NULL,
                                model = NULL,
                                weigh_delay_priors = FALSE,
-                               verbose = interactive(),
-                               filter_leading_zeros = FALSE,
-                               zero_threshold = Inf) {
-  if (!missing(filter_leading_zeros)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_secondary(filter_leading_zeros)",
-      "filter_leading_zeros()"
-    )
-  }
-  if (!missing(zero_threshold)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_secondary(zero_threshold)",
-      "apply_zero_threshold()"
-    )
-  }
+                               verbose = interactive()) {
   # Validate the inputs
   check_reports_valid(data, model = "estimate_secondary")
   assert_class(secondary, "secondary_opts")
@@ -190,10 +174,8 @@ estimate_secondary <- function(data,
 
   reports <- data.table::as.data.table(data)
 
-  reports <- default_fill_missing_obs(reports, obs, "secondary")
-
   secondary_reports <-
-    reports[, list(date, confirm = secondary, accumulate)]
+    reports[, list(date, confirm = secondary)]
 
   ## fill in missing data (required if fitting to prevalence)
   secondary_reports[, lookup := seq_len(.N)]
@@ -219,6 +201,7 @@ estimate_secondary <- function(data,
     )
   }
   # observation and control data
+  accumulate <- get_accumulate(reports)
   stan_data <- list(
     t = nrow(reports),
     primary = reports$primary,
@@ -227,8 +210,8 @@ estimate_secondary <- function(data,
     lt = sum(complete_secondary$lookup > burn_in),
     burn_in = burn_in,
     seeding_time = 0,
-    any_accumulate = as.integer(any(reports$accumulate > 0)),
-    accumulate = as.integer(reports$accumulate)
+    any_accumulate = as.integer(any(accumulate)),
+    accumulate = as.integer(accumulate)
   )
   # secondary model options
   stan_data <- c(stan_data, secondary)
@@ -763,7 +746,7 @@ forecast_secondary <- function(estimate,
   out
 }
 
-#' Extract elements from estimate_secondary objects with deprecated warnings
+#' Extract elements from estimate_secondary objects with deprecation errors
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #' Provides backward compatibility for the old return structure. The previous
@@ -777,35 +760,32 @@ forecast_secondary <- function(estimate,
 #'
 #' @param x An \code{estimate_secondary} object
 #' @param name The name of the element to extract
-#' @return The requested element with a deprecation warning
+#' @return The requested element. Errors for deprecated element names.
 #' @keywords internal
 #' @export
 #' @method $ estimate_secondary
 `$.estimate_secondary` <- function(x, name) {
   switch(name,
     predictions = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("estimate_secondary()$predictions"),
         "get_predictions()"
       )
-      get_predictions(x)
     },
     posterior = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("estimate_secondary()$posterior"),
         "get_samples()"
       )
-      get_samples(x)
     },
     data = {
-      lifecycle::deprecate_warn(
-        "1.8.0",
+      lifecycle::deprecate_stop(
+        "1.9.0",
         I("estimate_secondary()$data"),
         I("estimate_secondary()$observations")
       )
-      .subset2(x, "observations")
     },
     # For other elements, use .subset2 for direct list access
     .subset2(x, name)
@@ -820,16 +800,10 @@ forecast_secondary <- function(estimate,
 #'
 #' @param x An `estimate_secondary` object
 #' @param i The name or index of the element to extract
-#' @return The requested element with a deprecation warning for deprecated
-#'   elements
+#' @return The requested element. Errors for deprecated element names.
 #' @keywords internal
 #' @export
 #' @method [[ estimate_secondary
 `[[.estimate_secondary` <- function(x, i) {
-  deprecated_names <- c("predictions", "posterior", "data")
-  if (i %in% deprecated_names) {
-    # nolint next: object_usage_linter
-    return(`$.estimate_secondary`(x, i))
-  }
-  .subset2(x, i)
+  `$.estimate_secondary`(x, i)
 }

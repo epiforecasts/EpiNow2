@@ -43,8 +43,7 @@ present the default is to use 1000 samples.}
 \item{all_dates}{Logical, defaults to FALSE. Should a forecast for all dates
 and not just those in the forecast horizon be returned.}
 
-\item{CrIs}{Deprecated; specify credible intervals when using \code{\link[=summary]{summary()}} or
-\code{\link[=plot]{plot()}}}
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 }
 \value{
 A list containing: \code{predictions} (a \verb{<data.frame>} ordered by date

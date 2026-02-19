@@ -4,7 +4,7 @@
 \alias{format_fit}
 \title{Format Posterior Samples}
 \usage{
-format_fit(posterior_samples, horizon, shift, burn_in, start_date, CrIs)
+format_fit(posterior_samples, horizon, shift, CrIs)
 }
 \arguments{
 \item{posterior_samples}{A list of posterior samples as returned by
@@ -13,10 +13,6 @@ format_fit(posterior_samples, horizon, shift, burn_in, start_date, CrIs)
 \item{horizon}{Numeric, forecast horizon.}
 
 \item{shift}{Numeric, the shift to apply to estimates.}
-
-\item{burn_in}{Deprecated; this functionality is no longer available.}
-
-\item{start_date}{Deprecated; this functionality is no longer available.}
 
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 }

@@ -346,23 +346,20 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     opts$use_breakpoints <- TRUE
   }
 
-  if (is.list(prior) && !is(prior, "dist_spec")) {
-    cli_abort(
-      c(
-        "!" = "Specifying {.var prior} as a list is deprecated.",
-        "i" = "Use a {.cls dist_spec} instead."
+  assert_class(prior, "dist_spec")
+
+  if (is.numeric(pop)) {
+    lifecycle::deprecate_stop(
+      "1.9.0",
+      "rt_opts(pop = 'must be a `<dist_spec>`')",
+      details = paste(
+        "Population size must now be specified as a distribution.",
+        "For a fixed known population, wrap the value with `Fixed()`.",
+        "For example: `rt_opts(pop = Fixed(1000000))`."
       )
     )
   }
-
-  if (is.numeric(pop)) {
-    lifecycle::deprecate_warn(
-      "1.7.0",
-      "rt_opts(pop = 'must be a `<dist_spec>`')",
-      details = "For specifying a fixed population size, use `Fixed(pop)`"
-    )
-    pop <- Fixed(pop)
-  }
+  assert_class(pop, "dist_spec")
   opts$pop <- pop
   if (opts$pop_period == "all" && pop == Fixed(0)) {
     cli_abort(
@@ -449,14 +446,6 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' Defines a list specifying the structure of the approximate Gaussian
 #' process. Custom settings can be supplied which override the defaults.
 #'
-#' @param ls_mean Deprecated; use `ls` instead.
-#'
-#' @param ls_sd Deprecated; use `ls` instead.
-#'
-#' @param ls_min Deprecated; use `ls` instead.
-#'
-#' @param ls_max Deprecated; use `ls` instead.
-#'
 #' @param ls A `<dist_spec>` giving the prior distribution of the lengthscale
 #' parameter of the Gaussian process kernel on the scale of days. Defaults to
 #' a Lognormal distribution with mean 21 days, sd 7 days and maximum 60 days:
@@ -470,10 +459,6 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' Defaults to a half-normal distribution with mean 0 and sd 0.01:
 #' `Normal(mean = 0, sd = 0.01)` (a lower limit of 0 will be enforced
 #' automatically to ensure positivity)
-#'
-#' @param alpha_mean Deprecated; use `alpha` instead.
-#'
-#' @param alpha_sd Deprecated; use `alpha` instead.
 #'
 #' @param kernel Character string, the type of kernel required. Currently
 #' supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
@@ -514,55 +499,11 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' gp_opts(kernel = "periodic")
 gp_opts <- function(basis_prop = 0.2,
                     boundary_scale = 1.5,
-                    ls_mean = 21,
-                    ls_sd = 7,
-                    ls_min = 0,
-                    ls_max = 60,
                     ls = LogNormal(mean = 21, sd = 7, max = 60),
                     alpha = Normal(mean = 0, sd = 0.01),
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
-                    w0 = 1.0,
-                    alpha_mean, alpha_sd) {
-  if (!missing(alpha_mean)) {
-    lifecycle::deprecate_stop(
-      "1.7.0", "gp_opts(alpha_mean)", "gp_opts(alpha)"
-    )
-  }
-  if (!missing(alpha_sd)) {
-    lifecycle::deprecate_stop(
-      "1.7.0", "gp_opts(alpha_sd)", "gp_opts(alpha)"
-    )
-  }
-  if (!missing(ls_mean) || !missing(ls_sd) || !missing(ls_min) ||
-        !missing(ls_max)) {
-    if (!missing(ls)) {
-      cli_abort(
-        c(
-          "!" = "Both {.var ls} and at least one legacy argument
-          ({.var ls_mean}, {.var ls_sd}, {.var ls_min}, {.var ls_max}) have been
-          specified.",
-          "i" = "Only one of the should be used."
-        )
-      )
-    }
-    cli_abort(c(
-      "!" = "Specifying lengthscale priors via the {.var ls_mean}, {.var ls_sd},
-      {.var ls_min}, and {.var ls_max} arguments is deprecated.",
-      "i" = "Use the {.var ls} argument instead."
-    ))
-    if (ls_min > 0) {
-      cli_abort(
-        c(
-          "!" = "Lower lengthscale bounds of greater than 0 are no longer
-          supported. If this is a feature you need please open an Issue on the
-          EpiNow2 GitHub repository."
-        )
-      )
-    }
-    ls <- LogNormal(mean = ls_mean, sd = ls_sd, max = ls_max)
-  }
-
+                    w0 = 1.0) {
   kernel <- arg_match(kernel)
   if (kernel == "se") {
     matern_order <- Inf
@@ -622,10 +563,8 @@ gp_opts <- function(basis_prop = 0.2,
 #'   will be enforced automatically. If setting to a prior distribution and no
 #'   overreporting is expected, it might be sensible to set a maximum of 1 via
 #'   the `max` option when declaring the distribution.
-#' @param na Deprecated; use the [fill_missing()] function instead
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
-#' @param phi deprecated; use `dispersion` instead
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #'   be returned by the model.
 #' @importFrom rlang arg_match
@@ -637,7 +576,7 @@ gp_opts <- function(basis_prop = 0.2,
 #' obs_opts()
 #'
 #' # Turn off day of the week effect
-#' obs_opts(week_effect = TRUE)
+#' obs_opts(week_effect = FALSE)
 #'
 #' # Scale reported data
 #' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
@@ -648,59 +587,8 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      week_effect = TRUE,
                      week_length = 7,
                      scale = Fixed(1),
-                     na = c("missing", "accumulate"),
                      likelihood = TRUE,
-                     return_likelihood = FALSE,
-                     phi) {
-  if (!missing(phi)) {
-    if (!missing(dispersion)) {
-      cli::cli_abort(
-        "Can't specify {.var disperion} and {.var phi}."
-      )
-    } else {
-      lifecycle::deprecate_stop(
-        "1.7.0",
-        "obs_opts(phi)",
-        "obs_opts(dispersion)",
-        details =
-          "The meaning of the `phi` and `dispersion` arguments are the same."
-      )
-      dispersion <- phi
-    }
-  }
-  na_default_used <- missing(na)
-  if (!na_default_used) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "obs_opts(na)",
-      "fill_missing()",
-      details = c(
-        paste0(
-          "If NA values are not to be treated as missing use the ",
-          "`fill_missing()` function instead."
-        ),
-        "This argument will be removed in the next release of EpiNow2."
-      )
-    )
-  }
-  na <- arg_match(na)
-  if (na == "accumulate") {
-    # nolint start: duplicate_argument_linter
-    cli_inform(
-      c(
-        "i" = "Accumulating modelled values that correspond to NA values in the
-      data by adding them to the next non-NA data point.",
-        "i" = "This means that the first data point is not included in the
-      likelihood but used only to reset modelled observations to zero.",
-        "i" = "{col_red('If the first data point should be included in the
-        likelihood this can be achieved by using the `fill_missing()` function
-        with a non-zero `initial_missing` argument.')}"
-      ),
-      .frequency = "regularly",
-      .frequency_id = "obs_opts"
-    )
-    # nolint end
-  }
+                     return_likelihood = FALSE) {
   obs <- list(
     family = arg_match(family),
     dispersion = dispersion,
@@ -708,32 +596,12 @@ obs_opts <- function(family = c("negbin", "poisson"),
     week_effect = week_effect,
     week_length = week_length,
     scale = scale,
-    accumulate = as.integer(na == "accumulate"),
     likelihood = likelihood,
-    return_likelihood = return_likelihood,
-    na_as_missing_default_used = na_default_used
+    return_likelihood = return_likelihood
   )
 
   for (param in c("dispersion", "scale")) {
-    if (is.numeric(obs[[param]])) {
-      cli_abort(
-        c(
-          "!" = "Specifying {.var {param}} as a numeric value is deprecated.",
-          "i" = "Use a {.cls dist_spec} instead using {.fn Fixed()}."
-        )
-      )
-      obs[[param]] <- Fixed(obs[[param]])
-    } else if (is.list(obs[[param]]) && !is(obs[[param]], "dist_spec")) {
-      cli_abort(
-        c(
-          "!" = "Specifying {.var {param}} as a list is deprecated.",
-          "i" = "Use a {.cls dist_spec} instead."
-        )
-      )
-      obs[[param]] <- Normal(mean = obs[[param]]$mean, sd = obs[[param]]$sd)
-    } else {
-      assert_class(obs[[param]], "dist_spec")
-    }
+    assert_class(obs[[param]], "dist_spec")
   }
 
   attr(obs, "class") <- c("obs_opts", class(obs))

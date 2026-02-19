@@ -12,9 +12,6 @@ model that the data are to be used, e.g. \code{\link[=estimate_infections]{estim
 \code{\link[=estimate_secondary]{estimate_secondary()}}. See the documentation there for the expected
 format.}
 
-\item{horizon}{Deprecated; use \code{forecast} instead to specify the predictive
-horizon}
-
 \item{accumulate}{The number of days to accumulate when generating posterior
 prediction, e.g. 7 for weekly accumulated forecasts. If this is not set an
 attempt will be made to detect the accumulation frequency in the data.}

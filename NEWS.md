@@ -1,5 +1,27 @@
 # EpiNow2 (development version)
 
+## Breaking changes
+
+- Removed deprecated arguments that have been erroring since v1.7.0/v1.8.0:
+  - `gp_opts(ls_mean, ls_sd, ls_min, ls_max)` - use `ls` instead
+  - `gp_opts(alpha_mean, alpha_sd)` - use `alpha` instead
+  - `obs_opts(phi)` - use `dispersion` instead
+  - `obs_opts(na)` - use `fill_missing()` instead
+  - `estimate_infections(filter_leading_zeros, zero_threshold, horizon)`
+  - `estimate_secondary(filter_leading_zeros, zero_threshold)`
+  - `epinow(filter_leading_zeros, zero_threshold, horizon)`
+  - `regional_epinow(horizon)`
+  - `format_fit(burn_in, start_date)`
+- Removed the internal function `default_fill_missing_obs()`.
+- The `pop` argument in `rt_opts()` and `simulate_infections()` now errors when passed a numeric value. Use `Fixed(pop)` instead.
+- Deprecated accessors on model objects now error instead of warning:
+  - `estimate_infections()`: `$samples`, `$summarised`
+  - `estimate_secondary()`: `$predictions`, `$posterior`, `$data`
+  - `estimate_truncation()`: `$dist`, `$obs`, `$data`, `$last_obs`, `$cmf`
+  - `epinow()`: `$estimates`, `$estimated_reported_cases`, `$summary`, `$plots`, `$estimate_infections`
+- `summary.epinow(output)` and `summary.estimate_infections(type = 'samples')` now error.
+- Removed internal function `extract_parameter_samples()`. Use `format_simulation_output()` instead.
+
 # EpiNow2 1.8.0
 
 ## Breaking changes
@@ -28,7 +50,6 @@
   - Access the Stan fit directly via `object$fit`, model arguments via `object$args`, and observations via `object$observations`.
   - **Deprecated**: `summary(object, type = "samples")` now issues a deprecation warning. Use `get_samples(object)` instead.
   - **Deprecated**: `$samples` and `$summarised` accessors now issue deprecation warnings. Use `get_samples()` and `summary()` instead.
-  - **Deprecated**: Internal function `extract_parameter_samples()` renamed to `format_simulation_output()` for clarity.
 - `forecast_infections()` now returns an independent S3 class `"forecast_infections"` instead of inheriting from `"estimate_infections"`. This clarifies the distinction between fitted models (which contain a Stan fit for diagnostics) and forecast simulations (which contain pre-computed samples). Dedicated `summary()`, `plot()`, and `get_samples()` methods are provided.
 - `estimate_secondary()` now returns an S3 object of class `c("epinowfit", "estimate_secondary", "list")` with elements `fit`, `args`, and `observations`, matching the structure of `estimate_infections()`.
   - Use `get_samples(object)` to extract formatted posterior samples for delay and scaling parameters.

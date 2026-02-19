@@ -47,28 +47,10 @@
 #' the forecast opitions. Defaults to [forecast_opts()]. If NULL then no
 #' forecasting will be done.
 #'
-#' @param CrIs Deprecated; specify credible intervals when using [summary()] or
-#' [plot()]
-#'
-#' @param horizon Deprecated; use `forecast` instead to specify the predictive
-#'   horizon
-#'
-#' @param weigh_delay_priors Deprecated; this is now specified at the
-#' distribution level in `generation_time_opts()`, `delay_opts()` and
-#' `trunc_opts()` using the `weight_prior` argument.
-#'
 #' @param verbose Logical, defaults to `TRUE` when used interactively and
 #' otherwise `FALSE`. Should verbose debug progress messages be printed.
 #' Corresponds to the "DEBUG" level from `futile.logger`. See `setup_logging`
 #' for more detailed logging options.
-#'
-#' @param filter_leading_zeros Logical, defaults to TRUE. Should zeros at the
-#' start of the time series be filtered out.
-#'
-#' @param zero_threshold `r lifecycle::badge("experimental")` Numeric defaults
-#' to Inf. Indicates if detected zero cases are meaningful by using a threshold
-#' number of cases based on the 7-day average. If the average is above this
-#' threshold then the zero is replaced using `fill`.
 #'
 #' @export
 #' @return An `<estimate_infections>` object containing:
@@ -145,52 +127,8 @@ estimate_infections <- function(data,
                                 obs = obs_opts(),
                                 forecast = forecast_opts(),
                                 stan = stan_opts(),
-                                CrIs = c(0.2, 0.5, 0.9),
-                                weigh_delay_priors = TRUE,
                                 id = "estimate_infections",
-                                verbose = interactive(),
-                                filter_leading_zeros = TRUE,
-                                zero_threshold = Inf,
-                                horizon) {
-  if (!missing(CrIs)) {
-    lifecycle::deprecate_stop(
-      "1.8.0",
-      "estimate_infections(CrIs)",
-      detail = "Specify credible intervals when using `summary()` or `plot()`."
-    )
-  }
-  if (!missing(filter_leading_zeros)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_infections(filter_leading_zeros)",
-      "filter_leading_zeros()"
-    )
-  }
-  if (!missing(zero_threshold)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_infections(zero_threshold)",
-      "apply_zero_threshold()"
-    )
-  }
-  if (!missing(weigh_delay_priors)) {
-    lifecycle::deprecate_stop(
-      "1.8.0",
-      "estimate_infections(weigh_delay_priors)",
-      detail = "Weighting of priors is now done when defining them in
-      `generation_time_opts()`, `delay_opts()` or `trunc_opts()` using the
-      `weight_prior` argument."
-    )
-  }
-  if (!missing(horizon)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_infections(horizon)",
-      "estimate_infections(forecast)",
-      details = "The `horizon` argument passed to `estimate_infections()` will
-        override any `horizon` argument passed via `forecast_opts()`."
-    )
-  }
+                                verbose = interactive()) {
   # Validate inputs
   check_reports_valid(data, model = "estimate_infections")
   assert_class(generation_time, "generation_time_opts")
@@ -205,8 +143,6 @@ estimate_infections <- function(data,
   }
   assert_class(forecast, "forecast_opts")
   assert_class(stan, "stan_opts")
-  assert_numeric(CrIs, lower = 0, upper = 1)
-  assert_logical(weigh_delay_priors)
   assert_string(id)
   assert_logical(verbose)
 
@@ -223,29 +159,27 @@ estimate_infections <- function(data,
     )
   }
 
-  # Fill missing dates (deprecated)
-  reported_cases <- default_fill_missing_obs(data, obs, "confirm")
-
   ## add forecast horizon if forecasting is required
+  model_data <- data
   if (forecast$horizon > 0) {
     horizon_args <- list(
-      data = reported_cases,
+      data = model_data,
       horizon = forecast$horizon
     )
     if (!is.null(forecast$accumulate)) {
       horizon_args$accumulate <- forecast$accumulate
     }
-    reported_cases <- do.call(add_horizon, horizon_args)
+    model_data <- do.call(add_horizon, horizon_args)
   }
 
   # Add breakpoints column
-  reported_cases <- add_breakpoints(reported_cases)
+  model_data <- add_breakpoints(model_data)
 
   # Determine seeding time
   seeding_time <- get_seeding_time(delays, generation_time, rt)
 
   # Add initial zeroes
-  reported_cases <- pad_reported_cases(reported_cases, seeding_time)
+  model_data <- pad_reported_cases(model_data, seeding_time)
 
   params <- list(
     make_param("alpha", gp$alpha, lower_bound = 0),
@@ -258,7 +192,7 @@ estimate_infections <- function(data,
 
   # Define stan model parameters
   stan_data <- create_stan_data(
-    reported_cases,
+    model_data,
     seeding_time = seeding_time,
     rt = rt,
     gp = gp,
@@ -303,7 +237,7 @@ estimate_infections <- function(data,
   ret
 }
 
-#' Extract elements from estimate_infections objects with deprecated warnings
+#' Extract elements from estimate_infections objects with deprecation errors
 #'
 #' @description `r lifecycle::badge("deprecated")`
 #' Provides backward compatibility for the old return structure. The previous
@@ -316,28 +250,23 @@ estimate_infections <- function(data,
 #'
 #' @param x An \code{estimate_infections} object
 #' @param name The name of the element to extract
-#' @return The requested element with a deprecation warning for deprecated
-#'   elements
+#' @return The requested element. Errors for deprecated element names.
 #' @keywords internal
 #' @export
 #' @method $ estimate_infections
 `$.estimate_infections` <- function(x, name) {
-  if (name == "samples") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
+  switch(name,
+    samples = lifecycle::deprecate_stop(
+      "1.9.0",
       I("estimate_infections()$samples"),
       "get_samples()"
-    )
-    return(get_samples(x))
-  }
-  if (name == "summarised") {
-    lifecycle::deprecate_warn(
-      "1.8.0",
+    ),
+    summarised = lifecycle::deprecate_stop(
+      "1.9.0",
       I("estimate_infections()$summarised"),
       I("summary(type = 'parameters')")
     )
-    return(summary(x, type = "parameters"))
-  }
+  )
   .subset2(x, name)
 }
 
@@ -349,16 +278,10 @@ estimate_infections <- function(data,
 #'
 #' @param x An `estimate_infections` object
 #' @param i The name or index of the element to extract
-#' @return The requested element with a deprecation warning for deprecated
-#'   elements
+#' @return The requested element. Errors for deprecated element names.
 #' @keywords internal
 #' @export
 #' @method [[ estimate_infections
 `[[.estimate_infections` <- function(x, i) {
-  deprecated_names <- c("samples", "summarised")
-  if (i %in% deprecated_names) {
-    # nolint next: object_usage_linter
-    return(`$.estimate_infections`(x, i))
-  }
-  .subset2(x, i)
+  `$.estimate_infections`(x, i)
 }

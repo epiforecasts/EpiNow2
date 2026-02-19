@@ -33,6 +33,7 @@
 #'   growth roughly in line with the growth rate implied by the first value of
 #'   R.
 #' @inheritParams estimate_infections
+#' @inheritParams calc_CrIs
 #' @inheritParams rt_opts
 #' @inheritParams stan_opts
 #' @importFrom checkmate assert_data_frame assert_date assert_numeric
@@ -74,13 +75,17 @@ simulate_infections <- function(R,
                                 growth_method = c("infections",
                                                   "infectiousness")) {
   if (is.numeric(pop)) {
-    lifecycle::deprecate_warn(
-      "1.7.0",
+    lifecycle::deprecate_stop(
+      "1.9.0",
       "simulate_infections(pop = 'must be a `<dist_spec>`')",
-      details = "For specifying a fixed population size, use `Fixed(pop)`"
+      details = paste(
+        "Population size must now be specified as a distribution.",
+        "For a fixed known population, wrap the value with `Fixed()`.",
+        "For example: `simulate_infections(..., pop = Fixed(1000000))`."
+      )
     )
-    pop <- Fixed(pop)
   }
+  assert_class(pop, "dist_spec")
   pop_period <- arg_match(pop_period)
   if (pop_period == "all" && pop == Fixed(0)) {
     cli_abort(

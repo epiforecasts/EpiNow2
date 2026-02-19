@@ -17,9 +17,7 @@ estimate_secondary(
   priors = NULL,
   model = NULL,
   weigh_delay_priors = FALSE,
-  verbose = interactive(),
-  filter_leading_zeros = FALSE,
-  zero_threshold = Inf
+  verbose = interactive()
 )
 }
 \arguments{
@@ -61,8 +59,7 @@ settings if desired.}
 use for estimation but not to fit to at the beginning of the time series.
 This must be less than the number of observations.}
 
-\item{CrIs}{Deprecated; specify credible intervals when using \code{\link[=summary]{summary()}} or
-\code{\link[=plot]{plot()}}}
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{priors}{A \verb{<data.frame>} of named priors to be used in model fitting
 rather than the defaults supplied from other arguments. This is typically
@@ -81,14 +78,6 @@ parameters.}
 
 \item{verbose}{Logical, should model fitting progress be returned. Defaults
 to \code{\link[=interactive]{interactive()}}.}
-
-\item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
-start of the time series be filtered out.}
-
-\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
-to Inf. Indicates if detected zero cases are meaningful by using a threshold
-number of cases based on the 7-day average. If the average is above this
-threshold then the zero is replaced using \code{fill}.}
 }
 \value{
 An \verb{<estimate_secondary>} object containing:

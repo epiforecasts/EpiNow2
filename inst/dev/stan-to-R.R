@@ -24,28 +24,26 @@ simulate <- function(data,
 
   seeding_time <- get_seeding_time(delays, generation_time, rt)
 
-  reported_cases <- default_fill_missing_obs(data, obs, "confirm")
-
   ## add forecast horizon if forecasting is required
   if (forecast$horizon > 0) {
     horizon_args <- list(
-      data = reported_cases,
+      data = data,
       horizon = forecast$horizon
     )
     if (!is.null(forecast$accumulate)) {
       horizon_args$accumulate <- forecast$accumulate
     }
-    reported_cases <- do.call(add_horizon, horizon_args)
+    data <- do.call(add_horizon, horizon_args)
   }
 
   # Add breakpoints column
-  reported_cases <- add_breakpoints(reported_cases)
+  data <- add_breakpoints(data)
 
   # Determine seeding time
   seeding_time <- get_seeding_time(delays, generation_time, rt)
 
   # Add initial zeroes
-  reported_cases <- pad_reported_cases(reported_cases, seeding_time)
+  data <- pad_reported_cases(data, seeding_time)
 
   params <- list(
     make_param("alpha", gp$alpha, lower_bound = 0),
@@ -57,7 +55,7 @@ simulate <- function(data,
 
   # Define stan model parameters
   stan_data <- create_stan_data(
-    reported_cases,
+    data,
     seeding_time = seeding_time,
     rt = rt,
     gp = gp,
