@@ -43,8 +43,9 @@
 #' - Secondary event censoring (e.g., daily reporting of symptom onset)
 #' - Right truncation (observation window effects)
 #'
-#' The primarycensored Stan functions are included at compile time, so there's
-#' no runtime dependency on cmdstanr.
+#' The primarycensored Stan functions are vendored (included in the package),
+#' so the model is pre-compiled and runs without needing primarycensored at
+#' runtime.
 #'
 #' @export
 #' @examples
@@ -58,21 +59,11 @@ estimate_dist <- function(data,
                           samples = 2000,
                           chains = 4,
                           cores = 1,
-                          max_value,
+                          max_value = NULL,
                           verbose = FALSE,
                           backend = c("rstan", "cmdstanr"),
                           param_bounds = NULL,
                           ...) {
-
-  # Check primarycensored availability
-  if (!requireNamespace("primarycensored", quietly = TRUE)) {
-    cli::cli_abort(
-      c(
-        "x" = "Package 'primarycensored' is required",
-        "i" = "Install with: install.packages('primarycensored')"
-      )
-    )
-  }
 
   # Select backend
   backend <- match.arg(backend)
@@ -117,6 +108,8 @@ estimate_dist <- function(data,
     D = max(delay_data$delay_upper) + 10,  # Truncation time
     dist_id = dist_id,
     primary_id = 1L,  # Uniform primary censoring
+    n_primary_params = 0L,  # No primary params for uniform
+    primary_params = numeric(0),  # Empty array
     param_lower = param_bounds$lower,
     param_upper = param_bounds$upper
   )
@@ -230,40 +223,14 @@ estimate_dist <- function(data,
   return(bounds)
 }
 
-#' Fit with rstan using primarycensored functions
+#' Fit with rstan using pre-compiled estimate_dist model
 #'
 #' @keywords internal
 .fit_with_rstan_pcd <- function(stan_data, samples, chains, cores,
                                  verbose, ...) {
 
-  if (!requireNamespace("rstan", quietly = TRUE)) {
-    cli::cli_abort(
-      c(
-        "x" = "Package 'rstan' is required for backend='rstan'",
-        "i" = "Install with: install.packages('rstan')"
-      )
-    )
-  }
-
-  # Get primarycensored Stan functions path
-  pcd_path <- primarycensored::pcd_stan_path()
-
-  if (verbose) {
-    cli::cli_alert_info("Using primarycensored Stan functions")
-  }
-
-  # Get model file
-  model_file <- system.file(
-    "stan", "estimate_dist_primarycensored.stan",
-    package = "EpiNow2"
-  )
-
-  # Compile with include paths
-  model <- rstan::stan_model(
-    file = model_file,
-    include_paths = pcd_path,
-    verbose = verbose
-  )
+  # Get pre-compiled model
+  model <- stanmodels[["estimate_dist"]]
 
   # Fit
   fit <- rstan::sampling(
@@ -296,17 +263,17 @@ estimate_dist <- function(data,
     )
   }
 
-  # Get paths
-  pcd_path <- primarycensored::pcd_stan_path()
+  # Get Stan model file and include path for vendored primarycensored
   model_file <- system.file(
-    "stan", "estimate_dist_primarycensored.stan",
+    "stan", "estimate_dist.stan",
     package = "EpiNow2"
   )
+  include_path <- system.file("stan", package = "EpiNow2")
 
   # Compile
   model <- cmdstanr::cmdstan_model(
     model_file,
-    include_paths = pcd_path
+    include_paths = include_path
   )
 
   # Fit

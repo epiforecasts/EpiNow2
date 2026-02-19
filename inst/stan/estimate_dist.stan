@@ -7,8 +7,11 @@
 // - Right truncation (observation window effects)
 
 functions {
-  // Include all primarycensored Stan functions
-  #include primarycensored.stan
+  // Include vendored primarycensored Stan functions
+  #include primarycensored/primarycensored.stan
+  #include primarycensored/primarycensored_ode.stan
+  #include primarycensored/primarycensored_analytical_cdf.stan
+  #include primarycensored/expgrowth.stan
 }
 
 data {
@@ -34,6 +37,10 @@ data {
   // Primary distribution ID: 1=uniform (most common)
   int<lower=1> primary_id;
 
+  // Primary distribution parameters (empty for uniform)
+  int<lower=0> n_primary_params;
+  array[n_primary_params] real primary_params;
+
   // Parameter bounds
   vector[2] param_lower;
   vector[2] param_upper;
@@ -47,7 +54,6 @@ parameters {
 
 transformed parameters {
   array[2] real params = {param1, param2};
-  array[0] real primary_params = {};  // Empty for uniform primary
 }
 
 model {
