@@ -92,9 +92,9 @@ estimate_dist <- function(data,
   if (is.null(param_bounds)) {
     param_bounds <- .get_param_bounds_auto(delay_data, dist)
     if (verbose) {
-      cli::cli_alert_info(
-        "Parameter bounds: [{param_bounds$lower[1]:.2f}, {param_bounds$lower[2]:.2f}] to [{param_bounds$upper[1]:.2f}, {param_bounds$upper[2]:.2f}]"
-      )
+      lower <- paste0("[", round(param_bounds$lower, 2), "]", collapse = ", ")
+      upper <- paste0("[", round(param_bounds$upper, 2), "]", collapse = ", ")
+      cli::cli_alert_info("Parameter bounds: {lower} to {upper}")
     }
   }
 
@@ -122,9 +122,13 @@ estimate_dist <- function(data,
 
   # Fit
   if (backend == "cmdstanr") {
-    fit <- .fit_with_cmdstanr_pcd(stan_data, samples, chains, cores, verbose, ...)
+    fit <- .fit_with_cmdstanr_pcd(
+      stan_data, samples, chains, cores, verbose, ...
+    )
   } else {
-    fit <- .fit_with_rstan_pcd(stan_data, samples, chains, cores, verbose, ...)
+    fit <- .fit_with_rstan_pcd(
+      stan_data, samples, chains, cores, verbose, ...
+    )
   }
 
   # Extract and convert to dist_spec
@@ -139,7 +143,7 @@ estimate_dist <- function(data,
     cli::cli_alert_success("Fitting complete")
   }
 
-  return(result)
+  result
 }
 
 #' Prepare delay data as intervals
@@ -189,23 +193,21 @@ estimate_dist <- function(data,
     cli::cli_abort("data must be a numeric vector or data frame")
   }
 
-  return(delay_df)
+  delay_df
 }
 
 #' Get automatic parameter bounds
 #'
 #' @keywords internal
 .get_param_bounds_auto <- function(delay_data, dist) {
-
   # Use data to inform bounds
   midpoints <- (delay_data$delay + delay_data$delay_upper) / 2
-  weights <- delay_data$n
+  obs_weights <- delay_data$n
 
-  wmean <- stats::weighted.mean(midpoints, weights)
-  wsd <- sqrt(stats::weighted.mean((midpoints - wmean)^2, weights))
+  wmean <- stats::weighted.mean(midpoints, obs_weights)
 
   # Distribution-specific bounds
-  bounds <- switch(dist,
+  switch(dist,
     "lognormal" = list(
       lower = c(log(max(0.1, wmean / 10)), 0.01),
       upper = c(log(wmean * 10), 10)
@@ -219,21 +221,18 @@ estimate_dist <- function(data,
       upper = c(10, max(midpoints) * 3)
     )
   )
-
-  return(bounds)
 }
 
 #' Fit with rstan using pre-compiled estimate_dist model
 #'
 #' @keywords internal
 .fit_with_rstan_pcd <- function(stan_data, samples, chains, cores,
-                                 verbose, ...) {
-
+                                verbose, ...) {
   # Get pre-compiled model
   model <- stanmodels[["estimate_dist"]]
 
   # Fit
-  fit <- rstan::sampling(
+  rstan::sampling(
     model,
     data = stan_data,
     chains = chains,
@@ -244,16 +243,13 @@ estimate_dist <- function(data,
     verbose = verbose,
     ...
   )
-
-  return(fit)
 }
 
 #' Fit with cmdstanr
 #'
 #' @keywords internal
 .fit_with_cmdstanr_pcd <- function(stan_data, samples, chains, cores,
-                                    verbose, ...) {
-
+                                   verbose, ...) {
   if (!requireNamespace("cmdstanr", quietly = TRUE)) {
     cli::cli_abort(
       c(
@@ -277,7 +273,7 @@ estimate_dist <- function(data,
   )
 
   # Fit
-  fit <- model$sample(
+  model$sample(
     data = stan_data,
     chains = chains,
     parallel_chains = cores,
@@ -287,8 +283,6 @@ estimate_dist <- function(data,
     show_messages = verbose,
     ...
   )
-
-  return(fit)
 }
 
 #' Extract parameters and convert to dist_spec
@@ -384,16 +378,9 @@ estimate_dist <- function(data,
   }
 
   # Create dist_spec
-  result <- new_dist_spec(
+  new_dist_spec(
     params = params,
     max = max_value,
     distribution = dist
   )
-
-  return(result)
-}
-
-# Null-coalescing operator
-`%||%` <- function(x, y) {
-  if (is.null(x)) y else x
 }
