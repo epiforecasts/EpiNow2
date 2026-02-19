@@ -1,0 +1,7 @@
+<map id="setup_gp" name="setup_gp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,80,56"/>
+<area shape="rect" id="Node000002" href="$group__estimates__smoothing.html#gacb839312fe55f00e52b127baf5255990" title=" " alt="" coords="154,5,198,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,34,138,23,139,28,81,39"/>
+<area shape="rect" id="Node000003" href="$group__estimates__smoothing.html#ga3d1737e856bfefe04087fd613bafc09d" title=" " alt="" coords="128,55,224,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="81,48,113,53,112,59,80,53"/>
+</map>
