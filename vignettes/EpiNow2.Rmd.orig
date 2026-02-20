@@ -107,7 +107,7 @@ The default model uses a Gaussian process to estimate time-varying transmission,
 - Use variational inference for fast but unreliable approximate results (`stan = stan_opts(method = "vb")`).
 - Reduce the accuracy of the Gaussian process approximation (see `?gp_opts`).
 
-For a comparison of model formulations and their trade-offs, see the [estimate_infections_options](estimate_infections_options.html) vignette.
+For examples of different model configurations, see the [estimate_infections_options](estimate_infections_options.html) vignette.
 
 Both summary measures and posterior samples are returned for all parameters in an easily explored format which can be accessed using `summary`. The default is to return a summary table of estimates for key parameters at the latest date partially supported by data. 
 
