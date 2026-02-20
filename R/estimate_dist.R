@@ -110,10 +110,17 @@ estimate_dist <- function(data,
     primary_id = 1L,  # Uniform primary censoring
     n_primary_params = 0L,  # No primary params for uniform
     primary_params = numeric(0),  # Empty array
-    param_lower = param_bounds$lower,
-    param_upper = param_bounds$upper,
-    prior_dist = param_bounds$prior_dist,
-    prior_dist_params = param_bounds$prior_dist_params
+    # Standard EpiNow2 params interface
+    n_params_variable = 2L,
+    n_params_fixed = 0L,
+    params_lower = param_bounds$lower,
+    params_upper = param_bounds$upper,
+    params_fixed_lookup = array(c(0L, 0L)),
+    params_variable_lookup = array(c(1L, 2L)),
+    params_value = numeric(0),
+    prior_dist = array(param_bounds$prior_dist),
+    prior_dist_params_length = 4L,
+    prior_dist_params = array(param_bounds$prior_dist_params)
   )
 
   if (verbose) {

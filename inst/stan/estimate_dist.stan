@@ -7,10 +7,8 @@
 // - Right truncation (observation window effects)
 
 functions {
-  // Vendored from primarycensored using pcd_load_stan_functions()
-  #include primarycensored.stan
-  // EpiNow2 parameter handling
-  #include functions/params.stan
+#include functions/primarycensored.stan
+#include functions/params.stan
 }
 
 data {
@@ -40,32 +38,27 @@ data {
   int<lower=0> n_primary_params;
   array[n_primary_params] real primary_params;
 
-  // Parameter bounds
-  vector[2] param_lower;
-  vector[2] param_upper;
-
-  // Prior specification (0: lognormal, 1: gamma, 2: normal)
-  array[2] int prior_dist;
-  vector[4] prior_dist_params;  // 2 params per distribution
+  // Parameter specification (standard EpiNow2 params interface)
+  #include data/params.stan
 }
 
 parameters {
-  // Distribution parameters (bounded)
-  vector<lower=param_lower, upper=param_upper>[2] params_raw;
+  // Distribution parameters (using standard EpiNow2 params interface)
+  vector<lower=params_lower, upper=params_upper>[n_params_variable] params;
 }
 
 transformed parameters {
-  array[2] real params = to_array_1d(params_raw);
+  array[2] real params_array = to_array_1d(params);
 }
 
 model {
   // Priors using EpiNow2's params_lp function
-  params_lp(params_raw, prior_dist, prior_dist_params, param_lower, param_upper);
+  params_lp(params, prior_dist, prior_dist_params, params_lower, params_upper);
 
   // Likelihood using primarycensored
   for (i in 1:n) {
     target += n_obs[i] * primarycensored_lpmf(
-      delay[i] | dist_id, params, pwindow, delay_upper[i], D,
+      delay[i] | dist_id, params_array, pwindow, delay_upper[i], D,
       primary_id, primary_params
     );
   }
@@ -73,9 +66,9 @@ model {
 
 generated quantities {
   // Extract parameters in named format for easier extraction
-  real meanlog = (dist_id == 1) ? params_raw[1] : 0;
-  real sdlog = (dist_id == 1) ? params_raw[2] : 0;
-  real shape = (dist_id == 2 || dist_id == 3) ? params_raw[1] : 0;
-  real rate = (dist_id == 2) ? params_raw[2] : 0;
-  real scale = (dist_id == 3) ? params_raw[2] : 0;
+  real meanlog = (dist_id == 1) ? params[1] : 0;
+  real sdlog = (dist_id == 1) ? params[2] : 0;
+  real shape = (dist_id == 2 || dist_id == 3) ? params[1] : 0;
+  real rate = (dist_id == 2) ? params[2] : 0;
+  real scale = (dist_id == 3) ? params[2] : 0;
 }
