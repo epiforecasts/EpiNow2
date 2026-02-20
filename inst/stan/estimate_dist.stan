@@ -7,11 +7,8 @@
 // - Right truncation (observation window effects)
 
 functions {
-  // Include vendored primarycensored Stan functions
-  #include primarycensored/primarycensored.stan
-  #include primarycensored/primarycensored_ode.stan
-  #include primarycensored/primarycensored_analytical_cdf.stan
-  #include primarycensored/expgrowth.stan
+  // Vendored from primarycensored using pcd_load_stan_functions()
+  #include primarycensored.stan
 }
 
 data {
