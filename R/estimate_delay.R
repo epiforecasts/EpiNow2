@@ -267,7 +267,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' }
 estimate_delay <- function(delays, ...) {
   lifecycle::deprecate_warn(
-    when = "1.8.0",
+    when = "1.9.0",
     what = "estimate_delay()",
     with = "estimate_dist()"
   )
