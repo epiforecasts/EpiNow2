@@ -111,7 +111,9 @@ estimate_dist <- function(data,
     n_primary_params = 0L,  # No primary params for uniform
     primary_params = numeric(0),  # Empty array
     param_lower = param_bounds$lower,
-    param_upper = param_bounds$upper
+    param_upper = param_bounds$upper,
+    prior_dist = param_bounds$prior_dist,
+    prior_dist_params = param_bounds$prior_dist_params
   )
 
   if (verbose) {
@@ -196,29 +198,39 @@ estimate_dist <- function(data,
   delay_df
 }
 
-#' Get automatic parameter bounds
+#' Get automatic parameter bounds and priors
 #'
 #' @keywords internal
 .get_param_bounds_auto <- function(delay_data, dist) {
-  # Use data to inform bounds
+
+  # Use data to inform bounds and priors
   midpoints <- (delay_data$delay + delay_data$delay_upper) / 2
   obs_weights <- delay_data$n
 
   wmean <- stats::weighted.mean(midpoints, obs_weights)
+  wvar <- stats::weighted.mean((midpoints - wmean)^2, obs_weights)
+  wsd <- sqrt(wvar)
 
-  # Distribution-specific bounds
+  # Prior dist codes: 0 = lognormal, 1 = gamma, 2 = normal
+  # Distribution-specific bounds and priors
   switch(dist,
     "lognormal" = list(
       lower = c(log(max(0.1, wmean / 10)), 0.01),
-      upper = c(log(wmean * 10), 10)
+      upper = c(log(wmean * 10), 10),
+      prior_dist = c(2L, 2L),  # normal priors for both
+      prior_dist_params = c(log(wmean), 1.0, 0.5, 0.5)
     ),
     "gamma" = list(
       lower = c(0.01, 0.001),
-      upper = c(100, 10)
+      upper = c(100, 10),
+      prior_dist = c(2L, 2L),  # normal priors
+      prior_dist_params = c(wmean^2 / wvar, 2.0, wmean / wvar, 1.0)
     ),
     "weibull" = list(
       lower = c(0.1, 0.1),
-      upper = c(10, max(midpoints) * 3)
+      upper = c(10, max(midpoints) * 3),
+      prior_dist = c(2L, 2L),  # normal priors
+      prior_dist_params = c(1.0, 1.0, wmean, wsd)
     )
   )
 }
