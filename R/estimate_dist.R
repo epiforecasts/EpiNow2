@@ -308,98 +308,31 @@ estimate_dist <- function(data,
 #'
 #' @keywords internal
 .extract_to_dist_spec <- function(fit, dist, max_value, backend) {
+  # Parameter names by distribution
 
+  param_names <- switch(dist,
+    "lognormal" = c("meanlog", "sdlog"),
+    "gamma" = c("shape", "rate"),
+    "weibull" = c("shape", "scale")
+  )
+
+  # Extract samples (backend-specific)
   if (backend == "rstan") {
-    # Extract from rstan fit
-    samples <- rstan::extract(fit)
-
-    if (dist == "lognormal") {
-      params <- list(
-        meanlog = Normal(
-          mean = mean(samples$meanlog),
-          sd = sd(samples$meanlog)
-        ),
-        sdlog = Normal(
-          mean = mean(samples$sdlog),
-          sd = sd(samples$sdlog)
-        )
-      )
-    } else if (dist == "gamma") {
-      params <- list(
-        shape = Normal(
-          mean = mean(samples$shape),
-          sd = sd(samples$shape)
-        ),
-        rate = Normal(
-          mean = mean(samples$rate),
-          sd = sd(samples$rate)
-        )
-      )
-    } else if (dist == "weibull") {
-      params <- list(
-        shape = Normal(
-          mean = mean(samples$shape),
-          sd = sd(samples$shape)
-        ),
-        scale = Normal(
-          mean = mean(samples$scale),
-          sd = sd(samples$scale)
-        )
-      )
-    }
-
-  } else {  # cmdstanr
+    all_samples <- rstan::extract(fit)
+    get_samples <- function(name) all_samples[[name]]
+  } else {
     draws <- fit$draws()
-
-    if (dist == "lognormal") {
-      meanlog_draws <- posterior::subset_draws(draws, "meanlog")
-      sdlog_draws <- posterior::subset_draws(draws, "sdlog")
-
-      params <- list(
-        meanlog = Normal(
-          mean = mean(meanlog_draws),
-          sd = sd(meanlog_draws)
-        ),
-        sdlog = Normal(
-          mean = mean(sdlog_draws),
-          sd = sd(sdlog_draws)
-        )
-      )
-    } else if (dist == "gamma") {
-      shape_draws <- posterior::subset_draws(draws, "shape")
-      rate_draws <- posterior::subset_draws(draws, "rate")
-
-      params <- list(
-        shape = Normal(
-          mean = mean(shape_draws),
-          sd = sd(shape_draws)
-        ),
-        rate = Normal(
-          mean = mean(rate_draws),
-          sd = sd(rate_draws)
-        )
-      )
-    } else if (dist == "weibull") {
-      shape_draws <- posterior::subset_draws(draws, "shape")
-      scale_draws <- posterior::subset_draws(draws, "scale")
-
-      params <- list(
-        shape = Normal(
-          mean = mean(shape_draws),
-          sd = sd(shape_draws)
-        ),
-        scale = Normal(
-          mean = mean(scale_draws),
-          sd = sd(scale_draws)
-        )
-      )
+    get_samples <- function(name) {
+      as.vector(posterior::subset_draws(draws, name))
     }
   }
 
-  # Create dist_spec
-  new_dist_spec(
-    params = params,
-    max = max_value,
-    distribution = dist
-  )
+  # Build params list
+
+  params <- lapply(stats::setNames(param_names, param_names), function(name) {
+    s <- get_samples(name)
+    Normal(mean = mean(s), sd = sd(s))
+  })
+
+  new_dist_spec(params = params, max = max_value, distribution = dist)
 }
