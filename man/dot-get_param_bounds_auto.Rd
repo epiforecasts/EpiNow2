@@ -2,11 +2,11 @@
 % Please edit documentation in R/estimate_dist.R
 \name{.get_param_bounds_auto}
 \alias{.get_param_bounds_auto}
-\title{Get automatic parameter bounds}
+\title{Get automatic parameter bounds and priors}
 \usage{
 .get_param_bounds_auto(delay_data, dist)
 }
 \description{
-Get automatic parameter bounds
+Get automatic parameter bounds and priors
 }
 \keyword{internal}
