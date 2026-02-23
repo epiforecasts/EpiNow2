@@ -144,8 +144,7 @@ estimate_dist <- function(data,
   result <- .extract_to_dist_spec(
     fit = fit,
     dist = dist,
-    max_value = max_value %||% max(delay_data$delay_upper),
-    backend = backend
+    max_value = max_value %||% max(delay_data$delay_upper)
   )
 
   if (verbose) {
@@ -269,29 +268,8 @@ estimate_dist <- function(data,
 #' @keywords internal
 .fit_with_cmdstanr_pcd <- function(stan_data, samples, chains, cores,
                                    verbose, ...) {
-  if (!requireNamespace("cmdstanr", quietly = TRUE)) {
-    cli::cli_abort(
-      c(
-        "x" = "cmdstanr not available",
-        "i" = "Use backend='rstan' or install cmdstanr"
-      )
-    )
-  }
+  model <- epinow2_cmdstan_model("estimate_dist", verbose = verbose)
 
-  # Get Stan model file and include path for vendored primarycensored
-  model_file <- system.file(
-    "stan", "estimate_dist.stan",
-    package = "EpiNow2"
-  )
-  include_path <- system.file("stan", package = "EpiNow2")
-
-  # Compile
-  model <- cmdstanr::cmdstan_model(
-    model_file,
-    include_paths = include_path
-  )
-
-  # Fit
   model$sample(
     data = stan_data,
     chains = chains,
@@ -307,31 +285,17 @@ estimate_dist <- function(data,
 #' Extract parameters and convert to dist_spec
 #'
 #' @keywords internal
-.extract_to_dist_spec <- function(fit, dist, max_value, backend) {
-  # Parameter names by distribution
-
+.extract_to_dist_spec <- function(fit, dist, max_value) {
   param_names <- switch(dist,
     "lognormal" = c("meanlog", "sdlog"),
     "gamma" = c("shape", "rate"),
     "weibull" = c("shape", "scale")
   )
 
-  # Extract samples (backend-specific)
-  if (backend == "rstan") {
-    all_samples <- rstan::extract(fit)
-    get_samples <- function(name) all_samples[[name]]
-  } else {
-    draws <- fit$draws()
-    get_samples <- function(name) {
-      as.vector(posterior::subset_draws(draws, name))
-    }
-  }
-
-  # Build params list
+  samples <- extract_samples(fit, pars = param_names)
 
   params <- lapply(stats::setNames(param_names, param_names), function(name) {
-    s <- get_samples(name)
-    Normal(mean = mean(s), sd = sd(s))
+    Normal(mean = mean(samples[[name]]), sd = sd(samples[[name]]))
   })
 
   new_dist_spec(params = params, max = max_value, distribution = dist)
