@@ -11,6 +11,7 @@ estimate_dist(
   chains = 4,
   cores = 1,
   max_value = NULL,
+  truncation_time = NULL,
   verbose = FALSE,
   backend = c("rstan", "cmdstanr"),
   param_bounds = NULL,
@@ -39,6 +40,11 @@ estimate_dist(
 
 \item{max_value}{Numeric, maximum delay value for PMF. If not provided,
 inferred from data.}
+
+\item{truncation_time}{Numeric, the maximum observation time (right
+truncation point). This should match the truncation applied during data
+collection. If not provided, uses \code{max(delay_upper) + 10} which may
+underestimate the effect of truncation.}
 
 \item{verbose}{Logical, print progress messages? Defaults to FALSE.}
 

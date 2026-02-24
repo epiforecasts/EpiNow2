@@ -4,7 +4,7 @@
 \alias{.fit_with_rstan_pcd}
 \title{Fit with rstan using pre-compiled estimate_dist model}
 \usage{
-.fit_with_rstan_pcd(stan_data, samples, chains, cores, verbose, ...)
+.fit_with_rstan_pcd(stan_data, samples, chains, cores, verbose, init_fn, ...)
 }
 \description{
 Fit with rstan using pre-compiled estimate_dist model

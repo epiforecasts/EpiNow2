@@ -4,7 +4,15 @@
 \alias{.fit_with_cmdstanr_pcd}
 \title{Fit with cmdstanr}
 \usage{
-.fit_with_cmdstanr_pcd(stan_data, samples, chains, cores, verbose, ...)
+.fit_with_cmdstanr_pcd(
+  stan_data,
+  samples,
+  chains,
+  cores,
+  verbose,
+  init_fn,
+  ...
+)
 }
 \description{
 Fit with cmdstanr
