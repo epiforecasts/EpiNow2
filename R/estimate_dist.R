@@ -98,8 +98,10 @@ estimate_dist <- function(data,
   if (is.null(param_bounds)) {
     param_bounds <- .get_param_bounds_auto(delay_data, dist)
     if (verbose) {
+      # nolint start: object_usage_linter
       lower <- paste0("[", round(param_bounds$lower, 2), "]", collapse = ", ")
       upper <- paste0("[", round(param_bounds$upper, 2), "]", collapse = ", ")
+      # nolint end
       cli::cli_alert_info("Parameter bounds: {lower} to {upper}")
     }
   }
