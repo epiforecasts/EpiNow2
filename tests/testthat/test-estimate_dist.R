@@ -5,8 +5,9 @@ test_that("estimate_dist recovers lognormal parameters", {
   set.seed(123)
   true_meanlog <- log(5)
   true_sdlog <- 0.5
+  D <- 30
 
- # Use primarycensored simulator for proper censored data
+  # Use primarycensored simulator for proper censored data
   delays <- primarycensored::rprimarycensored(
     n = 500,
     rdist = rlnorm,
@@ -14,7 +15,7 @@ test_that("estimate_dist recovers lognormal parameters", {
     sdlog = true_sdlog,
     pwindow = 1,
     swindow = 1,
-    D = 30
+    D = D
   )
 
   result <- estimate_dist(
@@ -22,6 +23,7 @@ test_that("estimate_dist recovers lognormal parameters", {
     dist = "lognormal",
     samples = 1000,
     chains = 2,
+    truncation_time = D,
     backend = "rstan",
     verbose = FALSE
   )
@@ -37,14 +39,14 @@ test_that("estimate_dist recovers lognormal parameters", {
   expect_true(abs(est_sdlog - true_sdlog) < 0.2)
 })
 
-test_that("estimate_dist recovers gamma mean", {
+test_that("estimate_dist recovers gamma parameters", {
   skip_on_cran()
   skip_if_not_installed("primarycensored")
 
   set.seed(456)
   true_shape <- 5
   true_rate <- 1
-  true_mean <- true_shape / true_rate
+  D <- 30
 
   # Use primarycensored simulator for proper censored data
   delays <- primarycensored::rprimarycensored(
@@ -54,7 +56,7 @@ test_that("estimate_dist recovers gamma mean", {
     rate = true_rate,
     pwindow = 1,
     swindow = 1,
-    D = 30
+    D = D
   )
 
   result <- estimate_dist(
@@ -62,6 +64,7 @@ test_that("estimate_dist recovers gamma mean", {
     dist = "gamma",
     samples = 1000,
     chains = 2,
+    truncation_time = D,
     backend = "rstan",
     verbose = FALSE
   )
@@ -69,12 +72,11 @@ test_that("estimate_dist recovers gamma mean", {
   expect_s3_class(result, "dist_spec")
   expect_equal(result$distribution, "gamma")
 
-  # Gamma shape/rate are poorly identified individually but mean is recoverable
   est_shape <- result$parameters$shape$parameters$mean
   est_rate <- result$parameters$rate$parameters$mean
-  est_mean <- est_shape / est_rate
 
-  expect_true(abs(est_mean - true_mean) < 1.5)
+  expect_true(abs(est_shape - true_shape) < 1.5)
+  expect_true(abs(est_rate - true_rate) < 0.5)
 })
 
 test_that("estimate_dist works with data frame input", {

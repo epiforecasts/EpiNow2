@@ -23,6 +23,11 @@
 #' @param max_value Numeric, maximum delay value for PMF. If not provided,
 #'   inferred from data.
 #'
+#' @param truncation_time Numeric, the maximum observation time (right
+#'   truncation point). This should match the truncation applied during data
+#'   collection. If not provided, uses `max(delay_upper) + 10` which may
+#'   underestimate the effect of truncation.
+#'
 #' @param verbose Logical, print progress messages? Defaults to FALSE.
 #'
 #' @param backend Character, which Stan backend to use:
@@ -60,6 +65,7 @@ estimate_dist <- function(data,
                           chains = 4,
                           cores = 1,
                           max_value = NULL,
+                          truncation_time = NULL,
                           verbose = FALSE,
                           backend = c("rstan", "cmdstanr"),
                           param_bounds = NULL,
@@ -99,13 +105,14 @@ estimate_dist <- function(data,
   }
 
   # Prepare Stan data
+  D_inferred <- max(delay_data$delay_upper) + 10
   stan_data <- list(
     n = nrow(delay_data),
     delay = as.integer(delay_data$delay),
     delay_upper = delay_data$delay_upper,
     n_obs = as.integer(delay_data$n),
     pwindow = 1.0,  # Daily primary censoring
-    D = max(delay_data$delay_upper) + 10,  # Truncation time
+    D = truncation_time %||% D_inferred,  # Truncation time
     dist_id = dist_id,
     primary_id = 1L,  # Uniform primary censoring
     n_primary_params = 0L,  # No primary params for uniform
@@ -129,14 +136,30 @@ estimate_dist <- function(data,
     )
   }
 
+  # Compute initial values based on MoM estimates
+  midpoints <- (delay_data$delay + delay_data$delay_upper) / 2
+  obs_weights <- delay_data$n
+  wmean <- stats::weighted.mean(midpoints, obs_weights)
+  wvar <- stats::weighted.mean((midpoints - wmean)^2, obs_weights)
+
+  init_params <- switch(dist,
+    "lognormal" = c(log(wmean), sqrt(log(1 + wvar / wmean^2))),
+    "gamma" = c(wmean^2 / wvar, wmean / wvar),
+    "weibull" = c(1.0, wmean)
+  )
+  # Ensure init is within bounds
+  init_params <- pmax(init_params, param_bounds$lower + 0.01)
+  init_params <- pmin(init_params, param_bounds$upper - 0.01)
+  init_fn <- function() list(params = init_params)
+
   # Fit
   if (backend == "cmdstanr") {
     fit <- .fit_with_cmdstanr_pcd(
-      stan_data, samples, chains, cores, verbose, ...
+      stan_data, samples, chains, cores, verbose, init_fn, ...
     )
   } else {
     fit <- .fit_with_rstan_pcd(
-      stan_data, samples, chains, cores, verbose, ...
+      stan_data, samples, chains, cores, verbose, init_fn, ...
     )
   }
 
@@ -226,12 +249,19 @@ estimate_dist <- function(data,
       prior_dist = c(2L, 2L),  # normal priors for both
       prior_dist_params = c(log(wmean), 1.0, 0.5, 0.5)
     ),
-    "gamma" = list(
-      lower = c(0.01, 0.001),
-      upper = c(100, 10),
-      prior_dist = c(2L, 2L),  # normal priors
-      prior_dist_params = c(wmean^2 / wvar, 2.0, wmean / wvar, 1.0)
-    ),
+    "gamma" = {
+      # Method of moments estimates
+      shape_mom <- wmean^2 / wvar
+      rate_mom <- wmean / wvar
+      # Use gamma priors with shape=2 (weakly informative) and rate based on MoM
+      list(
+        lower = c(0.01, 0.01),
+        upper = c(50, 20),
+        prior_dist = c(1L, 1L),  # gamma priors (better for positive params)
+        # gamma(shape=2, rate) has mode at 1/rate, mean at 2/rate
+        prior_dist_params = c(2, 2 / shape_mom, 2, 2 / rate_mom)
+      )
+    },
     "weibull" = list(
       lower = c(0.1, 0.1),
       upper = c(10, max(midpoints) * 3),
@@ -245,7 +275,7 @@ estimate_dist <- function(data,
 #'
 #' @keywords internal
 .fit_with_rstan_pcd <- function(stan_data, samples, chains, cores,
-                                verbose, ...) {
+                                verbose, init_fn, ...) {
   # Get pre-compiled model
   model <- stanmodels[["estimate_dist"]]
 
@@ -257,6 +287,7 @@ estimate_dist <- function(data,
     cores = cores,
     iter = samples + 1000,
     warmup = 1000,
+    init = init_fn,
     control = list(adapt_delta = 0.95),
     verbose = verbose,
     ...
@@ -267,7 +298,7 @@ estimate_dist <- function(data,
 #'
 #' @keywords internal
 .fit_with_cmdstanr_pcd <- function(stan_data, samples, chains, cores,
-                                   verbose, ...) {
+                                   verbose, init_fn, ...) {
   model <- epinow2_cmdstan_model("estimate_dist", verbose = verbose)
 
   model$sample(
@@ -276,6 +307,7 @@ estimate_dist <- function(data,
     parallel_chains = cores,
     iter_warmup = 1000,
     iter_sampling = samples,
+    init = init_fn,
     adapt_delta = 0.95,
     show_messages = verbose,
     ...
