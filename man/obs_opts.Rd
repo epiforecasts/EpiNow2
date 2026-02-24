@@ -11,10 +11,8 @@ obs_opts(
   week_effect = TRUE,
   week_length = 7,
   scale = Fixed(1),
-  na = c("missing", "accumulate"),
   likelihood = TRUE,
-  return_likelihood = FALSE,
-  phi
+  return_likelihood = FALSE
 )
 }
 \arguments{
@@ -47,15 +45,11 @@ will be enforced automatically. If setting to a prior distribution and no
 overreporting is expected, it might be sensible to set a maximum of 1 via
 the \code{max} option when declaring the distribution.}
 
-\item{na}{Deprecated; use the \code{\link[=fill_missing]{fill_missing()}} function instead}
-
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
 included in the model.}
 
 \item{return_likelihood}{Logical, defaults to \code{FALSE}. Should the likelihood
 be returned by the model.}
-
-\item{phi}{deprecated; use \code{dispersion} instead}
 }
 \value{
 An \verb{<obs_opts>} object of observation model settings.
@@ -70,7 +64,7 @@ model. Custom settings can be supplied which override the defaults.
 obs_opts()
 
 # Turn off day of the week effect
-obs_opts(week_effect = TRUE)
+obs_opts(week_effect = FALSE)
 
 # Scale reported data
 obs_opts(scale = Normal(mean = 0.2, sd = 0.02))

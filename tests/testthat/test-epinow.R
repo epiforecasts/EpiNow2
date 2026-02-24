@@ -41,28 +41,19 @@ test_that("epinow produces expected output when run with default settings", {
   )))
 
   expect_equal(names(out), expected_out)
-  # Test deprecated accessors still work (warnings suppressed as they may have
-  # already fired during epinow execution)
-  suppressWarnings(df_non_zero(out$estimates$samples))
-  suppressWarnings(df_non_zero(out$estimates$summarised))
-  suppressWarnings(df_non_zero(out$estimated_reported_cases$samples))
-  suppressWarnings(df_non_zero(out$estimated_reported_cases$summarised))
-  suppressWarnings(df_non_zero(out$summary))
-  suppressWarnings(
-    expect_equal(
-      names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
-    )
+  # Test new accessor methods work correctly
+  df_non_zero(get_samples(out))
+  df_non_zero(summary(out, type = "parameters"))
+  df_non_zero(estimates_by_report_date(out)$summarised)
+  expect_true(!is.null(summary(out)))
+  expect_equal(
+    names(plot(out, type = "all")),
+    c("summary", "infections", "reports", "R", "growth_rate")
   )
 
-  # Note: Custom CrIs (0.95) were passed above but are not being applied.
-  # This appears to be a separate issue requiring investigation.
-  # For now, just verify the deprecated accessor returns valid CrIs.
-  suppressWarnings(
-    expect_true(length(extract_CrIs(out$estimates$summarised)) > 0)
-  )
-  suppressWarnings(
-    expect_true(length(extract_CrIs(out$estimated_reported_cases$summarised)) > 0)
-  )
+  # Verify CrIs are present in output
+  expect_true(length(extract_CrIs(summary(out, type = "parameters"))) > 0)
+  expect_true(length(extract_CrIs(estimates_by_report_date(out)$summarised)) > 0)
 })
 
 test_that("epinow produces expected output with cmdstanr backend", {
@@ -79,16 +70,14 @@ test_that("epinow produces expected output with cmdstanr backend", {
   )))
 
   expect_equal(names(out), expected_out)
-  # Test deprecated accessors still work
-  suppressWarnings(df_non_zero(out$estimates$samples))
-  suppressWarnings(df_non_zero(out$estimates$summarised))
-  suppressWarnings(df_non_zero(out$estimated_reported_cases$samples))
-  suppressWarnings(df_non_zero(out$estimated_reported_cases$summarised))
-  suppressWarnings(df_non_zero(out$summary))
-  suppressWarnings(
-    expect_equal(
-      names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
-    )
+  # Test new accessor methods work correctly
+  df_non_zero(get_samples(out))
+  df_non_zero(summary(out, type = "parameters"))
+  df_non_zero(estimates_by_report_date(out)$summarised)
+  expect_true(!is.null(summary(out)))
+  expect_equal(
+    names(plot(out, type = "all")),
+    c("summary", "infections", "reports", "R", "growth_rate")
   )
 })
 
@@ -105,16 +94,14 @@ test_that("epinow produces expected output with laplace algorithm", {
     )
   )))
   expect_equal(names(out), expected_out)
-  # Test deprecated accessors still work
-  suppressWarnings(df_non_zero(out$estimates$samples))
-  suppressWarnings(df_non_zero(out$estimates$summarised))
-  suppressWarnings(df_non_zero(out$estimated_reported_cases$samples))
-  suppressWarnings(df_non_zero(out$estimated_reported_cases$summarised))
-  suppressWarnings(df_non_zero(out$summary))
-  suppressWarnings(
-    expect_equal(
-      names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
-    )
+  # Test new accessor methods work correctly
+  df_non_zero(get_samples(out))
+  df_non_zero(summary(out, type = "parameters"))
+  df_non_zero(estimates_by_report_date(out)$summarised)
+  expect_true(!is.null(summary(out)))
+  expect_equal(
+    names(plot(out, type = "all")),
+    c("summary", "infections", "reports", "R", "growth_rate")
   )
 })
 
@@ -131,16 +118,14 @@ test_that("epinow produces expected output with pathfinder algorithm", {
     )
   )))
   expect_equal(names(out), expected_out)
-  # Test deprecated accessors still work
-  suppressWarnings(df_non_zero(out$estimates$samples))
-  suppressWarnings(df_non_zero(out$estimates$summarised))
-  suppressWarnings(df_non_zero(out$estimated_reported_cases$samples))
-  suppressWarnings(df_non_zero(out$estimated_reported_cases$summarised))
-  suppressWarnings(df_non_zero(out$summary))
-  suppressWarnings(
-    expect_equal(
-      names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
-    )
+  # Test new accessor methods work correctly
+  df_non_zero(get_samples(out))
+  df_non_zero(summary(out, type = "parameters"))
+  df_non_zero(estimates_by_report_date(out)$summarised)
+  expect_true(!is.null(summary(out)))
+  expect_equal(
+    names(plot(out, type = "all")),
+    c("summary", "infections", "reports", "R", "growth_rate")
   )
 })
 
@@ -182,11 +167,11 @@ test_that("epinow can produce partial output as specified", {
     )
   )))
   expect_equal(names(out), c("fit", "args", "observations"))
-  # Test deprecated accessors still work
-  suppressWarnings(df_non_zero(out$estimates$samples))
-  suppressWarnings(df_non_zero(out$estimates$summarised))
-  suppressWarnings(df_non_zero(out$estimated_reported_cases$summarised))
-  suppressWarnings(df_non_zero(out$summary))
+  # Test new accessor methods work correctly
+  df_non_zero(get_samples(out))
+  df_non_zero(summary(out, type = "parameters"))
+  df_non_zero(estimates_by_report_date(out)$summarised)
+  expect_true(!is.null(summary(out)))
 })
 
 test_that("epinow fails as expected when given a short timeout", {

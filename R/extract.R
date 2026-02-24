@@ -289,35 +289,6 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
   samples
 }
 
-#' Extract parameter samples from a Stan model
-#'
-#' @description `r lifecycle::badge("deprecated")`
-#' This function has been deprecated. Use [format_simulation_output()] for
-#' simulation outputs or [get_samples()] for estimation outputs instead.
-#'
-#' @inheritParams format_simulation_output
-#' @return A list of `<data.frame>`'s each containing the posterior of a
-#' parameter
-#' @keywords internal
-extract_parameter_samples <- function(stan_fit, data, reported_dates,
-                                      imputed_dates, reported_inf_dates,
-                                      drop_length_1 = FALSE, merge = FALSE) {
-  lifecycle::deprecate_warn(
-    "1.8.0",
-    "extract_parameter_samples()",
-    "format_simulation_output()"
-  )
-  format_simulation_output(
-    stan_fit = stan_fit,
-    data = data,
-    reported_dates = reported_dates,
-    imputed_dates = imputed_dates,
-    reported_inf_dates = reported_inf_dates,
-    drop_length_1 = drop_length_1,
-    merge = merge
-  )
-}
-
 #' Extract a parameter summary from a Stan object
 #'
 #' @description `r lifecycle::badge("stable")`

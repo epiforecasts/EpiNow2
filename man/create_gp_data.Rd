@@ -38,7 +38,7 @@ create_gp_data(data = data)
 create_gp_data(NULL, data)
 
 # custom lengthscale
-create_gp_data(gp_opts(ls_mean = 14), data)
+create_gp_data(gp_opts(ls = LogNormal(mean = 14, sd = 7)), data)
 }
 }
 \seealso{
