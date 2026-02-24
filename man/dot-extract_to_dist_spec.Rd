@@ -4,7 +4,7 @@
 \alias{.extract_to_dist_spec}
 \title{Extract parameters and convert to dist_spec}
 \usage{
-.extract_to_dist_spec(fit, dist, max_value, backend)
+.extract_to_dist_spec(fit, dist, max_value)
 }
 \description{
 Extract parameters and convert to dist_spec
