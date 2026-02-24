@@ -1,12 +1,23 @@
 test_that("estimate_dist recovers lognormal parameters", {
   skip_on_cran()
+  skip_if_not_installed("primarycensored")
 
   set.seed(123)
   true_meanlog <- log(5)
   true_sdlog <- 0.5
-  delays <- rlnorm(200, true_meanlog, true_sdlog)
 
- result <- estimate_dist(
+ # Use primarycensored simulator for proper censored data
+  delays <- primarycensored::rprimarycensored(
+    n = 500,
+    rdist = rlnorm,
+    meanlog = true_meanlog,
+    sdlog = true_sdlog,
+    pwindow = 1,
+    swindow = 1,
+    D = 30
+  )
+
+  result <- estimate_dist(
     delays,
     dist = "lognormal",
     samples = 1000,
@@ -22,20 +33,33 @@ test_that("estimate_dist recovers lognormal parameters", {
   est_meanlog <- result$parameters$meanlog$parameters$mean
   est_sdlog <- result$parameters$sdlog$parameters$mean
 
-  expect_true(abs(est_meanlog - true_meanlog) < 0.5)
-  expect_true(abs(est_sdlog - true_sdlog) < 0.3)
+  expect_true(abs(est_meanlog - true_meanlog) < 0.3)
+  expect_true(abs(est_sdlog - true_sdlog) < 0.2)
 })
 
-test_that("estimate_dist works with gamma distribution", {
+test_that("estimate_dist recovers gamma parameters", {
   skip_on_cran()
+  skip_if_not_installed("primarycensored")
 
   set.seed(456)
-  delays <- rgamma(100, shape = 5, rate = 1)
+  true_shape <- 5
+  true_rate <- 1
+
+  # Use primarycensored simulator for proper censored data
+  delays <- primarycensored::rprimarycensored(
+    n = 500,
+    rdist = rgamma,
+    shape = true_shape,
+    rate = true_rate,
+    pwindow = 1,
+    swindow = 1,
+    D = 30
+  )
 
   result <- estimate_dist(
     delays,
     dist = "gamma",
-    samples = 500,
+    samples = 1000,
     chains = 2,
     backend = "rstan",
     verbose = FALSE
@@ -43,8 +67,13 @@ test_that("estimate_dist works with gamma distribution", {
 
   expect_s3_class(result, "dist_spec")
   expect_equal(result$distribution, "gamma")
-  expect_true("shape" %in% names(result$parameters))
-  expect_true("rate" %in% names(result$parameters))
+
+  # Check parameter recovery
+  est_shape <- result$parameters$shape$parameters$mean
+  est_rate <- result$parameters$rate$parameters$mean
+
+  expect_true(abs(est_shape - true_shape) < 1.5)
+  expect_true(abs(est_rate - true_rate) < 0.5)
 })
 
 test_that("estimate_dist works with data frame input", {
