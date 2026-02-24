@@ -37,18 +37,21 @@ test_that("estimate_dist recovers lognormal parameters", {
   expect_true(abs(est_sdlog - true_sdlog) < 0.2)
 })
 
-test_that("estimate_dist works with gamma distribution", {
+test_that("estimate_dist recovers gamma mean", {
   skip_on_cran()
   skip_if_not_installed("primarycensored")
 
   set.seed(456)
+  true_shape <- 5
+  true_rate <- 1
+  true_mean <- true_shape / true_rate
 
   # Use primarycensored simulator for proper censored data
   delays <- primarycensored::rprimarycensored(
-    n = 200,
+    n = 500,
     rdist = rgamma,
-    shape = 5,
-    rate = 1,
+    shape = true_shape,
+    rate = true_rate,
     pwindow = 1,
     swindow = 1,
     D = 30
@@ -57,7 +60,7 @@ test_that("estimate_dist works with gamma distribution", {
   result <- estimate_dist(
     delays,
     dist = "gamma",
-    samples = 500,
+    samples = 1000,
     chains = 2,
     backend = "rstan",
     verbose = FALSE
@@ -65,8 +68,13 @@ test_that("estimate_dist works with gamma distribution", {
 
   expect_s3_class(result, "dist_spec")
   expect_equal(result$distribution, "gamma")
-  expect_true("shape" %in% names(result$parameters))
-  expect_true("rate" %in% names(result$parameters))
+
+  # Gamma shape/rate are poorly identified individually but mean is recoverable
+  est_shape <- result$parameters$shape$parameters$mean
+  est_rate <- result$parameters$rate$parameters$mean
+  est_mean <- est_shape / est_rate
+
+  expect_true(abs(est_mean - true_mean) < 1.5)
 })
 
 test_that("estimate_dist works with data frame input", {
