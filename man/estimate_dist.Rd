@@ -7,7 +7,7 @@
 estimate_dist(
   data,
   dist = "lognormal",
-  stan = stan_opts(adapt_delta = 0.95),
+  stan = stan_opts(),
   max_value = NULL,
   truncation_time = NULL,
   verbose = FALSE,
