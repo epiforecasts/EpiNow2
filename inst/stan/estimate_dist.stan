@@ -64,11 +64,4 @@ model {
   }
 }
 
-generated quantities {
-  // Extract parameters in named format for easier extraction
-  real meanlog = (dist_id == 1) ? params[1] : 0;
-  real sdlog = (dist_id == 1) ? params[2] : 0;
-  real shape = (dist_id == 2 || dist_id == 3) ? params[1] : 0;
-  real rate = (dist_id == 2) ? params[2] : 0;
-  real scale = (dist_id == 3) ? params[2] : 0;
-}
+// No generated quantities needed - parameter naming handled in R

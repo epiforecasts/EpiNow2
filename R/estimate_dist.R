@@ -257,17 +257,20 @@ estimate_dist <- function(data,
 #'
 #' @keywords internal
 .extract_to_dist_spec <- function(fit, dist, max_value) {
+  # Extract raw params - naming handled here based on distribution
+  samples <- extract_samples(fit, pars = "params")
+
   param_names <- switch(dist,
     "lognormal" = c("meanlog", "sdlog"),
     "gamma" = c("shape", "rate"),
     "weibull" = c("shape", "scale")
   )
 
-  samples <- extract_samples(fit, pars = param_names)
-
-  params <- lapply(stats::setNames(param_names, param_names), function(name) {
-    Normal(mean = mean(samples[[name]]), sd = sd(samples[[name]]))
+  # samples$params is a matrix with columns for each parameter
+  params <- lapply(seq_along(param_names), function(i) {
+    Normal(mean = mean(samples$params[, i]), sd = sd(samples$params[, i]))
   })
+  names(params) <- param_names
 
   new_dist_spec(params = params, max = max_value, distribution = dist)
 }
