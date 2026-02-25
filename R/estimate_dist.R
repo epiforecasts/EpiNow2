@@ -11,7 +11,14 @@
 #' @param dist Character string, which distribution to fit. Supported:
 #'   - "lognormal" (default)
 #'   - "gamma"
-#'   - "weibull"
+#'
+#' @param priors A list of `<dist_spec>` objects specifying priors for the
+#'   distribution parameters. Names must match the parameters of the chosen
+#'   distribution:
+#'   - lognormal: `meanlog`, `sdlog`
+#'   - gamma: `shape`, `rate`
+#'
+#'   If not provided, weakly informative defaults are used.
 #'
 #' @param max_value Numeric, maximum delay value for PMF. If not provided,
 #'   inferred from data.
@@ -22,9 +29,6 @@
 #'   underestimate the effect of truncation.
 #'
 #' @param verbose Logical, print progress messages? Defaults to FALSE.
-#'
-#' @param param_bounds Optional list with lower and upper bounds for parameters.
-#'   If not provided, sensible bounds are derived from the data.
 #'
 #' @return A `<dist_spec>` object summarising the fitted distribution.
 #'
@@ -43,24 +47,34 @@
 #' @export
 #' @examples
 #' \donttest{
-#' # Fit lognormal distribution
+#' # Fit lognormal distribution with default priors
 #' delays <- rlnorm(100, log(5), 0.5)
 #' result <- estimate_dist(delays, dist = "lognormal")
+#'
+#' # Fit with custom priors
+#' result <- estimate_dist(
+#'   delays,
+#'   dist = "lognormal",
+#'   priors = list(
+#'     meanlog = Normal(1.5, 0.5),
+#'     sdlog = Normal(0.5, 0.25)
+#'   )
+#' )
 #' }
 estimate_dist <- function(data,
                           dist = "lognormal",
+                          priors = NULL,
                           stan = stan_opts(),
                           max_value = NULL,
                           truncation_time = NULL,
-                          verbose = FALSE,
-                          param_bounds = NULL) {
+                          verbose = FALSE) {
 
   # Input validation
-  if (!dist %in% c("lognormal", "gamma", "weibull")) {
+  if (!dist %in% c("lognormal", "gamma")) {
     cli::cli_abort(
       c(
         "x" = "Unsupported distribution: {dist}",
-        "i" = "Supported: lognormal, gamma, weibull"
+        "i" = "Supported: lognormal, gamma"
       )
     )
   }
@@ -71,21 +85,33 @@ estimate_dist <- function(data,
   # Get distribution ID (primarycensored convention)
   dist_id <- switch(dist,
     "lognormal" = 1L,
-    "gamma" = 2L,
-    "weibull" = 3L
+    "gamma" = 2L
   )
 
-  # Get parameter bounds
-  if (is.null(param_bounds)) {
-    param_bounds <- .get_param_bounds_auto(delay_data, dist)
-    if (verbose) {
-      # nolint start: object_usage_linter
-      lower <- paste0("[", round(param_bounds$lower, 2), "]", collapse = ", ")
-      upper <- paste0("[", round(param_bounds$upper, 2), "]", collapse = ", ")
-      # nolint end
-      cli::cli_alert_info("Parameter bounds: {lower} to {upper}")
-    }
+  # Get default priors if not provided
+  priors <- .get_default_priors(dist, priors)
+
+  # Get parameter names for this distribution
+  param_names <- switch(dist,
+    "lognormal" = c("meanlog", "sdlog"),
+    "gamma" = c("shape", "rate")
+  )
+
+  # Validate priors have correct names
+  if (!all(param_names %in% names(priors))) {
+    cli::cli_abort(
+      c(
+        "x" = "Priors must include: {paste(param_names, collapse = ', ')}",
+        "i" = "Found: {paste(names(priors), collapse = ', ')}"
+      )
+    )
   }
+
+  # Create params list using make_param
+  lbounds <- lower_bounds(dist)
+  params <- lapply(param_names, function(name) {
+    make_param(name, priors[[name]], lower_bound = lbounds[[name]])
+  })
 
   # Prepare Stan data
   d_inferred <- max(delay_data$delay_upper) + 10
@@ -99,19 +125,11 @@ estimate_dist <- function(data,
     dist_id = dist_id,
     primary_id = 1L,  # Uniform primary censoring
     n_primary_params = 0L,  # No primary params for uniform
-    primary_params = numeric(0),  # Empty array
-    # Standard EpiNow2 params interface
-    n_params_variable = 2L,
-    n_params_fixed = 0L,
-    params_lower = param_bounds$lower,
-    params_upper = param_bounds$upper,
-    params_fixed_lookup = array(c(0L, 0L)),
-    params_variable_lookup = array(c(1L, 2L)),
-    params_value = numeric(0),
-    prior_dist = array(param_bounds$prior_dist),
-    prior_dist_params_length = 4L,
-    prior_dist_params = array(param_bounds$prior_dist_params)
+    primary_params = numeric(0)  # Empty array
   )
+
+  # Add params using standard EpiNow2 infrastructure
+  stan_data <- c(stan_data, create_stan_params(params))
 
   if (verbose) {
     # nolint start: object_usage_linter
@@ -130,12 +148,11 @@ estimate_dist <- function(data,
 
   init_params <- switch(dist,
     "lognormal" = c(log(wmean), sqrt(log(1 + wvar / wmean^2))),
-    "gamma" = c(wmean^2 / wvar, wmean / wvar),
-    "weibull" = c(1.0, wmean)
+    "gamma" = c(wmean^2 / wvar, wmean / wvar)
   )
   # Ensure init is within bounds
-  init_params <- pmax(init_params, param_bounds$lower + 0.01)
-  init_params <- pmin(init_params, param_bounds$upper - 0.01)
+  init_params <- pmax(init_params, stan_data$params_lower + 0.01)
+  init_params <- pmin(init_params, stan_data$params_upper - 0.01)
   init_fn <- function() list(params = init_params)
 
   # Create stan args and fit using shared infrastructure
@@ -209,48 +226,28 @@ estimate_dist <- function(data,
   delay_df
 }
 
-#' Get automatic parameter bounds and priors
+#' Get default priors for delay distribution parameters
 #'
 #' @keywords internal
-.get_param_bounds_auto <- function(delay_data, dist) {
-
-  # Use data to inform bounds and priors
-  midpoints <- (delay_data$delay + delay_data$delay_upper) / 2
-  obs_weights <- delay_data$n
-
-  wmean <- stats::weighted.mean(midpoints, obs_weights)
-  wvar <- stats::weighted.mean((midpoints - wmean)^2, obs_weights)
-  wsd <- sqrt(wvar)
-
-  # Prior dist codes: 0 = lognormal, 1 = gamma, 2 = normal
-  # Distribution-specific bounds and priors
-  switch(dist,
-    "lognormal" = list(
-      lower = c(log(max(0.1, wmean / 10)), 0.01),
-      upper = c(log(wmean * 10), 10),
-      prior_dist = c(2L, 2L),  # normal priors for both
-      prior_dist_params = c(log(wmean), 1.0, 0.5, 0.5)
-    ),
-    "gamma" = {
-      # Method of moments estimates
-      shape_mom <- wmean^2 / wvar
-      rate_mom <- wmean / wvar
-      # Use gamma priors with shape=2 (weakly informative) and rate based on MoM
-      list(
-        lower = c(0.01, 0.01),
-        upper = c(50, 20),
-        prior_dist = c(1L, 1L),  # gamma priors (better for positive params)
-        # gamma(shape=2, rate) has mode at 1/rate, mean at 2/rate
-        prior_dist_params = c(2, 2 / shape_mom, 2, 2 / rate_mom)
-      )
-    },
-    "weibull" = list(
-      lower = c(0.1, 0.1),
-      upper = c(10, max(midpoints) * 3),
-      prior_dist = c(2L, 2L),  # normal priors
-      prior_dist_params = c(1.0, 1.0, wmean, wsd)
+.get_default_priors <- function(dist, priors = NULL) {
+  defaults <- if (dist == "lognormal") {
+    list(
+      meanlog = Normal(mean = 1, sd = 1),
+      sdlog = Normal(mean = 0.5, sd = 0.5)
     )
-  )
+  } else if (dist == "gamma") {
+    list(
+      shape = Normal(mean = 2, sd = 2),
+      rate = Normal(mean = 0.5, sd = 0.5)
+    )
+  }
+
+  # Override defaults with user-provided priors
+  if (!is.null(priors)) {
+    defaults[names(priors)] <- priors
+  }
+
+  defaults
 }
 
 #' Extract parameters and convert to dist_spec
@@ -262,8 +259,7 @@ estimate_dist <- function(data,
 
   param_names <- switch(dist,
     "lognormal" = c("meanlog", "sdlog"),
-    "gamma" = c("shape", "rate"),
-    "weibull" = c("shape", "scale")
+    "gamma" = c("shape", "rate")
   )
 
   # samples$params is a matrix with columns for each parameter
