@@ -2,8 +2,7 @@
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' Estimate a delay distribution from observed data using primarycensored's
-#' sophisticated handling of truncation and censoring. Works with rstan
-#' (no cmdstanr dependency).
+#' sophisticated handling of truncation and censoring.
 #'
 #' @param data Either:
 #'   - A numeric vector of delay values (assumes daily censoring)
@@ -13,12 +12,6 @@
 #'   - "lognormal" (default)
 #'   - "gamma"
 #'   - "weibull"
-#'
-#' @param samples Numeric, number of posterior samples. Defaults to 2000.
-#'
-#' @param chains Numeric, number of MCMC chains. Defaults to 4.
-#'
-#' @param cores Numeric, number of cores to use. Defaults to 1.
 #'
 #' @param max_value Numeric, maximum delay value for PMF. If not provided,
 #'   inferred from data.
@@ -30,14 +23,8 @@
 #'
 #' @param verbose Logical, print progress messages? Defaults to FALSE.
 #'
-#' @param backend Character, which Stan backend to use:
-#'   - "rstan" (default, uses primarycensored Stan functions)
-#'   - "cmdstanr" (if available)
-#'
 #' @param param_bounds Optional list with lower and upper bounds for parameters.
 #'   If not provided, sensible bounds are derived from the data.
-#'
-#' @param ... Additional arguments passed to Stan sampling.
 #'
 #' @return A `<dist_spec>` object summarising the fitted distribution.
 #'
@@ -52,27 +39,21 @@
 #' so the model is pre-compiled and runs without needing primarycensored at
 #' runtime.
 #'
+#' @inheritParams estimate_infections
 #' @export
 #' @examples
 #' \donttest{
 #' # Fit lognormal distribution
 #' delays <- rlnorm(100, log(5), 0.5)
-#' result <- estimate_dist(delays, dist = "lognormal", samples = 1000)
+#' result <- estimate_dist(delays, dist = "lognormal")
 #' }
 estimate_dist <- function(data,
                           dist = "lognormal",
-                          samples = 2000,
-                          chains = 4,
-                          cores = 1,
+                          stan = stan_opts(adapt_delta = 0.95),
                           max_value = NULL,
                           truncation_time = NULL,
                           verbose = FALSE,
-                          backend = c("rstan", "cmdstanr"),
-                          param_bounds = NULL,
-                          ...) {
-
-  # Select backend
-  backend <- match.arg(backend)
+                          param_bounds = NULL) {
 
   # Input validation
   if (!dist %in% c("lognormal", "gamma", "weibull")) {
@@ -107,14 +88,14 @@ estimate_dist <- function(data,
   }
 
   # Prepare Stan data
-  D_inferred <- max(delay_data$delay_upper) + 10
+  d_inferred <- max(delay_data$delay_upper) + 10
   stan_data <- list(
     n = nrow(delay_data),
     delay = as.integer(delay_data$delay),
     delay_upper = delay_data$delay_upper,
     n_obs = as.integer(delay_data$n),
     pwindow = 1.0,  # Daily primary censoring
-    D = truncation_time %||% D_inferred,  # Truncation time
+    D = truncation_time %||% d_inferred,  # Truncation time
     dist_id = dist_id,
     primary_id = 1L,  # Uniform primary censoring
     n_primary_params = 0L,  # No primary params for uniform
@@ -133,6 +114,9 @@ estimate_dist <- function(data,
   )
 
   if (verbose) {
+    # nolint start: object_usage_linter
+    backend <- stan$backend %||% "rstan"
+    # nolint end
     cli::cli_alert_info(
       "Fitting {dist} to {sum(stan_data$n_obs)} observations using {backend}"
     )
@@ -154,16 +138,12 @@ estimate_dist <- function(data,
   init_params <- pmin(init_params, param_bounds$upper - 0.01)
   init_fn <- function() list(params = init_params)
 
-  # Fit
-  if (backend == "cmdstanr") {
-    fit <- .fit_with_cmdstanr_pcd(
-      stan_data, samples, chains, cores, verbose, init_fn, ...
-    )
-  } else {
-    fit <- .fit_with_rstan_pcd(
-      stan_data, samples, chains, cores, verbose, init_fn, ...
-    )
-  }
+  # Create stan args and fit using shared infrastructure
+  stan_args <- create_stan_args(
+    stan = stan, data = stan_data, init = init_fn, model = "estimate_dist",
+    verbose = verbose
+  )
+  fit <- fit_model(stan_args, id = "estimate_dist")
 
   # Extract and convert to dist_spec
   result <- .extract_to_dist_spec(
@@ -270,49 +250,6 @@ estimate_dist <- function(data,
       prior_dist = c(2L, 2L),  # normal priors
       prior_dist_params = c(1.0, 1.0, wmean, wsd)
     )
-  )
-}
-
-#' Fit with rstan using pre-compiled estimate_dist model
-#'
-#' @keywords internal
-.fit_with_rstan_pcd <- function(stan_data, samples, chains, cores,
-                                verbose, init_fn, ...) {
-  # Get pre-compiled model
-  model <- stanmodels[["estimate_dist"]]
-
-  # Fit
-  rstan::sampling(
-    model,
-    data = stan_data,
-    chains = chains,
-    cores = cores,
-    iter = samples + 1000,
-    warmup = 1000,
-    init = init_fn,
-    control = list(adapt_delta = 0.95),
-    verbose = verbose,
-    ...
-  )
-}
-
-#' Fit with cmdstanr
-#'
-#' @keywords internal
-.fit_with_cmdstanr_pcd <- function(stan_data, samples, chains, cores,
-                                   verbose, init_fn, ...) {
-  model <- epinow2_cmdstan_model("estimate_dist", verbose = verbose)
-
-  model$sample(
-    data = stan_data,
-    chains = chains,
-    parallel_chains = cores,
-    iter_warmup = 1000,
-    iter_sampling = samples,
-    init = init_fn,
-    adapt_delta = 0.95,
-    show_messages = verbose,
-    ...
   )
 }
 

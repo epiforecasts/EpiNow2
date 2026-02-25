@@ -21,10 +21,8 @@ test_that("estimate_dist recovers lognormal parameters", {
   result <- estimate_dist(
     delays,
     dist = "lognormal",
-    samples = 1000,
-    chains = 2,
+    stan = stan_opts(samples = 1000, chains = 2),
     truncation_time = D,
-    backend = "rstan",
     verbose = FALSE
   )
 
@@ -62,10 +60,8 @@ test_that("estimate_dist recovers gamma parameters", {
   result <- estimate_dist(
     delays,
     dist = "gamma",
-    samples = 1000,
-    chains = 2,
+    stan = stan_opts(samples = 1000, chains = 2),
     truncation_time = D,
-    backend = "rstan",
     verbose = FALSE
   )
 
@@ -93,9 +89,7 @@ test_that("estimate_dist works with data frame input", {
   result <- estimate_dist(
     delay_df,
     dist = "lognormal",
-    samples = 500,
-    chains = 2,
-    backend = "rstan",
+    stan = stan_opts(samples = 500, chains = 2),
     verbose = FALSE
   )
 
@@ -134,9 +128,7 @@ test_that("estimate_dist handles max_value parameter", {
     delays,
     dist = "lognormal",
     max_value = 30,
-    samples = 500,
-    chains = 2,
-    backend = "rstan",
+    stan = stan_opts(samples = 500, chains = 2),
     verbose = FALSE
   )
 
