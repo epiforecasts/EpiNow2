@@ -49,7 +49,7 @@
 #' }
 estimate_dist <- function(data,
                           dist = "lognormal",
-                          stan = stan_opts(adapt_delta = 0.95),
+                          stan = stan_opts(control = list(adapt_delta = 0.95)),
                           max_value = NULL,
                           truncation_time = NULL,
                           verbose = FALSE,
