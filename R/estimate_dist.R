@@ -14,11 +14,9 @@
 #'
 #' @param priors A list of `<dist_spec>` objects specifying priors for the
 #'   distribution parameters. Names must match the parameters of the chosen
-#'   distribution:
-#'   - lognormal: `meanlog`, `sdlog`
-#'   - gamma: `shape`, `rate`
-#'
-#'   If not provided, weakly informative defaults are used.
+#'   distribution. Defaults depend on `dist`:
+#'   - lognormal: `list(meanlog = Normal(1, 1), sdlog = Normal(0.5, 0.5))`
+#'   - gamma: `list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))`
 #'
 #' @param max_value Numeric, maximum delay value for PMF. If not provided,
 #'   inferred from data.
