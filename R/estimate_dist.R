@@ -63,7 +63,11 @@
 #' }
 estimate_dist <- function(data,
                           dist = "lognormal",
-                          priors = NULL,
+                          priors = if (dist == "lognormal") {
+                            list(meanlog = Normal(1, 1), sdlog = Normal(0.5, 0.5))
+                          } else {
+                            list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))
+                          },
                           stan = stan_opts(),
                           max_value = NULL,
                           truncation_time = NULL,
@@ -87,15 +91,6 @@ estimate_dist <- function(data,
     "lognormal" = 1L,
     "gamma" = 2L
   )
-
-  # Set default priors if not provided
-  if (is.null(priors)) {
-    priors <- if (dist == "lognormal") {
-      list(meanlog = Normal(1, 1), sdlog = Normal(0.5, 0.5))
-    } else {
-      list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))
-    }
-  }
 
   # Create params list using make_param
   param_names <- names(priors)
