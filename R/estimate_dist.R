@@ -88,26 +88,17 @@ estimate_dist <- function(data,
     "gamma" = 2L
   )
 
-  # Get default priors if not provided
-  priors <- .get_default_priors(dist, priors)
-
-  # Get parameter names for this distribution
-  param_names <- switch(dist,
-    "lognormal" = c("meanlog", "sdlog"),
-    "gamma" = c("shape", "rate")
-  )
-
-  # Validate priors have correct names
-  if (!all(param_names %in% names(priors))) {
-    cli::cli_abort(
-      c(
-        "x" = "Priors must include: {paste(param_names, collapse = ', ')}",
-        "i" = "Found: {paste(names(priors), collapse = ', ')}"
-      )
-    )
+  # Set default priors if not provided
+  if (is.null(priors)) {
+    priors <- if (dist == "lognormal") {
+      list(meanlog = Normal(1, 1), sdlog = Normal(0.5, 0.5))
+    } else {
+      list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))
+    }
   }
 
   # Create params list using make_param
+  param_names <- names(priors)
   lbounds <- lower_bounds(dist)
   params <- lapply(param_names, function(name) {
     make_param(name, priors[[name]], lower_bound = lbounds[[name]])
@@ -224,30 +215,6 @@ estimate_dist <- function(data,
   }
 
   delay_df
-}
-
-#' Get default priors for delay distribution parameters
-#'
-#' @keywords internal
-.get_default_priors <- function(dist, priors = NULL) {
-  defaults <- if (dist == "lognormal") {
-    list(
-      meanlog = Normal(mean = 1, sd = 1),
-      sdlog = Normal(mean = 0.5, sd = 0.5)
-    )
-  } else if (dist == "gamma") {
-    list(
-      shape = Normal(mean = 2, sd = 2),
-      rate = Normal(mean = 0.5, sd = 0.5)
-    )
-  }
-
-  # Override defaults with user-provided priors
-  if (!is.null(priors)) {
-    defaults[names(priors)] <- priors
-  }
-
-  defaults
 }
 
 #' Extract parameters and convert to dist_spec
