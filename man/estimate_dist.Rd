@@ -7,7 +7,13 @@
 estimate_dist(
   data,
   dist = "lognormal",
-  priors = NULL,
+  priors = if (dist == "lognormal") {
+     list(meanlog = Normal(1, 1), sdlog =
+    Normal(0.5, 0.5))
+ } else {
+     list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))
+
+    },
   stan = stan_opts(),
   max_value = NULL,
   truncation_time = NULL,
