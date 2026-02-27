@@ -62,9 +62,15 @@
 estimate_dist <- function(data,
                           dist = "lognormal",
                           priors = if (dist == "lognormal") {
-                            list(meanlog = Normal(1, 1), sdlog = Normal(0.5, 0.5))
+                            list(
+                              meanlog = Normal(1, 1),
+                              sdlog = Normal(0.5, 0.5)
+                            )
                           } else {
-                            list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))
+                            list(
+                              shape = Normal(2, 2),
+                              rate = Normal(0.5, 0.5)
+                            )
                           },
                           stan = stan_opts(),
                           max_value = NULL,
@@ -116,11 +122,9 @@ estimate_dist <- function(data,
   stan_data <- c(stan_data, create_stan_params(params))
 
   if (verbose) {
-    # nolint start: object_usage_linter
-    backend <- stan$backend %||% "rstan"
-    # nolint end
     cli::cli_alert_info(
-      "Fitting {dist} to {sum(stan_data$n_obs)} observations using {backend}"
+      "Fitting {dist} to {sum(stan_data$n_obs)} observations using
+      {stan$backend %||% 'rstan'}"
     )
   }
 
