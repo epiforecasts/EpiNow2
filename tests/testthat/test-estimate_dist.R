@@ -1,4 +1,4 @@
-test_that("estimate_dist recovers lognormal parameters", {
+test_that("correctly recovers lognormal parameters", {
   skip_on_cran()
   skip_if_not_installed("primarycensored")
 
@@ -37,7 +37,7 @@ test_that("estimate_dist recovers lognormal parameters", {
   expect_true(abs(est_sdlog - true_sdlog) < 0.2)
 })
 
-test_that("estimate_dist recovers gamma parameters", {
+test_that("correctly recovers gamma parameters", {
   skip_on_cran()
   skip_if_not_installed("primarycensored")
 
@@ -75,7 +75,7 @@ test_that("estimate_dist recovers gamma parameters", {
   expect_true(abs(est_rate - true_rate) < 0.5)
 })
 
-test_that("estimate_dist works with data frame input", {
+test_that("works as expected with data frame input", {
   skip_on_cran()
 
   set.seed(789)
@@ -97,7 +97,7 @@ test_that("estimate_dist works with data frame input", {
   expect_equal(result$distribution, "lognormal")
 })
 
-test_that("estimate_dist errors for unsupported distribution", {
+test_that("errors for unsupported distribution", {
   delays <- rlnorm(50, log(5), 0.5)
 
   expect_error(
@@ -106,7 +106,7 @@ test_that("estimate_dist errors for unsupported distribution", {
   )
 })
 
-test_that("estimate_dist errors for invalid data frame", {
+test_that("errors for invalid data frame", {
   bad_df <- data.frame(
     x = 1:10,
     y = 11:20
@@ -118,7 +118,7 @@ test_that("estimate_dist errors for invalid data frame", {
   )
 })
 
-test_that("estimate_dist handles max_value parameter", {
+test_that("correctly handles max_value parameter", {
   skip_on_cran()
 
   set.seed(321)
@@ -136,7 +136,7 @@ test_that("estimate_dist handles max_value parameter", {
   expect_equal(max(result), 30)
 })
 
-test_that("estimate_delay shows deprecation warning", {
+test_that("estimate_delay correctly shows deprecation warning", {
   skip_on_cran()
 
   set.seed(111)
