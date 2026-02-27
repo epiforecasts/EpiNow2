@@ -107,8 +107,8 @@ estimate_dist <- function(data,
     cli::cli_abort(
       c(
         "x" = "Invalid prior names for {dist} distribution",
-        "i" = "Expected: {paste(param_names, collapse = ', ')}",
-        "i" = "Got: {paste(names(priors), collapse = ', ')}"
+        "i" = "Expected: {paste(param_names, collapse = ', ')};
+              got: {paste(names(priors), collapse = ', ')}"
       )
     )
   }
