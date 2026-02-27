@@ -96,8 +96,23 @@ estimate_dist <- function(data,
     "gamma" = 2L
   )
 
-  # Create params list using make_param
-  param_names <- names(priors)
+  # Create params list using make_param in canonical order
+  param_names <- switch(dist,
+    "lognormal" = c("meanlog", "sdlog"),
+    "gamma" = c("shape", "rate")
+  )
+
+  # Validate prior names
+  if (!setequal(names(priors), param_names)) {
+    cli::cli_abort(
+      c(
+        "x" = "Invalid prior names for {dist} distribution",
+        "i" = "Expected: {paste(param_names, collapse = ', ')}",
+        "i" = "Got: {paste(names(priors), collapse = ', ')}"
+      )
+    )
+  }
+
   lbounds <- lower_bounds(dist)
   params <- lapply(param_names, function(name) {
     make_param(name, priors[[name]], lower_bound = lbounds[[name]])
