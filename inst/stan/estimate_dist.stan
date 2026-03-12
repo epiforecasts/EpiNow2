@@ -47,11 +47,18 @@ parameters {
   vector<lower=params_lower, upper=params_upper>[n_params_variable] params;
 }
 
-transformed parameters {
-  array[2] real params_array = to_array_1d(params);
-}
-
 model {
+  // Build full parameter array from fixed and variable params
+  int n_params = n_params_fixed + n_params_variable;
+  array[n_params] real params_array;
+  for (j in 1:n_params) {
+    if (params_fixed_lookup[j] > 0) {
+      params_array[j] = params_value[params_fixed_lookup[j]];
+    } else {
+      params_array[j] = params[params_variable_lookup[j]];
+    }
+  }
+
   // Priors using EpiNow2's params_lp function
   params_lp(params, prior_dist, prior_dist_params, params_lower, params_upper);
 
