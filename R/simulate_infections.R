@@ -398,6 +398,9 @@ forecast_infections <- function(estimates,
     draws$R <- R_draws
   }
 
+  # Extract R dates from original fit before modifying args
+  summarised <- summary(estimates, type = "parameters")
+
   # redefine time if Rt != data$t
   est_time <- estimates$args$t
   horizon <- estimates$args$horizon
@@ -422,7 +425,6 @@ forecast_infections <- function(estimates,
   }
 
   # define dates of interest
-  summarised <- summary(estimates, type = "parameters")
   dates <- seq(
     min(na.omit(unique(summarised[variable == "R"]$date))) - days(shift),
     by = "day", length.out = dim(draws$R)[2] + shift
