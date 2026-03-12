@@ -56,9 +56,10 @@ model {
   params_lp(params, prior_dist, prior_dist_params, params_lower, params_upper);
 
   // Likelihood using primarycensored
+  // L=0 means no left truncation
   for (i in 1:n) {
     target += n_obs[i] * primarycensored_lpmf(
-      delay[i] | dist_id, params_array, pwindow, delay_upper[i], D,
+      delay[i] | dist_id, params_array, pwindow, delay_upper[i], 0.0, D,
       primary_id, primary_params
     );
   }

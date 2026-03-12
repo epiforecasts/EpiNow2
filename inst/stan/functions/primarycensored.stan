@@ -1,56 +1,19 @@
-// Stan functions from primarycensored version 1.3.0
-real expgrowth_lpdf(real x, real min, real max, real r) {
-  if (x < min || x > max) {
+// Stan functions from primarycensored version 1.4.0
+real expgrowth_lpdf(real x, real xmin, real xmax, real r) {
+  if (x < xmin || x > xmax) {
     return negative_infinity();
   }
   if (abs(r) < 1e-10) {
-    return -log(max - min);
+    return -log(xmax - xmin);
   }
-  return log(r) + r * (x - min) - log(exp(r * max) - exp(r * min));
+  return log(abs(r)) + r * (x - xmin) -
+    log(abs(exp(r * xmax) - exp(r * xmin)));
 }
-real primarycensored_analytical_lcdf(data real d, int dist_id,
-                                           array[] real params,
-                                           data real pwindow, data real D,
-                                           int primary_id,
-                                           array[] real primary_params) {
-  real result;
-  real log_cdf_D;
-
-  if (d <= 0) return negative_infinity();
-  if (d >= D) return 0;
-
-  real q = max({d - pwindow, 0});
-
-  if (dist_id == 2 && primary_id == 1) {
-    // Gamma delay with Uniform primary
-    result = primarycensored_gamma_uniform_lcdf(d | q, params, pwindow);
-  } else if (dist_id == 1 && primary_id == 1) {
-    // Lognormal delay with Uniform primary
-    result = primarycensored_lognormal_uniform_lcdf(d | q, params, pwindow);
-  } else if (dist_id == 3 && primary_id == 1) {
-    // Weibull delay with Uniform primary
-    result = primarycensored_weibull_uniform_lcdf(d | q, params, pwindow);
-  } else {
-    // No analytical solution available
-    return negative_infinity();
-  }
-
-  if (!is_inf(D)) {
-    log_cdf_D = primarycensored_lcdf(
-      D | dist_id, params, pwindow, positive_infinity(),
-      primary_id, primary_params
-    );
-    result = result - log_cdf_D;
-  }
-
-  return result;
-}
-real primarycensored_analytical_cdf(data real d, int dist_id,
-                                          array[] real params,
-                                          data real pwindow, data real D,
-                                          int primary_id,
-                                          array[] real primary_params) {
-  return exp(primarycensored_analytical_lcdf(d | dist_id, params, pwindow, D, primary_id, primary_params));
+int check_for_analytical(int dist_id, int primary_id) {
+  if (dist_id == 2 && primary_id == 1) return 1; // Gamma delay with Uniform primary
+  if (dist_id == 1 && primary_id == 1) return 1; // Lognormal delay with Uniform primary
+  if (dist_id == 3 && primary_id == 1) return 1; // Weibull delay with Uniform primary
+  return 0; // No analytical solution for other combinations
 }
 real primarycensored_gamma_uniform_lcdf(data real d, real q, array[] real params, data real pwindow) {
   real shape = params[1];
@@ -140,6 +103,11 @@ real primarycensored_lognormal_uniform_lcdf(data real d, real q, array[] real pa
 
   return log_F_Splus;
 }
+real log_weibull_g(real t, real shape, real scale) {
+  real x = pow(t * inv(scale), shape);
+  real a = 1 + inv(shape);
+  return log(gamma_p(a, x)) + lgamma(a);
+}
 real primarycensored_weibull_uniform_lcdf(data real d, real q, array[] real params, data real pwindow) {
   real shape = params[1];
   real scale = params[2];
@@ -182,44 +150,82 @@ real primarycensored_weibull_uniform_lcdf(data real d, real q, array[] real para
 
   return log_F_Splus;
 }
-real log_weibull_g(real t, real shape, real scale) {
-  real x = pow(t * inv(scale), shape);
-  real a = 1 + inv(shape);
-  return log(gamma_p(a, x)) + lgamma(a);
+real primarycensored_analytical_lcdf_raw(data real d, int dist_id,
+                                         array[] real params,
+                                         data real pwindow,
+                                         int primary_id) {
+  real q = max({d - pwindow, 0});
+
+  if (dist_id == 2 && primary_id == 1) {
+    return primarycensored_gamma_uniform_lcdf(d | q, params, pwindow);
+  } else if (dist_id == 1 && primary_id == 1) {
+    return primarycensored_lognormal_uniform_lcdf(d | q, params, pwindow);
+  } else if (dist_id == 3 && primary_id == 1) {
+    return primarycensored_weibull_uniform_lcdf(d | q, params, pwindow);
+  }
+  return negative_infinity();
 }
-int check_for_analytical(int dist_id, int primary_id) {
-  if (dist_id == 2 && primary_id == 1) return 1; // Gamma delay with Uniform primary
-  if (dist_id == 1 && primary_id == 1) return 1; // Lognormal delay with Uniform primary
-  if (dist_id == 3 && primary_id == 1) return 1; // Weibull delay with Uniform primary
-  return 0; // No analytical solution for other combinations
+real primarycensored_analytical_lcdf(data real d, int dist_id,
+                                           array[] real params,
+                                           data real pwindow, data real L,
+                                           data real D, int primary_id,
+                                           array[] real primary_params) {
+  if (d <= L) return negative_infinity();
+  if (d >= D) return 0;
+
+  real result = primarycensored_analytical_lcdf_raw(
+    d, dist_id, params, pwindow, primary_id
+  );
+
+  // Apply truncation normalization
+  if (!is_inf(D) || L > 0) {
+    vector[2] bounds = primarycensored_truncation_bounds(
+      L, D, dist_id, params, pwindow, primary_id, primary_params
+    );
+    real log_cdf_L = bounds[1];
+    real log_cdf_D = bounds[2];
+
+    real log_normalizer = primarycensored_log_normalizer(log_cdf_D, log_cdf_L, L);
+    result = primarycensored_apply_truncation(result, log_cdf_L, log_normalizer, L);
+  }
+
+  return result;
+}
+real primarycensored_analytical_cdf(data real d, int dist_id,
+                                          array[] real params,
+                                          data real pwindow, data real L,
+                                          data real D, int primary_id,
+                                          array[] real primary_params) {
+  return exp(primarycensored_analytical_lcdf(d | dist_id, params, pwindow, L, D, primary_id, primary_params));
 }
 real dist_lcdf(real delay, array[] real params, int dist_id) {
   if (delay <= 0) return negative_infinity();
 
-  // Use if-else statements to handle different distribution types
+  // IDs match pcd_distributions$stan_id in R
   if (dist_id == 1) return lognormal_lcdf(delay | params[1], params[2]);
   else if (dist_id == 2) return gamma_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 3) return normal_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 3) return weibull_lcdf(delay | params[1], params[2]);
   else if (dist_id == 4) return exponential_lcdf(delay | params[1]);
-  else if (dist_id == 5) return weibull_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 6) return beta_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 7) return cauchy_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 8) return chi_square_lcdf(delay | params[1]);
-  else if (dist_id == 9) return inv_chi_square_lcdf(delay | params[1]);
-  else if (dist_id == 10) return double_exponential_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 11) return inv_gamma_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 12) return logistic_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 13) return pareto_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 14) return scaled_inv_chi_square_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 15) return student_t_lcdf(delay | params[1], params[2], params[3]);
-  else if (dist_id == 16) return uniform_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 17) return von_mises_lcdf(delay | params[1], params[2]);
-  else reject("Invalid distribution identifier");
+  else if (dist_id == 9) return beta_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 12) return cauchy_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 13) return chi_square_lcdf(delay | params[1]);
+  else if (dist_id == 15) return gumbel_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 16) return inv_gamma_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 17) return logistic_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 18) return normal_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 19) return inv_chi_square_lcdf(delay | params[1]);
+  else if (dist_id == 20) return double_exponential_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 21) return pareto_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 22) return scaled_inv_chi_square_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 23) return student_t_lcdf(delay | params[1], params[2], params[3]);
+  else if (dist_id == 24) return uniform_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 25) return von_mises_lcdf(delay | params[1], params[2]);
+  else reject("Invalid distribution identifier: ", dist_id);
 }
-real primary_lpdf(real x, int primary_id, array[] real params, real min, real max) {
+real primary_lpdf(real x, int primary_id, array[] real params, real xmin, real xmax) {
   // Implement switch for different primary distributions
-  if (primary_id == 1) return uniform_lpdf(x | min, max);
-  if (primary_id == 2) return expgrowth_lpdf(x | min, max, params[1]);
+  if (primary_id == 1) return uniform_lpdf(x | xmin, xmax);
+  if (primary_id == 2) return expgrowth_lpdf(x | xmin, xmax, params[1]);
   // Add more primary distributions as needed
   reject("Invalid primary distribution identifier");
 }
@@ -248,81 +254,56 @@ vector primarycensored_ode(real t, vector y, array[] real theta,
 
   return rep_vector(exp(log_cdf + log_primary_pdf), 1);
 }
-real primarycensored_lpmf(data int d, int dist_id, array[] real params,
-                                data real pwindow, data real d_upper,
-                                data real D, int primary_id,
-                                array[] real primary_params) {
-  if (d_upper > D) {
-    reject("Upper truncation point is greater than D. It is ", d_upper,
-           " and D is ", D, ". Resolve this by increasing D to be greater or equal to d + swindow or decreasing swindow.");
-  }
-  if (d_upper <= d) {
-    reject("Upper truncation point is less than or equal to d. It is ", d_upper,
-           " and d is ", d, ". Resolve this by increasing d to be less than d_upper.");
-  }
-  real log_cdf_upper = primarycensored_lcdf(
-    d_upper | dist_id, params, pwindow, positive_infinity(), primary_id, primary_params
-  );
-  real log_cdf_lower = primarycensored_lcdf(
-    d | dist_id, params, pwindow, positive_infinity(), primary_id, primary_params
-  );
-  if (!is_inf(D)) {
-    real log_cdf_D;
-
-    if (d_upper == D) {
-      log_cdf_D = log_cdf_upper;
-    } else {
-      log_cdf_D = primarycensored_lcdf(
-        D | dist_id, params, pwindow, positive_infinity(), primary_id, primary_params
-      );
-    }
-    return log_diff_exp(log_cdf_upper, log_cdf_lower) - log_cdf_D;
+real primarycensored_log_normalizer(real log_cdf_D, real log_cdf_L, real L) {
+  if (L > 0) {
+    return log_diff_exp(log_cdf_D, log_cdf_L);
   } else {
-    return log_diff_exp(log_cdf_upper, log_cdf_lower);
+    return log_cdf_D;
   }
 }
-real primarycensored_lcdf(data real d, int dist_id, array[] real params,
-                                data real pwindow, data real D,
-                                int primary_id,
-                                array[] real primary_params) {
-  real result;
-
-  if (d <= 0) {
-    return negative_infinity();
-  }
-
-  if (d >= D) {
-    return 0;
-  }
-
-  // Check if an analytical solution exists
-  if (check_for_analytical(dist_id, primary_id)) {
-    result = primarycensored_analytical_lcdf(
-      d | dist_id, params, pwindow, positive_infinity(), primary_id, primary_params
-    );
+real primarycensored_apply_truncation(real log_cdf, real log_cdf_L,
+                                      real log_normalizer, real L) {
+  if (L > 0) {
+    return log_diff_exp(log_cdf, log_cdf_L) - log_normalizer;
   } else {
-    // Use numerical integration
-    result = log(primarycensored_cdf(
-      d | dist_id, params, pwindow, positive_infinity(), primary_id, primary_params
-    ));
+    return log_cdf - log_normalizer;
+  }
+}
+vector primarycensored_truncation_bounds(
+  data real L, data real D,
+  int dist_id, array[] real params, data real pwindow,
+  int primary_id, array[] real primary_params
+) {
+  vector[2] result;
+
+  // Get CDF at lower truncation point L
+  if (L <= 0) {
+    result[1] = negative_infinity();
+  } else {
+    result[1] = primarycensored_lcdf(
+      L | dist_id, params, pwindow, 0, positive_infinity(),
+      primary_id, primary_params
+    );
   }
 
-  // Handle truncation
-  if (!is_inf(D)) {
-    real log_cdf_D = primarycensored_lcdf(
-      D | dist_id, params, pwindow, positive_infinity(), primary_id, primary_params
+  // Get CDF at upper truncation point D
+  if (is_inf(D)) {
+    result[2] = 0;
+  } else {
+    result[2] = primarycensored_lcdf(
+      D | dist_id, params, pwindow, 0, positive_infinity(),
+      primary_id, primary_params
     );
-    result = result - log_cdf_D;
   }
 
   return result;
 }
 real primarycensored_cdf(data real d, int dist_id, array[] real params,
-                               data real pwindow, data real D,
+                               data real pwindow, data real L, data real D,
                                int primary_id,
                                array[] real primary_params) {
   real result;
-  if (d <= 0) {
+  if (d <= L) {
     return 0;
   }
 
@@ -334,7 +315,7 @@ real primarycensored_cdf(data real d, int dist_id, array[] real params,
   if (check_for_analytical(dist_id, primary_id)) {
     // Use analytical solution
     result = primarycensored_analytical_cdf(
-      d | dist_id, params, pwindow, D, primary_id, primary_params
+      d | dist_id, params, pwindow, L, D, primary_id, primary_params
     );
   } else {
     // Use numerical integration for other cases
@@ -347,13 +328,122 @@ real primarycensored_cdf(data real d, int dist_id, array[] real params,
     vector[1] y0 = rep_vector(0.0, 1);
     result = ode_rk45(primarycensored_ode, y0, lower_bound, {d}, theta, {d, pwindow}, ids)[1, 1];
 
-    if (!is_inf(D)) {
-      real log_cdf_D = primarycensored_lcdf(
-        D | dist_id, params, pwindow, positive_infinity(), primary_id,primary_params
+    // Apply truncation normalization on log scale for numerical stability
+    if (!is_inf(D) || L > 0) {
+      real log_result = log(result);
+      vector[2] bounds = primarycensored_truncation_bounds(
+        L, D, dist_id, params, pwindow, primary_id, primary_params
       );
-      result = exp(log(result) - log_cdf_D);
+      real log_cdf_L = bounds[1];
+      real log_cdf_D = bounds[2];
+
+      real log_normalizer = primarycensored_log_normalizer(log_cdf_D, log_cdf_L, L);
+      log_result = primarycensored_apply_truncation(
+        log_result, log_cdf_L, log_normalizer, L
+      );
+      result = exp(log_result);
     }
   }
 
   return result;
+}
+real primarycensored_lcdf(data real d, int dist_id, array[] real params,
+                                data real pwindow, data real L, data real D,
+                                int primary_id,
+                                array[] real primary_params) {
+  real result;
+
+  if (d <= L) {
+    return negative_infinity();
+  }
+
+  if (d >= D) {
+    return 0;
+  }
+
+  // Check if an analytical solution exists
+  if (check_for_analytical(dist_id, primary_id)) {
+    result = primarycensored_analytical_lcdf(
+      d | dist_id, params, pwindow, 0, positive_infinity(), primary_id, primary_params
+    );
+  } else {
+    // Use numerical integration
+    result = log(primarycensored_cdf(
+      d | dist_id, params, pwindow, 0, positive_infinity(), primary_id, primary_params
+    ));
+  }
+
+  // Handle truncation normalization
+  if (!is_inf(D) || L > 0) {
+    vector[2] bounds = primarycensored_truncation_bounds(
+      L, D, dist_id, params, pwindow, primary_id, primary_params
+    );
+    real log_cdf_L = bounds[1];
+    real log_cdf_D = bounds[2];
+
+    real log_normalizer = primarycensored_log_normalizer(log_cdf_D, log_cdf_L, L);
+    result = primarycensored_apply_truncation(result, log_cdf_L, log_normalizer, L);
+  }
+
+  return result;
+}
+real primarycensored_lpmf(data int d, int dist_id, array[] real params,
+                                data real pwindow, data real d_upper,
+                                data real L, data real D, int primary_id,
+                                array[] real primary_params) {
+  if (d_upper > D) {
+    reject("Upper truncation point is greater than D. It is ", d_upper,
+           " and D is ", D, ". Resolve this by increasing D to be greater or equal to d + swindow or decreasing swindow.");
+  }
+  if (d_upper <= d) {
+    reject("Upper truncation point is less than or equal to d. It is ", d_upper,
+           " and d is ", d, ". Resolve this by increasing d to be less than d_upper.");
+  }
+  if (d < L) {
+    return negative_infinity();
+  }
+  real log_cdf_upper = primarycensored_lcdf(
+    d_upper | dist_id, params, pwindow, 0, positive_infinity(), primary_id, primary_params
+  );
+  real log_cdf_lower = primarycensored_lcdf(
+    d | dist_id, params, pwindow, 0, positive_infinity(), primary_id, primary_params
+  );
+
+  // Apply truncation normalization: log((F(d_upper) - F(d)) / (F(D) - F(L)))
+  if (!is_inf(D) || L > 0) {
+    real log_cdf_D;
+    real log_cdf_L;
+
+    // Get CDF at lower truncation point L
+    if (L <= 0) {
+      // No left truncation
+      log_cdf_L = negative_infinity();
+    } else if (d == L) {
+      // Reuse already computed CDF at d
+      log_cdf_L = log_cdf_lower;
+    } else {
+      // Compute CDF at L directly
+      log_cdf_L = primarycensored_lcdf(
+        L | dist_id, params, pwindow, 0, positive_infinity(),
+        primary_id, primary_params
+      );
+    }
+
+    // Get CDF at upper truncation point D
+    if (d_upper == D) {
+      log_cdf_D = log_cdf_upper;
+    } else if (is_inf(D)) {
+      log_cdf_D = 0;
+    } else {
+      log_cdf_D = primarycensored_lcdf(
+        D | dist_id, params, pwindow, 0, positive_infinity(),
+        primary_id, primary_params
+      );
+    }
+
+    real log_normalizer = primarycensored_log_normalizer(log_cdf_D, log_cdf_L, L);
+    return log_diff_exp(log_cdf_upper, log_cdf_lower) - log_normalizer;
+  } else {
+    return log_diff_exp(log_cdf_upper, log_cdf_lower);
+  }
 }
