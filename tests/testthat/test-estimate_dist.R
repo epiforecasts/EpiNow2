@@ -97,7 +97,7 @@ test_that("works as expected with data frame input", {
   expect_equal(result$distribution, "lognormal")
 })
 
-test_that("errors for unsupported distribution", {
+test_that("errors for bad distribution specifications", {
   delays <- rlnorm(50, log(5), 0.5)
 
   expect_error(
@@ -106,7 +106,7 @@ test_that("errors for unsupported distribution", {
   )
 })
 
-test_that("errors for invalid data frame", {
+test_that("errors for bad data frame specifications", {
   bad_df <- data.frame(
     x = 1:10,
     y = 11:20
