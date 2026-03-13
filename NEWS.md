@@ -26,6 +26,11 @@
 - `summary.epinow(output)` and `summary.estimate_infections(type = 'samples')` now error.
 - Removed internal function `extract_parameter_samples()`. Use `format_simulation_output()` instead.
 
+## Package changes
+
+- Added `estimate_dist()` function for estimating delay distributions with proper handling of interval censoring using Stan/MCMC inference, supporting both rstan and cmdstanr backends.
+- Deprecated `estimate_delay()` in favour of `estimate_dist()`, which provides more robust handling of censoring and truncation.
+
 # EpiNow2 1.8.0
 
 ## Breaking changes

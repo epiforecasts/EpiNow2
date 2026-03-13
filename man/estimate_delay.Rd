@@ -15,17 +15,22 @@ estimate_delay(delays, ...)
 A \verb{<dist_spec>} summarising the bootstrapped distribution
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Estimate a log normal delay distribution from a vector of integer delays.
-Currently this function is a simple wrapper for \code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}}.
+
+\strong{This function is deprecated.} Please use \code{\link[=estimate_dist]{estimate_dist()}} instead,
+which provides better handling of censoring and truncation.
 }
 \examples{
 \donttest{
-# bootstraps and samples have been reduced for this example
 delays <- rlnorm(500, log(5), 1)
-estimate_delay(delays, samples = 500, bootstraps = 2)
+# Old way (deprecated):
+# estimate_delay(delays, samples = 1000, bootstraps = 10)
+
+# New way (recommended):
+# estimate_dist(delays, dist = "lognormal", samples = 1000)
 }
 }
 \seealso{
-\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}}
+\code{\link[=estimate_dist]{estimate_dist()}} for the recommended replacement
 }

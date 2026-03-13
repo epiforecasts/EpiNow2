@@ -84,6 +84,7 @@ reference:
   - estimate_secondary
   - forecast_secondary
   - estimate_delay
+  - estimate_dist
   - estimate_truncation
 
 - title: Specify Arguments
