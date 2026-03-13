@@ -1,0 +1,62 @@
+# Check that vendored primarycensored Stan functions are up to date
+# with the latest CRAN version. Opens a PR if they are not.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Weekly on Monday at 06:00 UTC
+  workflow_dispatch:
+
+name: Check vendored primarycensored
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-primarycensored:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          install-pandoc: false
+          packages: |
+            any::primarycensored
+
+      - name: Regenerate vendored Stan functions
+        run: |
+          library(primarycensored)
+          stan_code <- pcd_load_stan_functions(
+            functions = c(
+              "primarycensored_lpmf",
+              "primarycensored_ode",
+              "dist_lcdf",
+              "primary_lpdf"
+            ),
+            dependencies = TRUE
+          )
+          version <- as.character(packageVersion("primarycensored"))
+          header <- paste0(
+            "// Stan functions from primarycensored version ", version
+          )
+          writeLines(
+            c(header, stan_code),
+            "inst/stan/functions/primarycensored.stan"
+          )
+        shell: Rscript {0}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: Update vendored primarycensored Stan functions
+          title: Update vendored primarycensored Stan functions
+          body: |
+            The vendored primarycensored Stan functions are out of date
+            with the latest CRAN version. This PR updates them.
+
+            Please verify the changes before merging.
+          branch: update-vendored-primarycensored
