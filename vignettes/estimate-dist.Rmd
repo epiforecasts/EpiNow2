@@ -101,7 +101,11 @@ head(linelist)
 
 
 ``` r
-ggplot(data.frame(delay = delays), aes(x = delay)) +
+observed_delays <- as.numeric(
+  linelist$sdate_lwr - linelist$pdate_lwr
+)
+
+ggplot(data.frame(delay = observed_delays), aes(x = delay)) +
   geom_histogram(
     aes(y = after_stat(density)),
     binwidth = 1, fill = "#4292C6", colour = "white"
@@ -123,7 +127,7 @@ ggplot(data.frame(delay = delays), aes(x = delay)) +
 
 ![plot of chunk plot-delays](estimate-dist-plot-delays-1.png)
 
-The histogram shows the observed delays after censoring and truncation.
+The histogram shows the observed delay lower bounds (i.e. `sdate_lwr - pdate_lwr`) from the filtered linelist.
 The solid line shows the true underlying lognormal density.
 The gap between the two illustrates the bias introduced by censoring and truncation, which `estimate_dist()` corrects for.
 
