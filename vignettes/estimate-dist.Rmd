@@ -36,7 +36,7 @@ For more flexible delay distribution modelling, see the [epidist](https://epidis
 We load `EpiNow2` and `primarycensored` (used here only to simulate data).
 
 ```{r setup}
-library(EpiNow2)
+library(EpiNow2) # nolint: unused_import_linter.
 library(primarycensored)
 options(mc.cores = 4)
 ```
