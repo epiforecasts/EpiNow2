@@ -12,7 +12,12 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
 
 # Introduction
 
@@ -27,11 +32,9 @@ For more flexible delay distribution modelling, see the [epidist](https://epidis
 
 # Set up
 
-
-``` r
+```{r setup}
 library(EpiNow2) # nolint: unused_import_linter.
 library(primarycensored)
-#> Warning: package 'primarycensored' was built under R version 4.5.2
 options(mc.cores = 2)
 ```
 
@@ -40,8 +43,7 @@ options(mc.cores = 2)
 We simulate 200 observations from a lognormal delay distribution with known parameters.
 `rprimarycensored()` generates delays subject to daily censoring and right truncation at `D = 30` days.
 
-
-``` r
+```{r simulate}
 set.seed(42)
 n <- 200
 D <- 30
@@ -68,13 +70,6 @@ linelist <- data.frame(
 )
 
 head(linelist)
-#>    pdate_lwr  sdate_lwr   obs_date
-#> 1 2023-01-01 2023-01-03 2023-01-31
-#> 2 2023-01-05 2023-01-11 2023-02-04
-#> 3 2023-01-01 2023-01-04 2023-01-31
-#> 4 2023-01-09 2023-01-19 2023-02-08
-#> 5 2023-01-10 2023-01-10 2023-02-09
-#> 6 2023-01-04 2023-01-19 2023-02-03
 ```
 
 The data frame has three columns:
@@ -90,34 +85,19 @@ Upper bounds for the primary and secondary event windows default to one day afte
 We pass the linelist directly to `estimate_dist()`.
 Internally the function converts dates to numeric intervals, aggregates identical delay–censoring combinations, and fits the model via MCMC.
 
-
-``` r
+```{r fit}
 result <- estimate_dist(
   linelist,
   dist = "lognormal"
 )
 result
-#> - lognormal distribution (max: 29):
-#>   meanlog:
-#>     - normal distribution:
-#>       mean:
-#>         1.4
-#>       sd:
-#>         0.061
-#>   sdlog:
-#>     - normal distribution:
-#>       mean:
-#>         0.81
-#>       sd:
-#>         0.053
 ```
 
 # Checking parameter recovery
 
 We compare the fitted posterior means to the true values.
 
-
-``` r
+```{r recovery}
 fitted_meanlog <- result$parameters$meanlog$parameters$mean
 fitted_sdlog <- result$parameters$sdlog$parameters$mean
 
@@ -126,9 +106,6 @@ data.frame(
   true = c(true_meanlog, true_sdlog),
   fitted = round(c(fitted_meanlog, fitted_sdlog), 2)
 )
-#>   parameter true fitted
-#> 1   meanlog 1.50   1.44
-#> 2     sdlog 0.75   0.81
 ```
 
 # What if I don't have dates?
@@ -139,8 +116,7 @@ You can use [primarycensored](https://primarycensored.epinowcast.org/) directly,
 
 Alternatively, you can construct a date-based data frame from numeric delays using dummy dates:
 
-
-``` r
+```{r numeric-delays, eval = FALSE}
 origin <- as.Date("2020-01-01")
 linelist <- data.frame(
   pdate_lwr = origin,
