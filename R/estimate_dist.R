@@ -339,7 +339,7 @@ estimate_dist <- function(data,
     data$sdate_upr <- data$sdate_lwr + 1
   }
   if (is.null(data$obs_date)) {
-    data$obs_date <- max(data$sdate_lwr)
+    data$obs_date <- max(data$sdate_upr)
   }
   if (is.null(data$n)) {
     data$n <- 1L
@@ -368,6 +368,21 @@ estimate_dist <- function(data,
   delay_upr <- as.integer(ceiling(stime_upr - ptime_lwr))
   pwindow <- as.integer(ptime_upr - ptime_lwr)
   relative_obs_time <- obs_time - ptime_lwr
+
+  # Validate obs_date >= sdate_upr for each observation
+  bad_trunc <- relative_obs_time < delay_upr
+  if (any(bad_trunc)) {
+    cli::cli_abort(c(
+      "x" = paste(
+        "{sum(bad_trunc)} observation(s) have obs_date",
+        "earlier than sdate_upr"
+      ),
+      "i" = paste(
+        "obs_date must be >= sdate_upr for all rows.",
+        "Increase obs_date or check your data."
+      )
+    ))
+  }
 
   # Filter out invalid delays
   valid <- delay_lwr >= 0
