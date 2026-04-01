@@ -381,6 +381,21 @@ estimate_dist <- function(data,
   pwindow <- as.integer(ptime_upr - ptime_lwr)
   relative_obs_time <- obs_time - ptime_lwr
 
+  # Filter out invalid delays first
+  valid <- delay_lwr >= 0
+  if (!all(valid)) {
+    if (verbose) {
+      cli::cli_alert_warning(
+        "Removed {sum(!valid)} observations with negative delays"
+      )
+    }
+    delay_lwr <- delay_lwr[valid]
+    delay_upr <- delay_upr[valid]
+    pwindow <- pwindow[valid]
+    relative_obs_time <- relative_obs_time[valid]
+    data <- data[valid, , drop = FALSE]
+  }
+
   # Validate obs_date >= sdate_upr for each observation
   bad_trunc <- relative_obs_time < delay_upr
   if (any(bad_trunc)) {
@@ -394,21 +409,6 @@ estimate_dist <- function(data,
         "Increase obs_date or check your data."
       )
     ))
-  }
-
-  # Filter out invalid delays
-  valid <- delay_lwr >= 0
-  if (!all(valid)) {
-    if (verbose) {
-      cli::cli_alert_warning(
-        "Removed {sum(!valid)} observations with negative delays"
-      )
-    }
-    delay_lwr <- delay_lwr[valid]
-    delay_upr <- delay_upr[valid]
-    pwindow <- pwindow[valid]
-    relative_obs_time <- relative_obs_time[valid]
-    data <- data[valid, , drop = FALSE]
   }
 
   # Obs-time-to-Inf heuristic: if relative_obs_time is much
