@@ -210,7 +210,8 @@ test_that("errors for negative delays", {
   origin <- as.Date("2023-01-01")
   linelist <- data.frame(
     pdate_lwr = origin + 5:9,
-    sdate_lwr = origin + 0:4
+    sdate_lwr = origin + 0:4,
+    obs_date = origin + 30
   )
 
   expect_error(
@@ -293,18 +294,18 @@ test_that("errors for invalid prior names", {
   )
 })
 
-test_that("negative delays are filtered without error", {
+test_that("negative delays error via prepare_linelist_data", {
   origin <- as.Date("2023-01-01")
-  # sdate_lwr before pdate_lwr for first two rows => negative delays
   linelist <- data.frame(
     pdate_lwr = origin + c(5, 6, 0, 1, 2),
-    sdate_lwr = origin + c(2, 3, 5, 6, 7)
+    sdate_lwr = origin + c(2, 3, 5, 6, 7),
+    obs_date = origin + 30
   )
 
-  # Should not error; negative delays are silently removed
-  result <- EpiNow2:::.prepare_linelist_data(linelist)
-  expect_true(all(result$delay_lwr >= 0))
-  expect_true(nrow(result) > 0)
+  expect_error(
+    EpiNow2:::.prepare_linelist_data(linelist),
+    "negative delay"
+  )
 })
 
 # Deprecation tests --------------------------------------------------------
