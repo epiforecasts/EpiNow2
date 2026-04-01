@@ -153,9 +153,16 @@ if (requireNamespace("primarycensored", quietly = TRUE)) {
 }
 }
 \references{
-Park, S., et al. "primarycensored: an R package and Stan
-library for fitting distributions accounting for
-primary event censoring."
+Park SW, et al. (2024) "Estimating epidemiological delay
+distributions for infectious diseases."
+doi:10.1101/2024.01.12.24301247
+
+Charniga K, Park SW, et al. (2024) "Best practices for
+estimating and reporting epidemiological delay
+distributions of infectious diseases."
+PLoS Comput Biol 20(10): e1012520.
+doi:10.1371/journal.pcbi.1012520
+
 Please cite \code{primarycensored} if you use this function;
 see \code{citation("primarycensored")}.
 }
