@@ -21,12 +21,12 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-Epidemiological delay distributions are subject to double interval censoring: both the primary event (e.g. infection) and the secondary event (e.g. symptom onset) are observed within discrete time windows rather than at exact times [@placeholder_charniga; @placeholder_park].
+Epidemiological delay distributions are subject to double interval censoring: both the primary event (e.g. infection) and the secondary event (e.g. symptom onset) are observed within discrete time windows rather than at exact times [@charniga2024best; @park2024primarycensored].
 If ignored, this censoring biases parameter estimates.
 Right truncation introduces further bias because recent observations are systematically missing due to reporting delays.
 
 `estimate_dist()` fits delay distributions from linelist data while accounting for both of these biases.
-The censoring windows need not be daily; the date-based interface supports arbitrary window widths.
+Event times are typically recorded at daily resolution, but the date-based interface supports arbitrary censoring window widths.
 The function uses a Stan model that vendors likelihood functions from the [primarycensored](https://primarycensored.epinowcast.org/) package.
 If you use `estimate_dist()`, please cite `primarycensored` in addition to `EpiNow2`.
 
