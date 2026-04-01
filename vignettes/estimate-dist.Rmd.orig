@@ -21,14 +21,22 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-`estimate_dist()` fits delay distributions from linelist data while accounting for interval censoring and right truncation.
-These biases arise routinely in epidemiological data where event times are recorded at daily resolution and recent observations are missing due to reporting delays.
+Epidemiological delay distributions are subject to double interval censoring: both the primary event (e.g. infection) and the secondary event (e.g. symptom onset) are observed within discrete time windows rather than at exact times [@placeholder_charniga; @placeholder_park].
+If ignored, this censoring biases parameter estimates.
+Right truncation introduces further bias because recent observations are systematically missing due to reporting delays.
+
+`estimate_dist()` fits delay distributions from linelist data while accounting for both of these biases.
+The censoring windows need not be daily; the date-based interface supports arbitrary window widths.
 The function uses a Stan model that vendors likelihood functions from the [primarycensored](https://primarycensored.epinowcast.org/) package.
 If you use `estimate_dist()`, please cite `primarycensored` in addition to `EpiNow2`.
 
 The fitted distribution is returned as a `<dist_spec>` object, ready for use in other _EpiNow2_ functions such as `estimate_infections()`.
+Common use cases include estimating the incubation period (infection to symptom onset), the reporting delay (symptom onset to case report), or the serial interval (symptom onset in infector-infectee pairs).
+Generation time estimation (infection to infection) typically requires known infection times for both infector and infectee, which calls for more complex models such as those in [epidist](https://epidist.epinowcast.org/).
 
-For more flexible delay distribution modelling, see the [epidist](https://epidist.epinowcast.org/) package.
+For more flexible delay distribution modelling, `epidist` supports latent variable models and regression on covariates.
+`primarycensored` operates at a lower level, working directly with numeric delays and censoring windows.
+Both packages can be used independently of `EpiNow2`.
 
 # Set up
 
@@ -40,8 +48,12 @@ options(mc.cores = 2)
 
 # Simulating censored delay data
 
-We simulate 200 observations from a lognormal delay distribution with known parameters.
-`rprimarycensored()` generates delays subject to daily censoring and right truncation at `D = 30` days.
+We simulate 200 individual delay observations from a lognormal distribution with known parameters.
+Each call to `rprimarycensored()` returns a single censored delay, so `n = 200` produces 200 observations.
+
+Primary event dates are drawn uniformly over a two-week period.
+For each observation, `rprimarycensored()` applies daily censoring (both primary and secondary windows of width 1) and right truncation at `D` days.
+We set a per-observation truncation time `D = 30`, representing the time between the primary event and the date of data extraction.
 
 ```{r simulate}
 set.seed(42)
@@ -72,6 +84,14 @@ linelist <- data.frame(
 head(linelist)
 ```
 
+```{r hist, fig.width = 6, fig.height = 4}
+hist(
+  delays, breaks = 20,
+  main = "Simulated censored delays",
+  xlab = "Delay (days)", col = "steelblue", border = "white"
+)
+```
+
 The data frame has three columns:
 
 - `pdate_lwr`: lower bound of the primary event date (e.g. date of infection).
@@ -80,10 +100,12 @@ The data frame has three columns:
 
 Upper bounds for the primary and secondary event windows default to one day after the lower bounds (daily censoring).
 
+If you have numeric delays without dates, you can construct a date-based data frame using a dummy origin date (e.g. `pdate_lwr = as.Date("2020-01-01")`) and adding delays to derive `sdate_lwr` and `obs_date`.
+
 # Fitting the model
 
 We pass the linelist directly to `estimate_dist()`.
-Internally the function converts dates to numeric intervals, aggregates identical delay–censoring combinations, and fits the model via MCMC.
+Internally the function converts dates to numeric intervals, aggregates identical delay-censoring combinations, and fits the model via MCMC.
 
 ```{r fit}
 result <- estimate_dist(
@@ -95,34 +117,5 @@ result
 
 # Checking parameter recovery
 
-We compare the fitted posterior means to the true values.
-
-```{r recovery}
-fitted_meanlog <- result$parameters$meanlog$parameters$mean
-fitted_sdlog <- result$parameters$sdlog$parameters$mean
-
-data.frame(
-  parameter = c("meanlog", "sdlog"),
-  true = c(true_meanlog, true_sdlog),
-  fitted = round(c(fitted_meanlog, fitted_sdlog), 2)
-)
-```
-
-# What if I don't have dates?
-
-If you have numeric delay values without dates, there are two options.
-
-You can use [primarycensored](https://primarycensored.epinowcast.org/) directly, which works with numeric delays and provides the same underlying model.
-
-Alternatively, you can construct a date-based data frame from numeric delays using dummy dates:
-
-```{r numeric-delays, eval = FALSE}
-origin <- as.Date("2020-01-01")
-linelist <- data.frame(
-  pdate_lwr = origin,
-  sdate_lwr = origin + delays,
-  obs_date = origin + D
-)
-```
-
-This lets you use `estimate_dist()` as shown above.
+The printed output above shows the posterior summary for each parameter.
+The posterior credible intervals should overlap with the true values used in the simulation (`meanlog = 1.5`, `sdlog = 0.75`).
