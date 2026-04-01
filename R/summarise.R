@@ -1057,7 +1057,7 @@ summary.estimate_dist <- function(object,
   attr(out, "primary") <- if (object$args$primary_id == 1L) {
     "uniform"
   } else {
-    "expgrowth"
+    "exponentially tilted"
   }
   class(out) <- c("summary.estimate_dist", class(out))
 
