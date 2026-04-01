@@ -1,5 +1,20 @@
+skip_on_cran()
+
+# Integration tests (MCMC-based) ------------------------------------------
+# These tests run actual MCMC sampling and are slow.
+
+# Helper to generate date-based linelist from primarycensored delays
+generate_linelist <- function(delays, D, n = length(delays)) {
+  origin <- as.Date("2023-01-01")
+  pdate_lwr <- origin + sample(0:20, n, replace = TRUE)
+  data.frame(
+    pdate_lwr = pdate_lwr,
+    sdate_lwr = pdate_lwr + delays,
+    obs_date = pdate_lwr + D
+  )
+}
+
 test_that("correctly recovers lognormal parameters with date input", {
-  skip_on_cran()
   skip_if_not_installed("primarycensored")
 
   set.seed(123)
@@ -17,14 +32,7 @@ test_that("correctly recovers lognormal parameters with date input", {
     D = D
   )
 
-  # Convert to date-based data frame
-  origin <- as.Date("2023-01-01")
-  pdate_lwr <- origin + sample(0:20, 500, replace = TRUE)
-  linelist <- data.frame(
-    pdate_lwr = pdate_lwr,
-    sdate_lwr = pdate_lwr + delays,
-    obs_date = pdate_lwr + D
-  )
+  linelist <- generate_linelist(delays, D)
 
   result <- estimate_dist(
     linelist,
@@ -44,7 +52,6 @@ test_that("correctly recovers lognormal parameters with date input", {
 })
 
 test_that("correctly recovers gamma parameters with date input", {
-  skip_on_cran()
   skip_if_not_installed("primarycensored")
 
   set.seed(456)
@@ -62,13 +69,7 @@ test_that("correctly recovers gamma parameters with date input", {
     D = D
   )
 
-  origin <- as.Date("2023-01-01")
-  pdate_lwr <- origin + sample(0:20, 500, replace = TRUE)
-  linelist <- data.frame(
-    pdate_lwr = pdate_lwr,
-    sdate_lwr = pdate_lwr + delays,
-    obs_date = pdate_lwr + D
-  )
+  linelist <- generate_linelist(delays, D)
 
   result <- estimate_dist(
     linelist,
@@ -88,8 +89,6 @@ test_that("correctly recovers gamma parameters with date input", {
 })
 
 test_that("works as expected with numeric vector input", {
-  skip_on_cran()
-
   set.seed(789)
   delays <- as.integer(rlnorm(50, log(3), 0.3))
 
@@ -104,21 +103,7 @@ test_that("works as expected with numeric vector input", {
   expect_equal(result$distribution, "lognormal")
 })
 
-test_that("errors for missing required columns", {
-  bad_df <- data.frame(
-    x = as.Date("2023-01-01") + 1:10,
-    y = as.Date("2023-01-11") + 1:10
-  )
-
-  expect_error(
-    estimate_dist(bad_df, dist = "lognormal"),
-    "must have columns"
-  )
-})
-
 test_that("works as expected with expgrowth primary", {
-  skip_on_cran()
-
   set.seed(101)
   origin <- as.Date("2023-01-01")
   pdate_lwr <- origin + sample(0:20, 50, replace = TRUE)
@@ -139,6 +124,34 @@ test_that("works as expected with expgrowth primary", {
   )
 })
 
+# Input validation tests ---------------------------------------------------
+
+test_that("errors for missing required columns", {
+  bad_df <- data.frame(
+    x = as.Date("2023-01-01") + 1:10,
+    y = as.Date("2023-01-11") + 1:10
+  )
+
+  expect_error(
+    estimate_dist(bad_df, dist = "lognormal"),
+    "must have columns"
+  )
+})
+
+test_that("errors when obs_date is earlier than sdate_upr", {
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + 0:4,
+    sdate_lwr = origin + 5:9,
+    obs_date = origin + 3:7
+  )
+
+  expect_error(
+    estimate_dist(linelist, dist = "lognormal"),
+    "obs_date.*earlier than sdate_upr"
+  )
+})
+
 test_that("errors for expgrowth without primary_params", {
   delays <- rlnorm(50, log(5), 0.5)
 
@@ -152,7 +165,7 @@ test_that("errors for expgrowth without primary_params", {
   )
 })
 
-test_that("errors for bad distribution specifications", {
+test_that("errors for unsupported distribution", {
   delays <- rlnorm(50, log(5), 0.5)
 
   expect_error(
@@ -161,9 +174,9 @@ test_that("errors for bad distribution specifications", {
   )
 })
 
-test_that("estimate_delay correctly shows deprecation warning", {
-  skip_on_cran()
+# Deprecation tests --------------------------------------------------------
 
+test_that("estimate_delay correctly shows deprecation warning", {
   set.seed(111)
   delays <- rlnorm(30, log(5), 0.5)
 
