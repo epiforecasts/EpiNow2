@@ -262,9 +262,8 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' # Old way (deprecated):
 #' # estimate_delay(delays, samples = 1000, bootstraps = 10)
 #'
-#' # New way (recommended):
-#' # estimate_dist(delays, dist = "lognormal",
-#' #               stan = stan_opts(samples = 1000))
+#' # New way: see ?estimate_dist and
+#' # vignette("estimate-dist") for date-based usage
 #' }
 estimate_delay <- function(delays, ...) {
   lifecycle::deprecate_warn(
