@@ -1029,8 +1029,8 @@ summary.estimate_dist <- function(object,
   raw_samples <- extract_samples(object$fit, pars = "params")
   param_mat <- raw_samples$params
 
-  dist <- object$args$dist
-  param_names <- .get_param_names(dist)
+  dist_name <- object$args$dist
+  param_names <- .get_param_names(dist_name) # nolint: object_usage_linter.
 
   # Build long-format samples table
   samples_list <- lapply(seq_along(param_names), function(i) {
@@ -1048,7 +1048,7 @@ summary.estimate_dist <- function(object,
     CrIs = CrIs
   )
 
-  attr(out, "distribution") <- dist
+  attr(out, "distribution") <- dist_name
   attr(out, "max_value") <- object$args$max_value
   class(out) <- c("summary.estimate_dist", class(out))
 

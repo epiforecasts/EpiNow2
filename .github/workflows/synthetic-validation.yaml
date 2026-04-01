@@ -38,20 +38,13 @@ jobs:
             here
             scoringutils
             loo
-            primarycensored
             any::rmarkdown
             local::.
-      - name: Run synthetic validation (Rt)
+      - name: Run synthetic validation
         run: |
           Rscript -e '
-          source("inst/dev/recover-synthetic/rt.R")
-          source("inst/dev/recover-synthetic/eval_rt.R")
-          '
-
-      - name: Run synthetic validation (estimate_dist)
-        run: |
-          Rscript -e '
-          source("inst/dev/recover-synthetic/estimate_dist.R")
+          source("inst/dev/recover-synthetic/rt.R") 
+          source("inst/dev/recover-synthetic/eval_rt.R") 
           '
 
       - name: Upload validation figures
@@ -66,9 +59,7 @@ jobs:
         with:
           name: fits
           retention-days: 5
-          path: |
-            synthetic.rds
-            estimate_dist_synthetic.rds
+          path: synthetic.rds
 
       - name: Render synthetic recovery md
         run: |
