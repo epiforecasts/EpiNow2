@@ -41,11 +41,20 @@ test_that("correctly recovers lognormal parameters with date input", {
     verbose = FALSE
   )
 
-  expect_s3_class(result, "dist_spec")
-  expect_equal(result$distribution, "lognormal")
+  expect_s3_class(result, "estimate_dist")
+  expect_s3_class(result, "epinowfit")
+  expect_true(!is.null(result$fit))
+  expect_true(!is.null(result$args))
+  expect_true(!is.null(result$data))
 
-  est_meanlog <- result$parameters$meanlog$parameters$mean
-  est_sdlog <- result$parameters$sdlog$parameters$mean
+  params <- get_parameters(result)
+  expect_true("delay" %in% names(params))
+  dist_spec <- params$delay
+  expect_s3_class(dist_spec, "dist_spec")
+  expect_equal(dist_spec$distribution, "lognormal")
+
+  est_meanlog <- dist_spec$parameters$meanlog$parameters$mean
+  est_sdlog <- dist_spec$parameters$sdlog$parameters$mean
 
   expect_true(abs(est_meanlog - true_meanlog) < 0.3)
   expect_true(abs(est_sdlog - true_sdlog) < 0.2)
@@ -78,11 +87,16 @@ test_that("correctly recovers gamma parameters with date input", {
     verbose = FALSE
   )
 
-  expect_s3_class(result, "dist_spec")
-  expect_equal(result$distribution, "gamma")
+  expect_s3_class(result, "estimate_dist")
+  expect_s3_class(result, "epinowfit")
 
-  est_shape <- result$parameters$shape$parameters$mean
-  est_rate <- result$parameters$rate$parameters$mean
+  params <- get_parameters(result)
+  dist_spec <- params$delay
+  expect_s3_class(dist_spec, "dist_spec")
+  expect_equal(dist_spec$distribution, "gamma")
+
+  est_shape <- dist_spec$parameters$shape$parameters$mean
+  est_rate <- dist_spec$parameters$rate$parameters$mean
 
   expect_true(abs(est_shape - true_shape) < 1.5)
   expect_true(abs(est_rate - true_rate) < 0.5)

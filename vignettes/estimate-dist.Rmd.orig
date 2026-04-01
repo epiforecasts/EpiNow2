@@ -30,7 +30,8 @@ The censoring windows need not be daily; the date-based interface supports arbit
 The function uses a Stan model that vendors likelihood functions from the [primarycensored](https://primarycensored.epinowcast.org/) package.
 If you use `estimate_dist()`, please cite `primarycensored` in addition to `EpiNow2`.
 
-The fitted distribution is returned as a `<dist_spec>` object, ready for use in other _EpiNow2_ functions such as `estimate_infections()`.
+The result is an `<estimate_dist>` object (inheriting from `<epinowfit>`) that gives access to the Stan fit for diagnostics.
+Use `get_parameters()` to extract the fitted `<dist_spec>`, ready for use in other _EpiNow2_ functions such as `estimate_infections()`.
 Common use cases include estimating the incubation period (infection to symptom onset), the reporting delay (symptom onset to case report), or the serial interval (symptom onset in infector-infectee pairs).
 Generation time estimation (infection to infection) typically requires known infection times for both infector and infectee, which calls for more complex models such as those in [epidist](https://epidist.epinowcast.org/).
 
@@ -112,8 +113,11 @@ result <- estimate_dist(
   linelist,
   dist = "lognormal"
 )
-result
+params <- get_parameters(result)
+params$delay
 ```
+
+The `result` object also provides access to the Stan fit via `result$fit`, which can be used for convergence diagnostics.
 
 # Checking parameter recovery
 

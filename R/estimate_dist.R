@@ -55,8 +55,14 @@
 #' @param verbose Logical, print progress messages?
 #'   Defaults to FALSE.
 #'
-#' @return A `<dist_spec>` object summarising the fitted
-#'   distribution.
+#' @return An `<estimate_dist>` object (inheriting from
+#'   `<epinowfit>`) with components:
+#'   \describe{
+#'     \item{fit}{The Stan fit object.}
+#'     \item{args}{The Stan data list used for fitting.}
+#'     \item{data}{The input data.}
+#'   }
+#'   Use [get_parameters()] to extract the fitted `<dist_spec>`.
 #'
 #' @details
 #' The model fits an interval-censored delay distribution while
@@ -237,18 +243,24 @@ estimate_dist <- function(data,
   )
   fit <- fit_model(stan_args, id = "estimate_dist")
 
-  # Extract and convert to dist_spec
-  result <- .extract_to_dist_spec(
-    fit = fit,
-    dist = dist,
-    max_value = max_value %||% max(delay_data$delay_upr)
+  out <- list(
+    data = data,
+    args = c(
+      stan_data,
+      list(
+        dist = dist,
+        max_value = max_value %||% max(delay_data$delay_upr)
+      )
+    ),
+    fit = fit
   )
+  class(out) <- c("estimate_dist", "epinowfit", class(out))
 
   if (verbose) {
     cli::cli_alert_success("Fitting complete")
   }
 
-  result
+  out
 }
 
 #' Map distribution name to primarycensored ID

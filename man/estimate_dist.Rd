@@ -78,8 +78,14 @@ If not provided, inferred from data.}
 Defaults to FALSE.}
 }
 \value{
-A \verb{<dist_spec>} object summarising the fitted
-distribution.
+An \verb{<estimate_dist>} object (inheriting from
+\verb{<epinowfit>}) with components:
+\describe{
+\item{fit}{The Stan fit object.}
+\item{args}{The Stan data list used for fitting.}
+\item{data}{The input data.}
+}
+Use \code{\link[=get_parameters]{get_parameters()}} to extract the fitted \verb{<dist_spec>}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}

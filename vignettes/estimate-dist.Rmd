@@ -21,7 +21,8 @@ These biases arise routinely in epidemiological data where event times are recor
 The function uses a Stan model that vendors likelihood functions from the [primarycensored](https://primarycensored.epinowcast.org/) package.
 If you use `estimate_dist()`, please cite `primarycensored` in addition to `EpiNow2`.
 
-The fitted distribution is returned as a `<dist_spec>` object, ready for use in other _EpiNow2_ functions such as `estimate_infections()`.
+The result is an `<estimate_dist>` object (inheriting from `<epinowfit>`) that gives access to the Stan fit for diagnostics.
+Use `get_parameters()` to extract the fitted `<dist_spec>`, ready for use in other _EpiNow2_ functions such as `estimate_infections()`.
 
 For more flexible delay distribution modelling, see the [epidist](https://epidist.epinowcast.org/) package.
 
@@ -96,7 +97,8 @@ result <- estimate_dist(
   linelist,
   dist = "lognormal"
 )
-result
+params <- get_parameters(result)
+params$delay
 #> - lognormal distribution (max: 29):
 #>   meanlog:
 #>     - normal distribution:
@@ -118,8 +120,9 @@ We compare the fitted posterior means to the true values.
 
 
 ``` r
-fitted_meanlog <- result$parameters$meanlog$parameters$mean
-fitted_sdlog <- result$parameters$sdlog$parameters$mean
+delay <- params$delay
+fitted_meanlog <- delay$parameters$meanlog$parameters$mean
+fitted_sdlog <- delay$parameters$sdlog$parameters$mean
 
 data.frame(
   parameter = c("meanlog", "sdlog"),
