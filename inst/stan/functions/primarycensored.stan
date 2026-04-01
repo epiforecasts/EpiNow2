@@ -1,4 +1,4 @@
-// Stan functions from primarycensored version 1.3.0.9000
+// Stan functions from primarycensored version 1.4.0
 real expgrowth_lpdf(real x, real xmin, real xmax, real r) {
   if (x < xmin || x > xmax) {
     return negative_infinity();
@@ -6,7 +6,8 @@ real expgrowth_lpdf(real x, real xmin, real xmax, real r) {
   if (abs(r) < 1e-10) {
     return -log(xmax - xmin);
   }
-  return log(r) + r * (x - xmin) - log(exp(r * xmax) - exp(r * xmin));
+  return log(abs(r)) + r * (x - xmin) -
+    log(abs(exp(r * xmax) - exp(r * xmin)));
 }
 int check_for_analytical(int dist_id, int primary_id) {
   if (dist_id == 2 && primary_id == 1) return 1; // Gamma delay with Uniform primary
@@ -164,33 +165,6 @@ real primarycensored_analytical_lcdf_raw(data real d, int dist_id,
   }
   return negative_infinity();
 }
-vector primarycensored_analytical_truncation_bounds(
-  data real L, data real D,
-  int dist_id, array[] real params, data real pwindow,
-  int primary_id
-) {
-  vector[2] result;
-
-  // Get CDF at lower truncation point L
-  if (L <= 0) {
-    result[1] = negative_infinity();
-  } else {
-    result[1] = primarycensored_analytical_lcdf_raw(
-      L, dist_id, params, pwindow, primary_id
-    );
-  }
-
-  // Get CDF at upper truncation point D
-  if (is_inf(D)) {
-    result[2] = 0;
-  } else {
-    result[2] = primarycensored_analytical_lcdf_raw(
-      D, dist_id, params, pwindow, primary_id
-    );
-  }
-
-  return result;
-}
 real primarycensored_analytical_lcdf(data real d, int dist_id,
                                            array[] real params,
                                            data real pwindow, data real L,
@@ -203,14 +177,10 @@ real primarycensored_analytical_lcdf(data real d, int dist_id,
     d, dist_id, params, pwindow, primary_id
   );
 
-  if (result == negative_infinity()) {
-    return negative_infinity();
-  }
-
   // Apply truncation normalization
   if (!is_inf(D) || L > 0) {
-    vector[2] bounds = primarycensored_analytical_truncation_bounds(
-      L, D, dist_id, params, pwindow, primary_id
+    vector[2] bounds = primarycensored_truncation_bounds(
+      L, D, dist_id, params, pwindow, primary_id, primary_params
     );
     real log_cdf_L = bounds[1];
     real log_cdf_D = bounds[2];
@@ -231,25 +201,26 @@ real primarycensored_analytical_cdf(data real d, int dist_id,
 real dist_lcdf(real delay, array[] real params, int dist_id) {
   if (delay <= 0) return negative_infinity();
 
-  // Use if-else statements to handle different distribution types
+  // IDs match pcd_distributions$stan_id in R
   if (dist_id == 1) return lognormal_lcdf(delay | params[1], params[2]);
   else if (dist_id == 2) return gamma_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 3) return normal_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 3) return weibull_lcdf(delay | params[1], params[2]);
   else if (dist_id == 4) return exponential_lcdf(delay | params[1]);
-  else if (dist_id == 5) return weibull_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 6) return beta_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 7) return cauchy_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 8) return chi_square_lcdf(delay | params[1]);
-  else if (dist_id == 9) return inv_chi_square_lcdf(delay | params[1]);
-  else if (dist_id == 10) return double_exponential_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 11) return inv_gamma_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 12) return logistic_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 13) return pareto_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 14) return scaled_inv_chi_square_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 15) return student_t_lcdf(delay | params[1], params[2], params[3]);
-  else if (dist_id == 16) return uniform_lcdf(delay | params[1], params[2]);
-  else if (dist_id == 17) return von_mises_lcdf(delay | params[1], params[2]);
-  else reject("Invalid distribution identifier");
+  else if (dist_id == 9) return beta_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 12) return cauchy_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 13) return chi_square_lcdf(delay | params[1]);
+  else if (dist_id == 15) return gumbel_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 16) return inv_gamma_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 17) return logistic_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 18) return normal_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 19) return inv_chi_square_lcdf(delay | params[1]);
+  else if (dist_id == 20) return double_exponential_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 21) return pareto_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 22) return scaled_inv_chi_square_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 23) return student_t_lcdf(delay | params[1], params[2], params[3]);
+  else if (dist_id == 24) return uniform_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 25) return von_mises_lcdf(delay | params[1], params[2]);
+  else reject("Invalid distribution identifier: ", dist_id);
 }
 real primary_lpdf(real x, int primary_id, array[] real params, real xmin, real xmax) {
   // Implement switch for different primary distributions
