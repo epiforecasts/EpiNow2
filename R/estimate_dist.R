@@ -398,14 +398,14 @@ estimate_dist <- function(data,
   }
 
   # Check upper bounds >= lower bounds
-  if (any(data$pdate_upr < data$pdate_lwr)) {
+  if (any(data$pdate_upr <= data$pdate_lwr)) {
     cli::cli_abort(
-      "pdate_upr must be >= pdate_lwr for all rows"
+      "pdate_upr must be > pdate_lwr for all rows"
     )
   }
-  if (any(data$sdate_upr < data$sdate_lwr)) {
+  if (any(data$sdate_upr <= data$sdate_lwr)) {
     cli::cli_abort(
-      "sdate_upr must be >= sdate_lwr for all rows"
+      "sdate_upr must be > sdate_lwr for all rows"
     )
   }
   if (any(data$obs_date <= data$pdate_lwr)) {
