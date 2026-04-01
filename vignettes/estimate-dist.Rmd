@@ -73,17 +73,8 @@ delays <- mapply(
   pwindows, swindows, obs_times
 )
 
-# Observations where the secondary event window extends past
-# the observation time have not yet been fully observed and
-# would not appear in a real linelist.
-keep <- obs_times >= delays + swindows
-delays <- delays[keep]
-pwindows <- pwindows[keep]
-swindows <- swindows[keep]
-obs_times <- obs_times[keep]
-
 pdate_lwr <- as.Date("2023-01-01") +
-  sample(0:13, sum(keep), replace = TRUE)
+  sample(0:13, n, replace = TRUE)
 
 linelist <- data.frame(
   pdate_lwr = pdate_lwr,
@@ -92,6 +83,11 @@ linelist <- data.frame(
   sdate_upr = pdate_lwr + delays + swindows,
   obs_date = pdate_lwr + obs_times
 )
+
+# Observations where the secondary event window extends
+# past the observation date are not yet fully observed and
+# would not appear in a real linelist.
+linelist <- linelist[linelist$obs_date >= linelist$sdate_upr, ]
 
 head(linelist)
 #>    pdate_lwr  pdate_upr  sdate_lwr  sdate_upr   obs_date
@@ -155,10 +151,12 @@ We recommend setting priors based on what you know about the delay.
 
 For `meanlog`, the prior should reflect the expected mean delay on the log scale.
 If you expect a delay with a mean around 3--7 days, `log(5) ≈ 1.6` is a reasonable centre.
+A standard deviation of 0.5 on the log scale corresponds to roughly a factor of 1.6 uncertainty in the mean delay (since `exp(0.5) ≈ 1.6`), so the prior covers mean delays from about `5/1.6 ≈ 3` to `5 * 1.6 ≈ 8` days within one standard deviation.
 
 For `sdlog`, it helps to think in terms of the coefficient of variation (CV).
+For a lognormal distribution, `CV = sqrt(exp(sdlog²) - 1)` depends only on `sdlog`.
 A `sdlog` of 0.5 gives `CV ≈ 0.53` (the standard deviation is about half the mean), while `sdlog = 1.0` gives `CV ≈ 1.3` (very dispersed).
-For most epidemiological delays `sdlog` falls between about 0.3 and 1.0, so a prior centred on 0.5 with moderate uncertainty is a reasonable starting point.
+Here we centre on 0.5 because we expect moderate variability in this delay, with a fairly tight prior (`sd = 0.25`) to rule out very large values.
 
 We define the prior as a `dist_spec` and use `plot()` to check that the implied delay distributions are plausible before fitting.
 
