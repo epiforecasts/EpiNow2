@@ -1009,6 +1009,65 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
   out
 }
 
+#' Summarise results from estimate_dist
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Returns parameter summary statistics for the fitted delay
+#' distribution model.
+#'
+#' @param object A fitted model object from `estimate_dist()`
+#' @inheritParams calc_summary_measures
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A `<data.table>` with summary statistics for the delay
+#'   distribution parameters.
+#' @method summary estimate_dist
+#' @export
+summary.estimate_dist <- function(object,
+                                  CrIs = c(0.2, 0.5, 0.9),
+                                  ...) {
+  raw_samples <- extract_samples(object$fit, pars = "params")
+  param_mat <- raw_samples$params
+
+  dist <- object$args$dist
+  param_names <- .get_param_names(dist)
+
+  # Build long-format samples table
+  samples_list <- lapply(seq_along(param_names), function(i) {
+    data.table::data.table(
+      variable = param_names[i],
+      value = param_mat[, i]
+    )
+  })
+  param_samples <- data.table::rbindlist(samples_list)
+
+  out <- calc_summary_measures(
+    param_samples,
+    summarise_by = "variable",
+    order_by = "variable",
+    CrIs = CrIs
+  )
+
+  attr(out, "distribution") <- dist
+  attr(out, "max_value") <- object$args$max_value
+  class(out) <- c("summary.estimate_dist", class(out))
+
+  out
+}
+
+#' @export
+print.summary.estimate_dist <- function(x, ...) {
+  dist_type <- attr(x, "distribution")
+  max_val <- attr(x, "max_value")
+  cat(
+    "Delay distribution:", dist_type,
+    paste0("(max: ", max_val, ")"), "\n\n"
+  )
+  cat("Parameter estimates:\n")
+  print(data.table::as.data.table(x), ...)
+  invisible(x)
+}
+
 #' @export
 print.summary.estimate_truncation <- function(x, ...) {
   dist_type <- attr(x, "distribution")
