@@ -164,7 +164,7 @@ real primarycensored_analytical_lcdf_raw(data real d, int dist_id,
   }
   return negative_infinity();
 }
-vector primarycensored_analytical_truncation_bounds_lcdf(
+vector primarycensored_analytical_truncation_bounds(
   data real L, data real D,
   int dist_id, array[] real params, data real pwindow,
   int primary_id
@@ -209,7 +209,7 @@ real primarycensored_analytical_lcdf(data real d, int dist_id,
 
   // Apply truncation normalization
   if (!is_inf(D) || L > 0) {
-    vector[2] bounds = primarycensored_analytical_truncation_bounds_lcdf(
+    vector[2] bounds = primarycensored_analytical_truncation_bounds(
       L, D, dist_id, params, pwindow, primary_id
     );
     real log_cdf_L = bounds[1];
@@ -298,7 +298,7 @@ real primarycensored_apply_truncation(real log_cdf, real log_cdf_L,
     return log_cdf - log_normalizer;
   }
 }
-vector primarycensored_truncation_bounds_lcdf(
+vector primarycensored_truncation_bounds(
   data real L, data real D,
   int dist_id, array[] real params, data real pwindow,
   int primary_id, array[] real primary_params
@@ -360,7 +360,7 @@ real primarycensored_cdf(data real d, int dist_id, array[] real params,
     // Apply truncation normalization on log scale for numerical stability
     if (!is_inf(D) || L > 0) {
       real log_result = log(result);
-      vector[2] bounds = primarycensored_truncation_bounds_lcdf(
+      vector[2] bounds = primarycensored_truncation_bounds(
         L, D, dist_id, params, pwindow, primary_id, primary_params
       );
       real log_cdf_L = bounds[1];
@@ -404,7 +404,7 @@ real primarycensored_lcdf(data real d, int dist_id, array[] real params,
 
   // Handle truncation normalization
   if (!is_inf(D) || L > 0) {
-    vector[2] bounds = primarycensored_truncation_bounds_lcdf(
+    vector[2] bounds = primarycensored_truncation_bounds(
       L, D, dist_id, params, pwindow, primary_id, primary_params
     );
     real log_cdf_L = bounds[1];
