@@ -52,6 +52,12 @@
 #' @param max_value Numeric, maximum delay value for PMF.
 #'   If not provided, inferred from data.
 #'
+#' @param obs_time_threshold Numeric, multiplier for the
+#'   obs-time-to-Inf heuristic. Observations where
+#'   `relative_obs_time > max(delay_upr) * obs_time_threshold`
+#'   are treated as untruncated. Default 2, following
+#'   `epidist`. Set to `Inf` to disable.
+#'
 #' @param verbose Logical, print progress messages?
 #'   Defaults to FALSE.
 #'
@@ -153,6 +159,7 @@ estimate_dist <- function(data,
                           primary_params = numeric(0),
                           stan = stan_opts(),
                           max_value = NULL,
+                          obs_time_threshold = 2,
                           verbose = FALSE) {
 
   dist_id <- .get_dist_id(dist)
@@ -188,7 +195,9 @@ estimate_dist <- function(data,
   }
 
   # Convert data to aggregated format
-  delay_data <- .prepare_linelist_data(data, verbose)
+  delay_data <- .prepare_linelist_data(
+    data, obs_time_threshold, verbose
+  )
 
   # Build params list
   lbounds <- lower_bounds(dist)
@@ -318,7 +327,9 @@ estimate_dist <- function(data,
 #' @return A data frame with columns: `delay_lwr`, `delay_upr`,
 #'   `pwindow`, `relative_obs_time`, `n`.
 #' @keywords internal
-.prepare_linelist_data <- function(data, verbose = FALSE) {
+.prepare_linelist_data <- function(data,
+                                   obs_time_threshold = 2,
+                                   verbose = FALSE) {
 
   if (!is.data.frame(data)) {
     cli::cli_abort("data must be a data frame")
@@ -337,21 +348,24 @@ estimate_dist <- function(data,
     ))
   }
 
-  if (verbose) {
-    cli::cli_alert_info(
-      "Converting date-based data to numeric intervals"
-    )
-  }
-
-  # Fill defaults
+  # Fill defaults with cli messages
   if (is.null(data$pdate_upr)) {
     data$pdate_upr <- data$pdate_lwr + 1
+    cli::cli_inform(
+      "Assuming daily primary censoring (pdate_upr = pdate_lwr + 1)"
+    )
   }
   if (is.null(data$sdate_upr)) {
     data$sdate_upr <- data$sdate_lwr + 1
+    cli::cli_inform(
+      "Assuming daily secondary censoring (sdate_upr = sdate_lwr + 1)"
+    )
   }
   if (is.null(data$obs_date)) {
     data$obs_date <- max(data$sdate_upr)
+    cli::cli_inform(
+      "No obs_date supplied, using max(sdate_upr): {max(data$obs_date)}"
+    )
   }
   if (is.null(data$n)) {
     data$n <- 1L
@@ -410,9 +424,19 @@ estimate_dist <- function(data,
 
   # Obs-time-to-Inf heuristic: if relative_obs_time is much
   # larger than the max delay, treat as untruncated.
-  # Threshold of 2x follows epidist's obs_time_threshold.
+  # Default threshold follows epidist's obs_time_threshold.
   max_delay <- max(delay_upr)
-  far_from_truncation <- relative_obs_time > max_delay * 2
+  threshold <- max_delay * obs_time_threshold
+  far_from_truncation <- relative_obs_time > threshold
+  if (any(far_from_truncation)) {
+    cli::cli_inform(
+      paste(
+        "Setting {sum(far_from_truncation)} observation(s)",
+        "with obs_time > {round(threshold, 1)} to",
+        "untruncated (Inf)"
+      )
+    )
+  }
   relative_obs_time[far_from_truncation] <- Inf
 
   # Aggregate by unique combinations
