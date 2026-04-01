@@ -206,6 +206,19 @@ test_that("errors for missing required columns", {
   )
 })
 
+test_that("errors for negative delays", {
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + 5:9,
+    sdate_lwr = origin + 0:4
+  )
+
+  expect_error(
+    estimate_dist(linelist, dist = "lognormal"),
+    "negative delay"
+  )
+})
+
 test_that("errors when obs_date is earlier than sdate_upr", {
   origin <- as.Date("2023-01-01")
   linelist <- data.frame(

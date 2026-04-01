@@ -381,19 +381,16 @@ estimate_dist <- function(data,
   pwindow <- as.integer(ptime_upr - ptime_lwr)
   relative_obs_time <- obs_time - ptime_lwr
 
-  # Filter out invalid delays first
-  valid <- delay_lwr >= 0
-  if (!all(valid)) {
-    if (verbose) {
-      cli::cli_alert_warning(
-        "Removed {sum(!valid)} observations with negative delays"
-      )
-    }
-    delay_lwr <- delay_lwr[valid]
-    delay_upr <- delay_upr[valid]
-    pwindow <- pwindow[valid]
-    relative_obs_time <- relative_obs_time[valid]
-    data <- data[valid, , drop = FALSE]
+  # Check for negative delays (sdate_lwr < pdate_lwr)
+  n_negative <- sum(delay_lwr < 0)
+  if (n_negative > 0) {
+    cli::cli_abort(c(
+      "x" = paste(
+        "{n_negative} observation(s) have sdate_lwr",
+        "earlier than pdate_lwr (negative delay)"
+      ),
+      "i" = "Check your data for date errors."
+    ))
   }
 
   # Validate obs_date >= sdate_upr for each observation
