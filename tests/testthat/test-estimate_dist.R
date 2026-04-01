@@ -98,8 +98,68 @@ test_that("correctly recovers gamma parameters with date input", {
   est_shape <- dist_spec$parameters$shape$parameters$mean
   est_rate <- dist_spec$parameters$rate$parameters$mean
 
-  expect_true(abs(est_shape - true_shape) < 1.5)
-  expect_true(abs(est_rate - true_rate) < 0.5)
+  expect_true(abs(est_shape - true_shape) < 0.75)
+  expect_true(abs(est_rate - true_rate) < 0.3)
+})
+
+test_that("correctly handles varying censoring windows", {
+  skip_if_not_installed("primarycensored")
+
+  set.seed(789)
+  n <- 500
+  true_meanlog <- 1.5
+  true_sdlog <- 0.75
+
+  pwindows <- sample.int(2, n, replace = TRUE)
+  swindows <- sample.int(2, n, replace = TRUE)
+  obs_times <- sample(20:30, n, replace = TRUE)
+
+  delays <- mapply(
+    function(pw, sw, D) {
+      primarycensored::rprimarycensored(
+        1, rlnorm,
+        meanlog = true_meanlog, sdlog = true_sdlog,
+        pwindow = pw, swindow = sw, D = D
+      )
+    },
+    pwindows, swindows, obs_times
+  )
+
+  # Filter observations not yet fully observed
+  keep <- obs_times >= delays + swindows
+  delays <- delays[keep]
+  pwindows <- pwindows[keep]
+  swindows <- swindows[keep]
+  obs_times <- obs_times[keep]
+
+  pdate_lwr <- as.Date("2023-01-01") +
+    sample(0:13, sum(keep), replace = TRUE)
+
+  linelist <- data.frame(
+    pdate_lwr = pdate_lwr,
+    pdate_upr = pdate_lwr + pwindows,
+    sdate_lwr = pdate_lwr + delays,
+    sdate_upr = pdate_lwr + delays + swindows,
+    obs_date = pdate_lwr + obs_times
+  )
+
+  result <- estimate_dist(
+    linelist,
+    dist = "lognormal",
+    stan = stan_opts(samples = 1000, chains = 2),
+    verbose = FALSE
+  )
+
+  expect_s3_class(result, "estimate_dist")
+  params <- get_parameters(result)
+  dist_spec <- params$delay
+  expect_equal(dist_spec$distribution, "lognormal")
+
+  est_meanlog <- dist_spec$parameters$meanlog$parameters$mean
+  est_sdlog <- dist_spec$parameters$sdlog$parameters$mean
+
+  expect_true(abs(est_meanlog - true_meanlog) < 0.3)
+  expect_true(abs(est_sdlog - true_sdlog) < 0.2)
 })
 
 test_that("errors for numeric vector input", {

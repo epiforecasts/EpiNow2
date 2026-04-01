@@ -72,8 +72,17 @@ delays <- mapply(
   pwindows, swindows, obs_times
 )
 
+# Observations where the secondary event window extends past
+# the observation time have not yet been fully observed and
+# would not appear in a real linelist.
+keep <- obs_times >= delays + swindows
+delays <- delays[keep]
+pwindows <- pwindows[keep]
+swindows <- swindows[keep]
+obs_times <- obs_times[keep]
+
 pdate_lwr <- as.Date("2023-01-01") +
-  sample(0:13, n, replace = TRUE)
+  sample(0:13, sum(keep), replace = TRUE)
 
 linelist <- data.frame(
   pdate_lwr = pdate_lwr,
@@ -146,10 +155,6 @@ result <- estimate_dist(
   linelist,
   dist = "lognormal"
 )
-#> Error in `.prepare_linelist_data()` at finish-primarycensored/R/estimate_dist.R:191:3:
-#> ✖ 2 observation(s) have obs_date earlier than sdate_upr
-#> ℹ obs_date must be >= sdate_upr for all rows. Increase obs_date or check your
-#>   data.
 ```
 
 The `result` object is an `estimate_dist` object that inherits from `epinowfit`.
@@ -158,8 +163,17 @@ Printing it shows a posterior summary of the fitted parameters.
 
 ``` r
 result
-#> Error:
-#> ! object 'result' not found
+#> Delay distribution: lognormal (max: 14) 
+#> 
+#> Parameter estimates:
+#>    variable    median      mean         sd  lower_90  lower_50  lower_20
+#>      <char>     <num>     <num>      <num>     <num>     <num>     <num>
+#> 1:  meanlog 1.4076213 1.4152854 0.09906318 1.2652369 1.3485551 1.3824484
+#> 2:    sdlog 0.8021084 0.8084836 0.08612721 0.6768883 0.7479874 0.7819483
+#>     upper_20  upper_50  upper_90
+#>        <num>     <num>     <num>
+#> 1: 1.4299885 1.4773864 1.5917930
+#> 2: 0.8234871 0.8647088 0.9595202
 ```
 
 For convergence diagnostics, the underlying Stan fit is accessible via `result$fit`.
@@ -167,21 +181,40 @@ For convergence diagnostics, the underlying Stan fit is accessible via `result$f
 
 ``` r
 rstan::summary(result$fit)$summary
-#> Error in `h()`:
-#> ! error in evaluating the argument 'object' in selecting a method for function 'summary': object 'result' not found
+#>                         mean     se_mean         sd         2.5%          25%
+#> params[1]          1.4152854 0.003706302 0.09906318    1.2359888    1.3485551
+#> params[2]          0.8084836 0.003338173 0.08612721    0.6530443    0.7479874
+#> delay_params[1]    1.4152854 0.003706302 0.09906318    1.2359888    1.3485551
+#> delay_params[2]    0.8084836 0.003338173 0.08612721    0.6530443    0.7479874
+#> lp__            -374.4330489 0.041535354 1.08697693 -377.2839903 -374.8752479
+#>                          50%          75%        97.5%    n_eff      Rhat
+#> params[1]          1.4076213    1.4773864    1.6273874 714.4027 1.0000169
+#> params[2]          0.8021084    0.8647088    0.9962613 665.6760 1.0015496
+#> delay_params[1]    1.4076213    1.4773864    1.6273874 714.4027 1.0000169
+#> delay_params[2]    0.8021084    0.8647088    0.9962613 665.6760 1.0015496
+#> lp__            -374.1213513 -373.6553663 -373.3761854 684.8648 0.9997824
 ```
 
 We can extract the fitted distribution as a `dist_spec` object using `get_parameters()`.
-This is useful for passing the result directly to other EpiNow2 functions such as `estimate_infections()` via `delay_opts()`.
+This is useful for passing the result directly to other `EpiNow2` functions such as `estimate_infections()` via `delay_opts()`.
 
 
 ``` r
 params <- get_parameters(result)
-#> Error:
-#> ! object 'result' not found
 params$delay
-#> Error:
-#> ! object 'params' not found
+#> - lognormal distribution (max: 14):
+#>   meanlog:
+#>     - normal distribution:
+#>       mean:
+#>         1.4
+#>       sd:
+#>         0.099
+#>   sdlog:
+#>     - normal distribution:
+#>       mean:
+#>         0.81
+#>       sd:
+#>         0.086
 ```
 
 # Checking parameter recovery
@@ -193,27 +226,17 @@ We can check how well the model recovers the true parameters by comparing the fi
 posterior <- extract_samples(
   result$fit, pars = "delay_params"
 )
-#> Error:
-#> ! object 'result' not found
 post_meanlog <- posterior$delay_params[, 1]
-#> Error:
-#> ! object 'posterior' not found
 post_sdlog <- posterior$delay_params[, 2]
-#> Error:
-#> ! object 'posterior' not found
 
 x_seq <- seq(0.01, 15, length.out = 200)
 
 # Sample 100 posterior draws for the density
 set.seed(1)
 draw_idx <- sample(length(post_meanlog), 100)
-#> Error:
-#> ! object 'post_meanlog' not found
 post_densities <- sapply(draw_idx, function(i) {
   dlnorm(x_seq, post_meanlog[i], post_sdlog[i])
 })
-#> Error:
-#> ! object 'draw_idx' not found
 
 plot_df <- data.frame(
   x = x_seq,
@@ -224,8 +247,6 @@ plot_df <- data.frame(
   post_lower = apply(post_densities, 1, quantile, 0.05),
   post_upper = apply(post_densities, 1, quantile, 0.95)
 )
-#> Error:
-#> ! object 'post_densities' not found
 
 ggplot(plot_df, aes(x = x)) +
   geom_ribbon(
@@ -253,9 +274,9 @@ ggplot(plot_df, aes(x = x)) +
   ) +
   theme_minimal() +
   theme(legend.position = "bottom")
-#> Error:
-#> ! object 'plot_df' not found
 ```
+
+![plot of chunk recovery-plot](figure/recovery-plot-1.png)
 
 The shaded region shows the 90% posterior interval for the density, with the posterior median as a solid line and the true density as a dashed line.
 The posterior credible intervals should overlap with the true values used in the simulation (`meanlog = 1.5`, `sdlog = 0.75`).

@@ -73,8 +73,17 @@ delays <- mapply(
   pwindows, swindows, obs_times
 )
 
+# Observations where the secondary event window extends past
+# the observation time have not yet been fully observed and
+# would not appear in a real linelist.
+keep <- obs_times >= delays + swindows
+delays <- delays[keep]
+pwindows <- pwindows[keep]
+swindows <- swindows[keep]
+obs_times <- obs_times[keep]
+
 pdate_lwr <- as.Date("2023-01-01") +
-  sample(0:13, n, replace = TRUE)
+  sample(0:13, sum(keep), replace = TRUE)
 
 linelist <- data.frame(
   pdate_lwr = pdate_lwr,
@@ -152,7 +161,7 @@ rstan::summary(result$fit)$summary
 ```
 
 We can extract the fitted distribution as a `dist_spec` object using `get_parameters()`.
-This is useful for passing the result directly to other EpiNow2 functions such as `estimate_infections()` via `delay_opts()`.
+This is useful for passing the result directly to other `EpiNow2` functions such as `estimate_infections()` via `delay_opts()`.
 
 ```{r extract-params}
 params <- get_parameters(result)
