@@ -25,6 +25,23 @@ stan_code <- pcd_load_stan_functions(
   output_file = output_file
 )
 
+# Workaround for epinowcast/primarycensored#295:
+# pcd_load_stan_functions() appends _lcdf to
+# truncation_bounds functions that return vector, breaking
+# rstan. Rename them until the upstream fix lands.
+code <- readLines(output_file)
+code <- gsub(
+  "primarycensored_analytical_truncation_bounds_lcdf",
+  "primarycensored_analytical_truncation_bounds",
+  code
+)
+code <- gsub(
+  "primarycensored_truncation_bounds_lcdf",
+  "primarycensored_truncation_bounds",
+  code
+)
+writeLines(code, output_file)
+
 version <- packageVersion("primarycensored")
 all_funcs <- unique(unlist(lapply(
   funcs, pcd_stan_function_deps
