@@ -126,23 +126,21 @@ Primary event parameters are not estimated.
 }
 \examples{
 \donttest{
-# Fit lognormal distribution with default priors
-delays <- rlnorm(100, log(5), 0.5)
-result <- estimate_dist(delays, dist = "lognormal")
-
-# Fit with date-based input using proper censored data
+# Fit lognormal distribution from date-based linelist
 if (requireNamespace("primarycensored", quietly = TRUE)) {
   set.seed(1)
   n <- 100
+  D <- 30
   pdate_lwr <- as.Date("2023-01-01") + rpois(n, 5)
   delays_sim <- primarycensored::rprimarycensored(
     n = n, rdist = rlnorm,
     meanlog = log(5), sdlog = 0.5,
-    pwindow = 1, D = 30, dprimary = dunif
+    pwindow = 1, D = D
   )
   linelist <- data.frame(
     pdate_lwr = pdate_lwr,
-    sdate_lwr = pdate_lwr + delays_sim
+    sdate_lwr = pdate_lwr + delays_sim,
+    obs_date = pdate_lwr + D
   )
   result <- estimate_dist(linelist, dist = "lognormal")
 }

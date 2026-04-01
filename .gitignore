@@ -50,3 +50,6 @@ inst/dev/benchmark-results.md
 
 # Claude
 .claude/*
+
+# Local context symlinks
+context-*
