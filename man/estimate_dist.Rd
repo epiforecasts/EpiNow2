@@ -18,6 +18,7 @@ estimate_dist(
   primary_params = numeric(0),
   stan = stan_opts(),
   max_value = NULL,
+  obs_time_threshold = 2,
   verbose = FALSE
 )
 }
@@ -73,6 +74,12 @@ settings if desired.}
 
 \item{max_value}{Numeric, maximum delay value for PMF.
 If not provided, inferred from data.}
+
+\item{obs_time_threshold}{Numeric, multiplier for the
+obs-time-to-Inf heuristic. Observations where
+\code{relative_obs_time > max(delay_upr) * obs_time_threshold}
+are treated as untruncated. Default 2, following
+\code{epidist}. Set to \code{Inf} to disable.}
 
 \item{verbose}{Logical, print progress messages?
 Defaults to FALSE.}

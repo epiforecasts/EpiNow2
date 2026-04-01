@@ -4,7 +4,7 @@
 \alias{.prepare_linelist_data}
 \title{Prepare linelist data for delay estimation}
 \usage{
-.prepare_linelist_data(data, verbose = FALSE)
+.prepare_linelist_data(data, obs_time_threshold = 2, verbose = FALSE)
 }
 \arguments{
 \item{data}{A data frame with date columns (\code{pdate_lwr},
