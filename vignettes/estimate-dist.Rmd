@@ -105,42 +105,31 @@ head(linelist)
 
 
 ``` r
-# Compute the expected PMF under censoring and truncation
-D_plot <- max(obs_times)
-max_d <- D_plot - 1L
-pmf <- dprimarycensored(
-  0:max_d,
-  plnorm,
-  meanlog = true_meanlog, sdlog = true_sdlog,
-  pwindow = 1, swindow = 1, D = D_plot
-)
-
-pmf_df <- data.frame(
-  delay = 0:max_d,
-  pmf = pmf
-)
-
 ggplot(data.frame(delay = delays), aes(x = delay)) +
   geom_histogram(
     aes(y = after_stat(density)),
     binwidth = 1, fill = "#4292C6", colour = "white"
   ) +
-  geom_col(
-    data = pmf_df, aes(x = delay, y = pmf),
-    fill = NA, colour = "#252525", linewidth = 0.5
+  stat_function(
+    fun = dlnorm,
+    args = list(
+      meanlog = true_meanlog, sdlog = true_sdlog
+    ),
+    linewidth = 1
   ) +
   labs(
     x = "Delay (days)",
     y = "Density",
-    title = "Observed delays vs expected censored PMF"
+    title = "Observed delays vs true distribution"
   ) +
   theme_minimal()
 ```
 
 ![plot of chunk plot-delays](estimate-dist-plot-delays-1.png)
 
-The histogram shows the observed censored delays.
-The outlined bars show the expected PMF under the true distribution with censoring and truncation, computed using `primarycensored::dprimarycensored()`.
+The histogram shows the observed delays after censoring and truncation.
+The solid line shows the true underlying lognormal density.
+The gap between the two illustrates the bias introduced by censoring and truncation, which `estimate_dist()` corrects for.
 
 The data frame has five columns:
 
@@ -183,14 +172,14 @@ result
 #> Primary event: uniform 
 #> 
 #> Parameter estimates:
-#>    variable    median      mean         sd lower_90  lower_50  lower_20
-#>      <char>     <num>     <num>      <num>    <num>     <num>     <num>
-#> 1:  meanlog 1.4041290 1.4188660 0.11389326 1.264373 1.3420596 1.3807755
-#> 2:    sdlog 0.8030721 0.8126087 0.08967779 0.683790 0.7504613 0.7839248
+#>    variable    median      mean         sd  lower_90  lower_50  lower_20
+#>      <char>     <num>     <num>      <num>     <num>     <num>     <num>
+#> 1:  meanlog 1.4076213 1.4152854 0.09906318 1.2652369 1.3485551 1.3824484
+#> 2:    sdlog 0.8021084 0.8084836 0.08612721 0.6768883 0.7479874 0.7819483
 #>     upper_20  upper_50  upper_90
 #>        <num>     <num>     <num>
-#> 1: 1.4321519 1.4802847 1.6082144
-#> 2: 0.8239009 0.8612665 0.9740673
+#> 1: 1.4299885 1.4773864 1.5917930
+#> 2: 0.8234871 0.8647088 0.9595202
 ```
 
 For convergence diagnostics, the underlying Stan fit is accessible via `result$fit`.
@@ -199,17 +188,17 @@ For convergence diagnostics, the underlying Stan fit is accessible via `result$f
 ``` r
 rstan::summary(result$fit)$summary
 #>                         mean     se_mean         sd         2.5%          25%
-#> params[1]          1.4188660 0.004725210 0.11389326    1.2378183    1.3420596
-#> params[2]          0.8126087 0.003669726 0.08967779    0.6647282    0.7504613
-#> delay_params[1]    1.4188660 0.004725210 0.11389326    1.2378183    1.3420596
-#> delay_params[2]    0.8126087 0.003669726 0.08967779    0.6647282    0.7504613
-#> lp__            -374.4704901 0.048080995 1.14271274 -377.5303759 -374.8431346
-#>                          50%          75%       97.5%    n_eff     Rhat
-#> params[1]          1.4041290    1.4802847    1.692204 580.9702 1.004724
-#> params[2]          0.8030721    0.8612665    1.007498 597.1762 1.002489
-#> delay_params[1]    1.4041290    1.4802847    1.692204 580.9702 1.004724
-#> delay_params[2]    0.8030721    0.8612665    1.007498 597.1762 1.002489
-#> lp__            -374.1406768 -373.6679174 -373.383212 564.8424 1.006961
+#> params[1]          1.4152854 0.003706302 0.09906318    1.2359888    1.3485551
+#> params[2]          0.8084836 0.003338173 0.08612721    0.6530443    0.7479874
+#> delay_params[1]    1.4152854 0.003706302 0.09906318    1.2359888    1.3485551
+#> delay_params[2]    0.8084836 0.003338173 0.08612721    0.6530443    0.7479874
+#> lp__            -374.4330489 0.041535354 1.08697693 -377.2839903 -374.8752479
+#>                          50%          75%        97.5%    n_eff      Rhat
+#> params[1]          1.4076213    1.4773864    1.6273874 714.4027 1.0000169
+#> params[2]          0.8021084    0.8647088    0.9962613 665.6760 1.0015496
+#> delay_params[1]    1.4076213    1.4773864    1.6273874 714.4027 1.0000169
+#> delay_params[2]    0.8021084    0.8647088    0.9962613 665.6760 1.0015496
+#> lp__            -374.1213513 -373.6553663 -373.3761854 684.8648 0.9997824
 ```
 
 We can extract the fitted distribution as a `dist_spec` object using `get_parameters()`.
@@ -225,13 +214,13 @@ params$delay
 #>       mean:
 #>         1.4
 #>       sd:
-#>         0.11
+#>         0.099
 #>   sdlog:
 #>     - normal distribution:
 #>       mean:
 #>         0.81
 #>       sd:
-#>         0.09
+#>         0.086
 ```
 
 # Checking parameter recovery

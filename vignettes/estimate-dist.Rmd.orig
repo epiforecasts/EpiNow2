@@ -99,40 +99,29 @@ head(linelist)
 ```
 
 ```{r plot-delays, fig.width = 6, fig.height = 4}
-# Compute the expected PMF under censoring and truncation
-D_plot <- max(obs_times)
-max_d <- D_plot - 1L
-pmf <- dprimarycensored(
-  0:max_d,
-  plnorm,
-  meanlog = true_meanlog, sdlog = true_sdlog,
-  pwindow = 1, swindow = 1, D = D_plot
-)
-
-pmf_df <- data.frame(
-  delay = 0:max_d,
-  pmf = pmf
-)
-
 ggplot(data.frame(delay = delays), aes(x = delay)) +
   geom_histogram(
     aes(y = after_stat(density)),
     binwidth = 1, fill = "#4292C6", colour = "white"
   ) +
-  geom_col(
-    data = pmf_df, aes(x = delay, y = pmf),
-    fill = NA, colour = "#252525", linewidth = 0.5
+  stat_function(
+    fun = dlnorm,
+    args = list(
+      meanlog = true_meanlog, sdlog = true_sdlog
+    ),
+    linewidth = 1
   ) +
   labs(
     x = "Delay (days)",
     y = "Density",
-    title = "Observed delays vs expected censored PMF"
+    title = "Observed delays vs true distribution"
   ) +
   theme_minimal()
 ```
 
-The histogram shows the observed censored delays.
-The outlined bars show the expected PMF under the true distribution with censoring and truncation, computed using `primarycensored::dprimarycensored()`.
+The histogram shows the observed delays after censoring and truncation.
+The solid line shows the true underlying lognormal density.
+The gap between the two illustrates the bias introduced by censoring and truncation, which `estimate_dist()` corrects for.
 
 The data frame has five columns:
 
