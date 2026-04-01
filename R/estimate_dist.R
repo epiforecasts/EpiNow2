@@ -408,9 +408,9 @@ estimate_dist <- function(data,
       "sdate_upr must be >= sdate_lwr for all rows"
     )
   }
-  if (any(data$obs_date < data$pdate_lwr)) {
+  if (any(data$obs_date <= data$pdate_lwr)) {
     cli::cli_abort(
-      "obs_date must be >= pdate_lwr for all rows"
+      "obs_date must be > pdate_lwr for all rows"
     )
   }
 
