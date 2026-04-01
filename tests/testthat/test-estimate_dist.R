@@ -167,7 +167,7 @@ test_that("errors for numeric vector input", {
 
   expect_error(
     estimate_dist(delays, dist = "lognormal"),
-    "data must be a data frame"
+    "data.frame"
   )
 })
 
