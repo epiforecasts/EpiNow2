@@ -119,6 +119,9 @@
 #'   \href{https://epidist.epinowcast.org/}{epidist} package for
 #'   more advanced delay distribution modelling.
 #'
+#' @importFrom checkmate assert_string assert_list assert_number
+#'   assert_numeric assert_logical assert_date
+#'   assert_data_frame assert_integerish
 #' @inheritParams estimate_infections
 #' @export
 #' @examples
@@ -161,6 +164,14 @@ estimate_dist <- function(data,
                           max_value = NULL,
                           obs_time_threshold = 2,
                           verbose = FALSE) {
+
+  # Validate inputs
+  assert_string(dist)
+  assert_list(priors)
+  assert_string(primary)
+  assert_numeric(primary_params)
+  assert_number(obs_time_threshold, lower = 0)
+  assert_logical(verbose, len = 1)
 
   dist_id <- .get_dist_id(dist)
   param_names <- .get_param_names(dist)
@@ -331,9 +342,7 @@ estimate_dist <- function(data,
                                    obs_time_threshold = 2,
                                    verbose = FALSE) {
 
-  if (!is.data.frame(data)) {
-    cli::cli_abort("data must be a data frame")
-  }
+  assert_data_frame(data)
 
   # Validate required columns
   required <- c("pdate_lwr", "sdate_lwr")
@@ -349,37 +358,60 @@ estimate_dist <- function(data,
   }
 
   # Validate column types
-  date_cols <- c("pdate_lwr", "sdate_lwr")
-  for (col in date_cols) {
-    if (!inherits(data[[col]], "Date")) {
-      cli::cli_abort(c(
-        "x" = "Column {.var {col}} must be of class Date",
-        "i" = "Found: {class(data[[col]])[1]}"
-      ))
-    }
-  }
+  assert_date(data$pdate_lwr, .var.name = "pdate_lwr")
+  assert_date(data$sdate_lwr, .var.name = "sdate_lwr")
 
-  # Fill defaults with cli messages
-  if (is.null(data$pdate_upr)) {
+  # Validate optional columns if present, default if absent
+  if (!is.null(data$pdate_upr)) {
+    assert_date(data$pdate_upr, .var.name = "pdate_upr")
+  } else {
     data$pdate_upr <- data$pdate_lwr + 1
     cli::cli_inform(
-      "Assuming daily primary censoring (pdate_upr = pdate_lwr + 1)"
+      "Assuming daily primary censoring \\
+      (pdate_upr = pdate_lwr + 1)"
     )
   }
-  if (is.null(data$sdate_upr)) {
+  if (!is.null(data$sdate_upr)) {
+    assert_date(data$sdate_upr, .var.name = "sdate_upr")
+  } else {
     data$sdate_upr <- data$sdate_lwr + 1
     cli::cli_inform(
-      "Assuming daily secondary censoring (sdate_upr = sdate_lwr + 1)"
+      "Assuming daily secondary censoring \\
+      (sdate_upr = sdate_lwr + 1)"
     )
   }
-  if (is.null(data$obs_date)) {
+  if (!is.null(data$obs_date)) {
+    assert_date(data$obs_date, .var.name = "obs_date")
+  } else {
     data$obs_date <- max(data$sdate_upr)
     cli::cli_inform(
-      "No obs_date supplied, using max(sdate_upr): {max(data$obs_date)}"
+      "No obs_date supplied, using \\
+      max(sdate_upr): {max(data$obs_date)}"
     )
   }
-  if (is.null(data$n)) {
+  if (!is.null(data$n)) {
+    assert_integerish(
+      data$n, lower = 1, .var.name = "n"
+    )
+  } else {
     data$n <- 1L
+  }
+
+  # Check upper bounds >= lower bounds
+  if (any(data$pdate_upr < data$pdate_lwr)) {
+    cli::cli_abort(
+      "pdate_upr must be >= pdate_lwr for all rows"
+    )
+  }
+  if (any(data$sdate_upr < data$sdate_lwr)) {
+    cli::cli_abort(
+      "sdate_upr must be >= sdate_lwr for all rows"
+    )
+  }
+  if (any(data$obs_date < data$pdate_lwr)) {
+    cli::cli_abort(
+      "obs_date must be >= pdate_lwr for all rows"
+    )
   }
 
   # Convert dates to numeric relative to min(pdate_lwr)
