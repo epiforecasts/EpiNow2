@@ -150,7 +150,6 @@ If you expect a delay with a mean around 3--7 days, `log(5) ≈ 1.6` is a reason
 
 For `sdlog`, it helps to think in terms of the coefficient of variation (CV).
 A `sdlog` of 0.5 gives `CV ≈ 0.53` (the standard deviation is about half the mean), while `sdlog = 1.0` gives `CV ≈ 1.3` (very dispersed).
-For most epidemiological delays `sdlog` falls between about 0.3 and 1.0, so a prior centred on 0.5 with moderate uncertainty is a reasonable starting point.
 
 We define the prior as a `dist_spec` and use `plot()` to check that the implied delay distributions are plausible before fitting.
 
