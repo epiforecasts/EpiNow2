@@ -1,0 +1,133 @@
+---
+title: "Fitting delay distributions with estimate_dist()"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Fitting delay distributions with estimate_dist()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+# Introduction
+
+`estimate_dist()` fits delay distributions from linelist data while accounting for interval censoring and right truncation.
+These biases arise routinely in epidemiological data where event times are recorded at daily resolution and recent observations are missing due to reporting delays.
+The function uses a Stan model that vendors likelihood functions from the [primarycensored](https://primarycensored.epinowcast.org/) package.
+If you use `estimate_dist()`, please cite `primarycensored` in addition to `EpiNow2`.
+
+The fitted distribution is returned as a `<dist_spec>` object, ready for use in other _EpiNow2_ functions such as `estimate_infections()`.
+
+For more flexible delay distribution modelling, see the [epidist](https://epidist.epinowcast.org/) package.
+
+# Set up
+
+We load `EpiNow2` and `primarycensored` (used here only to simulate data).
+
+```{r setup}
+library(EpiNow2)
+library(primarycensored)
+options(mc.cores = 4)
+```
+
+# Simulating censored delay data
+
+We simulate a linelist of 200 observations from a lognormal delay distribution with known parameters, using `rprimarycensored()` to generate delays that are subject to daily censoring and right truncation.
+
+```{r simulate}
+set.seed(42)
+n <- 200
+
+# True parameters
+true_meanlog <- 1.5
+true_sdlog <- 0.75
+
+# Generate primary event dates over a two-week window
+pdate_lwr <- as.Date("2023-01-01") + sample(0:13, n, replace = TRUE)
+
+# Simulate censored, truncated delays
+delays <- rprimarycensored(
+  n = n,
+  rdist = rlnorm,
+  meanlog = true_meanlog,
+  sdlog = true_sdlog,
+  pwindow = 1,
+  D = 30,
+  dprimary = dunif
+)
+
+# Build a date-based linelist
+linelist <- data.frame(
+  pdate_lwr = pdate_lwr,
+  sdate_lwr = pdate_lwr + delays,
+  obs_date = as.Date("2023-01-31")
+)
+
+head(linelist)
+```
+
+The data frame has three columns:
+
+- `pdate_lwr`: lower bound of the primary event date (e.g. date of infection).
+- `sdate_lwr`: lower bound of the secondary event date (e.g. date of symptom onset).
+- `obs_date`: the date at which the data were extracted, used to determine the right truncation point for each observation.
+
+Upper bounds for the primary and secondary event windows default to one day after the lower bounds (daily censoring).
+
+# Fitting the model
+
+We pass the linelist directly to `estimate_dist()`.
+The function converts dates to numeric intervals, aggregates identical delay–censoring combinations, and fits the model via MCMC.
+
+```{r fit}
+result <- estimate_dist(
+  linelist,
+  dist = "lognormal",
+  verbose = TRUE
+)
+result
+```
+
+The result is a `<dist_spec>` object summarising the posterior mean and standard deviation for each parameter.
+
+# Checking parameter recovery
+
+We can compare the fitted parameters to the true values used in the simulation.
+
+```{r recovery}
+fitted_params <- get_parameters(result)
+comparison <- data.frame(
+  parameter = names(fitted_params),
+  true = c(true_meanlog, true_sdlog),
+  fitted = unlist(fitted_params)
+)
+comparison
+```
+
+With 200 observations the fitted values should be close to the true parameters, though some posterior uncertainty is expected.
+
+# Convenience path for numeric vectors
+
+If you already have a vector of integer-valued delays (e.g. rounded observed delays) rather than a date-based linelist, you can pass it directly.
+The function assumes daily censoring and infers a conservative truncation time from the data.
+
+```{r numeric-path}
+result_numeric <- estimate_dist(
+  delays,
+  dist = "lognormal"
+)
+result_numeric
+```
+
+The date-based interface is preferred when primary event dates and observation dates are available, as it allows per-observation truncation times and non-unit censoring windows.
