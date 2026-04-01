@@ -409,7 +409,8 @@ estimate_dist <- function(data,
   }
 
   # Obs-time-to-Inf heuristic: if relative_obs_time is much
-  # larger than the max delay, treat as untruncated
+  # larger than the max delay, treat as untruncated.
+  # Threshold of 2x follows epidist's obs_time_threshold.
   max_delay <- max(delay_upr)
   far_from_truncation <- relative_obs_time > max_delay * 2
   relative_obs_time[far_from_truncation] <- Inf
