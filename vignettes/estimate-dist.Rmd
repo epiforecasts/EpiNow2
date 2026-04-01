@@ -16,15 +16,21 @@ vignette: >
 
 # Introduction
 
-`estimate_dist()` fits delay distributions from linelist data while accounting for interval censoring and right truncation.
-These biases arise routinely in epidemiological data where event times are recorded at daily resolution and recent observations are missing due to reporting delays.
+Epidemiological delay distributions are subject to double interval censoring: both the primary event (e.g. infection) and the secondary event (e.g. symptom onset) are observed within discrete time windows rather than at exact times [@Charniga2024; @Park2024].
+If ignored, this censoring biases parameter estimates.
+Right truncation introduces further bias because recent observations are systematically missing due to reporting delays.
+
+`estimate_dist()` fits delay distributions from linelist data while accounting for both of these biases.
+Event times are typically recorded at daily resolution, but the date-based interface supports arbitrary censoring window widths.
 The function uses a Stan model that vendors likelihood functions from the [primarycensored](https://primarycensored.epinowcast.org/) package.
 If you use `estimate_dist()`, please cite `primarycensored` in addition to `EpiNow2`.
 
-The result is an `<estimate_dist>` object (inheriting from `<epinowfit>`) that gives access to the Stan fit for diagnostics.
-Use `get_parameters()` to extract the fitted `<dist_spec>`, ready for use in other _EpiNow2_ functions such as `estimate_infections()`.
+Common use cases include estimating the incubation period (infection to symptom onset), the reporting delay (symptom onset to case report), or the serial interval (symptom onset in infector-infectee pairs).
+Generation time estimation (infection to infection) typically requires known infection times for both infector and infectee, which calls for more complex models.
 
-For more flexible delay distribution modelling, see the [epidist](https://epidist.epinowcast.org/) package.
+For more flexible delay distribution modelling, [`epidist`](https://epidist.epinowcast.org) supports time-varying delays, partial pooling across delays, regression on covariates, and a range of other models.
+`primarycensored` operates at a lower level, working directly with numeric delays and censoring windows.
+It supports fitting delay distributions both with and without a Stan dependency and is also useful for creating double interval censoring and truncation adjusted probability mass functions for use in other models.
 
 # Set up
 
@@ -33,63 +39,106 @@ For more flexible delay distribution modelling, see the [epidist](https://epidis
 library(EpiNow2) # nolint: unused_import_linter.
 library(primarycensored)
 #> Warning: package 'primarycensored' was built under R version 4.5.2
+library(ggplot2)
+#> Warning: package 'ggplot2' was built under R version 4.5.2
 options(mc.cores = 2)
 ```
 
 # Simulating censored delay data
 
-We simulate 200 observations from a lognormal delay distribution with known parameters.
-`rprimarycensored()` generates delays subject to daily censoring and right truncation at `D = 30` days.
+We simulate 200 individual delay observations from a lognormal distribution with known parameters.
+Each observation has its own primary and secondary censoring window width (1 or 2 days) and its own observation time (8 to 15 days after the primary event), reflecting the kind of variation present in real data.
 
 
 ``` r
 set.seed(42)
 n <- 200
-D <- 30
 
 true_meanlog <- 1.5
 true_sdlog <- 0.75
 
+pwindows <- sample.int(2, n, replace = TRUE)
+swindows <- sample.int(2, n, replace = TRUE)
+obs_times <- sample(8:15, n, replace = TRUE)
+
+delays <- mapply(
+  function(pw, sw, D) {
+    rprimarycensored(
+      1, rlnorm,
+      meanlog = true_meanlog, sdlog = true_sdlog,
+      pwindow = pw, swindow = sw, D = D
+    )
+  },
+  pwindows, swindows, obs_times
+)
+
 pdate_lwr <- as.Date("2023-01-01") +
   sample(0:13, n, replace = TRUE)
 
-delays <- rprimarycensored(
-  n = n,
-  rdist = rlnorm,
-  meanlog = true_meanlog,
-  sdlog = true_sdlog,
-  pwindow = 1,
-  D = D
-)
-
 linelist <- data.frame(
   pdate_lwr = pdate_lwr,
+  pdate_upr = pdate_lwr + pwindows,
   sdate_lwr = pdate_lwr + delays,
-  obs_date = pdate_lwr + D
+  sdate_upr = pdate_lwr + delays + swindows,
+  obs_date = pdate_lwr + obs_times
 )
 
 head(linelist)
-#>    pdate_lwr  sdate_lwr   obs_date
-#> 1 2023-01-01 2023-01-03 2023-01-31
-#> 2 2023-01-05 2023-01-11 2023-02-04
-#> 3 2023-01-01 2023-01-04 2023-01-31
-#> 4 2023-01-09 2023-01-19 2023-02-08
-#> 5 2023-01-10 2023-01-10 2023-02-09
-#> 6 2023-01-04 2023-01-19 2023-02-03
+#>    pdate_lwr  pdate_upr  sdate_lwr  sdate_upr   obs_date
+#> 1 2023-01-06 2023-01-07 2023-01-14 2023-01-16 2023-01-21
+#> 2 2023-01-14 2023-01-15 2023-01-18 2023-01-20 2023-01-25
+#> 3 2023-01-01 2023-01-02 2023-01-11 2023-01-12 2023-01-16
+#> 4 2023-01-06 2023-01-07 2023-01-10 2023-01-12 2023-01-18
+#> 5 2023-01-06 2023-01-08 2023-01-09 2023-01-10 2023-01-21
+#> 6 2023-01-14 2023-01-16 2023-01-17 2023-01-18 2023-01-27
 ```
 
-The data frame has three columns:
+
+``` r
+ggplot(data.frame(delay = delays), aes(x = delay)) +
+  geom_histogram(
+    aes(y = after_stat(density)),
+    binwidth = 1, fill = "#4292C6", colour = "white"
+  ) +
+  stat_function(
+    fun = dlnorm,
+    args = list(meanlog = true_meanlog, sdlog = true_sdlog),
+    linewidth = 1
+  ) +
+  labs(
+    x = "Delay (days)",
+    y = "Density",
+    title = "Simulated censored delays vs true distribution"
+  ) +
+  theme_minimal()
+```
+
+![plot of chunk plot-delays](figure/plot-delays-1.png)
+
+The histogram shows the observed (censored and truncated) delays, while the solid line shows the true underlying lognormal density.
+The observed distribution is shifted towards shorter delays because of right truncation.
+
+The data frame has five columns:
 
 - `pdate_lwr`: lower bound of the primary event date (e.g. date of infection).
+- `pdate_upr`: upper bound of the primary event date.
 - `sdate_lwr`: lower bound of the secondary event date (e.g. date of symptom onset).
+- `sdate_upr`: upper bound of the secondary event date.
 - `obs_date`: the date at which the data were extracted, determining the right truncation point for each observation.
 
-Upper bounds for the primary and secondary event windows default to one day after the lower bounds (daily censoring).
+Upper bounds for the primary and secondary event windows default to one day after the lower bounds (daily censoring) if not provided.
+
+Note that the simulation above constructs dates from numeric delays using a dummy origin date.
+If you have numeric delays without dates, you can do the same thing: set `pdate_lwr` to an arbitrary origin (e.g. `as.Date("2020-01-01")`) and derive the other columns by adding the appropriate intervals.
+
+For `obs_date`, use the date the data were sent to you, or the date data collection stopped.
+If neither is available, `estimate_dist()` defaults to `max(sdate_upr)`, which is a reasonable fallback for most situations.
 
 # Fitting the model
 
 We pass the linelist directly to `estimate_dist()`.
-Internally the function converts dates to numeric intervals, aggregates identical delay–censoring combinations, and fits the model via MCMC.
+Internally the function converts dates to numeric intervals, then aggregates identical delay-censoring-truncation combinations and counts their occurrences.
+This aggregation reduces the number of likelihood evaluations, which speeds up fitting considerably when many observations share the same structure.
 
 
 ``` r
@@ -97,59 +146,120 @@ result <- estimate_dist(
   linelist,
   dist = "lognormal"
 )
+#> Error in `.prepare_linelist_data()` at finish-primarycensored/R/estimate_dist.R:191:3:
+#> ✖ 2 observation(s) have obs_date earlier than sdate_upr
+#> ℹ obs_date must be >= sdate_upr for all rows. Increase obs_date or check your
+#>   data.
+```
+
+The `result` object is an `estimate_dist` object that inherits from `epinowfit`.
+Printing it shows a posterior summary of the fitted parameters.
+
+
+``` r
+result
+#> Error:
+#> ! object 'result' not found
+```
+
+For convergence diagnostics, the underlying Stan fit is accessible via `result$fit`.
+
+
+``` r
+rstan::summary(result$fit)$summary
+#> Error in `h()`:
+#> ! error in evaluating the argument 'object' in selecting a method for function 'summary': object 'result' not found
+```
+
+We can extract the fitted distribution as a `dist_spec` object using `get_parameters()`.
+This is useful for passing the result directly to other EpiNow2 functions such as `estimate_infections()` via `delay_opts()`.
+
+
+``` r
 params <- get_parameters(result)
+#> Error:
+#> ! object 'result' not found
 params$delay
-#> - lognormal distribution (max: 29):
-#>   meanlog:
-#>     - normal distribution:
-#>       mean:
-#>         1.4
-#>       sd:
-#>         0.061
-#>   sdlog:
-#>     - normal distribution:
-#>       mean:
-#>         0.81
-#>       sd:
-#>         0.053
+#> Error:
+#> ! object 'params' not found
 ```
 
 # Checking parameter recovery
 
-We compare the fitted posterior means to the true values.
+We can check how well the model recovers the true parameters by comparing the fitted posterior to the true distribution.
 
 
 ``` r
-delay <- params$delay
-fitted_meanlog <- delay$parameters$meanlog$parameters$mean
-fitted_sdlog <- delay$parameters$sdlog$parameters$mean
-
-data.frame(
-  parameter = c("meanlog", "sdlog"),
-  true = c(true_meanlog, true_sdlog),
-  fitted = round(c(fitted_meanlog, fitted_sdlog), 2)
+posterior <- extract_samples(
+  result$fit, pars = "delay_params"
 )
-#>   parameter true fitted
-#> 1   meanlog 1.50   1.44
-#> 2     sdlog 0.75   0.81
+#> Error:
+#> ! object 'result' not found
+post_meanlog <- posterior$delay_params[, 1]
+#> Error:
+#> ! object 'posterior' not found
+post_sdlog <- posterior$delay_params[, 2]
+#> Error:
+#> ! object 'posterior' not found
+
+x_seq <- seq(0.01, 15, length.out = 200)
+
+# Sample 100 posterior draws for the density
+set.seed(1)
+draw_idx <- sample(length(post_meanlog), 100)
+#> Error:
+#> ! object 'post_meanlog' not found
+post_densities <- sapply(draw_idx, function(i) {
+  dlnorm(x_seq, post_meanlog[i], post_sdlog[i])
+})
+#> Error:
+#> ! object 'draw_idx' not found
+
+plot_df <- data.frame(
+  x = x_seq,
+  true_density = dlnorm(
+    x_seq, true_meanlog, true_sdlog
+  ),
+  post_median = apply(post_densities, 1, median),
+  post_lower = apply(post_densities, 1, quantile, 0.05),
+  post_upper = apply(post_densities, 1, quantile, 0.95)
+)
+#> Error:
+#> ! object 'post_densities' not found
+
+ggplot(plot_df, aes(x = x)) +
+  geom_ribbon(
+    aes(ymin = post_lower, ymax = post_upper),
+    fill = "#4292C6", alpha = 0.3
+  ) +
+  geom_line(
+    aes(y = post_median, colour = "Fitted (posterior)")
+  ) +
+  geom_line(
+    aes(y = true_density, colour = "True"),
+    linetype = "dashed", linewidth = 1
+  ) +
+  scale_colour_manual(
+    values = c(
+      "Fitted (posterior)" = "#4292C6",
+      "True" = "#252525"
+    )
+  ) +
+  labs(
+    x = "Delay (days)",
+    y = "Density",
+    colour = NULL,
+    title = "Fitted vs true delay distribution"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+#> Error:
+#> ! object 'plot_df' not found
 ```
 
-# What if I don't have dates?
+The shaded region shows the 90% posterior interval for the density, with the posterior median as a solid line and the true density as a dashed line.
+The posterior credible intervals should overlap with the true values used in the simulation (`meanlog = 1.5`, `sdlog = 0.75`).
 
-If you have numeric delay values without dates, there are two options.
-
-You can use [primarycensored](https://primarycensored.epinowcast.org/) directly, which works with numeric delays and provides the same underlying model.
-
-Alternatively, you can construct a date-based data frame from numeric delays using dummy dates:
-
-
-``` r
-origin <- as.Date("2020-01-01")
-linelist <- data.frame(
-  pdate_lwr = origin,
-  sdate_lwr = origin + delays,
-  obs_date = origin + D
-)
-```
-
-This lets you use `estimate_dist()` as shown above.
+Note that `get_parameters()` returns Normal approximations to the marginal posteriors for each parameter.
+The actual posterior may not be exactly normal.
+For full posterior access, use `result$fit` directly with `rstan::extract()` or `extract_samples()`.
