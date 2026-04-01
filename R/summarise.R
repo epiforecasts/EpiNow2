@@ -1052,6 +1052,13 @@ summary.estimate_dist <- function(object,
 
   attr(out, "distribution") <- dist_name
   attr(out, "max_value") <- object$args$max_value
+  attr(out, "n_obs") <- sum(object$args$n_obs)
+  attr(out, "n_strata") <- object$args$n
+  attr(out, "primary") <- if (object$args$primary_id == 1L) {
+    "uniform"
+  } else {
+    "expgrowth"
+  }
   class(out) <- c("summary.estimate_dist", class(out))
 
   out
@@ -1059,12 +1066,13 @@ summary.estimate_dist <- function(object,
 
 #' @export
 print.summary.estimate_dist <- function(x, ...) {
-  dist_type <- attr(x, "distribution")
-  max_val <- attr(x, "max_value")
+  cat("Delay distribution:", attr(x, "distribution"))
+  cat(paste0(" (max: ", attr(x, "max_value"), ")\n"))
   cat(
-    "Delay distribution:", dist_type,
-    paste0("(max: ", max_val, ")"), "\n\n"
+    "Observations:", attr(x, "n_obs"),
+    paste0("(", attr(x, "n_strata"), " unique strata)\n")
   )
+  cat("Primary event:", attr(x, "primary"), "\n\n")
   cat("Parameter estimates:\n")
   print(data.table::as.data.table(x), ...)
   invisible(x)
