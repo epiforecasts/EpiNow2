@@ -15,7 +15,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.path = "estimate-dist-"
 )
 ```
 
@@ -36,6 +37,7 @@ Generation time estimation (infection to infection) typically requires known inf
 For more flexible delay distribution modelling, [`epidist`](https://epidist.epinowcast.org) supports time-varying delays, partial pooling across delays, regression on covariates, and a range of other models.
 `primarycensored` operates at a lower level, working directly with numeric delays and censoring windows.
 It supports fitting delay distributions both with and without a Stan dependency and is also useful for creating double interval censoring and truncation adjusted probability mass functions for use in other models.
+`primarycensored` also supports vendoring its Stan functions into custom models, which is useful for adapting the delay estimation approach to support more complex settings such as additional observation biases, mixture models, or joint estimation with other processes.
 
 # Set up
 
@@ -97,26 +99,40 @@ head(linelist)
 ```
 
 ```{r plot-delays, fig.width = 6, fig.height = 4}
+# Compute the expected PMF under censoring and truncation
+D_plot <- max(obs_times)
+max_d <- D_plot - 1L
+pmf <- dprimarycensored(
+  0:max_d,
+  plnorm,
+  meanlog = true_meanlog, sdlog = true_sdlog,
+  pwindow = 1, swindow = 1, D = D_plot
+)
+
+pmf_df <- data.frame(
+  delay = 0:max_d,
+  pmf = pmf
+)
+
 ggplot(data.frame(delay = delays), aes(x = delay)) +
   geom_histogram(
     aes(y = after_stat(density)),
     binwidth = 1, fill = "#4292C6", colour = "white"
   ) +
-  stat_function(
-    fun = dlnorm,
-    args = list(meanlog = true_meanlog, sdlog = true_sdlog),
-    linewidth = 1
+  geom_col(
+    data = pmf_df, aes(x = delay, y = pmf),
+    fill = NA, colour = "#252525", linewidth = 0.5
   ) +
   labs(
     x = "Delay (days)",
     y = "Density",
-    title = "Simulated censored delays vs true distribution"
+    title = "Observed delays vs expected censored PMF"
   ) +
   theme_minimal()
 ```
 
-The histogram shows the observed (censored and truncated) delays, while the solid line shows the true underlying lognormal density.
-The observed distribution is shifted towards shorter delays because of right truncation.
+The histogram shows the observed censored delays.
+The outlined bars show the expected PMF under the true distribution with censoring and truncation, computed using `primarycensored::dprimarycensored()`.
 
 The data frame has five columns:
 
@@ -172,16 +188,49 @@ params$delay
 
 We can check how well the model recovers the true parameters by comparing the fitted posterior to the true distribution.
 
-```{r recovery-plot, fig.width = 6, fig.height = 4}
+```{r recovery-params, fig.width = 6, fig.height = 4}
 posterior <- extract_samples(
   result$fit, pars = "delay_params"
 )
 post_meanlog <- posterior$delay_params[, 1]
 post_sdlog <- posterior$delay_params[, 2]
 
-x_seq <- seq(0.01, 15, length.out = 200)
+param_df <- data.frame(
+  value = c(post_meanlog, post_sdlog),
+  parameter = rep(
+    c("meanlog", "sdlog"),
+    each = length(post_meanlog)
+  )
+)
 
-# Sample 100 posterior draws for the density
+true_df <- data.frame(
+  parameter = c("meanlog", "sdlog"),
+  value = c(true_meanlog, true_sdlog)
+)
+
+ggplot(param_df, aes(x = value)) +
+  geom_density(fill = "#4292C6", alpha = 0.3) +
+  geom_vline(
+    data = true_df, aes(xintercept = value),
+    linetype = "dashed", linewidth = 1
+  ) +
+  facet_wrap(~parameter, scales = "free") +
+  labs(
+    x = "Value", y = "Posterior density",
+    title = "Parameter posteriors vs true values"
+  ) +
+  theme_minimal()
+```
+
+The dashed lines mark the true parameter values.
+The posteriors should concentrate around these values.
+
+We can also compare the implied delay density from the posterior against the true distribution.
+
+```{r recovery-density, fig.width = 6, fig.height = 4}
+max_x <- max(delays) + 2
+x_seq <- seq(0.01, max_x, length.out = 200)
+
 set.seed(1)
 draw_idx <- sample(length(post_meanlog), 100)
 post_densities <- sapply(draw_idx, function(i) {
@@ -193,9 +242,15 @@ plot_df <- data.frame(
   true_density = dlnorm(
     x_seq, true_meanlog, true_sdlog
   ),
-  post_median = apply(post_densities, 1, median),
-  post_lower = apply(post_densities, 1, quantile, 0.05),
-  post_upper = apply(post_densities, 1, quantile, 0.95)
+  post_median = apply(
+    post_densities, 1, median
+  ),
+  post_lower = apply(
+    post_densities, 1, quantile, 0.05
+  ),
+  post_upper = apply(
+    post_densities, 1, quantile, 0.95
+  )
 )
 
 ggplot(plot_df, aes(x = x)) +
@@ -217,8 +272,7 @@ ggplot(plot_df, aes(x = x)) +
     )
   ) +
   labs(
-    x = "Delay (days)",
-    y = "Density",
+    x = "Delay (days)", y = "Density",
     colour = NULL,
     title = "Fitted vs true delay distribution"
   ) +
@@ -226,9 +280,6 @@ ggplot(plot_df, aes(x = x)) +
   theme(legend.position = "bottom")
 ```
 
-The shaded region shows the 90% posterior interval for the density, with the posterior median as a solid line and the true density as a dashed line.
-The posterior credible intervals should overlap with the true values used in the simulation (`meanlog = 1.5`, `sdlog = 0.75`).
-
-Note that `get_parameters()` returns Normal approximations to the marginal posteriors for each parameter.
+Note that `get_parameters()` returns Normal approximations to the marginal posteriors.
 The actual posterior may not be exactly normal.
-For full posterior access, use `result$fit` directly with `rstan::extract()` or `extract_samples()`.
+For full posterior access, use `result$fit` directly with `extract_samples()`.
