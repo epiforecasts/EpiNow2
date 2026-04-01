@@ -1,69 +1,107 @@
 #' Estimate a delay distribution using primarycensored
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' Estimate a delay distribution from observed data using primarycensored's
-#' sophisticated handling of truncation and censoring.
+#' Fit an interval-censored delay distribution accounting for
+#' primary event censoring and right truncation.
+#' Estimation is done via MCMC using a Stan model that vendors
+#' likelihood functions from the
+#' \link[primarycensored:primarycensored-package]{primarycensored}
+#' package.
+#' If you use this function, please cite `primarycensored` in
+#' addition to `EpiNow2`.
 #'
 #' @param data Either:
-#'   - A numeric vector of delay values (assumes daily censoring with
-#'     truncation inferred from the data)
+#'   - A numeric vector of delay values (assumes daily censoring
+#'     with truncation inferred from the data)
 #'   - A data.frame with date columns (recommended):
 #'     - `pdate_lwr` (required): lower bound of primary event date
 #'     - `pdate_upr` (optional): upper bound of primary event date
 #'       (default: `pdate_lwr + 1`)
-#'     - `sdate_lwr` (required): lower bound of secondary event date
-#'     - `sdate_upr` (optional): upper bound of secondary event date
-#'       (default: `sdate_lwr + 1`)
+#'     - `sdate_lwr` (required): lower bound of secondary event
+#'       date
+#'     - `sdate_upr` (optional): upper bound of secondary event
+#'       date (default: `sdate_lwr + 1`)
 #'     - `obs_date` (optional): observation/censoring date
 #'       (default: `max(sdate_lwr)`)
 #'     - `n` (optional): observation count/weight (default: 1)
 #'
-#' @param dist Character string, which distribution to fit. Supported:
-#'   - `"lognormal"` (default)
-#'   - `"gamma"`
+#' @param dist Character string, which distribution to fit.
+#'   Currently only `"lognormal"` (default) and `"gamma"` are
+#'   supported.
 #'
-#' @param priors A list of `<dist_spec>` objects specifying priors for the
-#'   distribution parameters. Names must match the parameters of the chosen
-#'   distribution. Defaults depend on `dist`:
-#'   - lognormal: `list(meanlog = Normal(1, 1), sdlog = Normal(0.5, 0.5))`
-#'   - gamma: `list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))`
+#' @param priors A list of `<dist_spec>` objects specifying priors
+#'   for the distribution parameters.
+#'   Names must match the parameters of the chosen distribution.
+#'   Defaults depend on `dist`:
+#'   - lognormal:
+#'     `list(meanlog = Normal(1, 1), sdlog = Normal(0.5, 0.5))`
+#'   - gamma:
+#'     `list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))`
 #'
-#' @param primary Character string specifying the primary event distribution.
-#'   One of:
-#'   - `"uniform"` (default): uniform distribution over the primary window
-#'   - `"expgrowth"`: exponential growth distribution. Requires
-#'     `primary_params` to supply a fixed growth rate.
+#' @param primary Character string specifying the primary event
+#'   distribution. One of:
+#'   - `"uniform"` (default): uniform distribution over the
+#'     primary window
+#'   - `"expgrowth"`: exponential growth distribution.
+#'     Requires `primary_params` to supply a fixed growth rate.
 #'
-#' @param primary_params Numeric vector of parameters for the primary
-#'   distribution. Only used when `primary = "expgrowth"`, in which case
-#'   it should be a single numeric value for the growth rate.
-#'   Note: the growth rate is passed as fixed data to Stan, not estimated.
+#' @param primary_params Numeric vector of parameters for the
+#'   primary distribution.
+#'   Only used when `primary = "expgrowth"`, in which case it
+#'   should be a single numeric value for the growth rate.
+#'   The growth rate is passed as fixed data to Stan, not
+#'   estimated.
 #'
-#' @param max_value Numeric, maximum delay value for PMF. If not provided,
-#'   inferred from data.
+#' @param max_value Numeric, maximum delay value for PMF.
+#'   If not provided, inferred from data.
 #'
-#' @param verbose Logical, print progress messages? Defaults to FALSE.
+#' @param verbose Logical, print progress messages?
+#'   Defaults to FALSE.
 #'
-#' @return A `<dist_spec>` object summarising the fitted distribution.
+#' @return A `<dist_spec>` object summarising the fitted
+#'   distribution.
 #'
 #' @details
-#' This function uses primarycensored's Stan functions to estimate
-#' delay distributions while properly accounting for:
+#' The model fits an interval-censored delay distribution while
+#' accounting for:
 #' - Primary event censoring (e.g., daily reporting of exposure)
-#' - Secondary event censoring (e.g., daily reporting of symptom onset)
+#' - Secondary event censoring (e.g., daily reporting of symptom
+#'   onset)
 #' - Right truncation (observation window effects)
 #' - Per-observation truncation times (via `obs_date`)
 #'
-#' When a data frame with date columns is provided, observations are
-#' aggregated by unique combinations of `(delay_lwr, delay_upr, pwindow,
-#' relative_obs_time)` to reduce the number of likelihood evaluations.
-#' Observations where the relative observation time is much larger than
-#' the maximum observed delay are treated as untruncated (observation
-#' time set to infinity).
+#' When a data frame with date columns is provided, observations
+#' are aggregated by unique combinations of `(delay_lwr,
+#' delay_upr, pwindow, relative_obs_time)` to reduce the number
+#' of likelihood evaluations.
+#' Observations where the relative observation time is much
+#' larger than the maximum observed delay are treated as
+#' untruncated (observation time set to infinity).
 #'
-#' The primarycensored Stan functions are vendored (included in the
-#' package), so the model is pre-compiled and runs without needing
-#' primarycensored at runtime.
+#' The `primarycensored` Stan functions are vendored (included
+#' in the package), so the model is pre-compiled and runs without
+#' needing `primarycensored` at runtime.
+#'
+#' ## Limitations
+#'
+#' - Only lognormal and gamma delay distributions are currently
+#'   supported.
+#' - The primary event distribution is limited to uniform or
+#'   exponential growth with a fixed rate.
+#'   Primary event parameters are not estimated.
+#' - Left truncation is not yet exposed (internally set to 0).
+#'
+#' @references
+#' Park, S., et al. "primarycensored: an R package and Stan
+#' library for fitting distributions accounting for
+#' primary event censoring."
+#' Please cite `primarycensored` if you use this function;
+#' see `citation("primarycensored")`.
+#'
+#' @seealso [primarycensored::primarycensored-package] for the
+#'   underlying censoring methodology, and the
+#'   \href{https://epidist.epinowcast.org/}{epidist} package for
+#'   more advanced delay distribution modelling.
 #'
 #' @inheritParams estimate_infections
 #' @export
@@ -73,12 +111,22 @@
 #' delays <- rlnorm(100, log(5), 0.5)
 #' result <- estimate_dist(delays, dist = "lognormal")
 #'
-#' # Fit with date-based input
-#' linelist <- data.frame(
-#'   pdate_lwr = as.Date("2023-01-01") + rpois(100, 5),
-#'   sdate_lwr = as.Date("2023-01-01") + rpois(100, 5) + rpois(100, 3)
-#' )
-#' result <- estimate_dist(linelist, dist = "lognormal")
+#' # Fit with date-based input using proper censored data
+#' if (requireNamespace("primarycensored", quietly = TRUE)) {
+#'   set.seed(1)
+#'   n <- 100
+#'   pdate_lwr <- as.Date("2023-01-01") + rpois(n, 5)
+#'   delays_sim <- primarycensored::rprimarycensored(
+#'     n = n, rdist = rlnorm,
+#'     meanlog = log(5), sdlog = 0.5,
+#'     pwindow = 1, D = 30, dprimary = dunif
+#'   )
+#'   linelist <- data.frame(
+#'     pdate_lwr = pdate_lwr,
+#'     sdate_lwr = pdate_lwr + delays_sim
+#'   )
+#'   result <- estimate_dist(linelist, dist = "lognormal")
+#' }
 #' }
 estimate_dist <- function(data,
                           dist = "lognormal",
