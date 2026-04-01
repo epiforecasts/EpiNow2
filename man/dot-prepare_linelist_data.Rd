@@ -7,9 +7,9 @@
 .prepare_linelist_data(data, verbose = FALSE)
 }
 \arguments{
-\item{data}{Either a numeric vector of delays or a data frame with
-date columns (\code{pdate_lwr}, \code{sdate_lwr}, and optionally
-\code{pdate_upr}, \code{sdate_upr}, \code{obs_date}, \code{n}).}
+\item{data}{A data frame with date columns (\code{pdate_lwr},
+\code{sdate_lwr}, and optionally \code{pdate_upr}, \code{sdate_upr},
+\code{obs_date}, \code{n}).}
 
 \item{verbose}{Logical, print progress messages?}
 }

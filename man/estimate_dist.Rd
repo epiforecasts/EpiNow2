@@ -22,11 +22,7 @@ estimate_dist(
 )
 }
 \arguments{
-\item{data}{Either:
-\itemize{
-\item A numeric vector of delay values (assumes daily censoring
-with truncation inferred from the data)
-\item A data.frame with date columns (recommended):
+\item{data}{A data.frame with date columns:
 \itemize{
 \item \code{pdate_lwr} (required): lower bound of primary event date
 \item \code{pdate_upr} (optional): upper bound of primary event date
@@ -38,7 +34,6 @@ date (default: \code{sdate_lwr + 1})
 \item \code{obs_date} (optional): observation/censoring date
 (default: \code{max(sdate_upr)})
 \item \code{n} (optional): observation count/weight (default: 1)
-}
 }}
 
 \item{dist}{Character string, which distribution to fit.
