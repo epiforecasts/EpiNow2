@@ -348,6 +348,17 @@ estimate_dist <- function(data,
     ))
   }
 
+  # Validate column types
+  date_cols <- c("pdate_lwr", "sdate_lwr")
+  for (col in date_cols) {
+    if (!inherits(data[[col]], "Date")) {
+      cli::cli_abort(c(
+        "x" = "Column {.var {col}} must be of class Date",
+        "i" = "Found: {class(data[[col]])[1]}"
+      ))
+    }
+  }
+
   # Fill defaults with cli messages
   if (is.null(data$pdate_upr)) {
     data$pdate_upr <- data$pdate_lwr + 1
