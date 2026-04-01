@@ -164,9 +164,11 @@ params$delay
 We can check how well the model recovers the true parameters by comparing the fitted posterior to the true distribution.
 
 ```{r recovery-plot, fig.width = 6, fig.height = 4}
-posterior <- extract_samples(result$fit, pars = "params")
-post_meanlog <- posterior$params[, 1]
-post_sdlog <- posterior$params[, 2]
+posterior <- extract_samples(
+  result$fit, pars = "delay_params"
+)
+post_meanlog <- posterior$delay_params[, 1]
+post_sdlog <- posterior$delay_params[, 2]
 
 x_seq <- seq(0.01, 15, length.out = 200)
 

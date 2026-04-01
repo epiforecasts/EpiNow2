@@ -193,7 +193,9 @@ estimate_dist <- function(data,
   # Build params list
   lbounds <- lower_bounds(dist)
   params <- lapply(param_names, function(name) {
-    make_param(name, priors[[name]], lower_bound = lbounds[[name]])
+    make_param(
+      name, priors[[name]], lower_bound = lbounds[[name]]
+    )
   })
 
   # Prepare Stan data
@@ -444,14 +446,14 @@ estimate_dist <- function(data,
 #'
 #' @keywords internal
 .extract_to_dist_spec <- function(fit, dist, max_value) {
-  samples <- extract_samples(fit, pars = "params")
+  samples <- extract_samples(fit, pars = "delay_params")
 
   param_names <- .get_param_names(dist)
 
   params <- lapply(seq_along(param_names), function(i) {
     Normal(
-      mean = mean(samples$params[, i]),
-      sd = sd(samples$params[, i])
+      mean = mean(samples$delay_params[, i]),
+      sd = sd(samples$delay_params[, i])
     )
   })
   names(params) <- param_names

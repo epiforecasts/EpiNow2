@@ -1026,8 +1026,10 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
 summary.estimate_dist <- function(object,
                                   CrIs = c(0.2, 0.5, 0.9),
                                   ...) {
-  raw_samples <- extract_samples(object$fit, pars = "params")
-  param_mat <- raw_samples$params
+  raw_samples <- extract_samples(
+    object$fit, pars = "delay_params"
+  )
+  param_mat <- raw_samples$delay_params
 
   dist_name <- object$args$dist
   param_names <- .get_param_names(dist_name) # nolint: object_usage_linter.
