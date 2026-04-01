@@ -22,7 +22,7 @@
 #'     - `sdate_upr` (optional): upper bound of secondary event
 #'       date (default: `sdate_lwr + 1`)
 #'     - `obs_date` (optional): observation/censoring date
-#'       (default: `max(sdate_lwr)`)
+#'       (default: `max(sdate_upr)`)
 #'     - `n` (optional): observation count/weight (default: 1)
 #'
 #' @param dist Character string, which distribution to fit.
@@ -200,7 +200,7 @@ estimate_dist <- function(data,
     dist_id = dist_id,
     primary_id = primary_id,
     n_primary_params = as.integer(length(primary_params)),
-    primary_params = as.numeric(primary_params)
+    primary_params = array(as.numeric(primary_params))
   )
 
   # Add params using standard EpiNow2 infrastructure
