@@ -1,0 +1,65 @@
+on:
+  push:
+    paths:
+      - 'vignettes/estimate-dist.Rmd.orig'
+    branches: [main]
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+name: render-estimate-dist
+
+jobs:
+  EpiNow2:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: NA
+          extra-packages: |
+            local::.
+            any::primarycensored
+
+      - name: Render vignette
+        run: |
+            setwd("vignettes")
+            knitr::knit(
+              "estimate-dist.Rmd.orig",
+              "estimate-dist.Rmd"
+            )
+        shell: Rscript {0}
+
+      - name: Upload vignette as an artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: vignettes
+          path: vignettes
+
+      - name: Create Pull Request
+        if: github.ref == 'refs/heads/main'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: "Automatic Vignette update"
+          title: "Update estimate-dist vignette"
+          body: >
+            This is an automated pull request to update
+            the estimate-dist vignette.
+          branch: "update-estimate-dist-${{ github.run_number }}"
+          labels: "documentation"
+          add-paths: |
+            vignettes
+          token: ${{ secrets.GITHUB_TOKEN }}

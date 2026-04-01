@@ -10,20 +10,17 @@
 #' If you use this function, please cite `primarycensored` in
 #' addition to `EpiNow2`.
 #'
-#' @param data Either:
-#'   - A numeric vector of delay values (assumes daily censoring
-#'     with truncation inferred from the data)
-#'   - A data.frame with date columns (recommended):
-#'     - `pdate_lwr` (required): lower bound of primary event date
-#'     - `pdate_upr` (optional): upper bound of primary event date
-#'       (default: `pdate_lwr + 1`)
-#'     - `sdate_lwr` (required): lower bound of secondary event
-#'       date
-#'     - `sdate_upr` (optional): upper bound of secondary event
-#'       date (default: `sdate_lwr + 1`)
-#'     - `obs_date` (optional): observation/censoring date
-#'       (default: `max(sdate_upr)`)
-#'     - `n` (optional): observation count/weight (default: 1)
+#' @param data A data.frame with date columns:
+#'   - `pdate_lwr` (required): lower bound of primary event date
+#'   - `pdate_upr` (optional): upper bound of primary event date
+#'     (default: `pdate_lwr + 1`)
+#'   - `sdate_lwr` (required): lower bound of secondary event
+#'     date
+#'   - `sdate_upr` (optional): upper bound of secondary event
+#'     date (default: `sdate_lwr + 1`)
+#'   - `obs_date` (optional): observation/censoring date
+#'     (default: `max(sdate_upr)`)
+#'   - `n` (optional): observation count/weight (default: 1)
 #'
 #' @param dist Character string, which distribution to fit.
 #'   Currently only `"lognormal"` (default) and `"gamma"` are
@@ -295,21 +292,17 @@ estimate_dist <- function(data,
 #' conversion, computation of derived columns, an obs-time-to-Inf
 #' heuristic, and aggregation by unique delay/censoring combinations.
 #'
-#' @param data Either a numeric vector of delays or a data frame with
-#'   date columns (`pdate_lwr`, `sdate_lwr`, and optionally
-#'   `pdate_upr`, `sdate_upr`, `obs_date`, `n`).
+#' @param data A data frame with date columns (`pdate_lwr`,
+#'   `sdate_lwr`, and optionally `pdate_upr`, `sdate_upr`,
+#'   `obs_date`, `n`).
 #' @param verbose Logical, print progress messages?
 #' @return A data frame with columns: `delay_lwr`, `delay_upr`,
 #'   `pwindow`, `relative_obs_time`, `n`.
 #' @keywords internal
 .prepare_linelist_data <- function(data, verbose = FALSE) {
 
-  if (is.numeric(data)) {
-    return(.numeric_to_linelist(data, verbose))
-  }
-
   if (!is.data.frame(data)) {
-    cli::cli_abort("data must be a numeric vector or data frame")
+    cli::cli_abort("data must be a data frame")
   }
 
   # Validate required columns
@@ -428,41 +421,6 @@ estimate_dist <- function(data,
   }
 
   result
-}
-
-#' Convert numeric delay vector to linelist format
-#'
-#' @param data Numeric vector of delay values
-#' @param verbose Logical, print progress messages?
-#' @return A data frame with columns: `delay_lwr`, `delay_upr`,
-#'   `pwindow`, `relative_obs_time`, `n`.
-#' @keywords internal
-.numeric_to_linelist <- function(data, verbose = FALSE) {
-  if (verbose) {
-    cli::cli_alert_info(
-      "Converting numeric vector to interval format"
-    )
-  }
-
-  data <- as.integer(data)
-  data <- data[!is.na(data) & data >= 0]
-
-  delay_counts <- table(data)
-  delay_lwr <- as.integer(names(delay_counts))
-  delay_upr <- delay_lwr + 1L
-
-  # For numeric input, assume daily censoring and infer
-  # truncation as max(delay_upper) + 10 (conservative)
-  d_inferred <- max(delay_upr) + 10
-
-  data.frame(
-    delay_lwr = delay_lwr,
-    delay_upr = as.numeric(delay_upr),
-    pwindow = rep(1L, length(delay_lwr)),
-    relative_obs_time = rep(as.numeric(d_inferred),
-                            length(delay_lwr)),
-    n = as.integer(delay_counts)
-  )
 }
 
 #' Extract parameters and convert to dist_spec
