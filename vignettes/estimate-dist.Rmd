@@ -48,6 +48,7 @@ We simulate a linelist of 200 observations from a lognormal delay distribution w
 ```{r simulate}
 set.seed(42)
 n <- 200
+D <- 30
 
 # True parameters
 true_meanlog <- 1.5
@@ -63,15 +64,16 @@ delays <- rprimarycensored(
   meanlog = true_meanlog,
   sdlog = true_sdlog,
   pwindow = 1,
-  D = 30,
-  dprimary = dunif
+  D = D
 )
 
 # Build a date-based linelist
+# obs_date is set per-observation so that each primary event
+# has the correct truncation window
 linelist <- data.frame(
   pdate_lwr = pdate_lwr,
   sdate_lwr = pdate_lwr + delays,
-  obs_date = as.Date("2023-01-31")
+  obs_date = pdate_lwr + D
 )
 
 head(linelist)
@@ -106,11 +108,13 @@ The result is a `<dist_spec>` object summarising the posterior mean and standard
 We can compare the fitted parameters to the true values used in the simulation.
 
 ```{r recovery}
-fitted_params <- get_parameters(result)
+fitted_meanlog <- result$parameters$meanlog$parameters$mean
+fitted_sdlog <- result$parameters$sdlog$parameters$mean
+
 comparison <- data.frame(
-  parameter = names(fitted_params),
+  parameter = c("meanlog", "sdlog"),
   true = c(true_meanlog, true_sdlog),
-  fitted = unlist(fitted_params)
+  fitted = c(fitted_meanlog, fitted_sdlog)
 )
 comparison
 ```
