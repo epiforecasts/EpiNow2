@@ -5,12 +5,22 @@
 #' sophisticated handling of truncation and censoring.
 #'
 #' @param data Either:
-#'   - A numeric vector of delay values (assumes daily censoring)
-#'   - A data.frame with columns: delay, delay_upper, optionally n
+#'   - A numeric vector of delay values (assumes daily censoring with
+#'     truncation inferred from the data)
+#'   - A data.frame with date columns (recommended):
+#'     - `pdate_lwr` (required): lower bound of primary event date
+#'     - `pdate_upr` (optional): upper bound of primary event date
+#'       (default: `pdate_lwr + 1`)
+#'     - `sdate_lwr` (required): lower bound of secondary event date
+#'     - `sdate_upr` (optional): upper bound of secondary event date
+#'       (default: `sdate_lwr + 1`)
+#'     - `obs_date` (optional): observation/censoring date
+#'       (default: `max(sdate_lwr)`)
+#'     - `n` (optional): observation count/weight (default: 1)
 #'
 #' @param dist Character string, which distribution to fit. Supported:
-#'   - "lognormal" (default)
-#'   - "gamma"
+#'   - `"lognormal"` (default)
+#'   - `"gamma"`
 #'
 #' @param priors A list of `<dist_spec>` objects specifying priors for the
 #'   distribution parameters. Names must match the parameters of the chosen
@@ -18,13 +28,19 @@
 #'   - lognormal: `list(meanlog = Normal(1, 1), sdlog = Normal(0.5, 0.5))`
 #'   - gamma: `list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))`
 #'
+#' @param primary Character string specifying the primary event distribution.
+#'   One of:
+#'   - `"uniform"` (default): uniform distribution over the primary window
+#'   - `"expgrowth"`: exponential growth distribution. Requires
+#'     `primary_params` to supply a fixed growth rate.
+#'
+#' @param primary_params Numeric vector of parameters for the primary
+#'   distribution. Only used when `primary = "expgrowth"`, in which case
+#'   it should be a single numeric value for the growth rate.
+#'   Note: the growth rate is passed as fixed data to Stan, not estimated.
+#'
 #' @param max_value Numeric, maximum delay value for PMF. If not provided,
 #'   inferred from data.
-#'
-#' @param truncation_time Numeric, the maximum observation time (right
-#'   truncation point). This should match the truncation applied during data
-#'   collection. If not provided, uses `max(delay_upper) + 10` which may
-#'   underestimate the effect of truncation.
 #'
 #' @param verbose Logical, print progress messages? Defaults to FALSE.
 #'
@@ -36,10 +52,18 @@
 #' - Primary event censoring (e.g., daily reporting of exposure)
 #' - Secondary event censoring (e.g., daily reporting of symptom onset)
 #' - Right truncation (observation window effects)
+#' - Per-observation truncation times (via `obs_date`)
 #'
-#' The primarycensored Stan functions are vendored (included in the package),
-#' so the model is pre-compiled and runs without needing primarycensored at
-#' runtime.
+#' When a data frame with date columns is provided, observations are
+#' aggregated by unique combinations of `(delay_lwr, delay_upr, pwindow,
+#' relative_obs_time)` to reduce the number of likelihood evaluations.
+#' Observations where the relative observation time is much larger than
+#' the maximum observed delay are treated as untruncated (observation
+#' time set to infinity).
+#'
+#' The primarycensored Stan functions are vendored (included in the
+#' package), so the model is pre-compiled and runs without needing
+#' primarycensored at runtime.
 #'
 #' @inheritParams estimate_infections
 #' @export
@@ -49,15 +73,12 @@
 #' delays <- rlnorm(100, log(5), 0.5)
 #' result <- estimate_dist(delays, dist = "lognormal")
 #'
-#' # Fit with custom priors
-#' result <- estimate_dist(
-#'   delays,
-#'   dist = "lognormal",
-#'   priors = list(
-#'     meanlog = Normal(1.5, 0.5),
-#'     sdlog = Normal(0.5, 0.25)
-#'   )
+#' # Fit with date-based input
+#' linelist <- data.frame(
+#'   pdate_lwr = as.Date("2023-01-01") + rpois(100, 5),
+#'   sdate_lwr = as.Date("2023-01-01") + rpois(100, 5) + rpois(100, 3)
 #' )
+#' result <- estimate_dist(linelist, dist = "lognormal")
 #' }
 estimate_dist <- function(data,
                           dist = "lognormal",
@@ -72,65 +93,66 @@ estimate_dist <- function(data,
                               rate = Normal(0.5, 0.5)
                             )
                           },
+                          primary = "uniform",
+                          primary_params = numeric(0),
                           stan = stan_opts(),
                           max_value = NULL,
-                          truncation_time = NULL,
                           verbose = FALSE) {
 
-  # Input validation
-  if (!dist %in% c("lognormal", "gamma")) {
-    cli::cli_abort(
-      c(
-        "x" = "Unsupported distribution: {dist}",
-        "i" = "Supported: lognormal, gamma"
+  dist_id <- .get_dist_id(dist)
+  param_names <- .get_param_names(dist)
+
+  # Validate primary distribution
+  primary_id <- switch(primary,
+    "uniform" = 1L,
+    "expgrowth" = 2L,
+    cli::cli_abort(c(
+      "x" = "Unsupported primary distribution: {primary}",
+      "i" = "Supported: uniform, expgrowth"
+    ))
+  )
+  if (primary == "expgrowth" && length(primary_params) != 1) {
+    cli::cli_abort(c(
+      "x" = paste(
+        "primary_params must be a single numeric value",
+        "(growth rate) when primary = \"expgrowth\""
       )
-    )
+    ))
   }
-
-  # Convert data to proper format
-  delay_data <- .prepare_delay_intervals(data, verbose)
-
-  # Get distribution ID (primarycensored convention)
-  dist_id <- switch(dist,
-    "lognormal" = 1L,
-    "gamma" = 2L
-  )
-
-  # Create params list using make_param in canonical order
-  param_names <- switch(dist,
-    "lognormal" = c("meanlog", "sdlog"),
-    "gamma" = c("shape", "rate")
-  )
 
   # Validate prior names
   if (!setequal(names(priors), param_names)) {
-    cli::cli_abort(
-      c(
-        "x" = "Invalid prior names for {dist} distribution",
-        "i" = "Expected: {paste(param_names, collapse = ', ')};
-              got: {paste(names(priors), collapse = ', ')}"
+    cli::cli_abort(c(
+      "x" = "Invalid prior names for {dist} distribution",
+      "i" = paste(
+        "Expected: {paste(param_names, collapse = ', ')};",
+        "got: {paste(names(priors), collapse = ', ')}"
       )
-    )
+    ))
   }
 
+  # Convert data to aggregated format
+  delay_data <- .prepare_linelist_data(data, verbose)
+
+  # Build params list
   lbounds <- lower_bounds(dist)
   params <- lapply(param_names, function(name) {
     make_param(name, priors[[name]], lower_bound = lbounds[[name]])
   })
 
   # Prepare Stan data
-  d_inferred <- max(delay_data$delay_upper) + 10
   stan_data <- list(
     n = nrow(delay_data),
-    delay = as.integer(delay_data$delay),
-    delay_upper = delay_data$delay_upper,
+    delay = as.integer(delay_data$delay_lwr),
+    delay_upper = as.numeric(delay_data$delay_upr),
     n_obs = as.integer(delay_data$n),
-    pwindow = 1.0,  # Daily primary censoring
-    D = truncation_time %||% d_inferred,  # Truncation time
+    pwindow = as.integer(delay_data$pwindow),
+    D = as.numeric(delay_data$relative_obs_time),
+    L = rep(0.0, nrow(delay_data)),
     dist_id = dist_id,
-    primary_id = 1L,  # Uniform primary censoring
-    n_primary_params = 0L,  # No primary params for uniform
-    primary_params = numeric(0)  # Empty array
+    primary_id = primary_id,
+    n_primary_params = as.integer(length(primary_params)),
+    primary_params = as.numeric(primary_params)
   )
 
   # Add params using standard EpiNow2 infrastructure
@@ -138,30 +160,37 @@ estimate_dist <- function(data,
 
   if (verbose) {
     cli::cli_alert_info(
-      "Fitting {dist} to {sum(stan_data$n_obs)} observations using
+      "Fitting {dist} to {sum(stan_data$n_obs)} observations \\
+      ({nrow(delay_data)} unique combinations) using \\
       {stan$backend %||% 'rstan'}"
     )
   }
 
   # Compute initial values based on MoM estimates
-  midpoints <- (delay_data$delay + delay_data$delay_upper) / 2
+  midpoints <- (delay_data$delay_lwr + delay_data$delay_upr) / 2
   obs_weights <- delay_data$n
   wmean <- stats::weighted.mean(midpoints, obs_weights)
-  wvar <- stats::weighted.mean((midpoints - wmean)^2, obs_weights)
+  wvar <- stats::weighted.mean(
+    (midpoints - wmean)^2, obs_weights
+  )
 
   init_params <- switch(dist,
     "lognormal" = c(log(wmean), sqrt(log(1 + wvar / wmean^2))),
     "gamma" = c(wmean^2 / wvar, wmean / wvar)
   )
   # Ensure init is within bounds
-  init_params <- pmax(init_params, stan_data$params_lower + 0.01)
-  init_params <- pmin(init_params, stan_data$params_upper - 0.01)
+  init_params <- pmax(
+    init_params, stan_data$params_lower + 0.01
+  )
+  init_params <- pmin(
+    init_params, stan_data$params_upper - 0.01
+  )
   init_fn <- function() list(params = init_params)
 
   # Create stan args and fit using shared infrastructure
   stan_args <- create_stan_args(
-    stan = stan, data = stan_data, init = init_fn, model = "estimate_dist",
-    verbose = verbose
+    stan = stan, data = stan_data, init = init_fn,
+    model = "estimate_dist", verbose = verbose
   )
   fit <- fit_model(stan_args, id = "estimate_dist")
 
@@ -169,7 +198,7 @@ estimate_dist <- function(data,
   result <- .extract_to_dist_spec(
     fit = fit,
     dist = dist,
-    max_value = max_value %||% max(delay_data$delay_upper)
+    max_value = max_value %||% max(delay_data$delay_upr)
   )
 
   if (verbose) {
@@ -179,73 +208,217 @@ estimate_dist <- function(data,
   result
 }
 
-#' Prepare delay data as intervals
+#' Map distribution name to primarycensored ID
 #'
+#' @param dist Character distribution name
+#' @return Integer distribution ID
 #' @keywords internal
-.prepare_delay_intervals <- function(data, verbose = FALSE) {
+.get_dist_id <- function(dist) {
+  switch(dist,
+    "lognormal" = 1L,
+    "gamma" = 2L,
+    cli::cli_abort(c(
+      "x" = "Unsupported distribution: {dist}",
+      "i" = "Supported: lognormal, gamma"
+    ))
+  )
+}
+
+#' Map distribution name to parameter names
+#'
+#' @param dist Character distribution name
+#' @return Character vector of parameter names
+#' @keywords internal
+.get_param_names <- function(dist) {
+  switch(dist,
+    "lognormal" = c("meanlog", "sdlog"),
+    "gamma" = c("shape", "rate"),
+    cli::cli_abort(c(
+      "x" = "Unsupported distribution: {dist}",
+      "i" = "Supported: lognormal, gamma"
+    ))
+  )
+}
+
+#' Prepare linelist data for delay estimation
+#'
+#' Converts date-based or numeric delay data into an aggregated format
+#' suitable for the primarycensored Stan model. Handles date-to-numeric
+#' conversion, computation of derived columns, an obs-time-to-Inf
+#' heuristic, and aggregation by unique delay/censoring combinations.
+#'
+#' @param data Either a numeric vector of delays or a data frame with
+#'   date columns (`pdate_lwr`, `sdate_lwr`, and optionally
+#'   `pdate_upr`, `sdate_upr`, `obs_date`, `n`).
+#' @param verbose Logical, print progress messages?
+#' @return A data frame with columns: `delay_lwr`, `delay_upr`,
+#'   `pwindow`, `relative_obs_time`, `n`.
+#' @keywords internal
+.prepare_linelist_data <- function(data, verbose = FALSE) {
 
   if (is.numeric(data)) {
-    # Vector - convert to intervals
+    return(.numeric_to_linelist(data, verbose))
+  }
 
-    if (verbose) {
-      cli::cli_alert_info("Converting vector to interval format")
-    }
-
-    # Clean
-    data <- as.integer(data)
-    data <- data[!is.na(data) & data >= 0]
-
-    # Aggregate
-    delay_counts <- table(data)
-
-    delay_df <- data.frame(
-      delay = as.numeric(names(delay_counts)),
-      delay_upper = as.numeric(names(delay_counts)) + 1,
-      n = as.integer(delay_counts)
-    )
-
-  } else if (is.data.frame(data)) {
-
-    required <- c("delay", "delay_upper")
-    if (!all(required %in% names(data))) {
-      cli::cli_abort(
-        c(
-          "x" = "Data frame must have columns: delay, delay_upper",
-          "i" = "Found: {paste(names(data), collapse = ', ')}"
-        )
-      )
-    }
-
-    delay_df <- data
-
-    if (!"n" %in% names(delay_df)) {
-      delay_df$n <- 1L
-    }
-
-  } else {
+  if (!is.data.frame(data)) {
     cli::cli_abort("data must be a numeric vector or data frame")
   }
 
-  delay_df
+  # Validate required columns
+  required <- c("pdate_lwr", "sdate_lwr")
+  missing_cols <- setdiff(required, names(data))
+  if (length(missing_cols) > 0) {
+    cli::cli_abort(c(
+      "x" = paste(
+        "Data frame must have columns:",
+        toString(required)
+      ),
+      "i" = "Found: {paste(names(data), collapse = ', ')}"
+    ))
+  }
+
+  if (verbose) {
+    cli::cli_alert_info(
+      "Converting date-based data to numeric intervals"
+    )
+  }
+
+  # Fill defaults
+  if (is.null(data$pdate_upr)) {
+    data$pdate_upr <- data$pdate_lwr + 1
+  }
+  if (is.null(data$sdate_upr)) {
+    data$sdate_upr <- data$sdate_lwr + 1
+  }
+  if (is.null(data$obs_date)) {
+    data$obs_date <- max(data$sdate_lwr)
+  }
+  if (is.null(data$n)) {
+    data$n <- 1L
+  }
+
+  # Convert dates to numeric relative to min(pdate_lwr)
+  origin <- min(data$pdate_lwr)
+  ptime_lwr <- as.numeric(
+    difftime(data$pdate_lwr, origin, units = "days")
+  )
+  ptime_upr <- as.numeric(
+    difftime(data$pdate_upr, origin, units = "days")
+  )
+  stime_lwr <- as.numeric(
+    difftime(data$sdate_lwr, origin, units = "days")
+  )
+  stime_upr <- as.numeric(
+    difftime(data$sdate_upr, origin, units = "days")
+  )
+  obs_time <- as.numeric(
+    difftime(data$obs_date, origin, units = "days")
+  )
+
+  # Compute derived columns
+  delay_lwr <- as.integer(stime_lwr - ptime_lwr)
+  delay_upr <- as.integer(ceiling(stime_upr - ptime_lwr))
+  pwindow <- as.integer(ptime_upr - ptime_lwr)
+  relative_obs_time <- obs_time - ptime_lwr
+
+  # Filter out invalid delays
+  valid <- delay_lwr >= 0
+  if (!all(valid)) {
+    if (verbose) {
+      cli::cli_alert_warning(
+        "Removed {sum(!valid)} observations with negative delays"
+      )
+    }
+    delay_lwr <- delay_lwr[valid]
+    delay_upr <- delay_upr[valid]
+    pwindow <- pwindow[valid]
+    relative_obs_time <- relative_obs_time[valid]
+    data <- data[valid, , drop = FALSE]
+  }
+
+  # Obs-time-to-Inf heuristic: if relative_obs_time is much
+  # larger than the max delay, treat as untruncated
+  max_delay <- max(delay_upr)
+  far_from_truncation <- relative_obs_time > max_delay * 2
+  relative_obs_time[far_from_truncation] <- Inf
+
+  # Aggregate by unique combinations
+  agg_df <- data.frame(
+    delay_lwr = delay_lwr,
+    delay_upr = delay_upr,
+    pwindow = pwindow,
+    relative_obs_time = relative_obs_time,
+    n = as.integer(data$n)
+  )
+
+  result <- stats::aggregate(
+    n ~ delay_lwr + delay_upr + pwindow + relative_obs_time,
+    data = agg_df,
+    FUN = sum
+  )
+
+  if (verbose) {
+    cli::cli_alert_info(
+      "Aggregated {nrow(agg_df)} observations into \\
+      {nrow(result)} unique combinations"
+    )
+  }
+
+  result
+}
+
+#' Convert numeric delay vector to linelist format
+#'
+#' @param data Numeric vector of delay values
+#' @param verbose Logical, print progress messages?
+#' @return A data frame with columns: `delay_lwr`, `delay_upr`,
+#'   `pwindow`, `relative_obs_time`, `n`.
+#' @keywords internal
+.numeric_to_linelist <- function(data, verbose = FALSE) {
+  if (verbose) {
+    cli::cli_alert_info(
+      "Converting numeric vector to interval format"
+    )
+  }
+
+  data <- as.integer(data)
+  data <- data[!is.na(data) & data >= 0]
+
+  delay_counts <- table(data)
+  delay_lwr <- as.integer(names(delay_counts))
+  delay_upr <- delay_lwr + 1L
+
+  # For numeric input, assume daily censoring and infer
+  # truncation as max(delay_upper) + 10 (conservative)
+  d_inferred <- max(delay_upr) + 10
+
+  data.frame(
+    delay_lwr = delay_lwr,
+    delay_upr = as.numeric(delay_upr),
+    pwindow = rep(1L, length(delay_lwr)),
+    relative_obs_time = rep(as.numeric(d_inferred),
+                            length(delay_lwr)),
+    n = as.integer(delay_counts)
+  )
 }
 
 #' Extract parameters and convert to dist_spec
 #'
 #' @keywords internal
 .extract_to_dist_spec <- function(fit, dist, max_value) {
-  # Extract raw params - naming handled here based on distribution
   samples <- extract_samples(fit, pars = "params")
 
-  param_names <- switch(dist,
-    "lognormal" = c("meanlog", "sdlog"),
-    "gamma" = c("shape", "rate")
-  )
+  param_names <- .get_param_names(dist)
 
-  # samples$params is a matrix with columns for each parameter
   params <- lapply(seq_along(param_names), function(i) {
-    Normal(mean = mean(samples$params[, i]), sd = sd(samples$params[, i]))
+    Normal(
+      mean = mean(samples$params[, i]),
+      sd = sd(samples$params[, i])
+    )
   })
   names(params) <- param_names
 
-  new_dist_spec(params = params, max = max_value, distribution = dist)
+  new_dist_spec(
+    params = params, max = max_value, distribution = dist
+  )
 }
