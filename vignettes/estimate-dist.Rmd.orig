@@ -149,7 +149,9 @@ For `meanlog`, the prior should reflect the expected mean delay on the log scale
 If you expect a delay with a mean around 3--7 days, `log(5) ≈ 1.6` is a reasonable centre.
 
 For `sdlog`, it helps to think in terms of the coefficient of variation (CV).
+For a lognormal distribution, `CV = sqrt(exp(sdlog²) - 1)` depends only on `sdlog`.
 A `sdlog` of 0.5 gives `CV ≈ 0.53` (the standard deviation is about half the mean), while `sdlog = 1.0` gives `CV ≈ 1.3` (very dispersed).
+Here we centre on 0.5 because we expect moderate variability in this delay, with a fairly tight prior (`sd = 0.25`) to rule out very large values.
 
 We define the prior as a `dist_spec` and use `plot()` to check that the implied delay distributions are plausible before fitting.
 
