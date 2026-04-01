@@ -22,11 +22,14 @@ data {
   // Observation counts per interval
   array[n] int<lower=1> n_obs;
 
-  // Primary window (daily censoring = 1)
-  real<lower=0> pwindow;
+  // Per-observation primary window (daily censoring = 1)
+  array[n] int<lower=0> pwindow;
 
-  // Truncation time (maximum observation time)
-  real<lower=0> D;
+  // Per-observation left truncation point
+  array[n] real<lower=0> L;
+
+  // Per-observation truncation time (maximum observation time)
+  array[n] real<lower=0> D;
 
   // Distribution ID: 1=lognormal, 2=gamma, 3=weibull
   int<lower=1> dist_id;
@@ -63,10 +66,10 @@ model {
   params_lp(params, prior_dist, prior_dist_params, params_lower, params_upper);
 
   // Likelihood using primarycensored
-  // L=0 means no left truncation
   for (i in 1:n) {
     target += n_obs[i] * primarycensored_lpmf(
-      delay[i] | dist_id, params_array, pwindow, delay_upper[i], 0.0, D,
+      delay[i] | dist_id, params_array, pwindow[i],
+      delay_upper[i], L[i], D[i],
       primary_id, primary_params
     );
   }
