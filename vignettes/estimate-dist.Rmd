@@ -147,17 +147,75 @@ If you have numeric delays without dates, you can do the same thing: set `pdate_
 For `obs_date`, use the date the data were sent to you, or the date data collection stopped.
 If neither is available, `estimate_dist()` defaults to `max(sdate_upr)`, which is a reasonable fallback for most situations.
 
+# Setting priors
+
+By default, `estimate_dist()` uses `Normal(1, 1)` for `meanlog` and `Normal(0.5, 0.5)` for `sdlog`.
+These are fairly wide and may not reflect domain knowledge.
+We recommend setting priors based on what you know about the delay.
+
+For `meanlog`, the prior should reflect the expected mean delay on the log scale.
+If you expect a delay with a mean around 3--7 days, `log(5) ≈ 1.6` is a reasonable centre.
+
+For `sdlog`, it helps to think in terms of the coefficient of variation (CV).
+A `sdlog` of 0.5 gives `CV ≈ 0.53` (the standard deviation is about half the mean), while `sdlog = 1.0` gives `CV ≈ 1.3` (very dispersed).
+For most epidemiological delays `sdlog` falls between about 0.3 and 1.0, so a prior centred on 0.5 with moderate uncertainty is a reasonable starting point.
+
+
+``` r
+custom_priors <- list(
+  meanlog = Normal(1.6, 0.5),
+  sdlog = Normal(0.5, 0.25)
+)
+```
+
+A prior predictive check helps verify that the priors imply a plausible range of delay distributions.
+We draw from the priors and plot the implied densities.
+
+
+``` r
+set.seed(1)
+x_seq <- seq(0.01, 20, length.out = 200)
+n_draws <- 50
+
+prior_densities <- sapply(seq_len(n_draws), function(i) {
+  ml <- rnorm(1, 1.6, 0.5)
+  sl <- max(rnorm(1, 0.5, 0.25), 0.1)
+  dlnorm(x_seq, ml, sl)
+})
+
+prior_df <- data.frame(
+  x = rep(x_seq, n_draws),
+  density = as.vector(prior_densities),
+  draw = rep(seq_len(n_draws), each = length(x_seq))
+)
+
+ggplot(prior_df, aes(x = x, y = density, group = draw)) +
+  geom_line(alpha = 0.2, colour = "#4292C6") +
+  labs(
+    x = "Delay (days)", y = "Density",
+    title = "Prior predictive: implied delay distributions"
+  ) +
+  coord_cartesian(xlim = c(0, 20), ylim = c(0, 0.5)) +
+  theme_minimal()
+```
+
+![plot of chunk prior-predictive](estimate-dist-prior-predictive-1.png)
+
+Each line is a delay distribution drawn from the priors.
+The range should cover plausible delays for the application without placing substantial weight on unrealistic values.
+
 # Fitting the model
 
-We pass the linelist directly to `estimate_dist()`.
+We pass the linelist and our custom priors to `estimate_dist()`.
 Internally the function converts dates to numeric intervals, then aggregates identical delay-censoring-truncation combinations and counts their occurrences.
-This aggregation reduces the number of likelihood evaluations, which speeds up fitting considerably when many observations share the same structure.
+This reduces the number of likelihood evaluations, which speeds up fitting when many observations share the same structure.
 
 
 ``` r
 result <- estimate_dist(
   linelist,
-  dist = "lognormal"
+  dist = "lognormal",
+  priors = custom_priors
 )
 ```
 
@@ -174,12 +232,12 @@ result
 #> Parameter estimates:
 #>    variable    median      mean         sd  lower_90  lower_50  lower_20
 #>      <char>     <num>     <num>      <num>     <num>     <num>     <num>
-#> 1:  meanlog 1.4076213 1.4152854 0.09906318 1.2652369 1.3485551 1.3824484
-#> 2:    sdlog 0.8021084 0.8084836 0.08612721 0.6768883 0.7479874 0.7819483
-#>     upper_20  upper_50  upper_90
-#>        <num>     <num>     <num>
-#> 1: 1.4299885 1.4773864 1.5917930
-#> 2: 0.8234871 0.8647088 0.9595202
+#> 1:  meanlog 1.4030597 1.4133233 0.09858172 1.2723868 1.3489197 1.3820042
+#> 2:    sdlog 0.7882222 0.7953719 0.07807894 0.6788305 0.7423436 0.7706853
+#>     upper_20 upper_50  upper_90
+#>        <num>    <num>     <num>
+#> 1: 1.4258920 1.465487 1.5843156
+#> 2: 0.8080633 0.841584 0.9290615
 ```
 
 For convergence diagnostics, the underlying Stan fit is accessible via `result$fit`.
@@ -188,17 +246,17 @@ For convergence diagnostics, the underlying Stan fit is accessible via `result$f
 ``` r
 rstan::summary(result$fit)$summary
 #>                         mean     se_mean         sd         2.5%          25%
-#> params[1]          1.4152854 0.003706302 0.09906318    1.2359888    1.3485551
-#> params[2]          0.8084836 0.003338173 0.08612721    0.6530443    0.7479874
-#> delay_params[1]    1.4152854 0.003706302 0.09906318    1.2359888    1.3485551
-#> delay_params[2]    0.8084836 0.003338173 0.08612721    0.6530443    0.7479874
-#> lp__            -374.4330489 0.041535354 1.08697693 -377.2839903 -374.8752479
-#>                          50%          75%        97.5%    n_eff      Rhat
-#> params[1]          1.4076213    1.4773864    1.6273874 714.4027 1.0000169
-#> params[2]          0.8021084    0.8647088    0.9962613 665.6760 1.0015496
-#> delay_params[1]    1.4076213    1.4773864    1.6273874 714.4027 1.0000169
-#> delay_params[2]    0.8021084    0.8647088    0.9962613 665.6760 1.0015496
-#> lp__            -374.1213513 -373.6553663 -373.3761854 684.8648 0.9997824
+#> params[1]          1.4133233 0.004316969 0.09858172    1.2518316    1.3489197
+#> params[2]          0.7953719 0.003063368 0.07807894    0.6636291    0.7423436
+#> delay_params[1]    1.4133233 0.004316969 0.09858172    1.2518316    1.3489197
+#> delay_params[2]    0.7953719 0.003063368 0.07807894    0.6636291    0.7423436
+#> lp__            -375.0461582 0.052024836 1.12104595 -378.0435964 -375.4796121
+#>                          50%         75%        97.5%    n_eff     Rhat
+#> params[1]          1.4030597    1.465487    1.6417671 521.4767 1.000459
+#> params[2]          0.7882222    0.841584    0.9624373 649.6350 1.002513
+#> delay_params[1]    1.4030597    1.465487    1.6417671 521.4767 1.000459
+#> delay_params[2]    0.7882222    0.841584    0.9624373 649.6350 1.002513
+#> lp__            -374.7006841 -374.270796 -374.0016991 464.3286 1.013132
 ```
 
 We can extract the fitted distribution as a `dist_spec` object using `get_parameters()`.
@@ -218,9 +276,9 @@ params$delay
 #>   sdlog:
 #>     - normal distribution:
 #>       mean:
-#>         0.81
+#>         0.8
 #>       sd:
-#>         0.086
+#>         0.078
 ```
 
 # Checking parameter recovery
