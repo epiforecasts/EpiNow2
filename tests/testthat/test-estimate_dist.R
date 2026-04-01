@@ -88,19 +88,13 @@ test_that("correctly recovers gamma parameters with date input", {
   expect_true(abs(est_rate - true_rate) < 0.5)
 })
 
-test_that("works as expected with numeric vector input", {
-  set.seed(789)
+test_that("errors for numeric vector input", {
   delays <- as.integer(rlnorm(50, log(3), 0.3))
 
-  result <- estimate_dist(
-    delays,
-    dist = "lognormal",
-    stan = stan_opts(samples = 500, chains = 2),
-    verbose = FALSE
+  expect_error(
+    estimate_dist(delays, dist = "lognormal"),
+    "data must be a data frame"
   )
-
-  expect_s3_class(result, "dist_spec")
-  expect_equal(result$distribution, "lognormal")
 })
 
 test_that("works as expected with expgrowth primary", {
@@ -153,11 +147,15 @@ test_that("errors when obs_date is earlier than sdate_upr", {
 })
 
 test_that("errors for expgrowth without primary_params", {
-  delays <- rlnorm(50, log(5), 0.5)
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + 0:4,
+    sdate_lwr = origin + 5:9
+  )
 
   expect_error(
     estimate_dist(
-      delays,
+      linelist,
       dist = "lognormal",
       primary = "expgrowth"
     ),
@@ -166,12 +164,60 @@ test_that("errors for expgrowth without primary_params", {
 })
 
 test_that("errors for unsupported distribution", {
-  delays <- rlnorm(50, log(5), 0.5)
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + 0:4,
+    sdate_lwr = origin + 5:9
+  )
 
   expect_error(
-    estimate_dist(delays, dist = "normal"),
+    estimate_dist(linelist, dist = "normal"),
     "Unsupported distribution"
   )
+})
+
+test_that("errors for unsupported primary distribution", {
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + 0:4,
+    sdate_lwr = origin + 5:9
+  )
+
+  expect_error(
+    estimate_dist(linelist, primary = "weibull"),
+    "Unsupported primary distribution"
+  )
+})
+
+test_that("errors for invalid prior names", {
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + 0:4,
+    sdate_lwr = origin + 5:9
+  )
+
+  expect_error(
+    estimate_dist(
+      linelist,
+      dist = "lognormal",
+      priors = list(mu = Normal(1, 1), sigma = Normal(0.5, 0.5))
+    ),
+    "Invalid prior names"
+  )
+})
+
+test_that("negative delays are filtered without error", {
+  origin <- as.Date("2023-01-01")
+  # sdate_lwr before pdate_lwr for first two rows => negative delays
+  linelist <- data.frame(
+    pdate_lwr = origin + c(5, 6, 0, 1, 2),
+    sdate_lwr = origin + c(2, 3, 5, 6, 7)
+  )
+
+  # Should not error; negative delays are silently removed
+  result <- EpiNow2:::.prepare_linelist_data(linelist)
+  expect_true(all(result$delay_lwr >= 0))
+  expect_true(nrow(result) > 0)
 })
 
 # Deprecation tests --------------------------------------------------------
