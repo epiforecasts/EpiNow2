@@ -160,43 +160,20 @@ For `sdlog`, it helps to think in terms of the coefficient of variation (CV).
 A `sdlog` of 0.5 gives `CV ≈ 0.53` (the standard deviation is about half the mean), while `sdlog = 1.0` gives `CV ≈ 1.3` (very dispersed).
 For most epidemiological delays `sdlog` falls between about 0.3 and 1.0, so a prior centred on 0.5 with moderate uncertainty is a reasonable starting point.
 
+We define the prior as a `dist_spec` and use `plot()` to check that the implied delay distributions are plausible before fitting.
+
 
 ``` r
-custom_priors <- list(
+prior_dist <- LogNormal(
   meanlog = Normal(1.6, 0.5),
-  sdlog = Normal(0.5, 0.25)
+  sdlog = Normal(0.5, 0.25),
+  max = 20
 )
 ```
 
-A prior predictive check helps verify that the priors imply a plausible range of delay distributions.
-We draw from the priors and plot the implied densities.
-
 
 ``` r
-set.seed(1)
-x_seq <- seq(0.01, 20, length.out = 200)
-n_draws <- 50
-
-prior_densities <- sapply(seq_len(n_draws), function(i) {
-  ml <- rnorm(1, 1.6, 0.5)
-  sl <- max(rnorm(1, 0.5, 0.25), 0.1)
-  dlnorm(x_seq, ml, sl)
-})
-
-prior_df <- data.frame(
-  x = rep(x_seq, n_draws),
-  density = as.vector(prior_densities),
-  draw = rep(seq_len(n_draws), each = length(x_seq))
-)
-
-ggplot(prior_df, aes(x = x, y = density, group = draw)) +
-  geom_line(alpha = 0.2, colour = "#4292C6") +
-  labs(
-    x = "Delay (days)", y = "Density",
-    title = "Prior predictive: implied delay distributions"
-  ) +
-  coord_cartesian(xlim = c(0, 20), ylim = c(0, 0.5)) +
-  theme_minimal()
+plot(prior_dist, samples = 50, cumulative = FALSE)
 ```
 
 ![plot of chunk prior-predictive](estimate-dist-prior-predictive-1.png)
@@ -206,7 +183,7 @@ The range should cover plausible delays for the application without placing subs
 
 # Fitting the model
 
-We pass the linelist and our custom priors to `estimate_dist()`.
+We pass the linelist to `estimate_dist()`, extracting the priors from our `dist_spec`.
 Internally the function converts dates to numeric intervals, then aggregates identical delay-censoring-truncation combinations and counts their occurrences.
 This reduces the number of likelihood evaluations, which speeds up fitting when many observations share the same structure.
 
@@ -215,7 +192,7 @@ This reduces the number of likelihood evaluations, which speeds up fitting when 
 result <- estimate_dist(
   linelist,
   dist = "lognormal",
-  priors = custom_priors
+  priors = get_parameters(prior_dist)
 )
 ```
 
@@ -228,16 +205,17 @@ result
 #> Delay distribution: lognormal (max: 14)
 #> Observations: 198 (129 unique strata)
 #> Primary event: uniform 
+#> Max delay: 14 | Max obs time: 15
 #> 
 #> Parameter estimates:
-#>    variable    median      mean         sd  lower_90  lower_50  lower_20
-#>      <char>     <num>     <num>      <num>     <num>     <num>     <num>
-#> 1:  meanlog 1.4030597 1.4133233 0.09858172 1.2723868 1.3489197 1.3820042
-#> 2:    sdlog 0.7882222 0.7953719 0.07807894 0.6788305 0.7423436 0.7706853
-#>     upper_20 upper_50  upper_90
-#>        <num>    <num>     <num>
-#> 1: 1.4258920 1.465487 1.5843156
-#> 2: 0.8080633 0.841584 0.9290615
+#>    variable    median      mean         sd  lower_90 lower_50  lower_20
+#>      <char>     <num>     <num>      <num>     <num>    <num>     <num>
+#> 1:  meanlog 1.4001531 1.4068572 0.09398806 1.2655999 1.343393 1.3759575
+#> 2:    sdlog 0.7813516 0.7894131 0.07509719 0.6804412 0.733925 0.7642848
+#>     upper_20  upper_50  upper_90
+#>        <num>     <num>     <num>
+#> 1: 1.4214566 1.4611444 1.5759207
+#> 2: 0.8008999 0.8365392 0.9237593
 ```
 
 For convergence diagnostics, the underlying Stan fit is accessible via `result$fit`.
@@ -245,18 +223,18 @@ For convergence diagnostics, the underlying Stan fit is accessible via `result$f
 
 ``` r
 rstan::summary(result$fit)$summary
-#>                         mean     se_mean         sd         2.5%          25%
-#> params[1]          1.4133233 0.004316969 0.09858172    1.2518316    1.3489197
-#> params[2]          0.7953719 0.003063368 0.07807894    0.6636291    0.7423436
-#> delay_params[1]    1.4133233 0.004316969 0.09858172    1.2518316    1.3489197
-#> delay_params[2]    0.7953719 0.003063368 0.07807894    0.6636291    0.7423436
-#> lp__            -375.0461582 0.052024836 1.12104595 -378.0435964 -375.4796121
-#>                          50%         75%        97.5%    n_eff     Rhat
-#> params[1]          1.4030597    1.465487    1.6417671 521.4767 1.000459
-#> params[2]          0.7882222    0.841584    0.9624373 649.6350 1.002513
-#> delay_params[1]    1.4030597    1.465487    1.6417671 521.4767 1.000459
-#> delay_params[2]    0.7882222    0.841584    0.9624373 649.6350 1.002513
-#> lp__            -374.7006841 -374.270796 -374.0016991 464.3286 1.013132
+#>                         mean     se_mean         sd         2.5%         25%
+#> params[1]          1.4068572 0.003617471 0.09398806    1.2426296    1.343393
+#> params[2]          0.7894131 0.002818455 0.07509719    0.6621815    0.733925
+#> delay_params[1]    1.4068572 0.003617471 0.09398806    1.2426296    1.343393
+#> delay_params[2]    0.7894131 0.002818455 0.07509719    0.6621815    0.733925
+#> lp__            -374.9899611 0.035684411 0.98070943 -377.5335854 -375.388382
+#>                          50%          75%        97.5%    n_eff     Rhat
+#> params[1]          1.4001531    1.4611444    1.6166435 675.0489 1.003295
+#> params[2]          0.7813516    0.8365392    0.9616258 709.9457 1.004643
+#> delay_params[1]    1.4001531    1.4611444    1.6166435 675.0489 1.003295
+#> delay_params[2]    0.7813516    0.8365392    0.9616258 709.9457 1.004643
+#> lp__            -374.6670125 -374.2767613 -374.0051957 755.3072 1.000937
 ```
 
 We can extract the fitted distribution as a `dist_spec` object using `get_parameters()`.
@@ -272,13 +250,13 @@ params$delay
 #>       mean:
 #>         1.4
 #>       sd:
-#>         0.099
+#>         0.094
 #>   sdlog:
 #>     - normal distribution:
 #>       mean:
-#>         0.8
+#>         0.79
 #>       sd:
-#>         0.078
+#>         0.075
 ```
 
 # Checking parameter recovery

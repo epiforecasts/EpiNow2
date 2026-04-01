@@ -152,41 +152,18 @@ For `sdlog`, it helps to think in terms of the coefficient of variation (CV).
 A `sdlog` of 0.5 gives `CV ≈ 0.53` (the standard deviation is about half the mean), while `sdlog = 1.0` gives `CV ≈ 1.3` (very dispersed).
 For most epidemiological delays `sdlog` falls between about 0.3 and 1.0, so a prior centred on 0.5 with moderate uncertainty is a reasonable starting point.
 
+We define the prior as a `dist_spec` and use `plot()` to check that the implied delay distributions are plausible before fitting.
+
 ```{r priors}
-custom_priors <- list(
+prior_dist <- LogNormal(
   meanlog = Normal(1.6, 0.5),
-  sdlog = Normal(0.5, 0.25)
+  sdlog = Normal(0.5, 0.25),
+  max = 20
 )
 ```
 
-A prior predictive check helps verify that the priors imply a plausible range of delay distributions.
-We draw from the priors and plot the implied densities.
-
 ```{r prior-predictive, fig.width = 6, fig.height = 4}
-set.seed(1)
-x_seq <- seq(0.01, 20, length.out = 200)
-n_draws <- 50
-
-prior_densities <- sapply(seq_len(n_draws), function(i) {
-  ml <- rnorm(1, 1.6, 0.5)
-  sl <- max(rnorm(1, 0.5, 0.25), 0.1)
-  dlnorm(x_seq, ml, sl)
-})
-
-prior_df <- data.frame(
-  x = rep(x_seq, n_draws),
-  density = as.vector(prior_densities),
-  draw = rep(seq_len(n_draws), each = length(x_seq))
-)
-
-ggplot(prior_df, aes(x = x, y = density, group = draw)) +
-  geom_line(alpha = 0.2, colour = "#4292C6") +
-  labs(
-    x = "Delay (days)", y = "Density",
-    title = "Prior predictive: implied delay distributions"
-  ) +
-  coord_cartesian(xlim = c(0, 20), ylim = c(0, 0.5)) +
-  theme_minimal()
+plot(prior_dist, samples = 50, cumulative = FALSE)
 ```
 
 Each line is a delay distribution drawn from the priors.
@@ -194,7 +171,7 @@ The range should cover plausible delays for the application without placing subs
 
 # Fitting the model
 
-We pass the linelist and our custom priors to `estimate_dist()`.
+We pass the linelist to `estimate_dist()`, extracting the priors from our `dist_spec`.
 Internally the function converts dates to numeric intervals, then aggregates identical delay-censoring-truncation combinations and counts their occurrences.
 This reduces the number of likelihood evaluations, which speeds up fitting when many observations share the same structure.
 
@@ -202,7 +179,7 @@ This reduces the number of likelihood evaluations, which speeds up fitting when 
 result <- estimate_dist(
   linelist,
   dist = "lognormal",
-  priors = custom_priors
+  priors = get_parameters(prior_dist)
 )
 ```
 

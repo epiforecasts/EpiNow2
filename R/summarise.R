@@ -1059,6 +1059,15 @@ summary.estimate_dist <- function(object,
   } else {
     "exponentially tilted"
   }
+  D_vals <- object$args$D
+  finite_D <- D_vals[is.finite(D_vals)]
+  attr(out, "max_delay") <- max(object$args$delay_upper)
+  attr(out, "max_obs_time") <- if (length(finite_D) > 0) {
+    max(finite_D)
+  } else {
+    Inf
+  }
+  attr(out, "n_untruncated") <- sum(!is.finite(D_vals))
   class(out) <- c("summary.estimate_dist", class(out))
 
   out
@@ -1072,7 +1081,18 @@ print.summary.estimate_dist <- function(x, ...) {
     "Observations:", attr(x, "n_obs"),
     paste0("(", attr(x, "n_strata"), " unique strata)\n")
   )
-  cat("Primary event:", attr(x, "primary"), "\n\n")
+  cat("Primary event:", attr(x, "primary"), "\n")
+  cat(
+    "Max delay:", attr(x, "max_delay"),
+    "| Max obs time:", attr(x, "max_obs_time")
+  )
+  n_untrunc <- attr(x, "n_untruncated")
+  if (n_untrunc > 0) {
+    cat(
+      paste0(" (", n_untrunc, " strata untruncated)")
+    )
+  }
+  cat("\n\n")
   cat("Parameter estimates:\n")
   print(data.table::as.data.table(x), ...)
   invisible(x)
