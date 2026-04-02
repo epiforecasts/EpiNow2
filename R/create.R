@@ -256,7 +256,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 
   # Warn if fixed population is smaller than cumulative cases
   if (rt$pop != Fixed(0) && !is.null(data) &&
-        get_distribution(rt$pop) == "fixed") {
+    get_distribution(rt$pop) == "fixed") {
     pop_value <- mean(rt$pop, ignore_uncertainty = TRUE)
     total_cases <- sum(data[!is.na(confirm)]$confirm, na.rm = TRUE)
 
@@ -678,7 +678,7 @@ create_stan_args <- function(stan = stan_opts(),
   }
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
-        inherits(stan$object, "CmdStanModel")) {
+    inherits(stan$object, "CmdStanModel")) {
     init <- 2
   }
   # set up shared default arguments
@@ -772,6 +772,38 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$np_pmf_groups <- array(c(0, cumsum(nonparam_length)) + 1)
   ## calculate total np pmf length
   ret$np_pmf_length <- sum(nonparam_length)
+
+  ## estimated nonparametric delays
+  np_delays <- flat_delays[!parametric]
+  np_estimated <- vapply(
+    np_delays, is_estimated_nonparametric, logical(1)
+  )
+  est_np_indices <- which(np_estimated)
+  est_np_delays <- np_delays[np_estimated]
+  ret$np_est_n <- sum(np_estimated)
+
+  if (ret$np_est_n > 0) {
+    ret$np_est_which <- array(est_np_indices)
+    est_np_alphas <- unname(as.numeric(
+      flatten(lapply(est_np_delays, function(x) x$alpha))
+    ))
+    ret$np_est_alpha <- array(est_np_alphas)
+    est_np_lengths <- vapply(
+      est_np_delays,
+      function(x) length(x$alpha),
+      integer(1)
+    )
+    ret$np_est_groups <- array(
+      c(0, cumsum(est_np_lengths)) + 1
+    )
+    ret$np_est_length <- sum(est_np_lengths)
+  } else {
+    ret$np_est_which <- array(integer(0))
+    ret$np_est_alpha <- array(numeric(0))
+    ret$np_est_groups <- array(1L)
+    ret$np_est_length <- 0L
+  }
+
   ## get non zero length param lengths
   ret$params_groups <- array(c(0, cumsum(param_length)) + 1)
   ## calculate total param length
@@ -813,7 +845,8 @@ create_stan_params <- function(params) {
   null_ids <- rep(0, sum(null_params))
   if (length(null_ids) > 0) {
     names(null_ids) <- paste(
-      "param_id", tparams$name[null_params], sep = "_"
+      "param_id", tparams$name[null_params],
+      sep = "_"
     )
     params <- params[!null_params]
     tparams <- transpose(params)
