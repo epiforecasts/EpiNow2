@@ -1139,7 +1139,13 @@ dist_id_to_name <- function(dist_id) {
     "3" = "weibull",
     "4" = "exponential"
   )
-  unname(lookup[as.character(dist_id)])
+  result <- unname(lookup[as.character(dist_id)])
+  if (is.na(result)) {
+    cli::cli_abort(
+      "Unknown distribution ID {dist_id}. Expected one of: {.val {names(lookup)}}"
+    )
+  }
+  result
 }
 
 #' Get the lower bounds of the parameters of a distribution
