@@ -61,18 +61,20 @@ transformed parameters {
 }
 
 model {
-  // Priors
-  params_lp(
-    params, prior_dist, prior_dist_params,
-    params_lower, params_upper
-  );
-
-  // Likelihood
-  for (i in 1:n) {
-    target += n_obs[i] * primarycensored_lpmf(
-      delay[i] | dist_id, delay_params, pwindow[i],
-      delay_upper[i], L[i], D[i],
-      primary_id, primary_params
+  profile("priors") {
+    params_lp(
+      params, prior_dist, prior_dist_params,
+      params_lower, params_upper
     );
+  }
+
+  profile("likelihood") {
+    for (i in 1:n) {
+      target += n_obs[i] * primarycensored_lpmf(
+        delay[i] | dist_id, delay_params, pwindow[i],
+        delay_upper[i], L[i], D[i],
+        primary_id, primary_params
+      );
+    }
   }
 }
