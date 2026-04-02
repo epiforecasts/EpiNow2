@@ -148,10 +148,10 @@ test_that("extract_delays works with delay_id_* naming", {
   args <- list(
     delay_id_generation_time = 1,
     delay_id_reporting = 0,
-    delay_types_groups = c(1, 2),    # type 1 has flat delay 1
-    delay_types_p = c(1),            # flat delay 1 is parametric
-    delay_types_id = c(1),           # flat delay 1 is parametric delay 1
-    delay_params_groups = c(1, 3)    # parametric delay 1 has params 1-2
+    delay_types_groups = c(1, 2), # type 1 has flat delay 1
+    delay_types_p = c(1), # flat delay 1 is parametric
+    delay_types_id = c(1), # flat delay 1 is parametric delay 1
+    delay_params_groups = c(1, 3) # parametric delay 1 has params 1-2
   )
 
   result <- EpiNow2:::extract_delays(samples, args = args)
@@ -168,7 +168,7 @@ test_that("extract_delays works with delay_id_* naming", {
 
 test_that("extract_delays returns NULL when delay_params don't exist", {
   samples <- list(some_other_param = 1:10)
-  args <- list()  # Empty args
+  args <- list() # Empty args
   result <- EpiNow2:::extract_delays(samples, args = args)
   expect_null(result)
 })
@@ -178,7 +178,7 @@ test_that("extract_delays handles delays with no ID lookup gracefully", {
   samples <- list(
     delay_params = matrix(c(1.5, 2.0), nrow = 2, ncol = 1)
   )
-  args <- list()  # No ID lookup information
+  args <- list() # No ID lookup information
 
   result <- EpiNow2:::extract_delays(samples, args = args)
 
@@ -254,7 +254,88 @@ test_that("build_delay_name_lookup correctly names parameters", {
   result <- EpiNow2:::build_delay_name_lookup(args_three_mixed, n_cols = 4)
   expect_equal(
     result,
-    c("generation_time[1]", "generation_time[2]",
-      "truncation[1]", "truncation[2]")
+    c(
+      "generation_time[1]", "generation_time[2]",
+      "truncation[1]", "truncation[2]"
+    )
+  )
+})
+
+test_that("create_stan_delays works with fixed NonParametric", {
+  data <- EpiNow2:::create_stan_delays(
+    delays = delay_opts(
+      dist = NonParametric(c(0.1, 0.6, 0.3))
+    )
+  )
+  expect_equal(data$delay_n_np, 1L)
+  expect_equal(as.numeric(data$delay_np_pmf), c(0.1, 0.6, 0.3))
+  expect_equal(data$delay_np_est_n, 0L)
+  expect_equal(data$delay_np_est_length, 0L)
+  expect_equal(as.numeric(data$delay_np_est_alpha), numeric(0))
+  expect_equal(as.integer(data$delay_np_est_groups), 1L)
+})
+
+test_that("create_stan_delays handles EstimatedNonParametric", {
+  pmf <- c(0.1, 0.5, 0.3, 0.1)
+  conc <- 2
+  data <- EpiNow2:::create_stan_delays(
+    delays = delay_opts(
+      dist = EstimatedNonParametric(pmf, concentration = conc)
+    )
+  )
+  expect_equal(data$delay_np_est_n, 1L)
+  expect_equal(data$delay_np_est_length, 4L)
+  expect_equal(
+    as.numeric(data$delay_np_est_alpha),
+    conc * pmf
+  )
+  expect_equal(as.integer(data$delay_np_est_which), 1L)
+  expect_equal(
+    as.integer(data$delay_np_est_groups), c(1L, 5L)
+  )
+  # Prior PMF still present in np_pmf
+  expect_equal(as.numeric(data$delay_np_pmf), pmf)
+})
+
+test_that("create_stan_delays with no NP delays gives safe defaults", {
+  data <- EpiNow2:::create_stan_delays(
+    generation_time = gt_opts(Fixed(1))
+  )
+  expect_equal(data$delay_np_est_n, 0L)
+  expect_equal(data$delay_np_est_length, 0L)
+  expect_equal(as.numeric(data$delay_np_est_alpha), numeric(0))
+  expect_equal(as.integer(data$delay_np_est_groups), 1L)
+})
+
+test_that("create_stan_delays handles mixed fixed and estimated NP", {
+  fixed_pmf <- c(0.0, 0.5, 0.5)
+  est_pmf <- c(0.1, 0.4, 0.4, 0.1)
+  conc <- 5
+  data <- EpiNow2:::create_stan_delays(
+    generation_time = gt_opts(
+      dist = NonParametric(fixed_pmf)
+    ),
+    delays = delay_opts(
+      dist = EstimatedNonParametric(est_pmf, concentration = conc)
+    )
+  )
+  # Two NP delays total
+  expect_equal(data$delay_n_np, 2L)
+  # Only one is estimated
+  expect_equal(data$delay_np_est_n, 1L)
+  # The estimated one is the second NP delay
+  expect_equal(as.integer(data$delay_np_est_which), 2L)
+  expect_equal(
+    as.numeric(data$delay_np_est_alpha),
+    conc * est_pmf
+  )
+  expect_equal(data$delay_np_est_length, 4L)
+  expect_equal(
+    as.integer(data$delay_np_est_groups), c(1L, 5L)
+  )
+  # Both PMFs in np_pmf (generation_time first, then delays)
+  expect_equal(
+    as.numeric(data$delay_np_pmf),
+    c(fixed_pmf, est_pmf)
   )
 })
