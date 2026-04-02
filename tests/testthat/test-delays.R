@@ -339,3 +339,80 @@ test_that("create_stan_delays handles mixed fixed and estimated NP", {
     c(fixed_pmf, est_pmf)
   )
 })
+
+test_that(
+  "reconstruct_nonparametric returns NonParametric for fixed NP",
+  {
+    stan_data <- list(
+      delay_np_pmf = c(0.2, 0.5, 0.3),
+      delay_np_pmf_groups = c(1L, 4L),
+      delay_np_est_which = integer(0),
+      delay_np_est_groups = 1L,
+      delay_np_est_alpha = numeric(0)
+    )
+    result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 1L
+    )
+    expect_s3_class(result, "dist_spec")
+    expect_false(is_estimated_nonparametric(result))
+    expect_equal(
+      as.numeric(get_pmf(result)),
+      c(0.2, 0.5, 0.3)
+    )
+  }
+)
+
+test_that(
+  "reconstruct_nonparametric returns EstimatedNonParametric",
+  {
+    pmf <- c(0.1, 0.4, 0.4, 0.1)
+    conc <- 3
+    alpha <- conc * pmf
+    stan_data <- list(
+      delay_np_pmf = pmf,
+      delay_np_pmf_groups = c(1L, 5L),
+      delay_np_est_which = 1L,
+      delay_np_est_groups = c(1L, 5L),
+      delay_np_est_alpha = alpha
+    )
+    result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 1L
+    )
+    expect_true(is_estimated_nonparametric(result))
+    expect_equal(result$concentration, conc)
+    expect_equal(as.numeric(result$alpha), alpha)
+    expect_equal(as.numeric(get_pmf(result)), pmf)
+  }
+)
+
+test_that(
+  "reconstruct_nonparametric handles mixed fixed and estimated",
+  {
+    fixed_pmf <- c(0.0, 0.5, 0.5)
+    est_pmf <- c(0.1, 0.4, 0.4, 0.1)
+    conc <- 5
+    alpha <- conc * est_pmf
+    stan_data <- list(
+      delay_np_pmf = c(fixed_pmf, est_pmf),
+      delay_np_pmf_groups = c(1L, 4L, 8L),
+      delay_np_est_which = 2L,
+      delay_np_est_groups = c(1L, 5L),
+      delay_np_est_alpha = alpha
+    )
+    # First NP delay is fixed
+    fixed_result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 1L
+    )
+    expect_false(is_estimated_nonparametric(fixed_result))
+    expect_equal(
+      as.numeric(get_pmf(fixed_result)),
+      fixed_pmf
+    )
+    # Second NP delay is estimated
+    est_result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 2L
+    )
+    expect_true(is_estimated_nonparametric(est_result))
+    expect_equal(est_result$concentration, conc)
+  }
+)
