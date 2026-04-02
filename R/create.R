@@ -256,7 +256,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 
   # Warn if fixed population is smaller than cumulative cases
   if (rt$pop != Fixed(0) && !is.null(data) &&
-        get_distribution(rt$pop) == "fixed") {
+    get_distribution(rt$pop) == "fixed") {
     pop_value <- mean(rt$pop, ignore_uncertainty = TRUE)
     total_cases <- sum(data[!is.na(confirm)]$confirm, na.rm = TRUE)
 
@@ -678,7 +678,7 @@ create_stan_args <- function(stan = stan_opts(),
   }
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
-        inherits(stan$object, "CmdStanModel")) {
+    inherits(stan$object, "CmdStanModel")) {
     init <- 2
   }
   # set up shared default arguments
@@ -815,7 +815,8 @@ create_stan_params <- function(params) {
   null_ids <- rep(0, sum(null_params))
   if (length(null_ids) > 0) {
     names(null_ids) <- paste(
-      "param_id", tparams$name[null_params], sep = "_"
+      "param_id", tparams$name[null_params],
+      sep = "_"
     )
     params <- params[!null_params]
     tparams <- transpose(params)

@@ -13,7 +13,7 @@ test_that("discretised_pmf produces valid PMF for lognormal distribution", {
 
   # PMF should have a mode (peak) and then decrease
   mode_index <- which.max(pmf)
-  expect_true(mode_index > 1)  # Mode should not be at day 1
+  expect_true(mode_index > 1) # Mode should not be at day 1
 })
 
 test_that("discretised_pmf produces valid PMF for gamma distribution", {

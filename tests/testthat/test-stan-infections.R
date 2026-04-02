@@ -76,7 +76,7 @@ test_that("generate_infections respects pop_floor with population adjustment", {
 # test deconvolve_infections
 test_that("deconvolve_infections with fixed mode returns shifted cases", {
   shifted_cases <- c(10, 20, 30, 40, 50)
-  noise <- numeric(0)  # Noise not used in fixed mode
+  noise <- numeric(0) # Noise not used in fixed mode
   result <- deconvolve_infections(shifted_cases, noise, fixed = 1, prior = 0)
 
   # With fixed = 1, should return shifted_cases + small offset
@@ -85,7 +85,7 @@ test_that("deconvolve_infections with fixed mode returns shifted cases", {
 
 test_that("deconvolve_infections with prior=0 applies noise only", {
   shifted_cases <- rep(100, 10)
-  noise <- rep(0.1, 10)  # Small positive noise
+  noise <- rep(0.1, 10) # Small positive noise
 
   result <- deconvolve_infections(shifted_cases, noise, fixed = 0, prior = 0)
 
@@ -96,7 +96,7 @@ test_that("deconvolve_infections with prior=0 applies noise only", {
 
 test_that("deconvolve_infections with prior=1 scales cases by noise", {
   shifted_cases <- c(10, 20, 30, 40, 50)
-  noise <- rep(0, 5)  # Zero noise for simple test
+  noise <- rep(0, 5) # Zero noise for simple test
 
   result <- deconvolve_infections(shifted_cases, noise, fixed = 0, prior = 1)
 

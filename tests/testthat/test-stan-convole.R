@@ -98,7 +98,7 @@ test_that("convolve_to_report convolves infections with delay distribution", {
 
 test_that("convolve_to_report handles zero delay correctly", {
   infections <- c(10, 20, 30, 40, 50)
-  delay_rev_pmf <- numeric(0)  # Empty delay
+  delay_rev_pmf <- numeric(0) # Empty delay
   seeding_time <- 2
 
   result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
