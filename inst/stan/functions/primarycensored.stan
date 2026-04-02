@@ -447,3 +447,93 @@ real primarycensored_lpmf(data int d, int dist_id, array[] real params,
     return log_diff_exp(log_cdf_upper, log_cdf_lower);
   }
 }
+vector primarycensored_sone_lpmf_vectorized(
+  int max_delay, data real L, data real D, int dist_id,
+  array[] real params, data real pwindow,
+  int primary_id, array[] real primary_params
+) {
+
+  int upper_interval = max_delay + 1;
+  vector[upper_interval] log_pmfs;
+  vector[upper_interval] log_cdfs;
+  real log_normalizer;
+
+  // Check if D is at least max_delay + 1
+  if (D < upper_interval) {
+    reject("D must be at least max_delay + 1");
+  }
+
+  // Compute log CDFs (without truncation normalization)
+  // Start from max(1, floor(L)) to avoid computing unused CDFs when L > 0
+  int start_idx = L > 0 ? max(1, to_int(floor(L))) : 1;
+  for (d in start_idx:upper_interval) {
+    log_cdfs[d] = primarycensored_lcdf(
+      d | dist_id, params, pwindow, 0, positive_infinity(), primary_id,
+      primary_params
+    );
+  }
+
+  // Get CDF at lower truncation point L
+  real log_cdf_L;
+  if (L <= 0) {
+    // No left truncation
+    log_cdf_L = negative_infinity();
+  } else if (L <= upper_interval && floor(L) == L) {
+    // L is an integer within computed range, reuse cached value
+    log_cdf_L = log_cdfs[to_int(L)];
+  } else {
+    // L is outside computed range or non-integer, compute directly
+    log_cdf_L = primarycensored_lcdf(
+      L | dist_id, params, pwindow, 0, positive_infinity(),
+      primary_id, primary_params
+    );
+  }
+
+  // Compute log normalizer: log(F(D) - F(L))
+  real log_cdf_D;
+  if (D > upper_interval) {
+    if (is_inf(D)) {
+      log_cdf_D = 0; // log(1) = 0 for infinite D
+    } else {
+      log_cdf_D = primarycensored_lcdf(
+        D | dist_id, params, pwindow, 0, positive_infinity(),
+        primary_id, primary_params
+      );
+    }
+  } else {
+    log_cdf_D = log_cdfs[upper_interval];
+  }
+
+  log_normalizer = primarycensored_log_normalizer(log_cdf_D, log_cdf_L, L);
+
+  // Compute log PMFs: log((F(d) - F(d-1)) / (F(D) - F(L)))
+  for (d in 1:upper_interval) {
+    if (d <= L) {
+      // Delay interval [d-1, d) is entirely at or below L
+      log_pmfs[d] = negative_infinity();
+    } else if (d - 1 < L) {
+      // L falls within interval [d-1, d), so compute mass in [L, d)
+      log_pmfs[d] = log_diff_exp(log_cdfs[d], log_cdf_L) - log_normalizer;
+    } else if (d == 1) {
+      // First interval [0, 1) with L <= 0: F(0) = 0, so PMF = F(1) / normalizer
+      log_pmfs[d] = log_cdfs[d] - log_normalizer;
+    } else {
+      // Standard case: PMF = (F(d) - F(d-1)) / normalizer
+      log_pmfs[d] = log_diff_exp(log_cdfs[d], log_cdfs[d-1]) - log_normalizer;
+    }
+  }
+
+  return log_pmfs;
+}
+vector primarycensored_sone_pmf_vectorized(
+  int max_delay, data real L, data real D, int dist_id,
+  array[] real params, data real pwindow,
+  int primary_id,
+  array[] real primary_params
+) {
+  return exp(
+    primarycensored_sone_lpmf_vectorized(
+      max_delay, L, D, dist_id, params, pwindow, primary_id, primary_params
+    )
+  );
+}

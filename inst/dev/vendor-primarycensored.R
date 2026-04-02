@@ -12,6 +12,7 @@ output_file <- "inst/stan/functions/primarycensored.stan"
 # automatically. We list them explicitly here.
 funcs <- c(
   "primarycensored_lpmf",
+  "primarycensored_sone_pmf_vectorized",
   "primarycensored_ode",
   "dist_lcdf",
   "primary_lpdf",
