@@ -784,15 +784,25 @@ create_stan_delays <- function(..., time_points = 1L) {
 
   if (ret$np_est_n > 0) {
     ret$np_est_which <- array(est_np_indices)
-    est_np_alphas <- unname(as.numeric(
-      flatten(lapply(est_np_delays, function(x) x$alpha))
-    ))
-    ret$np_est_alpha <- array(est_np_alphas)
+    ## only include positive alpha entries (skip structural
+    ## zeros such as generation time at t=0)
+    all_alphas <- list()
+    all_pos <- list()
+    for (k in seq_along(est_np_delays)) {
+      alpha_k <- est_np_delays[[k]]$alpha
+      np_id <- est_np_indices[k]
+      pmf_start <- ret$np_pmf_groups[np_id]
+      positive <- which(alpha_k > 0)
+      all_alphas[[k]] <- alpha_k[positive]
+      all_pos[[k]] <- pmf_start + positive - 1L
+    }
+    est_np_alphas <- unname(as.numeric(unlist(all_alphas)))
+    est_np_positions <- as.integer(unlist(all_pos))
     est_np_lengths <- vapply(
-      est_np_delays,
-      function(x) length(x$alpha),
-      integer(1)
+      all_alphas, length, integer(1)
     )
+    ret$np_est_alpha <- array(est_np_alphas)
+    ret$np_est_pos <- array(est_np_positions)
     ret$np_est_groups <- array(
       c(0, cumsum(est_np_lengths)) + 1
     )
@@ -800,6 +810,7 @@ create_stan_delays <- function(..., time_points = 1L) {
   } else {
     ret$np_est_which <- array(integer(0))
     ret$np_est_alpha <- array(numeric(0))
+    ret$np_est_pos <- array(integer(0))
     ret$np_est_groups <- array(1L)
     ret$np_est_length <- 0L
   }

@@ -247,6 +247,50 @@ test_that("estimate_infections output does not contain breakpoints effect when b
   expect_false("breakpoints" %in% unique(samples$variable))
 })
 
+test_that("estimate_infections works with EstimatedNonParametric generation time", { # nolint
+  skip_integration()
+  gt_pmf <- c(0, 0.1, 0.3, 0.3, 0.2, 0.07, 0.03)
+  est_gt <- EstimatedNonParametric(
+    prior = gt_pmf,
+    concentration = 50
+  )
+  out <- suppressWarnings(estimate_infections(
+    data = reported_cases,
+    generation_time = gt_opts(est_gt),
+    delays = delay_opts(
+      example_incubation_period + example_reporting_delay
+    ),
+    rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+    stan = stan_opts(
+      samples = 200, warmup = 200,
+      chains = 2, cores = 1
+    ),
+    verbose = FALSE
+  ))
+  expect_null(out$error)
+  expect_true(nrow(summary(out, type = "parameters")) > 0)
+
+  # Check posterior GT recovery: with a tight prior
+  # (concentration=50) the posterior PMF should be close to
+  # the prior centre
+  draws <- out$fit$draws(variables = "delay_np_est_raw")
+  draws_mat <- posterior::as_draws_matrix(draws)
+  pmf_draws <- t(apply(draws_mat, 1, function(x) {
+    x / sum(x)
+  }))
+  posterior_mean <- colMeans(pmf_draws)
+  expect_equal(
+    posterior_mean, gt_pmf,
+    tolerance = 0.05
+  )
+
+  # Check get_parameters round-trips correctly
+  params <- get_parameters(out)
+  expect_true(
+    is_estimated_nonparametric(params$generation_time)
+  )
+})
+
 # Non-integration tests (fast - use one MCMC fit for multiple checks) ----
 
 test_that("summary with type='parameters' returns all dates by default", {

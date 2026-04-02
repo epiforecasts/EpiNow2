@@ -1150,8 +1150,6 @@ EstimatedNonParametric <- function(prior, concentration = 1) {
   }
   check_sparse_pmf_tail(pmf)
   alpha <- concentration * pmf
-  # Floor zero alphas to avoid invalid Gamma(0, 1) in Stan
-  alpha[alpha == 0] <- 1e-6
   params <- list(
     pmf = pmf,
     estimated = TRUE,
