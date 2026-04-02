@@ -28,8 +28,8 @@
 #'   - `n` (optional): observation count/weight (default: 1)
 #'
 #' @param dist Character string, which distribution to fit.
-#'   Currently only `"lognormal"` (default) and `"gamma"` are
-#'   supported.
+#'   One of `"lognormal"` (default), `"gamma"`, `"normal"`,
+#'   or `"exp"`.
 #'
 #' @param priors A list of `<dist_spec>` objects specifying priors
 #'   for the distribution parameters.
@@ -39,6 +39,9 @@
 #'     `list(meanlog = Normal(1, 1), sdlog = Normal(0.5, 0.5))`
 #'   - gamma:
 #'     `list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))`
+#'   - normal:
+#'     `list(mean = Normal(5, 5), sd = Normal(1, 1))`
+#'   - exp: `list(rate = Normal(0.5, 0.5))`
 #'
 #' @param primary Character string specifying the primary event
 #'   distribution. One of:
@@ -98,8 +101,8 @@
 #'
 #' ## Limitations
 #'
-#' - Only lognormal and gamma delay distributions are currently
-#'   supported.
+#' - Delay distributions are limited to lognormal, gamma,
+#'   normal, and exponential.
 #' - The primary event distribution is limited to uniform or
 #'   exponential growth with a fixed rate.
 #'   Primary event parameters are not estimated.
@@ -152,17 +155,23 @@
 #' }
 estimate_dist <- function(data,
                           dist = "lognormal",
-                          priors = if (dist == "lognormal") {
-                            list(
+                          priors = switch(dist,
+                            "lognormal" = list(
                               meanlog = Normal(1, 1),
                               sdlog = Normal(0.5, 0.5)
-                            )
-                          } else {
-                            list(
+                            ),
+                            "gamma" = list(
                               shape = Normal(2, 2),
                               rate = Normal(0.5, 0.5)
+                            ),
+                            "normal" = list(
+                              mean = Normal(5, 5),
+                              sd = Normal(1, 1)
+                            ),
+                            "exp" = list(
+                              rate = Normal(0.5, 0.5)
                             )
-                          },
+                          ),
                           primary = "uniform",
                           primary_params = numeric(0),
                           stan = stan_opts(),
@@ -303,13 +312,20 @@ estimate_dist <- function(data,
 #' @return Integer distribution ID
 #' @keywords internal
 .get_dist_id <- function(dist) {
-  switch(dist,
-    "lognormal" = 1L,
-    "gamma" = 2L,
-    cli::cli_abort(c(
-      "x" = "Unsupported distribution: {dist}",
-      "i" = "Supported: lognormal, gamma"
-    ))
+  # Map EpiNow2 names to primarycensored names
+  pc_name <- switch(dist,
+    "lognormal" = "lnorm",
+    "exp" = "exp",
+    dist
+  )
+  tryCatch(
+    primarycensored::pcd_stan_dist_id(pc_name, "delay"),
+    error = function(e) {
+      cli::cli_abort(c(
+        "x" = "Unsupported distribution: {dist}",
+        "i" = "Supported: lognormal, gamma, normal, exp"
+      ))
+    }
   )
 }
 
@@ -322,9 +338,11 @@ estimate_dist <- function(data,
   switch(dist,
     "lognormal" = c("meanlog", "sdlog"),
     "gamma" = c("shape", "rate"),
+    "normal" = c("mean", "sd"),
+    "exp" = "rate",
     cli::cli_abort(c(
       "x" = "Unsupported distribution: {dist}",
-      "i" = "Supported: lognormal, gamma"
+      "i" = "Supported: lognormal, gamma, normal, exp"
     ))
   )
 }

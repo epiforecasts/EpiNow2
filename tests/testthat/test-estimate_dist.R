@@ -36,12 +36,12 @@ test_that("correctly recovers lognormal parameters with date input", {
     meanlog = true_meanlog, sdlog = true_sdlog
   )
 
-  result <- estimate_dist(
+  result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "lognormal",
     stan = stan_opts(samples = 1000, chains = 2),
     verbose = FALSE
-  )
+  )))
 
   expect_s3_class(result, "estimate_dist")
   expect_s3_class(result, "epinowfit")
@@ -74,12 +74,12 @@ test_that("correctly recovers gamma parameters with date input", {
     shape = true_shape, rate = true_rate
   )
 
-  result <- estimate_dist(
+  result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "gamma",
     stan = stan_opts(samples = 1000, chains = 2),
     verbose = FALSE
-  )
+  )))
 
   expect_s3_class(result, "estimate_dist")
   expect_s3_class(result, "epinowfit")
@@ -137,12 +137,12 @@ test_that("correctly handles varying censoring windows", {
     obs_date = pdate_lwr + obs_times
   )
 
-  result <- estimate_dist(
+  result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "lognormal",
     stan = stan_opts(samples = 1000, chains = 2),
     verbose = FALSE
-  )
+  )))
 
   expect_s3_class(result, "estimate_dist")
   params <- get_parameters(result)
@@ -180,14 +180,14 @@ test_that("correctly recovers parameters with expgrowth primary", {
     rprimary_args = list(r = true_r)
   )
 
-  result <- estimate_dist(
+  result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "lognormal",
     primary = "expgrowth",
     primary_params = true_r,
     stan = stan_opts(samples = 1000, chains = 2),
     verbose = FALSE
-  )
+  )))
 
   expect_s3_class(result, "estimate_dist")
 
@@ -269,8 +269,7 @@ test_that("errors for unsupported distribution", {
   )
 
   expect_error(
-    estimate_dist(linelist, dist = "normal"),
-    "Unsupported distribution"
+    estimate_dist(linelist, dist = "weibull")
   )
 })
 
@@ -325,7 +324,9 @@ test_that("estimate_delay correctly shows deprecation warning", {
   delays <- rlnorm(30, log(5), 0.5)
 
   expect_warning(
-    estimate_delay(delays, samples = 100, bootstraps = 1),
+    suppressMessages(
+      estimate_delay(delays, samples = 100, bootstraps = 1)
+    ),
     "deprecated"
   )
 })

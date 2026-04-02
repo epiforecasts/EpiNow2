@@ -7,13 +7,9 @@
 estimate_dist(
   data,
   dist = "lognormal",
-  priors = if (dist == "lognormal") {
-     list(meanlog = Normal(1, 1), sdlog =
-    Normal(0.5, 0.5))
- } else {
-     list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))
-
-    },
+  priors = switch(dist, lognormal = list(meanlog = Normal(1, 1), sdlog = Normal(0.5,
+    0.5)), gamma = list(shape = Normal(2, 2), rate = Normal(0.5, 0.5)), normal =
+    list(mean = Normal(5, 5), sd = Normal(1, 1)), exp = list(rate = Normal(0.5, 0.5))),
   primary = "uniform",
   primary_params = numeric(0),
   stan = stan_opts(),
@@ -38,8 +34,8 @@ date (default: \code{sdate_lwr + 1})
 }}
 
 \item{dist}{Character string, which distribution to fit.
-Currently only \code{"lognormal"} (default) and \code{"gamma"} are
-supported.}
+One of \code{"lognormal"} (default), \code{"gamma"}, \code{"normal"},
+or \code{"exp"}.}
 
 \item{priors}{A list of \verb{<dist_spec>} objects specifying priors
 for the distribution parameters.
@@ -50,6 +46,9 @@ Defaults depend on \code{dist}:
 \code{list(meanlog = Normal(1, 1), sdlog = Normal(0.5, 0.5))}
 \item gamma:
 \code{list(shape = Normal(2, 2), rate = Normal(0.5, 0.5))}
+\item normal:
+\code{list(mean = Normal(5, 5), sd = Normal(1, 1))}
+\item exp: \code{list(rate = Normal(0.5, 0.5))}
 }}
 
 \item{primary}{Character string specifying the primary event
@@ -133,8 +132,8 @@ in the package), so the model is pre-compiled and runs without
 needing \code{primarycensored} at runtime.
 \subsection{Limitations}{
 \itemize{
-\item Only lognormal and gamma delay distributions are currently
-supported.
+\item Delay distributions are limited to lognormal, gamma,
+normal, and exponential.
 \item The primary event distribution is limited to uniform or
 exponential growth with a fixed rate.
 Primary event parameters are not estimated.
