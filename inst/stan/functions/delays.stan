@@ -167,15 +167,15 @@ void delays_lp(vector delay_params,
  *   ragged-array-of-simplexes/1382/21
  *
  * @param delay_np_est_raw Vector of raw gamma values
- * @param delay_np_alpha Vector of Dirichlet concentration parameters
+ * @param delay_np_est_alpha Vector of Dirichlet concentration parameters
  *
  * @ingroup delay_handlers
  */
 void delays_np_lp(
-  vector delay_np_est_raw, vector delay_np_alpha
+  vector delay_np_est_raw, vector delay_np_est_alpha
 ) {
   if (num_elements(delay_np_est_raw) == 0) return;
-  delay_np_est_raw ~ gamma(delay_np_alpha, 1);
+  delay_np_est_raw ~ gamma(delay_np_est_alpha, 1);
 }
 
 /**

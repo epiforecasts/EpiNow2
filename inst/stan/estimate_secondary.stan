@@ -121,7 +121,7 @@ model {
     delay_params, delay_params_mean, delay_params_sd, delay_params_groups,
     delay_dist, delay_weight
   );
-  delays_np_lp(delay_np_est_raw, delay_np_alpha);
+  delays_np_lp(delay_np_est_raw, delay_np_est_alpha);
 
   // parameter priors
   profile("param lp") {
