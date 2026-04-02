@@ -12,6 +12,8 @@ data {
   array[obs_sets] int obs_dist;
   int model_type; // 0 = Poisson, 1 = NegBin
   real log_cases_guess; // log mean of latest snapshot for prior
+  real rw_sd_prior_mean; // prior mean for random walk SD
+  real<lower = 0> rw_sd_prior_sd; // prior SD for random walk SD
 #include data/delays.stan
 }
 
@@ -81,30 +83,27 @@ model {
 
   // random walk priors
   log_cases_intercept ~ normal(log_cases_guess, 2);
-  rw_sd ~ normal(0, 0.1) T[0,];
+  rw_sd ~ normal(rw_sd_prior_mean, rw_sd_prior_sd) T[0,];
   rw_noise ~ std_normal();
 
-  // observation likelihood across all snapshots
+  // overdispersion prior (NegBin only)
   if (model_type) {
     reporting_overdispersion ~ normal(0, 1) T[0,];
-    real phi = inv_square(reporting_overdispersion);
-    for (i in 1:obs_sets) {
-      for (j in start_t[i]:end_t[i]) {
-        if (expected_obs[j, i] > 1e-8) {
-          obs[j, i] ~ neg_binomial_2(
-            expected_obs[j, i], phi
-          );
-        }
-      }
+  }
+
+  // observation likelihood across all snapshots
+  for (i in 1:obs_sets) {
+    int n_t = end_t[i] - start_t[i] + 1;
+    array[n_t] int case_times;
+    for (j in 1:n_t) {
+      case_times[j] = j;
     }
-  } else {
-    for (i in 1:obs_sets) {
-      for (j in start_t[i]:end_t[i]) {
-        if (expected_obs[j, i] > 1e-8) {
-          obs[j, i] ~ poisson(expected_obs[j, i]);
-        }
-      }
-    }
+    report_lp(
+      obs[start_t[i]:end_t[i], i],
+      case_times,
+      expected_obs[start_t[i]:end_t[i], i],
+      reporting_overdispersion, model_type, 1
+    );
   }
 }
 

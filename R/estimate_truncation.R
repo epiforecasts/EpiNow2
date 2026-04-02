@@ -127,6 +127,11 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' negative binomial). Defaults to [obs_opts()]. Week effects and
 #' scaling are not used by this model.
 #'
+#' @param rw_prior A `dist_spec` specifying the prior on the random walk
+#' standard deviation for the latent case process. Controls the
+#' smoothness of the estimated case trajectory. Defaults to
+#' `Normal(mean = 0, sd = 0.1)`.
+#'
 #' @param verbose Logical, should model fitting progress be returned.
 #'
 #' @param ... Additional parameters to pass to [rstan::sampling()].
@@ -197,6 +202,9 @@ estimate_truncation <- function(data,
                                   )
                                 ),
                                 obs = obs_opts(),
+                                rw_prior = Normal(
+                                  mean = 0, sd = 0.1
+                                ),
                                 stan = stan_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
                                 filter_leading_zeros = FALSE,
@@ -207,6 +215,7 @@ estimate_truncation <- function(data,
   walk(data, check_reports_valid, model = "estimate_infections")
   assert_class(truncation, "dist_spec")
   assert_class(obs, "obs_opts")
+  assert_class(rw_prior, "dist_spec")
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(filter_leading_zeros)
   assert_numeric(zero_threshold, lower = 0)
@@ -226,13 +235,19 @@ estimate_truncation <- function(data,
   latest <- obs_prep$dirty_obs[[length(obs_prep$dirty_obs)]]
   log_cases_guess <- log(mean(latest$confirm + 1, na.rm = TRUE))
 
+  # Extract random walk SD prior parameters
+  rw_sd_prior_mean <- rw_prior$parameters$mean
+  rw_sd_prior_sd <- rw_prior$parameters$sd
+
   stan_data <- list(
     obs = obs_prep$obs,
     obs_dist = obs_prep$obs_dist,
     t = obs_prep$t,
     obs_sets = obs_prep$obs_sets,
     model_type = obs_model$model_type,
-    log_cases_guess = log_cases_guess
+    log_cases_guess = log_cases_guess,
+    rw_sd_prior_mean = rw_sd_prior_mean,
+    rw_sd_prior_sd = rw_sd_prior_sd
   )
 
   stan_data <- c(stan_data, create_stan_delays(
