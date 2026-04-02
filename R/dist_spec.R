@@ -1123,20 +1123,23 @@ natural_params <- function(distribution) {
   )
 }
 
-#' Get parametric distribution types
+#' Get distribution name from primarycensored Stan dist_id
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' Returns the mapping of Stan integer codes to distribution names.
-#' Stan uses 0 for lognormal, 1 for gamma.
-#' @return A character vector of distribution names in Stan order.
+#' Maps a primarycensored Stan distribution ID back to an EpiNow2
+#' distribution name.
+#' @param dist_id Integer Stan distribution ID from primarycensored
+#'   (1 = lognormal, 2 = gamma, 3 = weibull, 4 = exponential).
+#' @return A character string distribution name.
 #' @keywords internal
-#' @examples
-#' \dontrun{
-#' dist_spec_distributions()
-#' dist_spec_distributions()[1]  # "lognormal"
-#' }
-dist_spec_distributions <- function() {
-  c("lognormal", "gamma")
+dist_id_to_name <- function(dist_id) {
+  lookup <- c(
+    "1" = "lognormal",
+    "2" = "gamma",
+    "3" = "weibull",
+    "4" = "exponential"
+  )
+  lookup[as.character(dist_id)]
 }
 
 #' Get the lower bounds of the parameters of a distribution

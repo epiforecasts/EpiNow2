@@ -14,7 +14,7 @@ test_that("get_delay_rev_pmf works with single parametric delay", {
   delay_np_pmf_groups <- array(1L)
   delay_params <- c(log(3), 0.5)  # meanlog, sdlog
   delay_params_groups <- array(c(1L, 3L))
-  delay_dist <- array(0L)  # Lognormal
+  delay_dist <- array(1L)  # Lognormal
 
   pmf <- get_delay_rev_pmf(
     delay_id, len, delay_types_p, delay_types_id,
@@ -42,7 +42,7 @@ test_that("get_delay_rev_pmf reverses correctly", {
   delay_np_pmf_groups <- array(1L)
   delay_params <- c(log(2), 0.3)
   delay_params_groups <- array(c(1L, 3L))
-  delay_dist <- array(0L)
+  delay_dist <- array(1L)
 
   # Get PMF without reversal
   pmf_normal <- get_delay_rev_pmf(
@@ -76,7 +76,7 @@ test_that("get_delay_rev_pmf produces cumulative PMF correctly", {
   delay_np_pmf_groups <- array(1L)
   delay_params <- c(log(4), 0.6)
   delay_params_groups <- array(c(1L, 3L))
-  delay_dist <- array(0L)
+  delay_dist <- array(1L)
 
   # Get daily PMF
   pmf_daily <- get_delay_rev_pmf(
@@ -113,7 +113,7 @@ test_that("get_delay_rev_pmf works with gamma distribution", {
   delay_np_pmf_groups <- array(1L)
   delay_params <- c(2.5, 0.5)  # shape, rate for gamma
   delay_params_groups <- array(c(1L, 3L))
-  delay_dist <- array(1L)  # Gamma distribution
+  delay_dist <- array(2L)  # Gamma distribution
 
   pmf <- get_delay_rev_pmf(
     delay_id, len, delay_types_p, delay_types_id,
@@ -141,7 +141,7 @@ test_that("get_delay_rev_pmf works with non-parametric delay", {
   delay_np_pmf_groups <- array(c(1L, 5L))
   delay_params <- numeric(0)  # Not used for non-parametric
   delay_params_groups <- array(1L)
-  delay_dist <- array(0L)
+  delay_dist <- array(1L)
 
   pmf <- get_delay_rev_pmf(
     delay_id, len, delay_types_p, delay_types_id,
@@ -171,7 +171,7 @@ test_that("get_delay_rev_pmf handles left truncation", {
   delay_np_pmf_groups <- array(1L)
   delay_params <- c(log(3), 0.5)
   delay_params_groups <- array(c(1L, 3L))
-  delay_dist <- array(0L)
+  delay_dist <- array(1L)
   left_truncate <- 2L
 
   pmf <- get_delay_rev_pmf(
