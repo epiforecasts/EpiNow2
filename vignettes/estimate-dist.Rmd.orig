@@ -32,7 +32,7 @@ The function uses a Stan model that vendors likelihood functions from the [prima
 If you use `estimate_dist()`, please cite `primarycensored` in addition to `EpiNow2`.
 
 Common use cases include estimating the incubation period (infection to symptom onset), the reporting delay (symptom onset to case report), or the serial interval (symptom onset in infector-infectee pairs).
-Generation time estimation (infection to infection) typically requires known infection times for both infector and infectee, which calls for more complex models.
+Generation time estimation (infection to infection) typically requires known infection times for both infector and infectee, which often calls for more complex models.
 
 For more flexible delay distribution modelling, [`epidist`](https://epidist.epinowcast.org) supports time-varying delays, partial pooling across delays, regression on covariates, and a range of other models.
 `primarycensored` operates at a lower level, working directly with numeric delays and censoring windows.
@@ -62,7 +62,7 @@ true_sdlog <- 0.75
 
 pwindows <- sample.int(2, n, replace = TRUE)
 swindows <- sample.int(2, n, replace = TRUE)
-obs_times <- sample(8:15, n, replace = TRUE)
+obs_times <- sample(seq.int(8, 15), n, replace = TRUE)
 
 delays <- mapply(
   function(pw, sw, D) {
@@ -94,6 +94,22 @@ linelist <- linelist[linelist$obs_date >= linelist$sdate_upr, ]
 head(linelist)
 ```
 
+The data frame has five columns:
+
+- `pdate_lwr`: lower bound of the primary event date (e.g. date of infection).
+- `pdate_upr`: upper bound of the primary event date.
+- `sdate_lwr`: lower bound of the secondary event date (e.g. date of symptom onset).
+- `sdate_upr`: upper bound of the secondary event date.
+- `obs_date`: the date at which the data were extracted, determining the right truncation point for each observation.
+
+Upper bounds for the primary and secondary event windows default to one day after the lower bounds (daily censoring) if not provided.
+
+Note that the simulation above constructs dates from numeric delays using a dummy origin date.
+If you have numeric delays without dates, you can do the same thing: set `pdate_lwr` to an arbitrary origin (e.g. `as.Date("2020-01-01")`) and derive the other columns by adding the appropriate intervals.
+
+For `obs_date`, use the date the data were sent to you, or the date data collection stopped.
+If neither is available, `estimate_dist()` defaults to `max(sdate_upr)`, which is a reasonable fallback for most situations.
+
 ```{r plot-delays, fig.width = 6, fig.height = 4}
 observed_delays <- as.numeric(
   linelist$sdate_lwr - linelist$pdate_lwr
@@ -119,25 +135,9 @@ ggplot(data.frame(delay = observed_delays), aes(x = delay)) +
   theme_minimal()
 ```
 
-The histogram shows the observed delay lower bounds (i.e. `sdate_lwr - pdate_lwr`) from the filtered linelist.
+The histogram shows the observed delay lower bounds (i.e. `sdate_lwr - pdate_lwr`) from the linelist filtered to observed delays.
 The solid line shows the true underlying lognormal density.
 The gap between the two illustrates the bias introduced by censoring and truncation, which `estimate_dist()` corrects for.
-
-The data frame has five columns:
-
-- `pdate_lwr`: lower bound of the primary event date (e.g. date of infection).
-- `pdate_upr`: upper bound of the primary event date.
-- `sdate_lwr`: lower bound of the secondary event date (e.g. date of symptom onset).
-- `sdate_upr`: upper bound of the secondary event date.
-- `obs_date`: the date at which the data were extracted, determining the right truncation point for each observation.
-
-Upper bounds for the primary and secondary event windows default to one day after the lower bounds (daily censoring) if not provided.
-
-Note that the simulation above constructs dates from numeric delays using a dummy origin date.
-If you have numeric delays without dates, you can do the same thing: set `pdate_lwr` to an arbitrary origin (e.g. `as.Date("2020-01-01")`) and derive the other columns by adding the appropriate intervals.
-
-For `obs_date`, use the date the data were sent to you, or the date data collection stopped.
-If neither is available, `estimate_dist()` defaults to `max(sdate_upr)`, which is a reasonable fallback for most situations.
 
 # Setting priors
 

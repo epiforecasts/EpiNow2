@@ -26,7 +26,7 @@ The function uses a Stan model that vendors likelihood functions from the [prima
 If you use `estimate_dist()`, please cite `primarycensored` in addition to `EpiNow2`.
 
 Common use cases include estimating the incubation period (infection to symptom onset), the reporting delay (symptom onset to case report), or the serial interval (symptom onset in infector-infectee pairs).
-Generation time estimation (infection to infection) typically requires known infection times for both infector and infectee, which calls for more complex models.
+Generation time estimation (infection to infection) typically requires known infection times for both infector and infectee, which generally calls for more complex models.
 
 For more flexible delay distribution modelling, [`epidist`](https://epidist.epinowcast.org) supports time-varying delays, partial pooling across delays, regression on covariates, and a range of other models.
 `primarycensored` operates at a lower level, working directly with numeric delays and censoring windows.
