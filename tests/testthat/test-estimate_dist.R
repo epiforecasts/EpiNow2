@@ -3,8 +3,18 @@ skip_on_cran()
 # Integration tests (MCMC-based) ------------------------------------------
 # These tests run actual MCMC sampling and are slow.
 
-# Helper to generate date-based linelist from primarycensored delays
-generate_linelist <- function(delays, D, n = length(delays)) {
+# Helper to simulate delays and build a date-based linelist
+generate_linelist <- function(
+    n = 500, rdist = rlnorm, D = 30,
+    pwindow = 1, swindow = 1,
+    rprimary = stats::runif, rprimary_args = list(),
+    ...) {
+  delays <- primarycensored::rprimarycensored(
+    n = n, rdist = rdist,
+    pwindow = pwindow, swindow = swindow, D = D,
+    rprimary = rprimary, rprimary_args = rprimary_args,
+    ...
+  )
   origin <- as.Date("2023-01-01")
   pdate_lwr <- origin + sample(0:20, n, replace = TRUE)
   data.frame(
@@ -20,19 +30,11 @@ test_that("correctly recovers lognormal parameters with date input", {
   set.seed(123)
   true_meanlog <- log(5)
   true_sdlog <- 0.5
-  D <- 30
 
-  delays <- primarycensored::rprimarycensored(
-    n = 500,
-    rdist = rlnorm,
-    meanlog = true_meanlog,
-    sdlog = true_sdlog,
-    pwindow = 1,
-    swindow = 1,
-    D = D
+  linelist <- generate_linelist(
+    n = 500, rdist = rlnorm,
+    meanlog = true_meanlog, sdlog = true_sdlog
   )
-
-  linelist <- generate_linelist(delays, D)
 
   result <- estimate_dist(
     linelist,
@@ -66,19 +68,11 @@ test_that("correctly recovers gamma parameters with date input", {
   set.seed(456)
   true_shape <- 5
   true_rate <- 1
-  D <- 30
 
-  delays <- primarycensored::rprimarycensored(
-    n = 500,
-    rdist = rgamma,
-    shape = true_shape,
-    rate = true_rate,
-    pwindow = 1,
-    swindow = 1,
-    D = D
+  linelist <- generate_linelist(
+    n = 500, rdist = rgamma,
+    shape = true_shape, rate = true_rate
   )
-
-  linelist <- generate_linelist(delays, D)
 
   result <- estimate_dist(
     linelist,
@@ -171,25 +165,41 @@ test_that("errors for numeric vector input", {
   )
 })
 
-test_that("works as expected with expgrowth primary", {
+test_that("correctly recovers parameters with expgrowth primary", {
+  skip_if_not_installed("primarycensored")
+
   set.seed(101)
-  origin <- as.Date("2023-01-01")
-  pdate_lwr <- origin + sample(0:20, 50, replace = TRUE)
-  linelist <- data.frame(
-    pdate_lwr = pdate_lwr,
-    sdate_lwr = pdate_lwr + rpois(50, 5)
+  true_meanlog <- log(5)
+  true_sdlog <- 0.5
+  true_r <- 0.2
+
+  linelist <- generate_linelist(
+    n = 500, rdist = rlnorm,
+    meanlog = true_meanlog, sdlog = true_sdlog,
+    rprimary = primarycensored::rexpgrowth,
+    rprimary_args = list(r = true_r)
   )
 
-  expect_no_error(
-    estimate_dist(
-      linelist,
-      dist = "lognormal",
-      primary = "expgrowth",
-      primary_params = 0.1,
-      stan = stan_opts(samples = 500, chains = 2),
-      verbose = FALSE
-    )
+  result <- estimate_dist(
+    linelist,
+    dist = "lognormal",
+    primary = "expgrowth",
+    primary_params = true_r,
+    stan = stan_opts(samples = 1000, chains = 2),
+    verbose = FALSE
   )
+
+  expect_s3_class(result, "estimate_dist")
+
+  params <- get_parameters(result)
+  dist_spec <- params$delay
+  expect_equal(dist_spec$distribution, "lognormal")
+
+  est_meanlog <- dist_spec$parameters$meanlog$parameters$mean
+  est_sdlog <- dist_spec$parameters$sdlog$parameters$mean
+
+  expect_true(abs(est_meanlog - true_meanlog) < 0.3)
+  expect_true(abs(est_sdlog - true_sdlog) < 0.2)
 })
 
 # Input validation tests ---------------------------------------------------
