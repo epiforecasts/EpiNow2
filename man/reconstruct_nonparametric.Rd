@@ -15,7 +15,8 @@ reconstruct_nonparametric(stan_data, np_id)
 A \code{dist_spec} object representing the nonparametric delay
 }
 \description{
-Helper function to reconstruct a single nonparametric delay component from
-Stan data. Nonparametric delays are stored as probability mass functions.
+Helper function to reconstruct a single nonparametric delay
+component from Stan data. Returns an \code{EstimatedNonParametric}
+if the delay was estimated, otherwise a fixed \code{NonParametric}.
 }
 \keyword{internal}
