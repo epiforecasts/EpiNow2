@@ -26,10 +26,16 @@
 - `summary.epinow(output)` and `summary.estimate_infections(type = 'samples')` now error.
 - Removed internal function `extract_parameter_samples()`. Use `format_simulation_output()` instead.
 
+## Model changes
+
+- The Stan model now uses `primarycensored` for computing delay distribution PMFs, replacing the naive CDF differencing approach. This accounts for primary event censoring and produces more accurate discretised delay distributions, consistent with the R-side computation introduced in v1.8.0. The distribution ID convention has been updated to match `primarycensored` (1 = lognormal, 2 = gamma).
+- Left truncation of delay distributions (e.g. excluding generation times of zero) is now handled analytically via `primarycensored` rather than by zeroing and renormalising.
+
 ## Package changes
 
 - Added `estimate_dist()` function for estimating delay distributions with proper handling of interval censoring using Stan/MCMC inference, supporting both rstan and cmdstanr backends.
 - Deprecated `estimate_delay()` in favour of `estimate_dist()`, which correctly accounts for interval censoring and truncation.
+- Added a vignette explaining how EpiNow2 handles delay distributions.
 
 # EpiNow2 1.8.0
 

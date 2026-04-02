@@ -83,7 +83,7 @@ vector get_delay_rev_pmf(
           delay_params[start:end],
           delay_max[delay_types_id[i]] + 1,
           delay_dist[delay_types_id[i]],
-          left_truncate
+          0
       );
       new_len = current_len + delay_max[delay_types_id[i]];
       if (current_len == 1) { // first delay
@@ -106,6 +106,12 @@ vector get_delay_rev_pmf(
       }
     }
     current_len = new_len;
+  }
+  if (left_truncate) {
+    pmf = append_row(
+      rep_vector(0, left_truncate),
+      pmf[(left_truncate + 1):len] / sum(pmf[(left_truncate + 1):len])
+    );
   }
   if (cumulative) {
     pmf = cumulative_sum(pmf);

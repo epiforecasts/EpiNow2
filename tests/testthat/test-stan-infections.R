@@ -26,35 +26,35 @@ gt_rev_pmf <- get_delay_rev_pmf(
 test_that("generate_infections works as expected", {
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(rep(1000, 10), 952, 945, 933, 921, 908, 896, 883, 871, 859, 847)
+    c(rep(1000, 10), 995, 996, rep(997, 8))
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(20), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(rep(20, 10), 19, 21, 21, 21, 22, 22, 22, 23, 23, 23)
+    c(rep(20, 10), 20, 22, 22, 23, 24, 25, 25, 26, 27, 28)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(rep(100, 10), 95, 104, 105, 106, 108, 110, 112, 114, 115, 117)
+    c(rep(100, 10), 99, 110, 112, 115, 119, 123, 126, 130, 135, 139)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(rep(500, 4), 381, 399, 399, 394, 389, 384, 378, 373, 368, 363)
+    c(rep(500, 4), 398, 420, 425, 426, 426, 427, 427, 427, 427, 427)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(rep(500, 4), 381, 439, 447, 455, 462, 470, 478, 486, 494, 502)
+    c(rep(500, 4), 398, 462, 478, 493, 508, 524, 541, 558, 575, 594)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 1, gt_rev_pmf, log(40), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(40, 8, 11, 12, 12, 12, 12, 11, 11, 11, 11)
+    c(40, 8, 12, 13, rep(13, 7))
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 1, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(100, 20, 31, 33, 34, 35, 35, 36, 36, 37, 38)
+    c(100, 21, 32, 35, 37, 38, 39, 40, 42, 43, 44)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 1.0, 4, 0, 0, 1), 0),
-    c(rep(1000, 10), 947, 939, 926, 912, 898, 884, 871, 857, 844, 831)
+    c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 981, 980, 978, 976)
   )
 })
 
@@ -62,7 +62,7 @@ test_that("generate_infections respects pop_floor with population adjustment", {
   # Test with higher pop_floor to verify floor behavior
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 10.0, 4, 0, 0, 1), 0),
-    c(rep(1000, 10), 947, 939, 926, 912, 898, 884, 871, 857, 844, 831)
+    c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 981, 980, 978, 976)
   )
 
   # Test with very small population where floor matters
