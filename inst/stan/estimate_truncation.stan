@@ -84,20 +84,24 @@ model {
   rw_sd ~ normal(0, 0.1) T[0,];
   rw_noise ~ std_normal();
 
-  // overdispersion prior (only affects sampling when model_type==1)
-  reporting_overdispersion ~ normal(0, 1) T[0,];
-
   // observation likelihood across all snapshots
-  {
+  if (model_type) {
+    reporting_overdispersion ~ normal(0, 1) T[0,];
     real phi = inv_square(reporting_overdispersion);
     for (i in 1:obs_sets) {
       for (j in start_t[i]:end_t[i]) {
         if (expected_obs[j, i] > 1e-8) {
-          if (model_type) {
-            obs[j, i] ~ neg_binomial_2(expected_obs[j, i], phi);
-          } else {
-            obs[j, i] ~ poisson(expected_obs[j, i]);
-          }
+          obs[j, i] ~ neg_binomial_2(
+            expected_obs[j, i], phi
+          );
+        }
+      }
+    }
+  } else {
+    for (i in 1:obs_sets) {
+      for (j in start_t[i]:end_t[i]) {
+        if (expected_obs[j, i] > 1e-8) {
+          obs[j, i] ~ poisson(expected_obs[j, i]);
         }
       }
     }
