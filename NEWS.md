@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Model changes
+
+- Redesigned `estimate_truncation()` to use a generative nowcasting model with a geometric random walk on latent cases. Now supports all `dist_spec` delay families and accepts `obs_opts()` for observation model selection (Poisson or negative binomial).
+
 ## Bug fixes
 
 - Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.
