@@ -7,6 +7,8 @@
 \alias{Normal}
 \alias{Fixed}
 \alias{NonParametric}
+\alias{EstimatedNonParametric}
+\alias{is_estimated_nonparametric}
 \title{Probability distributions}
 \usage{
 LogNormal(meanlog, sdlog, mean, sd, ...)
@@ -18,6 +20,10 @@ Normal(mean, sd, ...)
 Fixed(value, ...)
 
 NonParametric(pmf, ...)
+
+EstimatedNonParametric(prior, concentration = 1)
+
+is_estimated_nonparametric(x)
 }
 \arguments{
 \item{meanlog, sdlog}{mean and standard deviation of the distribution
@@ -39,15 +45,29 @@ passed to \code{\link[=bound_dist]{bound_dist()}}}
 passed as a zero-indexed numeric vector (i.e. the fist entry represents
 the probability mass of zero). If not summing to one it will be normalised
 to sum to one internally.}
+
+\item{prior}{Either a numeric PMF vector (zero-indexed, i.e. the
+first entry represents probability mass at zero) or a
+\code{dist_spec} object. If a \code{dist_spec} object is provided it will
+be discretised and the PMF extracted. If numeric, it will be
+normalised to sum to one internally.}
+
+\item{concentration}{A positive scalar controlling how tightly
+the Dirichlet prior concentrates around the supplied PMF.
+Higher values give a more informative prior. Defaults to 1.}
+
+\item{x}{A \code{dist_spec} object.}
 }
 \value{
 A \code{dist_spec} representing a distribution of the given
 specification.
+
+Logical; \code{TRUE} if \code{x} is an estimated nonparametric
+distribution.
 }
 \description{
-Probability distributions
-
-Generates a nonparametric distribution.
+An estimated nonparametric distribution uses a Dirichlet prior
+over the PMF, which is then estimated during model fitting.
 }
 \details{
 Probability distributions are ubiquitous in EpiNow2, usually representing
@@ -88,4 +108,13 @@ Fixed(value = 3)
 Fixed(value = 3.5)
 NonParametric(c(0.1, 0.3, 0.2, 0.4))
 NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))
+EstimatedNonParametric(c(0.1, 0.3, 0.4, 0.2))
+EstimatedNonParametric(
+  LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
+)
+EstimatedNonParametric(c(0.1, 0.3, 0.4, 0.2), concentration = 5)
+is_estimated_nonparametric(
+  EstimatedNonParametric(c(0.1, 0.3, 0.4, 0.2))
+)
+is_estimated_nonparametric(NonParametric(c(0.1, 0.3, 0.4, 0.2)))
 }

@@ -771,8 +771,9 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
 
 #' Reconstruct a nonparametric delay distribution
 #'
-#' Helper function to reconstruct a single nonparametric delay component from
-#' Stan data. Nonparametric delays are stored as probability mass functions.
+#' Helper function to reconstruct a single nonparametric delay
+#' component from Stan data. Returns an `EstimatedNonParametric`
+#' if the delay was estimated, otherwise a fixed `NonParametric`.
 #'
 #' @param stan_data List of Stan data containing delay specification
 #' @param np_id Integer index into the nonparametric delay PMF arrays
@@ -783,7 +784,24 @@ reconstruct_nonparametric <- function(stan_data, np_id) {
     stan_data$delay_np_pmf_groups[np_id],
     stan_data$delay_np_pmf_groups[np_id + 1] - 1
   )
-  NonParametric(pmf = stan_data$delay_np_pmf[pmf_idx])
+  prior_pmf <- stan_data$delay_np_pmf[pmf_idx]
+
+  # Check if this NP delay was estimated
+  est_pos <- match(np_id, stan_data$delay_np_est_which)
+  if (!is.na(est_pos)) {
+    alpha_idx <- seq(
+      stan_data$delay_np_est_groups[est_pos],
+      stan_data$delay_np_est_groups[est_pos + 1] - 1
+    )
+    alpha <- stan_data$delay_np_est_alpha[alpha_idx]
+    concentration <- sum(alpha)
+    EstimatedNonParametric(
+      prior = prior_pmf,
+      concentration = concentration
+    )
+  } else {
+    NonParametric(pmf = prior_pmf)
+  }
 }
 
 #' Extract delay distributions from a fitted model
