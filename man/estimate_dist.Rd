@@ -179,6 +179,8 @@ Please cite \code{primarycensored} if you use this function;
 see \code{citation("primarycensored")}.
 }
 \seealso{
-\link[primarycensored:primarycensored-package]{primarycensored::primarycensored-package} for the
-underlying censoring methodology.
+\code{vignette("estimate-dist", package = "EpiNow2")} for
+a worked example, and
+\link[primarycensored:primarycensored-package]{primarycensored::primarycensored-package} for the underlying
+censoring methodology.
 }

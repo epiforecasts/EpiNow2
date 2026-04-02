@@ -119,8 +119,10 @@
 #' Please cite `primarycensored` if you use this function;
 #' see `citation("primarycensored")`.
 #'
-#' @seealso [primarycensored::primarycensored-package] for the
-#'   underlying censoring methodology.
+#' @seealso `vignette("estimate-dist", package = "EpiNow2")` for
+#'   a worked example, and
+#'   [primarycensored::primarycensored-package] for the underlying
+#'   censoring methodology.
 #'
 #' @importFrom checkmate assert_string assert_list assert_number
 #'   assert_numeric assert_logical assert_date
