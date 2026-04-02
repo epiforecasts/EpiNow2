@@ -104,7 +104,7 @@ discrete_pmf <- function(distribution =
       )
     )
     if (!is.na(cdf_cutoff_max) &&
-          (missing(max_value) || cdf_cutoff_max < max_value)) {
+      (missing(max_value) || cdf_cutoff_max < max_value)) {
       max_value <- cdf_cutoff_max
     }
   }
@@ -691,7 +691,7 @@ print.dist_spec <- function(x, ...) {
       single_dist <- extract_single_dist(x, i)
       constrain_str <- character(0)
       if (!is.null(attr(single_dist, "max")) &&
-            is.finite(attr(single_dist, "max"))) {
+        is.finite(attr(single_dist, "max"))) {
         constrain_str["max"] <- paste("max:", max(single_dist))
       }
       if (!is.null(attr(single_dist, "cdf_cutoff"))) {
@@ -922,7 +922,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 
   ## if x is fixed already we don't have to do anything
   if (get_distribution(x) == "nonparametric" ||
-        all(vapply(get_parameters(x), is.numeric, logical(1)))) {
+    all(vapply(get_parameters(x), is.numeric, logical(1)))) {
     return(x)
   }
   ## apply strategy depending on choice
@@ -1101,6 +1101,81 @@ NonParametric <- function(pmf, ...) {
   new_dist_spec(params, "nonparametric")
 }
 
+#' Generates an estimated nonparametric distribution.
+#'
+#' An estimated nonparametric distribution uses a Dirichlet prior
+#' over the PMF, which is then estimated during model fitting.
+#'
+#' @param prior Either a numeric PMF vector (zero-indexed, i.e. the
+#'   first entry represents probability mass at zero) or a
+#'   `dist_spec` object. If a `dist_spec` object is provided it will
+#'   be discretised and the PMF extracted. If numeric, it will be
+#'   normalised to sum to one internally.
+#' @param concentration A positive scalar controlling how tightly
+#'   the Dirichlet prior concentrates around the supplied PMF.
+#'   Higher values give a more informative prior. Defaults to 1.
+#' @rdname Distributions
+#' @order 6
+#' @export
+#' @examples
+#' EstimatedNonParametric(c(0.1, 0.3, 0.4, 0.2))
+#' EstimatedNonParametric(
+#'   LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
+#' )
+#' EstimatedNonParametric(c(0.1, 0.3, 0.4, 0.2), concentration = 5)
+EstimatedNonParametric <- function(prior, concentration = 1) {
+  if (!is.numeric(concentration) || length(concentration) != 1 ||
+    concentration <= 0) {
+    cli_abort(
+      "The {.arg concentration} parameter must be a positive scalar."
+    )
+  }
+  if (is(prior, "dist_spec")) {
+    pmf <- get_pmf(discretise(prior))
+  } else {
+    if (!is.numeric(prior)) {
+      cli_abort(
+        "{.arg prior} must be a numeric vector or a {.cls dist_spec}."
+      )
+    }
+    if (any(prior < 0)) {
+      cli_abort("All elements of {.arg prior} must be non-negative.")
+    }
+    pmf <- prior / sum(prior)
+  }
+  if (length(pmf) < 2) {
+    cli_abort(
+      "The PMF must have at least 2 elements."
+    )
+  }
+  check_sparse_pmf_tail(pmf)
+  alpha <- concentration * pmf
+  params <- list(
+    pmf = pmf,
+    estimated = TRUE,
+    concentration = concentration,
+    alpha = alpha
+  )
+  new_dist_spec(params, "nonparametric")
+}
+
+#' Check whether a distribution is an estimated nonparametric
+#' distribution.
+#'
+#' @param x A `dist_spec` object.
+#' @return Logical; `TRUE` if `x` is an estimated nonparametric
+#'   distribution.
+#' @rdname Distributions
+#' @export
+#' @examples
+#' is_estimated_nonparametric(
+#'   EstimatedNonParametric(c(0.1, 0.3, 0.4, 0.2))
+#' )
+#' is_estimated_nonparametric(NonParametric(c(0.1, 0.3, 0.4, 0.2)))
+is_estimated_nonparametric <- function(x) {
+  get_distribution(x) == "nonparametric" && isTRUE(x$estimated)
+}
+
 #' Get the names of the natural parameters of a distribution
 #'
 #' @description `r lifecycle::badge("experimental")`
@@ -1133,7 +1208,7 @@ natural_params <- function(distribution) {
 #' @examples
 #' \dontrun{
 #' dist_spec_distributions()
-#' dist_spec_distributions()[1]  # "lognormal"
+#' dist_spec_distributions()[1] # "lognormal"
 #' }
 dist_spec_distributions <- function() {
   c("lognormal", "gamma")
@@ -1250,6 +1325,11 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
       pmf = params$pmf,
       distribution = "nonparametric"
     )
+    if (isTRUE(params$estimated)) {
+      ret$estimated <- TRUE
+      ret$concentration <- params$concentration
+      ret$alpha <- params$alpha
+    }
   } else {
     ## extract parameters and convert all to dist_spec
     params <- extract_params(params, distribution)
