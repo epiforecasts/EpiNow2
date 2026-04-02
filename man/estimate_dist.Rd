@@ -103,6 +103,10 @@ Estimation is done via MCMC using a Stan model that vendors
 likelihood functions from the
 \link[primarycensored:primarycensored-package]{primarycensored}
 package.
+For more flexible delay distribution modelling (e.g.
+time-varying delays, partial pooling, or regression on
+covariates), see the
+\href{https://epidist.epinowcast.org/}{epidist} package.
 If you use this function, please cite \code{primarycensored} in
 addition to \code{EpiNow2}.
 }
@@ -176,7 +180,5 @@ see \code{citation("primarycensored")}.
 }
 \seealso{
 \link[primarycensored:primarycensored-package]{primarycensored::primarycensored-package} for the
-underlying censoring methodology, and the
-\href{https://epidist.epinowcast.org/}{epidist} package for
-more advanced delay distribution modelling.
+underlying censoring methodology.
 }
