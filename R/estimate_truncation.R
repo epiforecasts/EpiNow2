@@ -214,7 +214,8 @@ estimate_truncation <- function(data,
 
   # Prepare observation matrix for Stan
   obs_prep <- prepare_truncation_obs(
-    data, trunc_max = max(truncation)
+    data,
+    trunc_max = max(truncation)
   )
 
   # Observation model settings
@@ -257,7 +258,8 @@ estimate_truncation <- function(data,
 
   # Warn if truncation distribution is longer than observed time
   check_truncation_length(
-    stan_args, time_points = stan_data$t
+    stan_args,
+    time_points = stan_data$t
   )
 
   # fit

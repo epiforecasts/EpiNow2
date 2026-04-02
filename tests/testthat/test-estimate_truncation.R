@@ -67,19 +67,22 @@ test_that("estimate_truncation accepts obs argument", {
 
 test_that("Stan data includes model_type from obs_opts", {
   obs_prep <- EpiNow2:::prepare_truncation_obs(
-    example_truncated, trunc_max = 10
+    example_truncated,
+    trunc_max = 10
   )
   dates <- obs_prep$dirty_obs[[length(obs_prep$dirty_obs)]]$date
 
   # NegBin (default)
   obs_negbin <- EpiNow2:::create_obs_model(
-    obs_opts(), dates = dates
+    obs_opts(),
+    dates = dates
   )
   expect_equal(obs_negbin$model_type, 1)
 
   # Poisson
   obs_poisson <- EpiNow2:::create_obs_model(
-    obs_opts(family = "poisson"), dates = dates
+    obs_opts(family = "poisson"),
+    dates = dates
   )
   expect_equal(obs_poisson$model_type, 0)
 })
