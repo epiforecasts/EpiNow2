@@ -1,8 +1,9 @@
 #' Estimate a delay distribution using primarycensored
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' Fit an interval-censored delay distribution accounting for
-#' primary event censoring and right truncation.
+#' Fit a delay distribution accounting for primary and secondary
+#' event censoring (double interval censoring) and right
+#' truncation.
 #' Estimation is done via MCMC using a Stan model that vendors
 #' likelihood functions from the
 #' \link[primarycensored:primarycensored-package]{primarycensored}

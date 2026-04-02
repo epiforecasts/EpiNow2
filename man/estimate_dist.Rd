@@ -96,8 +96,9 @@ Use \code{\link[=get_parameters]{get_parameters()}} to extract the fitted \verb{
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-Fit an interval-censored delay distribution accounting for
-primary event censoring and right truncation.
+Fit a delay distribution accounting for primary and secondary
+event censoring (double interval censoring) and right
+truncation.
 Estimation is done via MCMC using a Stan model that vendors
 likelihood functions from the
 \link[primarycensored:primarycensored-package]{primarycensored}
