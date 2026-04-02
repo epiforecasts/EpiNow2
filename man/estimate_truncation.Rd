@@ -78,7 +78,7 @@ using the selected observation model (negative binomial or Poisson).
 }
 
 The truncation distribution can be any parametric family supported by
-\code{\link[=dist_spec]{dist_spec()}} (e.g. log-normal, gamma). For simpler or more complex
+\code{dist_spec} (e.g. log-normal, gamma). For simpler or more complex
 nowcasting needs, see the
 \href{https://package.epinowcast.org/baselinenowcast/}{\code{baselinenowcast}}
 and \href{https://package.epinowcast.org/}{\code{epinowcast}} packages
