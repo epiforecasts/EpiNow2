@@ -81,7 +81,7 @@ test_that("convolve_dot_product can combine two vectors where x > y and len = x"
 # Test convolve_to_report function
 test_that("convolve_to_report convolves infections with delay distribution", {
   infections <- rep(100, 10)
-  delay_rev_pmf <- discretised_pmf(c(log(3), 0.5), 5, 0)
+  delay_rev_pmf <- discretised_pmf(c(log(3), 0.5), 5, 1, 0)
   seeding_time <- 3
 
   result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
@@ -109,7 +109,7 @@ test_that("convolve_to_report handles zero delay correctly", {
 
 test_that("convolve_to_report produces correct length output", {
   infections <- rep(50, 15)
-  delay_rev_pmf <- discretised_pmf(c(log(2), 0.3), 7, 0)
+  delay_rev_pmf <- discretised_pmf(c(log(2), 0.3), 7, 1, 0)
   seeding_time <- 5
 
   result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
@@ -120,7 +120,7 @@ test_that("convolve_to_report produces correct length output", {
 test_that("convolve_to_report with increasing infections shows delay", {
   # Growing infections
   infections <- exp(0.1 * (1:20))
-  delay_rev_pmf <- discretised_pmf(c(log(3), 0.4), 8, 0)
+  delay_rev_pmf <- discretised_pmf(c(log(3), 0.4), 8, 1, 0)
   seeding_time <- 5
 
   result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
@@ -139,7 +139,7 @@ test_that("convolve_to_report with increasing infections shows delay", {
 test_that("convolve_to_report handles decreasing infections", {
   # Declining epidemic
   infections <- exp(-0.1 * (1:20))
-  delay_rev_pmf <- discretised_pmf(c(log(3), 0.4), 8, 0)
+  delay_rev_pmf <- discretised_pmf(c(log(3), 0.4), 8, 1, 0)
   seeding_time <- 5
 
   result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
@@ -155,7 +155,7 @@ test_that("convolve_to_report handles decreasing infections", {
 test_that("convolve_to_report handles step change in infections", {
   # Abrupt increase
   infections <- c(rep(50, 10), rep(200, 10))
-  delay_rev_pmf <- discretised_pmf(c(log(3), 0.4), 8, 0)
+  delay_rev_pmf <- discretised_pmf(c(log(3), 0.4), 8, 1, 0)
   seeding_time <- 5
 
   result <- convolve_to_report(infections, delay_rev_pmf, seeding_time)

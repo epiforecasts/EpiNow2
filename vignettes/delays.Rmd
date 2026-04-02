@@ -1,0 +1,167 @@
+---
+title: "Understanding delay distributions in EpiNow2"
+author: "EpiNow2 Team"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Understanding delay distributions in EpiNow2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# What delay distributions represent
+
+Infectious disease surveillance data are shaped by delays between events that cannot be directly observed.
+The *generation time* is the interval between infection of a primary case and infection of a secondary case it causes.
+The *incubation period* is the time from infection to symptom onset.
+The *reporting delay* is the time from symptom onset (or another observable event) to the case appearing in surveillance data.
+
+EpiNow2 uses these delay distributions when estimating the time-varying reproduction number and when producing forecasts and nowcasts.
+Each delay shifts and smooths the relationship between underlying infections and the observations available to analysts, so getting them right matters for inference.
+
+# Specifying delays
+
+Delays are specified as `dist_spec` objects using the distribution constructors `LogNormal()`, `Gamma()`, `Normal()`, `Fixed()`, and `NonParametric()`.
+Parameters can be given as fixed values or with uncertainty expressed through `Normal()` priors on the natural parameters.
+
+```{r distributions, eval=FALSE}
+library(EpiNow2)
+
+# Fixed lognormal delay
+incubation_period <- LogNormal(
+  meanlog = 1.6, sdlog = 0.5, max = 14
+)
+
+# Gamma delay with uncertain parameters
+reporting_delay <- Gamma(
+  shape = Normal(3, 0.5),
+  rate = Normal(1, 0.25),
+  max = 14
+)
+
+# Fixed (delta) distribution for a known constant delay
+fixed_delay <- Fixed(value = 3)
+
+# Nonparametric distribution given directly as a PMF
+# (zero-indexed: first element is P(delay = 0))
+known_pmf <- NonParametric(c(0.0, 0.1, 0.4, 0.3, 0.2))
+```
+
+The `max` argument truncates the distribution at a given value, discarding probability mass beyond that point and renormalising.
+Alternatively, `cdf_cutoff` can be used to set the truncation point based on a tail probability threshold.
+
+When parameters carry uncertainty, EpiNow2 samples from the prior during fitting, propagating that uncertainty into the final estimates.
+
+# Why naive discretisation is biased
+
+Delay distributions are defined in continuous time, but surveillance data record events in discrete time windows (typically days).
+A common approach to discretisation is CDF differencing, where the probability mass for day $d$ is computed as $F(d+1) - F(d)$.
+This treats the primary event as though it occurred at a known, exact time, typically the start of the interval.
+
+In practice, both the primary event (e.g. infection) and the secondary event (e.g. symptom onset) are interval-censored.
+The primary event could have occurred at any point within its observation window, and the same is true of the secondary event.
+CDF differencing ignores this *double censoring* and introduces systematic bias, particularly for short delays where the censoring window is large relative to the delay itself [@placeholder; @placeholder].
+
+# How primarycensored corrects this
+
+EpiNow2 computes delay PMFs using the `primarycensored` package [@placeholder], which accounts for double censoring explicitly.
+For each discrete delay $d$, the PMF value is obtained by integrating over all possible primary event times within the primary window and all possible secondary event times within the secondary window.
+
+Concretely, `primarycensored::dprimarycensored()` is called with both a primary window (`pwindow`) and a secondary window (`swindow`), each typically set to 1 day.
+For common distribution and primary event combinations (e.g. lognormal delay with uniform primary events), analytical solutions are available, making the computation fast.
+When no closed-form solution exists, numerical integration is used as a fallback.
+
+The resulting PMF correctly represents the probability of observing a delay of $d$ days given that both events are recorded in daily intervals.
+This is the PMF used internally by EpiNow2's Stan model when computing the likelihood.
+
+# Composing multiple delays
+
+When the observation process involves more than one delay, the individual delay PMFs are convolved to produce a combined delay.
+In EpiNow2 this is done by adding `dist_spec` objects together with the `+` operator.
+
+```{r convolution, eval=FALSE}
+# Combined delay from infection to report
+combined_delay <- incubation_period + reporting_delay
+```
+
+The `+` operator signals to the model that these delays should be convolved.
+The `c()` function, by contrast, collects independent delay distributions without convolving them (e.g. for separate delay and truncation distributions passed to different parts of the model).
+
+Convolution of nonparametric PMFs is performed directly in discrete space.
+For parametric distributions with uncertain parameters, the convolution is handled within the Stan model at each iteration of the sampler.
+
+# Left truncation
+
+Some delays have a natural lower bound that excludes zero.
+For example, a generation time of zero days is epidemiologically implausible for most pathogens because transmission requires some minimum period of viral replication.
+
+EpiNow2 supports this through the `max` argument on `bound_dist()` and through the structure of the PMF itself.
+A `NonParametric()` distribution can encode left truncation directly by setting early entries to zero.
+For parametric distributions, the PMF computation via `primarycensored` respects the support of the underlying continuous distribution, and users can further adjust the PMF to exclude implausible values.
+
+# Fitting delay distributions from data
+
+When line-list data with individual-level event dates are available, `estimate_dist()` can be used to fit a delay distribution that properly accounts for interval censoring and right truncation.
+This function uses a Stan model built on `primarycensored` likelihood functions.
+
+```{r estimate-dist, eval=FALSE}
+# Fit a lognormal delay distribution from line-list data
+# Data should have columns: pdate_lwr, sdate_lwr
+# (and optionally pdate_upr, sdate_upr, obs_date)
+fit <- estimate_dist(
+  data = linelist_data,
+  dist = "lognormal"
+)
+```
+
+The fitted distribution can then be used directly in the modelling pipeline.
+For more details see `vignette("estimate-dist")`.
+
+# A practical example
+
+The following brings together the pieces described above into a typical EpiNow2 workflow.
+
+```{r practical, eval=FALSE}
+library(EpiNow2)
+
+# Generation time (lognormal, uncertain parameters)
+generation_time <- LogNormal(
+  meanlog = Normal(1.4, 0.15),
+  sdlog = Normal(0.5, 0.05),
+  max = 14
+)
+
+# Incubation period (fixed parameters)
+incubation_period <- LogNormal(
+  meanlog = 1.6, sdlog = 0.4, max = 14
+)
+
+# Reporting delay (gamma, fixed parameters)
+reporting_delay <- Gamma(
+  mean = 2, sd = 1, max = 10
+)
+
+# Combined delay from infection to observation
+delays <- incubation_period + reporting_delay
+
+# Use in estimation
+out <- epinow(
+  data = example_confirmed,
+  generation_time = generation_time_opts(generation_time),
+  delays = delay_opts(delays)
+)
+```
+
+# References

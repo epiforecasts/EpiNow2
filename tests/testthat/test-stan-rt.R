@@ -67,7 +67,7 @@ neg_MGF <- function(r, pmf) {
 }
 
 test_that("R_to_r_newton_step calculates correct Newton step", {
-  pmf <- discretised_pmf(c(4, 2), 10, 1)
+  pmf <- discretised_pmf(c(4, 2), 10, 2, 0)
   step <- R_to_r_newton_step(1.5, 0.1, pmf)
   expect_type(step, "double")
   expect_length(step, 1)
@@ -75,21 +75,21 @@ test_that("R_to_r_newton_step calculates correct Newton step", {
 })
 
 test_that("R_to_r correctly handles R = 1", {
-  pmf <- discretised_pmf(c(4, 2), 10, 1)
+  pmf <- discretised_pmf(c(4, 2), 10, 2, 0)
   gt_rev_pmf <- rev(pmf)
   r <- R_to_r(1.0, gt_rev_pmf, 1e-6)
   expect_equal(r, 0.0, tolerance = 1e-5)
 })
 
 test_that("R_to_r gives positive r for R > 1", {
-  pmf <- discretised_pmf(c(4, 2), 10, 1)
+  pmf <- discretised_pmf(c(4, 2), 10, 2, 0)
   gt_rev_pmf <- rev(pmf)
   r <- R_to_r(1.5, gt_rev_pmf, 1e-6)
   expect_gt(r, 0)
 })
 
 test_that("R_to_r gives negative r for R < 1", {
-  pmf <- discretised_pmf(c(4, 2), 10, 1)
+  pmf <- discretised_pmf(c(4, 2), 10, 2, 0)
   gt_rev_pmf <- rev(pmf)
   r <- R_to_r(0.8, gt_rev_pmf, 1e-6)
   expect_lt(r, 0)
@@ -98,9 +98,9 @@ test_that("R_to_r gives negative r for R < 1", {
 test_that("R_to_r round trip is consistent", {
   test_Rs <- c(0.5, 0.8, 1.0, 1.2, 1.5, 2.0)
   test_pmfs <- list(
-    short = discretised_pmf(c(2, 1), 8, 1),
-    medium = discretised_pmf(c(4, 2), 10, 1),
-    long = discretised_pmf(c(6, 3), 15, 1)
+    short = discretised_pmf(c(2, 1), 8, 2, 0),
+    medium = discretised_pmf(c(4, 2), 10, 2, 0),
+    long = discretised_pmf(c(6, 3), 15, 2, 0)
   )
   for (pmf in test_pmfs) {
     gt_rev_pmf <- rev(pmf)
@@ -113,11 +113,11 @@ test_that("R_to_r round trip is consistent", {
 })
 
 test_that("R_to_r works with different generation time distributions", {
-  pmf_short <- discretised_pmf(c(2, 1), 8, 1)
+  pmf_short <- discretised_pmf(c(2, 1), 8, 2, 0)
   gt_rev_pmf_short <- rev(pmf_short)
   r_short <- R_to_r(1.5, gt_rev_pmf_short, 1e-6)
   expect_true(is.finite(r_short))
-  pmf_long <- discretised_pmf(c(6, 3), 15, 1)
+  pmf_long <- discretised_pmf(c(6, 3), 15, 2, 0)
   gt_rev_pmf_long <- rev(pmf_long)
   r_long <- R_to_r(1.5, gt_rev_pmf_long, 1e-6)
   expect_true(is.finite(r_long))
@@ -125,7 +125,7 @@ test_that("R_to_r works with different generation time distributions", {
 })
 
 test_that("R_to_r respects tolerance parameter", {
-  pmf <- discretised_pmf(c(4, 2), 10, 1)
+  pmf <- discretised_pmf(c(4, 2), 10, 2, 0)
   gt_rev_pmf <- rev(pmf)
   R_true <- 1.5
   r_tight <- R_to_r(R_true, gt_rev_pmf, 1e-8)

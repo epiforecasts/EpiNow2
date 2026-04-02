@@ -1139,7 +1139,7 @@ dist_id_to_name <- function(dist_id) {
     "3" = "weibull",
     "4" = "exponential"
   )
-  lookup[as.character(dist_id)]
+  unname(lookup[as.character(dist_id)])
 }
 
 #' Get the lower bounds of the parameters of a distribution
