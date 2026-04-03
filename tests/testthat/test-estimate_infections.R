@@ -270,24 +270,18 @@ test_that("estimate_infections works with EstimatedNonParametric generation time
   expect_null(out$error)
   expect_true(nrow(summary(out, type = "parameters")) > 0)
 
-  # Check posterior GT recovery: with a tight prior
-  # (concentration=50) the posterior PMF should be close to
-  # the prior centre
-  draws <- out$fit$draws(variables = "delay_np_est_raw")
-  draws_mat <- posterior::as_draws_matrix(draws)
-  pmf_draws <- t(apply(draws_mat, 1, function(x) {
-    x / sum(x)
-  }))
-  posterior_mean <- colMeans(pmf_draws)
-  expect_equal(
-    posterior_mean, gt_pmf,
-    tolerance = 0.05
-  )
-
-  # Check get_parameters round-trips correctly
+  # get_parameters returns the posterior mean PMF as a
+  # NonParametric (the resolved estimate, not the prior)
   params <- get_parameters(out)
-  expect_true(
-    is_estimated_nonparametric(params$generation_time)
+  gt_result <- params$generation_time
+  expect_s3_class(gt_result, "dist_spec")
+  expect_equal(get_distribution(gt_result), "nonparametric")
+
+  # With a tight prior (concentration=50) the posterior PMF
+  # should be close to the prior centre
+  expect_equal(
+    as.numeric(get_pmf(gt_result)), gt_pmf,
+    tolerance = 0.05
   )
 })
 

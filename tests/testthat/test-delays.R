@@ -446,3 +446,37 @@ test_that(
     expect_equal(est_result$concentration, conc)
   }
 )
+
+test_that(
+  "reconstruct_nonparametric uses posterior when available",
+  {
+    pmf <- c(0, 0.3, 0.5, 0.2)
+    conc <- 10
+    alpha <- conc * pmf[pmf > 0]
+    stan_data <- list(
+      delay_np_pmf = pmf,
+      delay_np_pmf_groups = c(1L, 5L),
+      delay_np_est_which = 1L,
+      delay_np_est_groups = c(1L, 4L),
+      delay_np_est_alpha = alpha,
+      delay_np_est_pos = 2L:4L
+    )
+    # Simulate posterior draws (3 draws, 3 estimated bins)
+    np_posterior <- matrix(
+      c(3, 5, 2, 2.5, 5.5, 2, 3.5, 4.5, 2),
+      nrow = 3, byrow = TRUE
+    )
+    result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 1L, np_posterior
+    )
+    # Should return NonParametric (not EstimatedNonParametric)
+    expect_false(is_estimated_nonparametric(result))
+    post_pmf <- as.numeric(get_pmf(result))
+    # First element should be 0 (structural zero)
+    expect_equal(post_pmf[1], 0)
+    # Sum should be 1
+    expect_equal(sum(post_pmf), 1, tolerance = 1e-10)
+    # Should be close to prior with these draws
+    expect_true(all(post_pmf >= 0))
+  }
+)

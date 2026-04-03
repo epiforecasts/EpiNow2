@@ -696,11 +696,27 @@ reconstruct_delay <- function(object, delay_name) {
   # Extract posterior if parameters were estimated
   posterior <- NULL
   if (stan_data$delay_params_length > 0 && !is.null(object$fit)) {
-    posterior <- extract_stan_param(object$fit, params = "delay_params")
+    posterior <- extract_stan_param(
+      object$fit,
+      params = "delay_params"
+    )
+  }
+
+  # Extract NP posterior draws if estimated
+  np_posterior <- NULL
+  if (stan_data$delay_np_est_length > 0 && !is.null(object$fit)) {
+    np_draws <- object$fit$draws(
+      variables = "delay_np_est_raw"
+    )
+    np_posterior <- posterior::as_draws_matrix(np_draws)
+    np_posterior <- as.matrix(np_posterior)
   }
 
   # Get indices for this delay type
-  delay_indices <- seq(types_groups[delay_id], types_groups[delay_id + 1] - 1)
+  delay_indices <- seq(
+    types_groups[delay_id],
+    types_groups[delay_id + 1] - 1
+  )
   types_p <- stan_data$delay_types_p[delay_indices]
 
   # Reconstruct each delay component
@@ -711,7 +727,9 @@ reconstruct_delay <- function(object, delay_name) {
     if (types_p[i] == 1) {
       reconstruct_parametric(stan_data, type_id, posterior)
     } else {
-      reconstruct_nonparametric(stan_data, type_id)
+      reconstruct_nonparametric(
+        stan_data, type_id, np_posterior
+      )
     }
   })
 
@@ -779,15 +797,24 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
 
 #' Reconstruct a nonparametric delay distribution
 #'
-#' Helper function to reconstruct a single nonparametric delay
-#' component from Stan data. Returns an `EstimatedNonParametric`
-#' if the delay was estimated, otherwise a fixed `NonParametric`.
+#' Reconstruct a nonparametric delay from Stan data
 #'
-#' @param stan_data List of Stan data containing delay specification
-#' @param np_id Integer index into the nonparametric delay PMF arrays
-#' @return A `dist_spec` object representing the nonparametric delay
+#' Returns the posterior mean PMF as a `NonParametric` when
+#' posterior draws are available for an estimated delay. Otherwise
+#' returns the prior specification (as `EstimatedNonParametric`
+#' without a fit, or as a fixed `NonParametric`).
+#'
+#' @param stan_data List of Stan data containing delay
+#'   specification
+#' @param np_id Integer index into the nonparametric delay PMF
+#'   arrays
+#' @param np_posterior Matrix of posterior draws for
+#'   `delay_np_est_raw` (draws x parameters), or NULL
+#' @return A `dist_spec` object representing the nonparametric
+#'   delay
 #' @keywords internal
-reconstruct_nonparametric <- function(stan_data, np_id) {
+reconstruct_nonparametric <- function(stan_data, np_id,
+                                      np_posterior = NULL) {
   pmf_idx <- seq(
     stan_data$delay_np_pmf_groups[np_id],
     stan_data$delay_np_pmf_groups[np_id + 1] - 1
@@ -801,17 +828,26 @@ reconstruct_nonparametric <- function(stan_data, np_id) {
       stan_data$delay_np_est_groups[est_pos],
       stan_data$delay_np_est_groups[est_pos + 1] - 1
     )
-    alpha <- stan_data$delay_np_est_alpha[alpha_idx]
     pos_idx <- stan_data$delay_np_est_pos[alpha_idx]
-    ## recover concentration from alpha_i / pmf_i for any
-    ## positive entry (all give the same value)
     pmf_start <- stan_data$delay_np_pmf_groups[np_id]
     local_pos <- pos_idx - pmf_start + 1L
-    concentration <- alpha[1] / prior_pmf[local_pos[1]]
-    EstimatedNonParametric(
-      prior = prior_pmf,
-      concentration = concentration
-    )
+
+    if (!is.null(np_posterior)) {
+      ## compute posterior mean PMF from raw gamma draws
+      raw <- np_posterior[, alpha_idx, drop = FALSE]
+      normed <- raw / rowSums(raw)
+      post_mean <- colMeans(normed)
+      post_pmf <- prior_pmf
+      post_pmf[local_pos] <- post_mean
+      NonParametric(pmf = post_pmf)
+    } else {
+      alpha <- stan_data$delay_np_est_alpha[alpha_idx]
+      concentration <- alpha[1] / prior_pmf[local_pos[1]]
+      EstimatedNonParametric(
+        prior = prior_pmf,
+        concentration = concentration
+      )
+    }
   } else {
     NonParametric(pmf = prior_pmf)
   }
