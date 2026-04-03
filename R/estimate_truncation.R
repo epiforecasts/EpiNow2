@@ -225,6 +225,14 @@ estimate_truncation <- function(data,
   dates <- obs_prep$dirty_obs[[length(obs_prep$dirty_obs)]]$date
   obs_model <- create_obs_model(obs, dates = dates)
 
+  # Parameters handled via params infrastructure
+  params <- list(
+    make_param(
+      "reporting_overdispersion",
+      obs$dispersion, lower_bound = 0
+    )
+  )
+
   stan_data <- list(
     obs = obs_prep$obs,
     obs_dist = obs_prep$obs_dist,
@@ -238,12 +246,42 @@ estimate_truncation <- function(data,
     time_points = stan_data$t
   ))
 
+  stan_data <- c(stan_data, create_stan_params(params))
+
   # initial conditions
   init_fn <- function() {
-    c(create_delay_inits(stan_data), list(
-      reporting_overdispersion = abs(rnorm(1, 0, 0.5)),
-      sigma = abs(rnorm(1, 0, 1))
-    ))
+    out <- create_delay_inits(stan_data)
+    out$sigma <- abs(rnorm(1, 0, 1))
+    # params array init (via params infrastructure)
+    tparams <- purrr::transpose(params)
+    null <- vapply(
+      tparams$dist, is.null, logical(1)
+    )
+    fixed <- vapply(
+      tparams$dist[!null],
+      get_distribution, character(1)
+    ) == "fixed"
+    if (stan_data$n_params_variable > 0) {
+      param_means <- vapply(
+        tparams$dist[!null][!fixed],
+        mean, ignore_uncertainty = FALSE,
+        FUN.VALUE = numeric(1)
+      )
+      param_sds <- vapply(
+        tparams$dist[!null][!fixed],
+        sd, ignore_uncertainty = FALSE,
+        FUN.VALUE = numeric(1)
+      )
+      out$params <- array(truncnorm::rtruncnorm(
+        stan_data$n_params_variable,
+        a = stan_data$params_lower,
+        b = stan_data$params_upper,
+        mean = param_means, sd = param_sds
+      ))
+    } else {
+      out$params <- array(numeric(0))
+    }
+    out
   }
   stan_args <- create_stan_args(
     stan = stan, data = stan_data,

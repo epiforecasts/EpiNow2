@@ -3,6 +3,7 @@ functions {
 #include functions/pmfs.stan
 #include functions/observation_model.stan
 #include functions/delays.stan
+#include functions/params.stan
 }
 
 data {
@@ -12,6 +13,8 @@ data {
   array[obs_sets] int obs_dist;
   int model_type; // 0 = Poisson, 1 = NegBin
 #include data/delays.stan
+#include data/params.stan
+  int<lower = 0> param_id_reporting_overdispersion;
 }
 
 transformed data{
@@ -36,7 +39,9 @@ transformed data{
 parameters {
   vector<lower = delay_params_lower>[delay_params_length]
     delay_params;
-  real<lower = 0> reporting_overdispersion;
+  vector<lower = params_lower, upper = params_upper>[
+    n_params_variable
+  ] params;
   real<lower = 0> sigma;
 }
 
@@ -78,22 +83,34 @@ model {
     delay_params_groups, delay_dist, delay_weight
   );
 
-  reporting_overdispersion ~ normal(0, 1) T[0,];
+  // priors for params (reporting_overdispersion)
+  params_lp(
+    params, prior_dist, prior_dist_params,
+    params_lower, params_upper
+  );
+
   sigma ~ normal(0, 1) T[0,];
 
   // log density of truncated latest data vs that observed
-  for (i in 1:(obs_sets - 1)) {
-    int n_t = end_t[i] - start_t[i] + 1;
-    array[n_t] int case_times;
-    for (j in 1:n_t) {
-      case_times[j] = j;
-    }
-    report_lp(
-      obs[start_t[i]:(start_t[i] + n_t - 1), i],
-      case_times,
-      trunc_obs[1:n_t, i],
-      reporting_overdispersion, model_type, 1
+  {
+    real reporting_overdispersion = get_param(
+      param_id_reporting_overdispersion,
+      params_fixed_lookup, params_variable_lookup,
+      params_value, params
     );
+    for (i in 1:(obs_sets - 1)) {
+      int n_t = end_t[i] - start_t[i] + 1;
+      array[n_t] int case_times;
+      for (j in 1:n_t) {
+        case_times[j] = j;
+      }
+      report_lp(
+        obs[start_t[i]:(start_t[i] + n_t - 1), i],
+        case_times,
+        trunc_obs[1:n_t, i],
+        reporting_overdispersion, model_type, 1
+      );
+    }
   }
 }
 
@@ -111,20 +128,27 @@ generated quantities {
     );
   }
   // generate observations for posterior predictive checks
-  for (i in 1:(obs_sets - 1)) {
-    int n_t = end_t[i] - start_t[i] + 1;
-    {
-      array[n_t] int sampled = report_rng(
-        trunc_obs[1:n_t, i],
-        reporting_overdispersion, model_type
-      );
-      for (j in 1:n_t) {
-        gen_obs[j, i] = sampled[j];
+  {
+    real reporting_overdispersion = get_param(
+      param_id_reporting_overdispersion,
+      params_fixed_lookup, params_variable_lookup,
+      params_value, params
+    );
+    for (i in 1:(obs_sets - 1)) {
+      int n_t = end_t[i] - start_t[i] + 1;
+      {
+        array[n_t] int sampled = report_rng(
+          trunc_obs[1:n_t, i],
+          reporting_overdispersion, model_type
+        );
+        for (j in 1:n_t) {
+          gen_obs[j, i] = sampled[j];
+        }
       }
-    }
-    // zero-fill remaining rows
-    for (j in (n_t + 1):(delay_type_max[delay_id_truncation] + 1)) {
-      gen_obs[j, i] = 0;
+      // zero-fill remaining rows
+      for (j in (n_t + 1):(delay_type_max[delay_id_truncation] + 1)) {
+        gen_obs[j, i] = 0;
+      }
     }
   }
 }
