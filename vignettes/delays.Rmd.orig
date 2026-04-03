@@ -123,15 +123,15 @@ The `max` argument right-truncates the distribution at a given value, discarding
 Alternatively, `cdf_cutoff` sets the truncation point at the value where the CDF reaches a given threshold.
 
 ```{r truncation}
-# Truncate at max = 14
-dist_max <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 14)
+# No truncation cutoff
+dist_full <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 30)
 
-# Truncate where 99.9% of the mass is captured
+# Truncate where 99% of the mass is captured
 dist_cutoff <- LogNormal(
-  meanlog = 1.6, sdlog = 0.5, cdf_cutoff = 0.999
+  meanlog = 1.6, sdlog = 0.5, cdf_cutoff = 0.99
 )
 
-plot(dist_max)
+plot(dist_full)
 plot(dist_cutoff)
 ```
 
