@@ -285,6 +285,40 @@ test_that("estimate_infections works with EstimatedNonParametric generation time
   )
 })
 
+test_that("EstimatedNonParametric GT moves from prior towards truth", { # nolint
+  skip_integration()
+  # Use a shifted prior and check the posterior is closer to
+  # the true GT than the prior was
+  true_gt <- c(0, 0.1, 0.3, 0.35, 0.15, 0.07, 0.03)
+  shifted_prior <- c(0, 0.05, 0.15, 0.3, 0.25, 0.15, 0.1)
+  est_gt <- EstimatedNonParametric(
+    prior = shifted_prior,
+    concentration = 5
+  )
+  out <- suppressWarnings(estimate_infections(
+    data = reported_cases,
+    generation_time = gt_opts(est_gt),
+    delays = delay_opts(Fixed(0)),
+    rt = rt_opts(
+      prior = LogNormal(mean = 2, sd = 0.1),
+      rw = 7
+    ),
+    gp = NULL,
+    stan = stan_opts(
+      samples = 500, warmup = 500,
+      chains = 2, cores = 1
+    ),
+    verbose = FALSE
+  ))
+  expect_null(out$error)
+  post_pmf <- as.numeric(
+    get_pmf(get_parameters(out)$generation_time)
+  )
+  prior_err <- sum((shifted_prior - true_gt)^2)
+  post_err <- sum((post_pmf - true_gt)^2)
+  expect_lt(post_err, prior_err)
+})
+
 # Non-integration tests (fast - use one MCMC fit for multiple checks) ----
 
 test_that("summary with type='parameters' returns all dates by default", {
@@ -304,7 +338,7 @@ test_that("summary with type='parameters' returns all dates by default", {
 
   # When target_date is explicitly provided, should filter to that date
   # Use a date that exists in the summarised estimates
-  target <- summ_dates[length(summ_dates) %/% 2]  # Pick middle date
+  target <- summ_dates[length(summ_dates) %/% 2] # Pick middle date
   summ_filtered <- summary(out, type = "parameters", target_date = target)
   expect_equal(unique(summ_filtered$date), target)
 })
@@ -484,7 +518,6 @@ test_that("get_predictions horizon is correctly calculated", {
 })
 
 test_that("get_predictions format='sample' compatible with scoringutils", {
-
   skip_integration()
   skip_if_not_installed("scoringutils")
 
@@ -508,7 +541,8 @@ test_that("get_predictions format='sample' compatible with scoringutils", {
   preds <- get_predictions(fit, format = "sample")
   forecasts <- preds[horizon > 0]
   forecasts <- merge(
-    forecasts, data.table::as.data.table(example_confirmed), by = "date"
+    forecasts, data.table::as.data.table(example_confirmed),
+    by = "date"
   )
 
   forecast_obj <- scoringutils::as_forecast_sample(
@@ -548,7 +582,8 @@ test_that("get_predictions format='quantile' compatible with scoringutils", {
   preds <- get_predictions(fit, format = "quantile")
   forecasts <- preds[horizon > 0]
   forecasts <- merge(
-    forecasts, data.table::as.data.table(example_confirmed), by = "date"
+    forecasts, data.table::as.data.table(example_confirmed),
+    by = "date"
   )
 
   forecast_obj <- scoringutils::as_forecast_quantile(
