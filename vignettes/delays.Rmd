@@ -118,7 +118,22 @@ For parametric distributions with uncertain parameters, the convolution is handl
 # Truncation
 
 Delay distributions must be truncated to a finite support for use in the discrete-time model.
+Shorter distributions reduce the cost of the convolution step in the model, so choosing a sensible truncation point can noticeably improve run time.
 The `max` argument right-truncates the distribution at a given value, discarding probability mass beyond that point and renormalising.
+Alternatively, `cdf_cutoff` sets the truncation point at the value where the CDF reaches a given threshold.
+
+```{r truncation}
+# Truncate at max = 14
+dist_max <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 14)
+
+# Truncate where 99.9% of the mass is captured
+dist_cutoff <- LogNormal(
+  meanlog = 1.6, sdlog = 0.5, cdf_cutoff = 0.999
+)
+
+plot(dist_max)
+plot(dist_cutoff)
+```
 
 Right truncation is also important when estimating delay distributions from real-time data, because recent cases with long delays have not yet been observed.
 `estimate_dist()` accounts for this; see `vignette("estimate-dist")` for details.
