@@ -15,34 +15,38 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-**This is a work in progress. Please consider submitting a PR to improve it.** 
 
-This model deals with the problem of _nowcasting_, or adjusting for right-truncation in reported count data. This occurs when the quantity being observed, for example cases, hospitalisations or deaths, is reported with a delay, resulting in an underestimation of recent counts. The `estimate_truncation()` model attempts to infer parameters of the underlying delay distributions from multiple snapshots of past data. It is designed to be a simple model that can integrate with the other models in the package and therefore may not be ideal for all uses. For a more principled approach to nowcasting please consider using the [epinowcast](https://package.epinowcast.org) package.
+This model deals with the problem of _nowcasting_, or adjusting for right-truncation in reported count data.
+This occurs when the quantity being observed, for example cases, hospitalisations or deaths, is reported with a delay, resulting in an underestimation of recent counts.
+The `estimate_truncation()` model infers parameters of the underlying delay distribution from multiple snapshots of past data.
+It is designed to be a simple model that integrates with the other models in the package and therefore may not be ideal for all uses.
 
-Given snapshots $C^{i}_{t}$ reflecting reported counts for time $t$ where $i=1\ldots S$ is in order of recency (earliest snapshots first) and $S$ is the number of past snapshots used for estimation, we try to infer the parameters of a discrete truncation distribution $\zeta(\tau | \mu_{\zeta}, \sigma_{\zeta})$ with corresponding probability mass function $Z(\tau | \mu_{\zeta}$).
+For a simpler non-Stan approach, see the [baselinenowcast](https://package.epinowcast.org/baselinenowcast/) package.
+For more complex settings with time-varying delays, see the [epinowcast](https://package.epinowcast.org) package.
+
+## Model
+
+Given snapshots $C^{i}_{t}$ reflecting reported counts for time $t$ where $i=1\ldots S$ is in order of recency (earliest snapshots first) and $S$ is the number of past snapshots used for estimation, we infer the parameters $\boldsymbol{\theta}$ of a discrete truncation distribution with cumulative mass function $Z(\tau | \boldsymbol{\theta})$.
+The truncation distribution can be any parametric family supported by `dist_spec` (e.g. log-normal, gamma).
 
 The model assumes that final counts $D_{t}$ are related to observed snapshots via the truncation distribution such that
 
 \begin{equation}
-C^{i < S)_{t}_\sim \mathrm{NegBinom}\left(Z (T_i - t | \mu_{Z}, \sigma_{Z}) D(t) + \sigma, \varphi\right)
+C^{i < S}_{t} \sim F\left(Z(T_i - t | \boldsymbol{\theta}) \cdot D(t) + \sigma\right)
 \end{equation}
 
-where $T_i$ is the date of the final observation in snapshot $i$, $Z(\tau)$
-is defined to be zero for negative values of $\tau$ and $\sigma$ is an
-additional error term.
+where $T_i$ is the date of the final observation in snapshot $i$, $Z(\tau)$ is defined to be zero for negative values of $\tau$, $\sigma$ is an additive noise term, and $F$ is the observation model (Poisson or negative binomial, controlled via `obs_opts()`).
 
 The final counts $D_{t}$ are estimated from the most recent snapshot as
 
 \begin{equation}
-D_t = \frac{C^{S}}{Z (T_\mathrm{S} - t | \mu_{Z}, \sigma_{Z})}
+D_t = \frac{C^{S}_{t}}{Z(T_S - t | \boldsymbol{\theta})}
 \end{equation}
 
-Relevant priors are:
+### Priors
 
 \begin{align}
-\mu_\zeta &\sim \mathrm{Normal}(0, 1)\\
-\sigma_\zeta &\sim \mathrm{HalfNormal}(0, 1)\\
-\frac{1}{\sqrt{\varphi}} &\sim \mathrm{HalfNormal}(0, 0.25)\\
+\boldsymbol{\theta} &\sim \text{as specified by } \texttt{trunc\_opts()} \\
+\frac{1}{\varphi^2} &\sim \mathrm{HalfNormal}(0, 1) \quad \text{(negative binomial only)} \\
 \sigma &\sim \mathrm{HalfNormal}(0, 1)
 \end{align}
-

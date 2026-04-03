@@ -58,6 +58,34 @@ test_that("prepare_truncation_obs handles datasets with different start dates", 
   expect_equal(result$obs_sets, 2)
 })
 
+test_that("estimate_truncation accepts obs argument", {
+  expect_no_error(
+    match.arg("obs", names(formals(estimate_truncation)))
+  )
+})
+
+test_that("Stan data includes model_type from obs_opts", {
+  obs_prep <- EpiNow2:::prepare_truncation_obs(
+    example_truncated,
+    trunc_max = 10
+  )
+  dates <- obs_prep$dirty_obs[[length(obs_prep$dirty_obs)]]$date
+
+  # NegBin (default)
+  obs_negbin <- EpiNow2:::create_obs_model(
+    obs_opts(),
+    dates = dates
+  )
+  expect_equal(obs_negbin$model_type, 1)
+
+  # Poisson
+  obs_poisson <- EpiNow2:::create_obs_model(
+    obs_opts(family = "poisson"),
+    dates = dates
+  )
+  expect_equal(obs_poisson$model_type, 0)
+})
+
 test_that("merge_trunc_pred_obs correctly merges predictions with observations", {
   # Create simple test observations: 2 snapshots
   obs1 <- data.frame(
@@ -243,6 +271,42 @@ test_that("estimate_truncation works with zero_threshold set", {
   )
   expect_named(out, c("observations", "args", "fit"))
   expect_s3_class(get_parameters(out)$truncation, "dist_spec")
+})
+
+test_that("estimate_truncation works with Poisson observation model", {
+  skip_integration()
+  est <- estimate_truncation(example_truncated,
+    obs = obs_opts(family = "poisson"),
+    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
+  )
+  expect_equal(
+    names(est),
+    c("observations", "args", "fit")
+  )
+  expect_equal(est$args$model_type, 0)
+  expect_s3_class(get_parameters(est)$truncation, "dist_spec")
+  expect_error(plot(est), NA)
+})
+
+test_that("estimate_truncation works with Gamma truncation distribution", {
+  skip_integration()
+  est <- estimate_truncation(example_truncated,
+    truncation = trunc_opts(
+      Gamma(
+        shape = Normal(1, 0.5),
+        rate = Normal(1, 0.5),
+        max = 10
+      )
+    ),
+    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
+  )
+  expect_equal(
+    names(est),
+    c("observations", "args", "fit")
+  )
+  trunc_dist <- get_parameters(est)$truncation
+  expect_s3_class(trunc_dist, "dist_spec")
+  expect_equal(trunc_dist$distribution, "gamma")
 })
 
 test_that("estimate_truncation recovers true truncation parameters", {
