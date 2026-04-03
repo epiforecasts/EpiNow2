@@ -7,8 +7,7 @@
 dist_id_to_name(dist_id)
 }
 \arguments{
-\item{dist_id}{Integer Stan distribution ID from primarycensored
-(1 = lognormal, 2 = gamma, 3 = weibull, 4 = exponential).}
+\item{dist_id}{Integer Stan distribution ID from primarycensored.}
 }
 \value{
 A character string distribution name.
@@ -17,5 +16,7 @@ A character string distribution name.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Maps a primarycensored Stan distribution ID back to an EpiNow2
 distribution name.
+Builds a reverse lookup from
+\code{primarycensored::pcd_stan_dist_id()} for supported distributions.
 }
 \keyword{internal}
