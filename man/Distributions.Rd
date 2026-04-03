@@ -54,7 +54,18 @@ normalised to sum to one internally.}
 
 \item{concentration}{A positive scalar controlling how tightly
 the Dirichlet prior concentrates around the supplied PMF.
-Higher values give a more informative prior. Defaults to 1.}
+The Dirichlet alpha vector is computed as
+\code{alpha_i = concentration * p_i} where \code{p_i} is the prior PMF.
+Guidance on values:
+\itemize{
+\item \code{concentration = 1}: weak prior, each alpha equals the PMF
+value (near-uniform for roughly equal PMF entries)
+\item \code{concentration = 5-20}: moderate flexibility around the
+reference shape
+\item \verb{concentration = 50+}: strong anchoring to the reference PMF
+}
+
+Defaults to 1.}
 
 \item{x}{A \code{dist_spec} object.}
 }
@@ -66,8 +77,14 @@ Logical; \code{TRUE} if \code{x} is an estimated nonparametric
 distribution.
 }
 \description{
-An estimated nonparametric distribution uses a Dirichlet prior
-over the PMF, which is then estimated during model fitting.
+Probability distributions
+
+Generates a nonparametric distribution.
+
+Generates an estimated nonparametric distribution.
+
+Check whether a distribution is an estimated nonparametric
+distribution.
 }
 \details{
 Probability distributions are ubiquitous in EpiNow2, usually representing
@@ -91,8 +108,10 @@ from the given uncertainty and converting resulting parameters to their
 natural representation.
 
 Currently available distributions are lognormal, gamma, normal, fixed
-(delta) and nonparametric. The nonparametric is a special case where the
-probability mass function is given directly as a numeric vector.
+(delta), nonparametric, and estimated nonparametric. The nonparametric
+is a special case where the probability mass function is given directly
+as a numeric vector. The estimated nonparametric allows the PMF to be
+estimated during model fitting using a Dirichlet prior.
 }
 \examples{
 LogNormal(mean = 4, sd = 1)

@@ -75,12 +75,23 @@ simulate_secondary <- function(primary,
   ))
 
   if (length(stan_data$delay_params_sd) > 0 &&
-        any(stan_data$delay_params_sd > 0)) {
+    any(stan_data$delay_params_sd > 0)) {
     cli_abort(
       c(
         "!" = "Cannot simulate from uncertain parameters.",
-        "i" = "Use {.fn fix_parameters} to set the parameters of uncertain
-        distributions either using the mean or a randomly sampled value."
+        "i" = "Use {.fn fix_parameters} to set the parameters of
+        uncertain distributions either using the mean or a
+        randomly sampled value."
+      )
+    )
+  }
+  if (stan_data$delay_np_est_n > 0) {
+    cli_abort(
+      c(
+        "!" = "Cannot simulate from estimated nonparametric
+        delays.",
+        "i" = "Use a fixed {.fn NonParametric} distribution
+        instead of {.fn EstimatedNonParametric}."
       )
     )
   }

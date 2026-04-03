@@ -38,19 +38,7 @@ parameters {
 }
 
 transformed parameters{
-  // Combine fixed and estimated nonparametric delay PMFs
-  vector[delay_np_pmf_length] delay_np_pmf_use
-    = to_vector(delay_np_pmf);
-  for (i in 1:delay_np_est_n) {
-    int es = delay_np_est_groups[i];
-    int ee = delay_np_est_groups[i + 1] - 1;
-    vector[ee - es + 1] normed =
-      delay_np_est_raw[es:ee]
-      / sum(delay_np_est_raw[es:ee]);
-    for (j in es:ee) {
-      delay_np_pmf_use[delay_np_est_pos[j]] = normed[j - es + 1];
-    }
-  }
+#include functions/delay_np_pmf_use.stan
 
   real phi = 1 / sqrt(reporting_overdispersion);
   matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] trunc_obs =
