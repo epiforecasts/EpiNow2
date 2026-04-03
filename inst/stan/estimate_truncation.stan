@@ -86,10 +86,7 @@ model {
   rw_sd ~ normal(rw_sd_prior_mean, rw_sd_prior_sd) T[0,];
   rw_noise ~ std_normal();
 
-  // overdispersion prior (NegBin only)
-  if (model_type) {
-    reporting_overdispersion ~ normal(0, 1) T[0,];
-  }
+  reporting_overdispersion ~ normal(0, 1) T[0,];
 
   // observation likelihood across all snapshots
   for (i in 1:obs_sets) {
