@@ -1128,21 +1128,22 @@ natural_params <- function(distribution) {
 #' @description `r lifecycle::badge("experimental")`
 #' Maps a primarycensored Stan distribution ID back to an EpiNow2
 #' distribution name.
-#' @param dist_id Integer Stan distribution ID from primarycensored
-#'   (1 = lognormal, 2 = gamma, 3 = weibull, 4 = exponential).
+#' Builds a reverse lookup from
+#' `primarycensored::pcd_stan_dist_id()` for supported distributions.
+#' @param dist_id Integer Stan distribution ID from primarycensored.
 #' @return A character string distribution name.
 #' @keywords internal
 dist_id_to_name <- function(dist_id) {
-  lookup <- c(
-    "1" = "lognormal",
-    "2" = "gamma",
-    "3" = "weibull",
-    "4" = "exponential"
+  supported <- c(
+    "lognormal", "gamma", "weibull", "exponential", "normal"
   )
-  result <- unname(lookup[as.character(dist_id)])
-  if (is.na(result)) {
+  ids <- vapply(
+    supported, primarycensored::pcd_stan_dist_id, integer(1)
+  )
+  result <- supported[ids == dist_id]
+  if (length(result) == 0) {
     cli::cli_abort(
-      "Unknown distribution ID {dist_id}. Expected one of: {.val {names(lookup)}}"
+      "Unknown distribution ID {dist_id}."
     )
   }
   result

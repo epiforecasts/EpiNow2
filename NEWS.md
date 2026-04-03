@@ -28,7 +28,7 @@
 
 ## Model changes
 
-- The Stan model now uses `primarycensored` for computing delay distribution PMFs, replacing the naive CDF differencing approach. This accounts for primary event censoring and produces more accurate discretised delay distributions, consistent with the R-side computation introduced in v1.8.0. The distribution ID convention has been updated to match `primarycensored` (1 = lognormal, 2 = gamma).
+- The Stan model now uses `primarycensored` for computing delay distribution PMFs, replacing the approximate CDF differencing approach. This accounts for primary event censoring and produces more accurate discretised delay distributions, consistent with the R-side computation introduced in v1.8.0. The distribution ID convention has been updated to match `primarycensored` (1 = lognormal, 2 = gamma).
 - Left truncation of delay distributions (e.g. excluding generation times of zero) is now handled analytically via `primarycensored` rather than by zeroing and renormalising.
 
 ## Package changes
