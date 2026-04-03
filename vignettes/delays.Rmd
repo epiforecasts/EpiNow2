@@ -117,8 +117,12 @@ For parametric distributions with uncertain parameters, the convolution is handl
 
 # Truncation
 
+Delay distributions must be truncated to a finite support for use in the discrete-time model.
 The `max` argument right-truncates the distribution at a given value, discarding probability mass beyond that point and renormalising.
-A `NonParametric()` distribution can encode left truncation directly by setting early entries to zero.
+
+Left truncation excludes delays below a threshold, which is useful when zero-day delays are epidemiologically implausible (e.g. generation times).
+A `NonParametric()` distribution can encode this directly by setting early entries to zero.
+For parametric distributions, `primarycensored` handles left truncation analytically when computing the adjusted CDF, so the resulting PMF already accounts for the truncation without ad hoc zeroing and renormalising.
 
 # Fitting delay distributions from data
 
