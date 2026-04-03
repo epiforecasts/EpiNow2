@@ -89,8 +89,8 @@ Right truncation also introduces bias: recent events with long delays are system
 # How primarycensored corrects this
 
 EpiNow2 computes delay PMFs using the `primarycensored` package [@Park2024], which accounts for primary event censoring explicitly.
-For each discrete delay $d$, the PMF value is obtained by integrating over all possible primary event times within the primary window.
-For the secondary window, the difference of CDFs is taken.
+The approach integrates the delay CDF over all possible primary event times within the primary window, producing an adjusted CDF.
+The PMF is then obtained by differencing this adjusted CDF at successive days.
 
 For common distribution and primary event combinations (e.g. lognormal delay with uniform primary events), analytical solutions are available, making the computation fast.
 When no closed-form solution exists, numerical integration is used as a fallback.
