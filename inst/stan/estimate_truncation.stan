@@ -78,10 +78,7 @@ model {
     delay_params_groups, delay_dist, delay_weight
   );
 
-  // overdispersion prior (NegBin only)
-  if (model_type) {
-    reporting_overdispersion ~ normal(0, 1) T[0,];
-  }
+  reporting_overdispersion ~ normal(0, 1) T[0,];
   sigma ~ normal(0, 1) T[0,];
 
   // log density of truncated latest data vs that observed
