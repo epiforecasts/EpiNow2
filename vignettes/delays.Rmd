@@ -13,15 +13,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.width = 6.5,
-  fig.height = 4,
-  fig.path = "delays-"
-)
-```
+
 
 # What delay distributions represent
 
@@ -38,8 +30,14 @@ Each delay shifts and smooths the relationship between underlying infections and
 Delays are specified as `dist_spec` objects using the distribution constructors `LogNormal()`, `Gamma()`, `Normal()`, `Fixed()`, and `NonParametric()`.
 Parameters can be given as fixed values or with uncertainty expressed through `Normal()` priors on the natural parameters.
 
-```{r distributions}
+
+``` r
 library(EpiNow2)
+#> 
+#> Attaching package: 'EpiNow2'
+#> The following object is masked from 'package:stats':
+#> 
+#>     Gamma
 
 # Fixed lognormal delay
 incubation_period <- LogNormal(
@@ -63,10 +61,18 @@ known_pmf <- NonParametric(c(0.0, 0.1, 0.4, 0.3, 0.2))
 
 We can visualise any `dist_spec` object using `plot()`.
 
-```{r plot-distributions}
+
+``` r
 plot(incubation_period)
+```
+
+![plot of chunk plot-distributions](delays-plot-distributions-1.png)
+
+``` r
 plot(reporting_delay)
 ```
+
+![plot of chunk plot-distributions](delays-plot-distributions-2.png)
 
 The `max` argument right-truncates the distribution at a given value, discarding probability mass beyond that point and renormalising.
 Alternatively, `cdf_cutoff` can be used to set the truncation point based on a tail probability threshold.
@@ -103,11 +109,14 @@ This is the PMF used internally by EpiNow2's Stan model when computing the likel
 When the observation process involves more than one delay, the individual delay PMFs are convolved to produce a combined delay.
 In EpiNow2 this is done by adding `dist_spec` objects together with the `+` operator.
 
-```{r convolution}
+
+``` r
 # Combined delay from infection to report
 combined_delay <- incubation_period + reporting_delay
 plot(combined_delay)
 ```
+
+![plot of chunk convolution](delays-convolution-1.png)
 
 The `+` operator signals to the model that these delays should be convolved.
 The `c()` function, by contrast, collects independent delay distributions without convolving them (e.g. for separate delay and truncation distributions passed to different parts of the model).
@@ -122,18 +131,24 @@ Shorter distributions reduce the cost of the convolution step in the model, so c
 The `max` argument right-truncates the distribution at a given value, discarding probability mass beyond that point and renormalising.
 Alternatively, `cdf_cutoff` sets the truncation point at the value where the CDF reaches a given threshold.
 
-```{r truncation}
-# No truncation cutoff
-dist_full <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 30)
 
-# Truncate where 99% of the mass is captured
-dist_cutoff <- LogNormal(
-  meanlog = 1.6, sdlog = 0.5, cdf_cutoff = 0.99
-)
+``` r
+# Long tail retained
+dist_long <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 30)
 
-plot(dist_full)
-plot(dist_cutoff)
+# Truncated at a tighter bound
+dist_short <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 14)
+
+plot(dist_long)
 ```
+
+![plot of chunk truncation](delays-truncation-1.png)
+
+``` r
+plot(dist_short)
+```
+
+![plot of chunk truncation](delays-truncation-2.png)
 
 Right truncation is also important when estimating delay distributions from real-time data, because recent cases with long delays have not yet been observed.
 `estimate_dist()` accounts for this; see `vignette("estimate-dist")` for details.

@@ -123,16 +123,14 @@ The `max` argument right-truncates the distribution at a given value, discarding
 Alternatively, `cdf_cutoff` sets the truncation point at the value where the CDF reaches a given threshold.
 
 ```{r truncation}
-# No truncation cutoff
-dist_full <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 30)
+# Long tail retained
+dist_long <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 30)
 
-# Truncate where 99% of the mass is captured
-dist_cutoff <- LogNormal(
-  meanlog = 1.6, sdlog = 0.5, cdf_cutoff = 0.99
-)
+# Truncated at a tighter bound
+dist_short <- LogNormal(meanlog = 1.6, sdlog = 0.5, max = 14)
 
-plot(dist_full)
-plot(dist_cutoff)
+plot(dist_long)
+plot(dist_short)
 ```
 
 Right truncation is also important when estimating delay distributions from real-time data, because recent cases with long delays have not yet been observed.
