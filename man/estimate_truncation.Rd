@@ -82,10 +82,11 @@ binomial or Poisson) with an additive noise term to handle zero
 observations.
 }
 
-For simpler or more complex nowcasting needs, see the
+This can be thought of as a Bayesian form of the chain-ladder
+nowcasting approach in the
 \href{https://package.epinowcast.org/baselinenowcast/}{\code{baselinenowcast}}
-and \href{https://package.epinowcast.org/}{\code{epinowcast}} packages
-respectively.
+package. For settings requiring time-varying delays, see
+\href{https://package.epinowcast.org/}{\code{epinowcast}}.
 }
 \examples{
 \donttest{
