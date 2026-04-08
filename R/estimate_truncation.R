@@ -115,10 +115,11 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' binomial or Poisson) with an additive noise term to handle zero
 #' observations.
 #'
-#' For simpler or more complex nowcasting needs, see the
+#' This can be thought of as a Bayesian form of the chain-ladder
+#' nowcasting approach in the
 #' [`baselinenowcast`](https://package.epinowcast.org/baselinenowcast/)
-#' and [`epinowcast`](https://package.epinowcast.org/) packages
-#' respectively.
+#' package. For settings requiring time-varying delays, see
+#' [`epinowcast`](https://package.epinowcast.org/).
 #'
 #' @param data A list of `<data.frame>`s each containing a `date` variable
 #' and a `confirm` (numeric) variable. Each data set should be a snapshot
