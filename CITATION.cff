@@ -534,32 +534,6 @@ references:
     given-names: Steve
   year: '2026'
 - type: software
-  title: future
-  abstract: 'future: Unified Parallel and Distributed Processing in R for Everyone'
-  notes: Suggests
-  url: https://future.futureverse.org
-  repository: https://CRAN.R-project.org/package=future
-  authors:
-  - family-names: Bengtsson
-    given-names: Henrik
-    email: henrikb@braju.com
-    orcid: https://orcid.org/0000-0002-7579-5165
-  year: '2026'
-  doi: 10.32614/CRAN.package.future
-- type: software
-  title: future.apply
-  abstract: 'future.apply: Apply Function to Elements in Parallel using Futures'
-  notes: Suggests
-  url: https://future.apply.futureverse.org
-  repository: https://CRAN.R-project.org/package=future.apply
-  authors:
-  - family-names: Bengtsson
-    given-names: Henrik
-    email: henrikb@braju.com
-    orcid: https://orcid.org/0000-0002-7579-5165
-  year: '2026'
-  doi: 10.32614/CRAN.package.future.apply
-- type: software
   title: knitr
   abstract: 'knitr: A General-Purpose Package for Dynamic Report Generation in R'
   notes: Suggests
@@ -572,32 +546,6 @@ references:
     orcid: https://orcid.org/0000-0003-0645-5666
   year: '2026'
   doi: 10.32614/CRAN.package.knitr
-- type: software
-  title: parallelly
-  abstract: 'parallelly: Enhancing the ''parallel'' Package'
-  notes: Suggests
-  url: https://parallelly.futureverse.org
-  repository: https://CRAN.R-project.org/package=parallelly
-  authors:
-  - family-names: Bengtsson
-    given-names: Henrik
-    email: henrikb@braju.com
-    orcid: https://orcid.org/0000-0002-7579-5165
-  year: '2026'
-  doi: 10.32614/CRAN.package.parallelly
-- type: software
-  title: progressr
-  abstract: 'progressr: An Inclusive, Unifying API for Progress Updates'
-  notes: Suggests
-  url: https://progressr.futureverse.org
-  repository: https://CRAN.R-project.org/package=progressr
-  authors:
-  - family-names: Bengtsson
-    given-names: Henrik
-    email: henrikb@braju.com
-    orcid: https://orcid.org/0000-0002-7579-5165
-  year: '2026'
-  doi: 10.32614/CRAN.package.progressr
 - type: software
   title: rmarkdown
   abstract: 'rmarkdown: Dynamic Documents for R'
@@ -666,22 +614,6 @@ references:
     email: sebastian.funk@lshtm.ac.uk
   year: '2026'
   doi: 10.32614/CRAN.package.scoringutils
-- type: software
-  title: spelling
-  abstract: 'spelling: Tools for Spell Checking in R'
-  notes: Suggests
-  url: https://ropensci.r-universe.dev/spelling
-  repository: https://CRAN.R-project.org/package=spelling
-  authors:
-  - family-names: Ooms
-    given-names: Jeroen
-    email: jeroenooms@gmail.com
-    orcid: https://orcid.org/0000-0002-4035-0289
-  - family-names: Hester
-    given-names: Jim
-    email: james.hester@rstudio.com
-  year: '2026'
-  doi: 10.32614/CRAN.package.spelling
 - type: software
   title: testthat
   abstract: 'testthat: Unit Testing for R'
