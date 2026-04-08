@@ -1,0 +1,132 @@
+---
+title: "Model overview"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Model overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction
+
+EpiNow2 provides several estimation models that can be combined
+for end-to-end epidemiological inference and forecasting.
+This vignette gives an overview of how these models connect.
+For a feature-by-feature reference see the
+[model features](model.html) vignette.
+
+# Architecture
+
+The diagram below shows the main estimation functions and how
+they relate to one another.
+
+```{r architecture, echo = FALSE, fig.alt = "Diagram showing how the main EpiNow2 models connect."}
+knitr::include_graphics(
+  "model-overview-architecture-1.png"
+)
+```
+
+Data flows from top to bottom.
+`estimate_truncation()` feeds into `estimate_infections()`,
+which in turn feeds into `estimate_secondary()` and the
+forecasting functions.
+
+# Estimation models
+
+## `estimate_infections()`
+
+The core model estimates latent infections and the
+time-varying reproduction number from reported case counts.
+It supports mechanistic (renewal equation) and
+non-mechanistic (backcalculation) approaches.
+Configuration is handled by `rt_opts()`, `gp_opts()`,
+`gt_opts()`, `delay_opts()`, `obs_opts()`, `trunc_opts()`,
+and `backcalc_opts()`.
+See the [model definition](estimate_infections.html) and
+[configuration examples](estimate_infections_options.html).
+
+## `estimate_secondary()`
+
+Estimates secondary outcomes (e.g. deaths, hospitalisations)
+from primary case estimates.
+Supports both incidence and prevalence models, configured
+via `secondary_opts()`.
+See the [model definition](estimate_secondary.html).
+
+## `estimate_truncation()`
+
+Estimates reporting truncation distributions from multiple
+snapshots of the same data at different reporting dates.
+The output feeds into `estimate_infections()` via
+`trunc_opts()`.
+See the [model definition](estimate_truncation.html).
+
+# How models chain together
+
+`estimate_truncation()` produces a truncation distribution
+that is passed to `estimate_infections()` via `trunc_opts()`.
+
+The posterior from `estimate_infections()` feeds into
+`forecast_infections()`, which projects forward using the
+estimated reproduction number trajectory.
+
+Estimated primary observations from `estimate_infections()`
+are used as input to `estimate_secondary()`.
+
+`forecast_secondary()` generates forecasts from a fitted
+secondary model.
+
+# Wrapper functions
+
+`epinow()` wraps `estimate_infections()` with logging,
+output saving, and optional forecasting.
+`regional_epinow()` runs `epinow()` across multiple regions
+in parallel.
+See [production use](epinow.html).
+
+# Options functions
+
+The table below summarises the options functions, what they
+configure, and which estimation functions use them.
+
+| Function | Configures | Used by |
+|----------|-----------|---------|
+| `rt_opts()` | Reproduction number model | `estimate_infections()` |
+| `gp_opts()` | Gaussian process prior | `estimate_infections()` |
+| `gt_opts()` | Generation time distribution | `estimate_infections()` |
+| `delay_opts()` | Reporting delay distributions | `estimate_infections()`, `estimate_secondary()` |
+| `obs_opts()` | Observation model | `estimate_infections()`, `estimate_secondary()` |
+| `trunc_opts()` | Truncation distribution | `estimate_infections()` |
+| `backcalc_opts()` | Backcalculation settings | `estimate_infections()` |
+| `secondary_opts()` | Secondary model type | `estimate_secondary()` |
+
+See the [prior choice guide](prior_choice_guide.html) for
+default values and guidance.
+
+# Documentation map
+
+| Topic | Vignette | Description |
+|-------|----------|-------------|
+| Getting started | [EpiNow2](EpiNow2.html) | Quick introduction and basic usage |
+| Model features | [Model features](model.html) | Feature reference with summary and detail tables |
+| Infection model | [estimate_infections()](estimate_infections.html) | Mathematical model definition |
+| Secondary model | [estimate_secondary()](estimate_secondary.html) | Mathematical model definition |
+| Truncation model | [estimate_truncation()](estimate_truncation.html) | Mathematical model definition |
+| Gaussian process | [GP details](gaussian_process_implementation_details.html) | Kernel functions and spectral approximation |
+| Practical workflow | [Workflow](estimate_infections_workflow.html) | End-to-end estimation and forecasting |
+| Configuration examples | [Options](estimate_infections_options.html) | Different model configurations with results |
+| Prior guidance | [Prior choice guide](prior_choice_guide.html) | Default priors and how to modify them |
+| Production use | [epinow()](epinow.html) | Using `epinow()` and `regional_epinow()` |
+| Case studies | [Case studies](case-studies.html) | External applications in the literature |

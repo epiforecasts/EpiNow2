@@ -1,0 +1,187 @@
+---
+title: "Model features"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+bibliography: library.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/apa-numeric-superscript-brackets.csl
+vignette: >
+  %\VignetteIndexEntry{Model features}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette provides a quick reference to the modelling features
+available in EpiNow2.
+For mathematical details see the model definition vignettes
+([infection model](estimate_infections.html),
+[secondary model](estimate_secondary.html),
+[truncation model](estimate_truncation.html)).
+For applied examples see the
+[options vignette](estimate_infections_options.html).
+For prior guidance see the
+[prior choice guide](prior_choice_guide.html).
+
+# Component overview
+
+| Component | R function | Purpose | Details |
+|---|---|---|---|
+| Infection model | `estimate_infections()` | Estimate infections, Rt, and growth rate from reported cases | [Infection model](#infection-model) |
+| Secondary model | `estimate_secondary()` | Estimate secondary outcomes from primary observations | [Secondary model](#secondary-model) |
+| Truncation model | `estimate_truncation()` | Estimate reporting truncation from data snapshots | [Truncation](#truncation) |
+| Forecasting | `forecast_infections()`, `forecast_secondary()` | Generate forecasts from fitted models | [Forecasting](#forecasting) |
+| Workflow wrappers | `epinow()`, `regional_epinow()` | Production and multi-region workflows | [Wrappers](#workflow-wrappers) |
+
+# Infection model
+
+`estimate_infections()` reconstructs infections from reported cases
+using either a generative renewal model or non-parametric
+back-calculation.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Renewal equation (default) | `rt = rt_opts(...)` | Generative model using the reproduction number and generation time | [Model definition](estimate_infections.html) |
+| Back-calculation | `rt = NULL`, `backcalc = backcalc_opts(...)` | Non-parametric deconvolution of reported cases | [Model definition](estimate_infections.html) |
+
+See also: [estimate_infections workflow](estimate_infections_workflow.html)
+
+# Reproduction number
+
+When using the renewal equation, several options control how the
+time-varying reproduction number is modelled.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| GP on differences of log Rt (default) | `rt_opts(gp_on = "R_t-1")` | Gaussian process applied to successive Rt values | [Options examples](estimate_infections_options.html) |
+| GP on deviations from R0 | `rt_opts(gp_on = "R0")` | Gaussian process applied as deviations from a global mean | [Options examples](estimate_infections_options.html) |
+| Random walk | `rt_opts(rw = 7)` with `gp = NULL` | Piecewise-constant Rt with specified step size | [Options examples](estimate_infections_options.html) |
+| Breakpoints | `rt_opts(use_breakpoints = TRUE)` | Requires a `breakpoint` column in the input data | [Options examples](estimate_infections_options.html) |
+| Fixed Rt | `rt_opts(use_rt = FALSE)` | No time-varying reproduction number | [Options examples](estimate_infections_options.html) |
+| Population adjustment | `rt_opts(pop = Fixed(N))` | Adjust Rt for susceptible depletion | [Options examples](estimate_infections_options.html) |
+
+See also:
+[estimate_infections model definition](estimate_infections.html),
+[options examples](estimate_infections_options.html)
+
+# Gaussian process
+
+The Gaussian process controls the flexibility of the time-varying
+reproduction number or infection trajectory.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Matern 3/2 (default) | `gp_opts(kernel = "matern")` | Default kernel with `matern_order = 3/2` | [GP implementation details](gaussian_process_implementation_details.html) |
+| Squared exponential | `gp_opts(kernel = "se")` | Infinitely differentiable kernel | [GP implementation details](gaussian_process_implementation_details.html) |
+| Ornstein-Uhlenbeck | `gp_opts(kernel = "ou")` | Matern kernel with order 1/2 | [GP implementation details](gaussian_process_implementation_details.html) |
+| Periodic | `gp_opts(kernel = "periodic")` | Periodic kernel with tuneable frequency `w0` | [GP implementation details](gaussian_process_implementation_details.html) |
+| Disable GP | `gp = NULL` in `estimate_infections()` | Remove the Gaussian process entirely | [Options examples](estimate_infections_options.html) |
+| Accuracy/speed tradeoff | `gp_opts(basis_prop = 0.3)` | Higher values increase accuracy; lower values are faster | [GP implementation details](gaussian_process_implementation_details.html) |
+
+See also:
+[GP implementation details](gaussian_process_implementation_details.html),
+[options examples](estimate_infections_options.html)
+
+# Delay distributions
+
+Delay distributions map latent infections to observed quantities.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Generation time | `gt_opts(dist = Gamma(...))` | Time between successive infections | [Prior choice guide](prior_choice_guide.html) |
+| Reporting delay | `delay_opts(dist = LogNormal(...))` | Delay from infection to report | [Prior choice guide](prior_choice_guide.html) |
+| Composite delays | `delay_opts(dist = dist1 + dist2)` | Sum of independent delay distributions | [Workflow](estimate_infections_workflow.html) |
+| Non-parametric delays | `gt_opts(dist = NonParametric(...))` | Fixed PMF rather than a parametric family | [Workflow](estimate_infections_workflow.html) |
+| Uncertain parameters | `LogNormal(meanlog = Normal(...), sdlog = Normal(...))` | Parameters drawn from prior distributions | [Prior choice guide](prior_choice_guide.html) |
+| Truncation correction | `trunc_opts(dist = LogNormal(...))` | Adjust for right-truncation of recent data | [Truncation](#truncation) |
+
+See also:
+[workflow vignette](estimate_infections_workflow.html),
+[prior choice guide](prior_choice_guide.html)
+
+# Observation model
+
+The observation model links latent expected cases to reported data.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Negative binomial (default) | `obs_opts(family = "negbin")` | Overdispersed count model | [Prior choice guide](prior_choice_guide.html) |
+| Poisson | `obs_opts(family = "poisson")` | No overdispersion | [Prior choice guide](prior_choice_guide.html) |
+| Day-of-week effect | `obs_opts(week_effect = TRUE)` | Separate reporting rate for each day of the week | [Prior choice guide](prior_choice_guide.html) |
+| Scaling / ascertainment | `obs_opts(scale = Normal(0.5, 0.1))` | Fraction of infections observed | [Prior choice guide](prior_choice_guide.html) |
+| Accumulation (weekly data) | `fill_missing()` with `accumulate` column | Aggregate daily expected values to match reporting frequency | [Workflow](estimate_infections_workflow.html) |
+| Likelihood weighting | `obs_opts(weight = ...)` | Re-weight the observed data in the log density | [Prior choice guide](prior_choice_guide.html) |
+
+See also:
+[workflow vignette](estimate_infections_workflow.html),
+[prior choice guide](prior_choice_guide.html)
+
+# Secondary model
+
+`estimate_secondary()` estimates the relationship between a primary
+and secondary observation (e.g. cases and deaths, admissions and
+bed occupancy).
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Incidence model | `secondary_opts(type = "incidence")` | Secondary reports as a convolution of primary cases | [Secondary model definition](estimate_secondary.html) |
+| Prevalence model | `secondary_opts(type = "prevalence")` | Cumulative secondary reports (e.g. bed occupancy) | [Secondary model definition](estimate_secondary.html) |
+
+See also:
+[estimate_secondary model definition](estimate_secondary.html)
+
+# Truncation
+
+`estimate_truncation()` estimates a truncation distribution from
+multiple snapshots of the same data source over time.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Estimate truncation | `estimate_truncation(data = list_of_snapshots)` | Fit a log-normal truncation distribution to snapshot data | [Truncation model definition](estimate_truncation.html) |
+| Apply truncation correction | `trunc_opts(dist = ...)` in `estimate_infections()` | Adjust for right-truncation using an estimated or assumed distribution | [Truncation model definition](estimate_truncation.html) |
+
+See also:
+[estimate_truncation model definition](estimate_truncation.html)
+
+# Forecasting
+
+Forecasts can be generated from fitted models by projecting forward
+with specified or estimated parameters.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Infection forecast | `forecast_infections(estimates, R)` | Simulate future infections from a fitted model with a new Rt trajectory | [Workflow](estimate_infections_workflow.html) |
+| Secondary forecast | `forecast_secondary(estimate, primary)` | Forecast secondary observations from new primary data | [Secondary model definition](estimate_secondary.html) |
+
+See also:
+[workflow vignette](estimate_infections_workflow.html)
+
+# Workflow wrappers
+
+Convenience functions wrap the core estimation and reporting steps.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Production wrapper | `epinow()` | Wraps `estimate_infections()` with logging and formatted output | [epinow vignette](epinow.html) |
+| Multi-region | `regional_epinow()` | Runs `epinow()` across regions in parallel | [Getting started](EpiNow2.html) |
+| Region-specific options | `opts_list()` | Generate per-region configuration lists | [Getting started](EpiNow2.html) |
+
+See also:
+[epinow vignette](epinow.html),
+[getting started](EpiNow2.html)
+
+# Stan backend
+
+Models are implemented in Stan.
+Users can switch between MCMC sampling (default, via `cmdstanr` or
+`rstan`), variational inference, the Laplace approximation, or
+pathfinder using `stan_opts(method = ...)`.
+See the [workflow vignette](estimate_infections_workflow.html) for
+details on configuring the backend.

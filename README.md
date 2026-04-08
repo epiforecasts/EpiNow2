@@ -222,10 +222,10 @@ numbers and performing short-term forecasts for a disease spreading in a
 Model definitions
 </summary>
 
-In different vignettes we provide the mathematical definition of each
-model. For example, the model definition vignette for
-`estimate_infections()` can be found in
-`vignette("estimate_infections")`.
+For an overview of how the package's models connect see
+`vignette("model_overview")`. A quick reference to all modelling options
+is in `vignette("model")`. Mathematical definitions of each model are in
+their own vignettes, e.g. `vignette("estimate_infections")`.
 
 </details>
 <details>

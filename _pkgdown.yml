@@ -39,6 +39,11 @@ navbar:
     modeldefs:
       text: Model definitions
       menu:
+      - text: Model overview
+        href: articles/model_overview.html
+      - text: Model features
+        href: articles/model.html
+      - text: "---"
       - text: estimate_infections()
         href: articles/estimate_infections.html
       - text: estimate_secondary()
