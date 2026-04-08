@@ -256,7 +256,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 
   # Warn if fixed population is smaller than cumulative cases
   if (rt$pop != Fixed(0) && !is.null(data) &&
-    get_distribution(rt$pop) == "fixed") {
+        get_distribution(rt$pop) == "fixed") {
     pop_value <- mean(rt$pop, ignore_uncertainty = TRUE)
     total_cases <- sum(data[!is.na(confirm)]$confirm, na.rm = TRUE)
 
@@ -678,7 +678,7 @@ create_stan_args <- function(stan = stan_opts(),
   }
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
-    inherits(stan$object, "CmdStanModel")) {
+        inherits(stan$object, "CmdStanModel")) {
     init <- 2
   }
   # set up shared default arguments
@@ -798,9 +798,7 @@ create_stan_delays <- function(..., time_points = 1L) {
     }
     est_np_alphas <- unname(as.numeric(unlist(all_alphas)))
     est_np_positions <- as.integer(unlist(all_pos))
-    est_np_lengths <- vapply(
-      all_alphas, length, integer(1)
-    )
+    est_np_lengths <- lengths(all_alphas)
     ret$np_est_alpha <- array(est_np_alphas)
     ret$np_est_pos <- array(est_np_positions)
     ret$np_est_groups <- array(

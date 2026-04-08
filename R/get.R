@@ -834,8 +834,8 @@ reconstruct_nonparametric <- function(stan_data, np_id,
 
     if (!is.null(np_posterior)) {
       ## compute posterior mean PMF from raw gamma draws
-      raw <- np_posterior[, alpha_idx, drop = FALSE]
-      normed <- raw / rowSums(raw)
+      raw_draws <- np_posterior[, alpha_idx, drop = FALSE]
+      normed <- raw_draws / rowSums(raw_draws)
       post_mean <- colMeans(normed)
       post_pmf <- prior_pmf
       post_pmf[local_pos] <- post_mean
