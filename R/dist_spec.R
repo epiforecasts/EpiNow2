@@ -1032,6 +1032,8 @@ is_constrained.multi_dist_spec <- function(x, ...) {
 #' passed to [bound_dist()]
 #' @return A `dist_spec` representing a distribution of the given
 #' specification.
+#' @seealso `vignette("delays")` for an overview of how delay
+#'   distributions are used in EpiNow2
 #' @export
 #' @rdname Distributions
 #' @name Distributions

@@ -152,6 +152,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @seealso [convert_to_logmean()] [convert_to_logsd()]
 #' [bootstrapped_dist_fit()] \code{\link{Distributions}}
+#' `vignette("delays")` for background on delay distributions
 #' @export
 #' @examples
 #' # no delays
