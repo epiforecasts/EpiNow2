@@ -64,7 +64,7 @@ time-varying reproduction number is modelled.
 | GP on deviations from R0 | `rt_opts(gp_on = "R0")` | Gaussian process applied as deviations from a global mean | [Options examples](estimate_infections_options.html) |
 | Random walk | `rt_opts(rw = 7)` with `gp = NULL` | Piecewise-constant Rt with specified step size | [Options examples](estimate_infections_options.html) |
 | Breakpoints | `rt_opts(use_breakpoints = TRUE)` | Requires a `breakpoint` column in the input data | [Options examples](estimate_infections_options.html) |
-| Fixed Rt | `rt_opts(use_rt = FALSE)` | No time-varying reproduction number | [Options examples](estimate_infections_options.html) |
+| Fixed Rt | `gp = NULL`, `rt_opts(rw = 0)` | Constant reproduction number (no GP or random walk) | [Options examples](estimate_infections_options.html) |
 | Population adjustment | `rt_opts(pop = Fixed(N))` | Adjust Rt for susceptible depletion | [Options examples](estimate_infections_options.html) |
 
 See also:
