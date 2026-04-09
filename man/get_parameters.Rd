@@ -4,6 +4,7 @@
 \alias{get_parameters}
 \alias{get_parameters.dist_spec}
 \alias{get_parameters.epinowfit}
+\alias{get_parameters.estimate_dist}
 \title{Get parameters from distributions or fitted models}
 \usage{
 get_parameters(x, ...)
@@ -11,6 +12,8 @@ get_parameters(x, ...)
 \method{get_parameters}{dist_spec}(x, id = NULL, ...)
 
 \method{get_parameters}{epinowfit}(x, ...)
+
+\method{get_parameters}{estimate_dist}(x, ...)
 }
 \arguments{
 \item{x}{A \code{dist_spec} object or fitted model object}
