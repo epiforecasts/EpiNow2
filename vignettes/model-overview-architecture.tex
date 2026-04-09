@@ -82,8 +82,12 @@
 % ==========================================
 %  ROW 1: DATA INPUTS
 % ==========================================
-\node[databox] (cases) at (0, 0) {Reported cases};
-\node[databox] (snapshots) at (8, 0) {Data snapshots};
+\node[databox] (cases) at (0, 0)
+  {Count time series};
+\node[databox] (snapshots) at (8, 0)
+  {Data snapshots};
+\node[databox] (linelist) at (-6, 0)
+  {Linelist data};
 
 % ==========================================
 %  ROW 2: TRUNCATION (right column)
@@ -95,6 +99,23 @@
 
 \draw[arr] (snapshots) -- (esttrunc);
 \draw[optarr] (truncopt1) -- (esttrunc);
+
+% ==========================================
+%  ESTIMATE_DIST (left column)
+% ==========================================
+\node[estbox, below=0.7cm of linelist]
+  (estdist) {estimate\_dist()};
+
+\draw[arr] (linelist) -- (estdist);
+
+\node[databox, below=0.5cm of estdist,
+  minimum width=2.2cm]
+  (distout) {Delay distribution};
+
+\draw[arr] (estdist) -- (distout);
+\draw[darr] (distout.east) -- ++(1.0, 0)
+  |- (infbg.west |- delays)
+  node[lblstyle, pos=0.25, above] {delay priors};
 
 % ==========================================
 %  ESTIMATE_INFECTIONS BLOCK (centre)
@@ -192,7 +213,12 @@
 \node[fcastbox, right=1.2cm of posterior]
   (fcastinf) {forecast\_infections()};
 
+\node[fcastbox, left=1.2cm of posterior]
+  (siminf) {simulate\_infections()};
+
 \draw[arr] (posterior) -- (fcastinf);
+\draw[darr] (siminf) -- (posterior)
+  node[lblstyle, midway, above] {scenario};
 
 % ==========================================
 %  ESTIMATE_SECONDARY
@@ -230,8 +256,12 @@
 % ==========================================
 \node[fcastbox, below=0.8cm of estsec]
   (fcastsec) {forecast\_secondary()};
+\node[fcastbox, left=1.2cm of fcastsec]
+  (simsec) {simulate\_secondary()};
 
 \draw[arr] (estsec) -- (fcastsec);
+\draw[darr] (simsec) -- (fcastsec)
+  node[lblstyle, midway, above] {scenario};
 
 % ==========================================
 %  WRAPPER LAYER

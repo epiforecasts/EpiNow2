@@ -34,17 +34,19 @@ For prior guidance see the
 
 | Component | R function | Purpose | Details |
 |---|---|---|---|
-| Infection model | `estimate_infections()` | Estimate infections, Rt, and growth rate from reported cases | [Infection model](#infection-model) |
+| Infection model | `estimate_infections()` | Estimate infections, Rt, and growth rate from a count time series | [Infection model](#infection-model) |
 | Secondary model | `estimate_secondary()` | Estimate secondary outcomes from primary observations | [Secondary model](#secondary-model) |
 | Truncation model | `estimate_truncation()` | Estimate reporting truncation from data snapshots | [Truncation](#truncation) |
+| Delay distribution fitting | `estimate_dist()` | Fit delay distributions from linelist data | [Delay distribution fitting](#delay-distribution-fitting) |
+| Simulation | `simulate_infections()`, `simulate_secondary()` | Simulate observations from known parameters | [Simulation](#simulation) |
 | Forecasting | `forecast_infections()`, `forecast_secondary()` | Generate forecasts from fitted models | [Forecasting](#forecasting) |
 | Workflow wrappers | `epinow()`, `regional_epinow()` | Production and multi-region workflows | [Wrappers](#workflow-wrappers) |
 
 # Infection model
 
-`estimate_infections()` reconstructs infections from reported cases
-using either a generative renewal model or non-parametric
-back-calculation.
+`estimate_infections()` reconstructs infections from a count time
+series (e.g. reported cases) using either a generative renewal
+model or non-parametric back-calculation.
 
 | Feature | Argument | Description | See also |
 |---|---|---|---|
@@ -65,7 +67,8 @@ time-varying reproduction number is modelled.
 | Random walk | `rt_opts(rw = 7)` with `gp = NULL` | Piecewise-constant Rt with specified step size | [Options examples](estimate_infections_options.html) |
 | Breakpoints | `rt_opts(use_breakpoints = TRUE)` | Requires a `breakpoint` column in the input data | [Options examples](estimate_infections_options.html) |
 | Fixed Rt | `gp = NULL`, `rt_opts(rw = 0)` | Constant reproduction number (no GP or random walk) | [Options examples](estimate_infections_options.html) |
-| Population adjustment | `rt_opts(pop = Fixed(N))` | Adjust Rt for susceptible depletion | [Options examples](estimate_infections_options.html) |
+| Population adjustment | `rt_opts(pop = Fixed(N))` | Adjust Rt for susceptible depletion; `pop` accepts any `<dist_spec>` | [Options examples](estimate_infections_options.html) |
+| Growth rate method | `rt_opts(growth_method = "infectiousness")` | Alternative growth rate calculation via infectiousness | [Model definition](estimate_infections.html) |
 
 See also:
 [estimate_infections model definition](estimate_infections.html),
@@ -149,6 +152,37 @@ multiple snapshots of the same data source over time.
 
 See also:
 [estimate_truncation model definition](estimate_truncation.html)
+
+# Delay distribution fitting
+
+`estimate_dist()` fits delay distributions from linelist data,
+accounting for double interval censoring and right truncation
+using [primarycensored](https://primarycensored.epinowcast.org/).
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Log-normal delay (default) | `estimate_dist(dist = "lognormal")` | Fit a log-normal delay distribution | [Fitting delays](estimate-dist.html) |
+| Gamma delay | `estimate_dist(dist = "gamma")` | Fit a gamma delay distribution | [Fitting delays](estimate-dist.html) |
+| Normal delay | `estimate_dist(dist = "normal")` | Fit a normal delay distribution | [Fitting delays](estimate-dist.html) |
+| Exponential delay | `estimate_dist(dist = "exp")` | Fit an exponential delay distribution | [Fitting delays](estimate-dist.html) |
+| Primary event distribution | `estimate_dist(primary = "expgrowth")` | Account for exponential growth in primary events | [Fitting delays](estimate-dist.html) |
+
+See also:
+[fitting delay distributions](estimate-dist.html)
+
+# Simulation
+
+Simulation functions generate observations from known or fixed
+parameters, useful for model checking and scenario analysis.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Simulate infections | `simulate_infections(R, initial_infections)` | Forward-simulate from a given Rt trajectory via the renewal equation | [Workflow](estimate_infections_workflow.html) |
+| Simulate secondary | `simulate_secondary(primary, ...)` | Simulate secondary observations from primary data | [Secondary model definition](estimate_secondary.html) |
+| Convolve and scale | `convolve_and_scale(data, ...)` | R-based convolution with time-varying parameters | [Secondary model definition](estimate_secondary.html) |
+
+See also:
+[workflow vignette](estimate_infections_workflow.html)
 
 # Forecasting
 

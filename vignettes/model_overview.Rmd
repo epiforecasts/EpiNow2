@@ -48,7 +48,7 @@ forecasting functions.
 ## `estimate_infections()`
 
 The core model estimates latent infections and the
-time-varying reproduction number from reported case counts.
+time-varying reproduction number from a count time series.
 It supports mechanistic (renewal equation) and
 non-mechanistic (backcalculation) approaches.
 Configuration is handled by `rt_opts()`, `gp_opts()`,
@@ -73,6 +73,23 @@ The output feeds into `estimate_infections()` via
 `trunc_opts()`.
 See the [model definition](estimate_truncation.html).
 
+## `estimate_dist()`
+
+Fits delay distributions from linelist data, accounting for
+double interval censoring and right truncation.
+Uses likelihood functions vendored from the
+[primarycensored](https://primarycensored.epinowcast.org/)
+package.
+See [fitting delay distributions](estimate-dist.html).
+
+# Simulation
+
+`simulate_infections()` generates observations from a given
+Rt trajectory via the renewal equation with fixed parameters.
+`simulate_secondary()` does the same for secondary
+observations from primary data.
+These are useful for model checking and scenario analysis.
+
 # How models chain together
 
 `estimate_truncation()` produces a truncation distribution
@@ -88,6 +105,11 @@ are used as input to `estimate_secondary()`.
 `forecast_secondary()` generates forecasts from a fitted
 secondary model.
 
+`estimate_dist()` is a standalone model for fitting delay
+distributions from linelist data.
+Its output can be used to define delay priors for the other
+models via `delay_opts()`, `gt_opts()`, or `trunc_opts()`.
+
 # Wrapper functions
 
 `epinow()` wraps `estimate_infections()` with logging,
@@ -101,16 +123,16 @@ See [production use](epinow.html).
 The table below summarises the options functions, what they
 configure, and which estimation functions use them.
 
-| Function | Configures | Used by |
-|----------|-----------|---------|
-| `rt_opts()` | Reproduction number model | `estimate_infections()` |
-| `gp_opts()` | Gaussian process prior | `estimate_infections()` |
-| `gt_opts()` | Generation time distribution | `estimate_infections()` |
-| `delay_opts()` | Reporting delay distributions | `estimate_infections()`, `estimate_secondary()` |
-| `obs_opts()` | Observation model | `estimate_infections()`, `estimate_secondary()` |
-| `trunc_opts()` | Truncation distribution | `estimate_infections()` |
-| `backcalc_opts()` | Backcalculation settings | `estimate_infections()` |
-| `secondary_opts()` | Secondary model type | `estimate_secondary()` |
+| Function | Configures | Default | Used by |
+|----------|-----------|---------|---------|
+| `rt_opts()` | Reproduction number model | GP on log Rt differences | `estimate_infections()` |
+| `gp_opts()` | Gaussian process prior | Matern 3/2 kernel | `estimate_infections()` |
+| `gt_opts()` | Generation time distribution | Fixed(1) (no generation time) | `estimate_infections()` |
+| `delay_opts()` | Reporting delay distributions | Fixed(0) (no delay) | `estimate_infections()`, `estimate_secondary()` |
+| `obs_opts()` | Observation model | Negative binomial with day-of-week effect | `estimate_infections()`, `estimate_secondary()` |
+| `trunc_opts()` | Truncation distribution | Fixed(0) (no truncation) | `estimate_infections()` |
+| `backcalc_opts()` | Backcalculation settings | Smooth via GP | `estimate_infections()` |
+| `secondary_opts()` | Secondary model type | Incidence | `estimate_secondary()` |
 
 See the [prior choice guide](prior_choice_guide.html) for
 default values and guidance.
@@ -124,6 +146,7 @@ default values and guidance.
 | Infection model | [estimate_infections()](estimate_infections.html) | Mathematical model definition |
 | Secondary model | [estimate_secondary()](estimate_secondary.html) | Mathematical model definition |
 | Truncation model | [estimate_truncation()](estimate_truncation.html) | Mathematical model definition |
+| Delay fitting | [estimate_dist()](estimate-dist.html) | Fitting delay distributions from linelist data |
 | Gaussian process | [GP details](gaussian_process_implementation_details.html) | Kernel functions and spectral approximation |
 | Practical workflow | [Workflow](estimate_infections_workflow.html) | End-to-end estimation and forecasting |
 | Configuration examples | [Options](estimate_infections_options.html) | Different model configurations with results |
