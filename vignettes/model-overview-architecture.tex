@@ -49,7 +49,7 @@
   fcastbox/.style={
     draw=fcastorange, fill=fcastorangefill,
     rounded corners=4pt, minimum height=0.7cm,
-    minimum width=3.2cm, align=center,
+    minimum width=3.6cm, align=center,
     line width=0.8pt, font=\sffamily\small\bfseries
   },
   wrapbox/.style={
@@ -108,7 +108,7 @@
 
 \draw[arr] (linelist) -- (estdist);
 
-\node[databox, below=0.5cm of estdist,
+\node[databox, below=0.35cm of estdist,
   minimum width=4.0cm]
   (distout) {Delay distribution};
 
@@ -117,18 +117,18 @@
 % ==========================================
 %  ESTIMATE_INFECTIONS BLOCK (centre)
 % ==========================================
-% Internal components — 2x2 grid, wider spacing
+% Internal components — linear pipeline
 \node[intbox] (rt) at (-1.7, -2.7)
   {Reproduction number (Rt)};
 \node[intbox] (infmod) at (1.7, -2.7)
   {Infection model\\[-1pt]
     {\tiny renewal / backcalculation}};
 \node[intbox] (delays) at (-1.7, -3.8)
-  {Delay distributions\\[-1pt]
-    {\tiny convolution}};
+  {Delay convolution\\[-1pt]
+    {\tiny reporting delay}};
 \node[intbox] (obsmod) at (1.7, -3.8)
   {Observation model\\[-1pt]
-    {\tiny NB / Poisson}};
+    {\tiny NB / Poisson, ascertainment}};
 
 % Main function label at bottom of block
 \node[estbox, minimum width=4.5cm] (estinf)
@@ -148,16 +148,21 @@
 \draw[arr] (cases) -- (0, -2.0);
 
 % Internal flow arrows (light)
-\draw[arr, arrowcol!40] (rt) -- (delays);
-\draw[arr, arrowcol!40] (infmod) -- (obsmod);
-\draw[arr, arrowcol!40] (delays) -- (estinf);
+% Rt → Infection model (renewal equation)
+\draw[arr, arrowcol!40] (rt) -- (infmod);
+% Infection model → Delay convolution
+\draw[arr, arrowcol!40] (infmod) -- (delays);
+% Delay convolution → Observation model
+\draw[arr, arrowcol!40] (delays) -- (obsmod);
+% Observation model → output
 \draw[arr, arrowcol!40] (obsmod) -- (estinf);
 
-% Delay priors: route below distout then up to
-% block left edge at the delays row
-\draw[darr] (distout.east) -- ++(0.8, 0)
-  |- (infbg.west |- delays)
-  node[lblstyle, pos=0.25, above] {delay priors};
+% Delay priors: route down from distout, under
+% the options, then right to the block bottom
+\draw[darr] (distout.south)
+  -- ++(0, -2.8)
+  -| ([xshift=-4pt]infbg.south west)
+  node[lblstyle, pos=0.25, left] {delay priors};
 
 % Truncation distribution: route down then across
 % to block top, well clear of right-side options
