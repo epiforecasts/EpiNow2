@@ -70,9 +70,11 @@ See the [model definition](estimate_secondary.html).
 A nowcasting model that estimates reporting truncation
 distributions from multiple snapshots of the same data at
 different reporting dates.
+The model itself produces a nowcast (predicted complete
+observations), accessible via `get_predictions()`.
 Passing the estimated truncation distribution to
-`estimate_infections()` via `trunc_opts()` enables nowcasting
-by adjusting for incomplete recent observations.
+`estimate_infections()` via `trunc_opts()` enables
+truncation-adjusted inference in the full model.
 See the [model definition](estimate_truncation.html).
 
 ## `estimate_dist()`
@@ -94,24 +96,32 @@ These are useful for model checking and scenario analysis.
 
 # How models chain together
 
-`estimate_truncation()` produces a truncation distribution
-that is passed to `estimate_infections()` via `trunc_opts()`,
-enabling nowcasting of incomplete recent data.
+`estimate_truncation()` produces both a nowcast and a
+truncation distribution.
+The distribution is typically passed to
+`estimate_infections()` via `trunc_opts()` for
+truncation-adjusted inference, but can also be used via
+`delay_opts()` or `gt_opts()` where appropriate.
+
+`estimate_dist()` fits delay distributions from linelist
+data.
+Its output can define priors for the other models via
+`delay_opts()`, `gt_opts()`, or `trunc_opts()`.
 
 The posterior from `estimate_infections()` feeds into
 `forecast_infections()`, which projects forward using the
 estimated reproduction number trajectory.
+`simulate_infections()` can use posterior Rt for scenario
+analysis.
 
 Estimated primary observations from `estimate_infections()`
-are used as input to `estimate_secondary()`.
+are used as input to `estimate_secondary()` and
+`forecast_secondary()`.
 
 `forecast_secondary()` generates forecasts from a fitted
 secondary model.
-
-`estimate_dist()` is a standalone model for fitting delay
-distributions from linelist data.
-Its output can be used to define delay priors for the other
-models via `delay_opts()`, `gt_opts()`, or `trunc_opts()`.
+`simulate_secondary()` generates synthetic secondary
+observations from primary data.
 
 # Wrapper functions
 

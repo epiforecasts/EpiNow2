@@ -36,8 +36,8 @@ For prior guidance see the
 |---|---|---|---|
 | Infection model | `estimate_infections()` | Estimate infections, Rt, and growth rate from a count time series | [Infection model](#infection-model) |
 | Secondary model | `estimate_secondary()` | Estimate secondary outcomes from primary observations | [Secondary model](#secondary-model) |
-| Truncation / nowcasting | `estimate_truncation()` | Estimate truncation for nowcasting recent data | [Truncation / nowcasting](#truncation-nowcasting) |
-| Delay distribution fitting | `estimate_dist()` | Fit delay distributions from linelist data | [Delay distribution fitting](#delay-distribution-fitting) |
+| Truncation / nowcasting | `estimate_truncation()` | Nowcast recent data and estimate truncation distributions | [Truncation / nowcasting](#truncation-nowcasting) |
+| Delay distribution fitting | `estimate_dist()` | Fit delay distributions from linelist data accounting for censoring and truncation | [Delay distribution fitting](#delay-distribution-fitting) |
 | Data preprocessing | `fill_missing()` | Handle missing dates, missing observations, and non-daily data | [Data preprocessing](#data-preprocessing) |
 | Simulation | `simulate_infections()`, `simulate_secondary()` | Simulate observations from known parameters | [Simulation](#simulation) |
 | Forecasting | `forecast_infections()`, `forecast_secondary()` | Generate forecasts from fitted models | [Forecasting](#forecasting) |
@@ -182,36 +182,34 @@ See also:
 Recent observations are typically incomplete due to reporting
 delays (right truncation).
 `estimate_truncation()` estimates a truncation distribution from
-multiple snapshots of the same data source over time.
-Passing this distribution to `estimate_infections()` via
-`trunc_opts()` enables nowcasting: the model adjusts for
-incomplete recent data when estimating infections and Rt.
+multiple snapshots of the same data source over time and
+produces a nowcast (predicted complete observations).
+The estimated distribution can be passed to
+`estimate_infections()` via `trunc_opts()` for
+truncation-adjusted inference.
 
 | Feature | Argument | Description | See also |
 |---|---|---|---|
-| Estimate truncation | `estimate_truncation(data = list_of_snapshots)` | Fit a truncation distribution from data snapshots | [Truncation model definition](estimate_truncation.html) |
-| Nowcast via truncation correction | `trunc_opts(dist = ...)` in `estimate_infections()` | Adjust for right-truncation of recent data in the observation model | [Truncation model definition](estimate_truncation.html) |
-
-For more flexible nowcasting (e.g. time-varying delays, partial
-pooling), see the
-[epinowcast](https://package.epinowcast.org/) package.
+| Estimate truncation and nowcast | `estimate_truncation(data = list_of_snapshots)` | Fit a truncation distribution and produce a nowcast from data snapshots | [Truncation model definition](estimate_truncation.html) |
+| Truncation-adjusted inference | `trunc_opts(dist = ...)` in `estimate_infections()` | Adjust for right-truncation of recent data in the observation model | [Truncation model definition](estimate_truncation.html) |
 
 See also:
 [estimate_truncation model definition](estimate_truncation.html)
 
 # Delay distribution fitting
 
-`estimate_dist()` fits delay distributions from linelist data,
-accounting for double interval censoring and right truncation
-using [primarycensored](https://primarycensored.epinowcast.org/).
+`estimate_dist()` fits delay distributions from linelist data
+using likelihood functions vendored from
+[primarycensored](https://primarycensored.epinowcast.org/).
 
 | Feature | Argument | Description | See also |
 |---|---|---|---|
-| Log-normal delay (default) | `estimate_dist(dist = "lognormal")` | Fit a log-normal delay distribution | [Fitting delays](estimate-dist.html) |
-| Gamma delay | `estimate_dist(dist = "gamma")` | Fit a gamma delay distribution | [Fitting delays](estimate-dist.html) |
-| Normal delay | `estimate_dist(dist = "normal")` | Fit a normal delay distribution | [Fitting delays](estimate-dist.html) |
-| Exponential delay | `estimate_dist(dist = "exp")` | Fit an exponential delay distribution | [Fitting delays](estimate-dist.html) |
+| Double interval censoring | Date columns in linelist | Accounts for censoring of both primary and secondary events | [Fitting delays](estimate-dist.html) |
+| Variable censoring windows | `pdate_upr`, `sdate_upr` columns | Per-observation primary and secondary censoring window widths | [Fitting delays](estimate-dist.html) |
+| Right truncation | `obs_date` column | Per-observation truncation times from reporting delays | [Fitting delays](estimate-dist.html) |
 | Primary event distribution | `estimate_dist(primary = "expgrowth")` | Account for exponential growth in primary events | [Fitting delays](estimate-dist.html) |
+| Distribution families | `estimate_dist(dist = ...)` | Log-normal (default), gamma, normal, or exponential | [Fitting delays](estimate-dist.html) |
+| Observation aggregation | Automatic | Identical delay-censoring-truncation strata are aggregated to speed up fitting | [Fitting delays](estimate-dist.html) |
 
 See also:
 [fitting delay distributions](estimate-dist.html)

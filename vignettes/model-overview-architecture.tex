@@ -61,8 +61,8 @@
   },
   intbox/.style={
     draw=estblue!40, fill=white,
-    rounded corners=3pt, minimum height=0.55cm,
-    minimum width=2.5cm, align=center,
+    rounded corners=3pt, minimum height=0.6cm,
+    minimum width=3.0cm, align=center,
     line width=0.5pt, font=\sffamily\footnotesize
   },
   arr/.style={
@@ -84,9 +84,9 @@
 % ==========================================
 \node[databox] (cases) at (0, 0)
   {Count time series};
-\node[databox] (snapshots) at (8, 0)
+\node[databox] (snapshots) at (10, 0)
   {Data snapshots};
-\node[databox] (linelist) at (-6, 0)
+\node[databox] (linelist) at (-9, 0)
   {Linelist data};
 
 % ==========================================
@@ -109,33 +109,30 @@
 \draw[arr] (linelist) -- (estdist);
 
 \node[databox, below=0.5cm of estdist,
-  minimum width=2.2cm]
+  minimum width=4.0cm]
   (distout) {Delay distribution};
 
 \draw[arr] (estdist) -- (distout);
-\draw[darr] (distout.east) -- ++(1.0, 0)
-  |- (infbg.west |- delays)
-  node[lblstyle, pos=0.25, above] {delay priors};
 
 % ==========================================
 %  ESTIMATE_INFECTIONS BLOCK (centre)
 % ==========================================
-% Internal components — 2x2 grid
-\node[intbox] (rt) at (-1.4, -2.7)
+% Internal components — 2x2 grid, wider spacing
+\node[intbox] (rt) at (-1.7, -2.7)
   {Reproduction number (Rt)};
-\node[intbox] (infmod) at (1.4, -2.7)
+\node[intbox] (infmod) at (1.7, -2.7)
   {Infection model\\[-1pt]
     {\tiny renewal / backcalculation}};
-\node[intbox] (delays) at (-1.4, -3.7)
+\node[intbox] (delays) at (-1.7, -3.8)
   {Delay distributions\\[-1pt]
     {\tiny convolution}};
-\node[intbox] (obsmod) at (1.4, -3.7)
+\node[intbox] (obsmod) at (1.7, -3.8)
   {Observation model\\[-1pt]
     {\tiny NB / Poisson}};
 
 % Main function label at bottom of block
-\node[estbox, minimum width=4cm] (estinf)
-  at (0, -4.8) {estimate\_infections()};
+\node[estbox, minimum width=4.5cm] (estinf)
+  at (0, -5.0) {estimate\_infections()};
 
 % Background shading
 \begin{scope}[on background layer]
@@ -143,12 +140,12 @@
     fit=(rt)(infmod)(delays)(obsmod)(estinf),
     fill=internalbg, rounded corners=6pt,
     draw=estblue!30, line width=0.6pt,
-    inner xsep=10pt, inner ysep=8pt
+    inner xsep=12pt, inner ysep=10pt
   ] (infbg) {};
 \end{scope}
 
 % Data arrow into block top
-\draw[arr] (cases) -- (0, -2.05);
+\draw[arr] (cases) -- (0, -2.0);
 
 % Internal flow arrows (light)
 \draw[arr, arrowcol!40] (rt) -- (delays);
@@ -156,26 +153,35 @@
 \draw[arr, arrowcol!40] (delays) -- (estinf);
 \draw[arr, arrowcol!40] (obsmod) -- (estinf);
 
-% Truncation distribution feeds into block
+% Delay priors: route below distout then up to
+% block left edge at the delays row
+\draw[darr] (distout.east) -- ++(0.8, 0)
+  |- (infbg.west |- delays)
+  node[lblstyle, pos=0.25, above] {delay priors};
+
+% Truncation distribution: route down then across
+% to block top, well clear of right-side options
 \draw[darr] (esttrunc.south)
-  -- ++(0, -0.4)
-  -| (infbg.north east)
-  node[lblstyle, pos=0.55, right, xshift=1pt]
+  -- ++(0, -0.5)
+  -| ([xshift=4pt]infbg.north east)
+  node[lblstyle, pos=0.45, right, xshift=2pt]
     {truncation dist.};
 
 % ==========================================
 %  OPTIONS — LEFT SIDE
 % ==========================================
-\node[optbox] at (-5.0, -2.5) (rtopts)  {rt\_opts()};
-\node[optbox] at (-5.0, -3.1) (gpopts)  {gp\_opts()};
-\node[optbox] at (-5.0, -3.7) (delayopts)
+\node[optbox] at (-6.8, -2.7) (rtopts)  {rt\_opts()};
+\node[optbox] at (-6.8, -3.35) (gpopts)  {gp\_opts()};
+\node[optbox] at (-6.8, -4.0) (delayopts)
   {delay\_opts()};
-\node[optbox] at (-5.0, -4.3) (backopts)
+\node[optbox] at (-6.8, -4.65) (backopts)
   {backcalc\_opts()};
 
 % Arrows from left options to block boundary
-\draw[optarr] (rtopts.east)  -- (infbg.west |- rtopts);
-\draw[optarr] (gpopts.east)  -- (infbg.west |- gpopts);
+\draw[optarr] (rtopts.east)
+  -- (infbg.west |- rtopts);
+\draw[optarr] (gpopts.east)
+  -- (infbg.west |- gpopts);
 \draw[optarr] (delayopts.east)
   -- (infbg.west |- delayopts);
 \draw[optarr] (backopts.east)
@@ -184,9 +190,9 @@
 % ==========================================
 %  OPTIONS — RIGHT SIDE
 % ==========================================
-\node[optbox] at (5.0, -2.5) (gtopts)   {gt\_opts()};
-\node[optbox] at (5.0, -3.1) (obsopts)  {obs\_opts()};
-\node[optbox] at (5.0, -3.7) (truncopts)
+\node[optbox] at (6.2, -2.7) (gtopts)   {gt\_opts()};
+\node[optbox] at (6.2, -3.35) (obsopts)  {obs\_opts()};
+\node[optbox] at (6.2, -4.0) (truncopts)
   {trunc\_opts()};
 
 % Arrows from right options to block boundary
@@ -208,17 +214,20 @@
 \draw[arr] (estinf) -- (posterior);
 
 % ==========================================
-%  FORECAST_INFECTIONS
+%  FORECAST & SIMULATE INFECTIONS
 % ==========================================
-\node[fcastbox, right=1.2cm of posterior]
+\node[fcastbox, right=1.4cm of posterior]
   (fcastinf) {forecast\_infections()};
 
-\node[fcastbox, left=1.2cm of posterior]
+\node[fcastbox, left=1.4cm of posterior]
   (siminf) {simulate\_infections()};
 
-\draw[arr] (posterior) -- (fcastinf);
-\draw[darr] (siminf) -- (posterior)
-  node[lblstyle, midway, above] {scenario};
+% forecast takes estimate_infections output
+\draw[arr] (posterior) -- (fcastinf)
+  node[lblstyle, midway, above] {fitted model};
+% simulate can use estimated Rt for scenarios
+\draw[darr] (posterior) -- (siminf)
+  node[lblstyle, midway, above] {Rt};
 
 % ==========================================
 %  ESTIMATE_SECONDARY
@@ -227,7 +236,7 @@
   minimum width=3.4cm]
   (estsec) {estimate\_secondary()};
 
-\node[databox, left=1.2cm of estsec,
+\node[databox, left=1.4cm of estsec,
   minimum width=2.2cm]
   (secdata) {Secondary\\[-1pt]observations};
 
@@ -237,31 +246,35 @@
 \draw[arr] (secdata) -- (estsec);
 
 % Secondary options
-\node[optbox, right=1.0cm of estsec]
+\node[optbox, right=1.2cm of estsec]
   (secopts) {secondary\_opts()};
-\node[optbox, below=0.2cm of secopts]
+\node[optbox, below=0.25cm of secopts]
   (secdelay) {delay\_opts()};
-\node[optbox, below=0.2cm of secdelay]
+\node[optbox, below=0.25cm of secdelay]
   (secobs) {obs\_opts()};
 
 \draw[optarr] (secopts) -- (estsec);
 \draw[optarr] (secdelay.west)
-  -- ++(-0.4, 0) |- (estsec.east);
+  -- ++(-0.5, 0) |- (estsec.east);
 \draw[optarr] (secobs.west)
-  -- ++(-0.4, 0)
+  -- ++(-0.5, 0)
   |- ([yshift=-0.15cm]estsec.east);
 
 % ==========================================
-%  FORECAST_SECONDARY
+%  FORECAST & SIMULATE SECONDARY
 % ==========================================
 \node[fcastbox, below=0.8cm of estsec]
   (fcastsec) {forecast\_secondary()};
-\node[fcastbox, left=1.2cm of fcastsec]
+\node[fcastbox, left=1.4cm of fcastsec]
   (simsec) {simulate\_secondary()};
 
-\draw[arr] (estsec) -- (fcastsec);
-\draw[darr] (simsec) -- (fcastsec)
-  node[lblstyle, midway, above] {scenario};
+% forecast takes estimate_secondary output
+\draw[arr] (estsec) -- (fcastsec)
+  node[lblstyle, midway, right, xshift=2pt]
+    {fitted model};
+% simulate is standalone (takes primary data)
+\node[lblstyle, below=0.1cm of simsec]
+  {takes primary data};
 
 % ==========================================
 %  WRAPPER LAYER
