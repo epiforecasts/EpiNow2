@@ -38,6 +38,7 @@ For prior guidance see the
 | Secondary model | `estimate_secondary()` | Estimate secondary outcomes from primary observations | [Secondary model](#secondary-model) |
 | Truncation model | `estimate_truncation()` | Estimate reporting truncation from data snapshots | [Truncation](#truncation) |
 | Delay distribution fitting | `estimate_dist()` | Fit delay distributions from linelist data | [Delay distribution fitting](#delay-distribution-fitting) |
+| Data preprocessing | `fill_missing()` | Handle missing dates, missing observations, and non-daily data | [Data preprocessing](#data-preprocessing) |
 | Simulation | `simulate_infections()`, `simulate_secondary()` | Simulate observations from known parameters | [Simulation](#simulation) |
 | Forecasting | `forecast_infections()`, `forecast_secondary()` | Generate forecasts from fitted models | [Forecasting](#forecasting) |
 | Workflow wrappers | `epinow()`, `regional_epinow()` | Production and multi-region workflows | [Wrappers](#workflow-wrappers) |
@@ -78,53 +79,80 @@ See also:
 
 The Gaussian process controls the flexibility of the time-varying
 reproduction number or infection trajectory.
+Configured via `gp_opts()`.
+For kernel mathematics and the Hilbert space spectral approximation
+see the
+[GP implementation details](gaussian_process_implementation_details.html)
+vignette.
 
-| Feature | Argument | Description | See also |
-|---|---|---|---|
-| Matern 3/2 (default) | `gp_opts(kernel = "matern")` | Default kernel with `matern_order = 3/2` | [GP implementation details](gaussian_process_implementation_details.html) |
-| Squared exponential | `gp_opts(kernel = "se")` | Infinitely differentiable kernel | [GP implementation details](gaussian_process_implementation_details.html) |
-| Ornstein-Uhlenbeck | `gp_opts(kernel = "ou")` | Matern kernel with order 1/2 | [GP implementation details](gaussian_process_implementation_details.html) |
-| Periodic | `gp_opts(kernel = "periodic")` | Periodic kernel with tuneable frequency `w0` | [GP implementation details](gaussian_process_implementation_details.html) |
-| Disable GP | `gp = NULL` in `estimate_infections()` | Remove the Gaussian process entirely | [Options examples](estimate_infections_options.html) |
-| Accuracy/speed tradeoff | `gp_opts(basis_prop = 0.3)` | Higher values increase accuracy; lower values are faster | [GP implementation details](gaussian_process_implementation_details.html) |
+| Feature | Argument | Description |
+|---|---|---|
+| Kernel choice | `gp_opts(kernel = ...)` | `"matern"` (default), `"se"`, `"ou"`, or `"periodic"` |
+| Disable GP | `gp = NULL` in `estimate_infections()` | Remove the Gaussian process entirely |
+| Accuracy/speed tradeoff | `gp_opts(basis_prop = ...)` | Higher values increase accuracy; lower values are faster (default 0.2) |
 
 See also:
 [GP implementation details](gaussian_process_implementation_details.html),
-[options examples](estimate_infections_options.html)
+[options examples](estimate_infections_options.html),
+[prior choice guide](prior_choice_guide.html)
 
 # Delay distributions
 
 Delay distributions map latent infections to observed quantities.
+See the [workflow vignette](estimate_infections_workflow.html) for
+a practical guide and the
+[prior choice guide](prior_choice_guide.html) for default priors.
 
-| Feature | Argument | Description | See also |
-|---|---|---|---|
-| Generation time | `gt_opts(dist = Gamma(...))` | Time between successive infections | [Prior choice guide](prior_choice_guide.html) |
-| Reporting delay | `delay_opts(dist = LogNormal(...))` | Delay from infection to report | [Prior choice guide](prior_choice_guide.html) |
-| Composite delays | `delay_opts(dist = dist1 + dist2)` | Sum of independent delay distributions | [Workflow](estimate_infections_workflow.html) |
-| Non-parametric delays | `gt_opts(dist = NonParametric(...))` | Fixed PMF rather than a parametric family | [Workflow](estimate_infections_workflow.html) |
-| Uncertain parameters | `LogNormal(meanlog = Normal(...), sdlog = Normal(...))` | Parameters drawn from prior distributions | [Prior choice guide](prior_choice_guide.html) |
-| Truncation correction | `trunc_opts(dist = LogNormal(...))` | Adjust for right-truncation of recent data | [Truncation](#truncation) |
+| Feature | Argument | Description |
+|---|---|---|
+| Generation time | `gt_opts(dist = ...)` | Time between successive infections |
+| Reporting delay | `delay_opts(dist = ...)` | Delay from infection to report |
+| Composite delays | `delay_opts(dist = dist1 + dist2)` | Sum of independent delay distributions |
+| Non-parametric delays | `dist = NonParametric(...)` | Fixed PMF rather than a parametric family |
+| Uncertain parameters | e.g. `LogNormal(meanlog = Normal(...), ...)` | Parameters drawn from prior distributions |
+| Truncation correction | `trunc_opts(dist = ...)` | Adjust for right-truncation of recent data |
 
 See also:
 [workflow vignette](estimate_infections_workflow.html),
-[prior choice guide](prior_choice_guide.html)
+[prior choice guide](prior_choice_guide.html),
+[fitting delay distributions](estimate-dist.html)
 
 # Observation model
 
 The observation model links latent expected cases to reported data.
+Configured via `obs_opts()`.
+For default prior values see the
+[prior choice guide](prior_choice_guide.html).
 
-| Feature | Argument | Description | See also |
-|---|---|---|---|
-| Negative binomial (default) | `obs_opts(family = "negbin")` | Overdispersed count model | [Prior choice guide](prior_choice_guide.html) |
-| Poisson | `obs_opts(family = "poisson")` | No overdispersion | [Prior choice guide](prior_choice_guide.html) |
-| Day-of-week effect | `obs_opts(week_effect = TRUE)` | Separate reporting rate for each day of the week | [Prior choice guide](prior_choice_guide.html) |
-| Scaling / ascertainment | `obs_opts(scale = Normal(0.5, 0.1))` | Fraction of infections observed | [Prior choice guide](prior_choice_guide.html) |
-| Accumulation (weekly data) | `fill_missing()` with `accumulate` column | Aggregate daily expected values to match reporting frequency | [Workflow](estimate_infections_workflow.html) |
-| Likelihood weighting | `obs_opts(weight = ...)` | Re-weight the observed data in the log density | [Prior choice guide](prior_choice_guide.html) |
+| Feature | Argument | Description |
+|---|---|---|
+| Negative binomial (default) | `obs_opts(family = "negbin")` | Overdispersed count model |
+| Poisson | `obs_opts(family = "poisson")` | No overdispersion |
+| Day-of-week effect | `obs_opts(week_effect = TRUE)` | Separate reporting rate per day of the week (default on) |
+| Scaling / ascertainment | `obs_opts(scale = Normal(...))` | Fraction of infections observed; accepts any `<dist_spec>` |
+| Likelihood weighting | `obs_opts(weight = ...)` | Re-weight observations in the log density |
 
 See also:
 [workflow vignette](estimate_infections_workflow.html),
 [prior choice guide](prior_choice_guide.html)
+
+# Data preprocessing
+
+`fill_missing()` prepares data for use with the estimation
+functions.
+It handles missing dates, missing observations, and
+non-daily reporting frequencies.
+
+| Feature | Argument | Description |
+|---|---|---|
+| Accumulate missing dates | `fill_missing(missing_dates = "accumulate")` | Model observations on missing dates as accumulated onto the next data point |
+| Zero-fill missing dates | `fill_missing(missing_dates = "zero")` | Treat missing dates as zero observations |
+| Ignore missing dates | `fill_missing(missing_dates = "ignore")` | Skip missing dates in the likelihood (default) |
+| Handle NA observations | `fill_missing(missing_obs = "accumulate")` | Accumulate or zero-fill NA values |
+| Weekly reporting | `fill_missing(initial_accumulate = 7)` | Set accumulation window for weekly data |
+
+See also:
+[workflow vignette](estimate_infections_workflow.html)
 
 # Secondary model
 
