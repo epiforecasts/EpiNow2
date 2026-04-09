@@ -36,7 +36,7 @@ For prior guidance see the
 |---|---|---|---|
 | Infection model | `estimate_infections()` | Estimate infections, Rt, and growth rate from a count time series | [Infection model](#infection-model) |
 | Secondary model | `estimate_secondary()` | Estimate secondary outcomes from primary observations | [Secondary model](#secondary-model) |
-| Truncation model | `estimate_truncation()` | Estimate reporting truncation from data snapshots | [Truncation](#truncation) |
+| Truncation / nowcasting | `estimate_truncation()` | Estimate truncation for nowcasting recent data | [Truncation / nowcasting](#truncation-nowcasting) |
 | Delay distribution fitting | `estimate_dist()` | Fit delay distributions from linelist data | [Delay distribution fitting](#delay-distribution-fitting) |
 | Data preprocessing | `fill_missing()` | Handle missing dates, missing observations, and non-daily data | [Data preprocessing](#data-preprocessing) |
 | Simulation | `simulate_infections()`, `simulate_secondary()` | Simulate observations from known parameters | [Simulation](#simulation) |
@@ -131,6 +131,16 @@ For default prior values see the
 | Day-of-week effect | `obs_opts(week_effect = TRUE)` | Separate reporting rate per day of the week (default on) |
 | Scaling / ascertainment | `obs_opts(scale = Normal(...))` | Fraction of infections observed; accepts any `<dist_spec>` |
 | Likelihood weighting | `obs_opts(weight = ...)` | Re-weight observations in the log density |
+| Aggregated data | `fill_missing(missing_dates = "accumulate")` | Latent daily expectations are accumulated in the model before likelihood evaluation |
+| Missing observations | NA values in data | Time points with NA observations are excluded from the likelihood |
+
+Aggregation and missing data are handled at the model level in
+Stan, not just in preprocessing.
+`fill_missing()` constructs the flags that the Stan model uses;
+the model itself accumulates latent expected reports and drops
+missing observations from the likelihood.
+Both `estimate_infections()` and `estimate_secondary()` support
+these features.
 
 See also:
 [workflow vignette](estimate_infections_workflow.html),
@@ -138,17 +148,16 @@ See also:
 
 # Data preprocessing
 
-`fill_missing()` prepares data for use with the estimation
-functions.
-It handles missing dates, missing observations, and
-non-daily reporting frequencies.
+`fill_missing()` is an R-side utility that prepares data for the
+estimation functions by constructing the accumulation and
+missingness flags that the Stan models require.
 
 | Feature | Argument | Description |
 |---|---|---|
-| Accumulate missing dates | `fill_missing(missing_dates = "accumulate")` | Model observations on missing dates as accumulated onto the next data point |
-| Zero-fill missing dates | `fill_missing(missing_dates = "zero")` | Treat missing dates as zero observations |
-| Ignore missing dates | `fill_missing(missing_dates = "ignore")` | Skip missing dates in the likelihood (default) |
-| Handle NA observations | `fill_missing(missing_obs = "accumulate")` | Accumulate or zero-fill NA values |
+| Accumulate missing dates | `fill_missing(missing_dates = "accumulate")` | Mark missing dates for model-level accumulation |
+| Zero-fill missing dates | `fill_missing(missing_dates = "zero")` | Insert zero observations for missing dates |
+| Ignore missing dates (default) | `fill_missing(missing_dates = "ignore")` | Skip missing dates in the likelihood |
+| Handle NA observations | `fill_missing(missing_obs = ...)` | Accumulate or zero-fill NA values |
 | Weekly reporting | `fill_missing(initial_accumulate = 7)` | Set accumulation window for weekly data |
 
 See also:
@@ -168,15 +177,24 @@ bed occupancy).
 See also:
 [estimate_secondary model definition](estimate_secondary.html)
 
-# Truncation
+# Truncation / nowcasting {#truncation-nowcasting}
 
+Recent observations are typically incomplete due to reporting
+delays (right truncation).
 `estimate_truncation()` estimates a truncation distribution from
 multiple snapshots of the same data source over time.
+Passing this distribution to `estimate_infections()` via
+`trunc_opts()` enables nowcasting: the model adjusts for
+incomplete recent data when estimating infections and Rt.
 
 | Feature | Argument | Description | See also |
 |---|---|---|---|
-| Estimate truncation | `estimate_truncation(data = list_of_snapshots)` | Fit a log-normal truncation distribution to snapshot data | [Truncation model definition](estimate_truncation.html) |
-| Apply truncation correction | `trunc_opts(dist = ...)` in `estimate_infections()` | Adjust for right-truncation using an estimated or assumed distribution | [Truncation model definition](estimate_truncation.html) |
+| Estimate truncation | `estimate_truncation(data = list_of_snapshots)` | Fit a truncation distribution from data snapshots | [Truncation model definition](estimate_truncation.html) |
+| Nowcast via truncation correction | `trunc_opts(dist = ...)` in `estimate_infections()` | Adjust for right-truncation of recent data in the observation model | [Truncation model definition](estimate_truncation.html) |
+
+For more flexible nowcasting (e.g. time-varying delays, partial
+pooling), see the
+[epinowcast](https://package.epinowcast.org/) package.
 
 See also:
 [estimate_truncation model definition](estimate_truncation.html)

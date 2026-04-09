@@ -67,10 +67,12 @@ See the [model definition](estimate_secondary.html).
 
 ## `estimate_truncation()`
 
-Estimates reporting truncation distributions from multiple
-snapshots of the same data at different reporting dates.
-The output feeds into `estimate_infections()` via
-`trunc_opts()`.
+A nowcasting model that estimates reporting truncation
+distributions from multiple snapshots of the same data at
+different reporting dates.
+Passing the estimated truncation distribution to
+`estimate_infections()` via `trunc_opts()` enables nowcasting
+by adjusting for incomplete recent observations.
 See the [model definition](estimate_truncation.html).
 
 ## `estimate_dist()`
@@ -93,7 +95,8 @@ These are useful for model checking and scenario analysis.
 # How models chain together
 
 `estimate_truncation()` produces a truncation distribution
-that is passed to `estimate_infections()` via `trunc_opts()`.
+that is passed to `estimate_infections()` via `trunc_opts()`,
+enabling nowcasting of incomplete recent data.
 
 The posterior from `estimate_infections()` feeds into
 `forecast_infections()`, which projects forward using the
