@@ -188,7 +188,9 @@ test_that("get_parameters returns truncation distribution from estimate_truncati
   # Test getting all delays as named list
   delays <- get_parameters(est)
   expect_type(delays, "list")
-  expect_named(delays, c("truncation", "reporting_overdispersion"))
+  expect_named(
+    delays, c("truncation", "reporting_overdispersion", "sigma")
+  )
   expect_s3_class(delays$truncation, "dist_spec")
 })
 

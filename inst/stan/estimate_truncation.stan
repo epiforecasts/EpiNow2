@@ -15,6 +15,7 @@ data {
 #include data/delays.stan
 #include data/params.stan
   int<lower = 0> param_id_reporting_overdispersion;
+  int<lower = 0> param_id_sigma;
 }
 
 transformed data{
@@ -42,7 +43,6 @@ parameters {
   vector<lower = params_lower, upper = params_upper>[
     n_params_variable
   ] params;
-  real<lower = 0> sigma;
 }
 
 transformed parameters{
@@ -60,6 +60,11 @@ transformed parameters{
       delay_dist, 0, 1, 1
     );
   {
+    real sigma = get_param(
+      param_id_sigma,
+      params_fixed_lookup, params_variable_lookup,
+      params_value, params
+    );
     vector[t] last_obs;
     // reconstruct latest data without truncation
     last_obs = truncate_obs(
@@ -83,13 +88,11 @@ model {
     delay_params_groups, delay_dist, delay_weight
   );
 
-  // priors for params (reporting_overdispersion)
+  // priors for params (reporting_overdispersion, sigma)
   params_lp(
     params, prior_dist, prior_dist_params,
     params_lower, params_upper
   );
-
-  sigma ~ normal(0, 1) T[0,];
 
   // log density of truncated latest data vs that observed
   {

@@ -131,6 +131,11 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #' negative binomial). Defaults to [obs_opts()]. Week effects and
 #' scaling are not used by this model.
 #'
+#' @param noise A `dist_spec` specifying the prior on the additive noise
+#' term applied to expected observations. This small positive offset
+#' prevents zero expected counts. Defaults to `Normal(mean = 0, sd = 1)`
+#' with a lower bound of zero (i.e. a half-normal prior).
+#'
 #' @param verbose Logical, should model fitting progress be returned.
 #'
 #' @param ... Additional parameters to pass to [rstan::sampling()].
@@ -201,6 +206,9 @@ estimate_truncation <- function(data,
                                   )
                                 ),
                                 obs = obs_opts(),
+                                noise = Normal(
+                                  mean = 0, sd = 1
+                                ),
                                 stan = stan_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
                                 filter_leading_zeros = FALSE,
@@ -211,6 +219,7 @@ estimate_truncation <- function(data,
   walk(data, check_reports_valid, model = "estimate_infections")
   assert_class(truncation, "dist_spec")
   assert_class(obs, "obs_opts")
+  assert_class(noise, "dist_spec")
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(filter_leading_zeros)
   assert_numeric(zero_threshold, lower = 0)
@@ -231,7 +240,8 @@ estimate_truncation <- function(data,
     make_param(
       "reporting_overdispersion",
       obs$dispersion, lower_bound = 0
-    )
+    ),
+    make_param("sigma", noise, lower_bound = 0)
   )
 
   stan_data <- list(
@@ -252,7 +262,6 @@ estimate_truncation <- function(data,
   # initial conditions
   init_fn <- function() {
     out <- create_delay_inits(stan_data)
-    out$sigma <- abs(rnorm(1, 0, 1))
     # params array init (via params infrastructure)
     tparams <- purrr::transpose(params)
     null <- vapply(
