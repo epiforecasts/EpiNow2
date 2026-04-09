@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 ```
 
 This vignette provides a quick reference to the modelling features available in EpiNow2.
+For an overview of how these models connect see the [model overview](model_overview.html).
 For mathematical details see the model definition vignettes ([infection model](estimate_infections.html), [secondary model](estimate_secondary.html), [truncation model](estimate_truncation.html)).
 For applied examples see the [options vignette](estimate_infections_options.html).
 For prior guidance see the [prior choice guide](prior_choice_guide.html).
@@ -203,6 +204,23 @@ Convenience functions wrap the core estimation and reporting steps.
 | Region-specific options | `opts_list()` | Generate per-region configuration lists | [Getting started](EpiNow2.html) |
 
 See also: [epinow vignette](epinow.html), [getting started](EpiNow2.html)
+
+# Options summary
+
+The table below summarises the options functions, what they configure, their defaults, and which estimation functions use them.
+
+| Function | Configures | Default | Used by |
+|----------|-----------|---------|---------|
+| `rt_opts()` | Reproduction number model | GP on log Rt differences | `estimate_infections()` |
+| `gp_opts()` | Gaussian process prior | Matern 3/2 kernel | `estimate_infections()` |
+| `gt_opts()` | Generation time distribution | Fixed(1) (no generation time) | `estimate_infections()` |
+| `delay_opts()` | Reporting delay distributions | Fixed(0) (no delay) | `estimate_infections()`, `estimate_secondary()` |
+| `obs_opts()` | Observation model | Negative binomial with day-of-week effect | `estimate_infections()`, `estimate_secondary()` |
+| `trunc_opts()` | Truncation distribution | Fixed(0) (no truncation) | `estimate_infections()` |
+| `backcalc_opts()` | Backcalculation settings | Smooth via GP | `estimate_infections()` |
+| `secondary_opts()` | Secondary model type | Incidence | `estimate_secondary()` |
+
+See the [prior choice guide](prior_choice_guide.html) for default values and guidance.
 
 # Stan backend
 
