@@ -42,7 +42,7 @@ navbar:
       - text: Model overview
         href: articles/model_overview.html
       - text: Model features
-        href: articles/model.html
+        href: articles/model_features.html
       - text: "---"
       - text: estimate_infections()
         href: articles/estimate_infections.html

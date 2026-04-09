@@ -25,7 +25,7 @@ EpiNow2 provides several estimation models that can be combined
 for end-to-end epidemiological inference and forecasting.
 This vignette gives an overview of how these models connect.
 For a feature-by-feature reference see the
-[model features](model.html) vignette.
+[model features](model_features.html) vignette.
 
 # Architecture
 
@@ -120,7 +120,7 @@ default values and guidance.
 | Topic | Vignette | Description |
 |-------|----------|-------------|
 | Getting started | [EpiNow2](EpiNow2.html) | Quick introduction and basic usage |
-| Model features | [Model features](model.html) | Feature reference with summary and detail tables |
+| Model features | [Model features](model_features.html) | Feature reference with summary and detail tables |
 | Infection model | [estimate_infections()](estimate_infections.html) | Mathematical model definition |
 | Secondary model | [estimate_secondary()](estimate_secondary.html) | Mathematical model definition |
 | Truncation model | [estimate_truncation()](estimate_truncation.html) | Mathematical model definition |

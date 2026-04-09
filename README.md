@@ -224,7 +224,7 @@ Model definitions
 
 For an overview of how the package's models connect see
 `vignette("model_overview")`. A quick reference to all modelling options
-is in `vignette("model")`. Mathematical definitions of each model are in
+is in `vignette("model_features")`. Mathematical definitions of each model are in
 their own vignettes, e.g. `vignette("estimate_infections")`.
 
 </details>
