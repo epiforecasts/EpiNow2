@@ -1155,6 +1155,7 @@ lower_bounds <- function(distribution) {
     gamma = c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0),
     lognormal = c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0),
     normal = c(mean = -Inf, sd = 0),
+    exp = c(rate = 0),
     fixed = c(value = 1)
   )
 }

@@ -28,26 +28,7 @@ jobs:
             any::primarycensored
 
       - name: Regenerate vendored Stan functions
-        run: |
-          library(primarycensored)
-          stan_code <- pcd_load_stan_functions(
-            functions = c(
-              "primarycensored_lpmf",
-              "primarycensored_ode",
-              "dist_lcdf",
-              "primary_lpdf"
-            ),
-            dependencies = TRUE
-          )
-          version <- as.character(packageVersion("primarycensored"))
-          header <- paste0(
-            "// Stan functions from primarycensored version ", version
-          )
-          writeLines(
-            c(header, stan_code),
-            "inst/stan/functions/primarycensored.stan"
-          )
-        shell: Rscript {0}
+        run: Rscript inst/dev/vendor-primarycensored.R
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8

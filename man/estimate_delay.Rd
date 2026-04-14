@@ -27,8 +27,8 @@ delays <- rlnorm(500, log(5), 1)
 # Old way (deprecated):
 # estimate_delay(delays, samples = 1000, bootstraps = 10)
 
-# New way (recommended):
-# estimate_dist(delays, dist = "lognormal", samples = 1000)
+# New way: see ?estimate_dist and
+# vignette("estimate-dist") for date-based usage
 }
 }
 \seealso{

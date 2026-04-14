@@ -50,15 +50,23 @@ jobs:
             local::.
             here
             purrr
+            primarycensored
             any::cmdstanr
 
-      - name: Benchmark main branch
+      - name: Benchmark main branch (estimate_infections)
         id: benchmark-main
         continue-on-error: true
         working-directory: main
         run: |
-          # Use benchmark-single.R from PR branch (main may not have it yet)
+          # Use benchmark scripts from PR branch (main may not have them)
           Rscript ../branch/inst/dev/benchmark-single.R main
+
+      - name: Benchmark main branch (estimate_dist)
+        id: benchmark-main-dist
+        continue-on-error: true
+        working-directory: main
+        run: |
+          Rscript ../branch/inst/dev/benchmark-estimate-dist.R main
 
       - name: Install PR branch dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
@@ -66,15 +74,21 @@ jobs:
           working-directory: branch
           packages: |
             local::.
+            primarycensored
             any::cmdstanr
 
-      - name: Benchmark PR branch
+      - name: Benchmark PR branch (estimate_infections)
         working-directory: branch
         run: |
           Rscript inst/dev/benchmark-single.R branch
 
+      - name: Benchmark PR branch (estimate_dist)
+        working-directory: branch
+        run: |
+          Rscript inst/dev/benchmark-estimate-dist.R branch
+
       # Compare results
-      - name: Compare benchmarks
+      - name: Compare benchmarks (estimate_infections)
         id: compare
         if: steps.benchmark-main.outcome == 'success'
         working-directory: branch
@@ -82,16 +96,49 @@ jobs:
           Rscript inst/dev/benchmark-compare.R \
             ../main/main-profiles.csv \
             branch-profiles.csv \
-            benchmark-results.md
+            benchmark-infections.md
 
-      - name: Note if main benchmark failed
-        if: steps.benchmark-main.outcome == 'failure'
+      - name: Compare benchmarks (estimate_dist)
+        id: compare-dist
+        if: steps.benchmark-main-dist.outcome == 'success'
         working-directory: branch
         run: |
-          echo "Main branch benchmark failed (likely due to interface changes)." > benchmark-results.md
-          echo "PR branch benchmark completed successfully." >> benchmark-results.md
-          echo "" >> benchmark-results.md
-          echo "Comparison not available - only PR branch results collected." >> benchmark-results.md
+          Rscript inst/dev/benchmark-compare.R \
+            ../main/main-dist-profiles.csv \
+            branch-dist-profiles.csv \
+            benchmark-dist.md
+
+      - name: Combine benchmark results
+        working-directory: branch
+        run: |
+          echo "" > benchmark-results.md
+          if [ -f benchmark-infections.md ]; then
+            echo "## estimate_infections" >> benchmark-results.md
+            echo "" >> benchmark-results.md
+            cat benchmark-infections.md >> benchmark-results.md
+            echo "" >> benchmark-results.md
+          fi
+          if [ -f benchmark-dist.md ]; then
+            echo "## estimate_dist" >> benchmark-results.md
+            echo "" >> benchmark-results.md
+            cat benchmark-dist.md >> benchmark-results.md
+            echo "" >> benchmark-results.md
+          fi
+
+      - name: Note if main benchmarks failed
+        if: >-
+          steps.benchmark-main.outcome == 'failure' ||
+          steps.benchmark-main-dist.outcome == 'failure'
+        working-directory: branch
+        run: |
+          if [ "${{ steps.benchmark-main.outcome }}" = "failure" ]; then
+            echo "" >> benchmark-results.md
+            echo "Main branch estimate_infections benchmark failed (likely due to interface changes)." >> benchmark-results.md
+          fi
+          if [ "${{ steps.benchmark-main-dist.outcome }}" = "failure" ]; then
+            echo "" >> benchmark-results.md
+            echo "Main branch estimate_dist benchmark failed (likely due to interface changes)." >> benchmark-results.md
+          fi
 
       - id: output
         name: Output to environment variable
