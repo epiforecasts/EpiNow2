@@ -5,7 +5,7 @@
 \title{Discretised probability mass function}
 \usage{
 discrete_pmf(
-  distribution = c("exp", "gamma", "lognormal", "normal", "fixed"),
+  distribution = c("exp", "gamma", "lognormal", "normal", "weibull", "fixed"),
   params,
   max_value,
   cdf_cutoff,

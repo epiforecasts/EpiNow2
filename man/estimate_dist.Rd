@@ -9,7 +9,8 @@ estimate_dist(
   dist = "lognormal",
   priors = switch(dist, lognormal = list(meanlog = Normal(1, 1), sdlog = Normal(0.5,
     0.5)), gamma = list(shape = Normal(2, 2), rate = Normal(0.5, 0.5)), normal =
-    list(mean = Normal(5, 5), sd = Normal(1, 1)), exp = list(rate = Normal(0.5, 0.5))),
+    list(mean = Normal(5, 5), sd = Normal(1, 1)), exp = list(rate = Normal(0.5, 0.5)),
+    weibull = list(shape = Normal(2, 2), scale = Normal(5, 5))),
   primary = "uniform",
   primary_params = numeric(0),
   stan = stan_opts(),
@@ -35,7 +36,7 @@ date (default: \code{sdate_lwr + 1})
 
 \item{dist}{Character string, which distribution to fit.
 One of \code{"lognormal"} (default), \code{"gamma"}, \code{"normal"},
-or \code{"exp"}.}
+\code{"exp"}, or \code{"weibull"}.}
 
 \item{priors}{A list of \verb{<dist_spec>} objects specifying priors
 for the distribution parameters.
@@ -49,6 +50,8 @@ Defaults depend on \code{dist}:
 \item normal:
 \code{list(mean = Normal(5, 5), sd = Normal(1, 1))}
 \item exp: \code{list(rate = Normal(0.5, 0.5))}
+\item weibull:
+\code{list(shape = Normal(2, 2), scale = Normal(5, 5))}
 }}
 
 \item{primary}{Character string specifying the primary event
@@ -133,7 +136,7 @@ needing \code{primarycensored} at runtime.
 \subsection{Limitations}{
 \itemize{
 \item Delay distributions are limited to lognormal, gamma,
-normal, and exponential.
+normal, exponential, and weibull.
 \item The primary event distribution is limited to uniform or
 exponential growth with a fixed rate.
 Primary event parameters are not estimated.

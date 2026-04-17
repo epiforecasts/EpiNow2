@@ -12,7 +12,6 @@ A character vector of distribution names in Stan order.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Returns the mapping of Stan integer codes to distribution names.
-Stan uses 0 for lognormal, 1 for gamma.
 }
 \examples{
 \dontrun{
