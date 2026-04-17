@@ -7,7 +7,7 @@
 epinow2_stan_model(
   backend = c("rstan", "cmdstanr"),
   model = c("estimate_infections", "simulate_infections", "estimate_secondary",
-    "simulate_secondary", "estimate_truncation", "dist_fit")
+    "simulate_secondary", "estimate_truncation", "dist_fit", "estimate_dist")
 )
 }
 \arguments{

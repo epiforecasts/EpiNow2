@@ -26,7 +26,7 @@ Reconstruct a nonparametric delay from Stan data
 \details{
 Returns the posterior mean PMF as a \code{NonParametric} when
 posterior draws are available for an estimated delay. Otherwise
-returns the prior specification (as \code{EstimatedNonParametric}
+returns the prior specification (as \code{NonParametric(pmf = Dirichlet(...))}
 without a fit, or as a fixed \code{NonParametric}).
 }
 \keyword{internal}

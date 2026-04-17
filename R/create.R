@@ -776,7 +776,7 @@ create_stan_delays <- function(..., time_points = 1L) {
   ## estimated nonparametric delays
   np_delays <- flat_delays[!parametric]
   np_estimated <- vapply(
-    np_delays, is_estimated_nonparametric, logical(1)
+    np_delays, function(x) isTRUE(x$estimated), logical(1)
   )
   est_np_indices <- which(np_estimated)
   est_np_delays <- np_delays[np_estimated]

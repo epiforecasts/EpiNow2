@@ -801,7 +801,7 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
 #'
 #' Returns the posterior mean PMF as a `NonParametric` when
 #' posterior draws are available for an estimated delay. Otherwise
-#' returns the prior specification (as `EstimatedNonParametric`
+#' returns the prior specification (as `NonParametric(pmf = Dirichlet(...))`
 #' without a fit, or as a fixed `NonParametric`).
 #'
 #' @param stan_data List of Stan data containing delay
@@ -842,11 +842,9 @@ reconstruct_nonparametric <- function(stan_data, np_id,
       NonParametric(pmf = post_pmf)
     } else {
       alpha <- stan_data$delay_np_est_alpha[alpha_idx]
-      concentration <- alpha[1] / prior_pmf[local_pos[1]]
-      EstimatedNonParametric(
-        prior = prior_pmf,
-        concentration = concentration
-      )
+      full_alpha <- rep(0, length(prior_pmf))
+      full_alpha[local_pos] <- alpha
+      NonParametric(pmf = Dirichlet(alpha = full_alpha))
     }
   } else {
     NonParametric(pmf = prior_pmf)

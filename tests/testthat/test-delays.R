@@ -276,12 +276,12 @@ test_that("create_stan_delays works with fixed NonParametric", {
   expect_equal(as.integer(data$delay_np_est_groups), 1L)
 })
 
-test_that("create_stan_delays handles EstimatedNonParametric", {
+test_that("create_stan_delays handles Dirichlet prior", {
   pmf <- c(0.1, 0.5, 0.3, 0.1)
   conc <- 2
   data <- EpiNow2:::create_stan_delays(
     delays = delay_opts(
-      dist = EstimatedNonParametric(pmf, concentration = conc)
+      dist = NonParametric(Dirichlet(prior = pmf, concentration = conc))
     )
   )
   expect_equal(data$delay_np_est_n, 1L)
@@ -304,7 +304,7 @@ test_that("create_stan_delays skips zero alpha entries", {
   conc <- 10
   data <- EpiNow2:::create_stan_delays(
     generation_time = gt_opts(
-      dist = EstimatedNonParametric(pmf, concentration = conc)
+      dist = NonParametric(Dirichlet(prior = pmf, concentration = conc))
     )
   )
   # Only 3 positive entries estimated (zero at t=0 excluded)
@@ -333,7 +333,7 @@ test_that("create_stan_delays with no NP delays gives safe defaults", {
   expect_equal(as.integer(data$delay_np_est_groups), 1L)
 })
 
-test_that("create_stan_delays handles mixed fixed and estimated NP", {
+test_that("create_stan_delays handles mixed fixed and Dirichlet NP", {
   fixed_pmf <- c(0.0, 0.5, 0.5)
   est_pmf <- c(0.1, 0.4, 0.4, 0.1)
   conc <- 5
@@ -342,7 +342,7 @@ test_that("create_stan_delays handles mixed fixed and estimated NP", {
       dist = NonParametric(fixed_pmf)
     ),
     delays = delay_opts(
-      dist = EstimatedNonParametric(est_pmf, concentration = conc)
+      dist = NonParametric(Dirichlet(prior = est_pmf, concentration = conc))
     )
   )
   # Two NP delays total
@@ -382,7 +382,7 @@ test_that(
       stan_data, 1L
     )
     expect_s3_class(result, "dist_spec")
-    expect_false(is_estimated_nonparametric(result))
+    expect_false(isTRUE(result$estimated))
     expect_equal(
       as.numeric(get_pmf(result)),
       c(0.2, 0.5, 0.3)
@@ -391,7 +391,7 @@ test_that(
 )
 
 test_that(
-  "reconstruct_nonparametric returns EstimatedNonParametric",
+  "reconstruct_nonparametric returns NonParametric(pmf = Dirichlet)",
   {
     pmf <- c(0.1, 0.4, 0.4, 0.1)
     conc <- 3
@@ -407,8 +407,7 @@ test_that(
     result <- EpiNow2:::reconstruct_nonparametric(
       stan_data, 1L
     )
-    expect_true(is_estimated_nonparametric(result))
-    expect_equal(result$concentration, conc)
+    expect_true(isTRUE(result$estimated))
     expect_equal(as.numeric(result$alpha), alpha)
     expect_equal(as.numeric(get_pmf(result)), pmf)
   }
@@ -433,7 +432,7 @@ test_that(
     fixed_result <- EpiNow2:::reconstruct_nonparametric(
       stan_data, 1L
     )
-    expect_false(is_estimated_nonparametric(fixed_result))
+    expect_false(isTRUE(fixed_result$estimated))
     expect_equal(
       as.numeric(get_pmf(fixed_result)),
       fixed_pmf
@@ -442,10 +441,11 @@ test_that(
     est_result <- EpiNow2:::reconstruct_nonparametric(
       stan_data, 2L
     )
-    expect_true(is_estimated_nonparametric(est_result))
-    expect_equal(est_result$concentration, conc)
+    expect_true(isTRUE(est_result$estimated))
+    expect_equal(as.numeric(est_result$alpha), alpha)
   }
 )
+
 
 test_that(
   "reconstruct_nonparametric uses posterior when available",
@@ -469,8 +469,8 @@ test_that(
     result <- EpiNow2:::reconstruct_nonparametric(
       stan_data, 1L, np_posterior
     )
-    # Should return NonParametric (not EstimatedNonParametric)
-    expect_false(is_estimated_nonparametric(result))
+    # Should return NonParametric with estimated = FALSE
+    expect_false(isTRUE(result$estimated))
     post_pmf <- as.numeric(get_pmf(result))
     # First element should be 0 (structural zero)
     expect_equal(post_pmf[1], 0)

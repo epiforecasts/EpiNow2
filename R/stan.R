@@ -79,7 +79,8 @@ epinow2_stan_model <- function(backend = c("rstan", "cmdstanr"),
                                  "estimate_secondary",
                                  "simulate_secondary",
                                  "estimate_truncation",
-                                 "dist_fit"
+                                 "dist_fit",
+                                 "estimate_dist"
                                )) {
   backend <- arg_match(backend)
   model <- arg_match(model)

@@ -247,12 +247,14 @@ test_that("estimate_infections output does not contain breakpoints effect when b
   expect_false("breakpoints" %in% unique(samples$variable))
 })
 
-test_that("estimate_infections works with EstimatedNonParametric generation time", { # nolint
+test_that("estimate_infections works with estimated non-parametric generation time", { # nolint
   skip_integration()
   gt_pmf <- c(0, 0.1, 0.3, 0.3, 0.2, 0.07, 0.03)
-  est_gt <- EstimatedNonParametric(
-    prior = gt_pmf,
-    concentration = 50
+  est_gt <- NonParametric(
+    pmf = Dirichlet(
+      prior = gt_pmf,
+      concentration = 50
+    )
   )
   out <- suppressWarnings(estimate_infections(
     data = reported_cases,
@@ -285,15 +287,17 @@ test_that("estimate_infections works with EstimatedNonParametric generation time
   )
 })
 
-test_that("EstimatedNonParametric GT moves from prior towards truth", { # nolint
+test_that("Estimated non-parametric GT moves from prior towards truth", { # nolint
   skip_integration()
   # Use a shifted prior and check the posterior is closer to
   # the true GT than the prior was
   true_gt <- c(0, 0.1, 0.3, 0.35, 0.15, 0.07, 0.03)
   shifted_prior <- c(0, 0.05, 0.15, 0.3, 0.25, 0.15, 0.1)
-  est_gt <- EstimatedNonParametric(
-    prior = shifted_prior,
-    concentration = 5
+  est_gt <- NonParametric(
+    pmf = Dirichlet(
+      prior = shifted_prior,
+      concentration = 5
+    )
   )
   out <- suppressWarnings(estimate_infections(
     data = reported_cases,

@@ -91,7 +91,7 @@ simulate_secondary <- function(primary,
         "!" = "Cannot simulate from estimated nonparametric
         delays.",
         "i" = "Use a fixed {.fn NonParametric} distribution
-        instead of {.fn EstimatedNonParametric}."
+        instead of {.fn Dirichlet}."
       )
     )
   }
