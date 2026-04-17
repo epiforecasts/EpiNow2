@@ -51,7 +51,7 @@
 #' @importFrom rlang arg_match
 #' @importFrom primarycensored qprimarycensored
 discrete_pmf <- function(distribution =
-                           c("exp", "gamma", "lognormal", "normal", "fixed"),
+                           c("exp", "gamma", "lognormal", "normal", "weibull", "fixed"),
                          params, max_value, cdf_cutoff, width) {
   distribution <- arg_match(distribution)
 
@@ -86,7 +86,8 @@ discrete_pmf <- function(distribution =
     exp = pexp,
     gamma = pgamma,
     lognormal = plnorm,
-    normal = pnorm
+    normal = pnorm,
+    weibull = pweibull
   )
 
   ## apply CDF cutoff if given
@@ -334,6 +335,8 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
       lognormal = exp(params$meanlog + params$sdlog**2 / 2),
       gamma = params$shape / params$rate,
       normal = params$mean,
+      exp = 1 / params$rate,
+      weibull = params$scale * gamma(1 + 1 / params$shape),
       fixed = params$value
     )
     if (is.null(ret_mean)) {
@@ -399,6 +402,10 @@ sd.dist_spec <- function(x, ...) {
         exp(x$parameters$meanlog + 0.5 * x$parameters$sdlog**2),
       gamma = sqrt(x$parameters$shape / x$parameters$rate**2),
       normal = x$parameters$sd,
+      exp = 1 / x$parameters$rate,
+      weibull = x$parameters$scale *
+        sqrt(gamma(1 + 2 / x$parameters$shape) -
+          gamma(1 + 1 / x$parameters$shape)^2),
       fixed = 0.0
     )
     if (is.null(ret_sd)) {
@@ -1071,8 +1078,32 @@ Normal <- function(mean, sd, ...) {
   new_dist_spec(params, "normal", ...)
 }
 
+#' @inheritParams stats::Exponential
 #' @rdname Distributions
 #' @order 4
+#' @export
+#' @examples
+#' Exp(rate = 1)
+#' Exp(mean = 4)
+Exp <- function(rate, mean, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "exp", ...)
+}
+
+#' @inheritParams stats::Weibull
+#' @rdname Distributions
+#' @order 5
+#' @export
+#' @examples
+#' Weibull(shape = 1, scale = 1)
+#' Weibull(shape = 1, scale = 1, max = 10)
+Weibull <- function(shape, scale, mean, sd, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "weibull", ...)
+}
+
+#' @rdname Distributions
+#' @order 6
 #' @param value Value of the fixed (delta) distribution
 #' @export
 #' @examples
@@ -1119,6 +1150,8 @@ natural_params <- function(distribution) {
     gamma = c("shape", "rate"),
     lognormal = c("meanlog", "sdlog"),
     normal = c("mean", "sd"),
+    exp = "rate",
+    weibull = c("shape", "scale"),
     fixed = "value"
   )
 }
@@ -1127,7 +1160,6 @@ natural_params <- function(distribution) {
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' Returns the mapping of Stan integer codes to distribution names.
-#' Stan uses 0 for lognormal, 1 for gamma.
 #' @return A character vector of distribution names in Stan order.
 #' @keywords internal
 #' @examples
@@ -1136,7 +1168,7 @@ natural_params <- function(distribution) {
 #' dist_spec_distributions()[1]  # "lognormal"
 #' }
 dist_spec_distributions <- function() {
-  c("lognormal", "gamma")
+  c("lognormal", "gamma", "normal", "exp", "weibull")
 }
 
 #' Get the lower bounds of the parameters of a distribution
@@ -1156,6 +1188,7 @@ lower_bounds <- function(distribution) {
     lognormal = c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0),
     normal = c(mean = -Inf, sd = 0),
     exp = c(rate = 0),
+    weibull = c(shape = 0, scale = 0, mean = 0, sd = 0),
     fixed = c(value = 1)
   )
 }
@@ -1384,6 +1417,15 @@ convert_to_natural <- function(params, distribution) {
       x$meanlog <- ux$meanlog
       x$sdlog <- ux$sdlog
     }
+  } else if (distribution == "exp") {
+    if ("mean" %in% names(params)) {
+      x$rate <- 1 / ux$mean
+    } else {
+      x$rate <- ux$rate
+    }
+  } else if (distribution == "weibull") {
+    x$shape <- ux$shape
+    x$scale <- ux$scale
   }
   ## sort
   x <- x[natural_params(distribution)]

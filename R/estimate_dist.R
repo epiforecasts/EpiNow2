@@ -29,7 +29,7 @@
 #'
 #' @param dist Character string, which distribution to fit.
 #'   One of `"lognormal"` (default), `"gamma"`, `"normal"`,
-#'   or `"exp"`.
+#'   `"exp"`, or `"weibull"`.
 #'
 #' @param priors A list of `<dist_spec>` objects specifying priors
 #'   for the distribution parameters.
@@ -42,6 +42,8 @@
 #'   - normal:
 #'     `list(mean = Normal(5, 5), sd = Normal(1, 1))`
 #'   - exp: `list(rate = Normal(0.5, 0.5))`
+#'   - weibull:
+#'     `list(shape = Normal(2, 2), scale = Normal(5, 5))`
 #'
 #' @param primary Character string specifying the primary event
 #'   distribution. One of:
@@ -102,7 +104,7 @@
 #' ## Limitations
 #'
 #' - Delay distributions are limited to lognormal, gamma,
-#'   normal, and exponential.
+#'   normal, exponential, and weibull.
 #' - The primary event distribution is limited to uniform or
 #'   exponential growth with a fixed rate.
 #'   Primary event parameters are not estimated.
@@ -170,6 +172,10 @@ estimate_dist <- function(data,
                             ),
                             "exp" = list(
                               rate = Normal(0.5, 0.5)
+                            ),
+                            "weibull" = list(
+                              shape = Normal(2, 2),
+                              scale = Normal(5, 5)
                             )
                           ),
                           primary = "uniform",
@@ -268,7 +274,10 @@ estimate_dist <- function(data,
 
   init_params <- switch(dist,
     "lognormal" = c(log(wmean), sqrt(log(1 + wvar / wmean^2))),
-    "gamma" = c(wmean^2 / wvar, wmean / wvar)
+    "gamma" = c(wmean^2 / wvar, wmean / wvar),
+    "normal" = c(wmean, sqrt(wvar)),
+    "exp" = c(1 / wmean),
+    "weibull" = c(1, wmean)
   )
   # Ensure init is within bounds
   init_params <- pmax(
@@ -277,7 +286,7 @@ estimate_dist <- function(data,
   init_params <- pmin(
     init_params, stan_data$params_upper - 0.01
   )
-  init_fn <- function() list(params = init_params)
+  init_fn <- function() list(params = as.array(init_params))
 
   # Create stan args and fit using shared infrastructure
   stan_args <- create_stan_args(
@@ -316,6 +325,7 @@ estimate_dist <- function(data,
   pc_name <- switch(dist,
     "lognormal" = "lnorm",
     "exp" = "exp",
+    "weibull" = "weibull",
     dist
   )
   tryCatch(
@@ -323,7 +333,7 @@ estimate_dist <- function(data,
     error = function(e) {
       cli::cli_abort(c(
         "x" = "Unsupported distribution: {dist}",
-        "i" = "Supported: lognormal, gamma, normal, exp"
+        "i" = "Supported: lognormal, gamma, normal, exp, weibull"
       ))
     }
   )
@@ -340,9 +350,10 @@ estimate_dist <- function(data,
     "gamma" = c("shape", "rate"),
     "normal" = c("mean", "sd"),
     "exp" = "rate",
+    "weibull" = c("shape", "scale"),
     cli::cli_abort(c(
       "x" = "Unsupported distribution: {dist}",
-      "i" = "Supported: lognormal, gamma, normal, exp"
+      "i" = "Supported: lognormal, gamma, normal, exp, weibull"
     ))
   )
 }
