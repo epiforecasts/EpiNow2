@@ -17,7 +17,7 @@ Stan uses 0 for lognormal, 1 for gamma.
 \examples{
 \dontrun{
 dist_spec_distributions()
-dist_spec_distributions()[1]  # "lognormal"
+dist_spec_distributions()[1] # "lognormal"
 }
 }
 \keyword{internal}

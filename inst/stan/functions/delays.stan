@@ -159,6 +159,26 @@ void delays_lp(vector delay_params,
 }
 
 /**
+ * Update log density for estimated nonparametric delay priors
+ *
+ * Applies Gamma(alpha, 1) priors to raw values, which induces a
+ * Dirichlet(alpha) prior on the normalised PMF segments.
+ * See: https://discourse.mc-stan.org/t/
+ *   ragged-array-of-simplexes/1382/21
+ *
+ * @param delay_np_est_raw Vector of raw gamma values
+ * @param delay_np_est_alpha Vector of Dirichlet concentration parameters
+ *
+ * @ingroup delay_handlers
+ */
+void delays_np_lp(
+  vector delay_np_est_raw, vector delay_np_est_alpha
+) {
+  if (num_elements(delay_np_est_raw) == 0) return;
+  delay_np_est_raw ~ gamma(delay_np_est_alpha, 1);
+}
+
+/**
  * Generate random samples from a normal distribution with lower bounds
  *
  * @param mu Vector of means

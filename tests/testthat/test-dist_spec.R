@@ -341,3 +341,62 @@ test_that("get functions report errors", {
     Gamma(mean = 4, sd = 1), Gamma(mean = 4, sd = 1)
   )), "must be specified")
 })
+
+test_that("EstimatedNonParametric works with numeric vector", {
+  pmf <- c(0.1, 0.3, 0.4, 0.2)
+  result <- EstimatedNonParametric(pmf)
+  expect_s3_class(result, "dist_spec")
+  expect_equal(get_distribution(result), "nonparametric")
+  expect_true(is_estimated_nonparametric(result))
+  expect_equal(get_pmf(result), pmf / sum(pmf))
+  expect_equal(result$alpha, 1 * pmf / sum(pmf))
+  expect_equal(result$concentration, 1)
+})
+
+test_that("EstimatedNonParametric works with dist_spec prior", {
+  dist <- LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
+  result <- EstimatedNonParametric(dist)
+  expect_s3_class(result, "dist_spec")
+  expect_equal(get_distribution(result), "nonparametric")
+  expect_true(is_estimated_nonparametric(result))
+  expected_pmf <- get_pmf(discretise(dist))
+  expect_equal(get_pmf(result), expected_pmf)
+})
+
+test_that("EstimatedNonParametric alpha equals concentration * pmf", {
+  pmf <- c(0.2, 0.5, 0.3)
+  conc <- 5
+  result <- EstimatedNonParametric(pmf, concentration = conc)
+  expect_equal(result$alpha, conc * pmf / sum(pmf))
+  expect_equal(result$concentration, conc)
+})
+
+test_that("is_estimated_nonparametric returns FALSE for NonParametric", {
+  np <- NonParametric(c(0.1, 0.3, 0.4, 0.2))
+  expect_false(is_estimated_nonparametric(np))
+})
+
+test_that("EstimatedNonParametric errors for invalid concentration", {
+  expect_error(
+    EstimatedNonParametric(c(0.5, 0.5), concentration = 0),
+    "concentration"
+  )
+  expect_error(
+    EstimatedNonParametric(c(0.5, 0.5), concentration = -1),
+    "concentration"
+  )
+})
+
+test_that("EstimatedNonParametric errors for length-1 PMF", {
+  expect_error(
+    EstimatedNonParametric(c(1)),
+    "at least 2"
+  )
+})
+
+test_that("discretise is a no-op for EstimatedNonParametric", {
+  result <- EstimatedNonParametric(c(0.2, 0.5, 0.3))
+  discretised <- discretise(result)
+  expect_equal(get_pmf(discretised), get_pmf(result))
+  expect_true(is_estimated_nonparametric(discretised))
+})

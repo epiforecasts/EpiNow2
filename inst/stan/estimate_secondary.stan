@@ -33,11 +33,14 @@ transformed data{
 parameters{
   // observation model
   vector<lower = delay_params_lower>[delay_params_length] delay_params;
+  vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
 }
 
 transformed parameters {
+#include functions/delay_np_pmf_use.stan
+
   vector<lower=0>[t] secondary;
   // calculate secondary reports from primary
 
@@ -61,7 +64,7 @@ transformed parameters {
         get_delay_rev_pmf(
           delay_id_reporting, delay_type_max[delay_id_reporting] + 1,
           delay_types_p, delay_types_id, delay_types_groups, delay_max,
-          delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+          delay_np_pmf_use, delay_np_pmf_groups, delay_params, delay_params_groups,
           delay_dist, 0, 1, 0
         );
       convolved = convolved + convolve_to_report(scaled, reporting_rev_pmf, 0);
@@ -86,7 +89,7 @@ transformed parameters {
       get_delay_rev_pmf(
         delay_id_truncation, delay_type_max[delay_id_truncation] + 1,
         delay_types_p, delay_types_id, delay_types_groups, delay_max,
-        delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+        delay_np_pmf_use, delay_np_pmf_groups, delay_params, delay_params_groups,
         delay_dist, 0, 1, 1
       );
     secondary = truncate_obs(secondary, trunc_rev_cmf, 0);
@@ -106,6 +109,7 @@ model {
     delay_params, delay_params_mean, delay_params_sd, delay_params_groups,
     delay_dist, delay_weight
   );
+  delays_np_lp(delay_np_est_raw, delay_np_est_alpha);
 
   // parameter priors
   profile("param lp") {

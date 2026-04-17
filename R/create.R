@@ -772,6 +772,47 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$np_pmf_groups <- array(c(0, cumsum(nonparam_length)) + 1)
   ## calculate total np pmf length
   ret$np_pmf_length <- sum(nonparam_length)
+
+  ## estimated nonparametric delays
+  np_delays <- flat_delays[!parametric]
+  np_estimated <- vapply(
+    np_delays, is_estimated_nonparametric, logical(1)
+  )
+  est_np_indices <- which(np_estimated)
+  est_np_delays <- np_delays[np_estimated]
+  ret$np_est_n <- sum(np_estimated)
+
+  if (ret$np_est_n > 0) {
+    ret$np_est_which <- array(est_np_indices)
+    ## only include positive alpha entries (skip structural
+    ## zeros such as generation time at t=0)
+    all_alphas <- list()
+    all_pos <- list()
+    for (k in seq_along(est_np_delays)) {
+      alpha_k <- est_np_delays[[k]]$alpha
+      np_id <- est_np_indices[k]
+      pmf_start <- ret$np_pmf_groups[np_id]
+      positive <- which(alpha_k > 0)
+      all_alphas[[k]] <- alpha_k[positive]
+      all_pos[[k]] <- pmf_start + positive - 1L
+    }
+    est_np_alphas <- unname(as.numeric(unlist(all_alphas)))
+    est_np_positions <- as.integer(unlist(all_pos))
+    est_np_lengths <- lengths(all_alphas)
+    ret$np_est_alpha <- array(est_np_alphas)
+    ret$np_est_pos <- array(est_np_positions)
+    ret$np_est_groups <- array(
+      c(0, cumsum(est_np_lengths)) + 1
+    )
+    ret$np_est_length <- sum(est_np_lengths)
+  } else {
+    ret$np_est_which <- array(integer(0))
+    ret$np_est_alpha <- array(numeric(0))
+    ret$np_est_pos <- array(integer(0))
+    ret$np_est_groups <- array(1L)
+    ret$np_est_length <- 0L
+  }
+
   ## get non zero length param lengths
   ret$params_groups <- array(c(0, cumsum(param_length)) + 1)
   ## calculate total param length
@@ -813,7 +854,8 @@ create_stan_params <- function(params) {
   null_ids <- rep(0, sum(null_params))
   if (length(null_ids) > 0) {
     names(null_ids) <- paste(
-      "param_id", tparams$name[null_params], sep = "_"
+      "param_id", tparams$name[null_params],
+      sep = "_"
     )
     params <- params[!null_params]
     tparams <- transpose(params)

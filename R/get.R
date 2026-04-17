@@ -145,7 +145,8 @@ get_regional_results <- function(regional_output,
       estimates_out$samples <- samp
     }
     summarised <- purrr::map(
-      regional_output, summary, type = "parameters"
+      regional_output, summary,
+      type = "parameters"
     )
     summarised <- data.table::rbindlist(
       summarised,
@@ -430,11 +431,12 @@ get_predictions <- function(object, ...) {
 #' @rdname get_predictions
 #' @export
 get_predictions.estimate_infections <- function(
-    object,
-    format = c("summary", "sample", "quantile"),
-    CrIs = c(0.2, 0.5, 0.9),
-    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
-    ...) {
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...
+) {
   format <- rlang::arg_match(format)
 
   # Get samples for reported cases
@@ -459,11 +461,12 @@ get_predictions.estimate_infections <- function(
 #' @rdname get_predictions
 #' @export
 get_predictions.estimate_secondary <- function(
-    object,
-    format = c("summary", "sample", "quantile"),
-    CrIs = c(0.2, 0.5, 0.9),
-    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
-    ...) {
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...
+) {
   format <- rlang::arg_match(format)
 
   # Get samples for simulated secondary observations
@@ -488,11 +491,12 @@ get_predictions.estimate_secondary <- function(
 #' @rdname get_predictions
 #' @export
 get_predictions.forecast_infections <- function(
-    object,
-    format = c("summary", "sample", "quantile"),
-    CrIs = c(0.2, 0.5, 0.9),
-    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
-    ...) {
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...
+) {
   format <- rlang::arg_match(format)
 
   samples <- object$samples[variable == "reported_cases"]
@@ -511,11 +515,12 @@ get_predictions.forecast_infections <- function(
 #' @rdname get_predictions
 #' @export
 get_predictions.forecast_secondary <- function(
-    object,
-    format = c("summary", "sample", "quantile"),
-    CrIs = c(0.2, 0.5, 0.9),
-    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
-    ...) {
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...
+) {
   format <- rlang::arg_match(format)
 
   # forecast_secondary$samples only contains sim_secondary, no filtering needed
@@ -541,11 +546,12 @@ get_predictions.forecast_secondary <- function(
 #' @rdname get_predictions
 #' @export
 get_predictions.estimate_truncation <- function(
-    object,
-    format = c("summary", "sample", "quantile"),
-    CrIs = c(0.2, 0.5, 0.9),
-    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
-    ...) {
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...
+) {
   format <- rlang::arg_match(format)
 
   # Process input observations to get dates
@@ -655,8 +661,10 @@ get_predictions.estimate_truncation <- function(
       ]
       data.table::setcolorder(
         predictions,
-        c("dataset", "forecast_date", "date", "horizon",
-          "quantile_level", "predicted")
+        c(
+          "dataset", "forecast_date", "date", "horizon",
+          "quantile_level", "predicted"
+        )
       )
     }
 
@@ -688,11 +696,27 @@ reconstruct_delay <- function(object, delay_name) {
   # Extract posterior if parameters were estimated
   posterior <- NULL
   if (stan_data$delay_params_length > 0 && !is.null(object$fit)) {
-    posterior <- extract_stan_param(object$fit, params = "delay_params")
+    posterior <- extract_stan_param(
+      object$fit,
+      params = "delay_params"
+    )
+  }
+
+  # Extract NP posterior draws if estimated
+  np_posterior <- NULL
+  if (stan_data$delay_np_est_length > 0 && !is.null(object$fit)) {
+    np_draws <- object$fit$draws(
+      variables = "delay_np_est_raw"
+    )
+    np_posterior <- posterior::as_draws_matrix(np_draws)
+    np_posterior <- as.matrix(np_posterior)
   }
 
   # Get indices for this delay type
-  delay_indices <- seq(types_groups[delay_id], types_groups[delay_id + 1] - 1)
+  delay_indices <- seq(
+    types_groups[delay_id],
+    types_groups[delay_id + 1] - 1
+  )
   types_p <- stan_data$delay_types_p[delay_indices]
 
   # Reconstruct each delay component
@@ -703,7 +727,9 @@ reconstruct_delay <- function(object, delay_name) {
     if (types_p[i] == 1) {
       reconstruct_parametric(stan_data, type_id, posterior)
     } else {
-      reconstruct_nonparametric(stan_data, type_id)
+      reconstruct_nonparametric(
+        stan_data, type_id, np_posterior
+      )
     }
   })
 
@@ -771,19 +797,60 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
 
 #' Reconstruct a nonparametric delay distribution
 #'
-#' Helper function to reconstruct a single nonparametric delay component from
-#' Stan data. Nonparametric delays are stored as probability mass functions.
+#' Reconstruct a nonparametric delay from Stan data
 #'
-#' @param stan_data List of Stan data containing delay specification
-#' @param np_id Integer index into the nonparametric delay PMF arrays
-#' @return A `dist_spec` object representing the nonparametric delay
+#' Returns the posterior mean PMF as a `NonParametric` when
+#' posterior draws are available for an estimated delay. Otherwise
+#' returns the prior specification (as `EstimatedNonParametric`
+#' without a fit, or as a fixed `NonParametric`).
+#'
+#' @param stan_data List of Stan data containing delay
+#'   specification
+#' @param np_id Integer index into the nonparametric delay PMF
+#'   arrays
+#' @param np_posterior Matrix of posterior draws for
+#'   `delay_np_est_raw` (draws x parameters), or NULL
+#' @return A `dist_spec` object representing the nonparametric
+#'   delay
 #' @keywords internal
-reconstruct_nonparametric <- function(stan_data, np_id) {
+reconstruct_nonparametric <- function(stan_data, np_id,
+                                      np_posterior = NULL) {
   pmf_idx <- seq(
     stan_data$delay_np_pmf_groups[np_id],
     stan_data$delay_np_pmf_groups[np_id + 1] - 1
   )
-  NonParametric(pmf = stan_data$delay_np_pmf[pmf_idx])
+  prior_pmf <- stan_data$delay_np_pmf[pmf_idx]
+
+  # Check if this NP delay was estimated
+  est_pos <- match(np_id, stan_data$delay_np_est_which)
+  if (!is.na(est_pos)) {
+    alpha_idx <- seq(
+      stan_data$delay_np_est_groups[est_pos],
+      stan_data$delay_np_est_groups[est_pos + 1] - 1
+    )
+    pos_idx <- stan_data$delay_np_est_pos[alpha_idx]
+    pmf_start <- stan_data$delay_np_pmf_groups[np_id]
+    local_pos <- pos_idx - pmf_start + 1L
+
+    if (!is.null(np_posterior)) {
+      ## compute posterior mean PMF from raw gamma draws
+      raw_draws <- np_posterior[, alpha_idx, drop = FALSE]
+      normed <- raw_draws / rowSums(raw_draws)
+      post_mean <- colMeans(normed)
+      post_pmf <- prior_pmf
+      post_pmf[local_pos] <- post_mean
+      NonParametric(pmf = post_pmf)
+    } else {
+      alpha <- stan_data$delay_np_est_alpha[alpha_idx]
+      concentration <- alpha[1] / prior_pmf[local_pos[1]]
+      EstimatedNonParametric(
+        prior = prior_pmf,
+        concentration = concentration
+      )
+    }
+  } else {
+    NonParametric(pmf = prior_pmf)
+  }
 }
 
 #' Extract delay distributions from a fitted model

@@ -32,11 +32,14 @@ transformed data{
 
 parameters {
   vector<lower = delay_params_lower>[delay_params_length] delay_params;
+  vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
   real<lower=0> reporting_overdispersion;
   real<lower=0> sigma;
 }
 
 transformed parameters{
+#include functions/delay_np_pmf_use.stan
+
   real phi = 1 / sqrt(reporting_overdispersion);
   matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] trunc_obs =
     rep_matrix(0, delay_type_max[delay_id_truncation] + 1, obs_sets - 1);
@@ -44,7 +47,7 @@ transformed parameters{
     get_delay_rev_pmf(
       delay_id_truncation, delay_type_max[delay_id_truncation] + 1,
       delay_types_p, delay_types_id, delay_types_groups, delay_max,
-      delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+      delay_np_pmf_use, delay_np_pmf_groups, delay_params, delay_params_groups,
       delay_dist, 0, 1, 1
     );
   {
@@ -66,6 +69,7 @@ model {
     delay_params, delay_params_mean, delay_params_sd, delay_params_groups,
     delay_dist, delay_weight
   );
+  delays_np_lp(delay_np_est_raw, delay_np_est_alpha);
 
   reporting_overdispersion ~ normal(0, 1) T[0,];
   sigma ~ normal(0, 1) T[0,];
