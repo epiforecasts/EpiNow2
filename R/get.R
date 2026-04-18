@@ -932,3 +932,14 @@ get_parameters.epinowfit <- function(x, ...) {
     extract_scalar_params(x, stan_data)
   )
 }
+
+#' @rdname get_parameters
+#' @method get_parameters estimate_dist
+#' @export
+get_parameters.estimate_dist <- function(x, ...) {
+  list(
+    delay = .extract_to_dist_spec(
+      x$fit, x$args$dist, x$args$max_value
+    )
+  )
+}

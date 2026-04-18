@@ -1180,7 +1180,9 @@ natural_params <- function(distribution) {
     lognormal = c("meanlog", "sdlog"),
     normal = c("mean", "sd"),
     fixed = "value",
-    dirichlet = "alpha"
+    dirichlet = "alpha",
+    exp = "rate",
+    weibull = c("shape", "scale")
   )
 }
 
@@ -1217,7 +1219,9 @@ lower_bounds <- function(distribution) {
     lognormal = c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0),
     normal = c(mean = -Inf, sd = 0),
     fixed = c(value = 1),
-    dirichlet = c(alpha = 0)
+    dirichlet = c(alpha = 0),
+    exp = c(rate = 0),
+    weibull = c(shape = 0, scale = 0)
   )
 }
 
