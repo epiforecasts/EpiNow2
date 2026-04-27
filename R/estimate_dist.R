@@ -238,15 +238,17 @@ estimate_dist <- function(data,
     )
   })
 
-  # Prepare Stan data
+  # Prepare Stan data. Wrap per-observation vectors in as.array()
+  # so a single aggregated row is passed as array[1] rather than a
+  # scalar.
   stan_data <- list(
     n = nrow(delay_data),
-    delay = as.integer(delay_data$delay_lwr),
-    delay_upper = as.numeric(delay_data$delay_upr),
-    n_obs = as.integer(delay_data$n),
-    pwindow = as.integer(delay_data$pwindow),
-    D = as.numeric(delay_data$relative_obs_time),
-    L = rep(0.0, nrow(delay_data)),
+    delay = as.array(as.integer(delay_data$delay_lwr)),
+    delay_upper = as.array(as.numeric(delay_data$delay_upr)),
+    n_obs = as.array(as.integer(delay_data$n)),
+    pwindow = as.array(as.integer(delay_data$pwindow)),
+    D = as.array(as.numeric(delay_data$relative_obs_time)),
+    L = as.array(rep(0.0, nrow(delay_data))),
     dist_id = dist_id,
     primary_id = primary_id,
     n_primary_params = as.integer(length(primary_params)),
@@ -264,13 +266,18 @@ estimate_dist <- function(data,
     )
   }
 
-  # Compute initial values based on MoM estimates
+  # Compute initial values based on MoM estimates, guarding
+  # against zero/constant delays that would produce non-finite
+  # candidates.
   midpoints <- (delay_data$delay_lwr + delay_data$delay_upr) / 2
   obs_weights <- delay_data$n
   wmean <- stats::weighted.mean(midpoints, obs_weights)
   wvar <- stats::weighted.mean(
     (midpoints - wmean)^2, obs_weights
   )
+  eps <- sqrt(.Machine$double.eps)
+  wmean <- max(wmean, eps)
+  wvar <- max(wvar, eps)
 
   init_params <- switch(dist,
     "lognormal" = c(log(wmean), sqrt(log(1 + wvar / wmean^2))),
@@ -279,7 +286,14 @@ estimate_dist <- function(data,
     "exp" = c(1 / wmean),
     "weibull" = c(1, wmean)
   )
-  # Ensure init is within bounds
+  # Replace any non-finite candidate with a bounded positive
+  # default, then clamp inside the Stan-declared bounds.
+  safe_default <- pmin(
+    pmax(stan_data$params_lower + 0.01, 1),
+    stan_data$params_upper - 0.01
+  )
+  non_finite <- !is.finite(init_params)
+  init_params[non_finite] <- safe_default[non_finite]
   init_params <- pmax(
     init_params, stan_data$params_lower + 0.01
   )
@@ -368,6 +382,10 @@ estimate_dist <- function(data,
 #' @param data A data frame with date columns (`pdate_lwr`,
 #'   `sdate_lwr`, and optionally `pdate_upr`, `sdate_upr`,
 #'   `obs_date`, `n`).
+#' @param obs_time_threshold Numeric multiplier for the
+#'   obs-time-to-Inf heuristic. Observations where
+#'   `relative_obs_time > max(delay_upr) * obs_time_threshold`
+#'   are treated as untruncated. Set to `Inf` to disable.
 #' @param verbose Logical, print progress messages?
 #' @return A data frame with columns: `delay_lwr`, `delay_upr`,
 #'   `pwindow`, `relative_obs_time`, `n`.
@@ -400,28 +418,34 @@ estimate_dist <- function(data,
     assert_date(data$pdate_upr, .var.name = "pdate_upr")
   } else {
     data$pdate_upr <- data$pdate_lwr + 1
-    cli::cli_inform(
-      "Assuming daily primary censoring \\
-      (pdate_upr = pdate_lwr + 1)"
-    )
+    if (verbose) {
+      cli::cli_inform(
+        "Assuming daily primary censoring \\
+        (pdate_upr = pdate_lwr + 1)"
+      )
+    }
   }
   if (!is.null(data$sdate_upr)) {
     assert_date(data$sdate_upr, .var.name = "sdate_upr")
   } else {
     data$sdate_upr <- data$sdate_lwr + 1
-    cli::cli_inform(
-      "Assuming daily secondary censoring \\
-      (sdate_upr = sdate_lwr + 1)"
-    )
+    if (verbose) {
+      cli::cli_inform(
+        "Assuming daily secondary censoring \\
+        (sdate_upr = sdate_lwr + 1)"
+      )
+    }
   }
   if (!is.null(data$obs_date)) {
     assert_date(data$obs_date, .var.name = "obs_date")
   } else {
     data$obs_date <- max(data$sdate_upr)
-    cli::cli_inform(
-      "No obs_date supplied, using \\
-      max(sdate_upr): {max(data$obs_date)}"
-    )
+    if (verbose) {
+      cli::cli_inform(
+        "No obs_date supplied, using \\
+        max(sdate_upr): {max(data$obs_date)}"
+      )
+    }
   }
   if (!is.null(data$n)) {
     assert_integerish(
@@ -505,7 +529,7 @@ estimate_dist <- function(data,
   max_delay <- max(delay_upr)
   threshold <- max_delay * obs_time_threshold
   far_from_truncation <- relative_obs_time > threshold
-  if (any(far_from_truncation)) {
+  if (verbose && any(far_from_truncation)) {
     cli::cli_inform(
       paste(
         "Setting {sum(far_from_truncation)} observation(s)",
@@ -543,6 +567,12 @@ estimate_dist <- function(data,
 
 #' Extract parameters and convert to dist_spec
 #'
+#' @param fit A fitted Stan model object.
+#' @param dist Character, the distribution name (one of
+#'   `"lognormal"`, `"gamma"`, `"normal"`, `"exp"`, or `"weibull"`).
+#' @param max_value Numeric, the maximum delay value to retain on
+#'   the returned `<dist_spec>`.
+#' @return A `<dist_spec>` with posterior mean/sd parameters.
 #' @keywords internal
 .extract_to_dist_spec <- function(fit, dist, max_value) {
   samples <- extract_samples(fit, pars = "delay_params")

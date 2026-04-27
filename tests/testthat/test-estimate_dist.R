@@ -444,6 +444,26 @@ test_that("errors for expgrowth without primary_params", {
   )
 })
 
+test_that("correctly handles constant delays without non-finite init", {
+  skip_if_not_installed("primarycensored")
+
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + 0:9,
+    sdate_lwr = origin + 0:9 + 3L,
+    obs_date = origin + 30
+  )
+
+  expect_no_error(
+    suppressWarnings(suppressMessages(estimate_dist(
+      linelist,
+      dist = "lognormal",
+      stan = stan_opts(samples = 100, chains = 1, warmup = 100),
+      verbose = FALSE
+    )))
+  )
+})
+
 test_that("errors for unsupported distribution", {
   origin <- as.Date("2023-01-01")
   linelist <- data.frame(
@@ -452,7 +472,8 @@ test_that("errors for unsupported distribution", {
   )
 
   expect_error(
-    estimate_dist(linelist, dist = "cauchy")
+    estimate_dist(linelist, dist = "cauchy"),
+    "Unsupported distribution"
   )
 })
 
