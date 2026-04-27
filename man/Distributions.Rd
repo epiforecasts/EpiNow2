@@ -19,7 +19,7 @@ Normal(mean, sd, ...)
 
 Exp(rate, mean, ...)
 
-Weibull(shape, scale, mean, sd, ...)
+Weibull(shape, scale, ...)
 
 NonParametric(pmf, ...)
 
