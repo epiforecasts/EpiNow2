@@ -29,7 +29,7 @@ For a reference of what each model can do see the [model features](model_feature
 
 The diagram below shows the main functions and how they relate to one another.
 
-```{r architecture, echo = FALSE, fig.alt = "Diagram showing how the main EpiNow2 models connect."}
+```{r architecture, echo = FALSE, out.width = "100%", fig.align = "center", fig.alt = "Diagram showing how the main EpiNow2 models connect."}
 knitr::include_graphics(
   "model-overview-architecture-1.png"
 )
@@ -40,7 +40,7 @@ Solid arrows show direct dependencies; dashed arrows show optional connections.
 Green boxes are options functions that configure the estimation models.
 See the [model features](model_features.html) vignette for what each function and option does.
 
-# How models chain together
+# Relationship between models
 
 `estimate_dist()` fits delay distributions from linelist data, accounting for double interval censoring and right truncation.
 Its output can define priors for the other models via `delay_opts()`, `gt_opts()`, or `trunc_opts()`.
@@ -57,19 +57,25 @@ Estimated primary observations from `estimate_infections()` are used as input to
 `epinow()` wraps `estimate_infections()` with logging and formatted output.
 `regional_epinow()` runs `epinow()` across regions in parallel.
 
-# Documentation map
+# Where to look next
 
-| Topic | Vignette | Description |
-|-------|----------|-------------|
-| Model features | [Model features](model_features.html) | Feature reference with summary and detail tables |
-| Getting started | [EpiNow2](EpiNow2.html) | Quick introduction and basic usage |
-| Infection model | [estimate_infections()](estimate_infections.html) | Mathematical model definition |
-| Secondary model | [estimate_secondary()](estimate_secondary.html) | Mathematical model definition |
-| Truncation model | [estimate_truncation()](estimate_truncation.html) | Mathematical model definition |
-| Delay fitting | [estimate_dist()](estimate-dist.html) | Fitting delay distributions from linelist data |
-| Gaussian process | [GP details](gaussian_process_implementation_details.html) | Kernel functions and spectral approximation |
-| Practical workflow | [Workflow](estimate_infections_workflow.html) | End-to-end estimation and forecasting |
-| Configuration examples | [Options](estimate_infections_options.html) | Different model configurations with results |
-| Prior guidance | [Prior choice guide](prior_choice_guide.html) | Default priors and how to modify them |
-| Production use | [epinow()](epinow.html) | Using `epinow()` and `regional_epinow()` |
-| Case studies | [Case studies](case-studies.html) | External applications in the literature |
+**Start here**
+
+- [Getting started](EpiNow2.html) — quick introduction and basic usage
+- [Model features](model_features.html) — feature reference for arguments and options
+
+**Model definitions** (mathematical detail)
+
+- [Infection model](estimate_infections.html) — `estimate_infections()`
+    - [Gaussian process implementation](gaussian_process_implementation_details.html) — shared component used inside the renewal and back-calculation models
+- [Secondary model](estimate_secondary.html) — `estimate_secondary()`
+- [Truncation model](estimate_truncation.html) — `estimate_truncation()`
+- [Delay distribution fitting](estimate-dist.html) — `estimate_dist()`
+
+**Applied use**
+
+- [Workflow](estimate_infections_workflow.html) — end-to-end estimation and forecasting
+- [Configuration examples](estimate_infections_options.html) — different model configurations with results
+- [Prior choice guide](prior_choice_guide.html) — default priors and how to modify them
+- [Production use](epinow.html) — `epinow()` and `regional_epinow()`
+- [Case studies](case-studies.html) — external applications in the literature
