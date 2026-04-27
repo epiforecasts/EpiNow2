@@ -111,7 +111,12 @@ jobs:
       - name: Combine benchmark results
         working-directory: branch
         run: |
-          echo "" > benchmark-results.md
+          if [ ! -f benchmark-infections.md ] \
+            && [ ! -f benchmark-dist.md ]; then
+            echo "No benchmark results to combine; skipping."
+            exit 0
+          fi
+          : > benchmark-results.md
           if [ -f benchmark-infections.md ]; then
             echo "## estimate_infections" >> benchmark-results.md
             echo "" >> benchmark-results.md
