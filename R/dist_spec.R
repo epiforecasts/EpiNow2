@@ -105,7 +105,7 @@ discrete_pmf <- function(distribution =
       )
     )
     if (!is.na(cdf_cutoff_max) &&
-          (missing(max_value) || cdf_cutoff_max < max_value)) {
+      (missing(max_value) || cdf_cutoff_max < max_value)) {
       max_value <- cdf_cutoff_max
     }
   }
@@ -698,7 +698,7 @@ print.dist_spec <- function(x, ...) {
       single_dist <- extract_single_dist(x, i)
       constrain_str <- character(0)
       if (!is.null(attr(single_dist, "max")) &&
-            is.finite(attr(single_dist, "max"))) {
+        is.finite(attr(single_dist, "max"))) {
         constrain_str["max"] <- paste("max:", max(single_dist))
       }
       if (!is.null(attr(single_dist, "cdf_cutoff"))) {
@@ -929,7 +929,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 
   ## if x is fixed already we don't have to do anything
   if (get_distribution(x) == "nonparametric" ||
-        all(vapply(get_parameters(x), is.numeric, logical(1)))) {
+    all(vapply(get_parameters(x), is.numeric, logical(1)))) {
     return(x)
   }
   ## apply strategy depending on choice
@@ -1039,6 +1039,8 @@ is_constrained.multi_dist_spec <- function(x, ...) {
 #' passed to [bound_dist()]
 #' @return A `dist_spec` representing a distribution of the given
 #' specification.
+#' @seealso `vignette("delays")` for an overview of how delay
+#'   distributions are used in EpiNow2
 #' @export
 #' @rdname Distributions
 #' @name Distributions
@@ -1156,19 +1158,30 @@ natural_params <- function(distribution) {
   )
 }
 
-#' Get parametric distribution types
+#' Get distribution name from primarycensored Stan dist_id
 #'
 #' @description `r lifecycle::badge("experimental")`
-#' Returns the mapping of Stan integer codes to distribution names.
-#' @return A character vector of distribution names in Stan order.
+#' Maps a primarycensored Stan distribution ID back to an EpiNow2
+#' distribution name.
+#' Builds a reverse lookup from
+#' `primarycensored::pcd_stan_dist_id()` for supported distributions.
+#' @param dist_id Integer Stan distribution ID from primarycensored.
+#' @return A character string distribution name.
 #' @keywords internal
-#' @examples
-#' \dontrun{
-#' dist_spec_distributions()
-#' dist_spec_distributions()[1]  # "lognormal"
-#' }
-dist_spec_distributions <- function() {
-  c("lognormal", "gamma", "normal", "exp", "weibull")
+dist_id_to_name <- function(dist_id) {
+  supported <- c(
+    "lognormal", "gamma", "weibull", "exponential", "normal"
+  )
+  ids <- vapply(
+    supported, primarycensored::pcd_stan_dist_id, integer(1)
+  )
+  result <- supported[ids == dist_id]
+  if (length(result) == 0) {
+    cli::cli_abort(
+      "Unknown distribution ID {dist_id}."
+    )
+  }
+  result
 }
 
 #' Get the lower bounds of the parameters of a distribution

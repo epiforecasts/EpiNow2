@@ -148,10 +148,10 @@ test_that("extract_delays works with delay_id_* naming", {
   args <- list(
     delay_id_generation_time = 1,
     delay_id_reporting = 0,
-    delay_types_groups = c(1, 2),    # type 1 has flat delay 1
-    delay_types_p = c(1),            # flat delay 1 is parametric
-    delay_types_id = c(1),           # flat delay 1 is parametric delay 1
-    delay_params_groups = c(1, 3)    # parametric delay 1 has params 1-2
+    delay_types_groups = c(1, 2), # type 1 has flat delay 1
+    delay_types_p = c(1), # flat delay 1 is parametric
+    delay_types_id = c(1), # flat delay 1 is parametric delay 1
+    delay_params_groups = c(1, 3) # parametric delay 1 has params 1-2
   )
 
   result <- EpiNow2:::extract_delays(samples, args = args)
@@ -168,7 +168,7 @@ test_that("extract_delays works with delay_id_* naming", {
 
 test_that("extract_delays returns NULL when delay_params don't exist", {
   samples <- list(some_other_param = 1:10)
-  args <- list()  # Empty args
+  args <- list() # Empty args
   result <- EpiNow2:::extract_delays(samples, args = args)
   expect_null(result)
 })
@@ -178,7 +178,7 @@ test_that("extract_delays handles delays with no ID lookup gracefully", {
   samples <- list(
     delay_params = matrix(c(1.5, 2.0), nrow = 2, ncol = 1)
   )
-  args <- list()  # No ID lookup information
+  args <- list() # No ID lookup information
 
   result <- EpiNow2:::extract_delays(samples, args = args)
 
@@ -254,7 +254,9 @@ test_that("build_delay_name_lookup correctly names parameters", {
   result <- EpiNow2:::build_delay_name_lookup(args_three_mixed, n_cols = 4)
   expect_equal(
     result,
-    c("generation_time[1]", "generation_time[2]",
-      "truncation[1]", "truncation[2]")
+    c(
+      "generation_time[1]", "generation_time[2]",
+      "truncation[1]", "truncation[2]"
+    )
   )
 })

@@ -151,7 +151,6 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 setup_future <- function(data,
                          strategies = c("multisession", "multisession"),
                          min_cores_per_worker = 4) {
-
   required_pkgs <- c("future", "parallelly")
   missing_pkgs <- required_pkgs[
     !vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)

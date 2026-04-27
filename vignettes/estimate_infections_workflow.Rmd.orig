@@ -69,11 +69,7 @@ As these will affect any results, it is worth spending some time investigating w
 
 _EpiNow2_ works with different delays that apply to different parts of the infection and observation process.
 They are defined using a common interface that involves functions that are named after the probability distributions, i.e. `LogNormal()`, `Gamma()`, etc.
-For help with this function, see its manual page
-
-```{r eval = FALSE}
-?EpiNow2::Distributions
-```
+For help with this function, see its manual page (`?EpiNow2::Distributions`) or the [delays vignette](delays.html) for background on how EpiNow2 handles delay distributions.
 
 In all cases, the distributions given can be *fixed* (i.e. have no uncertainty) or *variable* (i.e. have associated uncertainty).
 For example, to define a fixed gamma distribution with mean 3, standard deviation (sd) 1 and maximum value 10, you would write

@@ -1,5 +1,10 @@
 # EpiNow2 (development version)
 
+## Documentation
+
+- Added a model overview vignette with an architecture diagram showing how the package's models connect.
+- Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
+
 ## Bug fixes
 
 - Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.
@@ -26,10 +31,16 @@
 - `summary.epinow(output)` and `summary.estimate_infections(type = 'samples')` now error.
 - Removed internal function `extract_parameter_samples()`. Use `format_simulation_output()` instead.
 
+## Model changes
+
+- Delay distribution discretisation now properly accounts for primary event censoring during model fitting, matching the correction already applied on the R side since v1.8.0. This improves accuracy for short delays where the observation window is large relative to the delay.
+- Left truncation of delay distributions (e.g. excluding generation times of zero) is now handled analytically rather than by zeroing and renormalising, giving more accurate PMFs near the truncation point.
+
 ## Package changes
 
 - Added `estimate_dist()` function for estimating delay distributions with proper handling of interval censoring using Stan/MCMC inference, supporting both rstan and cmdstanr backends.
 - Deprecated `estimate_delay()` in favour of `estimate_dist()`, which correctly accounts for interval censoring and truncation.
+- Added a vignette explaining how EpiNow2 handles delay distributions.
 
 # EpiNow2 1.8.0
 

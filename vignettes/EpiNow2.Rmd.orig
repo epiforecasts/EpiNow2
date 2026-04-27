@@ -36,7 +36,7 @@ library(EpiNow2)
 
 Distributions can be supplied in two ways. First, one can supply delay data to `estimate_delay()`, where a subsampled bootstrapped lognormal will be fit to account for uncertainty in the observed data without being biased by changes in incidence (see `?EpiNow2::estimate_delay()`).
 
-Second, one can specify predetermined delays with uncertainty using the distribution functions such as `Gamma` or `Lognormal`. An arbitrary number of delay distributions are supported in `dist_spec()` with a common use case being an incubation period followed by a reporting delay. For more information on specifying distributions see (see `?EpiNow2::Distributions`).
+Second, one can specify predetermined delays with uncertainty using the distribution functions such as `Gamma` or `Lognormal`. An arbitrary number of delay distributions are supported in `dist_spec()` with a common use case being an incubation period followed by a reporting delay. For more information on specifying distributions see `?EpiNow2::Distributions` or the [delays vignette](delays.html).
 
 For example if data on the delay between onset and infection was available we could fit a distribution to it, using `estimate_delay()`, with appropriate uncertainty as follows (note this is a synthetic example),
 ```{r, eval = FALSE}

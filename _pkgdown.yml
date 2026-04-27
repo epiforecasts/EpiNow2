@@ -37,8 +37,13 @@ navbar:
       - text: Stan Reference
         href: https://epiforecasts.io/EpiNow2/stan/
     modeldefs:
-      text: Model definitions
+      text: Models
       menu:
+      - text: Model overview
+        href: articles/model_overview.html
+      - text: Model features
+        href: articles/model_features.html
+      - text: "---"
       - text: estimate_infections()
         href: articles/estimate_infections.html
       - text: estimate_secondary()
@@ -67,6 +72,34 @@ navbar:
       menu:
       - text: External case studies and use in the literature
         href: articles/case-studies.html
+
+articles:
+- title: Start here
+  navbar: ~
+  contents:
+  - EpiNow2
+  - model_overview
+  - model_features
+- title: Model definitions
+  navbar: Model definitions
+  contents:
+  - estimate_infections
+  - estimate_secondary
+  - estimate_truncation
+  - estimate-dist
+  - gaussian_process_implementation_details
+- title: Applied use
+  navbar: Usage
+  contents:
+  - estimate_infections_workflow
+  - estimate_infections_options
+  - prior_choice_guide
+  - epinow
+  - forecasting_multiple_data_streams
+- title: Case studies
+  navbar: ~
+  contents:
+  - case-studies
 
 figures:
   fig.width: 9

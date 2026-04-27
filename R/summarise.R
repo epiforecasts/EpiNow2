@@ -304,7 +304,7 @@ regional_summary <- function(regional_output = NULL,
   uppers <- grepl("upper_", colnames(current_inf), fixed = TRUE) # nolint
   lowers <- grepl("lower_", colnames(current_inf), fixed = TRUE) # nolint
   log_cases <- (max(current_inf[, ..uppers], na.rm = TRUE) /
-                  (min(current_inf[, ..lowers], na.rm = TRUE) + 1)) > 1000
+    (min(current_inf[, ..lowers], na.rm = TRUE) + 1)) > 1000
 
   max_reported_cases <- round(
     max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0
@@ -989,8 +989,7 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
   )
 
   # Map generic parameter names to distribution-specific names
-  dist_idx <- object$args$delay_dist[1] + 1
-  dist_type <- dist_spec_distributions()[dist_idx]
+  dist_type <- dist_id_to_name(object$args$delay_dist[1])
   param_names <- natural_params(dist_type)
   idx <- suppressWarnings(
     as.integer(gsub(".*\\[(\\d+)\\]", "\\1", out$variable))
@@ -1027,7 +1026,8 @@ summary.estimate_dist <- function(object,
                                   CrIs = c(0.2, 0.5, 0.9),
                                   ...) {
   raw_samples <- extract_samples(
-    object$fit, pars = "delay_params"
+    object$fit,
+    pars = "delay_params"
   )
   param_mat <- raw_samples$delay_params
 

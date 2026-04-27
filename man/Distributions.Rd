@@ -99,3 +99,7 @@ NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))
 Fixed(value = 3)
 Fixed(value = 3.5)
 }
+\seealso{
+\code{vignette("delays")} for an overview of how delay
+distributions are used in EpiNow2
+}

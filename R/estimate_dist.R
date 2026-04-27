@@ -184,7 +184,6 @@ estimate_dist <- function(data,
                           max_value = NULL,
                           obs_time_threshold = 2,
                           verbose = FALSE) {
-
   # Validate inputs
   assert_string(dist)
   assert_list(priors)
@@ -234,7 +233,8 @@ estimate_dist <- function(data,
   lbounds <- lower_bounds(dist)
   params <- lapply(param_names, function(name) {
     make_param(
-      name, priors[[name]], lower_bound = lbounds[[name]]
+      name, priors[[name]],
+      lower_bound = lbounds[[name]]
     )
   })
 
@@ -393,7 +393,6 @@ estimate_dist <- function(data,
 .prepare_linelist_data <- function(data,
                                    obs_time_threshold = 2,
                                    verbose = FALSE) {
-
   assert_data_frame(data)
 
   # Validate required columns
@@ -449,7 +448,8 @@ estimate_dist <- function(data,
   }
   if (!is.null(data$n)) {
     assert_integerish(
-      data$n, lower = 1, .var.name = "n"
+      data$n,
+      lower = 1, .var.name = "n"
     )
   } else {
     data$n <- 1L

@@ -39,6 +39,8 @@ For more flexible delay distribution modelling, [`epidist`](https://epidist.epin
 It supports fitting delay distributions both with and without a Stan dependency and is also useful for creating double interval censoring and truncation adjusted probability mass functions for use in other models.
 `primarycensored` also supports vendoring its Stan functions into custom models, which is useful for adapting the delay estimation approach to support more complex settings such as additional observation biases, mixture models, or joint estimation with other processes.
 
+For background on how EpiNow2 uses delay distributions internally, including discretisation and primary event censoring, see the [delays vignette](delays.html).
+
 # Set up
 
 ```{r setup}
