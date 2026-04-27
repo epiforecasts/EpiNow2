@@ -286,8 +286,49 @@ test_that("estimate_truncation works with Poisson observation model", {
     c("observations", "args", "fit")
   )
   expect_equal(est$args$model_type, 0)
+  # reporting_overdispersion is unused under Poisson and should not appear
+  # in get_parameters() output.
+  expect_named(get_parameters(est), c("truncation", "sigma"))
   expect_s3_class(get_parameters(est)$truncation, "dist_spec")
   expect_error(plot(est), NA)
+})
+
+test_that("estimate_truncation accepts a non-default noise prior", {
+  skip_integration()
+  est <- estimate_truncation(example_truncated,
+    noise = Fixed(0.1),
+    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
+  )
+  expect_equal(
+    names(est),
+    c("observations", "args", "fit")
+  )
+  # A Fixed noise prior should be wired through as a fixed param,
+  # so sigma is no longer in the variable parameter set.
+  expect_named(get_parameters(est), c("truncation", "reporting_overdispersion"))
+  expect_s3_class(get_parameters(est)$truncation, "dist_spec")
+})
+
+test_that("check_truncation_obs_opts warns on unsupported non-default settings", {
+  expect_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(week_effect = FALSE)),
+    "ignored by"
+  )
+  expect_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(scale = Normal(0.5, 0.1))),
+    "ignored by"
+  )
+  expect_no_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts())
+  )
+  expect_no_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(family = "poisson"))
+  )
+  expect_no_warning(
+    EpiNow2:::check_truncation_obs_opts(
+      obs_opts(dispersion = Normal(0, 0.5))
+    )
+  )
 })
 
 test_that("estimate_truncation works with Gamma truncation distribution", {

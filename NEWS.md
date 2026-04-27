@@ -2,7 +2,7 @@
 
 ## Package changes
 
-- `estimate_truncation()` now supports all `dist_spec` delay families and accepts `obs_opts()` for observation model selection (Poisson or negative binomial). The existing observation model functions (`report_lp`, `report_rng`) are now reused internally.
+- Added support for all `dist_spec` delay families and `obs_opts()` observation model selection (Poisson or negative binomial) to `estimate_truncation()`. The existing observation model functions (`report_lp`, `report_rng`) are now reused internally.
 
 ## Bug fixes
 
