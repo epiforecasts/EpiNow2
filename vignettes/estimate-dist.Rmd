@@ -39,9 +39,7 @@ It supports fitting delay distributions both with and without a Stan dependency 
 ``` r
 library(EpiNow2) # nolint: unused_import_linter.
 library(primarycensored)
-#> Warning: package 'primarycensored' was built under R version 4.5.2
 library(ggplot2)
-#> Warning: package 'ggplot2' was built under R version 4.5.2
 options(mc.cores = 2)
 ```
 

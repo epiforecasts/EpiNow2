@@ -43,7 +43,7 @@ For background on how EpiNow2 uses delay distributions internally, including dis
 
 # Set up
 
-```{r setup}
+```{r setup, warning = FALSE, message = FALSE}
 library(EpiNow2) # nolint: unused_import_linter.
 library(primarycensored)
 library(ggplot2)
