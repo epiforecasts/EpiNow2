@@ -83,12 +83,13 @@ See also: [estimate_secondary model definition](estimate_secondary.html)
 
 Recent observations are typically incomplete due to reporting delays (right truncation).
 `estimate_truncation()` estimates a truncation distribution from multiple snapshots of the same data source over time and produces a nowcast (predicted complete observations).
+The reconstructed observations can be obtained from the fit with `get_predictions()`.
 The estimated distribution can be passed to `estimate_infections()` via `trunc_opts()` for truncation-adjusted inference.
 
 | Feature | Argument | Description | See also |
 |---|---|---|---|
 | Estimate truncation and nowcast | `estimate_truncation(data = list_of_snapshots)` | Fit a truncation distribution and produce a nowcast from data snapshots | [Truncation model definition](estimate_truncation.html) |
-| Truncation-adjusted inference | `trunc_opts(dist = ...)` in `estimate_infections()` | Adjust for right-truncation of recent data in the observation model | [Truncation model definition](estimate_truncation.html) |
+| Truncation-adjusted inference | `estimate_infections(truncation = trunc_opts(dist = ...))` | Adjust for right-truncation of recent data in the observation model | [Truncation model definition](estimate_truncation.html) |
 
 See also: [estimate_truncation model definition](estimate_truncation.html)
 
@@ -102,7 +103,7 @@ See also: [estimate_truncation model definition](estimate_truncation.html)
 | Variable censoring windows | `pdate_upr`, `sdate_upr` columns | Per-observation primary and secondary censoring window widths | [Fitting delays](estimate-dist.html) |
 | Right truncation | `obs_date` column | Per-observation truncation times from reporting delays | [Fitting delays](estimate-dist.html) |
 | Primary event distribution | `estimate_dist(primary = "expgrowth")` | Account for exponential growth in primary events | [Fitting delays](estimate-dist.html) |
-| Distribution families | `estimate_dist(dist = ...)` | Log-normal (default), gamma, normal, or exponential | [Fitting delays](estimate-dist.html) |
+| Distribution families | `estimate_dist(dist = ...)` | `"lognormal"` (default), `"gamma"`, `"normal"`, `"exp"` | [Fitting delays](estimate-dist.html) |
 | Observation aggregation | Automatic | Identical delay-censoring-truncation strata are aggregated to speed up fitting | [Fitting delays](estimate-dist.html) |
 
 See also: [fitting delay distributions](estimate-dist.html)
@@ -118,8 +119,8 @@ When using the renewal equation, several options control how the time-varying re
 | GP on differences of log Rt (default) | `rt_opts(gp_on = "R_t-1")` | Gaussian process applied to successive Rt values | [Options examples](estimate_infections_options.html) |
 | GP on deviations from R0 | `rt_opts(gp_on = "R0")` | Gaussian process applied as deviations from a global mean | [Options examples](estimate_infections_options.html) |
 | Random walk | `rt_opts(rw = 7)` with `gp = NULL` | Piecewise-constant Rt with specified step size | [Options examples](estimate_infections_options.html) |
-| Breakpoints | `rt_opts(use_breakpoints = TRUE)` | Requires a `breakpoint` column in the input data | [Options examples](estimate_infections_options.html) |
-| Fixed Rt | `gp = NULL`, `rt_opts(rw = 0)` | Constant reproduction number (no GP or random walk) | [Options examples](estimate_infections_options.html) |
+| Breakpoints | Add a `breakpoint` column to the input data | Step changes in Rt at user-specified dates; on by default in `rt_opts()`, set `use_breakpoints = FALSE` to disable | [Options examples](estimate_infections_options.html) |
+| Fixed Rt | `gp = NULL` (and default `rt_opts()`) | Constant reproduction number sampled from the prior; no GP, no random walk | [Options examples](estimate_infections_options.html) |
 | Population adjustment | `rt_opts(pop = Fixed(N))` | Adjust Rt for susceptible depletion; `pop` accepts any `<dist_spec>` | [Options examples](estimate_infections_options.html) |
 | Growth rate method | `rt_opts(growth_method = "infectiousness")` | Alternative growth rate calculation via infectiousness | [Model definition](estimate_infections.html) |
 
@@ -185,11 +186,11 @@ The table below summarises the options functions, what they configure, their def
 |----------|-----------|---------|---------|
 | `rt_opts()` | Reproduction number model | GP on log Rt differences | `estimate_infections()` |
 | `gp_opts()` | Gaussian process prior | Matern 3/2 kernel | `estimate_infections()` |
-| `gt_opts()` | Generation time distribution | Fixed(1) (no generation time) | `estimate_infections()` |
-| `delay_opts()` | Reporting delay distributions | Fixed(0) (no delay) | `estimate_infections()`, `estimate_secondary()` |
+| `gt_opts()` | Generation time distribution | `Fixed(1)` (degenerate 1-day generation interval; users normally override) | `estimate_infections()` |
+| `delay_opts()` | Reporting delay distributions | `Fixed(0)` (no delay) | `estimate_infections()`, `estimate_secondary()` |
 | `obs_opts()` | Observation model | Negative binomial with day-of-week effect | `estimate_infections()`, `estimate_secondary()` |
-| `trunc_opts()` | Truncation distribution | Fixed(0) (no truncation) | `estimate_infections()` |
-| `backcalc_opts()` | Backcalculation settings | Smooth via GP | `estimate_infections()` |
+| `trunc_opts()` | Truncation distribution | `Fixed(0)` (no truncation) | `estimate_infections()` |
+| `backcalc_opts()` | Back-calculation settings | Smoothed reports as prior | `estimate_infections()` (when `rt = NULL`) |
 | `secondary_opts()` | Secondary model type | Incidence | `estimate_secondary()` |
 
 See the [prior choice guide](prior_choice_guide.html) for default values and guidance.
