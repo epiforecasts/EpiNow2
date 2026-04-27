@@ -188,12 +188,15 @@ simulate_infections <- function(R,
     obs$dispersion <- NULL
   }
 
+  # reporting_overdispersion is unused under a Poisson observation model so
+  # we pass NULL to avoid carrying a prior that has no effect.
+  dispersion_dist <- if (obs$family == "negbin") obs$dispersion else NULL
   params <- list(
     make_param("alpha", NULL),
     make_param("rho", NULL),
     make_param("R0", NULL),
     make_param("fraction_observed", obs$scale, lower_bound = 0),
-    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
+    make_param("reporting_overdispersion", dispersion_dist, lower_bound = 0),
     make_param("pop", pop, lower_bound = 0)
   )
 
