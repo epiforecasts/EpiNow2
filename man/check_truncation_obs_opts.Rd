@@ -14,9 +14,9 @@ Called for its side effects.
 }
 \description{
 Internal check that warns when \code{\link[=obs_opts]{obs_opts()}} settings that are
-not consumed by the truncation model (week effect, scale, weight,
-likelihood, return_likelihood) have been set to non-default values. These
-settings are silently ignored by \code{\link[=estimate_truncation]{estimate_truncation()}} which only uses
-\code{family} and \code{dispersion}.
+not consumed by the truncation model (week effect, scale, weight) have been
+set to non-default values. These settings are silently ignored by
+\code{\link[=estimate_truncation]{estimate_truncation()}} which only uses \code{family}, \code{dispersion},
+\code{likelihood} and \code{return_likelihood}.
 }
 \keyword{internal}
