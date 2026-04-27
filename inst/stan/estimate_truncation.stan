@@ -140,10 +140,19 @@ generated quantities {
     for (i in 1:(obs_sets - 1)) {
       int n_t = end_t[i] - start_t[i] + 1;
       {
-        array[n_t] int sampled = report_rng(
-          trunc_obs[1:n_t, i],
-          reporting_overdispersion, model_type
-        );
+        array[n_t] int sampled;
+        if (model_type == 0) {
+          for (j in 1:n_t) {
+            sampled[j] = poisson_rng(
+              trunc_obs[j, i] > 1e8 ? 1e8 : trunc_obs[j, i]
+            );
+          }
+        } else {
+          sampled = report_rng(
+            trunc_obs[1:n_t, i],
+            reporting_overdispersion, model_type
+          );
+        }
         for (j in 1:n_t) {
           gen_obs[j, i] = sampled[j];
         }
