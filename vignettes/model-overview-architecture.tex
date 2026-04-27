@@ -1,3 +1,15 @@
+% Source for vignettes/model-overview-architecture-1.png.
+% Only needs to be re-rendered when this file changes.
+%
+% Build the PDF with any LaTeX engine that supports TikZ, e.g.:
+%   pdflatex model-overview-architecture.tex
+%   tectonic model-overview-architecture.tex
+%
+% Convert to PNG with poppler:
+%   pdftoppm -r 200 -png model-overview-architecture.pdf \
+%            model-overview-architecture-1
+%
+% In R, `tinytex::install_tinytex()` provides a working LaTeX install.
 \documentclass[tikz,border=12pt]{standalone}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -164,12 +176,11 @@
   -| ([xshift=-4pt]infbg.south west)
   node[lblstyle, pos=0.25, left] {delay priors};
 
-% Truncation distribution: route down then across
-% to block top, well clear of right-side options
+% Truncation distribution: clean L from esttrunc south
+% across to the north-east corner of the infection block
 \draw[darr] (esttrunc.south)
-  -- ++(0, -0.5)
   -| ([xshift=4pt]infbg.north east)
-  node[lblstyle, pos=0.45, right, xshift=2pt]
+  node[lblstyle, pos=0.5, above]
     {truncation dist.};
 
 % ==========================================
