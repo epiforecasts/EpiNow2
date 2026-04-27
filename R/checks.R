@@ -247,10 +247,10 @@ check_truncation_length <- function(stan_args, time_points) {
 #' Check that obs_opts settings unused by estimate_truncation are at defaults
 #'
 #' @description Internal check that warns when [obs_opts()] settings that are
-#' not consumed by the truncation model (week effect, scale, weight,
-#' likelihood, return_likelihood) have been set to non-default values. These
-#' settings are silently ignored by [estimate_truncation()] which only uses
-#' `family` and `dispersion`.
+#' not consumed by the truncation model (week effect, scale, weight) have been
+#' set to non-default values. These settings are silently ignored by
+#' [estimate_truncation()] which only uses `family`, `dispersion`,
+#' `likelihood` and `return_likelihood`.
 #'
 #' @param obs An `<obs_opts>` object.
 #' @importFrom cli cli_warn
@@ -259,8 +259,7 @@ check_truncation_length <- function(stan_args, time_points) {
 check_truncation_obs_opts <- function(obs) {
   defaults <- obs_opts()
   unused <- c(
-    "weight", "week_effect", "week_length", "scale", "likelihood",
-    "return_likelihood"
+    "weight", "week_effect", "week_length", "scale"
   )
   changed <- vapply(unused, function(field) {
     !identical(obs[[field]], defaults[[field]])

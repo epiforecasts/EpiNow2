@@ -12,6 +12,8 @@ data {
   array[t, obs_sets] int obs;
   array[obs_sets] int obs_dist;
   int model_type; // 0 = Poisson, 1 = NegBin
+  int likelihood; // 1 = include obs likelihood, 0 = priors only
+  int return_likelihood; // 1 = return per-cell log_lik in generated quantities
 #include data/delays.stan
 #include data/params.stan
   int<lower = 0> param_id_reporting_overdispersion;
@@ -22,6 +24,7 @@ transformed data{
   int delay_id_truncation = 1;
   array[obs_sets] int<lower = 1> end_t;
   array[obs_sets] int<lower = 1> start_t;
+  int n_obs_cells = 0;
 
   array[delay_types] int delay_type_max;
   delay_type_max = get_delay_type_max(
@@ -34,6 +37,10 @@ transformed data{
     start_t[i] = max(
       1, end_t[i] - delay_type_max[delay_id_truncation]
     );
+  }
+  // Total observed cells across all earlier snapshots used in the likelihood.
+  for (i in 1:(obs_sets - 1)) {
+    n_obs_cells += end_t[i] - start_t[i] + 1;
   }
 }
 
@@ -95,7 +102,7 @@ model {
   );
 
   // log density of truncated latest data vs that observed
-  {
+  if (likelihood) {
     real reporting_overdispersion = get_param(
       param_id_reporting_overdispersion,
       params_fixed_lookup, params_variable_lookup,
@@ -124,19 +131,22 @@ generated quantities {
     );
   matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1]
     gen_obs;
+  vector[return_likelihood ? n_obs_cells : 0] log_lik;
   // reconstruct all truncated datasets using posterior
   for (i in 1:obs_sets) {
     recon_obs[1:(end_t[i] - start_t[i] + 1), i] = truncate_obs(
       to_vector(obs[start_t[i]:end_t[i], i]), trunc_rev_cmf, 1
     );
   }
-  // generate observations for posterior predictive checks
+  // generate observations for posterior predictive checks and (optionally)
+  // per-cell log likelihood
   {
     real reporting_overdispersion = get_param(
       param_id_reporting_overdispersion,
       params_fixed_lookup, params_variable_lookup,
       params_value, params
     );
+    int log_lik_idx = 0;
     for (i in 1:(obs_sets - 1)) {
       int n_t = end_t[i] - start_t[i] + 1;
       {
@@ -160,6 +170,15 @@ generated quantities {
       // zero-fill remaining rows
       for (j in (n_t + 1):(delay_type_max[delay_id_truncation] + 1)) {
         gen_obs[j, i] = 0;
+      }
+      if (return_likelihood) {
+        vector[n_t] cell_log_lik = report_log_lik(
+          obs[start_t[i]:(start_t[i] + n_t - 1), i],
+          trunc_obs[1:n_t, i],
+          reporting_overdispersion, model_type, 1
+        );
+        log_lik[(log_lik_idx + 1):(log_lik_idx + n_t)] = cell_log_lik;
+        log_lik_idx += n_t;
       }
     }
   }

@@ -329,6 +329,37 @@ test_that("check_truncation_obs_opts warns on unsupported non-default settings",
       obs_opts(dispersion = Normal(0, 0.5))
     )
   )
+  # likelihood and return_likelihood are now consumed by the model
+  expect_no_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(likelihood = FALSE))
+  )
+  expect_no_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(return_likelihood = TRUE))
+  )
+})
+
+test_that("estimate_truncation passes likelihood/return_likelihood to Stan", {
+  skip_integration()
+  est <- estimate_truncation(example_truncated,
+    obs = obs_opts(return_likelihood = TRUE),
+    verbose = FALSE, chains = 2, iter = 500, warmup = 200
+  )
+  expect_equal(est$args$likelihood, 1)
+  expect_equal(est$args$return_likelihood, 1)
+  log_lik <- rstan::extract(est$fit, "log_lik")$log_lik
+  expect_true(is.matrix(log_lik) || is.array(log_lik))
+  expect_true(ncol(log_lik) > 0)
+  expect_true(all(is.finite(log_lik)))
+})
+
+test_that("estimate_truncation runs with likelihood = FALSE (priors only)", {
+  skip_integration()
+  est <- estimate_truncation(example_truncated,
+    obs = obs_opts(likelihood = FALSE),
+    verbose = FALSE, chains = 2, iter = 500, warmup = 200
+  )
+  expect_equal(est$args$likelihood, 0)
+  expect_s3_class(get_parameters(est)$truncation, "dist_spec")
 })
 
 test_that("estimate_truncation works with Gamma truncation distribution", {
