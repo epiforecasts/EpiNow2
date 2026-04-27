@@ -87,6 +87,7 @@ articles:
   - estimate_secondary
   - estimate_truncation
   - estimate-dist
+  - delays
   - gaussian_process_implementation_details
 - title: Applied use
   navbar: Usage
