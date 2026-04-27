@@ -42,6 +42,11 @@ transformed data{
   for (i in 1:(obs_sets - 1)) {
     n_obs_cells += end_t[i] - start_t[i] + 1;
   }
+  array[delay_type_max[delay_id_truncation] + 1] int case_times =
+    linspaced_int_array(
+      delay_type_max[delay_id_truncation] + 1,
+      1, delay_type_max[delay_id_truncation] + 1
+    );
 }
 
 parameters {
@@ -110,13 +115,9 @@ model {
     );
     for (i in 1:(obs_sets - 1)) {
       int n_t = end_t[i] - start_t[i] + 1;
-      array[n_t] int case_times;
-      for (j in 1:n_t) {
-        case_times[j] = j;
-      }
       report_lp(
         obs[start_t[i]:(start_t[i] + n_t - 1), i],
-        case_times,
+        segment(case_times, 1, n_t),
         trunc_obs[1:n_t, i],
         reporting_overdispersion, model_type, 1
       );

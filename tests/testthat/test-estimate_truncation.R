@@ -329,7 +329,6 @@ test_that("check_truncation_obs_opts warns on unsupported non-default settings",
       obs_opts(dispersion = Normal(0, 0.5))
     )
   )
-  # likelihood and return_likelihood are now consumed by the model
   expect_no_warning(
     EpiNow2:::check_truncation_obs_opts(obs_opts(likelihood = FALSE))
   )

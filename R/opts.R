@@ -590,9 +590,6 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
   family <- arg_match(family)
-  # Dispersion is only used by the negative binomial observation model. Drop
-  # it for other families so it is not sampled from its prior, and warn if
-  # the caller explicitly supplied one that will be ignored.
   if (family != "negbin") {
     if (!missing(dispersion)) {
       cli_warn(

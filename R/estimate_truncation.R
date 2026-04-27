@@ -237,9 +237,6 @@ estimate_truncation <- function(data,
   dates <- obs_prep$dirty_obs[[length(obs_prep$dirty_obs)]]$date
   obs_model <- create_obs_model(obs, dates = dates)
 
-  # Parameters handled via params infrastructure. obs_opts() drops dispersion
-  # for non-negbin families, so reporting_overdispersion automatically becomes
-  # an unused param under Poisson.
   params <- list(
     make_param(
       "reporting_overdispersion",
@@ -265,43 +262,13 @@ estimate_truncation <- function(data,
 
   stan_data <- c(stan_data, create_stan_params(params))
 
-  # initial conditions
-  init_fn <- function() {
-    out <- create_delay_inits(stan_data)
-    # params array init (via params infrastructure)
-    tparams <- purrr::transpose(params)
-    null <- vapply(
-      tparams$dist, is.null, logical(1)
-    )
-    fixed <- vapply(
-      tparams$dist[!null],
-      get_distribution, character(1)
-    ) == "fixed"
-    if (stan_data$n_params_variable > 0) {
-      param_means <- vapply(
-        tparams$dist[!null][!fixed],
-        mean, ignore_uncertainty = FALSE,
-        FUN.VALUE = numeric(1)
-      )
-      param_sds <- vapply(
-        tparams$dist[!null][!fixed],
-        sd, ignore_uncertainty = FALSE,
-        FUN.VALUE = numeric(1)
-      )
-      out$params <- array(truncnorm::rtruncnorm(
-        stan_data$n_params_variable,
-        a = stan_data$params_lower,
-        b = stan_data$params_upper,
-        mean = param_means, sd = param_sds
-      ))
-    } else {
-      out$params <- array(numeric(0))
-    }
-    out
-  }
+  inits <- create_initial_conditions(
+    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0, week_effect = 0)),
+    params
+  )
   stan_args <- create_stan_args(
     stan = stan, data = stan_data,
-    init = init_fn, model = "estimate_truncation"
+    init = inits, model = "estimate_truncation"
   )
 
   # Warn if truncation distribution is longer than observed time

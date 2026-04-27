@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 This model deals with the problem of _nowcasting_, or adjusting for right-truncation in reported count data.
 This occurs when the quantity being observed, for example cases, hospitalisations or deaths, is reported with a delay, resulting in an underestimation of recent counts.
 The `estimate_truncation()` model infers parameters of the underlying delay distribution from multiple snapshots of past data.
-This can be thought of as a Bayesian form of the chain-ladder nowcasting approach implemented in the [baselinenowcast](https://package.epinowcast.org/baselinenowcast/) package, with the added benefit of full uncertainty quantification and delay estimation.
+This can be thought of as a Bayesian form of the chain-ladder nowcasting approach implemented in the [baselinenowcast](https://package.epinowcast.org/baselinenowcast/) package, with the added benefit of joint uncertainty quantification and delay estimation.
 For settings requiring time-varying delays or more detailed reporting structure, see the [epinowcast](https://package.epinowcast.org) package.
 
 ## Model
