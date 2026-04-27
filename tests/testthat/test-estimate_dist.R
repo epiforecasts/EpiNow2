@@ -41,7 +41,7 @@ test_that("correctly recovers normal parameters with date input", {
   result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "normal",
-    stan = stan_opts(samples = 1000, chains = 2),
+    stan = stan_opts(samples = 1000, chains = 2, seed = 12345),
     verbose = FALSE
   )))
 
@@ -69,7 +69,7 @@ test_that("correctly recovers exponential parameters with date input", {
   result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "exp",
-    stan = stan_opts(samples = 1000, chains = 2),
+    stan = stan_opts(samples = 1000, chains = 2, seed = 12345),
     verbose = FALSE
   )))
 
@@ -96,7 +96,7 @@ test_that("correctly recovers weibull parameters with date input", {
   result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "weibull",
-    stan = stan_opts(samples = 1000, chains = 2),
+    stan = stan_opts(samples = 1000, chains = 2, seed = 12345),
     verbose = FALSE
   )))
 
@@ -127,7 +127,7 @@ test_that("correctly weights observations with the n column", {
   result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "lognormal",
-    stan = stan_opts(samples = 1000, chains = 2),
+    stan = stan_opts(samples = 1000, chains = 2, seed = 12345),
     verbose = FALSE
   )))
 
@@ -159,7 +159,7 @@ test_that("correctly handles obs_time_threshold", {
     linelist,
     dist = "lognormal",
     obs_time_threshold = 1.1,
-    stan = stan_opts(samples = 1000, chains = 2),
+    stan = stan_opts(samples = 1000, chains = 2, seed = 12345),
     verbose = FALSE
   )))
 
@@ -188,7 +188,7 @@ test_that("correctly recovers lognormal parameters with date input", {
   result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "lognormal",
-    stan = stan_opts(samples = 1000, chains = 2),
+    stan = stan_opts(samples = 1000, chains = 2, seed = 12345),
     verbose = FALSE
   )))
 
@@ -226,7 +226,7 @@ test_that("correctly recovers gamma parameters with date input", {
   result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "gamma",
-    stan = stan_opts(samples = 1000, chains = 2),
+    stan = stan_opts(samples = 1000, chains = 2, seed = 12345),
     verbose = FALSE
   )))
 
@@ -265,7 +265,7 @@ test_that("correctly recovers gamma parameters with expgrowth primary", {
     dist = "gamma",
     primary = "expgrowth",
     primary_params = true_r,
-    stan = stan_opts(samples = 1000, chains = 2),
+    stan = stan_opts(samples = 1000, chains = 2, seed = 12345),
     verbose = FALSE
   )))
 
@@ -323,7 +323,7 @@ test_that("correctly handles varying censoring windows", {
   result <- suppressWarnings(suppressMessages(estimate_dist(
     linelist,
     dist = "lognormal",
-    stan = stan_opts(samples = 1000, chains = 2),
+    stan = stan_opts(samples = 1000, chains = 2, seed = 12345),
     verbose = FALSE
   )))
 
@@ -368,7 +368,7 @@ test_that("correctly recovers parameters with expgrowth primary", {
     dist = "lognormal",
     primary = "expgrowth",
     primary_params = true_r,
-    stan = stan_opts(samples = 1000, chains = 2),
+    stan = stan_opts(samples = 1000, chains = 2, seed = 12345),
     verbose = FALSE
   )))
 
@@ -458,7 +458,7 @@ test_that("correctly handles constant delays without non-finite init", {
     suppressWarnings(suppressMessages(estimate_dist(
       linelist,
       dist = "lognormal",
-      stan = stan_opts(samples = 100, chains = 1, warmup = 100),
+      stan = stan_opts(samples = 100, chains = 1, warmup = 100, seed = 12345),
       verbose = FALSE
     )))
   )
