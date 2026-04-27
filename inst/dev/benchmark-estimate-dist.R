@@ -19,11 +19,11 @@ if (length(args) < 1) {
 output_prefix <- args[1]
 
 ## Configuration
+set.seed(12345)
 n_iter <- 5
 seeds <- sample(.Machine$integer.max, n_iter)
 
 ## Simulate censored delay data
-set.seed(12345)
 n_obs <- 400
 true_meanlog <- 1.5
 true_sdlog <- 0.7
