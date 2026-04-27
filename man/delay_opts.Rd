@@ -52,4 +52,5 @@ delay_opts(delay + delay)
 \seealso{
 \code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
 \code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link{Distributions}}
+\code{vignette("delays")} for background on delay distributions
 }
