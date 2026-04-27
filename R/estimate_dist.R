@@ -186,14 +186,13 @@ estimate_dist <- function(data,
                           verbose = FALSE) {
   # Validate inputs
   assert_string(dist)
+  dist_id <- .get_dist_id(dist)
+  param_names <- .get_param_names(dist)
   assert_list(priors)
   assert_string(primary)
   assert_numeric(primary_params)
   assert_number(obs_time_threshold, lower = 0)
   assert_logical(verbose, len = 1)
-
-  dist_id <- .get_dist_id(dist)
-  param_names <- .get_param_names(dist)
 
   # Validate primary distribution
   primary_id <- switch(primary,
