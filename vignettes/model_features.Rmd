@@ -27,18 +27,37 @@ For prior guidance see the [prior choice guide](prior_choice_guide.html).
 
 # Component overview
 
-| Component | R function | Purpose | Details |
-|---|---|---|---|
-| Infection model | `estimate_infections()` | Estimate infections, Rt, and growth rate from a count time series | [Infection model](#infection-model) |
-| Secondary model | `estimate_secondary()` | Estimate secondary outcomes from primary observations | [Secondary model](#secondary-model) |
-| Truncation / nowcasting | `estimate_truncation()` | Nowcast recent data and estimate truncation distributions | [Truncation / nowcasting](#truncation-nowcasting) |
-| Delay distribution fitting | `estimate_dist()` | Fit delay distributions from linelist data accounting for censoring and truncation | [Delay distribution fitting](#delay-distribution-fitting) |
-| Data preprocessing | `fill_missing()` | Handle missing dates, missing observations, and non-daily data | [Data preprocessing](#data-preprocessing) |
-| Simulation | `simulate_infections()`, `simulate_secondary()` | Simulate observations from known parameters | [Simulation](#simulation) |
-| Forecasting | `forecast_infections()`, `forecast_secondary()` | Generate forecasts from fitted models | [Forecasting](#forecasting) |
-| Workflow wrappers | `epinow()`, `regional_epinow()` | Production and multi-region workflows | [Wrappers](#workflow-wrappers) |
+The package's modelling features fall into four groups.
 
-# Infection model
+**Estimation models** fit a Stan model to data:
+
+- [Infection model](#infection-model) — `estimate_infections()`
+- [Secondary model](#secondary-model) — `estimate_secondary()`
+- [Truncation / nowcasting](#truncation-nowcasting) — `estimate_truncation()`
+- [Delay distribution fitting](#delay-distribution-fitting) — `estimate_dist()`
+
+**Model configuration** controls how the estimation models behave:
+
+- [Reproduction number](#reproduction-number) — `rt_opts()`
+- [Gaussian process](#gaussian-process) — `gp_opts()`
+- [Delay distributions](#delay-distributions) — `gt_opts()`, `delay_opts()`, `trunc_opts()`
+- [Observation model](#observation-model) — `obs_opts()`
+- [Options summary](#options-summary) — defaults and which models use each
+
+**Forward simulation and forecasting** generate observations:
+
+- [Simulation](#simulation) — `simulate_infections()`, `simulate_secondary()`
+- [Forecasting](#forecasting) — `forecast_infections()`, `forecast_secondary()`
+
+**Supporting utilities**:
+
+- [Data preprocessing](#data-preprocessing) — `fill_missing()`
+- [Workflow wrappers](#workflow-wrappers) — `epinow()`, `regional_epinow()`
+- [Stan backend](#stan-backend) — `stan_opts()`
+
+# Estimation models
+
+## Infection model
 
 `estimate_infections()` reconstructs infections from a count time series (e.g. reported cases) using either a generative renewal model or non-parametric back-calculation.
 
@@ -49,7 +68,48 @@ For prior guidance see the [prior choice guide](prior_choice_guide.html).
 
 See also: [estimate_infections workflow](estimate_infections_workflow.html)
 
-# Reproduction number
+## Secondary model
+
+`estimate_secondary()` estimates the relationship between a primary and secondary observation (e.g. cases and deaths, admissions and bed occupancy).
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Incidence model | `secondary_opts(type = "incidence")` | Secondary reports as a convolution of primary cases | [Secondary model definition](estimate_secondary.html) |
+| Prevalence model | `secondary_opts(type = "prevalence")` | Cumulative secondary reports (e.g. bed occupancy) | [Secondary model definition](estimate_secondary.html) |
+
+See also: [estimate_secondary model definition](estimate_secondary.html)
+
+## Truncation / nowcasting {#truncation-nowcasting}
+
+Recent observations are typically incomplete due to reporting delays (right truncation).
+`estimate_truncation()` estimates a truncation distribution from multiple snapshots of the same data source over time and produces a nowcast (predicted complete observations).
+The estimated distribution can be passed to `estimate_infections()` via `trunc_opts()` for truncation-adjusted inference.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Estimate truncation and nowcast | `estimate_truncation(data = list_of_snapshots)` | Fit a truncation distribution and produce a nowcast from data snapshots | [Truncation model definition](estimate_truncation.html) |
+| Truncation-adjusted inference | `trunc_opts(dist = ...)` in `estimate_infections()` | Adjust for right-truncation of recent data in the observation model | [Truncation model definition](estimate_truncation.html) |
+
+See also: [estimate_truncation model definition](estimate_truncation.html)
+
+## Delay distribution fitting
+
+`estimate_dist()` fits delay distributions from linelist data using likelihood functions vendored from [primarycensored](https://primarycensored.epinowcast.org/).
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Double interval censoring | Date columns in linelist | Accounts for censoring of both primary and secondary events | [Fitting delays](estimate-dist.html) |
+| Variable censoring windows | `pdate_upr`, `sdate_upr` columns | Per-observation primary and secondary censoring window widths | [Fitting delays](estimate-dist.html) |
+| Right truncation | `obs_date` column | Per-observation truncation times from reporting delays | [Fitting delays](estimate-dist.html) |
+| Primary event distribution | `estimate_dist(primary = "expgrowth")` | Account for exponential growth in primary events | [Fitting delays](estimate-dist.html) |
+| Distribution families | `estimate_dist(dist = ...)` | Log-normal (default), gamma, normal, or exponential | [Fitting delays](estimate-dist.html) |
+| Observation aggregation | Automatic | Identical delay-censoring-truncation strata are aggregated to speed up fitting | [Fitting delays](estimate-dist.html) |
+
+See also: [fitting delay distributions](estimate-dist.html)
+
+# Model configuration
+
+## Reproduction number
 
 When using the renewal equation, several options control how the time-varying reproduction number is modelled.
 
@@ -65,7 +125,7 @@ When using the renewal equation, several options control how the time-varying re
 
 See also: [estimate_infections model definition](estimate_infections.html), [options examples](estimate_infections_options.html)
 
-# Gaussian process
+## Gaussian process
 
 The Gaussian process controls the flexibility of the time-varying reproduction number or infection trajectory.
 Configured via `gp_opts()`.
@@ -79,7 +139,7 @@ For kernel mathematics and the Hilbert space spectral approximation see the [GP 
 
 See also: [GP implementation details](gaussian_process_implementation_details.html), [options examples](estimate_infections_options.html), [prior choice guide](prior_choice_guide.html)
 
-# Delay distributions
+## Delay distributions
 
 Delay distributions map latent infections to observed quantities.
 See the [workflow vignette](estimate_infections_workflow.html) for a practical guide and the [prior choice guide](prior_choice_guide.html) for default priors.
@@ -95,7 +155,7 @@ See the [workflow vignette](estimate_infections_workflow.html) for a practical g
 
 See also: [workflow vignette](estimate_infections_workflow.html), [prior choice guide](prior_choice_guide.html), [fitting delay distributions](estimate-dist.html)
 
-# Observation model
+## Observation model
 
 The observation model links latent expected cases to reported data.
 Configured via `obs_opts()`.
@@ -117,95 +177,7 @@ Both `estimate_infections()` and `estimate_secondary()` support these features.
 
 See also: [workflow vignette](estimate_infections_workflow.html), [prior choice guide](prior_choice_guide.html)
 
-# Data preprocessing
-
-`fill_missing()` is an R-side utility that prepares data for the estimation functions by constructing the accumulation and missingness flags that the Stan models require.
-
-| Feature | Argument | Description |
-|---|---|---|
-| Accumulate missing dates | `fill_missing(missing_dates = "accumulate")` | Mark missing dates for model-level accumulation |
-| Zero-fill missing dates | `fill_missing(missing_dates = "zero")` | Insert zero observations for missing dates |
-| Ignore missing dates (default) | `fill_missing(missing_dates = "ignore")` | Skip missing dates in the likelihood |
-| Handle NA observations | `fill_missing(missing_obs = ...)` | Accumulate or zero-fill NA values |
-| Weekly reporting | `fill_missing(initial_accumulate = 7)` | Set accumulation window for weekly data |
-
-See also: [workflow vignette](estimate_infections_workflow.html)
-
-# Secondary model
-
-`estimate_secondary()` estimates the relationship between a primary and secondary observation (e.g. cases and deaths, admissions and bed occupancy).
-
-| Feature | Argument | Description | See also |
-|---|---|---|---|
-| Incidence model | `secondary_opts(type = "incidence")` | Secondary reports as a convolution of primary cases | [Secondary model definition](estimate_secondary.html) |
-| Prevalence model | `secondary_opts(type = "prevalence")` | Cumulative secondary reports (e.g. bed occupancy) | [Secondary model definition](estimate_secondary.html) |
-
-See also: [estimate_secondary model definition](estimate_secondary.html)
-
-# Truncation / nowcasting {#truncation-nowcasting}
-
-Recent observations are typically incomplete due to reporting delays (right truncation).
-`estimate_truncation()` estimates a truncation distribution from multiple snapshots of the same data source over time and produces a nowcast (predicted complete observations).
-The estimated distribution can be passed to `estimate_infections()` via `trunc_opts()` for truncation-adjusted inference.
-
-| Feature | Argument | Description | See also |
-|---|---|---|---|
-| Estimate truncation and nowcast | `estimate_truncation(data = list_of_snapshots)` | Fit a truncation distribution and produce a nowcast from data snapshots | [Truncation model definition](estimate_truncation.html) |
-| Truncation-adjusted inference | `trunc_opts(dist = ...)` in `estimate_infections()` | Adjust for right-truncation of recent data in the observation model | [Truncation model definition](estimate_truncation.html) |
-
-See also: [estimate_truncation model definition](estimate_truncation.html)
-
-# Delay distribution fitting
-
-`estimate_dist()` fits delay distributions from linelist data using likelihood functions vendored from [primarycensored](https://primarycensored.epinowcast.org/).
-
-| Feature | Argument | Description | See also |
-|---|---|---|---|
-| Double interval censoring | Date columns in linelist | Accounts for censoring of both primary and secondary events | [Fitting delays](estimate-dist.html) |
-| Variable censoring windows | `pdate_upr`, `sdate_upr` columns | Per-observation primary and secondary censoring window widths | [Fitting delays](estimate-dist.html) |
-| Right truncation | `obs_date` column | Per-observation truncation times from reporting delays | [Fitting delays](estimate-dist.html) |
-| Primary event distribution | `estimate_dist(primary = "expgrowth")` | Account for exponential growth in primary events | [Fitting delays](estimate-dist.html) |
-| Distribution families | `estimate_dist(dist = ...)` | Log-normal (default), gamma, normal, or exponential | [Fitting delays](estimate-dist.html) |
-| Observation aggregation | Automatic | Identical delay-censoring-truncation strata are aggregated to speed up fitting | [Fitting delays](estimate-dist.html) |
-
-See also: [fitting delay distributions](estimate-dist.html)
-
-# Simulation
-
-Simulation functions generate observations from known or fixed parameters, useful for model checking and scenario analysis.
-
-| Feature | Argument | Description | See also |
-|---|---|---|---|
-| Simulate infections | `simulate_infections(R, initial_infections)` | Forward-simulate from a given Rt trajectory via the renewal equation | [Workflow](estimate_infections_workflow.html) |
-| Simulate secondary | `simulate_secondary(primary, ...)` | Simulate secondary observations from primary data | [Secondary model definition](estimate_secondary.html) |
-| Convolve and scale | `convolve_and_scale(data, ...)` | R-based convolution with time-varying parameters | [Secondary model definition](estimate_secondary.html) |
-
-See also: [workflow vignette](estimate_infections_workflow.html)
-
-# Forecasting
-
-Forecasts can be generated from fitted models by projecting forward with specified or estimated parameters.
-
-| Feature | Argument | Description | See also |
-|---|---|---|---|
-| Infection forecast | `forecast_infections(estimates, R)` | Simulate future infections from a fitted model with a new Rt trajectory | [Workflow](estimate_infections_workflow.html) |
-| Secondary forecast | `forecast_secondary(estimate, primary)` | Forecast secondary observations from new primary data | [Secondary model definition](estimate_secondary.html) |
-
-See also: [workflow vignette](estimate_infections_workflow.html)
-
-# Workflow wrappers
-
-Convenience functions wrap the core estimation and reporting steps.
-
-| Feature | Argument | Description | See also |
-|---|---|---|---|
-| Production wrapper | `epinow()` | Wraps `estimate_infections()` with logging and formatted output | [epinow vignette](epinow.html) |
-| Multi-region | `regional_epinow()` | Runs `epinow()` across regions in parallel | [Getting started](EpiNow2.html) |
-| Region-specific options | `opts_list()` | Generate per-region configuration lists | [Getting started](EpiNow2.html) |
-
-See also: [epinow vignette](epinow.html), [getting started](EpiNow2.html)
-
-# Options summary
+## Options summary
 
 The table below summarises the options functions, what they configure, their defaults, and which estimation functions use them.
 
@@ -222,7 +194,63 @@ The table below summarises the options functions, what they configure, their def
 
 See the [prior choice guide](prior_choice_guide.html) for default values and guidance.
 
-# Stan backend
+# Forward simulation and forecasting
+
+The estimation models already produce forecasts as part of their fit, projecting forward over a horizon set by the `horizon` argument.
+The functions below are for the cases where you want to simulate or forecast separately from a fit: generating synthetic observations from known parameters, or extending a fitted model with new inputs (e.g. a new Rt trajectory or new primary data).
+
+## Simulation
+
+Simulation functions generate observations from known or fixed parameters, useful for model checking and scenario analysis.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Simulate infections | `simulate_infections(R, initial_infections)` | Forward-simulate from a given Rt trajectory via the renewal equation | [Workflow](estimate_infections_workflow.html) |
+| Simulate secondary | `simulate_secondary(primary, ...)` | Simulate secondary observations from primary data | [Secondary model definition](estimate_secondary.html) |
+| Convolve and scale | `convolve_and_scale(data, ...)` | R-based convolution with time-varying parameters | [Secondary model definition](estimate_secondary.html) |
+
+See also: [workflow vignette](estimate_infections_workflow.html)
+
+## Forecasting
+
+Forecasts can be generated from fitted models by projecting forward with specified or estimated parameters.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Infection forecast | `forecast_infections(estimates, R)` | Simulate future infections from a fitted model with a new Rt trajectory | [Workflow](estimate_infections_workflow.html) |
+| Secondary forecast | `forecast_secondary(estimate, primary)` | Forecast secondary observations from new primary data | [Secondary model definition](estimate_secondary.html) |
+
+See also: [workflow vignette](estimate_infections_workflow.html)
+
+# Supporting utilities
+
+## Data preprocessing
+
+`fill_missing()` is an R-side utility that prepares data for the estimation functions by constructing the accumulation and missingness flags that the Stan models require.
+
+| Feature | Argument | Description |
+|---|---|---|
+| Accumulate missing dates | `fill_missing(missing_dates = "accumulate")` | Mark missing dates for model-level accumulation |
+| Zero-fill missing dates | `fill_missing(missing_dates = "zero")` | Insert zero observations for missing dates |
+| Ignore missing dates (default) | `fill_missing(missing_dates = "ignore")` | Skip missing dates in the likelihood |
+| Handle NA observations | `fill_missing(missing_obs = ...)` | Accumulate or zero-fill NA values |
+| Weekly reporting | `fill_missing(initial_accumulate = 7)` | Set accumulation window for weekly data |
+
+See also: [workflow vignette](estimate_infections_workflow.html)
+
+## Workflow wrappers
+
+Convenience functions wrap the core estimation and reporting steps.
+
+| Feature | Argument | Description | See also |
+|---|---|---|---|
+| Production wrapper | `epinow()` | Wraps `estimate_infections()` with logging and formatted output | [epinow vignette](epinow.html) |
+| Multi-region | `regional_epinow()` | Runs `epinow()` across regions in parallel | [Getting started](EpiNow2.html) |
+| Region-specific options | `opts_list()` | Generate per-region configuration lists | [Getting started](EpiNow2.html) |
+
+See also: [epinow vignette](epinow.html), [getting started](EpiNow2.html)
+
+## Stan backend
 
 Models are implemented in Stan.
 Users can switch between MCMC sampling (default, via `cmdstanr` or `rstan`), variational inference, the Laplace approximation, or pathfinder using `stan_opts(method = ...)`.
