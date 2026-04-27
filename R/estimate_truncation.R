@@ -237,14 +237,13 @@ estimate_truncation <- function(data,
   dates <- obs_prep$dirty_obs[[length(obs_prep$dirty_obs)]]$date
   obs_model <- create_obs_model(obs, dates = dates)
 
-  # Parameters handled via params infrastructure. The
-  # reporting_overdispersion parameter is unused under a Poisson observation
-  # model so we pass NULL to avoid sampling it from its prior.
-  dispersion_dist <- if (obs$family == "negbin") obs$dispersion else NULL
+  # Parameters handled via params infrastructure. obs_opts() drops dispersion
+  # for non-negbin families, so reporting_overdispersion automatically becomes
+  # an unused param under Poisson.
   params <- list(
     make_param(
       "reporting_overdispersion",
-      dispersion_dist, lower_bound = 0
+      obs$dispersion, lower_bound = 0
     ),
     make_param("sigma", noise, lower_bound = 0)
   )
