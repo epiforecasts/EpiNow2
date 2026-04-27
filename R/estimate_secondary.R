@@ -225,9 +225,12 @@ estimate_secondary <- function(data,
   # observation model data
   stan_data <- c(stan_data, create_obs_model(obs, dates = reports$date))
 
+  # reporting_overdispersion is unused under a Poisson observation model so
+  # we pass NULL to avoid sampling it from its prior.
+  dispersion_dist <- if (obs$family == "negbin") obs$dispersion else NULL
   params <- list(
     make_param("fraction_observed", obs$scale, lower_bound = 0),
-    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0)
+    make_param("reporting_overdispersion", dispersion_dist, lower_bound = 0)
   )
 
   stan_data <- c(stan_data, create_stan_params(params))
