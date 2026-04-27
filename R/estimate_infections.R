@@ -181,15 +181,12 @@ estimate_infections <- function(data,
   # Add initial zeroes
   model_data <- pad_reported_cases(model_data, seeding_time)
 
-  # reporting_overdispersion is unused under a Poisson observation model so
-  # we pass NULL to avoid sampling it from its prior.
-  dispersion_dist <- if (obs$family == "negbin") obs$dispersion else NULL
   params <- list(
     make_param("alpha", gp$alpha, lower_bound = 0),
     make_param("rho", gp$ls, lower_bound = 0),
     make_param("R0", rt$prior, lower_bound = 0),
     make_param("fraction_observed", obs$scale, lower_bound = 0),
-    make_param("reporting_overdispersion", dispersion_dist, lower_bound = 0),
+    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("pop", rt$pop, lower_bound = 0)
   )
 

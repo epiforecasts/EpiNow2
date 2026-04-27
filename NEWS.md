@@ -3,7 +3,7 @@
 ## Bug fixes
 
 - Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.
-- Stopped sampling `reporting_overdispersion` from its prior in `estimate_infections()`, `estimate_secondary()` and `simulate_infections()` when `obs_opts(family = "poisson")` is used. The parameter is unused under a Poisson observation model and was previously cluttering `get_parameters()` output.
+- Centralised the gating of `dispersion` on `family` in `obs_opts()`: `dispersion` is now `NULL` whenever `family != "negbin"`, with a warning if the caller supplied one explicitly. As a result, `reporting_overdispersion` is no longer sampled from its prior in `estimate_infections()`, `estimate_secondary()` and `simulate_infections()` when a Poisson observation model is used, and no per-site switches are needed.
 
 ## Breaking changes
 
