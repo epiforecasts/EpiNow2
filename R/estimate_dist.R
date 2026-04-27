@@ -274,8 +274,11 @@ estimate_dist <- function(data,
   wvar <- stats::weighted.mean(
     (midpoints - wmean)^2, obs_weights
   )
+  # Clamp variance away from zero so divisions in lognormal/gamma
+  # init don't blow up when all observed delays are identical;
+  # leave wmean alone so distributions that support a negative
+  # mean (e.g. normal) keep their sign.
   eps <- sqrt(.Machine$double.eps)
-  wmean <- max(wmean, eps)
   wvar <- max(wvar, eps)
 
   init_params <- switch(dist,
