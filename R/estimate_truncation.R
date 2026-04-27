@@ -219,6 +219,7 @@ estimate_truncation <- function(data,
   walk(data, check_reports_valid, model = "estimate_infections")
   assert_class(truncation, "dist_spec")
   assert_class(obs, "obs_opts")
+  check_truncation_obs_opts(obs)
   assert_class(noise, "dist_spec")
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(filter_leading_zeros)
@@ -235,11 +236,14 @@ estimate_truncation <- function(data,
   dates <- obs_prep$dirty_obs[[length(obs_prep$dirty_obs)]]$date
   obs_model <- create_obs_model(obs, dates = dates)
 
-  # Parameters handled via params infrastructure
+  # Parameters handled via params infrastructure. The
+  # reporting_overdispersion parameter is unused under a Poisson observation
+  # model so we pass NULL to avoid sampling it from its prior.
+  dispersion_dist <- if (obs$family == "negbin") obs$dispersion else NULL
   params <- list(
     make_param(
       "reporting_overdispersion",
-      obs$dispersion, lower_bound = 0
+      dispersion_dist, lower_bound = 0
     ),
     make_param("sigma", noise, lower_bound = 0)
   )
