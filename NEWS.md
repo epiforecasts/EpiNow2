@@ -1,7 +1,17 @@
 # EpiNow2 (development version)
 
+## New features
+
+- Added `estimate_dist()` for fitting delay distributions from interval-censored linelist data using Bayesian inference, with support for lognormal, gamma, normal, exponential, and Weibull distributions.
+- Added `Exp()`, `Weibull()`, and `Normal()` distribution constructors.
+
+## Deprecations
+
+- `estimate_delay()` is soft-deprecated in favour of `estimate_dist()`.
+
 ## Documentation
 
+- Added a vignette demonstrating delay distribution fitting workflows and posterior validation.
 - Added a model overview vignette with an architecture diagram showing how the package's models connect.
 - Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
 
