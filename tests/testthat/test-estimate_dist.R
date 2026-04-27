@@ -446,6 +446,7 @@ test_that("errors for expgrowth without primary_params", {
 
 test_that("correctly handles constant delays without non-finite init", {
   skip_if_not_installed("primarycensored")
+  skip_integration()
 
   origin <- as.Date("2023-01-01")
   linelist <- data.frame(
