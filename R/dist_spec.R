@@ -781,27 +781,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
   # Get the PMF and CDF data
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
     if (get_distribution(x, i) == "nonparametric") {
-      # nonparametric
-      single <- extract_single_dist(x, i)
-      alpha <- single$alpha
-      if (!is.null(alpha) && any(alpha > 0)) {
-        # Dirichlet-backed: sample PMFs from the prior/posterior
-        # to show uncertainty across bins.
-        dist_name <- paste0("Nonparametric (Dirichlet) (ID: ", i, ")")
-        pmf_dt <- rbindlist(lapply(seq_len(samples), function(s) {
-          data.table(
-            sample = s, x = seq_along(alpha) - 1,
-            p = rdirichlet(alpha), distribution = dist_name
-          )
-        }))
-      } else {
-        pmf <- get_pmf(x, i)
-        values <- seq_along(pmf) - 1
-        dist_name <- paste0("Nonparametric", " (ID: ", i, ")")
-        pmf_dt <- data.table(
-          sample = 1, x = values, p = pmf, distribution = dist_name
-        )
-      }
+      pmf_dt <- nonparametric_pmf_data(x, i, samples)
     } else {
       # parametric
       uncertain <- vapply(get_parameters(x, i), function(y) {
@@ -1231,6 +1211,40 @@ rdirichlet <- function(alpha) {
   raw <- rgamma(sum(positive), alpha[positive], 1)
   pmf[positive] <- raw / sum(raw)
   pmf
+}
+
+#' Build PMF data for the nonparametric branch of `plot.dist_spec`
+#'
+#' For a fixed nonparametric delay returns a single row per bin
+#' (the stored PMF). For a Dirichlet-backed estimated delay, draws
+#' `samples` PMFs from the alpha vector via [rdirichlet()] and
+#' returns one row per sample-bin pair so the calling plot can
+#' render an uncertainty band.
+#'
+#' @param x The `<dist_spec>` being plotted.
+#' @param i Index of the nonparametric component within `x`.
+#' @param samples Number of PMFs to draw when alpha is present.
+#' @importFrom data.table data.table rbindlist
+#' @return A `data.table` with columns `sample`, `x`, `p`,
+#'   `distribution`.
+#' @keywords internal
+nonparametric_pmf_data <- function(x, i, samples) {
+  single <- extract_single_dist(x, i)
+  alpha <- single$alpha
+  if (!is.null(alpha) && any(alpha > 0)) {
+    dist_name <- paste0("Nonparametric (Dirichlet) (ID: ", i, ")")
+    return(rbindlist(lapply(seq_len(samples), function(s) {
+      data.table(
+        sample = s, x = seq_along(alpha) - 1,
+        p = rdirichlet(alpha), distribution = dist_name
+      )
+    })))
+  }
+  pmf <- get_pmf(x, i)
+  data.table(
+    sample = 1, x = seq_along(pmf) - 1, p = pmf,
+    distribution = paste0("Nonparametric (ID: ", i, ")")
+  )
 }
 
 #' Get the names of the natural parameters of a distribution
