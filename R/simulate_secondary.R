@@ -90,8 +90,9 @@ simulate_secondary <- function(primary,
       c(
         "!" = "Cannot simulate from estimated nonparametric
         delays.",
-        "i" = "Use a fixed {.fn NonParametric} distribution
-        instead of {.fn Dirichlet}."
+        "i" = "Use {.fn fix_parameters} to resolve the
+        Dirichlet prior to a fixed PMF using either the prior
+        mean or a randomly sampled PMF."
       )
     )
   }

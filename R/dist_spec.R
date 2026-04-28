@@ -930,7 +930,16 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
   ## match strategy argument to options
   strategy <- arg_match(strategy)
 
-  ## if x is fixed already we don't have to do anything
+  ## Dirichlet-backed nonparametric: resolve to a fixed PMF
+  if (get_distribution(x) == "nonparametric" && isTRUE(x$estimated)) {
+    pmf <- if (strategy == "mean") {
+      x$alpha / sum(x$alpha)
+    } else {
+      rdirichlet(x$alpha)
+    }
+    return(NonParametric(pmf = pmf))
+  }
+  ## fixed nonparametric or fully numeric parametric: nothing to do
   if (get_distribution(x) == "nonparametric" ||
         all(vapply(get_parameters(x), is.numeric, logical(1)))) {
     return(x)
