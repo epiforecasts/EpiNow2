@@ -782,12 +782,31 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
   pmf_data <- lapply(seq_len(ndist(x)), function(i) {
     if (get_distribution(x, i) == "nonparametric") {
       # nonparametric
-      pmf <- get_pmf(x, i)
-      values <- seq_along(pmf) - 1
-      dist_name <- paste0("Nonparametric", " (ID: ", i, ")")
-      pmf_dt <- data.table(
-        sample = 1, x = values, p = pmf, distribution = dist_name
-      )
+      single <- extract_single_dist(x, i)
+      alpha <- single$alpha
+      if (!is.null(alpha) && any(alpha > 0)) {
+        # Dirichlet-backed: sample PMFs to show prior/posterior
+        # uncertainty across bins.
+        pmf_len <- length(alpha)
+        positive <- alpha > 0
+        dist_name <- paste0("Nonparametric (Dirichlet) (ID: ", i, ")")
+        pmf_dt <- rbindlist(lapply(seq_len(samples), function(s) {
+          pmf <- rep(0, pmf_len)
+          raw <- rgamma(sum(positive), alpha[positive], 1)
+          pmf[positive] <- raw / sum(raw)
+          data.table(
+            sample = s, x = seq_len(pmf_len) - 1, p = pmf,
+            distribution = dist_name
+          )
+        }))
+      } else {
+        pmf <- get_pmf(x, i)
+        values <- seq_along(pmf) - 1
+        dist_name <- paste0("Nonparametric", " (ID: ", i, ")")
+        pmf_dt <- data.table(
+          sample = 1, x = values, p = pmf, distribution = dist_name
+        )
+      }
     } else {
       # parametric
       uncertain <- vapply(get_parameters(x, i), function(y) {
