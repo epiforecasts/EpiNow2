@@ -287,40 +287,60 @@ test_that("estimate_infections works with estimated non-parametric generation ti
   )
 })
 
-test_that("Estimated non-parametric GT moves from prior towards truth", { # nolint
+test_that("Estimated non-parametric GT concentration anchors posterior", { # nolint
   skip_integration()
-  # Use a shifted prior and check the posterior is closer to
-  # the true GT than the prior was
+  # Same shifted prior, two concentrations: a low concentration
+  # should let the posterior move towards the data (i.e. away
+  # from the prior), a high one should keep it close to the
+  # prior. Both should still improve on the prior under data.
   true_gt <- c(0, 0.1, 0.3, 0.35, 0.15, 0.07, 0.03)
   shifted_prior <- c(0, 0.05, 0.15, 0.3, 0.25, 0.15, 0.1)
-  est_gt <- NonParametric(
-    pmf = Dirichlet(
-      prior = shifted_prior,
-      concentration = 5
-    )
-  )
-  out <- suppressWarnings(estimate_infections(
-    data = reported_cases,
-    generation_time = gt_opts(est_gt),
-    delays = delay_opts(Fixed(0)),
-    rt = rt_opts(
-      prior = LogNormal(mean = 2, sd = 0.1),
-      rw = 7
-    ),
-    gp = NULL,
-    stan = stan_opts(
-      samples = 500, warmup = 500,
-      chains = 2, cores = 1
-    ),
-    verbose = FALSE
-  ))
-  expect_null(out$error)
-  post_pmf <- as.numeric(
-    get_pmf(get_parameters(out)$generation_time)
-  )
-  prior_err <- sum((shifted_prior - true_gt)^2)
-  post_err <- sum((post_pmf - true_gt)^2)
-  expect_lt(post_err, prior_err)
+  fit_at <- function(conc) {
+    suppressWarnings(estimate_infections(
+      data = reported_cases,
+      generation_time = gt_opts(NonParametric(
+        pmf = Dirichlet(prior = shifted_prior, concentration = conc)
+      )),
+      delays = delay_opts(Fixed(0)),
+      rt = rt_opts(
+        prior = LogNormal(mean = 2, sd = 0.1),
+        rw = 7
+      ),
+      gp = NULL,
+      stan = stan_opts(
+        samples = 500, warmup = 500,
+        chains = 2, cores = 1
+      ),
+      verbose = FALSE
+    ))
+  }
+  out_loose <- fit_at(1)
+  out_tight <- fit_at(50)
+  expect_null(out_loose$error)
+  expect_null(out_tight$error)
+
+  pmf_of <- function(out) {
+    as.numeric(get_pmf(get_parameters(out)$generation_time))
+  }
+  err_to <- function(p, q) sum((p - q)^2)
+
+  prior_err <- err_to(shifted_prior, true_gt)
+  loose_err <- err_to(pmf_of(out_loose), true_gt)
+  tight_err <- err_to(pmf_of(out_tight), true_gt)
+
+  # Both posteriors improve on the shifted prior.
+  expect_lt(loose_err, prior_err)
+  expect_lt(tight_err, prior_err)
+
+  # Tight prior stays anchored: closer to the prior than the
+  # loose one.
+  loose_drift <- err_to(pmf_of(out_loose), shifted_prior)
+  tight_drift <- err_to(pmf_of(out_tight), shifted_prior)
+  expect_lt(tight_drift, loose_drift)
+
+  # And, since the prior is shifted away from truth, the loose
+  # posterior should sit closer to truth than the tight one.
+  expect_lt(loose_err, tight_err)
 })
 
 # Non-integration tests (fast - use one MCMC fit for multiple checks) ----
