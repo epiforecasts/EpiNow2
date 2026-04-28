@@ -785,18 +785,13 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
       single <- extract_single_dist(x, i)
       alpha <- single$alpha
       if (!is.null(alpha) && any(alpha > 0)) {
-        # Dirichlet-backed: sample PMFs to show prior/posterior
-        # uncertainty across bins.
-        pmf_len <- length(alpha)
-        positive <- alpha > 0
+        # Dirichlet-backed: sample PMFs from the prior/posterior
+        # to show uncertainty across bins.
         dist_name <- paste0("Nonparametric (Dirichlet) (ID: ", i, ")")
         pmf_dt <- rbindlist(lapply(seq_len(samples), function(s) {
-          pmf <- rep(0, pmf_len)
-          raw <- rgamma(sum(positive), alpha[positive], 1)
-          pmf[positive] <- raw / sum(raw)
           data.table(
-            sample = s, x = seq_len(pmf_len) - 1, p = pmf,
-            distribution = dist_name
+            sample = s, x = seq_along(alpha) - 1,
+            p = rdirichlet(alpha), distribution = dist_name
           )
         }))
       } else {
@@ -1216,6 +1211,26 @@ Dirichlet <- function(alpha, prior, concentration, ...) {
   }
   params <- list(alpha = alpha)
   new_dist_spec(params, "dirichlet")
+}
+
+#' Draw a single sample from a Dirichlet
+#'
+#' Equivalent to other `rdirichlet()` implementations
+#' (independent gammas with the same rate, segment-normalised).
+#' Bins with `alpha == 0` stay at zero so structural zeros (e.g.
+#' the t = 0 generation-time bin) are preserved.
+#'
+#' @param alpha A non-negative numeric vector of concentration
+#'   parameters.
+#' @return A numeric vector the same length as `alpha`, summing
+#'   to 1 over the positive-alpha entries.
+#' @keywords internal
+rdirichlet <- function(alpha) {
+  positive <- alpha > 0
+  pmf <- numeric(length(alpha))
+  raw <- rgamma(sum(positive), alpha[positive], 1)
+  pmf[positive] <- raw / sum(raw)
+  pmf
 }
 
 #' Get the names of the natural parameters of a distribution
