@@ -134,7 +134,7 @@ fill_missing <- function(data,
     }
   }
   if (missing(initial_accumulate) && isFALSE(data$accumulate[1]) &&
-    any(data$accumulate)) {
+        any(data$accumulate)) {
     # nolint start: duplicate_argument_linter
     cli_warn(
       c(
