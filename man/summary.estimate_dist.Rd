@@ -14,11 +14,11 @@
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
-A \code{<data.table>} with summary statistics for the delay
+A \verb{<data.table>} with summary statistics for the delay
 distribution parameters.
 }
 \description{
-\code{r lifecycle::badge("experimental")}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Returns parameter summary statistics for the fitted delay
 distribution model.
 }

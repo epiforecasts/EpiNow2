@@ -6,6 +6,18 @@
 \usage{
 .extract_to_dist_spec(fit, dist, max_value)
 }
+\arguments{
+\item{fit}{A fitted Stan model object.}
+
+\item{dist}{Character, the distribution name (one of
+\code{"lognormal"}, \code{"gamma"}, \code{"normal"}, \code{"exp"}, or \code{"weibull"}).}
+
+\item{max_value}{Numeric, the maximum delay value to retain on
+the returned \verb{<dist_spec>}.}
+}
+\value{
+A \verb{<dist_spec>} with posterior mean/sd parameters.
+}
 \description{
 Extract parameters and convert to dist_spec
 }

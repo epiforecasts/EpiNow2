@@ -304,7 +304,7 @@ regional_summary <- function(regional_output = NULL,
   uppers <- grepl("upper_", colnames(current_inf), fixed = TRUE) # nolint
   lowers <- grepl("lower_", colnames(current_inf), fixed = TRUE) # nolint
   log_cases <- (max(current_inf[, ..uppers], na.rm = TRUE) /
-                  (min(current_inf[, ..lowers], na.rm = TRUE) + 1)) > 1000
+    (min(current_inf[, ..lowers], na.rm = TRUE) + 1)) > 1000
 
   max_reported_cases <- round(
     max(reported_cases$confirm, na.rm = TRUE) * max_plot, 0
@@ -989,8 +989,7 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
   )
 
   # Map generic parameter names to distribution-specific names
-  dist_idx <- object$args$delay_dist[1] + 1
-  dist_type <- dist_spec_distributions()[dist_idx]
+  dist_type <- dist_id_to_name(object$args$delay_dist[1])
   param_names <- natural_params(dist_type)
   idx <- suppressWarnings(
     as.integer(gsub(".*\\[(\\d+)\\]", "\\1", out$variable))
@@ -1007,6 +1006,96 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
   class(out) <- c("summary.estimate_truncation", class(out))
 
   out
+}
+
+#' Summarise results from estimate_dist
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Returns parameter summary statistics for the fitted delay
+#' distribution model.
+#'
+#' @param object A fitted model object from `estimate_dist()`
+#' @inheritParams calc_summary_measures
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A `<data.table>` with summary statistics for the delay
+#'   distribution parameters.
+#' @method summary estimate_dist
+#' @export
+summary.estimate_dist <- function(object,
+                                  CrIs = c(0.2, 0.5, 0.9),
+                                  ...) {
+  raw_samples <- extract_samples(
+    object$fit,
+    pars = "delay_params"
+  )
+  param_mat <- raw_samples$delay_params
+
+  dist_name <- object$args$dist
+  param_names <- .get_param_names(dist_name) # nolint: object_usage_linter.
+
+  # Build long-format samples table
+  samples_list <- lapply(seq_along(param_names), function(i) {
+    data.table::data.table(
+      variable = param_names[i],
+      value = param_mat[, i]
+    )
+  })
+  param_samples <- data.table::rbindlist(samples_list)
+
+  out <- calc_summary_measures(
+    param_samples,
+    summarise_by = "variable",
+    order_by = "variable",
+    CrIs = CrIs
+  )
+
+  attr(out, "distribution") <- dist_name
+  attr(out, "max_value") <- object$args$max_value
+  attr(out, "n_obs") <- sum(object$args$n_obs)
+  attr(out, "n_strata") <- object$args$n
+  attr(out, "primary") <- if (object$args$primary_id == 1L) {
+    "uniform"
+  } else {
+    "exponentially tilted"
+  }
+  D_vals <- object$args$D
+  finite_D <- D_vals[is.finite(D_vals)]
+  attr(out, "max_delay") <- max(object$args$delay_upper)
+  attr(out, "max_obs_time") <- if (length(finite_D) > 0) {
+    max(finite_D)
+  } else {
+    Inf
+  }
+  attr(out, "n_untruncated") <- sum(!is.finite(D_vals))
+  class(out) <- c("summary.estimate_dist", class(out))
+
+  out
+}
+
+#' @export
+print.summary.estimate_dist <- function(x, ...) {
+  cat("Delay distribution:", attr(x, "distribution"))
+  cat(paste0(" (max: ", attr(x, "max_value"), ")\n"))
+  cat(
+    "Observations:", attr(x, "n_obs"),
+    paste0("(", attr(x, "n_strata"), " unique strata)\n")
+  )
+  cat("Primary event:", attr(x, "primary"), "\n")
+  cat(
+    "Max delay:", attr(x, "max_delay"),
+    "| Max obs time:", attr(x, "max_obs_time")
+  )
+  n_untrunc <- attr(x, "n_untruncated")
+  if (n_untrunc > 0) {
+    cat(
+      paste0(" (", n_untrunc, " strata untruncated)")
+    )
+  }
+  cat("\n\n")
+  cat("Parameter estimates:\n")
+  print(data.table::as.data.table(x), ...)
+  invisible(x)
 }
 
 #' @export

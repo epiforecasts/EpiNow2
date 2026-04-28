@@ -764,7 +764,7 @@ posterior_to_normal <- function(posterior, idx) {
 #' @return A `dist_spec` object representing the delay distribution
 #' @keywords internal
 reconstruct_parametric <- function(stan_data, param_id, posterior) {
-  dist_type <- dist_spec_distributions()[stan_data$delay_dist[param_id] + 1]
+  dist_type <- dist_id_to_name(stan_data$delay_dist[param_id])
   dist_max <- stan_data$delay_max[param_id]
 
   # Get parameter indices and values
@@ -934,12 +934,12 @@ get_parameters.epinowfit <- function(x, ...) {
 }
 
 #' @rdname get_parameters
-#' @method get_parameters estimate_dist
 #' @export
 get_parameters.estimate_dist <- function(x, ...) {
-  list(
-    delay = .extract_to_dist_spec(
-      x$fit, x$args$dist, x$args$max_value
-    )
+  dist_spec <- .extract_to_dist_spec(
+    fit = x$fit,
+    dist = x$args$dist,
+    max_value = x$args$max_value
   )
+  list(delay = dist_spec)
 }

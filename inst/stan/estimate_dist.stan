@@ -26,7 +26,8 @@ data {
   // Per-observation right truncation time
   array[n] real<lower=0> D;
 
-  // Distribution ID: 1=lognormal, 2=gamma
+  // Distribution ID; see primarycensored::pcd_stan_dist_id()
+  // (supported: lognormal, gamma, normal, exp, weibull).
   int<lower=1> dist_id;
 
   // Primary distribution ID: 1=uniform, 2=expgrowth

@@ -307,6 +307,21 @@ test_that("delay distributions can be specified in different ways", {
     round(get_pmf(discretise(Normal(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2),
     c(0.00, 0.01, 0.07, 0.26, 0.40, 0.26)
   )
+  expect_equal(
+    unname(as.numeric(get_parameters(Exp(rate = 0.5)))), 0.5
+  )
+  expect_equal(
+    round(get_pmf(discretise(Exp(rate = 0.5, max = 5))), 2),
+    c(0.24, 0.35, 0.21, 0.13, 0.08)
+  )
+  expect_equal(
+    unname(as.numeric(get_parameters(Weibull(shape = 2, scale = 5)))),
+    c(2, 5)
+  )
+  expect_equal(
+    round(get_pmf(discretise(Weibull(shape = 2, scale = 5, max = 5))), 2),
+    c(0.02, 0.14, 0.24, 0.30, 0.30)
+  )
   expect_equal(get_pmf(discretise(Fixed(value = 3))), c(0, 0, 0, 1))
   ## fractional fixed values split probability across adjacent intervals
   expect_equal(get_pmf(discretise(Fixed(value = 2.5))), c(0, 0, 0.5, 0.5))

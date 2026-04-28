@@ -2,7 +2,8 @@ int<lower = 0> delay_n; // number of delay distribution distributions
 int<lower = 0> delay_n_p; // number of parametric delay distributions
 int<lower = 0> delay_n_np; // number of nonparametric delay distributions
 array[delay_n_p] int<lower = 1> delay_max; // maximum delay distribution
-array[delay_n_p] int<lower = 0> delay_dist; // 0 = lognormal; 1 = gamma
+// primarycensored dist_id: 1 = lognormal; 2 = gamma; 3 = weibull
+array[delay_n_p] int<lower = 1> delay_dist;
 int<lower = 0> delay_np_pmf_length; // number of nonparametric pmf elements
 // ragged array of fixed PMFs
 vector<lower = 0, upper = 1>[delay_np_pmf_length] delay_np_pmf;

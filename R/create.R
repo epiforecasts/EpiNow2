@@ -256,7 +256,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 
   # Warn if fixed population is smaller than cumulative cases
   if (rt$pop != Fixed(0) && !is.null(data) &&
-        get_distribution(rt$pop) == "fixed") {
+    get_distribution(rt$pop) == "fixed") {
     pop_value <- mean(rt$pop, ignore_uncertainty = TRUE)
     total_cases <- sum(data[!is.na(confirm)]$confirm, na.rm = TRUE)
 
@@ -678,7 +678,7 @@ create_stan_args <- function(stan = stan_opts(),
   }
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
-        inherits(stan$object, "CmdStanModel")) {
+    inherits(stan$object, "CmdStanModel")) {
     init <- 2
   }
   # set up shared default arguments
@@ -831,7 +831,9 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$weight <- array(rep(1, ret$n_p))
   ret$weight[weight_priors] <- time_points
   ## assign distribution
-  ret$dist <- array(match(distributions, dist_spec_distributions()) - 1L)
+  ret$dist <- array(vapply(
+    distributions, primarycensored::pcd_stan_dist_id, integer(1)
+  ))
 
   names(ret) <- paste("delay", names(ret), sep = "_")
   ret <- c(ret, as.list(delay_ids))

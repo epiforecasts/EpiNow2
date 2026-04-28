@@ -644,7 +644,8 @@ forecast_secondary <- function(estimate,
   # combined primary from data and input primary
   predictions <- get_predictions(estimate)
   predictions <- merge(
-    predictions, estimate$observations, by = "date", all = TRUE
+    predictions, estimate$observations,
+    by = "date", all = TRUE
   )
   primary_fit <- predictions[
     ,
@@ -722,7 +723,8 @@ forecast_secondary <- function(estimate,
   out$forecast <- summarised
   # link previous prediction observations with forecast observations
   preds_with_obs <- merge(
-    get_predictions(estimate), estimate$observations, by = "date"
+    get_predictions(estimate), estimate$observations,
+    by = "date"
   )
   forecast_obs <- data.table::rbindlist(
     list(

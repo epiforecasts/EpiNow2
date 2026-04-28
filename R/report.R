@@ -110,7 +110,6 @@ report_summary <- function(summarised_estimates,
 }
 
 
-
 #' Report plots
 #'
 #' @description `r lifecycle::badge("questioning")`

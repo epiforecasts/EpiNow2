@@ -14,7 +14,7 @@ test_that("update_infectiousness works as expected with default settings", {
   expect_error(update_infectiousness(rep(1, 20), rep(0.1, 5), 5, 10, 10))
 })
 
-pmf <- discretised_pmf(c(2.25, 0.75), 15, 1)
+pmf <- discretised_pmf(c(2.25, 0.75), 15, 2, 0)
 gt_rev_pmf <- get_delay_rev_pmf(
   1L, 15L, array(0L), array(1L),
   array(c(1L, 2L)), array(15L), pmf,
@@ -30,31 +30,31 @@ test_that("generate_infections works as expected", {
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(20), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(rep(20, 11), 22, 22, 23, 24, 24, 25, 26, 27, 28)
+    c(rep(20, 10), 20, 22, 22, 23, 24, 25, 25, 26, 27, 28)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(rep(100, 10), 99, 110, 112, 115, 119, 122, 126, 130, 134, 138)
+    c(rep(100, 10), 99, 110, 112, 115, 119, 123, 126, 130, 135, 139)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(rep(500, 4), 394, 418, 424, rep(425, 7))
+    c(rep(500, 4), 398, 420, 425, 426, 426, 427, 427, 427, 427, 427)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(rep(500, 4), 394, 460, 475, 489, 505, 520, 536, 553, 570, 588)
+    c(rep(500, 4), 398, 462, 478, 493, 508, 524, 541, 558, 575, 594)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 1, gt_rev_pmf, log(40), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(40, 8, 11, 12, 12, rep(13, 6))
+    c(40, 8, 12, 13, rep(13, 7))
   )
   expect_equal(
     round(generate_infections(c(1, rep(1.1, 9)), 1, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1), 0),
-    c(100, 20, 31, 35, 36, 37, 38, 39, 41, 42, 43)
+    c(100, 21, 32, 35, 37, 38, 39, 40, 42, 43, 44)
   )
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 1.0, 4, 0, 0, 1), 0),
-    c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 982, 980, 978, 976)
+    c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 981, 980, 978, 976)
   )
 })
 
@@ -62,7 +62,7 @@ test_that("generate_infections respects pop_floor with population adjustment", {
   # Test with higher pop_floor to verify floor behavior
   expect_equal(
     round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 10.0, 4, 0, 0, 1), 0),
-    c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 982, 980, 978, 976)
+    c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 981, 980, 978, 976)
   )
 
   # Test with very small population where floor matters
@@ -76,7 +76,7 @@ test_that("generate_infections respects pop_floor with population adjustment", {
 # test deconvolve_infections
 test_that("deconvolve_infections with fixed mode returns shifted cases", {
   shifted_cases <- c(10, 20, 30, 40, 50)
-  noise <- numeric(0)  # Noise not used in fixed mode
+  noise <- numeric(0) # Noise not used in fixed mode
   result <- deconvolve_infections(shifted_cases, noise, fixed = 1, prior = 0)
 
   # With fixed = 1, should return shifted_cases + small offset
@@ -85,7 +85,7 @@ test_that("deconvolve_infections with fixed mode returns shifted cases", {
 
 test_that("deconvolve_infections with prior=0 applies noise only", {
   shifted_cases <- rep(100, 10)
-  noise <- rep(0.1, 10)  # Small positive noise
+  noise <- rep(0.1, 10) # Small positive noise
 
   result <- deconvolve_infections(shifted_cases, noise, fixed = 0, prior = 0)
 
@@ -96,7 +96,7 @@ test_that("deconvolve_infections with prior=0 applies noise only", {
 
 test_that("deconvolve_infections with prior=1 scales cases by noise", {
   shifted_cases <- c(10, 20, 30, 40, 50)
-  noise <- rep(0, 5)  # Zero noise for simple test
+  noise <- rep(0, 5) # Zero noise for simple test
 
   result <- deconvolve_infections(shifted_cases, noise, fixed = 0, prior = 1)
 

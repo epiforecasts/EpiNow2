@@ -201,7 +201,8 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
 #' @keywords internal
 combine_tv_and_static_params <- function(time_varying_list, raw_samples, args) {
   combined_tv <- data.table::rbindlist(
-    time_varying_list, fill = TRUE, idcol = "variable"
+    time_varying_list,
+    fill = TRUE, idcol = "variable"
   )
 
   static_params <- list(
