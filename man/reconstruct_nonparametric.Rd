@@ -21,12 +21,13 @@ A \code{dist_spec} object representing the nonparametric
 delay
 }
 \description{
-Reconstruct a nonparametric delay from Stan data
+Reconstruct a nonparametric delay from Stan data.
 }
 \details{
-Returns the posterior mean PMF as a \code{NonParametric} when
-posterior draws are available for an estimated delay. Otherwise
-returns the prior specification (as \code{NonParametric(pmf = Dirichlet(...))}
-without a fit, or as a fixed \code{NonParametric}).
+For estimated delays, returns \code{NonParametric(pmf = Dirichlet(...))},
+using either the prior alpha (no fit available) or a moment-matched
+Dirichlet whose mean equals the posterior mean of the simplex and
+whose concentration matches the average per-bin posterior variance.
+For fixed delays, returns the \code{NonParametric} PMF as supplied.
 }
 \keyword{internal}

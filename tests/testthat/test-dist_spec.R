@@ -396,4 +396,3 @@ test_that("Dirichlet works with dist_spec prior", {
   expect_equal(mean(result), expected_pmf)
   expect_equal(get_parameters(result)$alpha, 5 * expected_pmf)
 })
-

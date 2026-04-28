@@ -5,6 +5,8 @@
 \title{Summarise results from estimate_dist}
 \usage{
 \method{summary}{estimate_dist}(object, CrIs = c(0.2, 0.5, 0.9), ...)
+
+\method{summary}{estimate_dist}(object, CrIs = c(0.2, 0.5, 0.9), ...)
 }
 \arguments{
 \item{object}{A fitted model object from \code{estimate_dist()}}
@@ -16,9 +18,16 @@
 \value{
 A \verb{<data.table>} with summary statistics for the delay
 distribution parameters.
+
+A \code{<data.table>} with summary statistics for the delay
+distribution parameters.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+Returns parameter summary statistics for the fitted delay
+distribution model.
+
+\code{r lifecycle::badge("experimental")}
 Returns parameter summary statistics for the fitted delay
 distribution model.
 }
