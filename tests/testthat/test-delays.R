@@ -469,14 +469,17 @@ test_that(
     result <- EpiNow2:::reconstruct_nonparametric(
       stan_data, 1L, np_posterior
     )
-    # Should return NonParametric with estimated = FALSE
-    expect_false(isTRUE(result$estimated))
+    # Should round-trip as a NonParametric backed by a Dirichlet
+    expect_true(isTRUE(result$estimated))
+    post_alpha <- result$alpha
+    # Structural zero is preserved
+    expect_equal(post_alpha[1], 0)
+    # Free alphas are positive
+    expect_true(all(post_alpha[-1] > 0))
+    # Implied mean PMF is a valid simplex
     post_pmf <- as.numeric(get_pmf(result))
-    # First element should be 0 (structural zero)
     expect_equal(post_pmf[1], 0)
-    # Sum should be 1
     expect_equal(sum(post_pmf), 1, tolerance = 1e-10)
-    # Should be close to prior with these draws
     expect_true(all(post_pmf >= 0))
   }
 )

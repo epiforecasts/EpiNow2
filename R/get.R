@@ -797,12 +797,13 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
 
 #' Reconstruct a nonparametric delay distribution
 #'
-#' Reconstruct a nonparametric delay from Stan data
+#' Reconstruct a nonparametric delay from Stan data.
 #'
-#' Returns the posterior mean PMF as a `NonParametric` when
-#' posterior draws are available for an estimated delay. Otherwise
-#' returns the prior specification (as `NonParametric(pmf = Dirichlet(...))`
-#' without a fit, or as a fixed `NonParametric`).
+#' For estimated delays, returns `NonParametric(pmf = Dirichlet(...))`,
+#' using either the prior alpha (no fit available) or a moment-matched
+#' Dirichlet whose mean equals the posterior mean of the simplex and
+#' whose concentration matches the average per-bin posterior variance.
+#' For fixed delays, returns the `NonParametric` PMF as supplied.
 #'
 #' @param stan_data List of Stan data containing delay
 #'   specification
@@ -832,20 +833,24 @@ reconstruct_nonparametric <- function(stan_data, np_id,
     pmf_start <- stan_data$delay_np_pmf_groups[np_id]
     local_pos <- pos_idx - pmf_start + 1L
 
+    full_alpha <- rep(0, length(prior_pmf))
     if (!is.null(np_posterior)) {
-      ## compute posterior mean PMF from raw gamma draws
+      ## moment-match the simplex draws to a Dirichlet so the
+      ## posterior summary round-trips as a prior
       raw_draws <- np_posterior[, alpha_idx, drop = FALSE]
       normed <- raw_draws / rowSums(raw_draws)
-      post_mean <- colMeans(normed)
-      post_pmf <- prior_pmf
-      post_pmf[local_pos] <- post_mean
-      NonParametric(pmf = post_pmf)
+      mu <- colMeans(normed)
+      v <- apply(normed, 2, var)
+      ## solve mu*(1-mu)/(alpha0+1) = v for alpha0 per bin, then
+      ## average over bins with non-degenerate variance
+      alpha0_per_bin <- mu * (1 - mu) / v - 1
+      keep <- is.finite(alpha0_per_bin) & alpha0_per_bin > 0
+      alpha0 <- if (any(keep)) mean(alpha0_per_bin[keep]) else 1
+      full_alpha[local_pos] <- alpha0 * mu
     } else {
-      alpha <- stan_data$delay_np_est_alpha[alpha_idx]
-      full_alpha <- rep(0, length(prior_pmf))
-      full_alpha[local_pos] <- alpha
-      NonParametric(pmf = Dirichlet(alpha = full_alpha))
+      full_alpha[local_pos] <- stan_data$delay_np_est_alpha[alpha_idx]
     }
+    NonParametric(pmf = Dirichlet(alpha = full_alpha))
   } else {
     NonParametric(pmf = prior_pmf)
   }
