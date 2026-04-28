@@ -1223,8 +1223,8 @@ Dirichlet <- function(alpha, prior, concentration, ...) {
 rdirichlet <- function(alpha) {
   positive <- alpha > 0
   pmf <- numeric(length(alpha))
-  raw <- rgamma(sum(positive), alpha[positive], 1)
-  pmf[positive] <- raw / sum(raw)
+  draws <- rgamma(sum(positive), alpha[positive], 1)
+  pmf[positive] <- draws / sum(draws)
   pmf
 }
 
@@ -1244,8 +1244,8 @@ rdirichlet <- function(alpha) {
 #'   `distribution`.
 #' @keywords internal
 nonparametric_pmf_data <- function(x, i, samples) {
-  single <- extract_single_dist(x, i)
-  alpha <- single$alpha
+  component <- extract_single_dist(x, i)
+  alpha <- component$alpha
   if (!is.null(alpha) && any(alpha > 0)) {
     dist_name <- paste0("Nonparametric (Dirichlet) (ID: ", i, ")")
     return(rbindlist(lapply(seq_len(samples), function(s) {
