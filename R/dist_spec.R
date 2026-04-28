@@ -1195,10 +1195,16 @@ Dirichlet <- function(alpha, prior, concentration, ...) {
 
 #' Draw a single sample from a Dirichlet
 #'
-#' Equivalent to other `rdirichlet()` implementations
-#' (independent gammas with the same rate, segment-normalised).
-#' Bins with `alpha == 0` stay at zero so structural zeros (e.g.
-#' the t = 0 generation-time bin) are preserved.
+#' Base R does not provide an `rdirichlet()`. We use the
+#' gamma-normalisation method also used by the Stan model:
+#' draw an independent `Gamma(alpha_i, 1)` per bin and rescale by
+#' the segment sum. Bins with `alpha == 0` stay at zero so
+#' structural zeros (e.g. the t = 0 generation-time bin) are
+#' preserved.
+#'
+#' @references
+#' Stan discourse, "Ragged array of simplexes",
+#' \url{https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382/21}.
 #'
 #' @param alpha A non-negative numeric vector of concentration
 #'   parameters.

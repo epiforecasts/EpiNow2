@@ -15,9 +15,15 @@ A numeric vector the same length as \code{alpha}, summing
 to 1 over the positive-alpha entries.
 }
 \description{
-Equivalent to other \code{rdirichlet()} implementations
-(independent gammas with the same rate, segment-normalised).
-Bins with \code{alpha == 0} stay at zero so structural zeros (e.g.
-the t = 0 generation-time bin) are preserved.
+Base R does not provide an \code{rdirichlet()}. We use the
+gamma-normalisation method also used by the Stan model:
+draw an independent \code{Gamma(alpha_i, 1)} per bin and rescale by
+the segment sum. Bins with \code{alpha == 0} stay at zero so
+structural zeros (e.g. the t = 0 generation-time bin) are
+preserved.
+}
+\references{
+Stan discourse, "Ragged array of simplexes",
+\url{https://discourse.mc-stan.org/t/ragged-array-of-simplexes/1382/21}.
 }
 \keyword{internal}
