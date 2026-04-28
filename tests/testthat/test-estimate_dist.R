@@ -5,12 +5,11 @@ skip_on_cran()
 
 # Helper to simulate delays and build a date-based linelist
 generate_linelist <- function(
-  n = 500, rdist = rlnorm, D = 30,
-  pwindow = 1, swindow = 1,
-  rprimary = stats::runif, rprimary_args = list(),
-  weight = 1,
-  ...
-) {
+    n = 500, rdist = rlnorm, D = 30,
+    pwindow = 1, swindow = 1,
+    rprimary = stats::runif, rprimary_args = list(),
+    weight = 1,
+    ...) {
   delays <- primarycensored::rprimarycensored(
     n = n, rdist = rdist,
     pwindow = pwindow, swindow = swindow, D = D,

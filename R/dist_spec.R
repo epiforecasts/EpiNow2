@@ -51,11 +51,10 @@
 #' @importFrom rlang arg_match
 #' @importFrom primarycensored qprimarycensored
 discrete_pmf <- function(
-  distribution = c(
-    "exp", "gamma", "lognormal", "normal", "weibull", "fixed"
-  ),
-  params, max_value, cdf_cutoff, width
-) {
+    distribution = c(
+      "exp", "gamma", "lognormal", "normal", "weibull", "fixed"
+    ),
+    params, max_value, cdf_cutoff, width) {
   distribution <- arg_match(distribution)
 
   ## handle fixed distribution as special case
