@@ -43,7 +43,7 @@ For background on how EpiNow2 uses delay distributions internally, including dis
 
 # Set up
 
-```{r setup}
+```{r setup, warning = FALSE, message = FALSE}
 library(EpiNow2) # nolint: unused_import_linter.
 library(primarycensored)
 library(ggplot2)
@@ -147,9 +147,9 @@ By default, `estimate_dist()` uses `Normal(1, 1)` for `meanlog` and `Normal(0.5,
 These are fairly wide and may not reflect domain knowledge.
 We recommend setting priors based on what you know about the delay.
 
-For `meanlog`, the prior should reflect the expected mean delay on the log scale.
-If you expect a delay with a mean around 3--7 days, `log(5) ≈ 1.6` is a reasonable centre.
-A standard deviation of 0.5 on the log scale corresponds to roughly a factor of 1.6 uncertainty in the mean delay (since `exp(0.5) ≈ 1.6`), so the prior covers mean delays from about `5/1.6 ≈ 3` to `5 * 1.6 ≈ 8` days within one standard deviation.
+For `meanlog`, the prior should reflect the expected median delay on the log scale, since `exp(meanlog)` is the median of a lognormal (the mean is `exp(meanlog + sdlog^2 / 2)`).
+If you expect a delay with a median around 3--7 days, `log(5) ≈ 1.6` is a reasonable centre.
+A standard deviation of 0.5 on the log scale corresponds to roughly a factor of 1.6 uncertainty (since `exp(0.5) ≈ 1.6`), so the prior covers median delays from about `5/1.6 ≈ 3` to `5 * 1.6 ≈ 8` days within one standard deviation.
 
 For `sdlog`, it helps to think in terms of the coefficient of variation (CV).
 For a lognormal distribution, `CV = sqrt(exp(sdlog²) - 1)` depends only on `sdlog`.

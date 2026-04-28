@@ -19,12 +19,12 @@ funcs <- c(
   "expgrowth_lpdf"
 )
 
-stan_code <- pcd_load_stan_functions(
+invisible(pcd_load_stan_functions(
   functions = funcs,
   dependencies = TRUE,
   write_to_file = TRUE,
   output_file = output_file
-)
+))
 
 version <- packageVersion("primarycensored")
 all_funcs <- unique(unlist(lapply(

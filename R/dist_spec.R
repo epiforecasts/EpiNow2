@@ -47,12 +47,14 @@
 #' @return A vector representing a probability distribution.
 #' @keywords internal
 #' @inheritParams bound_dist
-#' @importFrom stats pexp pgamma plnorm pnorm
+#' @importFrom stats pexp pgamma plnorm pnorm pweibull
 #' @importFrom rlang arg_match
 #' @importFrom primarycensored qprimarycensored
-discrete_pmf <- function(distribution =
-                           c("exp", "gamma", "lognormal", "normal", "fixed"),
-                         params, max_value, cdf_cutoff, width) {
+discrete_pmf <- function(
+    distribution = c(
+      "exp", "gamma", "lognormal", "normal", "weibull", "fixed"
+    ),
+    params, max_value, cdf_cutoff, width) {
   distribution <- arg_match(distribution)
 
   ## handle fixed distribution as special case
@@ -86,7 +88,8 @@ discrete_pmf <- function(distribution =
     exp = pexp,
     gamma = pgamma,
     lognormal = plnorm,
-    normal = pnorm
+    normal = pnorm,
+    weibull = pweibull
   )
 
   ## apply CDF cutoff if given
@@ -334,6 +337,8 @@ mean.dist_spec <- function(x, ..., ignore_uncertainty = FALSE) {
       lognormal = exp(params$meanlog + params$sdlog**2 / 2),
       gamma = params$shape / params$rate,
       normal = params$mean,
+      exp = 1 / params$rate,
+      weibull = params$scale * gamma(1 + 1 / params$shape),
       fixed = params$value
     )
     if (is.null(ret_mean)) {
@@ -399,6 +404,12 @@ sd.dist_spec <- function(x, ...) {
         exp(x$parameters$meanlog + 0.5 * x$parameters$sdlog**2),
       gamma = sqrt(x$parameters$shape / x$parameters$rate**2),
       normal = x$parameters$sd,
+      exp = 1 / x$parameters$rate,
+      weibull = {
+        wshape <- x$parameters$shape
+        wscale <- x$parameters$scale
+        wscale * sqrt(gamma(1 + 2 / wshape) - gamma(1 + 1 / wshape)^2)
+      },
       fixed = 0.0
     )
     if (is.null(ret_sd)) {
@@ -1073,8 +1084,32 @@ Normal <- function(mean, sd, ...) {
   new_dist_spec(params, "normal", ...)
 }
 
+#' @inheritParams stats::Exponential
 #' @rdname Distributions
 #' @order 4
+#' @export
+#' @examples
+#' Exp(rate = 1)
+#' Exp(mean = 4)
+Exp <- function(rate, mean, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "exp", ...)
+}
+
+#' @inheritParams stats::Weibull
+#' @rdname Distributions
+#' @order 5
+#' @export
+#' @examples
+#' Weibull(shape = 1, scale = 1)
+#' Weibull(shape = 1, scale = 1, max = 10)
+Weibull <- function(shape, scale, ...) {
+  params <- as.list(environment())
+  new_dist_spec(params, "weibull", ...)
+}
+
+#' @rdname Distributions
+#' @order 6
 #' @param value Value of the fixed (delta) distribution
 #' @export
 #' @examples
@@ -1121,6 +1156,8 @@ natural_params <- function(distribution) {
     gamma = c("shape", "rate"),
     lognormal = c("meanlog", "sdlog"),
     normal = c("mean", "sd"),
+    exp = "rate",
+    weibull = c("shape", "scale"),
     fixed = "value"
   )
 }
@@ -1167,7 +1204,8 @@ lower_bounds <- function(distribution) {
     gamma = c(shape = 0, rate = 0, scale = 0, mean = 0, sd = 0),
     lognormal = c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0),
     normal = c(mean = -Inf, sd = 0),
-    exp = c(rate = 0),
+    exp = c(rate = 0, mean = 0),
+    weibull = c(shape = 0, scale = 0),
     fixed = c(value = 1)
   )
 }
@@ -1374,29 +1412,38 @@ convert_to_natural <- function(params, distribution) {
   rel_unc <- mean(sds^2 / unlist(ux))
   ## store natural parameters
   x <- list()
-  if (distribution == "gamma") {
-    ## given as mean and sd
-    if ("mean" %in% names(ux) && "sd" %in% names(ux)) {
-      x$shape <- ux$mean**2 / ux$sd**2
-      x$rate <- x$shape / ux$mean
-    } else {
-      ## convert scale => rate
-      if ("scale" %in% names(ux)) {
-        x$rate <- 1 / ux$scale
+  switch(distribution,
+    gamma = {
+      if ("mean" %in% names(ux) && "sd" %in% names(ux)) {
+        x$shape <- ux$mean**2 / ux$sd**2
+        x$rate <- x$shape / ux$mean
+      } else {
+        ## convert scale => rate
+        if ("scale" %in% names(ux)) {
+          x$rate <- 1 / ux$scale
+        } else {
+          x$rate <- ux$rate
+        }
+        x$shape <- ux$shape
+      }
+    },
+    lognormal = {
+      if ("mean" %in% names(params) && "sd" %in% names(params)) {
+        x$meanlog <- log(ux$mean^2 / sqrt(ux$sd^2 + ux$mean^2))
+        x$sdlog <- convert_to_logsd(ux$mean, ux$sd)
+      } else {
+        x$meanlog <- ux$meanlog
+        x$sdlog <- ux$sdlog
+      }
+    },
+    exp = {
+      if ("mean" %in% names(params)) {
+        x$rate <- 1 / ux$mean
       } else {
         x$rate <- ux$rate
       }
-      x$shape <- ux$shape
     }
-  } else if (distribution == "lognormal") {
-    if ("mean" %in% names(params) && "sd" %in% names(params)) {
-      x$meanlog <- log(ux$mean^2 / sqrt(ux$sd^2 + ux$mean^2))
-      x$sdlog <- convert_to_logsd(ux$mean, ux$sd)
-    } else {
-      x$meanlog <- ux$meanlog
-      x$sdlog <- ux$sdlog
-    }
-  }
+  )
   ## sort
   x <- x[natural_params(distribution)]
   if (anyNA(names(x))) {

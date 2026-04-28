@@ -11,6 +11,11 @@
 \code{sdate_lwr}, and optionally \code{pdate_upr}, \code{sdate_upr},
 \code{obs_date}, \code{n}).}
 
+\item{obs_time_threshold}{Numeric multiplier for the
+obs-time-to-Inf heuristic. Observations where
+\code{relative_obs_time > max(delay_upr) * obs_time_threshold}
+are treated as untruncated. Set to \code{Inf} to disable.}
+
 \item{verbose}{Logical, print progress messages?}
 }
 \value{
