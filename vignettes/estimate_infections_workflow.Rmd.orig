@@ -254,27 +254,69 @@ See the [Model options](estimate_infections_options.html) vignette for an illust
 ## Evaluating forecasts with scoringutils
 
 Forecast evaluation is useful for comparing the predictive performance of different models or assessing how accuracy changes at different forecast horizons.
-The `get_predictions()` function supports a `format = "sample"` argument to return raw posterior samples compatible with the [scoringutils](https://epiforecasts.io/scoringutils/) package.
+EpiNow2 provides an `as_forecast_sample()` method that converts the output of `estimate_infections()` (and related functions) directly into a `forecast_sample` object from the [scoringutils](https://epiforecasts.io/scoringutils/) package.
 
 Since we fitted on only the first 60 days of `example_confirmed`, we can score the 7-day forecast against the full dataset.
-Here we show forecast scores by horizon:
 
 ```{r scoringutils}
 library(scoringutils)
 
-# Get sample-based predictions for the forecast period
-preds <- get_predictions(def, format = "sample")
-forecasts <- preds[horizon > 0]
-
-# Add observed data
-forecasts <- merge(forecasts, example_confirmed, by = "date")
+forecast_obj <- as_forecast_sample(
+  def,
+  observations = example_confirmed,
+  forecast_unit = c("forecast_date", "date", "horizon")
+)
 
 # Score forecasts by horizon
+score(forecast_obj[forecast_obj$horizon > 0, ])
+```
+
+### Comparing alternative model assumptions
+
+To see how the choice of model assumptions affects predictive performance, we fit two further variants alongside `def`:
+
+* `weak_prior`: a wider prior on the initial reproduction number;
+* `rw`: a weekly random walk on Rt instead of the default Gaussian process.
+
+We then combine the resulting forecast samples with a `model` column and score them jointly so that scores can be compared across models.
+
+```{r scoringutils-compare}
+weak_prior <- estimate_infections(
+  reported_cases,
+  generation_time = gt_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = LogNormal(mean = 2, sd = 1)),
+  forecast = forecast_opts(horizon = 7)
+)
+
+rw <- estimate_infections(
+  reported_cases,
+  generation_time = gt_opts(generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = rt_prior, rw = 7),
+  gp = NULL,
+  forecast = forecast_opts(horizon = 7)
+)
+
+fits <- list(default = def, weak_prior = weak_prior, rw = rw)
+
+forecasts <- lapply(names(fits), function(model) {
+  fc <- as.data.table(get_predictions(fits[[model]], format = "sample"))
+  fc[, model := model][]
+})
+forecasts <- rbindlist(forecasts)
+forecasts <- merge(forecasts, example_confirmed, by = "date")
+
 forecast_obj <- as_forecast_sample(
-  forecasts,
-  forecast_unit = "horizon",
+  forecasts[horizon > 0],
+  forecast_unit = c("model", "forecast_date", "date", "horizon"),
   observed = "confirm",
   sample_id = "sample"
 )
-score(forecast_obj)
+
+scores <- score(forecast_obj)
+summarise_scores(scores, by = c("model", "horizon"))
 ```
+
+Lower CRPS values indicate better forecasts.
+Comparisons across a single time series should be treated as illustrative; for a more reliable assessment one would score across multiple forecast dates and locations.
