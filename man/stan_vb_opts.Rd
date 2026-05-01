@@ -17,16 +17,16 @@ rstan::vb()] before failing.}
 \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}.}
 
 \item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}} or
-\code{\link[cmdstanr:model-method-variational]{cmdstanr::variational()}}, depending on the chosen backend.}
+\code{\link[cmdstanr:variational]{cmdstanr::variational()}}, depending on the chosen backend.}
 }
 \value{
 A list of arguments to pass to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}} or
-\code{\link[cmdstanr:model-method-variational]{cmdstanr::variational()}}, depending on the chosen backend.
+\code{\link[cmdstanr:variational]{cmdstanr::variational()}}, depending on the chosen backend.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}} or
-\code{\link[cmdstanr:model-method-variational]{cmdstanr::variational()}}. Custom settings can be supplied which override the
+\code{\link[cmdstanr:variational]{cmdstanr::variational()}}. Custom settings can be supplied which override the
 defaults.
 }
 \examples{
