@@ -556,3 +556,25 @@ test_that("as_forecast_sample errors when observations are missing or invalid", 
     "confirm"
   )
 })
+
+test_that("as_forecast_sample.epinow dispatches and surfaces failed-run errors", {
+  skip_if_not_installed("scoringutils")
+
+  # Synthesise an epinow object by prepending the class to a successful fit
+  fake_epinow <- default_fit
+  class(fake_epinow) <- c("epinow", class(fake_epinow))
+
+  forecast_obj <- scoringutils::as_forecast_sample(
+    fake_epinow,
+    observations = example_confirmed,
+    forecast_unit = c("forecast_date", "date", "horizon")
+  )
+  expect_s3_class(forecast_obj, "forecast_sample")
+
+  failed <- list(error = "boom")
+  class(failed) <- c("epinow", "list")
+  expect_error(
+    scoringutils::as_forecast_sample(failed, observations = example_confirmed),
+    "failed"
+  )
+})
