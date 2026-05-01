@@ -257,12 +257,11 @@ Forecast evaluation is useful for comparing the predictive performance of differ
 _EpiNow2_ provides an `as_forecast_sample()` method that converts the output of `estimate_infections()` (and related functions) directly into a `forecast_sample` object from the [scoringutils](https://epiforecasts.io/scoringutils/) package.
 
 Since we fitted on only the first 60 days of `example_confirmed`, we can score the 7-day forecast against the full dataset.
+By default the forecast classes drop in-sample horizons (`horizon < 0`); pass a numeric `horizon` argument to override.
 
 ```{r scoringutils}
 library(scoringutils)
 
 forecast_obj <- as_forecast_sample(def, observations = example_confirmed)
-
-# Score forecasts by horizon
-score(forecast_obj[forecast_obj$horizon > 0, ])
+score(forecast_obj)
 ```

@@ -540,6 +540,23 @@ test_that("as_forecast_sample.estimate_infections produces a scoreable object", 
   expect_true("crps" %in% names(scores))
 })
 
+test_that("as_forecast_sample horizon arg subsets predictions", {
+  skip_if_not_installed("scoringutils")
+
+  default_obj <- scoringutils::as_forecast_sample(
+    default_fit,
+    observations = example_confirmed
+  )
+  expect_true(all(default_obj$horizon >= 0))
+
+  subset_obj <- scoringutils::as_forecast_sample(
+    default_fit,
+    observations = example_confirmed,
+    horizon = c(1, 2)
+  )
+  expect_setequal(unique(subset_obj$horizon), c(1, 2))
+})
+
 test_that("as_forecast_sample errors when observations are missing or invalid", {
   skip_if_not_installed("scoringutils")
 

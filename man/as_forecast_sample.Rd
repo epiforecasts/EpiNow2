@@ -8,13 +8,13 @@
 \alias{as_forecast_sample.estimate_truncation}
 \title{Convert EpiNow2 model output to a \code{forecast_sample} object}
 \usage{
-\method{as_forecast_sample}{estimate_infections}(data, observations, ...)
+\method{as_forecast_sample}{estimate_infections}(data, observations, horizon = NULL, ...)
 
-\method{as_forecast_sample}{epinow}(data, observations, ...)
+\method{as_forecast_sample}{epinow}(data, observations, horizon = NULL, ...)
 
-\method{as_forecast_sample}{forecast_secondary}(data, observations, ...)
+\method{as_forecast_sample}{forecast_secondary}(data, observations, horizon = NULL, ...)
 
-\method{as_forecast_sample}{estimate_truncation}(data, observations, ...)
+\method{as_forecast_sample}{estimate_truncation}(data, observations, horizon = NULL, ...)
 }
 \arguments{
 \item{data}{Output of \code{\link[=epinow]{epinow()}}, \code{\link[=estimate_infections]{estimate_infections()}},
@@ -25,6 +25,14 @@ Must contain a \code{date} column. For \code{\link[=epinow]{epinow()}} and \code
 objects must also contain a \code{confirm} column; for \code{\link[=forecast_secondary]{forecast_secondary()}}
 objects a \code{secondary} column; for \code{\link[=estimate_truncation]{estimate_truncation()}} objects a
 \code{confirm} column representing the latest, least-truncated observations.}
+
+\item{horizon}{Optional numeric vector of horizons to keep, applied via
+\code{\%in\%} to the \code{horizon} column of \code{\link[=get_predictions]{get_predictions()}} output before
+scoring. If \code{NULL} (default), a class-specific filter is applied:
+horizons \verb{>= 0} (i.e. forecast period only) for \code{\link[=epinow]{epinow()}},
+\code{\link[=estimate_infections]{estimate_infections()}} and \code{\link[=forecast_secondary]{forecast_secondary()}} objects, and no
+filter for \code{\link[=estimate_truncation]{estimate_truncation()}} objects (where horizons are
+non-positive by construction).}
 
 \item{...}{Additional arguments passed to
 \code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}}. \code{forecast_unit} is set
