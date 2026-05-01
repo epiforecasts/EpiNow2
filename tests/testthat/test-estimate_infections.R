@@ -525,3 +525,34 @@ test_that("get_predictions format='quantile' compatible with scoringutils", {
   expect_s3_class(scores, "data.table")
   expect_true("wis" %in% names(scores))
 })
+
+test_that("as_forecast_sample.estimate_infections produces a scoreable object", {
+  skip_if_not_installed("scoringutils")
+
+  forecast_obj <- scoringutils::as_forecast_sample(
+    default_fit,
+    observations = example_confirmed,
+    forecast_unit = c("forecast_date", "date", "horizon")
+  )
+  expect_s3_class(forecast_obj, "forecast_sample")
+
+  scores <- scoringutils::score(forecast_obj)
+  expect_s3_class(scores, "data.table")
+  expect_true("crps" %in% names(scores))
+})
+
+test_that("as_forecast_sample errors when observations are missing or invalid", {
+  skip_if_not_installed("scoringutils")
+
+  expect_error(
+    scoringutils::as_forecast_sample(default_fit),
+    "observations"
+  )
+  expect_error(
+    scoringutils::as_forecast_sample(
+      default_fit,
+      observations = data.frame(date = example_confirmed$date)
+    ),
+    "confirm"
+  )
+})

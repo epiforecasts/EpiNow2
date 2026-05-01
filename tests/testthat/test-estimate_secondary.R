@@ -100,6 +100,20 @@ test_that("forecast_secondary can return values from simulated data and plot
   expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
 })
 
+test_that("as_forecast_sample.forecast_secondary produces a scoreable object", {
+  skip_if_not_installed("scoringutils")
+
+  inc_preds <- forecast_secondary(
+    default_inc, inc_cases[seq(61, .N)][, value := primary]
+  )
+  forecast_obj <- scoringutils::as_forecast_sample(
+    inc_preds,
+    observations = inc_cases,
+    forecast_unit = c("forecast_date", "date", "horizon")
+  )
+  expect_s3_class(forecast_obj, "forecast_sample")
+})
+
 test_that("estimate_secondary recovers scaling parameter from incidence data", {
   # Basic parameter recovery check using pre-computed fit
   # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
