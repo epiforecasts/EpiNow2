@@ -345,6 +345,11 @@ forecast_obj <- as_forecast_sample(
   sample_id = "sample"
 )
 score(forecast_obj)
+#> Warning: Predictions appear to be integer-valued.
+#> ! The log score uses kernel density estimation, which may not be appropriate
+#>   for integer-valued forecasts.
+#> ℹ See the scoringRules package for alternatives for discrete probability
+#>   distributions.
 #>    horizon    bias      dss     crps overprediction underprediction dispersion
 #>      <num>   <num>    <num>    <num>          <num>           <num>      <num>
 #> 1:       1 -0.6505 13.31003 305.8814          0.000         190.593   115.2884
