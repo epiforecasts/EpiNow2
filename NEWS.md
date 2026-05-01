@@ -2,7 +2,7 @@
 
 ## Package changes
 
-- Bundled the repeated input data frame validation in `simulate_infections()` and `simulate_secondary()` into a shared internal helper `check_simulation_input()`.
+- Added a shared internal helper `check_simulation_input()` that bundles the repeated input data frame validation in `simulate_infections()` and `simulate_secondary()`.
 
 ## Bug fixes
 
