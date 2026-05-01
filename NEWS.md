@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Package changes
+
+- Bundled the repeated input data frame validation in `simulate_infections()` and `simulate_secondary()` into a shared internal helper `check_simulation_input()`.
+
 ## Bug fixes
 
 - Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.
