@@ -27,7 +27,10 @@ objects a \code{secondary} column; for \code{\link[=estimate_truncation]{estimat
 \code{confirm} column representing the latest, least-truncated observations.}
 
 \item{...}{Additional arguments passed to
-\code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}}.}
+\code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}}. For \code{\link[=estimate_truncation]{estimate_truncation()}} objects
+any user-supplied \code{forecast_unit} must include \code{"dataset"}, since
+predictions contain one observation snapshot per dataset and \code{sample_id}
+values repeat across datasets.}
 }
 \value{
 A \code{forecast_sample} object as returned by

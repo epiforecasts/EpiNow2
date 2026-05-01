@@ -24,7 +24,10 @@
 #'   objects a `secondary` column; for [estimate_truncation()] objects a
 #'   `confirm` column representing the latest, least-truncated observations.
 #' @param ... Additional arguments passed to
-#'   [scoringutils::as_forecast_sample()].
+#'   [scoringutils::as_forecast_sample()]. For [estimate_truncation()] objects
+#'   any user-supplied `forecast_unit` must include `"dataset"`, since
+#'   predictions contain one observation snapshot per dataset and `sample_id`
+#'   values repeat across datasets.
 #'
 #' @return A `forecast_sample` object as returned by
 #'   [scoringutils::as_forecast_sample()]. Rows for which `observations` does
@@ -75,6 +78,17 @@ as_forecast_sample.forecast_secondary <- function(data, observations, ...) {
 #' @rdname as_forecast_sample
 #' @exportS3Method scoringutils::as_forecast_sample
 as_forecast_sample.estimate_truncation <- function(data, observations, ...) {
+  dots <- list(...)
+  if (!is.null(dots$forecast_unit) && !"dataset" %in% dots$forecast_unit) {
+    cli::cli_abort(c(
+      "{.arg forecast_unit} must include {.val dataset} for \\
+      {.cls estimate_truncation} objects.",
+      "i" = "Predictions contain one observation snapshot per {.val dataset} \\
+            and {.arg sample} values repeat across snapshots; omitting \\
+            {.val dataset} produces duplicate sample IDs and silently \\
+            wrong scores."
+    ))
+  }
   build_forecast_sample(data, observations, observed_col = "confirm", ...)
 }
 

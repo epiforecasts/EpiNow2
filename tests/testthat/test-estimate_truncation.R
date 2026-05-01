@@ -142,6 +142,20 @@ test_that("as_forecast_sample.estimate_truncation produces a scoreable object", 
   expect_true("crps" %in% names(scores))
 })
 
+test_that("as_forecast_sample.estimate_truncation errors when forecast_unit drops dataset", {
+  skip_if_not_installed("scoringutils")
+
+  latest <- example_truncated[[length(example_truncated)]]
+  expect_error(
+    scoringutils::as_forecast_sample(
+      default_est,
+      observations = latest,
+      forecast_unit = c("forecast_date", "date", "horizon")
+    ),
+    "dataset"
+  )
+})
+
 test_that("get_parameters returns valid truncation distribution", {
   est <- default_est
 
