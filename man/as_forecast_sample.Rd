@@ -8,13 +8,13 @@
 \alias{as_forecast_sample.estimate_truncation}
 \title{Convert EpiNow2 model output to a \code{forecast_sample} object}
 \usage{
-\method{as_forecast_sample}{estimate_infections}(data, observations, horizon = NULL, ...)
+\method{as_forecast_sample}{estimate_infections}(data, observations, horizon = 0, ...)
 
-\method{as_forecast_sample}{epinow}(data, observations, horizon = NULL, ...)
+\method{as_forecast_sample}{epinow}(data, observations, horizon = 0, ...)
 
-\method{as_forecast_sample}{forecast_secondary}(data, observations, horizon = NULL, ...)
+\method{as_forecast_sample}{forecast_secondary}(data, observations, horizon = 0, ...)
 
-\method{as_forecast_sample}{estimate_truncation}(data, observations, horizon = NULL, ...)
+\method{as_forecast_sample}{estimate_truncation}(data, observations, horizon = -Inf, ...)
 }
 \arguments{
 \item{data}{Output of \code{\link[=epinow]{epinow()}}, \code{\link[=estimate_infections]{estimate_infections()}},
@@ -26,13 +26,12 @@ objects must also contain a \code{confirm} column; for \code{\link[=forecast_sec
 objects a \code{secondary} column; for \code{\link[=estimate_truncation]{estimate_truncation()}} objects a
 \code{confirm} column representing the latest, least-truncated observations.}
 
-\item{horizon}{Optional numeric vector of horizons to keep, applied via
-\code{\%in\%} to the \code{horizon} column of \code{\link[=get_predictions]{get_predictions()}} output before
-scoring. If \code{NULL} (default), a class-specific filter is applied:
-horizons \verb{>= 0} (i.e. forecast period only) for \code{\link[=epinow]{epinow()}},
-\code{\link[=estimate_infections]{estimate_infections()}} and \code{\link[=forecast_secondary]{forecast_secondary()}} objects, and no
-filter for \code{\link[=estimate_truncation]{estimate_truncation()}} objects (where horizons are
-non-positive by construction).}
+\item{horizon}{Numeric scalar lower bound on the \code{horizon} column of
+\code{\link[=get_predictions]{get_predictions()}} output: rows with \code{horizon >= horizon} are kept.
+Defaults to \code{0} for \code{\link[=epinow]{epinow()}}, \code{\link[=estimate_infections]{estimate_infections()}} and
+\code{\link[=forecast_secondary]{forecast_secondary()}} (i.e. forecast period only) and to \code{-Inf} for
+\code{\link[=estimate_truncation]{estimate_truncation()}} (keep all reconstructed horizons). Pass
+\code{horizon = -Inf} to disable filtering.}
 
 \item{...}{Additional arguments passed to
 \code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}}. \code{forecast_unit} is set
@@ -61,20 +60,22 @@ observations on \code{date}, and pass the result to
 installed gives an informative error.
 }
 \examples{
-\dontshow{if (interactive() && rlang::is_installed("scoringutils")) withAutoprint(\{ # examplesIf}
+\dontshow{if (rlang::is_installed("scoringutils")) withAutoprint(\{ # examplesIf}
+\donttest{
 library(scoringutils)
 
-reported_cases <- example_confirmed[1:60]
-fit <- estimate_infections(
-  reported_cases,
+# samples and calculation time have been reduced for this example
+# for real analyses, use at least samples = 2000
+fit <- estimate_infections(example_confirmed[1:40],
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + example_reporting_delay),
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
-  forecast = forecast_opts(horizon = 7)
+  stan = stan_opts(samples = 100, warmup = 200)
 )
 
 forecast_obj <- as_forecast_sample(fit, observations = example_confirmed)
 score(forecast_obj)
+}
 \dontshow{\}) # examplesIf}
 }
 \seealso{

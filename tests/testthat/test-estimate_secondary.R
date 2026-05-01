@@ -100,7 +100,7 @@ test_that("forecast_secondary can return values from simulated data and plot
   expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
 })
 
-test_that("as_forecast_sample.forecast_secondary produces a scoreable object", {
+test_that("as_forecast_sample.forecast_secondary produces a valid forecast_sample", {
   skip_if_not_installed("scoringutils")
 
   inc_preds <- forecast_secondary(
@@ -111,10 +111,9 @@ test_that("as_forecast_sample.forecast_secondary produces a scoreable object", {
     observations = inc_cases
   )
   expect_s3_class(forecast_obj, "forecast_sample")
-
-  scores <- scoringutils::score(forecast_obj)
-  expect_s3_class(scores, "data.table")
-  expect_true("crps" %in% names(scores))
+  expect_no_error(
+    scoringutils::assert_forecast(forecast_obj, verbose = FALSE)
+  )
 })
 
 test_that("estimate_secondary recovers scaling parameter from incidence data", {

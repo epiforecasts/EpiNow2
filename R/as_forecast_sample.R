@@ -22,13 +22,12 @@
 #'   objects must also contain a `confirm` column; for [forecast_secondary()]
 #'   objects a `secondary` column; for [estimate_truncation()] objects a
 #'   `confirm` column representing the latest, least-truncated observations.
-#' @param horizon Optional numeric vector of horizons to keep, applied via
-#'   `%in%` to the `horizon` column of [get_predictions()] output before
-#'   scoring. If `NULL` (default), a class-specific filter is applied:
-#'   horizons `>= 0` (i.e. forecast period only) for [epinow()],
-#'   [estimate_infections()] and [forecast_secondary()] objects, and no
-#'   filter for [estimate_truncation()] objects (where horizons are
-#'   non-positive by construction).
+#' @param horizon Numeric scalar lower bound on the `horizon` column of
+#'   [get_predictions()] output: rows with `horizon >= horizon` are kept.
+#'   Defaults to `0` for [epinow()], [estimate_infections()] and
+#'   [forecast_secondary()] (i.e. forecast period only) and to `-Inf` for
+#'   [estimate_truncation()] (keep all reconstructed horizons). Pass
+#'   `horizon = -Inf` to disable filtering.
 #' @param ... Additional arguments passed to
 #'   [scoringutils::as_forecast_sample()]. `forecast_unit` is set
 #'   automatically from the object class (`forecast_date`, `date`, `horizon`,
@@ -40,32 +39,33 @@
 #'
 #' @seealso [get_predictions()] for the underlying sample extraction.
 #' @name as_forecast_sample
-#' @examplesIf interactive() && rlang::is_installed("scoringutils")
+#' @examplesIf rlang::is_installed("scoringutils")
+#' \donttest{
 #' library(scoringutils)
 #'
-#' reported_cases <- example_confirmed[1:60]
-#' fit <- estimate_infections(
-#'   reported_cases,
+#' # samples and calculation time have been reduced for this example
+#' # for real analyses, use at least samples = 2000
+#' fit <- estimate_infections(example_confirmed[1:40],
 #'   generation_time = gt_opts(example_generation_time),
 #'   delays = delay_opts(example_incubation_period + example_reporting_delay),
 #'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
-#'   forecast = forecast_opts(horizon = 7)
+#'   stan = stan_opts(samples = 100, warmup = 200)
 #' )
 #'
 #' forecast_obj <- as_forecast_sample(fit, observations = example_confirmed)
 #' score(forecast_obj)
+#' }
 NULL
 
 #' @rdname as_forecast_sample
 #' @exportS3Method scoringutils::as_forecast_sample
 as_forecast_sample.estimate_infections <- function(data, observations,
-                                                   horizon = NULL, ...) {
+                                                   horizon = 0, ...) {
   .build_forecast_sample(
     data, observations,
     observed_col = "confirm",
     forecast_unit = c("forecast_date", "date", "horizon"),
     horizon = horizon,
-    default_horizon = function(h) h >= 0,
     ...
   )
 }
@@ -73,7 +73,7 @@ as_forecast_sample.estimate_infections <- function(data, observations,
 #' @rdname as_forecast_sample
 #' @exportS3Method scoringutils::as_forecast_sample
 as_forecast_sample.epinow <- function(data, observations,
-                                      horizon = NULL, ...) {
+                                      horizon = 0, ...) {
   if (!is.null(data$error)) {
     cli::cli_abort(c(
       "Cannot convert a failed {.fn epinow} run to a {.cls forecast_sample}.",
@@ -85,7 +85,6 @@ as_forecast_sample.epinow <- function(data, observations,
     observed_col = "confirm",
     forecast_unit = c("forecast_date", "date", "horizon"),
     horizon = horizon,
-    default_horizon = function(h) h >= 0,
     ...
   )
 }
@@ -93,13 +92,12 @@ as_forecast_sample.epinow <- function(data, observations,
 #' @rdname as_forecast_sample
 #' @exportS3Method scoringutils::as_forecast_sample
 as_forecast_sample.forecast_secondary <- function(data, observations,
-                                                  horizon = NULL, ...) {
+                                                  horizon = 0, ...) {
   .build_forecast_sample(
     data, observations,
     observed_col = "secondary",
     forecast_unit = c("forecast_date", "date", "horizon"),
     horizon = horizon,
-    default_horizon = function(h) h >= 0,
     ...
   )
 }
@@ -107,20 +105,20 @@ as_forecast_sample.forecast_secondary <- function(data, observations,
 #' @rdname as_forecast_sample
 #' @exportS3Method scoringutils::as_forecast_sample
 as_forecast_sample.estimate_truncation <- function(data, observations,
-                                                   horizon = NULL, ...) {
+                                                   horizon = -Inf, ...) {
   .build_forecast_sample(
     data, observations,
     observed_col = "confirm",
     forecast_unit = c("dataset", "forecast_date", "date", "horizon"),
     horizon = horizon,
-    default_horizon = function(h) rep(TRUE, length(h)),
     ...
   )
 }
 
+#' @importFrom checkmate assert_data_frame assert_date assert_names
+#'   assert_numeric
 .build_forecast_sample <- function(data, observations, observed_col,
-                                   forecast_unit, horizon, default_horizon,
-                                   ...) {
+                                   forecast_unit, horizon, ...) {
   rlang::check_installed(
     "scoringutils",
     reason = "to convert EpiNow2 outputs to forecast_sample objects."
@@ -130,32 +128,27 @@ as_forecast_sample.estimate_truncation <- function(data, observations,
       "{.arg observations} must be supplied to score predictions."
     )
   }
-  observations <- data.table::as.data.table(observations)
-  required <- c("date", observed_col)
-  missing_cols <- setdiff(required, names(observations))
-  if (length(missing_cols) > 0) {
-    cli::cli_abort(
-      "{.arg observations} is missing required column{?s} \\
-      {.var {missing_cols}}."
-    )
-  }
-  if (anyDuplicated(observations$date) > 0L) {
-    cli::cli_abort(
-      "{.arg observations} must contain unique {.var date} values."
-    )
-  }
+  assert_numeric(horizon, len = 1L, any.missing = FALSE)
+  assert_data_frame(observations)
+  assert_names(names(observations), must.include = c("date", observed_col))
+  assert_date(observations$date, any.missing = FALSE, unique = TRUE)
+  assert_numeric(observations[[observed_col]], lower = 0)
 
+  observations <- data.table::as.data.table(observations)
   predictions <- get_predictions(data, format = "sample")
-  keep <- if (is.null(horizon)) {
-    default_horizon(predictions$horizon)
-  } else {
-    predictions$horizon %in% horizon
-  }
+  keep <- predictions$horizon >= horizon
   predictions <- predictions[keep]
 
   obs <- observations[, c("date", observed_col), with = FALSE]
   data.table::setnames(obs, observed_col, "observed")
   forecasts <- merge(predictions, obs, by = "date")
+  if (nrow(forecasts) == 0L) {
+    cli::cli_abort(c(
+      "No predictions remain after merging with {.arg observations}.",
+      "i" = "Check that {.arg observations} covers the prediction dates and \\
+            that the {.arg horizon} filter is not too restrictive."
+    ))
+  }
 
   dots <- list(...)
   dots$forecast_unit <- NULL

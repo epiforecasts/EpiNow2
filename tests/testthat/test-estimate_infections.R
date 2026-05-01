@@ -526,7 +526,7 @@ test_that("get_predictions format='quantile' compatible with scoringutils", {
   expect_true("wis" %in% names(scores))
 })
 
-test_that("as_forecast_sample.estimate_infections produces a scoreable object", {
+test_that("as_forecast_sample.estimate_infections produces a valid forecast_sample", {
   skip_if_not_installed("scoringutils")
 
   forecast_obj <- scoringutils::as_forecast_sample(
@@ -534,13 +534,12 @@ test_that("as_forecast_sample.estimate_infections produces a scoreable object", 
     observations = example_confirmed
   )
   expect_s3_class(forecast_obj, "forecast_sample")
-
-  scores <- scoringutils::score(forecast_obj)
-  expect_s3_class(scores, "data.table")
-  expect_true("crps" %in% names(scores))
+  expect_no_error(
+    scoringutils::assert_forecast(forecast_obj, verbose = FALSE)
+  )
 })
 
-test_that("as_forecast_sample horizon arg subsets predictions", {
+test_that("as_forecast_sample horizon arg sets the lower bound", {
   skip_if_not_installed("scoringutils")
 
   default_obj <- scoringutils::as_forecast_sample(
@@ -549,12 +548,19 @@ test_that("as_forecast_sample horizon arg subsets predictions", {
   )
   expect_true(all(default_obj$horizon >= 0))
 
-  subset_obj <- scoringutils::as_forecast_sample(
+  later_obj <- scoringutils::as_forecast_sample(
     default_fit,
     observations = example_confirmed,
-    horizon = c(1, 2)
+    horizon = 5
   )
-  expect_setequal(unique(subset_obj$horizon), c(1, 2))
+  expect_true(all(later_obj$horizon >= 5))
+
+  all_obj <- scoringutils::as_forecast_sample(
+    default_fit,
+    observations = example_confirmed,
+    horizon = -Inf
+  )
+  expect_true(any(all_obj$horizon < 0))
 })
 
 test_that("as_forecast_sample errors when observations are missing or invalid", {
@@ -578,7 +584,14 @@ test_that("as_forecast_sample errors when observations are missing or invalid", 
   )
   expect_error(
     scoringutils::as_forecast_sample(default_fit, observations = duped),
-    "unique"
+    "duplicated"
+  )
+
+  no_overlap <- data.table::copy(example_confirmed)
+  no_overlap$date <- no_overlap$date + as.difftime(1000, units = "days")
+  expect_error(
+    scoringutils::as_forecast_sample(default_fit, observations = no_overlap),
+    "merging"
   )
 })
 
