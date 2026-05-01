@@ -254,7 +254,7 @@ See the [Model options](estimate_infections_options.html) vignette for an illust
 ## Evaluating forecasts with scoringutils
 
 Forecast evaluation is useful for comparing the predictive performance of different models or assessing how accuracy changes at different forecast horizons.
-EpiNow2 provides an `as_forecast_sample()` method that converts the output of `estimate_infections()` (and related functions) directly into a `forecast_sample` object from the [scoringutils](https://epiforecasts.io/scoringutils/) package.
+_EpiNow2_ provides an `as_forecast_sample()` method that converts the output of `estimate_infections()` (and related functions) directly into a `forecast_sample` object from the [scoringutils](https://epiforecasts.io/scoringutils/) package.
 
 Since we fitted on only the first 60 days of `example_confirmed`, we can score the 7-day forecast against the full dataset.
 
