@@ -263,5 +263,6 @@ By default the forecast classes only keep horizons `>= 0` (i.e. the forecast per
 library(scoringutils)
 
 forecast_obj <- as_forecast_sample(def, observations = example_confirmed)
+forecast_obj
 score(forecast_obj)
 ```
