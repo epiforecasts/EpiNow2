@@ -531,8 +531,7 @@ test_that("as_forecast_sample.estimate_infections produces a scoreable object", 
 
   forecast_obj <- scoringutils::as_forecast_sample(
     default_fit,
-    observations = example_confirmed,
-    forecast_unit = c("forecast_date", "date", "horizon")
+    observations = example_confirmed
   )
   expect_s3_class(forecast_obj, "forecast_sample")
 
@@ -555,6 +554,15 @@ test_that("as_forecast_sample errors when observations are missing or invalid", 
     ),
     "confirm"
   )
+
+  duped <- rbind(
+    data.table::as.data.table(example_confirmed),
+    data.table::as.data.table(example_confirmed[1])
+  )
+  expect_error(
+    scoringutils::as_forecast_sample(default_fit, observations = duped),
+    "unique"
+  )
 })
 
 test_that("as_forecast_sample.epinow dispatches and surfaces failed-run errors", {
@@ -566,8 +574,7 @@ test_that("as_forecast_sample.epinow dispatches and surfaces failed-run errors",
 
   forecast_obj <- scoringutils::as_forecast_sample(
     fake_epinow,
-    observations = example_confirmed,
-    forecast_unit = c("forecast_date", "date", "horizon")
+    observations = example_confirmed
   )
   expect_s3_class(forecast_obj, "forecast_sample")
 

@@ -108,10 +108,13 @@ test_that("as_forecast_sample.forecast_secondary produces a scoreable object", {
   )
   forecast_obj <- scoringutils::as_forecast_sample(
     inc_preds,
-    observations = inc_cases,
-    forecast_unit = c("forecast_date", "date", "horizon")
+    observations = inc_cases
   )
   expect_s3_class(forecast_obj, "forecast_sample")
+
+  scores <- scoringutils::score(forecast_obj)
+  expect_s3_class(scores, "data.table")
+  expect_true("crps" %in% names(scores))
 })
 
 test_that("estimate_secondary recovers scaling parameter from incidence data", {

@@ -27,10 +27,9 @@ objects a \code{secondary} column; for \code{\link[=estimate_truncation]{estimat
 \code{confirm} column representing the latest, least-truncated observations.}
 
 \item{...}{Additional arguments passed to
-\code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}}. For \code{\link[=estimate_truncation]{estimate_truncation()}} objects
-any user-supplied \code{forecast_unit} must include \code{"dataset"}, since
-predictions contain one observation snapshot per dataset and \code{sample_id}
-values repeat across datasets.}
+\code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}}. \code{forecast_unit} is set
+automatically from the object class (\code{forecast_date}, \code{date}, \code{horizon},
+plus \code{dataset} for \code{\link[=estimate_truncation]{estimate_truncation()}}) and cannot be overridden.}
 }
 \value{
 A \code{forecast_sample} object as returned by
@@ -40,19 +39,18 @@ not provide a value on the corresponding \code{date} are dropped.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Convert outputs of EpiNow2 fitting and forecasting functions to
-\code{forecast_sample} objects from the \code{scoringutils} package for evaluating
-predictive performance. Methods are provided for objects returned by
-\code{\link[=epinow]{epinow()}}, \code{\link[=estimate_infections]{estimate_infections()}}, \code{\link[=forecast_secondary]{forecast_secondary()}}, and
-\code{\link[=estimate_truncation]{estimate_truncation()}}.
+\code{forecast_sample} objects via \code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}} for
+evaluating predictive performance. Methods are provided for objects
+returned by \code{\link[=epinow]{epinow()}}, \code{\link[=estimate_infections]{estimate_infections()}}, \code{\link[=forecast_secondary]{forecast_secondary()}},
+and \code{\link[=estimate_truncation]{estimate_truncation()}}.
 
 These methods extract sample-level posterior predictions via
 \code{\link[=get_predictions]{get_predictions()}} with \code{format = "sample"}, merge them with the supplied
 observations on \code{date}, and pass the result to
 \code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}}.
 
-\code{scoringutils} is an optional dependency. Methods are registered via
-delayed S3 method registration so that EpiNow2 can be loaded and checked
-without \code{scoringutils} installed; the methods themselves require it.
+\link[scoringutils:scoringutils-package]{scoringutils::scoringutils} is an optional dependency; calling these methods without it
+installed gives an informative error.
 }
 \examples{
 \dontshow{if (interactive() && rlang::is_installed("scoringutils")) withAutoprint(\{ # examplesIf}

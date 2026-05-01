@@ -2,19 +2,18 @@
 #'
 #' @description `r lifecycle::badge("experimental")`
 #' Convert outputs of EpiNow2 fitting and forecasting functions to
-#' `forecast_sample` objects from the `scoringutils` package for evaluating
-#' predictive performance. Methods are provided for objects returned by
-#' [epinow()], [estimate_infections()], [forecast_secondary()], and
-#' [estimate_truncation()].
+#' `forecast_sample` objects via [scoringutils::as_forecast_sample()] for
+#' evaluating predictive performance. Methods are provided for objects
+#' returned by [epinow()], [estimate_infections()], [forecast_secondary()],
+#' and [estimate_truncation()].
 #'
 #' These methods extract sample-level posterior predictions via
 #' [get_predictions()] with `format = "sample"`, merge them with the supplied
 #' observations on `date`, and pass the result to
 #' [scoringutils::as_forecast_sample()].
 #'
-#' `scoringutils` is an optional dependency. Methods are registered via
-#' delayed S3 method registration so that EpiNow2 can be loaded and checked
-#' without `scoringutils` installed; the methods themselves require it.
+#' [scoringutils] is an optional dependency; calling these methods without it
+#' installed gives an informative error.
 #'
 #' @param data Output of [epinow()], [estimate_infections()],
 #'   [forecast_secondary()], or [estimate_truncation()].
@@ -24,10 +23,9 @@
 #'   objects a `secondary` column; for [estimate_truncation()] objects a
 #'   `confirm` column representing the latest, least-truncated observations.
 #' @param ... Additional arguments passed to
-#'   [scoringutils::as_forecast_sample()]. For [estimate_truncation()] objects
-#'   any user-supplied `forecast_unit` must include `"dataset"`, since
-#'   predictions contain one observation snapshot per dataset and `sample_id`
-#'   values repeat across datasets.
+#'   [scoringutils::as_forecast_sample()]. `forecast_unit` is set
+#'   automatically from the object class (`forecast_date`, `date`, `horizon`,
+#'   plus `dataset` for [estimate_truncation()]) and cannot be overridden.
 #'
 #' @return A `forecast_sample` object as returned by
 #'   [scoringutils::as_forecast_sample()]. Rows for which `observations` does
@@ -54,7 +52,12 @@ NULL
 #' @rdname as_forecast_sample
 #' @exportS3Method scoringutils::as_forecast_sample
 as_forecast_sample.estimate_infections <- function(data, observations, ...) {
-  build_forecast_sample(data, observations, observed_col = "confirm", ...)
+  .build_forecast_sample(
+    data, observations,
+    observed_col = "confirm",
+    forecast_unit = c("forecast_date", "date", "horizon"),
+    ...
+  )
 }
 
 #' @rdname as_forecast_sample
@@ -66,48 +69,38 @@ as_forecast_sample.epinow <- function(data, observations, ...) {
       "i" = "The run failed with error: {data$error}"
     ))
   }
-  build_forecast_sample(data, observations, observed_col = "confirm", ...)
+  .build_forecast_sample(
+    data, observations,
+    observed_col = "confirm",
+    forecast_unit = c("forecast_date", "date", "horizon"),
+    ...
+  )
 }
 
 #' @rdname as_forecast_sample
 #' @exportS3Method scoringutils::as_forecast_sample
 as_forecast_sample.forecast_secondary <- function(data, observations, ...) {
-  build_forecast_sample(data, observations, observed_col = "secondary", ...)
+  .build_forecast_sample(
+    data, observations,
+    observed_col = "secondary",
+    forecast_unit = c("forecast_date", "date", "horizon"),
+    ...
+  )
 }
 
 #' @rdname as_forecast_sample
 #' @exportS3Method scoringutils::as_forecast_sample
 as_forecast_sample.estimate_truncation <- function(data, observations, ...) {
-  dots <- list(...)
-  if (!is.null(dots$forecast_unit) && !"dataset" %in% dots$forecast_unit) {
-    cli::cli_abort(c(
-      "{.arg forecast_unit} must include {.val dataset} for \\
-      {.cls estimate_truncation} objects.",
-      "i" = "Predictions contain one observation snapshot per {.val dataset} \\
-            and {.arg sample} values repeat across snapshots; omitting \\
-            {.val dataset} produces duplicate sample IDs and silently \\
-            wrong scores."
-    ))
-  }
-  build_forecast_sample(data, observations, observed_col = "confirm", ...)
+  .build_forecast_sample(
+    data, observations,
+    observed_col = "confirm",
+    forecast_unit = c("dataset", "forecast_date", "date", "horizon"),
+    ...
+  )
 }
 
-#' Build a `forecast_sample` from EpiNow2 sample predictions
-#'
-#' Internal helper that gates on `scoringutils` availability, extracts samples
-#' via [get_predictions()], merges with observations, and forwards to
-#' [scoringutils::as_forecast_sample()].
-#'
-#' @param data An EpiNow2 model fit or forecast object.
-#' @param observations A `<data.frame>` with `date` and the column named in
-#'   `observed_col`.
-#' @param observed_col Name of the observed-value column in `observations`.
-#' @param ... Additional arguments passed to
-#'   [scoringutils::as_forecast_sample()].
-#'
-#' @return A `forecast_sample` object.
-#' @keywords internal
-build_forecast_sample <- function(data, observations, observed_col, ...) {
+.build_forecast_sample <- function(data, observations, observed_col,
+                                   forecast_unit, ...) {
   rlang::check_installed(
     "scoringutils",
     reason = "to convert EpiNow2 outputs to forecast_sample objects."
@@ -126,17 +119,31 @@ build_forecast_sample <- function(data, observations, observed_col, ...) {
       {.var {missing_cols}}."
     )
   }
+  if (anyDuplicated(observations$date) > 0L) {
+    cli::cli_abort(
+      "{.arg observations} must contain unique {.var date} values."
+    )
+  }
 
   predictions <- get_predictions(data, format = "sample")
   obs <- observations[, c("date", observed_col), with = FALSE]
   data.table::setnames(obs, observed_col, "observed")
   forecasts <- merge(predictions, obs, by = "date")
 
-  scoringutils::as_forecast_sample(
-    forecasts,
-    observed = "observed",
-    predicted = "predicted",
-    sample_id = "sample",
-    ...
+  dots <- list(...)
+  dots$forecast_unit <- NULL
+
+  do.call(
+    scoringutils::as_forecast_sample,
+    c(
+      list(
+        data = forecasts,
+        forecast_unit = forecast_unit,
+        observed = "observed",
+        predicted = "predicted",
+        sample_id = "sample"
+      ),
+      dots
+    )
   )
 }
