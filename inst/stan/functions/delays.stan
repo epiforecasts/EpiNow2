@@ -212,8 +212,8 @@ vector combine_np_pmf(
   for (i in 1:delay_np_est_n) {
     int es = delay_np_est_groups[i];
     int ee = delay_np_est_groups[i + 1] - 1;
-    vector[ee - es + 1] normed =
-      delay_np_est_raw[es:ee] / sum(delay_np_est_raw[es:ee]);
+    vector[ee - es + 1] raw = delay_np_est_raw[es:ee];
+    vector[ee - es + 1] normed = raw / sum(raw);
     for (j in es:ee) {
       ret[delay_np_est_pos[j]] = normed[j - es + 1];
     }
