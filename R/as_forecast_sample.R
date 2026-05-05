@@ -23,11 +23,11 @@
 #'   objects a `secondary` column; for [estimate_truncation()] objects a
 #'   `confirm` column representing the latest, least-truncated observations.
 #' @param horizon Numeric scalar lower bound on the `horizon` column of
-#'   [get_predictions()] output: rows with `horizon >= horizon` are kept.
-#'   Defaults to `0` for [epinow()], [estimate_infections()] and
-#'   [forecast_secondary()] (i.e. forecast period only) and to `-Inf` for
-#'   [estimate_truncation()] (keep all reconstructed horizons). Pass
-#'   `horizon = -Inf` to disable filtering.
+#'   [get_predictions()] output. Predictions with a `horizon` value at or above
+#'   this bound are retained. Defaults to `0` for [epinow()],
+#'   [estimate_infections()] and [forecast_secondary()] (i.e. forecast period
+#'   only) and to `-Inf` for [estimate_truncation()] (keep all reconstructed
+#'   horizons). Pass `horizon = -Inf` to disable filtering.
 #' @param ... Additional arguments passed to
 #'   [scoringutils::as_forecast_sample()]. `forecast_unit` is set
 #'   automatically from the object class (`forecast_date`, `date`, `horizon`,
@@ -40,7 +40,6 @@
 #' @seealso [get_predictions()] for the underlying sample extraction.
 #' @name as_forecast_sample
 #' @examplesIf rlang::is_installed("scoringutils")
-#' \donttest{
 #' library(scoringutils)
 #'
 #' # samples and calculation time have been reduced for this example
@@ -54,7 +53,6 @@
 #'
 #' forecast_obj <- as_forecast_sample(fit, observations = example_confirmed)
 #' score(forecast_obj)
-#' }
 NULL
 
 #' @rdname as_forecast_sample

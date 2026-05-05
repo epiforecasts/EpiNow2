@@ -27,11 +27,11 @@ objects a \code{secondary} column; for \code{\link[=estimate_truncation]{estimat
 \code{confirm} column representing the latest, least-truncated observations.}
 
 \item{horizon}{Numeric scalar lower bound on the \code{horizon} column of
-\code{\link[=get_predictions]{get_predictions()}} output: rows with \code{horizon >= horizon} are kept.
-Defaults to \code{0} for \code{\link[=epinow]{epinow()}}, \code{\link[=estimate_infections]{estimate_infections()}} and
-\code{\link[=forecast_secondary]{forecast_secondary()}} (i.e. forecast period only) and to \code{-Inf} for
-\code{\link[=estimate_truncation]{estimate_truncation()}} (keep all reconstructed horizons). Pass
-\code{horizon = -Inf} to disable filtering.}
+\code{\link[=get_predictions]{get_predictions()}} output. Predictions with a \code{horizon} value at or above
+this bound are retained. Defaults to \code{0} for \code{\link[=epinow]{epinow()}},
+\code{\link[=estimate_infections]{estimate_infections()}} and \code{\link[=forecast_secondary]{forecast_secondary()}} (i.e. forecast period
+only) and to \code{-Inf} for \code{\link[=estimate_truncation]{estimate_truncation()}} (keep all reconstructed
+horizons). Pass \code{horizon = -Inf} to disable filtering.}
 
 \item{...}{Additional arguments passed to
 \code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}}. \code{forecast_unit} is set
@@ -61,7 +61,6 @@ installed gives an informative error.
 }
 \examples{
 \dontshow{if (rlang::is_installed("scoringutils")) withAutoprint(\{ # examplesIf}
-\donttest{
 library(scoringutils)
 
 # samples and calculation time have been reduced for this example
@@ -75,7 +74,6 @@ fit <- estimate_infections(example_confirmed[1:40],
 
 forecast_obj <- as_forecast_sample(fit, observations = example_confirmed)
 score(forecast_obj)
-}
 \dontshow{\}) # examplesIf}
 }
 \seealso{
