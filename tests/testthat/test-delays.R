@@ -481,3 +481,61 @@ test_that(
     expect_true(all(post_pmf >= 0))
   }
 )
+
+test_that("build_np_est_data produces expected output", {
+  np_delays <- list(
+    NonParametric(Dirichlet(prior = c(0.1, 0.5, 0.4), concentration = 10))
+  )
+  out <- EpiNow2:::build_np_est_data(np_delays, np_pmf_groups = c(1L, 4L))
+  expect_equal(out$np_est_n, 1L)
+  expect_equal(out$np_est_length, 3L)
+  expect_equal(as.integer(out$np_est_which), 1L)
+  expect_equal(as.numeric(out$np_est_alpha), 10 * c(0.1, 0.5, 0.4))
+  expect_equal(as.integer(out$np_est_pos), 1L:3L)
+  expect_equal(as.integer(out$np_est_groups), c(1L, 4L))
+})
+
+test_that("build_np_est_data drops structural zeros", {
+  np_delays <- list(
+    NonParametric(Dirichlet(prior = c(0, 0.3, 0.5, 0.2), concentration = 10))
+  )
+  out <- EpiNow2:::build_np_est_data(np_delays, np_pmf_groups = c(1L, 5L))
+  # Structural zero excluded from the parameter vector
+  expect_equal(out$np_est_length, 3L)
+  expect_equal(as.numeric(out$np_est_alpha), 10 * c(0.3, 0.5, 0.2))
+  # Positions skip the zero entry but stay 1-indexed in delay_np_pmf
+  expect_equal(as.integer(out$np_est_pos), 2L:4L)
+  expect_equal(as.integer(out$np_est_groups), c(1L, 4L))
+})
+
+test_that("build_np_est_data correctly handles mixed fixed and estimated", {
+  np_delays <- list(
+    NonParametric(c(0.5, 0.5)),
+    NonParametric(Dirichlet(prior = c(0.2, 0.8), concentration = 5))
+  )
+  ## fixed PMF takes positions 1-2, estimated PMF takes 3-4
+  out <- EpiNow2:::build_np_est_data(np_delays, np_pmf_groups = c(1L, 3L, 5L))
+  expect_equal(out$np_est_n, 1L)
+  expect_equal(as.integer(out$np_est_which), 2L)
+  expect_equal(as.integer(out$np_est_pos), 3L:4L)
+  expect_equal(as.numeric(out$np_est_alpha), 5 * c(0.2, 0.8))
+  expect_equal(as.integer(out$np_est_groups), c(1L, 3L))
+})
+
+test_that("build_np_est_data returns empty defaults when none estimated", {
+  out <- EpiNow2:::build_np_est_data(
+    list(NonParametric(c(0.4, 0.6))), np_pmf_groups = c(1L, 3L)
+  )
+  expect_equal(out$np_est_n, 0L)
+  expect_equal(out$np_est_length, 0L)
+  expect_equal(as.numeric(out$np_est_alpha), numeric(0))
+  expect_equal(as.integer(out$np_est_pos), integer(0))
+  expect_equal(as.integer(out$np_est_which), integer(0))
+  expect_equal(as.integer(out$np_est_groups), 1L)
+})
+
+test_that("build_np_est_data returns empty defaults for empty input", {
+  out <- EpiNow2:::build_np_est_data(list(), np_pmf_groups = 1L)
+  expect_equal(out$np_est_n, 0L)
+  expect_equal(out$np_est_length, 0L)
+})

@@ -704,6 +704,71 @@ create_stan_args <- function(stan = stan_opts(),
   stan_args
 }
 
+##' Build Stan data for estimated nonparametric delays
+##'
+##' Takes the nonparametric delays and the PMF group boundaries and
+##' returns the ragged-array fields that Stan needs to map a
+##' normalised Dirichlet draw back into `delay_np_pmf`.
+##'
+##' Structural zeros (entries where the prior alpha is zero, e.g. the
+##' `t = 0` generation-time bin) are dropped from the estimated
+##' parameter vector so Stan never sees a `Gamma(0, 1)` rate. Their
+##' positions are still held by the fixed `delay_np_pmf` entries and
+##' are left untouched at sampling time.
+##'
+##' @param np_delays A list of nonparametric `dist_spec` objects in
+##'   their original order. Each estimated entry must carry an
+##'   `$alpha` numeric vector aligned with its PMF.
+##' @param np_pmf_groups Integer vector of 1-indexed PMF group
+##'   boundaries (output of `create_stan_delays()`).
+##' @return A named list with `np_est_n`, `np_est_which`,
+##'   `np_est_alpha`, `np_est_pos`, `np_est_groups`, and
+##'   `np_est_length`. Empty arrays are returned when no delays are
+##'   estimated.
+##' @keywords internal
+build_np_est_data <- function(np_delays, np_pmf_groups) {
+  np_estimated <- vapply(
+    np_delays, function(x) isTRUE(x$estimated), logical(1)
+  )
+  est_np_indices <- which(np_estimated)
+  est_np_delays <- np_delays[np_estimated]
+  np_est_n <- sum(np_estimated)
+
+  if (np_est_n == 0L) {
+    return(list(
+      np_est_n = 0L,
+      np_est_which = array(integer(0)),
+      np_est_alpha = array(numeric(0)),
+      np_est_pos = array(integer(0)),
+      np_est_groups = array(1L),
+      np_est_length = 0L
+    ))
+  }
+
+  all_alphas <- list()
+  all_pos <- list()
+  for (k in seq_along(est_np_delays)) {
+    alpha_k <- est_np_delays[[k]]$alpha
+    np_id <- est_np_indices[k]
+    pmf_start <- np_pmf_groups[np_id]
+    positive <- which(alpha_k > 0)
+    all_alphas[[k]] <- alpha_k[positive]
+    all_pos[[k]] <- pmf_start + positive - 1L
+  }
+  est_np_alphas <- unname(as.numeric(unlist(all_alphas)))
+  est_np_positions <- as.integer(unlist(all_pos))
+  est_np_lengths <- lengths(all_alphas)
+
+  list(
+    np_est_n = np_est_n,
+    np_est_which = array(est_np_indices),
+    np_est_alpha = array(est_np_alphas),
+    np_est_pos = array(est_np_positions),
+    np_est_groups = array(c(0, cumsum(est_np_lengths)) + 1),
+    np_est_length = sum(est_np_lengths)
+  )
+}
+
 ##' Create delay variables for stan
 ##'
 ##' @param ... Named delay distributions. The names are assigned to IDs
@@ -786,54 +851,10 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$np_pmf_length <- sum(nonparam_length)
 
   ## estimated nonparametric delays
-  np_delays <- flat_delays[!parametric]
-  np_estimated <- vapply(
-    np_delays, function(x) isTRUE(x$estimated), logical(1)
+  ret <- c(
+    ret,
+    build_np_est_data(flat_delays[!parametric], ret$np_pmf_groups)
   )
-  est_np_indices <- which(np_estimated)
-  est_np_delays <- np_delays[np_estimated]
-  ret$np_est_n <- sum(np_estimated)
-
-  if (ret$np_est_n > 0) {
-    ## Build a flat ragged array of Dirichlet alphas across all
-    ## estimated NP delays.
-    ##
-    ## np_est_which: which NP delays are estimated.
-    ## np_est_alpha: concatenated alpha values, dropping any
-    ##   structural zeros (e.g. the t = 0 generation-time bin).
-    ## np_est_pos: position of each estimated alpha within
-    ##   delay_np_pmf, so Stan can place the normalised draw back
-    ##   into the full PMF without disturbing fixed entries.
-    ## np_est_groups: 1-indexed boundaries into np_est_alpha /
-    ##   np_est_pos, one entry per estimated NP delay plus a
-    ##   trailing length sentinel.
-    ret$np_est_which <- array(est_np_indices)
-    all_alphas <- list()
-    all_pos <- list()
-    for (k in seq_along(est_np_delays)) {
-      alpha_k <- est_np_delays[[k]]$alpha
-      np_id <- est_np_indices[k]
-      pmf_start <- ret$np_pmf_groups[np_id]
-      positive <- which(alpha_k > 0)
-      all_alphas[[k]] <- alpha_k[positive]
-      all_pos[[k]] <- pmf_start + positive - 1L
-    }
-    est_np_alphas <- unname(as.numeric(unlist(all_alphas)))
-    est_np_positions <- as.integer(unlist(all_pos))
-    est_np_lengths <- lengths(all_alphas)
-    ret$np_est_alpha <- array(est_np_alphas)
-    ret$np_est_pos <- array(est_np_positions)
-    ret$np_est_groups <- array(
-      c(0, cumsum(est_np_lengths)) + 1
-    )
-    ret$np_est_length <- sum(est_np_lengths)
-  } else {
-    ret$np_est_which <- array(integer(0))
-    ret$np_est_alpha <- array(numeric(0))
-    ret$np_est_pos <- array(integer(0))
-    ret$np_est_groups <- array(1L)
-    ret$np_est_length <- 0L
-  }
 
   ## get non zero length param lengths
   ret$params_groups <- array(c(0, cumsum(param_length)) + 1)
