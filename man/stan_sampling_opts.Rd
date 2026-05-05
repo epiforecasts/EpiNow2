@@ -55,16 +55,16 @@ estimation will fail with an informative error.}
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 
-\item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} or
+\item{...}{Additional parameters to pass to \code{\link[rstan:sampling]{rstan::sampling()}} or
 \code{\link[cmdstanr:sample]{cmdstanr::sample()}}.}
 }
 \value{
-A list of arguments to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} or
+A list of arguments to pass to \code{\link[rstan:sampling]{rstan::sampling()}} or
 \code{\link[cmdstanr:sample]{cmdstanr::sample()}}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Defines a list specifying the arguments passed to either \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}
+Defines a list specifying the arguments passed to either \code{\link[rstan:sampling]{rstan::sampling()}}
 or \code{\link[cmdstanr:sample]{cmdstanr::sample()}}. Custom settings can be supplied which override the
 defaults.
 }
