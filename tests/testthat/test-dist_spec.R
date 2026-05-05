@@ -89,8 +89,6 @@ test_that("convert_to_natural converts non-natural parameters", {
   exp_mean <- EpiNow2:::convert_to_natural(list(mean = 4), "exp")
   expect_equal(exp_mean$rate, 0.25)
 
-  ## Weibull mean/sd -> shape/scale via numerical inversion: round-trip from
-  ## known natural parameters back to natural via the analytical mean/sd.
   shape <- 2
   scale <- 5
   m <- scale * gamma(1 + 1 / shape)
