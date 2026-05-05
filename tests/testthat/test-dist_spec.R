@@ -68,35 +68,6 @@ test_that("dist_spec returns error when the wrong number of parameters are given
   expect_error(Gamma(shape = 1, rate = 2, mean = 3), "must be specified")
 })
 
-test_that("convert_to_natural converts non-natural parameters", {
-  gamma_meansd <- EpiNow2:::convert_to_natural(
-    list(mean = 4, sd = 2), "gamma"
-  )
-  expect_equal(gamma_meansd$shape, 4)
-  expect_equal(gamma_meansd$rate, 1)
-
-  gamma_scale <- EpiNow2:::convert_to_natural(
-    list(shape = 2, scale = 4), "gamma"
-  )
-  expect_equal(gamma_scale$rate, 0.25)
-
-  lognormal_meansd <- EpiNow2:::convert_to_natural(
-    list(mean = 4, sd = 1), "lognormal"
-  )
-  expect_equal(lognormal_meansd$meanlog, log(16 / sqrt(17)))
-  expect_equal(lognormal_meansd$sdlog, sqrt(log(1 + 1 / 16)))
-
-  shape <- 2
-  scale <- 5
-  m <- scale * gamma(1 + 1 / shape)
-  s <- sqrt(scale^2 * (gamma(1 + 2 / shape) - gamma(1 + 1 / shape)^2))
-  weibull_meansd <- EpiNow2:::convert_to_natural(
-    list(mean = m, sd = s), "weibull"
-  )
-  expect_equal(weibull_meansd$shape, shape, tolerance = 1e-6)
-  expect_equal(weibull_meansd$scale, scale, tolerance = 1e-6)
-})
-
 test_that("each supported distribution is fully wired through dist_spec", {
   supported <- c("lognormal", "gamma", "normal", "exp", "weibull")
   natural_values <- list(
@@ -110,6 +81,25 @@ test_that("each supported distribution is fully wired through dist_spec", {
     lognormal = LogNormal, gamma = Gamma, normal = Normal,
     exp = Exp, weibull = Weibull
   )
+  weibull_m <- 5 * gamma(1 + 1 / 2)
+  weibull_s <- sqrt(5^2 * (gamma(1 + 2 / 2) - gamma(1 + 1 / 2)^2))
+  nonnatural_cases <- list(
+    gamma = list(
+      list(input = list(mean = 4, sd = 2),
+           expected = list(shape = 4, rate = 1)),
+      list(input = list(shape = 2, scale = 4),
+           expected = list(rate = 0.25))
+    ),
+    lognormal = list(
+      list(input = list(mean = 4, sd = 1),
+           expected = list(meanlog = log(16 / sqrt(17)),
+                           sdlog = sqrt(log(1 + 1 / 16))))
+    ),
+    weibull = list(
+      list(input = list(mean = weibull_m, sd = weibull_s),
+           expected = list(shape = 2, scale = 5))
+    )
+  )
 
   for (d in supported) {
     np <- EpiNow2:::natural_params(d)
@@ -122,7 +112,6 @@ test_that("each supported distribution is fully wired through dist_spec", {
       info = paste("lower_bounds missing natural params for", d)
     )
 
-    ## convert_to_natural must round-trip the natural parameterisation
     nat <- natural_values[[d]]
     converted <- EpiNow2:::convert_to_natural(nat, d)
     expect_equal(
@@ -130,14 +119,25 @@ test_that("each supported distribution is fully wired through dist_spec", {
       info = paste("convert_to_natural does not round-trip for", d)
     )
 
-    ## constructor produces a dist_spec with the natural parameters
+    for (case in nonnatural_cases[[d]]) {
+      converted <- EpiNow2:::convert_to_natural(case$input, d)
+      for (param in names(case$expected)) {
+        expect_equal(
+          converted[[param]], case$expected[[param]],
+          tolerance = 1e-6,
+          info = paste(
+            "convert_to_natural", d, "non-natural param", param,
+            "from", paste(names(case$input), collapse = ",")
+          )
+        )
+      }
+    }
+
     spec <- do.call(constructors[[d]], nat)
     expect_s3_class(spec, "dist_spec")
     expect_equal(EpiNow2::get_distribution(spec), d)
     expect_equal(EpiNow2::get_parameters(spec)[np], nat[np])
 
-    ## dist_id_to_name round-trips via primarycensored, returning the same
-    ## distribution name the rest of the package uses.
     id <- primarycensored::pcd_stan_dist_id(d, "delay")
     expect_equal(
       EpiNow2:::dist_id_to_name(id), d,
