@@ -7,7 +7,7 @@
 extract_delays(samples, args)
 }
 \arguments{
-\item{samples}{Extracted stan model (using \code{\link[rstan:stanfit-method-extract]{rstan::extract()}})}
+\item{samples}{Extracted stan model (using \code{\link[rstan:extract]{rstan::extract()}})}
 
 \item{args}{Stan data list with delay_id_* and related lookup variables.}
 }

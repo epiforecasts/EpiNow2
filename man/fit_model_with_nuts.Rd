@@ -30,7 +30,7 @@ A stan model object
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
-Fits a stan model using \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}. Provides the optional ability to
+Fits a stan model using \code{\link[rstan:sampling]{rstan::sampling()}}. Provides the optional ability to
 run chains using \code{future} with error catching, timeouts and merging of
 completed chains.
 }
