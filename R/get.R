@@ -145,8 +145,7 @@ get_regional_results <- function(regional_output,
       estimates_out$samples <- samp
     }
     summarised <- purrr::map(
-      regional_output, summary,
-      type = "parameters"
+      regional_output, summary, type = "parameters"
     )
     summarised <- data.table::rbindlist(
       summarised,
@@ -431,12 +430,11 @@ get_predictions <- function(object, ...) {
 #' @rdname get_predictions
 #' @export
 get_predictions.estimate_infections <- function(
-  object,
-  format = c("summary", "sample", "quantile"),
-  CrIs = c(0.2, 0.5, 0.9),
-  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
-  ...
-) {
+    object,
+    format = c("summary", "sample", "quantile"),
+    CrIs = c(0.2, 0.5, 0.9),
+    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+    ...) {
   format <- rlang::arg_match(format)
 
   # Get samples for reported cases
@@ -461,12 +459,11 @@ get_predictions.estimate_infections <- function(
 #' @rdname get_predictions
 #' @export
 get_predictions.estimate_secondary <- function(
-  object,
-  format = c("summary", "sample", "quantile"),
-  CrIs = c(0.2, 0.5, 0.9),
-  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
-  ...
-) {
+    object,
+    format = c("summary", "sample", "quantile"),
+    CrIs = c(0.2, 0.5, 0.9),
+    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+    ...) {
   format <- rlang::arg_match(format)
 
   # Get samples for simulated secondary observations
@@ -491,12 +488,11 @@ get_predictions.estimate_secondary <- function(
 #' @rdname get_predictions
 #' @export
 get_predictions.forecast_infections <- function(
-  object,
-  format = c("summary", "sample", "quantile"),
-  CrIs = c(0.2, 0.5, 0.9),
-  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
-  ...
-) {
+    object,
+    format = c("summary", "sample", "quantile"),
+    CrIs = c(0.2, 0.5, 0.9),
+    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+    ...) {
   format <- rlang::arg_match(format)
 
   samples <- object$samples[variable == "reported_cases"]
@@ -515,12 +511,11 @@ get_predictions.forecast_infections <- function(
 #' @rdname get_predictions
 #' @export
 get_predictions.forecast_secondary <- function(
-  object,
-  format = c("summary", "sample", "quantile"),
-  CrIs = c(0.2, 0.5, 0.9),
-  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
-  ...
-) {
+    object,
+    format = c("summary", "sample", "quantile"),
+    CrIs = c(0.2, 0.5, 0.9),
+    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+    ...) {
   format <- rlang::arg_match(format)
 
   # forecast_secondary$samples only contains sim_secondary, no filtering needed
@@ -546,12 +541,11 @@ get_predictions.forecast_secondary <- function(
 #' @rdname get_predictions
 #' @export
 get_predictions.estimate_truncation <- function(
-  object,
-  format = c("summary", "sample", "quantile"),
-  CrIs = c(0.2, 0.5, 0.9),
-  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
-  ...
-) {
+    object,
+    format = c("summary", "sample", "quantile"),
+    CrIs = c(0.2, 0.5, 0.9),
+    quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+    ...) {
   format <- rlang::arg_match(format)
 
   # Process input observations to get dates
@@ -661,10 +655,8 @@ get_predictions.estimate_truncation <- function(
       ]
       data.table::setcolorder(
         predictions,
-        c(
-          "dataset", "forecast_date", "date", "horizon",
-          "quantile_level", "predicted"
-        )
+        c("dataset", "forecast_date", "date", "horizon",
+          "quantile_level", "predicted")
       )
     }
 

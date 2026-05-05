@@ -109,6 +109,7 @@ regional_epinow <- function(data,
                             verbose = FALSE,
                             logs = tempdir(check = TRUE),
                             ...) {
+
   # supported output
   output <- match_output_arguments(output,
     supported_args = c(
@@ -413,6 +414,7 @@ run_region <- function(target_region,
 process_region <- function(out, target_region, timing,
                            return_output = TRUE, return_timing = TRUE,
                            complete_logger = "EpiNow2.epinow") {
+
   # Skip processing for failed runs (which have an error field)
   # Use .subset2 to bypass S3 method dispatch
   if (!is.null(.subset2(out, "error"))) {

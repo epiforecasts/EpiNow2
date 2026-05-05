@@ -101,8 +101,7 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
     ]
   }
   estimated_reported_cases$summarised <- summary(
-    estimates,
-    type = "parameters", CrIs = CrIs
+    estimates, type = "parameters", CrIs = CrIs
   )[
     variable == "reported_cases"
   ][
@@ -124,6 +123,7 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
   }
   estimated_reported_cases
 }
+
 
 
 #' Copy Results From Dated Folder to Latest

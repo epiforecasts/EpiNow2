@@ -856,8 +856,7 @@ create_stan_params <- function(params) {
   null_ids <- rep(0, sum(null_params))
   if (length(null_ids) > 0) {
     names(null_ids) <- paste(
-      "param_id", tparams$name[null_params],
-      sep = "_"
+      "param_id", tparams$name[null_params], sep = "_"
     )
     params <- params[!null_params]
     tparams <- transpose(params)

@@ -72,10 +72,8 @@ simulate_infections <- function(R,
                                 pop = Fixed(0),
                                 pop_period = c("forecast", "all"),
                                 pop_floor = 1.0,
-                                growth_method = c(
-                                  "infections",
-                                  "infectiousness"
-                                )) {
+                                growth_method = c("infections",
+                                                  "infectiousness")) {
   if (is.numeric(pop)) {
     lifecycle::deprecate_stop(
       "1.9.0",
