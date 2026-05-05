@@ -1017,6 +1017,10 @@ is_constrained.multi_dist_spec <- function(x, ...) {
   all(constrained)
 }
 
+#' @description
+#' Constructors for the probability distributions supported by
+#' EpiNow2 as `dist_spec` objects.
+#'
 #' @details
 #' Probability distributions are ubiquitous in EpiNow2, usually representing
 #' epidemiological delays (e.g., the generation time for delays between
@@ -1129,8 +1133,6 @@ Fixed <- function(value, ...) {
   new_dist_spec(params, "fixed")
 }
 
-#' Generates a nonparametric distribution.
-#'
 #' @param pmf Probability mass of the given distribution; this is
 #'   passed as either a zero-indexed numeric vector (i.e. the fist entry
 #'   represents the probability mass of zero) or a `dist_spec` (e.g.
@@ -1154,11 +1156,6 @@ NonParametric <- function(pmf, ...) {
   new_dist_spec(params, "nonparametric", ...)
 }
 
-#' Generates a Dirichlet distribution.
-#'
-#' @description This distribution is used as a prior for the PMF of a
-#'   nonparametric distribution.
-#'
 #' @param alpha A positive numeric vector of concentration parameters.
 #' @param prior Either a numeric PMF vector (zero-indexed, i.e. the
 #'   first entry represents probability mass at zero) or a

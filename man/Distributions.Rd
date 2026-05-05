@@ -76,8 +76,8 @@ A \code{dist_spec} representing a distribution of the given
 specification.
 }
 \description{
-This distribution is used as a prior for the PMF of a
-nonparametric distribution.
+Constructors for the probability distributions supported by
+EpiNow2 as \code{dist_spec} objects.
 }
 \details{
 Probability distributions are ubiquitous in EpiNow2, usually representing
