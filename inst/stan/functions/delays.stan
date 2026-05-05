@@ -162,15 +162,18 @@ void delays_lp(vector delay_params,
 }
 
 /**
- * Update log density for estimated nonparametric delay priors
+ * Update log prior density for estimated nonparametric delays
  *
- * Applies Gamma(alpha, 1) priors to raw values, which induces a
- * Dirichlet(alpha) prior on the normalised PMF segments.
- * See: https://discourse.mc-stan.org/t/
- *   ragged-array-of-simplexes/1382/21
+ * Applies Gamma(alpha, 1) priors to the raw vector that backs the
+ * estimated nonparametric PMFs. Once normalised within each ragged
+ * segment, this induces a Dirichlet(alpha) prior on the segment.
+ * See https://mc-stan.org/docs/stan-users-guide/simplexes.html for
+ * the gamma-normalisation construction.
  *
- * @param delay_np_est_raw Vector of raw gamma values
- * @param delay_np_est_alpha Vector of Dirichlet concentration parameters
+ * @param delay_np_est_raw Raw gamma-distributed values backing each
+ *   estimated nonparametric PMF segment.
+ * @param delay_np_est_alpha Dirichlet concentration parameters,
+ *   matched element-wise to delay_np_est_raw.
  *
  * @ingroup delay_handlers
  */
@@ -179,6 +182,43 @@ void delays_np_lp(
 ) {
   if (num_elements(delay_np_est_raw) == 0) return;
   delay_np_est_raw ~ gamma(delay_np_est_alpha, 1);
+}
+
+/**
+ * Combine fixed and estimated nonparametric delay PMFs
+ *
+ * Returns a copy of the fixed PMF vector with the estimated entries
+ * overwritten by per-segment normalisation of the raw gamma values.
+ * Fixed entries and structural zeros are left unchanged.
+ *
+ * @param delay_np_pmf Fixed PMF vector (concatenated ragged array).
+ * @param delay_np_est_n Number of estimated nonparametric delays.
+ * @param delay_np_est_groups Ragged-array boundaries into
+ *   delay_np_est_raw (length delay_np_est_n + 1).
+ * @param delay_np_est_pos For each estimated element, its position
+ *   within delay_np_pmf.
+ * @param delay_np_est_raw Raw gamma values backing each segment.
+ * @return A vector of length num_elements(delay_np_pmf) containing
+ *   the combined PMF.
+ *
+ * @ingroup delay_handlers
+ */
+vector combine_np_pmf(
+  vector delay_np_pmf, int delay_np_est_n,
+  array[] int delay_np_est_groups, array[] int delay_np_est_pos,
+  vector delay_np_est_raw
+) {
+  vector[num_elements(delay_np_pmf)] ret = delay_np_pmf;
+  for (i in 1:delay_np_est_n) {
+    int es = delay_np_est_groups[i];
+    int ee = delay_np_est_groups[i + 1] - 1;
+    vector[ee - es + 1] normed =
+      delay_np_est_raw[es:ee] / sum(delay_np_est_raw[es:ee]);
+    for (j in es:ee) {
+      ret[delay_np_est_pos[j]] = normed[j - es + 1];
+    }
+  }
+  return ret;
 }
 
 /**

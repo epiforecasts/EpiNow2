@@ -33,13 +33,19 @@ transformed data{
 
 parameters {
   vector<lower = delay_params_lower>[delay_params_length] delay_params;
+  // raw gamma values for estimated nonparametric delay PMFs;
+  // normalised within each ragged segment to give a Dirichlet draw
   vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
   real<lower=0> reporting_overdispersion;
   real<lower=0> sigma;
 }
 
-transformed parameters{
-#include functions/delay_np_pmf_use.stan
+transformed parameters {
+  // combined fixed + estimated nonparametric delay PMF
+  vector[delay_np_pmf_length] delay_np_pmf_use = combine_np_pmf(
+    delay_np_pmf, delay_np_est_n, delay_np_est_groups,
+    delay_np_est_pos, delay_np_est_raw
+  );
 
   real phi = 1 / sqrt(reporting_overdispersion);
   matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] trunc_obs =

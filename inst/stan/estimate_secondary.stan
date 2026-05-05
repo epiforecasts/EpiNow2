@@ -34,13 +34,19 @@ transformed data{
 parameters{
   // observation model
   vector<lower = delay_params_lower>[delay_params_length] delay_params;
+  // raw gamma values for estimated nonparametric delay PMFs;
+  // normalised within each ragged segment to give a Dirichlet draw
   vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
 }
 
 transformed parameters {
-#include functions/delay_np_pmf_use.stan
+  // combined fixed + estimated nonparametric delay PMF
+  vector[delay_np_pmf_length] delay_np_pmf_use = combine_np_pmf(
+    delay_np_pmf, delay_np_est_n, delay_np_est_groups,
+    delay_np_est_pos, delay_np_est_raw
+  );
 
   vector<lower=0>[t] secondary;
   // calculate secondary reports from primary
