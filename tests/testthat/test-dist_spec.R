@@ -327,9 +327,27 @@ test_that("delay distributions can be specified in different ways", {
     tolerance = 0.1
   )
   expect_equal(
+    round(get_pmf(discretise(LogNormal(mean = 4, sd = 1, max = 10))), 2),
+    c(0.00, 0.00, 0.05, 0.29, 0.38, 0.20, 0.06, 0.02, 0.00, 0.00)
+  )
+  expect_equal(
+    round(
+      get_pmf(discretise(LogNormal(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2
+    ),
+    c(0.00, 0.00, 0.05, 0.32, 0.41, 0.22)
+  )
+  expect_equal(
     unname(as.numeric(get_parameters(Gamma(mean = 4, sd = 1)))),
     c(16, 4),
     tolerance = 0.1
+  )
+  expect_equal(
+    round(get_pmf(discretise(Gamma(mean = 4, sd = 1, max = 7))), 2),
+    c(0.00, 0.00, 0.06, 0.28, 0.38, 0.22, 0.07)
+  )
+  expect_equal(
+    round(get_pmf(discretise(Gamma(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2),
+    c(0.00, 0.00, 0.06, 0.30, 0.40, 0.23)
   )
   expect_equal(
     unname(as.numeric(
@@ -356,43 +374,22 @@ test_that("delay distributions can be specified in different ways", {
     )),
     c(4, 1)
   )
-  discretise_cases <- list(
-    list(
-      LogNormal(mean = 4, sd = 1, max = 10),
-      c(0.00, 0.00, 0.05, 0.29, 0.38, 0.20, 0.06, 0.02, 0.00, 0.00)
-    ),
-    list(
-      LogNormal(mean = 4, sd = 1, cdf_cutoff = 0.1),
-      c(0.00, 0.00, 0.05, 0.32, 0.41, 0.22)
-    ),
-    list(
-      Gamma(mean = 4, sd = 1, max = 7),
-      c(0.00, 0.00, 0.06, 0.28, 0.38, 0.22, 0.07)
-    ),
-    list(
-      Gamma(mean = 4, sd = 1, cdf_cutoff = 0.1),
-      c(0.00, 0.00, 0.06, 0.30, 0.40, 0.23)
-    ),
-    list(
-      Normal(mean = 4, sd = 1, max = 5),
-      c(0.00, 0.01, 0.10, 0.35, 0.54)
-    ),
-    list(
-      Normal(mean = 4, sd = 1, cdf_cutoff = 0.1),
-      c(0.00, 0.01, 0.07, 0.26, 0.40, 0.26)
-    ),
-    list(
-      Exp(rate = 0.5, max = 5),
-      c(0.24, 0.35, 0.21, 0.13, 0.08)
-    ),
-    list(
-      Weibull(shape = 2, scale = 5, max = 5),
-      c(0.02, 0.14, 0.24, 0.30, 0.30)
-    )
+  expect_equal(
+    round(get_pmf(discretise(Normal(mean = 4, sd = 1, max = 5))), 2),
+    c(0.00, 0.01, 0.10, 0.35, 0.54)
   )
-  for (case in discretise_cases) {
-    expect_equal(round(get_pmf(discretise(case[[1]])), 2), case[[2]])
-  }
+  expect_equal(
+    round(get_pmf(discretise(Normal(mean = 4, sd = 1, cdf_cutoff = 0.1))), 2),
+    c(0.00, 0.01, 0.07, 0.26, 0.40, 0.26)
+  )
+  expect_equal(
+    round(get_pmf(discretise(Exp(rate = 0.5, max = 5))), 2),
+    c(0.24, 0.35, 0.21, 0.13, 0.08)
+  )
+  expect_equal(
+    round(get_pmf(discretise(Weibull(shape = 2, scale = 5, max = 5))), 2),
+    c(0.02, 0.14, 0.24, 0.30, 0.30)
+  )
   expect_equal(get_pmf(discretise(Fixed(value = 3))), c(0, 0, 0, 1))
   ## fractional fixed values split probability across adjacent intervals
   expect_equal(get_pmf(discretise(Fixed(value = 2.5))), c(0, 0, 0.5, 0.5))
