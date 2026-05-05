@@ -1174,7 +1174,7 @@ natural_params <- function(distribution) {
 #' @keywords internal
 dist_id_to_name <- function(dist_id) {
   supported <- c(
-    "lognormal", "gamma", "weibull", "exponential", "normal"
+    "lognormal", "gamma", "weibull", "exp", "normal"
   )
   ids <- vapply(
     supported, primarycensored::pcd_stan_dist_id, integer(1)

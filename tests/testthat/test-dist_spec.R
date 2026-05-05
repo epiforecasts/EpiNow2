@@ -144,6 +144,14 @@ test_that("each supported distribution is fully wired through dist_spec", {
     expect_s3_class(spec, "dist_spec")
     expect_equal(EpiNow2::get_distribution(spec), d)
     expect_equal(EpiNow2::get_parameters(spec)[np], nat[np])
+
+    ## dist_id_to_name round-trips via primarycensored, returning the same
+    ## distribution name the rest of the package uses.
+    id <- primarycensored::pcd_stan_dist_id(d, "delay")
+    expect_equal(
+      EpiNow2:::dist_id_to_name(id), d,
+      info = paste("dist_id_to_name does not round-trip for", d)
+    )
   }
 })
 
