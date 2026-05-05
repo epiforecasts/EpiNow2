@@ -101,10 +101,6 @@ test_that("convert_to_natural converts non-natural parameters", {
 })
 
 test_that("each supported distribution is fully wired through dist_spec", {
-  ## A drift guard: every parametric distribution must be supported by
-  ## natural_params, lower_bounds, convert_to_natural, and a sentence-case
-  ## constructor. Adding a new distribution should make this fail until
-  ## all surfaces are updated.
   supported <- c("lognormal", "gamma", "normal", "exp", "weibull")
   natural_values <- list(
     lognormal = list(meanlog = 1, sdlog = 0.5),
