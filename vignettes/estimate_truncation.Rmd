@@ -16,16 +16,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-This model deals with the problem of _nowcasting_, or adjusting for right-truncation in reported count data.
-This occurs when the quantity being observed, for example cases, hospitalisations or deaths, is reported with a delay, resulting in an underestimation of recent counts.
-The `estimate_truncation()` model infers parameters of the underlying delay distribution from multiple snapshots of past data.
-This can be thought of as a Bayesian form of the chain-ladder nowcasting approach implemented in the [baselinenowcast](https://package.epinowcast.org/baselinenowcast/) package, with the added benefit of joint uncertainty quantification and delay estimation.
-For settings requiring time-varying delays or more detailed reporting structure, see the [epinowcast](https://package.epinowcast.org) package.
+This model deals with the problem of _nowcasting_, or adjusting for right-truncation in reported count data. This occurs when the quantity being observed, for example cases, hospitalisations or deaths, is reported with a delay, resulting in an underestimation of recent counts. The `estimate_truncation()` model infers parameters of the underlying delay distribution from multiple snapshots of past data. This can be thought of as a Bayesian form of the chain-ladder nowcasting approach implemented in the [baselinenowcast](https://package.epinowcast.org/baselinenowcast/) package, with the added benefit of joint uncertainty quantification and delay estimation. For settings requiring time-varying delays or more detailed reporting structure, see the [epinowcast](https://package.epinowcast.org) package.
 
 ## Model
 
-Given snapshots $C^{i}_{t}$ reflecting reported counts for time $t$ where $i=1\ldots S$ is in order of recency (earliest snapshots first) and $S$ is the number of past snapshots used for estimation, we infer the parameters $\boldsymbol{\theta}$ of a discrete truncation distribution with cumulative mass function $Z(\tau | \boldsymbol{\theta})$.
-The truncation distribution can be any family supported by `dist_spec` (e.g. log-normal, gamma).
+Given snapshots $C^{i}_{t}$ reflecting reported counts for time $t$ where $i=1\ldots S$ is in order of recency (earliest snapshots first) and $S$ is the number of past snapshots used for estimation, we infer the parameters $\boldsymbol{\theta}$ of a discrete truncation distribution with cumulative mass function $Z(\tau | \boldsymbol{\theta})$. The truncation distribution can be any family supported by `dist_spec` (e.g. log-normal, gamma).
 
 The model assumes that final counts $D_{t}$ are related to observed snapshots via the truncation distribution such that
 

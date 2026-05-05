@@ -207,9 +207,7 @@ estimate_truncation <- function(data,
                                   )
                                 ),
                                 obs = obs_opts(),
-                                noise = Normal(
-                                  mean = 0, sd = 1
-                                ),
+                                noise = Normal(mean = 0, sd = 1),
                                 stan = stan_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
                                 filter_leading_zeros = FALSE,
@@ -228,20 +226,14 @@ estimate_truncation <- function(data,
   assert_logical(verbose)
 
   # Prepare observation matrix for Stan
-  obs_prep <- prepare_truncation_obs(
-    data,
-    trunc_max = max(truncation)
-  )
+  obs_prep <- prepare_truncation_obs(data, trunc_max = max(truncation))
 
   # Observation model settings
   dates <- obs_prep$dirty_obs[[length(obs_prep$dirty_obs)]]$date
   obs_model <- create_obs_model(obs, dates = dates)
 
   params <- list(
-    make_param(
-      "reporting_overdispersion",
-      obs$dispersion, lower_bound = 0
-    ),
+    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("sigma", noise, lower_bound = 0)
   )
 
@@ -267,15 +259,11 @@ estimate_truncation <- function(data,
     params
   )
   stan_args <- create_stan_args(
-    stan = stan, data = stan_data,
-    init = inits, model = "estimate_truncation"
+    stan = stan, data = stan_data, init = inits, model = "estimate_truncation"
   )
 
   # Warn if truncation distribution is longer than observed time
-  check_truncation_length(
-    stan_args,
-    time_points = stan_data$t
-  )
+  check_truncation_length(stan_args, time_points = stan_data$t)
 
   # fit
   fit <- fit_model(stan_args, id = "estimate_truncation")
