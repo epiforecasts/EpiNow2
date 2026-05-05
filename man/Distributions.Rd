@@ -19,7 +19,7 @@ Normal(mean, sd, ...)
 
 Exp(rate, mean, ...)
 
-Weibull(shape, scale, ...)
+Weibull(shape, scale, mean, sd, ...)
 
 NonParametric(pmf, ...)
 
@@ -94,6 +94,7 @@ Exp(rate = 1)
 Exp(mean = 4)
 Weibull(shape = 1, scale = 1)
 Weibull(shape = 1, scale = 1, max = 10)
+Weibull(mean = 4, sd = 1)
 NonParametric(c(0.1, 0.3, 0.2, 0.4))
 NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))
 Fixed(value = 3)

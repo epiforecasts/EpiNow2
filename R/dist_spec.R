@@ -1103,7 +1103,8 @@ Exp <- function(rate, mean, ...) {
 #' @examples
 #' Weibull(shape = 1, scale = 1)
 #' Weibull(shape = 1, scale = 1, max = 10)
-Weibull <- function(shape, scale, ...) {
+#' Weibull(mean = 4, sd = 1)
+Weibull <- function(shape, scale, mean, sd, ...) {
   params <- as.list(environment())
   new_dist_spec(params, "weibull", ...)
 }
@@ -1205,7 +1206,7 @@ lower_bounds <- function(distribution) {
     lognormal = c(meanlog = -Inf, sdlog = 0, mean = 0, sd = 0),
     normal = c(mean = -Inf, sd = 0),
     exp = c(rate = 0, mean = 0),
-    weibull = c(shape = 0, scale = 0),
+    weibull = c(shape = 0, scale = 0, mean = 0, sd = 0),
     fixed = c(value = 1)
   )
 }
@@ -1441,6 +1442,23 @@ convert_to_natural <- function(params, distribution) {
         x$rate <- 1 / ux$mean
       } else {
         x$rate <- ux$rate
+      }
+    },
+    normal = {
+      x$mean <- ux$mean
+      x$sd <- ux$sd
+    },
+    weibull = {
+      if (all(c("mean", "sd") %in% names(ux))) {
+        log_cv2_p1 <- log1p((ux$sd / ux$mean)^2)
+        x$shape <- stats::uniroot(
+          function(k) lgamma(1 + 2 / k) - 2 * lgamma(1 + 1 / k) - log_cv2_p1,
+          interval = c(0.01, 200)
+        )$root
+        x$scale <- ux$mean / gamma(1 + 1 / x$shape)
+      } else {
+        x$shape <- ux$shape
+        x$scale <- ux$scale
       }
     }
   )

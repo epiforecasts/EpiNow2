@@ -68,6 +68,85 @@ test_that("dist_spec returns error when the wrong number of parameters are given
   expect_error(Gamma(shape = 1, rate = 2, mean = 3), "must be specified")
 })
 
+test_that("convert_to_natural converts non-natural parameters", {
+  gamma_meansd <- EpiNow2:::convert_to_natural(
+    list(mean = 4, sd = 2), "gamma"
+  )
+  expect_equal(gamma_meansd$shape, 4)
+  expect_equal(gamma_meansd$rate, 1)
+
+  gamma_scale <- EpiNow2:::convert_to_natural(
+    list(shape = 2, scale = 4), "gamma"
+  )
+  expect_equal(gamma_scale$rate, 0.25)
+
+  lognormal_meansd <- EpiNow2:::convert_to_natural(
+    list(mean = 4, sd = 1), "lognormal"
+  )
+  expect_equal(lognormal_meansd$meanlog, log(16 / sqrt(17)))
+  expect_equal(lognormal_meansd$sdlog, sqrt(log(1 + 1 / 16)))
+
+  exp_mean <- EpiNow2:::convert_to_natural(list(mean = 4), "exp")
+  expect_equal(exp_mean$rate, 0.25)
+
+  ## Weibull mean/sd -> shape/scale via numerical inversion: round-trip from
+  ## known natural parameters back to natural via the analytical mean/sd.
+  shape <- 2
+  scale <- 5
+  m <- scale * gamma(1 + 1 / shape)
+  s <- sqrt(scale^2 * (gamma(1 + 2 / shape) - gamma(1 + 1 / shape)^2))
+  weibull_meansd <- EpiNow2:::convert_to_natural(
+    list(mean = m, sd = s), "weibull"
+  )
+  expect_equal(weibull_meansd$shape, shape, tolerance = 1e-6)
+  expect_equal(weibull_meansd$scale, scale, tolerance = 1e-6)
+})
+
+test_that("each supported distribution is fully wired through dist_spec", {
+  ## A drift guard: every parametric distribution must be supported by
+  ## natural_params, lower_bounds, convert_to_natural, and a sentence-case
+  ## constructor. Adding a new distribution should make this fail until
+  ## all surfaces are updated.
+  supported <- c("lognormal", "gamma", "normal", "exp", "weibull")
+  natural_values <- list(
+    lognormal = list(meanlog = 1, sdlog = 0.5),
+    gamma = list(shape = 2, rate = 1),
+    normal = list(mean = 4, sd = 1),
+    exp = list(rate = 0.5),
+    weibull = list(shape = 2, scale = 5)
+  )
+  constructors <- list(
+    lognormal = LogNormal, gamma = Gamma, normal = Normal,
+    exp = Exp, weibull = Weibull
+  )
+
+  for (d in supported) {
+    np <- EpiNow2:::natural_params(d)
+    expect_type(np, "character")
+    expect_gt(length(np), 0)
+
+    lb <- EpiNow2:::lower_bounds(d)
+    expect_true(
+      all(np %in% names(lb)),
+      info = paste("lower_bounds missing natural params for", d)
+    )
+
+    ## convert_to_natural must round-trip the natural parameterisation
+    nat <- natural_values[[d]]
+    converted <- EpiNow2:::convert_to_natural(nat, d)
+    expect_equal(
+      converted[np], nat[np],
+      info = paste("convert_to_natural does not round-trip for", d)
+    )
+
+    ## constructor produces a dist_spec with the natural parameters
+    spec <- do.call(constructors[[d]], nat)
+    expect_s3_class(spec, "dist_spec")
+    expect_equal(EpiNow2::get_distribution(spec), d)
+    expect_equal(EpiNow2::get_parameters(spec)[np], nat[np])
+  }
+})
+
 test_that("c.dist_spec returns correct output for sum of two distributions", {
   dist1 <- LogNormal(meanlog = 5, sdlog = 1, max = 19)
   dist2 <- Gamma(shape = Normal(3, 0.5), rate = Normal(2, 0.5), max = 20)
@@ -297,9 +376,6 @@ test_that("delay distributions can be specified in different ways", {
     c(4, 1)
   )
   expect_equal(
-    unname(as.numeric(get_parameters(Normal(mean = 4, sd = 1)))), c(4, 1)
-  )
-  expect_equal(
     round(get_pmf(discretise(Normal(mean = 4, sd = 1, max = 5))), 2),
     c(0.00, 0.01, 0.10, 0.35, 0.54)
   )
@@ -308,15 +384,8 @@ test_that("delay distributions can be specified in different ways", {
     c(0.00, 0.01, 0.07, 0.26, 0.40, 0.26)
   )
   expect_equal(
-    unname(as.numeric(get_parameters(Exp(rate = 0.5)))), 0.5
-  )
-  expect_equal(
     round(get_pmf(discretise(Exp(rate = 0.5, max = 5))), 2),
     c(0.24, 0.35, 0.21, 0.13, 0.08)
-  )
-  expect_equal(
-    unname(as.numeric(get_parameters(Weibull(shape = 2, scale = 5)))),
-    c(2, 5)
   )
   expect_equal(
     round(get_pmf(discretise(Weibull(shape = 2, scale = 5, max = 5))), 2),

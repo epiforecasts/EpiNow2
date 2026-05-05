@@ -4,6 +4,7 @@
 
 - Added `estimate_dist()` for fitting delay distributions from interval-censored linelist data using Bayesian inference, with support for lognormal, gamma, normal, exponential, and Weibull distributions.
 - Added `Exp()`, `Weibull()`, and `Normal()` distribution constructors.
+- `Weibull()` now also accepts `mean` and `sd`, with conversion to `shape` and `scale` by numerical inversion of the moment equations.
 
 ## Deprecations
 
