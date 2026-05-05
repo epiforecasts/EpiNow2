@@ -1,6 +1,7 @@
 linters: linters_with_tags(
     tags = NULL, # include all linters
     implicit_integer_linter = NULL,
+    indentation_linter = NULL,
     keyword_quote_linter = NULL,
     undesirable_function_linter(
       fun = c(
