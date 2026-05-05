@@ -30,7 +30,7 @@ The *generation time* is the interval between infection of a primary case and in
 The *incubation period* is the time from infection to symptom onset.
 The *reporting delay* is the time from symptom onset (or another observable event) to the case appearing in surveillance data.
 
-EpiNow2 uses these delay distributions when estimating the time-varying reproduction number and when producing forecasts and nowcasts.
+_EpiNow2_ uses these delay distributions when estimating the time-varying reproduction number and when producing forecasts and nowcasts.
 Each delay shifts and smooths the relationship between underlying infections and the observations available to analysts, so getting them right matters for inference.
 
 # Specifying delays
@@ -71,12 +71,12 @@ plot(reporting_delay)
 The `max` argument right-truncates the distribution at a given value, discarding probability mass beyond that point and renormalising.
 Alternatively, `cdf_cutoff` can be used to set the truncation point based on a tail probability threshold.
 
-When parameters carry uncertainty, EpiNow2 samples from the prior during fitting, propagating that uncertainty into the final estimates.
+When parameters carry uncertainty, _EpiNow2_ samples from the prior during fitting, propagating that uncertainty into the final estimates.
 
 # Why naive discretisation is biased
 
 Delay distributions are often defined in continuous time, but surveillance data record events in discrete time windows (typically days).
-EpiNow2 operates at daily resolution, so both observation windows are set to 1 day.
+_EpiNow2_ operates at daily resolution, so both observation windows are set to 1 day.
 A common approach to discretisation is CDF differencing, where the probability mass for day $d$ is computed as $F(d+1) - F(d)$.
 This treats the primary event as though it occurred at a known, exact time, typically the start of the interval.
 
@@ -88,7 +88,7 @@ Right truncation also introduces bias: recent events with long delays are system
 
 # How primarycensored corrects this
 
-EpiNow2 computes delay PMFs using the `primarycensored` package [@Park2024], which accounts for primary event censoring explicitly.
+_EpiNow2_ computes delay PMFs using the `primarycensored` package [@Park2024], which accounts for primary event censoring explicitly.
 The approach integrates the delay CDF over all possible primary event times within the primary window, producing an adjusted CDF.
 The PMF is then obtained by differencing this adjusted CDF at successive days.
 
@@ -96,12 +96,12 @@ For common distribution and primary event combinations (e.g. lognormal delay wit
 When no closed-form solution exists, numerical integration is used as a fallback.
 
 The resulting PMF correctly represents the probability of observing a delay of $d$ days given that both events are recorded in daily intervals.
-This is the PMF used internally by EpiNow2's Stan model when computing the likelihood.
+This is the PMF used internally by _EpiNow2_'s Stan model when computing the likelihood.
 
 # Composing multiple delays
 
 When the observation process involves more than one delay, the individual delay PMFs are convolved to produce a combined delay.
-In EpiNow2 this is done by adding `dist_spec` objects together with the `+` operator.
+In _EpiNow2_ this is done by adding `dist_spec` objects together with the `+` operator.
 
 ```{r convolution}
 # Combined delay from infection to report
