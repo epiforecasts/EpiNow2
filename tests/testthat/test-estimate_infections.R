@@ -266,7 +266,7 @@ test_that("summary with type='parameters' returns all dates by default", {
 
   # When target_date is explicitly provided, should filter to that date
   # Use a date that exists in the summarised estimates
-  target <- summ_dates[length(summ_dates) %/% 2] # Pick middle date
+  target <- summ_dates[length(summ_dates) %/% 2]  # Pick middle date
   summ_filtered <- summary(out, type = "parameters", target_date = target)
   expect_equal(unique(summ_filtered$date), target)
 })
@@ -446,6 +446,7 @@ test_that("get_predictions horizon is correctly calculated", {
 })
 
 test_that("get_predictions format='sample' compatible with scoringutils", {
+
   skip_integration()
   skip_if_not_installed("scoringutils")
 
@@ -469,8 +470,7 @@ test_that("get_predictions format='sample' compatible with scoringutils", {
   preds <- get_predictions(fit, format = "sample")
   forecasts <- preds[horizon > 0]
   forecasts <- merge(
-    forecasts, data.table::as.data.table(example_confirmed),
-    by = "date"
+    forecasts, data.table::as.data.table(example_confirmed), by = "date"
   )
 
   forecast_obj <- scoringutils::as_forecast_sample(
@@ -510,8 +510,7 @@ test_that("get_predictions format='quantile' compatible with scoringutils", {
   preds <- get_predictions(fit, format = "quantile")
   forecasts <- preds[horizon > 0]
   forecasts <- merge(
-    forecasts, data.table::as.data.table(example_confirmed),
-    by = "date"
+    forecasts, data.table::as.data.table(example_confirmed), by = "date"
   )
 
   forecast_obj <- scoringutils::as_forecast_quantile(

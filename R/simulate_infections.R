@@ -72,10 +72,8 @@ simulate_infections <- function(R,
                                 pop = Fixed(0),
                                 pop_period = c("forecast", "all"),
                                 pop_floor = 1.0,
-                                growth_method = c(
-                                  "infections",
-                                  "infectiousness"
-                                )) {
+                                growth_method = c("infections",
+                                                  "infectiousness")) {
   if (is.numeric(pop)) {
     lifecycle::deprecate_stop(
       "1.9.0",
@@ -148,7 +146,7 @@ simulate_infections <- function(R,
   ))
 
   if (length(stan_data$delay_params_sd) > 0 &&
-    any(stan_data$delay_params_sd > 0)) {
+        any(stan_data$delay_params_sd > 0)) {
     cli_abort(
       c(
         "!" = "Cannot simulate from uncertain parameters.",
@@ -330,7 +328,7 @@ forecast_infections <- function(estimates,
   assert_class(estimates, "estimate_infections")
   assert_names(names(estimates), must.include = "fit")
   if (!(test_numeric(R, lower = 0, null.ok = TRUE) ||
-    test_data_frame(R, null.ok = TRUE))) {
+          test_data_frame(R, null.ok = TRUE))) {
     cli_abort(
       c(
         "!" = "R must either be a {.cls numeric} vector or

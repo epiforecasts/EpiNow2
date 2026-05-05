@@ -129,8 +129,7 @@ test_that("forecast_infections works with an adjusted Rt in data frame", {
   skip_integration()
   fixtures <- get_test_fixtures()
   R_dates <- summary(
-    fixtures$estimate_infections,
-    type = "parameters", param = "R"
+    fixtures$estimate_infections, type = "parameters", param = "R"
   )$date
   R <- c(rep(1.4, length(R_dates) - 10), rep(0.5, 10))
   R_dt <- data.frame(date = R_dates, value = R)
@@ -179,15 +178,14 @@ test_that("forecast_infections works with R extended beyond original fit", {
   skip_integration()
   fixtures <- get_test_fixtures()
   # Get the original R length from the fit
-  original_R_length <- nrow(
+ original_R_length <- nrow(
     summary(fixtures$estimate_infections, type = "parameters", param = "R")
   )
   # Create an R vector longer than the original fit (extend by 10 days)
   extended_R <- c(rep(NA_real_, original_R_length), rep(0.8, 10))
   # This would fail before the fix due to date-dimension mismatch
   sims <- forecast_infections(
-    fixtures$estimate_infections,
-    R = extended_R, samples = 10
+    fixtures$estimate_infections, R = extended_R, samples = 10
   )
   expect_equal(names(sims), c("samples", "summarised", "observations"))
   expect_true(nrow(sims$samples) > 0)

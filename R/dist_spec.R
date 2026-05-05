@@ -50,11 +50,10 @@
 #' @importFrom stats pexp pgamma plnorm pnorm pweibull
 #' @importFrom rlang arg_match
 #' @importFrom primarycensored qprimarycensored
-discrete_pmf <- function(
-    distribution = c(
-      "exp", "gamma", "lognormal", "normal", "weibull", "fixed"
-    ),
-    params, max_value, cdf_cutoff, width) {
+discrete_pmf <- function(distribution =
+                           c("exp", "gamma", "lognormal", "normal",
+                             "weibull", "fixed"),
+                         params, max_value, cdf_cutoff, width) {
   distribution <- arg_match(distribution)
 
   ## handle fixed distribution as special case
@@ -107,7 +106,7 @@ discrete_pmf <- function(
       )
     )
     if (!is.na(cdf_cutoff_max) &&
-      (missing(max_value) || cdf_cutoff_max < max_value)) {
+          (missing(max_value) || cdf_cutoff_max < max_value)) {
       max_value <- cdf_cutoff_max
     }
   }
@@ -702,7 +701,7 @@ print.dist_spec <- function(x, ...) {
       single_dist <- extract_single_dist(x, i)
       constrain_str <- character(0)
       if (!is.null(attr(single_dist, "max")) &&
-        is.finite(attr(single_dist, "max"))) {
+            is.finite(attr(single_dist, "max"))) {
         constrain_str["max"] <- paste("max:", max(single_dist))
       }
       if (!is.null(attr(single_dist, "cdf_cutoff"))) {
@@ -933,7 +932,7 @@ fix_parameters.dist_spec <- function(x, strategy = c("mean", "sample"), ...) {
 
   ## if x is fixed already we don't have to do anything
   if (get_distribution(x) == "nonparametric" ||
-    all(vapply(get_parameters(x), is.numeric, logical(1)))) {
+        all(vapply(get_parameters(x), is.numeric, logical(1)))) {
     return(x)
   }
   ## apply strategy depending on choice
