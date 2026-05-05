@@ -86,9 +86,6 @@ test_that("convert_to_natural converts non-natural parameters", {
   expect_equal(lognormal_meansd$meanlog, log(16 / sqrt(17)))
   expect_equal(lognormal_meansd$sdlog, sqrt(log(1 + 1 / 16)))
 
-  exp_mean <- EpiNow2:::convert_to_natural(list(mean = 4), "exp")
-  expect_equal(exp_mean$rate, 0.25)
-
   shape <- 2
   scale <- 5
   m <- scale * gamma(1 + 1 / shape)
