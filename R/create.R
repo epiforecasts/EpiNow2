@@ -545,6 +545,18 @@ create_delay_inits <- function(stan_data) {
   } else {
     out$delay_params <- array(numeric(0))
   }
+  ## seed the gamma-trick raw vector from its prior so chains start
+  ## near the configured Dirichlet mean rather than from generic random
+  ## values
+  if (isTRUE(stan_data$delay_np_est_length > 0)) {
+    out$delay_np_est_raw <- array(stats::rgamma(
+      n = stan_data$delay_np_est_length,
+      shape = stan_data$delay_np_est_alpha,
+      rate = 1
+    ))
+  } else {
+    out$delay_np_est_raw <- array(numeric(0))
+  }
   out
 }
 
@@ -783,9 +795,19 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$np_est_n <- sum(np_estimated)
 
   if (ret$np_est_n > 0) {
+    ## Build a flat ragged array of Dirichlet alphas across all
+    ## estimated NP delays.
+    ##
+    ## np_est_which: which NP delays are estimated.
+    ## np_est_alpha: concatenated alpha values, dropping any
+    ##   structural zeros (e.g. the t = 0 generation-time bin).
+    ## np_est_pos: position of each estimated alpha within
+    ##   delay_np_pmf, so Stan can place the normalised draw back
+    ##   into the full PMF without disturbing fixed entries.
+    ## np_est_groups: 1-indexed boundaries into np_est_alpha /
+    ##   np_est_pos, one entry per estimated NP delay plus a
+    ##   trailing length sentinel.
     ret$np_est_which <- array(est_np_indices)
-    ## only include positive alpha entries (skip structural
-    ## zeros such as generation time at t=0)
     all_alphas <- list()
     all_pos <- list()
     for (k in seq_along(est_np_delays)) {
