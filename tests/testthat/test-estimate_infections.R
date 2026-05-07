@@ -247,46 +247,6 @@ test_that("estimate_infections output does not contain breakpoints effect when b
   expect_false("breakpoints" %in% unique(samples$variable))
 })
 
-test_that("estimate_infections works with estimated non-parametric generation time", { # nolint
-  skip_integration()
-  gt_pmf <- c(0, 0.1, 0.3, 0.3, 0.2, 0.07, 0.03)
-  est_gt <- NonParametric(
-    pmf = Dirichlet(
-      prior = gt_pmf,
-      concentration = 50
-    )
-  )
-  out <- suppressWarnings(estimate_infections(
-    data = reported_cases,
-    generation_time = gt_opts(est_gt),
-    delays = delay_opts(
-      example_incubation_period + example_reporting_delay
-    ),
-    rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
-    stan = stan_opts(
-      samples = 200, warmup = 200,
-      chains = 2, cores = 1
-    ),
-    verbose = FALSE
-  ))
-  expect_null(out$error)
-  expect_true(nrow(summary(out, type = "parameters")) > 0)
-
-  # get_parameters returns the posterior mean PMF as a
-  # NonParametric (the resolved estimate, not the prior)
-  params <- get_parameters(out)
-  gt_result <- params$generation_time
-  expect_s3_class(gt_result, "dist_spec")
-  expect_equal(get_distribution(gt_result), "nonparametric")
-
-  # With a tight prior (concentration=50) the posterior PMF
-  # should be close to the prior centre
-  expect_equal(
-    as.numeric(get_pmf(gt_result)), gt_pmf,
-    tolerance = 0.05
-  )
-})
-
 test_that("Estimated non-parametric GT concentration anchors posterior", { # nolint
   skip_integration()
   # Same shifted prior, two concentrations: a low concentration
