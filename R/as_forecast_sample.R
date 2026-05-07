@@ -1,0 +1,167 @@
+#' Convert EpiNow2 model output to a `forecast_sample` object
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Convert outputs of EpiNow2 fitting and forecasting functions to
+#' `forecast_sample` objects via [scoringutils::as_forecast_sample()] for
+#' evaluating predictive performance. Methods are provided for objects
+#' returned by [epinow()], [estimate_infections()], [forecast_secondary()],
+#' and [estimate_truncation()].
+#'
+#' These methods extract sample-level posterior predictions via
+#' [get_predictions()] with `format = "sample"`, merge them with the supplied
+#' observations on `date`, and pass the result to
+#' [scoringutils::as_forecast_sample()].
+#'
+#' [scoringutils] is an optional dependency; calling these methods without it
+#' installed gives an informative error.
+#'
+#' @param data Output of [epinow()], [estimate_infections()],
+#'   [forecast_secondary()], or [estimate_truncation()].
+#' @param observations A `<data.frame>` of observed values to score against.
+#'   Must contain a `date` column. For [epinow()] and [estimate_infections()]
+#'   objects must also contain a `confirm` column; for [forecast_secondary()]
+#'   objects a `secondary` column; for [estimate_truncation()] objects a
+#'   `confirm` column representing the latest, least-truncated observations.
+#' @param horizon Numeric scalar lower bound on the `horizon` column of
+#'   [get_predictions()] output. Predictions with a `horizon` value at or above
+#'   this bound are retained. Defaults to `0` for [epinow()],
+#'   [estimate_infections()] and [forecast_secondary()] (i.e. forecast period
+#'   only) and to `-Inf` for [estimate_truncation()] (keep all reconstructed
+#'   horizons). Pass `horizon = -Inf` to disable filtering.
+#' @param ... Additional arguments passed to
+#'   [scoringutils::as_forecast_sample()]. `forecast_unit` is set
+#'   automatically from the object class (`forecast_date`, `date`, `horizon`,
+#'   plus `dataset` for [estimate_truncation()]) and cannot be overridden.
+#'
+#' @return A `forecast_sample` object as returned by
+#'   [scoringutils::as_forecast_sample()]. Rows for which `observations` does
+#'   not provide a value on the corresponding `date` are dropped.
+#'
+#' @seealso [get_predictions()] for the underlying sample extraction.
+#' @name as_forecast_sample
+#' @examplesIf rlang::is_installed("scoringutils")
+#' library(scoringutils)
+#'
+#' # samples and calculation time have been reduced for this example
+#' # for real analyses, use at least samples = 2000
+#' fit <- estimate_infections(example_confirmed[1:40],
+#'   generation_time = gt_opts(example_generation_time),
+#'   delays = delay_opts(example_incubation_period + example_reporting_delay),
+#'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+#'   stan = stan_opts(samples = 100, warmup = 200)
+#' )
+#'
+#' forecast_obj <- as_forecast_sample(fit, observations = example_confirmed)
+#' score(forecast_obj)
+NULL
+
+#' @rdname as_forecast_sample
+#' @exportS3Method scoringutils::as_forecast_sample
+as_forecast_sample.estimate_infections <- function(data, observations,
+                                                   horizon = 0, ...) {
+  .build_forecast_sample(
+    data, observations,
+    observed_col = "confirm",
+    forecast_unit = c("forecast_date", "date", "horizon"),
+    horizon = horizon,
+    ...
+  )
+}
+
+#' @rdname as_forecast_sample
+#' @exportS3Method scoringutils::as_forecast_sample
+as_forecast_sample.epinow <- function(data, observations,
+                                      horizon = 0, ...) {
+  if (!is.null(data$error)) {
+    cli::cli_abort(c(
+      "Cannot convert a failed {.fn epinow} run to a {.cls forecast_sample}.",
+      "i" = "The run failed with error: {data$error}"
+    ))
+  }
+  .build_forecast_sample(
+    data, observations,
+    observed_col = "confirm",
+    forecast_unit = c("forecast_date", "date", "horizon"),
+    horizon = horizon,
+    ...
+  )
+}
+
+#' @rdname as_forecast_sample
+#' @exportS3Method scoringutils::as_forecast_sample
+as_forecast_sample.forecast_secondary <- function(data, observations,
+                                                  horizon = 0, ...) {
+  .build_forecast_sample(
+    data, observations,
+    observed_col = "secondary",
+    forecast_unit = c("forecast_date", "date", "horizon"),
+    horizon = horizon,
+    ...
+  )
+}
+
+#' @rdname as_forecast_sample
+#' @exportS3Method scoringutils::as_forecast_sample
+as_forecast_sample.estimate_truncation <- function(data, observations,
+                                                   horizon = -Inf, ...) {
+  .build_forecast_sample(
+    data, observations,
+    observed_col = "confirm",
+    forecast_unit = c("dataset", "forecast_date", "date", "horizon"),
+    horizon = horizon,
+    ...
+  )
+}
+
+#' @importFrom checkmate assert_data_frame assert_date assert_names
+#'   assert_numeric
+.build_forecast_sample <- function(data, observations, observed_col,
+                                   forecast_unit, horizon, ...) {
+  rlang::check_installed(
+    "scoringutils",
+    reason = "to convert EpiNow2 outputs to forecast_sample objects."
+  )
+  if (missing(observations)) {
+    cli::cli_abort(
+      "{.arg observations} must be supplied to score predictions."
+    )
+  }
+  assert_numeric(horizon, len = 1L, any.missing = FALSE)
+  assert_data_frame(observations)
+  assert_names(names(observations), must.include = c("date", observed_col))
+  assert_date(observations$date, any.missing = FALSE, unique = TRUE)
+  assert_numeric(observations[[observed_col]], lower = 0)
+
+  observations <- data.table::as.data.table(observations)
+  predictions <- get_predictions(data, format = "sample")
+  keep <- predictions$horizon >= horizon
+  predictions <- predictions[keep]
+
+  obs <- observations[, c("date", observed_col), with = FALSE]
+  data.table::setnames(obs, observed_col, "observed")
+  forecasts <- merge(predictions, obs, by = "date")
+  if (nrow(forecasts) == 0L) {
+    cli::cli_abort(c(
+      "No predictions remain after merging with {.arg observations}.",
+      "i" = "Check that {.arg observations} covers the prediction dates and \\
+            that the {.arg horizon} filter is not too restrictive."
+    ))
+  }
+
+  dots <- list(...)
+  dots$forecast_unit <- NULL
+
+  do.call(
+    scoringutils::as_forecast_sample,
+    c(
+      list(
+        data = forecasts,
+        forecast_unit = forecast_unit,
+        observed = "observed",
+        predicted = "predicted",
+        sample_id = "sample"
+      ),
+      dots
+    )
+  )
+}

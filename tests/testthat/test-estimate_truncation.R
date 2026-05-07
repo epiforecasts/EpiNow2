@@ -126,6 +126,20 @@ test_that("estimate_truncation can return values from simulated data and plot
   expect_error(plot(est), NA)
 })
 
+test_that("as_forecast_sample.estimate_truncation produces a valid forecast_sample", {
+  skip_if_not_installed("scoringutils")
+
+  latest <- example_truncated[[length(example_truncated)]]
+  forecast_obj <- scoringutils::as_forecast_sample(
+    default_est,
+    observations = latest
+  )
+  expect_s3_class(forecast_obj, "forecast_sample")
+  expect_no_error(
+    scoringutils::assert_forecast(forecast_obj, verbose = FALSE)
+  )
+})
+
 test_that("get_parameters returns valid truncation distribution", {
   est <- default_est
 

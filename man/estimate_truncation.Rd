@@ -43,7 +43,7 @@ primary count less than this threshold are set to zero.}
 
 \item{verbose}{Logical, should model fitting progress be returned.}
 
-\item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}.}
+\item{...}{Additional parameters to pass to \code{\link[rstan:sampling]{rstan::sampling()}}.}
 }
 \value{
 An \verb{<estimate_truncation>} object containing:

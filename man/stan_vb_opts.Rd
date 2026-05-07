@@ -14,19 +14,19 @@ samples.}
 rstan::vb()] before failing.}
 
 \item{iter}{Numeric, defaulting to 10000. Number of iterations to use in
-\code{\link[rstan:stanmodel-method-vb]{rstan::vb()}}.}
+\code{\link[rstan:vb]{rstan::vb()}}.}
 
-\item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}} or
-\code{\link[cmdstanr:model-method-variational]{cmdstanr::variational()}}, depending on the chosen backend.}
+\item{...}{Additional parameters to pass to \code{\link[rstan:vb]{rstan::vb()}} or
+\code{\link[cmdstanr:variational]{cmdstanr::variational()}}, depending on the chosen backend.}
 }
 \value{
-A list of arguments to pass to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}} or
-\code{\link[cmdstanr:model-method-variational]{cmdstanr::variational()}}, depending on the chosen backend.
+A list of arguments to pass to \code{\link[rstan:vb]{rstan::vb()}} or
+\code{\link[cmdstanr:variational]{cmdstanr::variational()}}, depending on the chosen backend.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Defines a list specifying the arguments passed to \code{\link[rstan:stanmodel-method-vb]{rstan::vb()}} or
-\code{\link[cmdstanr:model-method-variational]{cmdstanr::variational()}}. Custom settings can be supplied which override the
+Defines a list specifying the arguments passed to \code{\link[rstan:vb]{rstan::vb()}} or
+\code{\link[cmdstanr:variational]{cmdstanr::variational()}}. Custom settings can be supplied which override the
 defaults.
 }
 \examples{
