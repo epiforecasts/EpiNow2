@@ -51,10 +51,18 @@ knitr::opts_chunk$set(
 
 - Binny, Rachelle N., Audrey Lustig, Shaun C. Hendy, Oliver J. Maclaren, Kannan M. Ridings, Giorgia Vattiato, and Michael J. Plank. 2022. "Real-time Estimation of the Effective Reproduction Number of SARS-CoV-2 in Aotearoa New Zealand." PeerJ 10: e14119. https://doi.org/10.7717/peerj.14119.
 
+- Parker, Edyth, Catelyn Anderson, Mark Zeller, Ahmad Tibi, Jennifer L. Havens, Geneviève Laroche, Mehdi Benlarbi, Ardeshir Ariana, Refugio Robles-Sikisaka, Alaa Abdel Latif, Alexander Watts, Abdalla Awidi, Saied A. Jaradat, Karthik Gangavarapu, Karthik Ramesh, Ezra Kurzban, Nathaniel L. Matteson, Alvin X. Han, Laura D. Hughes, Michelle McGraw, Emily Spencer, Laura Nicholson, Kamran Khan, Marc A. Suchard, Joel O. Wertheim, Shirlee Wohl, Marceline Côté, Amid Abdelnour, Kristian G. Andersen, and Issa Abu-Dayyeh. 2022. "Regional Connectivity Drove Bidirectional Transmission of SARS-CoV-2 in the Middle East during Travel Restrictions." Nature Communications 13: 4784. https://doi.org/10.1038/s41467-022-32536-1.
+
+- Ranoa, Diana Rose E., Robin L. Holland, Fadi G. Alnaji, Kelsie J. Green, Leyi Wang, Richard L. Fredrickson, et al. 2022. "Mitigation of SARS-CoV-2 Transmission at a Large Public University." Nature Communications 13: 3207. https://doi.org/10.1038/s41467-022-30833-3.
+
 - Aravamuthan, Srikanth, Juan Francisco Mandujano Reyes, Brian S. Yandell, and Dörte Döpfer. 2023. "Real-time Estimation and Forecasting of COVID-19 Cases and Hospitalizations in Wisconsin HERC Regions for Public Health Decision Making Processes." BMC Public Health 23: 359. https://doi.org/10.1186/s12889-023-15160-6.
+
+- Kerr, Gaige Hunter, Hamada S. Badr, Alisson F. Barbieri, Josh M. Colston, Lauren M. Gardner, Margaret N. Kosek, and Benjamin F. Zaitchik. 2023. "Evolving Drivers of Brazilian SARS-CoV-2 Transmission: A Spatiotemporally Disaggregated Time Series Analysis of Meteorology, Policy, and Human Mobility." GeoHealth 7 (3): e2022GH000727. https://doi.org/10.1029/2022GH000727.
 
 - Charniga, Kelly, Zachary J. Madewell, Nicholas B. Masters, Jason Asher, Yoshinori Nakazawa, and Ian H. Spicknall. 2024. "Nowcasting and Forecasting the 2022 U.S. Mpox Outbreak: Support for Public Health Decision Making and Lessons Learned." Epidemics 47: 100755. https://doi.org/10.1016/j.epidem.2024.100755.
 
 - Richard, Danielle M., Zachary Susswein, Sarah Connolly, Adán Myers y Gutiérrez, Roselyn Thalathara, Kelly Carey, Emily H. Koumans, Diba Khan, Nina B. Masters, Nathan McIntosh, Patrick Corbett, Isaac Ghinai, Rebecca Kahn, Adrienne Keen, Juliet Pulliam, Daniel Sosin, and Katelyn Gostic. 2024. "Detection of Real-Time Changes in Direction of COVID-19 Transmission Using National- and State-Level Epidemic Trends Based on Rt Estimates — United States Overall and New Mexico, April–October 2024." MMWR Morbidity and Mortality Weekly Report 73 (46): 1058–1063. https://doi.org/10.15585/mmwr.mm7346a3.
+
+- Costa, João Marcos Nacif da, Luis Gustavo Corbellini, Nicolás Céspedes Cárdenas, Fernando Henrique Sauter Groff, and Gustavo Machado. 2025. "Assessing Epidemiological Parameters and Dissemination Characteristics of the 2000 and 2001 Foot-and-Mouth Disease Outbreaks in Rio Grande do Sul, Brazil." Ciência Rural 55: e20240540. https://doi.org/10.1590/0103-8478cr20240540.
 
 - Pekar, Jonathan E., Yanjun Wang, Jade C. Wang, Yiyang Shao, Faten Taki, Leah A. Forgione, Hemi Amin, Timothy Clabby, Kathy Johnson, Lucia V. Torian, Straten L. Braunstein, Preeti Pathela, Esther Omoregie, Stella Hughes, Marc A. Suchard, Tetyana I. Vasylyeva, Philippe Lemey, and Joel O. Wertheim. 2025. "Transmission Dynamics of the 2022 Mpox Epidemic in New York City." Nature Medicine 31. https://doi.org/10.1038/s41591-025-03526-9.
