@@ -70,7 +70,7 @@ Estimated primary observations from `estimate_infections()` are used as input to
     - [Gaussian process implementation](gaussian_process_implementation_details.html) — shared component used inside the renewal and back-calculation models
 - [Secondary model](estimate_secondary.html) — `estimate_secondary()`
 - [Truncation model](estimate_truncation.html) — `estimate_truncation()`
-- [Delay distribution fitting](estimate_dist_workflow.html) — `estimate_dist()`
+- [Distribution model](estimate_dist.html) — `estimate_dist()`
 
 **Applied use**
 

@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 This vignette provides a quick reference to the modelling features available in EpiNow2.
 For an overview of how these models connect see the [model overview](model_overview.html).
-For mathematical details see the model definition vignettes ([infection model](estimate_infections.html), [secondary model](estimate_secondary.html), [truncation model](estimate_truncation.html)).
+For mathematical details see the model definition vignettes ([infection model](estimate_infections.html), [secondary model](estimate_secondary.html), [truncation model](estimate_truncation.html), [distribution model](estimate_dist.html)).
 For applied examples see the [options vignette](estimate_infections_options.html).
 For prior guidance see the [prior choice guide](prior_choice_guide.html).
 
@@ -99,14 +99,14 @@ See also: [estimate_truncation model definition](estimate_truncation.html)
 
 | Feature | Argument | Description | See also |
 |---|---|---|---|
-| Double interval censoring | Date columns in linelist | Accounts for censoring of both primary and secondary events | [Fitting delays](estimate_dist_workflow.html) |
-| Variable censoring windows | `pdate_upr`, `sdate_upr` columns | Per-observation primary and secondary censoring window widths | [Fitting delays](estimate_dist_workflow.html) |
-| Right truncation | `obs_date` column | Per-observation truncation times from reporting delays | [Fitting delays](estimate_dist_workflow.html) |
-| Primary event distribution | `estimate_dist(primary = "expgrowth")` | Account for exponential growth in primary events | [Fitting delays](estimate_dist_workflow.html) |
-| Distribution families | `estimate_dist(dist = ...)` | `"lognormal"` (default), `"gamma"`, `"normal"`, `"exp"` | [Fitting delays](estimate_dist_workflow.html) |
-| Observation aggregation | Automatic | Identical delay-censoring-truncation strata are aggregated to speed up fitting | [Fitting delays](estimate_dist_workflow.html) |
+| Double interval censoring | Date columns in linelist | Accounts for censoring of both primary and secondary events | [Distribution model](estimate_dist.html) |
+| Variable censoring windows | `pdate_upr`, `sdate_upr` columns | Per-observation primary and secondary censoring window widths | [Distribution model](estimate_dist.html) |
+| Right truncation | `obs_date` column | Per-observation truncation times from reporting delays | [Distribution model](estimate_dist.html) |
+| Primary event distribution | `estimate_dist(primary = "expgrowth")` | Account for exponential growth in primary events | [Distribution model](estimate_dist.html) |
+| Distribution families | `estimate_dist(dist = ...)` | `"lognormal"` (default), `"gamma"`, `"normal"`, `"exp"` | [Distribution model](estimate_dist.html) |
+| Observation aggregation | Automatic | Identical delay-censoring-truncation strata are aggregated to speed up fitting | [Distribution model](estimate_dist.html) |
 
-See also: [fitting delay distributions](estimate_dist_workflow.html)
+See also: [distribution model](estimate_dist.html), [worked example](estimate_dist_workflow.html)
 
 # Model configuration
 
