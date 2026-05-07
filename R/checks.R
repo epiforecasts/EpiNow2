@@ -51,6 +51,30 @@ check_reports_valid <- function(data,
   invisible(data)
 }
 
+#' Validate simulation input data frame
+#'
+#' @description `r lifecycle::badge("stable")`
+#' Checks that a data frame intended for simulation has the required `date`
+#' column and a named numeric value column, that the `date` column is in date
+#' format, and that the value column contains non-negative numeric values with
+#' no missing entries.
+#'
+#' @param data A data frame with at least a `date` column and a numeric value
+#'   column named `value_col`.
+#' @param value_col Character; name of the numeric value column to check.
+#' @importFrom checkmate assert_data_frame assert_date assert_numeric
+#'   assert_subset
+#' @return Called for its side effects.
+#' @keywords internal
+check_simulation_input <- function(data, value_col) {
+  data_name <- deparse(substitute(data))
+  assert_data_frame(data, any.missing = FALSE, .var.name = data_name)
+  assert_subset(c("date", value_col), colnames(data))
+  assert_date(data$date)
+  assert_numeric(data[[value_col]], lower = 0)
+  invisible(data)
+}
+
 #' Validate probability distribution for passing to stan
 #'
 #' @description `r lifecycle::badge("stable")`
