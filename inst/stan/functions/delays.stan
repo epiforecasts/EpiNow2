@@ -53,8 +53,9 @@ array[] int get_delay_type_max(
  * @param delay_np_pmf_groups Array of indices for accessing non-parametric PMFs
  * @param delay_params Vector of parameters for parametric delay distributions
  * @param delay_params_groups Array of indices for accessing delay parameters
- * @param delay_dist Array of distribution types (0: lognormal, 1: gamma)
- * @param left_truncate Whether to left-truncate the PMF (1) or not (0)
+ * @param delay_dist Array of distribution types using primarycensored
+ *   convention (1: lognormal, 2: gamma, 3: weibull, 4: exponential)
+ * @param left_truncate Left truncation point (0 for no truncation)
  * @param reverse_pmf Whether to reverse the PMF (1) or not (0)
  * @param cumulative Whether to return cumulative (1) or daily (0) values
  * @return A vector containing the (reversed) PMF of length len
@@ -81,7 +82,8 @@ vector get_delay_rev_pmf(
         discretised_pmf(
           delay_params[start:end],
           delay_max[delay_types_id[i]] + 1,
-          delay_dist[delay_types_id[i]]
+          delay_dist[delay_types_id[i]],
+          0
       );
       new_len = current_len + delay_max[delay_types_id[i]];
       if (current_len == 1) { // first delay
@@ -127,7 +129,8 @@ vector get_delay_rev_pmf(
  * @param delay_params_mean Vector of prior means for delay parameters
  * @param delay_params_sd Vector of prior standard deviations for delay parameters
  * @param delay_params_groups Array of indices for accessing delay parameters
- * @param delay_dist Array of distribution types (0: lognormal, 1: gamma)
+ * @param delay_dist Array of distribution types using primarycensored
+ *   convention (1: lognormal, 2: gamma, 3: weibull, 4: exponential)
  * @param weight Array of weights for each delay distribution in the log density
  *
  * @ingroup delay_handlers

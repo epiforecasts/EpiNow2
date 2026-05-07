@@ -1,9 +1,21 @@
 # EpiNow2 (development version)
 
-## Package changes
+## New features
 
+- Added `estimate_dist()` for fitting delay distributions from interval-censored linelist data using Bayesian inference, with support for lognormal, gamma, normal, exponential, and Weibull distributions.
+- Added `Exp()`, `Weibull()`, and `Normal()` distribution constructors.
 - Added a shared internal helper `check_simulation_input()` that bundles the repeated input data frame validation in `simulate_infections()` and `simulate_secondary()`.
 - Added `as_forecast_sample()` S3 methods for `epinow`, `estimate_infections`, `forecast_secondary`, and `estimate_truncation` objects, allowing direct conversion to `forecast_sample` objects via [`scoringutils::as_forecast_sample()`](https://epiforecasts.io/scoringutils/reference/as_forecast_sample.html) for evaluation.
+
+## Deprecations
+
+- `estimate_delay()` is soft-deprecated in favour of `estimate_dist()`.
+
+## Documentation
+
+- Added a vignette demonstrating delay distribution fitting workflows and posterior validation.
+- Added a model overview vignette with an architecture diagram showing how the package's models connect.
+- Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
 
 ## Bug fixes
 
@@ -30,6 +42,17 @@
   - `epinow()`: `$estimates`, `$estimated_reported_cases`, `$summary`, `$plots`, `$estimate_infections`
 - `summary.epinow(output)` and `summary.estimate_infections(type = 'samples')` now error.
 - Removed internal function `extract_parameter_samples()`. Use `format_simulation_output()` instead.
+
+## Model changes
+
+- Delay distribution discretisation now properly accounts for primary event censoring during model fitting, matching the correction already applied on the R side since v1.8.0. This improves accuracy for short delays where the observation window is large relative to the delay.
+- Left truncation of delay distributions (e.g. excluding generation times of zero) is now handled analytically rather than by zeroing and renormalising, giving more accurate PMFs near the truncation point.
+
+## Package changes
+
+- Added `estimate_dist()` function for estimating delay distributions with proper handling of interval censoring using Stan/MCMC inference, supporting both rstan and cmdstanr backends.
+- Deprecated `estimate_delay()` in favour of `estimate_dist()`, which correctly accounts for interval censoring and truncation.
+- Added a vignette explaining how EpiNow2 handles delay distributions.
 
 # EpiNow2 1.8.0
 
