@@ -142,6 +142,34 @@ test_that("check_reports_valid errors for bad 'secondary' specifications", {
   test_col_specs(secondary_col_dt, model = "estimate_secondary")
 })
 
+test_that("check_simulation_input passes for valid input", {
+  good <- data.frame(
+    date = seq.Date(as.Date("2023-01-01"), length.out = 3, by = "day"),
+    R = c(1.1, 1.2, 0.9)
+  )
+  expect_invisible(check_simulation_input(good, "R"))
+  expect_identical(check_simulation_input(good, "R"), good)
+})
+
+test_that("check_simulation_input errors for bad simulation input", {
+  good <- data.frame(
+    date = seq.Date(as.Date("2023-01-01"), length.out = 3, by = "day"),
+    primary = c(1, 2, 3)
+  )
+  expect_error(check_simulation_input(as.list(good), "primary"))
+  expect_error(check_simulation_input(transform(good, date = NULL), "primary"))
+  expect_error(check_simulation_input(transform(good, primary = NULL), "primary"))
+  expect_error(
+    check_simulation_input(transform(good, date = as.character(date)), "primary")
+  )
+  expect_error(
+    check_simulation_input(transform(good, primary = -primary), "primary")
+  )
+  bad_missing <- good
+  bad_missing$primary[1] <- NA
+  expect_error(check_simulation_input(bad_missing, "primary"))
+})
+
 test_that("check_sparse_pmf_tail throws a warning as expected", {
   # NB: The warning is set to be thrown once every 8 hours, so hard to test
   # regularly. The fix is to change the local setting here to throw the

@@ -2,6 +2,7 @@
 
 ## Package changes
 
+- Added a shared internal helper `check_simulation_input()` that bundles the repeated input data frame validation in `simulate_infections()` and `simulate_secondary()`.
 - Added `as_forecast_sample()` S3 methods for `epinow`, `estimate_infections`, `forecast_secondary`, and `estimate_truncation` objects, allowing direct conversion to `forecast_sample` objects via [`scoringutils::as_forecast_sample()`](https://epiforecasts.io/scoringutils/reference/as_forecast_sample.html) for evaluation.
 
 ## Bug fixes
