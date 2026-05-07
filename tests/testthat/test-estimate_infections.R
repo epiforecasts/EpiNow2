@@ -249,23 +249,37 @@ test_that("estimate_infections output does not contain breakpoints effect when b
 
 test_that("Estimated non-parametric GT concentration anchors posterior", { # nolint
   skip_integration()
-  # Same shifted prior, two concentrations: a low concentration
-  # should let the posterior move towards the data (i.e. away
-  # from the prior), a high one should keep it close to the
-  # prior. Both should still improve on the prior under data.
+  # Simulate cases from a known true GT, then fit at a low and a
+  # high concentration with a shifted prior. A low concentration
+  # should let the posterior move towards the truth in the data; a
+  # high one should keep it close to the (shifted) prior. Both
+  # should still improve on the prior.
   true_gt <- c(0, 0.1, 0.3, 0.35, 0.15, 0.07, 0.03)
   shifted_prior <- c(0, 0.05, 0.15, 0.3, 0.25, 0.15, 0.1)
+
+  set.seed(123)
+  R_traj <- data.frame(
+    date = seq.Date(as.Date("2023-01-01"), length.out = 60, by = "day"),
+    R = c(rep(1.4, 30), rep(0.8, 30))
+  )
+  sim <- simulate_infections(
+    R = R_traj,
+    initial_infections = 100,
+    generation_time = gt_opts(NonParametric(true_gt)),
+    delays = delay_opts(Fixed(0)),
+    obs = obs_opts(family = "poisson")
+  )
+  sim_cases <- sim[, c("date", "reports")]
+  data.table::setnames(sim_cases, "reports", "confirm")
+
   fit_at <- function(conc) {
     suppressWarnings(estimate_infections(
-      data = reported_cases,
+      data = sim_cases,
       generation_time = gt_opts(NonParametric(
         pmf = Dirichlet(prior = shifted_prior, concentration = conc)
       )),
       delays = delay_opts(Fixed(0)),
-      rt = rt_opts(
-        prior = LogNormal(mean = 2, sd = 0.1),
-        rw = 7
-      ),
+      rt = rt_opts(prior = LogNormal(mean = 1, sd = 0.2), rw = 7),
       gp = NULL,
       stan = stan_opts(
         samples = 500, warmup = 500,
@@ -298,8 +312,8 @@ test_that("Estimated non-parametric GT concentration anchors posterior", { # nol
   tight_drift <- err_to(pmf_of(out_tight), shifted_prior)
   expect_lt(tight_drift, loose_drift)
 
-  # And, since the prior is shifted away from truth, the loose
-  # posterior should sit closer to truth than the tight one.
+  # The loose posterior should sit closer to truth than the tight
+  # one because the prior is shifted away from truth.
   expect_lt(loose_err, tight_err)
 })
 

@@ -819,14 +819,18 @@ reconstruct_nonparametric <- function(stan_data, np_id,
 
     full_alpha <- rep(0, length(prior_pmf))
     if (!is.null(np_posterior)) {
-      ## moment-match the simplex draws to a Dirichlet so the
-      ## posterior summary round-trips as a prior
+      ## Moment-match the posterior simplex draws to a Dirichlet so
+      ## the summary round-trips as a prior. For Dirichlet(alpha)
+      ## with concentration alpha0 = sum(alpha) and means
+      ## mu_i = alpha_i / alpha0, the per-bin variance is
+      ## mu_i (1 - mu_i) / (alpha0 + 1), so alpha0 = mu(1-mu)/v - 1.
+      ## We average alpha0 across bins with non-degenerate variance
+      ## to dampen Monte Carlo noise. See Minka (2000),
+      ## "Estimating a Dirichlet distribution".
       raw_draws <- np_posterior[, alpha_idx, drop = FALSE]
       normed <- raw_draws / rowSums(raw_draws)
       mu <- colMeans(normed)
       v <- apply(normed, 2, var)
-      ## solve mu*(1-mu)/(alpha0+1) = v for alpha0 per bin, then
-      ## average over bins with non-degenerate variance
       alpha0_per_bin <- mu * (1 - mu) / v - 1
       keep <- is.finite(alpha0_per_bin) & alpha0_per_bin > 0
       alpha0 <- if (any(keep)) mean(alpha0_per_bin[keep]) else 1

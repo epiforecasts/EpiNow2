@@ -482,6 +482,41 @@ test_that(
   }
 )
 
+test_that(
+  "reconstruct_nonparametric recovers known Dirichlet via moment matching",
+  {
+    ## Draw from a known Dirichlet via the gamma trick (matches the
+    ## Stan parameterisation), feed the unnormalised draws into
+    ## reconstruct_nonparametric, and check the moment-matched alpha
+    ## is close to the truth.
+    set.seed(42)
+    true_alpha <- c(8, 24, 40, 16)
+    n_draws <- 10000L
+    raw_draws <- matrix(
+      rgamma(n_draws * length(true_alpha),
+             shape = rep(true_alpha, each = n_draws), rate = 1),
+      nrow = n_draws
+    )
+    pmf <- c(0, true_alpha / sum(true_alpha))
+    stan_data <- list(
+      delay_np_pmf = pmf,
+      delay_np_pmf_groups = c(1L, length(pmf) + 1L),
+      delay_np_est_which = 1L,
+      delay_np_est_groups = c(1L, length(true_alpha) + 1L),
+      delay_np_est_alpha = true_alpha,
+      delay_np_est_pos = seq.int(2L, length(pmf))
+    )
+    result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 1L, raw_draws
+    )
+    recovered <- result$alpha[-1] # drop structural zero at t = 0
+    ## per-bin alphas within a few percent of truth at this sample
+    ## size; concentration recovered tightly
+    expect_equal(recovered, true_alpha, tolerance = 0.1)
+    expect_equal(sum(recovered), sum(true_alpha), tolerance = 0.1)
+  }
+)
+
 test_that("build_np_est_data produces expected output", {
   np_delays <- list(
     NonParametric(Dirichlet(prior = c(0.1, 0.5, 0.4), concentration = 10))
