@@ -156,14 +156,12 @@ simulate_infections <- function(R,
       )
     )
   }
-  if (stan_data$delay_np_est_n > 0) {
+  if (stan_data$delay_n_np_est > 0) {
     cli_abort(
       c(
-        "!" = "Cannot simulate from estimated nonparametric
-        delays.",
-        "i" = "Use {.fn fix_parameters} to resolve the
-        Dirichlet prior to a fixed PMF using either the prior
-        mean or a randomly sampled PMF."
+        "!" = "Cannot simulate from estimated nonparametric delays.",
+        "i" = "Use {.fn fix_parameters} to resolve the Dirichlet prior to a
+        fixed PMF using either the prior mean or a randomly sampled PMF."
       )
     )
   }

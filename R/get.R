@@ -688,27 +688,18 @@ reconstruct_delay <- function(object, delay_name) {
   # Extract posterior if parameters were estimated
   posterior <- NULL
   if (stan_data$delay_params_length > 0 && !is.null(object$fit)) {
-    posterior <- extract_stan_param(
-      object$fit,
-      params = "delay_params"
-    )
+    posterior <- extract_stan_param(object$fit, params = "delay_params")
   }
 
   # Extract NP posterior draws if estimated
   np_posterior <- NULL
   if (stan_data$delay_np_est_length > 0 && !is.null(object$fit)) {
-    np_draws <- object$fit$draws(
-      variables = "delay_np_est_raw"
-    )
+    np_draws <- object$fit$draws(variables = "delay_np_est_raw")
     np_posterior <- posterior::as_draws_matrix(np_draws)
-    np_posterior <- as.matrix(np_posterior)
   }
 
   # Get indices for this delay type
-  delay_indices <- seq(
-    types_groups[delay_id],
-    types_groups[delay_id + 1] - 1
-  )
+  delay_indices <- seq(types_groups[delay_id], types_groups[delay_id + 1] - 1)
   types_p <- stan_data$delay_types_p[delay_indices]
 
   # Reconstruct each delay component
