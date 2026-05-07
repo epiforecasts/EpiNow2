@@ -254,27 +254,15 @@ See the [Model options](estimate_infections_options.html) vignette for an illust
 ## Evaluating forecasts with scoringutils
 
 Forecast evaluation is useful for comparing the predictive performance of different models or assessing how accuracy changes at different forecast horizons.
-The `get_predictions()` function supports a `format = "sample"` argument to return raw posterior samples compatible with the [scoringutils](https://epiforecasts.io/scoringutils/) package.
+_EpiNow2_ provides an `as_forecast_sample()` method that converts the output of `estimate_infections()` (and related functions) directly into a `forecast_sample` object from the [scoringutils](https://epiforecasts.io/scoringutils/) package.
 
 Since we fitted on only the first 60 days of `example_confirmed`, we can score the 7-day forecast against the full dataset.
-Here we show forecast scores by horizon:
+By default the forecast classes only keep horizons `>= 0` (i.e. the forecast period); pass a numeric `horizon` argument to set a different lower bound, e.g. `horizon = -Inf` to include the in-sample period.
 
 ```{r scoringutils}
 library(scoringutils)
 
-# Get sample-based predictions for the forecast period
-preds <- get_predictions(def, format = "sample")
-forecasts <- preds[horizon > 0]
-
-# Add observed data
-forecasts <- merge(forecasts, example_confirmed, by = "date")
-
-# Score forecasts by horizon
-forecast_obj <- as_forecast_sample(
-  forecasts,
-  forecast_unit = "horizon",
-  observed = "confirm",
-  sample_id = "sample"
-)
+forecast_obj <- as_forecast_sample(def, observations = example_confirmed)
+forecast_obj
 score(forecast_obj)
 ```

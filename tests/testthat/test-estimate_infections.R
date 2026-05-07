@@ -528,3 +528,93 @@ test_that("get_predictions format='quantile' compatible with scoringutils", {
   expect_s3_class(scores, "data.table")
   expect_true("wis" %in% names(scores))
 })
+
+test_that("as_forecast_sample.estimate_infections produces a valid forecast_sample", {
+  skip_if_not_installed("scoringutils")
+
+  forecast_obj <- scoringutils::as_forecast_sample(
+    default_fit,
+    observations = example_confirmed
+  )
+  expect_s3_class(forecast_obj, "forecast_sample")
+  expect_no_error(
+    scoringutils::assert_forecast(forecast_obj, verbose = FALSE)
+  )
+})
+
+test_that("as_forecast_sample horizon arg sets the lower bound", {
+  skip_if_not_installed("scoringutils")
+
+  default_obj <- scoringutils::as_forecast_sample(
+    default_fit,
+    observations = example_confirmed
+  )
+  expect_true(all(default_obj$horizon >= 0))
+
+  later_obj <- scoringutils::as_forecast_sample(
+    default_fit,
+    observations = example_confirmed,
+    horizon = 5
+  )
+  expect_true(all(later_obj$horizon >= 5))
+
+  all_obj <- scoringutils::as_forecast_sample(
+    default_fit,
+    observations = example_confirmed,
+    horizon = -Inf
+  )
+  expect_true(any(all_obj$horizon < 0))
+})
+
+test_that("as_forecast_sample errors when observations are missing or invalid", {
+  skip_if_not_installed("scoringutils")
+
+  expect_error(
+    scoringutils::as_forecast_sample(default_fit),
+    "observations"
+  )
+  expect_error(
+    scoringutils::as_forecast_sample(
+      default_fit,
+      observations = data.frame(date = example_confirmed$date)
+    ),
+    "confirm"
+  )
+
+  duped <- rbind(
+    data.table::as.data.table(example_confirmed),
+    data.table::as.data.table(example_confirmed[1])
+  )
+  expect_error(
+    scoringutils::as_forecast_sample(default_fit, observations = duped),
+    "duplicated"
+  )
+
+  no_overlap <- data.table::copy(example_confirmed)
+  no_overlap$date <- no_overlap$date + as.difftime(1000, units = "days")
+  expect_error(
+    scoringutils::as_forecast_sample(default_fit, observations = no_overlap),
+    "merging"
+  )
+})
+
+test_that("as_forecast_sample.epinow dispatches and surfaces failed-run errors", {
+  skip_if_not_installed("scoringutils")
+
+  # Synthesise an epinow object by prepending the class to a successful fit
+  fake_epinow <- default_fit
+  class(fake_epinow) <- c("epinow", class(fake_epinow))
+
+  forecast_obj <- scoringutils::as_forecast_sample(
+    fake_epinow,
+    observations = example_confirmed
+  )
+  expect_s3_class(forecast_obj, "forecast_sample")
+
+  failed <- list(error = "boom")
+  class(failed) <- c("epinow", "list")
+  expect_error(
+    scoringutils::as_forecast_sample(failed, observations = example_confirmed),
+    "failed"
+  )
+})
