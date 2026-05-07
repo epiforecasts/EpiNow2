@@ -66,7 +66,8 @@
 #'   obs-time-to-Inf heuristic. Observations where
 #'   `relative_obs_time > max(delay_upr) * obs_time_threshold`
 #'   are treated as untruncated. Default 2, following
-#'   `epidist`. Set to `Inf` to disable.
+#'   [epidist](https://epidist.epinowcast.org/). Set to `Inf` to
+#'   disable.
 #'
 #' @param verbose Logical, print progress messages?
 #'   Defaults to FALSE.
@@ -132,6 +133,7 @@
 #' @importFrom checkmate assert_string assert_list assert_number
 #'   assert_numeric assert_logical assert_date
 #'   assert_data_frame assert_integerish
+#' @importFrom stats weighted.mean
 #' @inheritParams estimate_infections
 #' @export
 #' @examples
@@ -270,8 +272,8 @@ estimate_dist <- function(data,
   # candidates.
   midpoints <- (delay_data$delay_lwr + delay_data$delay_upr) / 2
   obs_weights <- delay_data$n
-  wmean <- stats::weighted.mean(midpoints, obs_weights)
-  wvar <- stats::weighted.mean(
+  wmean <- weighted.mean(midpoints, obs_weights)
+  wvar <- weighted.mean(
     (midpoints - wmean)^2, obs_weights
   )
   # Clamp variance away from zero so divisions in lognormal/gamma
@@ -317,6 +319,7 @@ estimate_dist <- function(data,
       stan_data,
       list(
         dist = dist,
+        primary = primary,
         max_value = max_value %||% max(delay_data$delay_upr)
       )
     ),
@@ -391,6 +394,7 @@ estimate_dist <- function(data,
 #' @param verbose Logical, print progress messages?
 #' @return A data frame with columns: `delay_lwr`, `delay_upr`,
 #'   `pwindow`, `relative_obs_time`, `n`.
+#' @importFrom stats aggregate
 #' @keywords internal
 .prepare_linelist_data <- function(data,
                                    obs_time_threshold = 2,
@@ -551,7 +555,7 @@ estimate_dist <- function(data,
     n = as.integer(data$n)
   )
 
-  result <- stats::aggregate(
+  result <- aggregate(
     n ~ delay_lwr + delay_upr + pwindow + relative_obs_time,
     data = agg_df,
     FUN = sum

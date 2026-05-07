@@ -1518,6 +1518,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
 #' @param params A numerical named parameter vector
 #' @inheritParams natural_params
 #' @importFrom cli cli_abort
+#' @importFrom stats uniroot
 #' @return A list with two elements, `params_mean` and `params_sd`, containing
 #' mean and sd of natural parameters.
 #' @keywords internal
@@ -1585,7 +1586,7 @@ convert_to_natural <- function(params, distribution) {
     weibull = {
       if (all(c("mean", "sd") %in% names(ux))) {
         log_cv2_p1 <- log1p((ux$sd / ux$mean)^2)
-        x$shape <- stats::uniroot(
+        x$shape <- uniroot(
           function(k) lgamma(1 + 2 / k) - 2 * lgamma(1 + 1 / k) - log_cv2_p1,
           interval = c(0.01, 200)
         )$root

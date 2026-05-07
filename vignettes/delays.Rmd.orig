@@ -88,7 +88,7 @@ Right truncation also introduces bias: recent events with long delays are system
 
 # How primarycensored corrects this
 
-_EpiNow2_ computes delay PMFs using the `primarycensored` package [@Park2024], which accounts for primary event censoring explicitly.
+_EpiNow2_ computes delay PMFs using the `primarycensored` package [@primarycensored], which accounts for primary event censoring explicitly.
 The approach integrates the delay CDF over all possible primary event times within the primary window, producing an adjusted CDF.
 The PMF is then obtained by differencing this adjusted CDF at successive days.
 

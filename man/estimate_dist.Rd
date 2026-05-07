@@ -81,7 +81,8 @@ If not provided, inferred from data.}
 obs-time-to-Inf heuristic. Observations where
 \code{relative_obs_time > max(delay_upr) * obs_time_threshold}
 are treated as untruncated. Default 2, following
-\code{epidist}. Set to \code{Inf} to disable.}
+\href{https://epidist.epinowcast.org/}{epidist}. Set to \code{Inf} to
+disable.}
 
 \item{verbose}{Logical, print progress messages?
 Defaults to FALSE.}
