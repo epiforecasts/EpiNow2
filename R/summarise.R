@@ -1032,7 +1032,7 @@ summary.estimate_dist <- function(object,
   param_mat <- raw_samples$delay_params
 
   dist_name <- object$args$dist
-  param_names <- .get_param_names(dist_name) # nolint: object_usage_linter.
+  param_names <- .get_param_names(dist_name)
 
   # Build long-format samples table
   samples_list <- lapply(seq_along(param_names), function(i) {
@@ -1054,11 +1054,7 @@ summary.estimate_dist <- function(object,
   attr(out, "max_value") <- object$args$max_value
   attr(out, "n_obs") <- sum(object$args$n_obs)
   attr(out, "n_strata") <- object$args$n
-  attr(out, "primary") <- if (object$args$primary_id == 1L) {
-    "uniform"
-  } else {
-    "exponentially tilted"
-  }
+  attr(out, "primary") <- object$args$primary
   D_vals <- object$args$D
   finite_D <- D_vals[is.finite(D_vals)]
   attr(out, "max_delay") <- max(object$args$delay_upper)
@@ -1111,4 +1107,3 @@ print.summary.estimate_truncation <- function(x, ...) {
   print(as.data.table(x), ...)
   invisible(x)
 }
-

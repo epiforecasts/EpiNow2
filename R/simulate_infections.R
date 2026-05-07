@@ -150,9 +150,8 @@ simulate_infections <- function(R,
     cli_abort(
       c(
         "!" = "Cannot simulate from uncertain parameters.",
-        "i" = "Use {.fn fix_parameters} to set the parameters of
-        uncertain distributions using either the mean or a randomly
-        sampled value."
+        "i" = "Use {.fn fix_parameters} to set the parameters of uncertain
+        distributions using either the mean or a randomly sampled value."
       )
     )
   }
