@@ -15,7 +15,7 @@ their original order. Each estimated entry must carry an
 boundaries (output of \code{create_stan_delays()}).}
 }
 \value{
-A named list with \code{np_est_n}, \code{np_est_which},
+A named list with \code{n_np_est}, \code{np_est_which},
 \code{np_est_alpha}, \code{np_est_pos}, \code{np_est_groups}, and
 \code{np_est_length}. Empty arrays are returned when no delays are
 estimated.
