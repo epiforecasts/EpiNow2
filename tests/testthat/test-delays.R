@@ -510,10 +510,16 @@ test_that(
       stan_data, 1L, raw_draws
     )
     recovered <- result$alpha[-1] # drop structural zero at t = 0
-    ## per-bin alphas within a few percent of truth at this sample
-    ## size; concentration recovered tightly
-    expect_equal(recovered, true_alpha, tolerance = 0.1)
+    ## mean simplex
+    expect_equal(
+      recovered / sum(recovered), true_alpha / sum(true_alpha),
+      tolerance = 0.05
+    )
+    ## concentration (alpha0 = sum(alpha)) — this is the part the
+    ## moment-matching solves for, so check it explicitly
     expect_equal(sum(recovered), sum(true_alpha), tolerance = 0.1)
+    ## and per-bin alphas as a combined sanity check
+    expect_equal(recovered, true_alpha, tolerance = 0.1)
   }
 )
 
