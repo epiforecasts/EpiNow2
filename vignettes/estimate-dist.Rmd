@@ -16,22 +16,15 @@ vignette: >
 
 # Introduction
 
-Epidemiological delay distributions are subject to double interval censoring: both the primary event (e.g. infection) and the secondary event (e.g. symptom onset) are observed within discrete time windows rather than at exact times [@Charniga2024; @Park2024].
-If ignored, this censoring biases parameter estimates.
-Right truncation introduces further bias because recent observations are systematically missing due to reporting delays.
+This vignette is a worked example of fitting a delay distribution with `estimate_dist()`.
+We simulate doubly-interval-censored linelist data, set priors based on domain knowledge, fit the model, and check parameter recovery.
 
-`estimate_dist()` fits delay distributions from linelist data while accounting for both of these biases.
-Event times are typically recorded at daily resolution, but the date-based interface supports arbitrary censoring window widths.
-The function uses a Stan model that vendors likelihood functions from the [primarycensored](https://primarycensored.epinowcast.org/) package.
-If you use `estimate_dist()`, please cite `primarycensored` in addition to `EpiNow2`.
+For the formal model, including the censored likelihood, supported families, and default priors, see `vignette("estimate_dist")`.
+For the conceptual background to delay distributions in _EpiNow2_, including why naive discretisation is biased and how `primarycensored` corrects for it, see `vignette("delays")`.
+If you use `estimate_dist()`, please cite [primarycensored](https://primarycensored.epinowcast.org/) [@primarycensored] in addition to _EpiNow2_.
 
 Common use cases include estimating the incubation period (infection to symptom onset), the reporting delay (symptom onset to case report), or the serial interval (symptom onset in infector-infectee pairs).
-Generation time estimation (infection to infection) typically requires known infection times for both infector and infectee, which generally calls for more complex models.
-
-For more flexible delay distribution modelling, [`epidist`](https://epidist.epinowcast.org) supports time-varying delays, partial pooling across delays, regression on covariates, and a range of other models.
-`primarycensored` operates at a lower level, working directly with numeric delays and censoring windows.
-It supports fitting delay distributions both with and without a Stan dependency and is also useful for creating double interval censoring and truncation adjusted probability mass functions for use in other models.
-`primarycensored` also supports vendoring its Stan functions into custom models, which is useful for adapting the delay estimation approach to support more complex settings such as additional observation biases, mixture models, or joint estimation with other processes.
+Generation time estimation (infection to infection) typically requires known infection times for both infector and infectee, which generally calls for more complex models such as those provided by [`epidist`](https://epidist.epinowcast.org/).
 
 # Set up
 
