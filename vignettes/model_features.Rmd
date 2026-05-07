@@ -103,7 +103,8 @@ See also: [estimate_truncation model definition](estimate_truncation.html)
 | Variable censoring windows | `pdate_upr`, `sdate_upr` columns | Per-observation primary and secondary censoring window widths | [Distribution model](estimate_dist.html) |
 | Right truncation | `obs_date` column | Per-observation truncation times from reporting delays | [Distribution model](estimate_dist.html) |
 | Primary event distribution | `estimate_dist(primary = "expgrowth")` | Account for exponential growth in primary events | [Distribution model](estimate_dist.html) |
-| Distribution families | `estimate_dist(dist = ...)` | `"lognormal"` (default), `"gamma"`, `"normal"`, `"exp"` | [Distribution model](estimate_dist.html) |
+| Distribution families | `estimate_dist(dist = ...)` | `"lognormal"` (default), `"gamma"`, `"normal"`, `"exp"`, `"weibull"` | [Distribution model](estimate_dist.html) |
+| Untruncated approximation | `estimate_dist(obs_time_threshold = ...)` | Skip the right-truncation renormalisation when observation times are far beyond the largest observed delay | [Distribution model](estimate_dist.html) |
 | Observation aggregation | Automatic | Identical delay-censoring-truncation strata are aggregated to speed up fitting | [Distribution model](estimate_dist.html) |
 
 See also: [distribution model](estimate_dist.html), [worked example](estimate_dist_workflow.html)
