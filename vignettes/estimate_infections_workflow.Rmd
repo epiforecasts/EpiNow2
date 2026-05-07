@@ -76,12 +76,7 @@ As these will affect any results, it is worth spending some time investigating w
 
 _EpiNow2_ works with different delays that apply to different parts of the infection and observation process.
 They are defined using a common interface that involves functions that are named after the probability distributions, i.e. `LogNormal()`, `Gamma()`, etc.
-For help with this function, see its manual page
-
-
-``` r
-?EpiNow2::Distributions
-```
+For help with this function, see its manual page (`?EpiNow2::Distributions`) or the [delays vignette](delays.html) for background on how EpiNow2 handles delay distributions.
 
 In all cases, the distributions given can be *fixed* (i.e. have no uncertainty) or *variable* (i.e. have associated uncertainty).
 For example, to define a fixed gamma distribution with mean 3, standard deviation (sd) 1 and maximum value 10, you would write
@@ -293,6 +288,10 @@ def <- estimate_infections(
   rt = rt_opts(prior = rt_prior),
   forecast = forecast_opts(horizon = 7)
 )
+#> Warning: There were 2 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
 ```
 
 Alternatively, for production environments, we recommend using the `epinow()` function. It uses `estimate_infections()` internally and provides functionality for logging and saving results and plots in dedicated directories in the user's file system.
@@ -339,17 +338,17 @@ forecast_obj
 #> Key: <date>
 #>        sample_id predicted observed forecast_date       date horizon
 #>            <int>     <num>    <num>        <Date>     <Date>   <num>
-#>     1:         1      2223     2256    2020-04-21 2020-04-21       0
-#>     2:         2      2568     2256    2020-04-21 2020-04-21       0
-#>     3:         3      3309     2256    2020-04-21 2020-04-21       0
-#>     4:         4      3337     2256    2020-04-21 2020-04-21       0
-#>     5:         5      2710     2256    2020-04-21 2020-04-21       0
+#>     1:         1      2155     2256    2020-04-21 2020-04-21       0
+#>     2:         2      2242     2256    2020-04-21 2020-04-21       0
+#>     3:         3      2833     2256    2020-04-21 2020-04-21       0
+#>     4:         4      2679     2256    2020-04-21 2020-04-21       0
+#>     5:         5      1786     2256    2020-04-21 2020-04-21       0
 #>    ---                                                              
-#> 15996:      1996      2966     1739    2020-04-21 2020-04-28       7
-#> 15997:      1997      1784     1739    2020-04-21 2020-04-28       7
-#> 15998:      1998      1612     1739    2020-04-21 2020-04-28       7
-#> 15999:      1999      2145     1739    2020-04-21 2020-04-28       7
-#> 16000:      2000      1457     1739    2020-04-21 2020-04-28       7
+#> 15996:      1996      3163     1739    2020-04-21 2020-04-28       7
+#> 15997:      1997      2021     1739    2020-04-21 2020-04-28       7
+#> 15998:      1998      3562     1739    2020-04-21 2020-04-28       7
+#> 15999:      1999      1146     1739    2020-04-21 2020-04-28       7
+#> 16000:      2000      2553     1739    2020-04-21 2020-04-28       7
 score(forecast_obj)
 #> Warning: Predictions appear to be integer-valued.
 #> ! The log score uses kernel density estimation, which may not be appropriate
@@ -358,22 +357,22 @@ score(forecast_obj)
 #>   distributions.
 #>    forecast_date       date horizon    bias      dss     crps overprediction
 #>           <Date>     <Date>   <num>   <num>    <num>    <num>          <num>
-#> 1:    2020-04-21 2020-04-21       0  0.5170 13.11080 214.9536         89.984
-#> 2:    2020-04-21 2020-04-22       1 -0.6505 13.31003 305.8814          0.000
-#> 3:    2020-04-21 2020-04-23       2 -0.8755 15.26973 657.2073          0.000
-#> 4:    2020-04-21 2020-04-24       3  0.2560 13.38751 190.0780         28.593
-#> 5:    2020-04-21 2020-04-25       4 -0.5490 13.53322 317.1630          0.000
-#> 6:    2020-04-21 2020-04-26       5  0.3910 13.79891 254.7470         70.291
-#> 7:    2020-04-21 2020-04-27       6  0.1640 13.68110 204.2124         12.438
-#> 8:    2020-04-21 2020-04-28       7  0.4320 13.76404 252.2392         78.715
-#>    underprediction dispersion log_score      mad ae_median   se_mean
-#>              <num>      <num>     <num>    <num>     <num>     <num>
-#> 1:           0.000   124.9696  7.355158 527.8056     355.0 151293.38
-#> 2:         190.593   115.2884  7.756721 475.1733     528.5 220416.63
-#> 3:         529.589   127.6183  8.763339 539.6664     990.0 850682.48
-#> 4:           0.000   161.4850  7.476291 688.6677     211.0  87562.73
-#> 5:         166.370   150.7930  7.945295 643.4484     543.0 203621.15
-#> 6:           0.000   184.4560  7.620958 768.7281     354.5 224057.86
-#> 7:           0.000   191.7744  7.573535 795.4149     146.5  89926.22
-#> 8:           0.000   173.5242  7.522562 733.8870     363.5 246446.22
+#> 1:    2020-04-21 2020-04-21       0  0.5180 13.00240 206.9490         90.493
+#> 2:    2020-04-21 2020-04-22       1 -0.7125 13.32726 306.9011          0.000
+#> 3:    2020-04-21 2020-04-23       2 -0.8630 15.28418 655.3489          0.000
+#> 4:    2020-04-21 2020-04-24       3  0.2795 13.41517 200.1155         34.763
+#> 5:    2020-04-21 2020-04-25       4 -0.5360 13.49324 315.8515          0.000
+#> 6:    2020-04-21 2020-04-26       5  0.4450 13.87591 284.8807        101.178
+#> 7:    2020-04-21 2020-04-27       6  0.2085 13.67033 214.0379         21.604
+#> 8:    2020-04-21 2020-04-28       7  0.4620 13.84288 275.3218        101.619
+#>    underprediction dispersion log_score      mad ae_median  se_mean
+#>              <num>      <num>     <num>    <num>     <num>    <num>
+#> 1:           0.000   116.4560  7.322814 498.1536     331.0 137832.9
+#> 2:         199.369   107.5321  7.723186 456.6408     513.5 225721.4
+#> 3:         526.699   128.6499  8.783905 533.7360     997.0 846521.4
+#> 4:           0.000   165.3525  7.518136 681.2547     255.0 103217.3
+#> 5:         161.075   154.7765  7.945730 632.3289     550.5 204575.7
+#> 6:           0.000   183.7027  7.671799 791.7084     451.0 292471.7
+#> 7:           0.000   192.4339  7.623054 820.6191     203.5 107934.9
+#> 8:           0.000   173.7028  7.584995 739.8174     424.0 295036.4
 ```
