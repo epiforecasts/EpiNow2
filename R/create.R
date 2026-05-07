@@ -534,6 +534,7 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
 ##'
 ##' @inheritParams create_initial_conditions
 ##' @return A list of initial conditions for delays
+##' @importFrom stats rgamma
 ##' @keywords internal
 create_delay_inits <- function(stan_data) {
   out <- list()
@@ -549,7 +550,7 @@ create_delay_inits <- function(stan_data) {
   ## near the configured Dirichlet mean rather than from generic random
   ## values
   if (isTRUE(stan_data$delay_np_est_length > 0)) {
-    out$delay_np_est_raw <- array(stats::rgamma(
+    out$delay_np_est_raw <- array(rgamma(
       n = stan_data$delay_np_est_length,
       shape = stan_data$delay_np_est_alpha,
       rate = 1
