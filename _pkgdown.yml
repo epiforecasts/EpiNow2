@@ -87,6 +87,7 @@ articles:
   - EpiNow2
   - model_overview
   - model_features
+  - delays
 - title: Model definitions
   navbar: Model definitions
   contents:
@@ -94,7 +95,6 @@ articles:
   - estimate_secondary
   - estimate_truncation
   - estimate_dist
-  - delays
   - gaussian_process_implementation_details
 - title: Estimating the reproduction number
   navbar: Estimating Rt

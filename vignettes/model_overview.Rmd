@@ -63,6 +63,7 @@ Estimated primary observations from `estimate_infections()` are used as input to
 
 - [Getting started](EpiNow2.html) — quick introduction and basic usage
 - [Model features](model_features.html) — feature reference for arguments and options
+- [Understanding delay distributions](delays.html) — conceptual background on delays in _EpiNow2_
 
 **Model definitions** (mathematical detail)
 
@@ -72,10 +73,21 @@ Estimated primary observations from `estimate_infections()` are used as input to
 - [Truncation model](estimate_truncation.html) — `estimate_truncation()`
 - [Distribution model](estimate_dist.html) — `estimate_dist()`
 
-**Applied use**
+**Estimating the reproduction number**
 
 - [Workflow](estimate_infections_workflow.html) — end-to-end estimation and forecasting
 - [Configuration examples](estimate_infections_options.html) — different model configurations with results
 - [Prior choice guide](prior_choice_guide.html) — default priors and how to modify them
-- [Production use](epinow.html) — `epinow()` and `regional_epinow()`
-- [Case studies](case-studies.html) — external applications in the literature
+
+**Auxiliary models**
+
+- [Fitting delay distributions](estimate_dist_workflow.html) — worked example for `estimate_dist()`
+- [Forecasting multiple data streams](forecasting_multiple_data_streams.html) — combining `estimate_infections()` with `forecast_secondary()`
+
+**Production use**
+
+- [epinow() and regional_epinow()](epinow.html) — wrappers for production runs
+
+**Case studies**
+
+- [External case studies](case-studies.html) — applications in the literature
