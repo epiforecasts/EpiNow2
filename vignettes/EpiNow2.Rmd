@@ -28,7 +28,7 @@ library(EpiNow2)
 
 Distributions can be supplied in two ways. First, one can supply delay data to `estimate_delay()`, where a subsampled bootstrapped lognormal will be fit to account for uncertainty in the observed data without being biased by changes in incidence (see `?EpiNow2::estimate_delay()`).
 
-Second, one can specify predetermined delays with uncertainty using the distribution functions such as `Gamma` or `Lognormal`. An arbitrary number of delay distributions are supported in `dist_spec()` with a common use case being an incubation period followed by a reporting delay. For more information on specifying distributions see (see `?EpiNow2::Distributions`).
+Second, one can specify predetermined delays with uncertainty using the distribution functions such as `Gamma` or `Lognormal`. An arbitrary number of delay distributions are supported in `dist_spec()` with a common use case being an incubation period followed by a reporting delay. For more information on specifying distributions see `?EpiNow2::Distributions` or the [delays vignette](delays.html).
 
 For example if data on the delay between onset and infection was available we could fit a distribution to it, using `estimate_delay()`, with appropriate uncertainty as follows (note this is a synthetic example),
 
@@ -156,13 +156,13 @@ knitr::kable(summary(estimates))
 
 
 
-|measure                      |estimate                 |
-|:----------------------------|:------------------------|
-|New infections per day       |2236 (1364 -- 3747)      |
-|Expected change in reports   |Likely decreasing        |
-|Effective reproduction no.   |0.89 (0.71 -- 1.1)       |
-|Rate of growth               |-0.029 (-0.098 -- 0.037) |
-|Doubling/halving time (days) |-24 (19 -- -7.1)         |
+|measure                      |estimate                |
+|:----------------------------|:-----------------------|
+|New infections per day       |2238 (1361 -- 3776)     |
+|Expected change in reports   |Likely decreasing       |
+|Effective reproduction no.   |0.9 (0.72 -- 1.1)       |
+|Rate of growth               |-0.029 (-0.095 -- 0.04) |
+|Doubling/halving time (days) |-24 (17 -- -7.3)        |
 
 
 
@@ -173,20 +173,20 @@ Summarised parameter estimates can also easily be returned, either filtered for 
 head(summary(estimates, type = "parameters", params = "R"))
 #>          date variable strat     type   median     mean         sd lower_90
 #>        <Date>   <char> <int>   <char>    <num>    <num>      <num>    <num>
-#> 1: 2020-02-22        R    NA estimate 2.189648 2.196213 0.11336185 2.023501
-#> 2: 2020-02-23        R    NA estimate 2.153710 2.159198 0.10259863 1.998873
-#> 3: 2020-02-24        R    NA estimate 2.118107 2.120663 0.09411365 1.974120
-#> 4: 2020-02-25        R    NA estimate 2.078305 2.080785 0.08768269 1.941711
-#> 5: 2020-02-26        R    NA estimate 2.037962 2.039743 0.08296362 1.909825
-#> 6: 2020-02-27        R    NA estimate 1.995351 1.997715 0.07954817 1.874942
+#> 1: 2020-02-22        R    NA estimate 2.168650 2.177295 0.11655839 1.993084
+#> 2: 2020-02-23        R    NA estimate 2.131079 2.139736 0.10617133 1.969911
+#> 3: 2020-02-24        R    NA estimate 2.093210 2.100701 0.09805302 1.947125
+#> 4: 2020-02-25        R    NA estimate 2.054677 2.060418 0.09188230 1.918718
+#> 5: 2020-02-26        R    NA estimate 2.013701 2.019119 0.08723416 1.882894
+#> 6: 2020-02-27        R    NA estimate 1.970974 1.977023 0.08365191 1.847897
 #>    lower_50 lower_20 upper_20 upper_50 upper_90
 #>       <num>    <num>    <num>    <num>    <num>
-#> 1: 2.116083 2.163518 2.221263 2.267635 2.391763
-#> 2: 2.086574 2.128094 2.182408 2.224640 2.333380
-#> 3: 2.054704 2.092117 2.140637 2.180685 2.279482
-#> 4: 2.019448 2.055093 2.099769 2.136280 2.230685
-#> 5: 1.981584 2.015820 2.057302 2.089886 2.182033
-#> 6: 1.941424 1.975040 2.014929 2.046460 2.135327
+#> 1: 2.101110 2.139373 2.199382 2.250761 2.378719
+#> 2: 2.068130 2.106184 2.158555 2.208929 2.322276
+#> 3: 2.033855 2.070210 2.118975 2.164187 2.272569
+#> 4: 1.997565 2.032288 2.077399 2.120360 2.220921
+#> 5: 1.958820 1.991759 2.035872 2.077043 2.168067
+#> 6: 1.919210 1.951074 1.991899 2.031857 2.118908
 ```
 
 Reported cases can be extracted using `get_predictions()` which returns summarised estimates by default.
@@ -194,22 +194,22 @@ Reported cases can be extracted using `get_predictions()` which returns summaris
 
 ``` r
 head(get_predictions(estimates))
-#>          date median     mean       sd lower_90 lower_50 lower_20 upper_20
-#>        <Date>  <num>    <num>    <num>    <num>    <num>    <num>    <num>
-#> 1: 2020-02-22     35  36.3825  9.99996       22    29.75       33       38
-#> 2: 2020-02-23     52  53.0555 13.09439       34    44.00       49       55
-#> 3: 2020-02-24     65  65.6955 15.56759       42    55.00       60       69
-#> 4: 2020-02-25     72  72.8700 16.93146       48    61.00       68       76
-#> 5: 2020-02-26     83  83.5495 18.01854       54    72.00       78       87
-#> 6: 2020-02-27    120 121.3125 25.71222       82   103.00      113      126
+#>          date median     mean        sd lower_90 lower_50 lower_20 upper_20
+#>        <Date>  <num>    <num>     <num>    <num>    <num>    <num>    <num>
+#> 1: 2020-02-22     35  35.6935  9.701475       21       29     32.0       37
+#> 2: 2020-02-23     53  53.5045 13.230249       34       45     49.0       56
+#> 3: 2020-02-24     64  65.5110 15.668204       42       54     60.6       68
+#> 4: 2020-02-25     72  73.2385 16.400613       48       62     68.0       76
+#> 5: 2020-02-26     82  83.3325 18.092833       56       71     78.0       87
+#> 6: 2020-02-27    118 120.4175 25.729384       82      103    112.0      125
 #>    upper_50 upper_90
 #>       <num>    <num>
-#> 1:       42       54
-#> 2:       61       77
-#> 3:       75       93
-#> 4:       83      104
-#> 5:       95      115
-#> 6:      137      167
+#> 1:       42    53.00
+#> 2:       61    77.00
+#> 3:       75    93.00
+#> 4:       84   102.00
+#> 5:       94   115.00
+#> 6:      136   166.05
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
@@ -281,8 +281,8 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 |Region   |New infections per day |Expected change in reports |Effective reproduction no. |Rate of growth          |Doubling/halving time (days) |
 |:--------|:----------------------|:--------------------------|:--------------------------|:-----------------------|:----------------------------|
-|realland |2002 (1078 -- 3830)    |Likely decreasing          |0.85 (0.63 -- 1.1)         |-0.041 (-0.11 -- 0.035) |-17 (20 -- -6.3)             |
-|testland |3977 (2069 -- 7977)    |Likely decreasing          |0.85 (0.61 -- 1.2)         |-0.043 (-0.11 -- 0.042) |-16 (16 -- -6.1)             |
+|realland |1965 (1068 -- 3835)    |Likely decreasing          |0.84 (0.62 -- 1.1)         |-0.044 (-0.11 -- 0.037) |-16 (19 -- -6.4)             |
+|testland |4111 (2130 -- 7803)    |Likely decreasing          |0.86 (0.63 -- 1.1)         |-0.039 (-0.11 -- 0.038) |-18 (18 -- -6.3)             |
 
 
 
