@@ -17,6 +17,7 @@
 - Added a model definition vignette for `estimate_dist()`.
 - Added a model overview vignette with an architecture diagram showing how the package's models connect.
 - Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
+- The delay distribution fitting vignette has been renamed from `vignette("estimate-dist")` to `vignette("estimate_dist_workflow")` for consistency with the other workflow vignettes; the model definition is at `vignette("estimate_dist")`.
 
 ## Bug fixes
 
