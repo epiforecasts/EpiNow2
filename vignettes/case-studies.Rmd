@@ -22,15 +22,14 @@ knitr::opts_chunk$set(
 - [Estimating reporting delays and nowcasting/forecasting infections with EpiNow2](https://github.com/epiforecasts/nowcasting.example/blob/main/inst/reports/epinow2.md) by Sebastian Funk and Sam Abbott.
 - [Forecast Covid-19 reported deaths from Covid-19 reported cases (both observed and forecast) for a country in the ECDC](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17) by Sam Abbott.
 - [Explore Covid-19 data truncation in England](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a) by Sam Abbott.
-- [Estimate the effective reproduction number of Covid-19 in last 3 months for a country](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) By Sam Abbott.
+- [Estimate the effective reproduction number of Covid-19 in last 3 months for a country](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867) by Sam Abbott.
 - [Nowcasting and forecasting the 2022 U.S. mpox outbreak](https://github.com/kcharniga/mpox_nowcasting) by Kelly Charniga, Zachary J. Madewell, Nicholas B. Masters, Jason Asher, Yoshinori Nakazawa, and Ian H. Spicknall.
 
 # Public health surveillance
 
 - CDC. 2022. "Technical Report 3: Multi-National Monkeypox Outbreak, United States, 2022." Centers for Disease Control and Prevention. October 3, 2022. https://archive.cdc.gov/www_cdc_gov/poxvirus/mpox/cases-data/technical-report/report-3.html
 
-- CDC Center for Forecasting and Outbreak Analytics. "Current Epidemic Trends (Based on Rt) for States." Centers for Disease Control and Prevention. https://www.cdc.gov/cfa-modeling-and-forecasting/rt-estimates/index.html.
-EpiNow2 is used to estimate the time-varying reproduction number for COVID-19, influenza, and RSV across U.S. states from emergency department visit data, with estimates updated weekly.
+- CDC Center for Forecasting and Outbreak Analytics. "Current Epidemic Trends (Based on Rt) for States." Centers for Disease Control and Prevention. https://www.cdc.gov/cfa-modeling-and-forecasting/rt-estimates/index.html. EpiNow2 is used to estimate the time-varying reproduction number for COVID-19, influenza, and RSV across U.S. states from emergency department visit data, with estimates updated weekly.
 
 # Literature
 
@@ -66,4 +65,4 @@ EpiNow2 is used to estimate the time-varying reproduction number for COVID-19, i
 
 - Costa, João Marcos Nacif da, Luis Gustavo Corbellini, Nicolás Céspedes Cárdenas, Fernando Henrique Sauter Groff, and Gustavo Machado. 2025. "Assessing Epidemiological Parameters and Dissemination Characteristics of the 2000 and 2001 Foot-and-Mouth Disease Outbreaks in Rio Grande do Sul, Brazil." Ciência Rural 55: e20240540. https://doi.org/10.1590/0103-8478cr20240540.
 
-- Pekar, Jonathan E., Yanjun Wang, Jade C. Wang, Yiyang Shao, Faten Taki, Leah A. Forgione, Hemi Amin, Timothy Clabby, Kathy Johnson, Lucia V. Torian, Straten L. Braunstein, Preeti Pathela, Esther Omoregie, Stella Hughes, Marc A. Suchard, Tetyana I. Vasylyeva, Philippe Lemey, and Joel O. Wertheim. 2025. "Transmission Dynamics of the 2022 Mpox Epidemic in New York City." Nature Medicine 31. https://doi.org/10.1038/s41591-025-03526-9.
+- Pekar, Jonathan E., Yanjun Wang, Jade C. Wang, Yiyang Shao, Faten Taki, Leah A. Forgione, Hemi Amin, Timothy Clabby, Kathy Johnson, Lucia V. Torian, Straten L. Braunstein, Preeti Pathela, Esther Omoregie, Stella Hughes, Marc A. Suchard, Tetyana I. Vasylyeva, Philippe Lemey, and Joel O. Wertheim. 2025. "Transmission Dynamics of the 2022 Mpox Epidemic in New York City." Nature Medicine 31 (5): 1464–1473. https://doi.org/10.1038/s41591-025-03526-9.
