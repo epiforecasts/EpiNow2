@@ -151,7 +151,7 @@ plot(dist_short)
 ![plot of chunk truncation](delays-truncation-2.png)
 
 Right truncation is also important when estimating delay distributions from real-time data, because recent cases with long delays have not yet been observed.
-`estimate_dist()` accounts for this; see `vignette("estimate_dist")` for the model definition and `vignette("estimate-dist")` for a worked example.
+`estimate_dist()` accounts for this; see `vignette("estimate_dist")` for the model definition and `vignette("estimate_dist_workflow")` for a worked example.
 
 Left truncation excludes delays below a threshold, which is useful when zero-day delays are epidemiologically implausible (e.g. generation times).
 A `NonParametric()` distribution can encode this directly by setting early entries to zero.
@@ -160,6 +160,6 @@ For parametric distributions, `primarycensored` handles left truncation analytic
 # Fitting delay distributions from data
 
 When line-list data with individual-level event dates are available, `estimate_dist()` can be used to fit a delay distribution that properly accounts for interval censoring and right truncation.
-See `vignette("estimate_dist")` for the model definition and `vignette("estimate-dist")` for a worked example.
+See `vignette("estimate_dist")` for the model definition and `vignette("estimate_dist_workflow")` for a worked example.
 
 # References

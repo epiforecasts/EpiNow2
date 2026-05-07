@@ -16,7 +16,7 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "estimate-dist-"
+  fig.path = "estimate_dist_workflow-"
 )
 ```
 

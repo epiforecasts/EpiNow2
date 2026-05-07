@@ -28,7 +28,7 @@ delays <- rlnorm(500, log(5), 1)
 # estimate_delay(delays, samples = 1000, bootstraps = 10)
 
 # New way: see ?estimate_dist and
-# vignette("estimate-dist") for date-based usage
+# vignette("estimate_dist_workflow") for date-based usage
 }
 }
 \seealso{

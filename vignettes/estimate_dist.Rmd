@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 `estimate_dist()` fits a parametric delay distribution from interval-censored linelist data via MCMC.
 The model accounts for double interval censoring of the primary and secondary events, right truncation due to a finite observation period, and optional left truncation.
 The likelihood is provided by the [primarycensored](https://primarycensored.epinowcast.org/) package [@primarycensored], whose Stan functions are vendored into _EpiNow2_ at `inst/stan/functions/primarycensored.stan` and called from `inst/stan/estimate_dist.stan`.
-The conceptual motivation for these adjustments is given in `vignette("delays")`, and a worked example is given in `vignette("estimate-dist")`.
+The conceptual motivation for these adjustments is given in `vignette("delays")`, and a worked example is given in `vignette("estimate_dist_workflow")`.
 Sources for the choice of likelihood and the recommended adjustments are [@Park2024] and [@Charniga2024].
 
 # Data and notation
@@ -149,7 +149,7 @@ The default priors are family-specific:
 \end{align}
 
 These defaults are deliberately wide and are intended as starting points rather than fits to any particular delay.
-Users are encouraged to set priors that reflect domain knowledge about the delay being estimated; see `vignette("estimate-dist")` for guidance on translating prior beliefs into the lognormal parameterisation.
+Users are encouraged to set priors that reflect domain knowledge about the delay being estimated; see `vignette("estimate_dist_workflow")` for guidance on translating prior beliefs into the lognormal parameterisation.
 
 # Relationship to `primarycensored`
 

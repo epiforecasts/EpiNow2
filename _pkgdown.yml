@@ -64,7 +64,7 @@ navbar:
       - text: Using epinow() for running in production mode
         href: articles/epinow.html
       - text: Fitting delay distributions
-        href: articles/estimate-dist.html
+        href: articles/estimate_dist_workflow.html
       - text: Forecasting multiple data streams
         href: articles/forecasting_multiple_data_streams.html
     casestudies:
@@ -86,7 +86,7 @@ articles:
   - estimate_infections
   - estimate_secondary
   - estimate_truncation
-  - estimate-dist
+  - estimate_dist_workflow
   - delays
   - gaussian_process_implementation_details
 - title: Applied use

@@ -116,7 +116,7 @@ ggplot(data.frame(delay = observed_delays), aes(x = delay)) +
   theme_minimal()
 ```
 
-![plot of chunk plot-delays](estimate-dist-plot-delays-1.png)
+![plot of chunk plot-delays](estimate_dist_workflow-plot-delays-1.png)
 
 The histogram shows the observed delay lower bounds (i.e. `sdate_lwr - pdate_lwr`) from the filtered linelist.
 The solid line shows the true underlying lognormal density.
@@ -169,7 +169,7 @@ prior_dist <- LogNormal(
 plot(prior_dist, samples = 50, cumulative = FALSE)
 ```
 
-![plot of chunk prior-predictive](estimate-dist-prior-predictive-1.png)
+![plot of chunk prior-predictive](estimate_dist_workflow-prior-predictive-1.png)
 
 Each line is a delay distribution drawn from the priors.
 The range should cover plausible delays for the application without placing substantial weight on unrealistic values.
@@ -291,7 +291,7 @@ ggplot(param_df, aes(x = value)) +
   theme_minimal()
 ```
 
-![plot of chunk recovery-params](estimate-dist-recovery-params-1.png)
+![plot of chunk recovery-params](estimate_dist_workflow-recovery-params-1.png)
 
 The dashed lines mark the true parameter values.
 The posteriors should concentrate around these values.
@@ -352,7 +352,7 @@ ggplot(plot_df, aes(x = x)) +
   theme(legend.position = "bottom")
 ```
 
-![plot of chunk recovery-density](estimate-dist-recovery-density-1.png)
+![plot of chunk recovery-density](estimate_dist_workflow-recovery-density-1.png)
 
 Note that `get_parameters()` returns Normal approximations to the marginal posteriors.
 The actual posterior may not be exactly normal.

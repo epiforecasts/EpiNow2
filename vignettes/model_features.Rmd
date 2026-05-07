@@ -99,14 +99,14 @@ See also: [estimate_truncation model definition](estimate_truncation.html)
 
 | Feature | Argument | Description | See also |
 |---|---|---|---|
-| Double interval censoring | Date columns in linelist | Accounts for censoring of both primary and secondary events | [Fitting delays](estimate-dist.html) |
-| Variable censoring windows | `pdate_upr`, `sdate_upr` columns | Per-observation primary and secondary censoring window widths | [Fitting delays](estimate-dist.html) |
-| Right truncation | `obs_date` column | Per-observation truncation times from reporting delays | [Fitting delays](estimate-dist.html) |
-| Primary event distribution | `estimate_dist(primary = "expgrowth")` | Account for exponential growth in primary events | [Fitting delays](estimate-dist.html) |
-| Distribution families | `estimate_dist(dist = ...)` | `"lognormal"` (default), `"gamma"`, `"normal"`, `"exp"` | [Fitting delays](estimate-dist.html) |
-| Observation aggregation | Automatic | Identical delay-censoring-truncation strata are aggregated to speed up fitting | [Fitting delays](estimate-dist.html) |
+| Double interval censoring | Date columns in linelist | Accounts for censoring of both primary and secondary events | [Fitting delays](estimate_dist_workflow.html) |
+| Variable censoring windows | `pdate_upr`, `sdate_upr` columns | Per-observation primary and secondary censoring window widths | [Fitting delays](estimate_dist_workflow.html) |
+| Right truncation | `obs_date` column | Per-observation truncation times from reporting delays | [Fitting delays](estimate_dist_workflow.html) |
+| Primary event distribution | `estimate_dist(primary = "expgrowth")` | Account for exponential growth in primary events | [Fitting delays](estimate_dist_workflow.html) |
+| Distribution families | `estimate_dist(dist = ...)` | `"lognormal"` (default), `"gamma"`, `"normal"`, `"exp"` | [Fitting delays](estimate_dist_workflow.html) |
+| Observation aggregation | Automatic | Identical delay-censoring-truncation strata are aggregated to speed up fitting | [Fitting delays](estimate_dist_workflow.html) |
 
-See also: [fitting delay distributions](estimate-dist.html)
+See also: [fitting delay distributions](estimate_dist_workflow.html)
 
 # Model configuration
 
@@ -154,7 +154,7 @@ See the [workflow vignette](estimate_infections_workflow.html) for a practical g
 | Uncertain parameters | e.g. `LogNormal(meanlog = Normal(...), ...)` | Parameters drawn from prior distributions |
 | Truncation correction | `trunc_opts(dist = ...)` | Adjust for right-truncation of recent data |
 
-See also: [workflow vignette](estimate_infections_workflow.html), [prior choice guide](prior_choice_guide.html), [fitting delay distributions](estimate-dist.html)
+See also: [workflow vignette](estimate_infections_workflow.html), [prior choice guide](prior_choice_guide.html), [fitting delay distributions](estimate_dist_workflow.html)
 
 ## Observation model
 
