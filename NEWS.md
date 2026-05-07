@@ -16,6 +16,7 @@
 - Added a vignette demonstrating delay distribution fitting workflows and posterior validation.
 - Added a model overview vignette with an architecture diagram showing how the package's models connect.
 - Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
+- Expanded the case studies vignette with additional literature references and public health surveillance examples.
 
 ## Bug fixes
 

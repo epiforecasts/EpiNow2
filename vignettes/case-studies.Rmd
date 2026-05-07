@@ -29,7 +29,8 @@ knitr::opts_chunk$set(
 
 - CDC. 2022. "Technical Report 3: Multi-National Monkeypox Outbreak, United States, 2022." Centers for Disease Control and Prevention. October 3, 2022. https://archive.cdc.gov/www_cdc_gov/poxvirus/mpox/cases-data/technical-report/report-3.html
 
-- CDC Center for Forecasting and Outbreak Analytics. "Current Epidemic Trends (Based on Rt) for States." Centers for Disease Control and Prevention. https://www.cdc.gov/cfa-modeling-and-forecasting/rt-estimates/index.html. EpiNow2 is used to estimate the time-varying reproduction number for COVID-19, influenza, and RSV across U.S. states from emergency department visit data, with estimates updated weekly.
+- CDC Center for Forecasting and Outbreak Analytics. "Current Epidemic Trends (Based on Rt) for States." Centers for Disease Control and Prevention. https://www.cdc.gov/cfa-modeling-and-forecasting/rt-estimates/index.html.
+EpiNow2 is used to estimate the time-varying reproduction number for COVID-19, influenza, and RSV across U.S. states from emergency department visit data, with estimates updated weekly.
 
 # Literature
 
