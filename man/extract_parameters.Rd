@@ -7,7 +7,7 @@
 extract_parameters(samples, args)
 }
 \arguments{
-\item{samples}{Extracted stan model (using \code{\link[rstan:stanfit-method-extract]{rstan::extract()}})}
+\item{samples}{Extracted stan model (using \code{\link[rstan:extract]{rstan::extract()}})}
 
 \item{args}{Stan data list containing param_id_* and params_variable_lookup
 for parameter naming.}

@@ -9,7 +9,7 @@ extract_latent_state(param, samples, dates)
 \arguments{
 \item{param}{Character string indicating the latent state to extract}
 
-\item{samples}{Extracted stan model (using \code{\link[rstan:stanfit-method-extract]{rstan::extract()}})}
+\item{samples}{Extracted stan model (using \code{\link[rstan:extract]{rstan::extract()}})}
 
 \item{dates}{A vector identifying the dimensionality of the latent state to
 extract. Generally this will be a date.}

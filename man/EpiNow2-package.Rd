@@ -25,6 +25,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Sebastian Funk \email{sebastian.funk@lshtm.ac.uk} (\href{https://orcid.org/0000-0002-2842-3406}{ORCID})
   \item Sam Abbott \email{sam.abbott@lshtm.ac.uk} (\href{https://orcid.org/0000-0001-8057-8037}{ORCID})
   \item Joel Hellewell \email{joel.hellewell@lshtm.ac.uk} (\href{https://orcid.org/0000-0003-2683-0849}{ORCID})
   \item Katharine Sherratt \email{katharine.sherratt@lshtm.ac.uk}
