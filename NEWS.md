@@ -14,6 +14,7 @@
 ## Documentation
 
 - Added a vignette demonstrating delay distribution fitting workflows and posterior validation.
+- Added a model definition vignette for `estimate_dist()`.
 - Added a model overview vignette with an architecture diagram showing how the package's models connect.
 - Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
 
