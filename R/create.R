@@ -721,7 +721,7 @@ create_stan_args <- function(stan = stan_opts(),
 ##'   `$alpha` numeric vector aligned with its PMF.
 ##' @param np_pmf_groups Integer vector of 1-indexed PMF group
 ##'   boundaries (output of `create_stan_delays()`).
-##' @return A named list with `np_est_n`, `np_est_which`,
+##' @return A named list with `n_np_est`, `np_est_which`,
 ##'   `np_est_alpha`, `np_est_pos`, `np_est_groups`, and
 ##'   `np_est_length`. Empty arrays are returned when no delays are
 ##'   estimated.
@@ -732,11 +732,11 @@ build_np_est_data <- function(np_delays, np_pmf_groups) {
   )
   est_np_indices <- which(np_estimated)
   est_np_delays <- np_delays[np_estimated]
-  np_est_n <- sum(np_estimated)
+  n_np_est <- sum(np_estimated)
 
-  if (np_est_n == 0L) {
+  if (n_np_est == 0L) {
     return(list(
-      np_est_n = 0L,
+      n_np_est = 0L,
       np_est_which = array(integer(0)),
       np_est_alpha = array(numeric(0)),
       np_est_pos = array(integer(0)),
@@ -760,7 +760,7 @@ build_np_est_data <- function(np_delays, np_pmf_groups) {
   est_np_lengths <- lengths(all_alphas)
 
   list(
-    np_est_n = np_est_n,
+    n_np_est = n_np_est,
     np_est_which = array(est_np_indices),
     np_est_alpha = array(est_np_alphas),
     np_est_pos = array(est_np_positions),

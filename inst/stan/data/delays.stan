@@ -12,14 +12,14 @@ vector<lower = 0, upper = 1>[delay_np_pmf_length] delay_np_pmf;
 array[delay_n_np + 1] int<lower = 1> delay_np_pmf_groups;
 
 // Estimated nonparametric delays (Dirichlet via gamma trick)
-int<lower = 0> delay_np_est_n; // number of estimated NP delays
+int<lower = 0> delay_n_np_est; // number of estimated NP delays
 int<lower = 0> delay_np_est_length; // total estimated elements
-array[delay_np_est_n + 1] int delay_np_est_groups; // ragged indexing
+array[delay_n_np_est + 1] int delay_np_est_groups; // ragged indexing
 vector<lower = 0>[delay_np_est_length] delay_np_est_alpha; // Dirichlet alpha
 // position of each estimated element within delay_np_pmf
 array[delay_np_est_length] int delay_np_est_pos;
 // maps estimated NP delay index to its position in delay_np_pmf
-array[delay_np_est_n] int delay_np_est_which;
+array[delay_n_np_est] int delay_np_est_which;
 
 // number of parameters across all parametric delay distributions
 int<lower = 0> delay_params_length;

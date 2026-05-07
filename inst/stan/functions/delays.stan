@@ -192,9 +192,9 @@ void delays_np_lp(
  * Fixed entries and structural zeros are left unchanged.
  *
  * @param delay_np_pmf Fixed PMF vector (concatenated ragged array).
- * @param delay_np_est_n Number of estimated nonparametric delays.
+ * @param delay_n_np_est Number of estimated nonparametric delays.
  * @param delay_np_est_groups Ragged-array boundaries into
- *   delay_np_est_raw (length delay_np_est_n + 1).
+ *   delay_np_est_raw (length delay_n_np_est + 1).
  * @param delay_np_est_pos For each estimated element, its position
  *   within delay_np_pmf.
  * @param delay_np_est_raw Raw gamma values backing each segment.
@@ -204,18 +204,17 @@ void delays_np_lp(
  * @ingroup delay_handlers
  */
 vector combine_np_pmf(
-  vector delay_np_pmf, int delay_np_est_n,
+  vector delay_np_pmf, int delay_n_np_est,
   array[] int delay_np_est_groups, array[] int delay_np_est_pos,
   vector delay_np_est_raw
 ) {
   vector[num_elements(delay_np_pmf)] ret = delay_np_pmf;
-  for (i in 1:delay_np_est_n) {
+  for (i in 1:delay_n_np_est) {
     int es = delay_np_est_groups[i];
     int ee = delay_np_est_groups[i + 1] - 1;
-    vector[ee - es + 1] raw = delay_np_est_raw[es:ee];
-    vector[ee - es + 1] normed = raw / sum(raw);
+    real seg_sum = sum(delay_np_est_raw[es:ee]);
     for (j in es:ee) {
-      ret[delay_np_est_pos[j]] = normed[j - es + 1];
+      ret[delay_np_est_pos[j]] = delay_np_est_raw[j] / seg_sum;
     }
   }
   return ret;

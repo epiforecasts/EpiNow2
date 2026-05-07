@@ -44,7 +44,7 @@ parameters{
 transformed parameters {
   // combined fixed + estimated nonparametric delay PMF
   vector[delay_np_pmf_length] delay_np_pmf_use = combine_np_pmf(
-    delay_np_pmf, delay_np_est_n, delay_np_est_groups,
+    delay_np_pmf, delay_n_np_est, delay_np_est_groups,
     delay_np_est_pos, delay_np_est_raw
   );
 
