@@ -36,8 +36,7 @@
 #' @inheritParams calc_CrIs
 #' @inheritParams rt_opts
 #' @inheritParams stan_opts
-#' @importFrom checkmate assert_data_frame assert_date assert_numeric
-#'   assert_subset assert_integer
+#' @importFrom checkmate assert_numeric assert_integer
 #' @importFrom data.table data.table merge.data.table nafill rbindlist
 #' @importFrom cli cli_abort
 #' @return A data.table of simulated infections (variable `infections`) and
@@ -96,10 +95,7 @@ simulate_infections <- function(R,
   }
 
   ## check inputs
-  assert_data_frame(R, any.missing = FALSE)
-  assert_subset(c("date", "R"), colnames(R))
-  assert_date(R$date)
-  assert_numeric(R$R, lower = 0)
+  check_simulation_input(R, "R")
   assert_numeric(initial_infections, lower = 0)
   assert_numeric(day_of_week_effect, lower = 0, null.ok = TRUE)
   if (!is.null(seeding_time)) {
