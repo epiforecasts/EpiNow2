@@ -17,6 +17,10 @@
 - Added a model overview vignette with an architecture diagram showing how the package's models connect.
 - Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
 
+## Model changes
+
+- Improved identifiability of the non-stationary Gaussian process used to model Rt over time. Three changes in `inst/stan`: (1) GP increments are rescaled by `1/sqrt(gp_n)` so the `alpha` hyperparameter controls the standard deviation of the cumulated log-Rt trajectory rather than of the increment, matching what `gp_opts()` already documents; (2) the cumulated GP is centred so that `R0` is the mean Rt over the trajectory rather than the initial value, eliminating the `(R0, drift)` ridge in the joint posterior; (3) the GP coefficients are now sampled in centred form (`eta ~ N(0, diagSPD)` rather than unit-normal eta scaled by `diagSPD`), which avoids the `(alpha, eta)` funnel and gives substantially smoother HMC geometry in the small-`alpha` regime. Together the changes eliminate stuck chains and divergent transitions seen on previously pathological seeds, while sampling roughly 4× faster.
+
 ## Bug fixes
 
 - Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.

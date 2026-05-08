@@ -181,23 +181,20 @@ matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
 }
 
 /**
-  * Update Gaussian process using spectral densities
+  * Compute the diagonal of the spectral density matrix for the chosen kernel.
   *
-  * @param PHI Basis functions matrix
   * @param M Number of basis functions
   * @param L Length of the interval
-  * @param alpha Scaling parameter
-  * @param rho Length scale parameter
-  * @param eta Vector of noise terms
-  * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern)
-  * @param nu Smoothness parameter for Matern kernel
-  * @return A vector of updated noise terms
+  * @param alpha GP magnitude
+  * @param rho GP length-scale
+  * @param type Kernel type (0=EQ, 1=Periodic, 2=Matern)
+  * @param nu Matern smoothness
+  * @return Diagonal vector of spectral densities
+  *
+  * @ingroup estimates_smoothing
   */
-vector update_gp(matrix PHI, int M, real L, real alpha,
-                 real rho, vector eta, int type, real nu) {
-  vector[type == 1 ? 2 * M : M] diagSPD;    // spectral density
-
-  // GP in noise - spectral densities
+vector compute_diagSPD(int M, real L, real alpha, real rho, int type, real nu) {
+  vector[type == 1 ? 2 * M : M] diagSPD;
   if (type == 0) {
     diagSPD = diagSPD_EQ(alpha, rho, L, M);
   } else if (type == 1) {
@@ -213,17 +210,55 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
       reject("nu must be one of 1/2, 3/2 or 5/2; found nu=", nu);
     }
   }
-  return PHI * (diagSPD .* eta);
+  return diagSPD;
 }
 
 /**
-  * Priors for Gaussian process (excluding length scale)
+  * Update Gaussian process using spectral densities (centred form).
+  *
+  * Returns PHI * eta where eta is sampled with a N(0, diagSPD) prior in
+  * gaussian_process_lp. The spectral density scaling is applied via the
+  * prior rather than via multiplication of unit-normal eta, which avoids
+  * the (alpha, eta) funnel that arises in the non-centred form when alpha
+  * is small (data uninformative about eta).
+  *
+  * @param PHI Basis functions matrix
+  * @param M Number of basis functions (unused; kept for signature stability)
+  * @param L Length of the interval (unused; kept for signature stability)
+  * @param alpha Scaling parameter (unused; kept for signature stability)
+  * @param rho Length scale parameter (unused; kept for signature stability)
+  * @param eta Vector of noise terms (already on diagSPD scale)
+  * @param type Type of kernel (unused; kept for signature stability)
+  * @param nu Smoothness parameter (unused; kept for signature stability)
+  * @return A vector of GP noise values
+  */
+vector update_gp(matrix PHI, int M, real L, real alpha,
+                 real rho, vector eta, int type, real nu) {
+  return PHI * eta;
+}
+
+/**
+  * Priors for Gaussian process (centred form).
+  *
+  * Samples eta on its natural scale: eta ~ N(0, diagSPD(alpha, rho)). This
+  * is the centred parameterisation of the HSGP coefficients. Combined with
+  * `noise = PHI * eta` in update_gp it gives smoother HMC geometry than
+  * the non-centred form when alpha is small (Stan manual recommendation).
   *
   * @param eta Vector of noise terms
+  * @param M Number of basis functions
+  * @param L Boundary
+  * @param alpha GP magnitude
+  * @param rho GP length-scale
+  * @param type Kernel type (0=EQ, 1=Periodic, 2=Matern)
+  * @param nu Matern smoothness
   *
   * @ingroup estimates_smoothing
   */
-void gaussian_process_lp(vector eta) {
-  eta ~ std_normal();
+void gaussian_process_lp(vector eta, int M, real L, real alpha, real rho,
+                         int type, real nu) {
+  vector[type == 1 ? 2 * M : M] diagSPD =
+    compute_diagSPD(M, L, alpha, rho, type, nu);
+  eta ~ normal(0, diagSPD);
 }
 
