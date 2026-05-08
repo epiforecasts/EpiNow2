@@ -5,8 +5,10 @@
 \alias{LogNormal}
 \alias{Gamma}
 \alias{Normal}
-\alias{Fixed}
+\alias{Exp}
+\alias{Weibull}
 \alias{NonParametric}
+\alias{Fixed}
 \title{Probability distributions}
 \usage{
 LogNormal(meanlog, sdlog, mean, sd, ...)
@@ -15,9 +17,13 @@ Gamma(shape, rate, scale, mean, sd, ...)
 
 Normal(mean, sd, ...)
 
-Fixed(value, ...)
+Exp(rate, mean, ...)
+
+Weibull(shape, scale, mean, sd, ...)
 
 NonParametric(pmf, ...)
+
+Fixed(value, ...)
 }
 \arguments{
 \item{meanlog, sdlog}{mean and standard deviation of the distribution
@@ -33,12 +39,12 @@ passed to \code{\link[=bound_dist]{bound_dist()}}}
 
 \item{rate}{an alternative way to specify the scale.}
 
-\item{value}{Value of the fixed (delta) distribution}
-
 \item{pmf}{Probability mass of the given distribution; this is
 passed as a zero-indexed numeric vector (i.e. the fist entry represents
 the probability mass of zero). If not summing to one it will be normalised
 to sum to one internally.}
+
+\item{value}{Value of the fixed (delta) distribution}
 }
 \value{
 A \code{dist_spec} representing a distribution of the given
@@ -84,8 +90,17 @@ Gamma(shape = 16, rate = 4)
 Gamma(shape = Normal(16, 2), rate = Normal(4, 1))
 Normal(mean = 4, sd = 1)
 Normal(mean = 4, sd = 1, max = 10)
-Fixed(value = 3)
-Fixed(value = 3.5)
+Exp(rate = 1)
+Exp(mean = 4)
+Weibull(shape = 1, scale = 1)
+Weibull(shape = 1, scale = 1, max = 10)
+Weibull(mean = 4, sd = 1)
 NonParametric(c(0.1, 0.3, 0.2, 0.4))
 NonParametric(c(0.1, 0.3, 0.2, 0.1, 0.1))
+Fixed(value = 3)
+Fixed(value = 3.5)
+}
+\seealso{
+\code{vignette("delays")} for an overview of how delay
+distributions are used in EpiNow2
 }
