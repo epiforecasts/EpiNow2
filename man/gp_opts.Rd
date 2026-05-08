@@ -8,7 +8,7 @@ gp_opts(
   basis_prop = 0.2,
   boundary_scale = 1.5,
   ls = LogNormal(mean = 21, sd = 7, max = 60),
-  alpha = Normal(mean = 0, sd = 0.08),
+  alpha = Normal(mean = 0, sd = 0.2),
   kernel = c("matern", "se", "ou", "periodic"),
   matern_order = 3/2,
   w0 = 1
@@ -36,8 +36,8 @@ enforced automatically to ensure positivity)}
 parameter of the Gaussian process kernel. After rescaling of the
 non-stationary GP, this is approximately the standard deviation of the
 cumulated log-Rt trajectory over the observation window. Defaults to a
-half-normal distribution with mean 0 and sd 0.08:
-\code{Normal(mean = 0, sd = 0.08)} (a lower limit of 0 will be enforced
+half-normal distribution with mean 0 and sd 0.2:
+\code{Normal(mean = 0, sd = 0.2)} (a lower limit of 0 will be enforced
 automatically to ensure positivity)}
 
 \item{kernel}{Character string, the type of kernel required. Currently
