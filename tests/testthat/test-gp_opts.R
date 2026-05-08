@@ -2,7 +2,7 @@ test_that("gp_opts returns correct default values", {
   gp <- gp_opts()
   expect_equal(gp$basis_prop, 0.2)
   expect_equal(gp$boundary_scale, 1.5)
-  expect_equal(gp$alpha, Normal(0, 0.2))
+  expect_equal(gp$alpha, Normal(0, 0.5))
   expect_equal(gp$ls, LogNormal(mean = 21, sd = 7, max = 60))
   expect_equal(gp$kernel, "matern")
   expect_equal(gp$matern_order, 3 / 2)
