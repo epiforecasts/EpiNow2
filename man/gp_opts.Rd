@@ -8,7 +8,7 @@ gp_opts(
   basis_prop = 0.2,
   boundary_scale = 1.5,
   ls = LogNormal(mean = 21, sd = 7, max = 60),
-  alpha = Normal(mean = 0, sd = 0.01),
+  alpha = Normal(mean = 0, sd = 0.08),
   kernel = c("matern", "se", "ou", "periodic"),
   matern_order = 3/2,
   w0 = 1
@@ -33,11 +33,11 @@ a Lognormal distribution with mean 21 days, sd 7 days and maximum 60 days:
 enforced automatically to ensure positivity)}
 
 \item{alpha}{A \verb{<dist_spec>} giving the prior distribution of the magnitude
-parameter of the Gaussian process kernel. Should be approximately the
-expected standard deviation of the Gaussian process (logged Rt in case of
-the renewal model, logged infections in case of the nonmechanistic model).
-Defaults to a half-normal distribution with mean 0 and sd 0.01:
-\code{Normal(mean = 0, sd = 0.01)} (a lower limit of 0 will be enforced
+parameter of the Gaussian process kernel. After rescaling of the
+non-stationary GP, this is approximately the standard deviation of the
+cumulated log-Rt trajectory over the observation window. Defaults to a
+half-normal distribution with mean 0 and sd 0.08:
+\code{Normal(mean = 0, sd = 0.08)} (a lower limit of 0 will be enforced
 automatically to ensure positivity)}
 
 \item{kernel}{Character string, the type of kernel required. Currently
