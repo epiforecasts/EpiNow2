@@ -9,9 +9,13 @@ test_that("update_Rt works to produce multiple Rt estimates with a static gaussi
   )
 })
 test_that("update_Rt works to produce multiple Rt estimates with a non-static gaussian process", {
+  # Non-stationary GP: increments rescaled by 1/sqrt(gp_n) and the cumulated
+  # trajectory centred so log R0 = mean log Rt rather than initial log Rt.
+  # For noise = rep(0.1, 9), gp_n = 9, log(R0) = log(1.2):
+  #   gp = cumsum(rep(0.1/3, 9)), prepended with 0, then mean-subtracted.
   expect_equal(
-    round(update_Rt(10, 1.2, rep(0.1, 9), rep(10, 0), numeric(0), 0), 2),
-    c(1.20, 1.33, 1.47, 1.62, 1.79, 1.98, 2.19, 2.42, 2.67, 2.95)
+    round(update_Rt(10, 1.2, rep(0.1, 9), rep(10, 0), numeric(0), 0), 3),
+    c(1.033, 1.068, 1.104, 1.141, 1.180, 1.220, 1.262, 1.304, 1.348, 1.394)
   )
 })
 test_that("update_Rt works to produce multiple Rt estimates with a non-static stationary gaussian process", {
@@ -53,9 +57,11 @@ test_that("update_Rt works when Rt is variable and a breakpoint is present", {
     round(update_Rt(5, 1.2, rep(0, 5), c(1, 1, 2, 2, 2), 0.1, 1), 2),
     c(1.2, 1.2, rep(1.33, 3))
   )
+  # Non-stationary GP: see explanation in the earlier non-static GP test.
+  # Here gp_n = 4, breakpoints add 0.1 from t=3 onward.
   expect_equal(
-    round(update_Rt(5, 1.2, rep(0.1, 4), c(1, 1, 2, 2, 2), 0.1, 0), 2),
-    c(1.20, 1.33, 1.62, 1.79, 1.98)
+    round(update_Rt(5, 1.2, rep(0.1, 4), c(1, 1, 2, 2, 2), 0.1, 0), 3),
+    c(1.086, 1.141, 1.326, 1.394, 1.466)
   )
 })
 
