@@ -82,7 +82,7 @@ Different options are available for setting a prior for $R_t$, the instantaneous
   \log R_{t} - \log R_{t-1} \sim \mathrm{GP}_t
 \end{equation}
 
-More details on the mathematical form of the GP approximation and implementation are given in the [Gaussian Process implementation details](gaussian_process_implementation_details.html) vignette. Other choices for the prior of $R_t$ are available such as a GP prior for the difference between $R_t$ and its mean value (implying that in the absence of data $R_t$ will revert to its prior mean rather than the last value with robust support from the data).
+The cumulated trajectory is mean-centred so that $\log R_0 = \mathrm{mean}(\log R_t)$ over the observation window rather than the initial value; this eliminates a $(R_0, \mathrm{drift})$ ridge in the joint posterior that otherwise produced stuck chains on some seeds. More details on the mathematical form of the GP approximation and implementation are given in the [Gaussian Process implementation details](gaussian_process_implementation_details.html) vignette. Other choices for the prior of $R_t$ are available such as a GP prior for the difference between $R_t$ and its mean value (implying that in the absence of data $R_t$ will revert to its prior mean rather than the last value with robust support from the data).
 
 \begin{equation}
   \log R_{t} - \log R_0 \sim \mathrm{GP}_t
@@ -99,7 +99,7 @@ where $\div$ indicates interval-valued division (i.e. the floor of the division)
 
 The choice of prior for the time-varying reproduction number impact run-time, smoothness of the estimates and real-time behaviour and may alter the best use-case for the model.
 
-The prior distribution of the initial reproduction number $R_{0}$ can be set by the user.
+The prior distribution of the reproduction number $R_{0}$ can be set by the user. With the default non-stationary Gaussian process model ($gp_on = "R_{t-1}"$, see below), the cumulated GP is centred so that $R_0$ represents the mean reproduction number over the observation window; with no GP or with the stationary GP, $R_0$ is the initial reproduction number.
 By default this is a log-normal distribution with mean 1 and standard deviation 1.
 
 \begin{equation}
