@@ -465,7 +465,7 @@ test_that("warns when all observed delays are identical", {
       )),
       error = function(e) NULL
     ),
-    "All observed delays are identical" # matches cli_warn text
+    "Near-zero variance in observed delays" # matches cli_warn text
   )
 })
 
