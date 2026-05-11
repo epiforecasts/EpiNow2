@@ -145,7 +145,7 @@ if (any(changes$trend != "no change")) {
   cat(knitr::kable(
     format_output, align = "lrrrrr",
     caption = "Benchmarking results (mean time in seconds)."
-  ))
+  ), sep = "\n")
   cat("\n")
   if (length(output_lines) > 0) {
     cat(paste(output_lines, collapse = "\n"))
