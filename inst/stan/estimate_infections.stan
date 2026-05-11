@@ -202,19 +202,7 @@ model {
   // priors for noise GP
   if (!fixed) {
     profile("gp lp") {
-      // Recompute alpha and rescaled_rho here because they are local to
-      // the transformed parameters block. The centred-form gaussian_process_lp
-      // needs them to compute diagSPD for the eta prior.
-      real alpha_for_lp = get_param(
-        param_id_alpha, params_fixed_lookup, params_variable_lookup,
-        params_value, params
-      );
-      real rescaled_rho_for_lp = 2 * get_param(
-        param_id_rho, params_fixed_lookup, params_variable_lookup,
-        params_value, params
-      ) / noise_terms;
-      gaussian_process_lp(eta, M, L, alpha_for_lp, rescaled_rho_for_lp,
-                          gp_type, nu);
+      gaussian_process_lp(eta);
     }
   }
 

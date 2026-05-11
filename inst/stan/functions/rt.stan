@@ -46,14 +46,11 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
         gp[(gp_n + 1):t] = rep_vector(noise[gp_n], t - gp_n);
       }
     } else {
-      // alpha controls trajectory SD (not increment SD): rescale increments
-      // by 1/sqrt(gp_n) so the cumulative log Rt has variance ≈ alpha^2
-      // instead of alpha^2 * gp_n.
-      gp[2:(gp_n + 1)] = noise / sqrt(gp_n);
+      gp[2:(gp_n + 1)] = noise;
       gp = cumulative_sum(gp);
-      // Identifiability: subtract the trajectory mean so log R0 = mean log
-      // Rt rather than the initial value. Eliminates the (R0, drift) ridge
-      // in the joint posterior.
+      // Identifiability: subtract the trajectory mean so log R0 is the mean
+      // log Rt over the window rather than the initial value. Eliminates
+      // the (R0, drift) ridge in the joint posterior.
       gp -= mean(gp);
     }
     logR = logR + gp;
