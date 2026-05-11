@@ -61,6 +61,7 @@ installed gives an informative error.
 }
 \examples{
 \dontshow{if (rlang::is_installed("scoringutils")) withAutoprint(\{ # examplesIf}
+\donttest{
 library(scoringutils)
 
 # samples and calculation time have been reduced for this example
@@ -74,6 +75,7 @@ fit <- estimate_infections(example_confirmed[1:40],
 
 forecast_obj <- as_forecast_sample(fit, observations = example_confirmed)
 score(forecast_obj)
+}
 \dontshow{\}) # examplesIf}
 }
 \seealso{
