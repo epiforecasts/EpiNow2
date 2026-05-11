@@ -287,13 +287,15 @@ estimate_dist <- function(data,
   if (near_zero_var) {
     cli::cli_warn(c(
       paste(
-        "All observed delays are identical;",
-        "variance cannot be estimated and scale parameters",
-        "will be initialised from the prior."
+        "The method-of-moments initialiser cannot estimate",
+        "scale parameters from near-zero variance in the",
+        "observed delays; scale parameters will be",
+        "initialised from the prior."
       ),
       "i" = paste(
-        "Check whether constant delays are expected or",
-        "indicate a data issue."
+        "This often occurs when all observed delays are",
+        "identical. Check whether this is expected or",
+        "indicates a data issue."
       )
     ))
   }
