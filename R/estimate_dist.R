@@ -305,8 +305,11 @@ estimate_dist <- function(data,
   init_params <- switch(dist,
     "lognormal" = c(
       log(wmean),
-      if (near_zero_var) prior_means[2] else
+      if (near_zero_var) {
+        prior_means[2]
+      } else {
         sqrt(log(1 + wvar / wmean^2))
+      }
     ),
     "gamma" = c(
       if (near_zero_var) prior_means[1] else wmean^2 / wvar,

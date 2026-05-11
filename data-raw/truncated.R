@@ -32,7 +32,8 @@ apply_truncation <- function(index, data, dist, meanlog = NULL, sdlog = NULL) {
   # Stan model's discretised_pmf (which uses primarycensored_sone_pmf_vectorized
   # with pwindow=1, uniform primary, D=max_d+1).
   pmf <- primarycensored::dprimarycensored(
-    0:max_d, pdist = plnorm,
+    0:max_d,
+    pdist = plnorm,
     pwindow = 1, swindow = 1, D = max_d + 1,
     meanlog = meanlog, sdlog = sdlog
   )
