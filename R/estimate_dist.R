@@ -288,7 +288,8 @@ estimate_dist <- function(data,
     cli::cli_warn(c(
       paste(
         "All observed delays are identical;",
-        "the fitted distribution will be dominated by the prior."
+        "variance cannot be estimated and scale parameters",
+        "will be initialised from the prior."
       ),
       "i" = paste(
         "Check whether constant delays are expected or",
