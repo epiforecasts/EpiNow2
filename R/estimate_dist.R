@@ -286,10 +286,13 @@ estimate_dist <- function(data,
 
   if (near_zero_var) {
     cli::cli_warn(c(
-      "All observed delays are identical or near-identical.",
+      paste(
+        "All observed delays are identical;",
+        "the fitted distribution will be dominated by the prior."
+      ),
       "i" = paste(
-        "Variance parameters cannot be estimated from data",
-        "and will reflect the prior."
+        "Check whether constant delays are expected or",
+        "indicate a data issue."
       )
     ))
   }

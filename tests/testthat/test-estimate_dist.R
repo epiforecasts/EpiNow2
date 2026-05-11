@@ -444,6 +444,31 @@ test_that("errors for expgrowth without primary_params", {
   )
 })
 
+test_that("warns when all observed delays are identical", {
+  skip_if_not_installed("primarycensored")
+
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin,
+    sdate_lwr = origin + 3L,
+    obs_date = origin + 30
+  )
+
+  # Warning fires before Stan starts; tryCatch absorbs any
+  # subsequent sampling failure so the assertion stays clean.
+  expect_warning(
+    tryCatch(
+      suppressMessages(estimate_dist(
+        linelist,
+        dist = "lognormal",
+        stan = stan_opts(samples = 1, chains = 1, warmup = 1, seed = 1)
+      )),
+      error = function(e) NULL
+    ),
+    "All observed delays are identical" # matches cli_warn text
+  )
+})
+
 test_that("correctly handles constant delays without non-finite init", {
   skip_if_not_installed("primarycensored")
   skip_integration()
