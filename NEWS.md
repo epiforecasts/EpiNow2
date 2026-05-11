@@ -20,7 +20,7 @@
 ## Bug fixes
 
 - Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.
-- Fixed a bug where `estimate_dist()` failed with a "model fitting timed out or failed" error when the method-of-moments initialiser encountered near-zero variance in observed delays. Scale parameters are now initialised from the prior in this case, and a warning is issued.
+- Fixed a bug where `estimate_dist()` would fail with a "model fitting timed out or failed" error when observed delays had near-zero variance. Scale parameters are now initialised from the prior when variance cannot be estimated from the data, and a warning is issued.
 - Fixed a bug where `example_truncated` was generated with the old discrete-CDF PMF while `estimate_truncation()` now uses the primarycensored-based PMF, causing biased parameter recovery. The dataset has been regenerated for consistency.
 
 ## Breaking changes

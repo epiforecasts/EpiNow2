@@ -287,10 +287,9 @@ estimate_dist <- function(data,
   if (near_zero_var) {
     cli::cli_warn(c(
       paste(
-        "The method-of-moments initialiser cannot estimate",
-        "scale parameters from near-zero variance in the",
-        "observed delays; scale parameters will be",
-        "initialised from the prior."
+        "Near-zero variance in observed delays;",
+        "scale parameters cannot be estimated and will",
+        "be initialised from the prior."
       ),
       "i" = paste(
         "This often occurs when all observed delays are",
