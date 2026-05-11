@@ -1,11 +1,5 @@
 library(EpiNow2)
 
-# Expose Stan functions to use discretised_pmf directly
-expose_stan_fns(
-  "pmfs.stan",
-  target_dir = system.file("stan", "functions", package = "EpiNow2")
-)
-
 #' Apply truncation to a data set
 #'
 #' @param index Index from which to truncate
@@ -34,10 +28,14 @@ apply_truncation <- function(index, data, dist, meanlog = NULL, sdlog = NULL) {
     sdlog <- get_parameters(get_parameters(dist)$sdlog)$mean
   }
 
-  # Use Stan discretised_pmf directly (dist=0 for lognormal)
-  # nolint start: object_usage_linter
-  pmf <- discretised_pmf(c(meanlog, sdlog), max_d + 1L, 0L)
-  # nolint end
+  # Use primarycensored to compute the PMF, consistent with the
+  # Stan model's discretised_pmf (which uses primarycensored_sone_pmf_vectorized
+  # with pwindow=1, uniform primary, D=max_d+1).
+  pmf <- primarycensored::dprimarycensored(
+    0:max_d, pdist = plnorm,
+    pwindow = 1, swindow = 1, D = max_d + 1,
+    meanlog = meanlog, sdlog = sdlog
+  )
   cmf <- cumsum(pmf)
   cmf <- rev(cmf)[-1]
 
