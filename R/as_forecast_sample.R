@@ -40,6 +40,7 @@
 #' @seealso [get_predictions()] for the underlying sample extraction.
 #' @name as_forecast_sample
 #' @examplesIf rlang::is_installed("scoringutils")
+#' \donttest{
 #' library(scoringutils)
 #'
 #' # samples and calculation time have been reduced for this example
@@ -53,6 +54,7 @@
 #'
 #' forecast_obj <- as_forecast_sample(fit, observations = example_confirmed)
 #' score(forecast_obj)
+#' }
 NULL
 
 #' @rdname as_forecast_sample
