@@ -162,7 +162,6 @@ For analyses that need flexibility beyond what `estimate_dist()` provides (e.g. 
 
 # Limitations
 
-This is the canonical reference for the limitations of `estimate_dist()`.
 
 - The supported delay families are lognormal, gamma, normal, exponential, and Weibull.
   Other families would require additions to the vendored `primarycensored` Stan functions.
