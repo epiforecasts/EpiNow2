@@ -98,7 +98,8 @@ void rt_lp(array[] real initial_infections_scale, vector bp_effects,
  *
  * @ingroup rt_estimation
  */
-real R_to_r_newton_step(real R, real r, vector pmf, vector zero_series) {
+real R_to_r_newton_step_with_support(real R, real r, vector pmf,
+                                     vector zero_series) {
   int len = num_elements(pmf);
   vector[len] exp_r = exp(-r * zero_series);
   real ret = (R * dot_product(pmf, exp_r) - 1) /
@@ -109,7 +110,7 @@ real R_to_r_newton_step(real R, real r, vector pmf, vector zero_series) {
 real R_to_r_newton_step(real R, real r, vector pmf) {
   int len = num_elements(pmf);
   vector[len] zero_series = linspaced_vector(len, 0, len - 1);
-  return R_to_r_newton_step(R, r, pmf, zero_series);
+  return R_to_r_newton_step_with_support(R, r, pmf, zero_series);
 }
 
 /**
@@ -138,7 +139,7 @@ real R_to_r(real R, vector gt_rev_pmf, real abs_tol) {
   real r = fmax((R - 1) / (R * mean_gt), -1);
   real step = abs_tol + 1;
   while (abs(step) > abs_tol) {
-    step = R_to_r_newton_step(R, r, gt_pmf, zero_series);
+    step = R_to_r_newton_step_with_support(R, r, gt_pmf, zero_series);
     r -= step;
   }
 
