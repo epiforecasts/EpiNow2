@@ -154,7 +154,12 @@ jobs:
           echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: Post comment
-        if: ${{ hashFiles('branch/benchmark-results.md') != '' }}
+        if: >-
+          ${{
+            hashFiles('branch/benchmark-results.md') != '' &&
+            github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository
+          }}
         uses: actions/github-script@v9
         env:
           BENCHMARK: ${{ steps.output.outputs.BENCHMARK }}

@@ -14,6 +14,7 @@ jobs:
     if: "! contains(github.event.head_commit.message, '[ci skip]')"
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v6
 
@@ -28,7 +29,6 @@ jobs:
             here
             usethis
             any::cmdstanr
-            any::gh
             any::lintr
             any::purrr
             progressr
@@ -46,8 +46,15 @@ jobs:
 
       - name: Extract and lint files changed by this PR
         run: |
-          files <- gh::gh("GET https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files")
-          changed_files <- purrr::map_chr(files, "filename")
+          changed_files <- system2(
+            "gh",
+            c(
+              "api", "--paginate",
+              "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files",
+              "--jq", ".[].filename"
+            ),
+            stdout = TRUE
+          )
           all_files <- list.files(recursive = TRUE)
           exclusions_list <- as.list(setdiff(all_files, changed_files))
           lintr::lint_package(exclusions = exclusions_list)

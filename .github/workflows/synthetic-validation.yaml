@@ -75,7 +75,11 @@ jobs:
           
       - name: Post the artifact
         uses: CDCgov/cfa-actions/post-artifact@main
-        if: ${{ github.event_name == 'pull_request' }}
+        if: >-
+          ${{
+            github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository
+          }}
         with:
           artifact-name: synthetic_recovery
           gh-token: ${{ secrets.GITHUB_TOKEN }}
