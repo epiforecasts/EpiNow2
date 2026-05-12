@@ -73,14 +73,20 @@ vector convolve_with_rev_pmf(vector x, vector y, int len) {
   }
 
   for (s in 1:xlen) {
-    array[4] int indices = calc_conv_indices_xlen(s, xlen, ylen);
-    z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
+    int s_minus_ylen = s - ylen;
+    int start_x = max(1, s_minus_ylen + 1);
+    int end_x = s;
+    int start_y = max(1, 1 - s_minus_ylen);
+    z[s] = dot_product(x[start_x:end_x], y[start_y:ylen]);
   }
 
   if (len > xlen) {
     for (s in (xlen + 1):len) {
-      array[4] int indices = calc_conv_indices_len(s, xlen, ylen);
-      z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
+      int s_minus_ylen = s - ylen;
+      int start_x = max(1, s_minus_ylen + 1);
+      int start_y = max(1, 1 - s_minus_ylen);
+      int end_y = ylen + xlen - s;
+      z[s] = dot_product(x[start_x:xlen], y[start_y:end_y]);
     }
   }
 
