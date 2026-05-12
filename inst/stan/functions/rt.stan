@@ -94,6 +94,9 @@ void rt_lp(array[] real initial_infections_scale, vector bp_effects,
  * @param R Reproduction number
  * @param r Current estimate of the growth rate
  * @param pmf Generation time probability mass function (first index: 0)
+ * @param zero_series Precomputed vector of indices `(0, 1, ..., len - 1)`
+ * used to align `pmf` with lagged terms in the calculation; expected to have
+ * the same length as `pmf`.
  * @return The Newton step for updating r
  *
  * @ingroup rt_estimation
