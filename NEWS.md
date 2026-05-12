@@ -49,6 +49,7 @@
 
 - Delay distribution discretisation now properly accounts for primary event censoring during model fitting, matching the correction already applied on the R side since v1.8.0. This improves accuracy for short delays where the observation window is large relative to the delay.
 - Left truncation of delay distributions (e.g. excluding generation times of zero) is now handled analytically rather than by zeroing and renormalising, giving more accurate PMFs near the truncation point.
+- Reduced Stan delay PMF construction overhead for parametric lognormal, gamma, and Weibull delays by reusing adjacent primary-censored CDF terms.
 
 ## Package changes
 

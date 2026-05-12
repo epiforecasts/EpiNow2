@@ -33,6 +33,13 @@ vector discretised_pmf(
     params_array[i] = params[i];
   }
   array[0] real primary_params;
+  if (dist == 1 || dist == 2 || dist == 3) {
+    return exp(
+      primarycensored_sone_unit_uniform_lpmf_vectorized(
+        n - 1, L * 1.0, n * 1.0, dist, params_array
+      )
+    );
+  }
   return primarycensored_sone_pmf_vectorized(
     n - 1, L * 1.0, n * 1.0, dist,
     params_array, 1.0, 1, primary_params

@@ -74,3 +74,24 @@ test_that("discretised_pmf produces consistent results", {
 
   expect_equal(pmf1, pmf2)
 })
+
+test_that("discretised_pmf matches generic primarycensored PMFs", {
+  pmf_cases <- list(
+    lognormal = list(params = c(log(3), 0.5), dist = 1L),
+    gamma = list(params = c(4, 2), dist = 2L),
+    weibull = list(params = c(2, 5), dist = 3L)
+  )
+  n <- 15L
+
+  for (pmf_case in pmf_cases) {
+    optimised <- discretised_pmf(
+      pmf_case$params, n, pmf_case$dist, 0L
+    )
+    generic <- primarycensored_sone_pmf_vectorized(
+      n - 1L, 0, n, pmf_case$dist, pmf_case$params,
+      1, 1L, numeric(0)
+    )
+
+    expect_equal(optimised, generic, tolerance = 1e-12)
+  }
+})

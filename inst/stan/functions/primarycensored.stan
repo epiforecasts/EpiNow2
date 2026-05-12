@@ -447,6 +447,148 @@ real primarycensored_lpmf(data int d, int dist_id, array[] real params,
     return log_diff_exp(log_cdf_upper, log_cdf_lower);
   }
 }
+vector primarycensored_sone_unit_uniform_lpmf_vectorized(
+  int max_delay, data real L, data real D, int dist_id,
+  array[] real params
+) {
+  int upper_interval = max_delay + 1;
+  vector[upper_interval] log_pmfs;
+  vector[upper_interval] log_cdfs;
+  real log_normalizer;
+  array[0] real primary_params;
+
+  if (D < upper_interval) {
+    reject("D must be at least max_delay + 1");
+  }
+
+  if (dist_id == 1) {
+    real mu = params[1];
+    real sigma = params[2];
+    real mu_sigma2 = mu + square(sigma);
+    real log_mean = mu + 0.5 * square(sigma);
+    vector[upper_interval] log_F;
+    vector[upper_interval] log_F_mu_sigma2;
+
+    for (d in 1:upper_interval) {
+      log_F[d] = lognormal_lcdf(d | mu, sigma);
+      log_F_mu_sigma2[d] = lognormal_lcdf(d | mu_sigma2, sigma);
+    }
+
+    log_cdfs[1] = log_diff_exp(
+      log_F[1], log_mean + log_F_mu_sigma2[1]
+    );
+    for (d in 2:upper_interval) {
+      real log_delta_F_mu_sigma2 = log_diff_exp(
+        log_F_mu_sigma2[d], log_F_mu_sigma2[d - 1]
+      );
+      real log_delta_F = log_diff_exp(log_F[d], log_F[d - 1]);
+      log_cdfs[d] = log_diff_exp(
+        log_F[d],
+        log_diff_exp(
+          log_mean + log_delta_F_mu_sigma2,
+          log(d - 1) + log_delta_F
+        )
+      );
+    }
+  } else if (dist_id == 2) {
+    real shape = params[1];
+    real rate = params[2];
+    real log_mean = log(shape * inv(rate));
+    vector[upper_interval] log_F;
+    vector[upper_interval] log_F_shape_1;
+
+    for (d in 1:upper_interval) {
+      log_F[d] = gamma_lcdf(d | shape, rate);
+      log_F_shape_1[d] = gamma_lcdf(d | shape + 1, rate);
+    }
+
+    log_cdfs[1] = log_diff_exp(
+      log_F[1], log_mean + log_F_shape_1[1]
+    );
+    for (d in 2:upper_interval) {
+      real log_delta_F_shape_1 = log_diff_exp(
+        log_F_shape_1[d], log_F_shape_1[d - 1]
+      );
+      real log_delta_F = log_diff_exp(log_F[d], log_F[d - 1]);
+      log_cdfs[d] = log_diff_exp(
+        log_F[d],
+        log_diff_exp(
+          log_mean + log_delta_F_shape_1,
+          log(d - 1) + log_delta_F
+        )
+      );
+    }
+  } else if (dist_id == 3) {
+    real shape = params[1];
+    real scale = params[2];
+    real log_scale = log(scale);
+    vector[upper_interval] log_F;
+    vector[upper_interval] log_g;
+
+    for (d in 1:upper_interval) {
+      log_F[d] = weibull_lcdf(d | shape, scale);
+      log_g[d] = log_weibull_g(d, shape, scale);
+    }
+
+    log_cdfs[1] = log_diff_exp(
+      log_F[1], log_scale + log_g[1]
+    );
+    for (d in 2:upper_interval) {
+      real log_delta_g = log_diff_exp(log_g[d], log_g[d - 1]);
+      real log_delta_F = log_diff_exp(log_F[d], log_F[d - 1]);
+      log_cdfs[d] = log_diff_exp(
+        log_F[d],
+        log_diff_exp(
+          log_scale + log_delta_g,
+          log(d - 1) + log_delta_F
+        )
+      );
+    }
+  } else {
+    reject("Unit uniform analytical PMFs only support lognormal, gamma, and weibull delays.");
+  }
+
+  real log_cdf_L;
+  if (L <= 0) {
+    log_cdf_L = negative_infinity();
+  } else if (L <= upper_interval && floor(L) == L) {
+    log_cdf_L = log_cdfs[to_int(L)];
+  } else {
+    log_cdf_L = primarycensored_lcdf(
+      L | dist_id, params, 1.0, 0, positive_infinity(), 1, primary_params
+    );
+  }
+
+  real log_cdf_D;
+  if (D > upper_interval) {
+    if (is_inf(D)) {
+      log_cdf_D = 0;
+    } else {
+      log_cdf_D = primarycensored_lcdf(
+        D | dist_id, params, 1.0, 0, positive_infinity(), 1, primary_params
+      );
+    }
+  } else {
+    log_cdf_D = log_cdfs[upper_interval];
+  }
+
+  log_normalizer = primarycensored_log_normalizer(log_cdf_D, log_cdf_L, L);
+
+  for (d in 1:upper_interval) {
+    if (d <= L) {
+      log_pmfs[d] = negative_infinity();
+    } else if (d - 1 < L) {
+      log_pmfs[d] = log_diff_exp(log_cdfs[d], log_cdf_L) - log_normalizer;
+    } else if (d == 1) {
+      log_pmfs[d] = log_cdfs[d] - log_normalizer;
+    } else {
+      log_pmfs[d] = log_diff_exp(log_cdfs[d], log_cdfs[d - 1]) -
+        log_normalizer;
+    }
+  }
+
+  return log_pmfs;
+}
 vector primarycensored_sone_lpmf_vectorized(
   int max_delay, data real L, data real D, int dist_id,
   array[] real params, data real pwindow,
