@@ -18,10 +18,13 @@
 - Added a model overview vignette with an architecture diagram showing how the package's models connect.
 - Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
 - The delay distribution fitting vignette has been renamed from `vignette("estimate-dist")` to `vignette("estimate_dist_workflow")` for consistency with the other workflow vignettes; the model definition is at `vignette("estimate_dist")`.
+- Expanded the case studies vignette with additional literature references and public health surveillance examples.
 
 ## Bug fixes
 
 - Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.
+- Fixed a bug where `estimate_dist()` would fail with a "model fitting timed out or failed" error when observed delays had near-zero variance. Scale parameters are now initialised from the prior when variance cannot be estimated from the data, and a warning is issued.
+- Fixed a bug where `example_truncated` was generated with the old discrete-CDF PMF while `estimate_truncation()` now uses the primarycensored-based PMF, causing biased parameter recovery. The dataset has been regenerated for consistency.
 
 ## Breaking changes
 

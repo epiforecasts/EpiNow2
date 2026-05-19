@@ -282,13 +282,53 @@ estimate_dist <- function(data,
   # mean (e.g. normal) keep their sign.
   eps <- sqrt(.Machine$double.eps)
   wvar <- max(wvar, eps)
+  near_zero_var <- wvar <= eps
+
+  if (near_zero_var) {
+    cli::cli_warn(c(
+      paste(
+        "Near-zero variance in observed delays;",
+        "scale parameters cannot be estimated and will",
+        "be initialised from the prior."
+      ),
+      "i" = paste(
+        "This often occurs when all observed delays are",
+        "identical. Check whether this is expected or",
+        "indicates a data issue."
+      )
+    ))
+  }
+
+  # When data variance is near-zero, MoM gives near-zero scale
+  # estimates that create degenerate sampler geometry. Fall back
+  # to prior means for scale parameters so the sampler can explore
+  # the prior-dominated posterior.
+  prior_means <- vapply(
+    params, function(p) mean(p$dist), numeric(1)
+  )
 
   init_params <- switch(dist,
-    "lognormal" = c(log(wmean), sqrt(log(1 + wvar / wmean^2))),
-    "gamma" = c(wmean^2 / wvar, wmean / wvar),
-    "normal" = c(wmean, sqrt(wvar)),
+    "lognormal" = c(
+      log(wmean),
+      if (near_zero_var) {
+        prior_means[2]
+      } else {
+        sqrt(log(1 + wvar / wmean^2))
+      }
+    ),
+    "gamma" = c(
+      if (near_zero_var) prior_means[1] else wmean^2 / wvar,
+      if (near_zero_var) prior_means[2] else wmean / wvar
+    ),
+    "normal" = c(
+      wmean,
+      if (near_zero_var) prior_means[2] else sqrt(wvar)
+    ),
     "exp" = c(1 / wmean),
-    "weibull" = c(1, wmean)
+    "weibull" = c(
+      if (near_zero_var) prior_means[1] else 1,
+      wmean
+    )
   )
   # Replace any non-finite candidate with a bounded positive
   # default, then clamp inside the Stan-declared bounds.
