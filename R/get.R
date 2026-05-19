@@ -670,6 +670,7 @@ get_predictions.estimate_truncation <- function(
 #' @param object A fitted model object containing fit and args
 #' @param delay_name The name of the delay (e.g., "generation_time")
 #' @return A dist_spec object, or NULL if the delay doesn't exist
+#' @importFrom posterior as_draws_matrix
 #' @keywords internal
 reconstruct_delay <- function(object, delay_name) {
   stan_data <- object$args
@@ -691,6 +692,13 @@ reconstruct_delay <- function(object, delay_name) {
     posterior <- extract_stan_param(object$fit, params = "delay_params")
   }
 
+  # Extract NP posterior draws if estimated
+  np_posterior <- NULL
+  if (stan_data$delay_np_est_length > 0 && !is.null(object$fit)) {
+    np_draws <- object$fit$draws(variables = "delay_np_est_raw")
+    np_posterior <- as_draws_matrix(np_draws)
+  }
+
   # Get indices for this delay type
   delay_indices <- seq(types_groups[delay_id], types_groups[delay_id + 1] - 1)
   types_p <- stan_data$delay_types_p[delay_indices]
@@ -703,7 +711,9 @@ reconstruct_delay <- function(object, delay_name) {
     if (types_p[i] == 1) {
       reconstruct_parametric(stan_data, type_id, posterior)
     } else {
-      reconstruct_nonparametric(stan_data, type_id)
+      reconstruct_nonparametric(
+        stan_data, type_id, np_posterior
+      )
     }
   })
 
@@ -771,19 +781,67 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
 
 #' Reconstruct a nonparametric delay distribution
 #'
-#' Helper function to reconstruct a single nonparametric delay component from
-#' Stan data. Nonparametric delays are stored as probability mass functions.
+#' Reconstruct a nonparametric delay from Stan data.
 #'
-#' @param stan_data List of Stan data containing delay specification
-#' @param np_id Integer index into the nonparametric delay PMF arrays
-#' @return A `dist_spec` object representing the nonparametric delay
+#' For estimated delays, returns `NonParametric(pmf = Dirichlet(...))`,
+#' using either the prior alpha (no fit available) or a moment-matched
+#' Dirichlet whose mean equals the posterior mean of the simplex and
+#' whose concentration matches the average per-bin posterior variance.
+#' For fixed delays, returns the `NonParametric` PMF as supplied.
+#'
+#' @param stan_data List of Stan data containing delay
+#'   specification
+#' @param np_id Integer index into the nonparametric delay PMF
+#'   arrays
+#' @param np_posterior Matrix of posterior draws for
+#'   `delay_np_est_raw` (draws x parameters), or NULL
+#' @return A `dist_spec` object representing the nonparametric
+#'   delay
 #' @keywords internal
-reconstruct_nonparametric <- function(stan_data, np_id) {
+reconstruct_nonparametric <- function(stan_data, np_id,
+                                      np_posterior = NULL) {
   pmf_idx <- seq(
     stan_data$delay_np_pmf_groups[np_id],
     stan_data$delay_np_pmf_groups[np_id + 1] - 1
   )
-  NonParametric(pmf = stan_data$delay_np_pmf[pmf_idx])
+  prior_pmf <- stan_data$delay_np_pmf[pmf_idx]
+
+  # Check if this NP delay was estimated
+  est_pos <- match(np_id, stan_data$delay_np_est_which)
+  if (!is.na(est_pos)) {
+    alpha_idx <- seq(
+      stan_data$delay_np_est_groups[est_pos],
+      stan_data$delay_np_est_groups[est_pos + 1] - 1
+    )
+    pos_idx <- stan_data$delay_np_est_pos[alpha_idx]
+    pmf_start <- stan_data$delay_np_pmf_groups[np_id]
+    local_pos <- pos_idx - pmf_start + 1L
+
+    full_alpha <- rep(0, length(prior_pmf))
+    if (!is.null(np_posterior)) {
+      ## Moment-match the posterior simplex draws to a Dirichlet so
+      ## the summary round-trips as a prior. For Dirichlet(alpha)
+      ## with concentration alpha0 = sum(alpha) and means
+      ## mu_i = alpha_i / alpha0, the per-bin variance is
+      ## mu_i (1 - mu_i) / (alpha0 + 1), so alpha0 = mu(1-mu)/v - 1.
+      ## We average alpha0 across bins with non-degenerate variance
+      ## to dampen Monte Carlo noise. See Minka (2000),
+      ## "Estimating a Dirichlet distribution".
+      raw_draws <- np_posterior[, alpha_idx, drop = FALSE]
+      normed <- raw_draws / rowSums(raw_draws)
+      mu <- colMeans(normed)
+      v <- apply(normed, 2, var)
+      alpha0_per_bin <- mu * (1 - mu) / v - 1
+      keep <- is.finite(alpha0_per_bin) & alpha0_per_bin > 0
+      alpha0 <- if (any(keep)) mean(alpha0_per_bin[keep]) else 1
+      full_alpha[local_pos] <- alpha0 * mu
+    } else {
+      full_alpha[local_pos] <- stan_data$delay_np_est_alpha[alpha_idx]
+    }
+    NonParametric(pmf = Dirichlet(alpha = full_alpha))
+  } else {
+    NonParametric(pmf = prior_pmf)
+  }
 }
 
 #' Extract delay distributions from a fitted model

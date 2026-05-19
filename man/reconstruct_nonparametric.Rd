@@ -4,18 +4,30 @@
 \alias{reconstruct_nonparametric}
 \title{Reconstruct a nonparametric delay distribution}
 \usage{
-reconstruct_nonparametric(stan_data, np_id)
+reconstruct_nonparametric(stan_data, np_id, np_posterior = NULL)
 }
 \arguments{
-\item{stan_data}{List of Stan data containing delay specification}
+\item{stan_data}{List of Stan data containing delay
+specification}
 
-\item{np_id}{Integer index into the nonparametric delay PMF arrays}
+\item{np_id}{Integer index into the nonparametric delay PMF
+arrays}
+
+\item{np_posterior}{Matrix of posterior draws for
+\code{delay_np_est_raw} (draws x parameters), or NULL}
 }
 \value{
-A \code{dist_spec} object representing the nonparametric delay
+A \code{dist_spec} object representing the nonparametric
+delay
 }
 \description{
-Helper function to reconstruct a single nonparametric delay component from
-Stan data. Nonparametric delays are stored as probability mass functions.
+Reconstruct a nonparametric delay from Stan data.
+}
+\details{
+For estimated delays, returns \code{NonParametric(pmf = Dirichlet(...))},
+using either the prior alpha (no fit available) or a moment-matched
+Dirichlet whose mean equals the posterior mean of the simplex and
+whose concentration matches the average per-bin posterior variance.
+For fixed delays, returns the \code{NonParametric} PMF as supplied.
 }
 \keyword{internal}

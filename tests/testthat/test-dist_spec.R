@@ -424,3 +424,43 @@ test_that("get functions report errors", {
     Gamma(mean = 4, sd = 1), Gamma(mean = 4, sd = 1)
   )), "must be specified")
 })
+
+test_that("Dirichlet works with alpha vector", {
+  alpha <- c(1, 2, 3)
+  result <- Dirichlet(alpha)
+  expect_s3_class(result, "dist_spec")
+  expect_equal(get_distribution(result), "dirichlet")
+  expect_equal(get_parameters(result)$alpha, alpha)
+  expect_equal(mean(result), alpha / sum(alpha))
+})
+
+test_that("Dirichlet works with prior and concentration", {
+  prior <- c(0.1, 0.3, 0.4, 0.2)
+  conc <- 10
+  result <- Dirichlet(prior = prior, concentration = conc)
+  expect_s3_class(result, "dist_spec")
+  expect_equal(get_distribution(result), "dirichlet")
+  expect_equal(get_parameters(result)$alpha, conc * prior / sum(prior))
+  expect_equal(mean(result), prior / sum(prior))
+})
+
+test_that("NonParametric works with Dirichlet prior", {
+  prior <- c(0.1, 0.3, 0.4, 0.2)
+  conc <- 10
+  result <- NonParametric(pmf = Dirichlet(prior = prior, concentration = conc))
+  expect_s3_class(result, "dist_spec")
+  expect_equal(get_distribution(result), "nonparametric")
+  expect_true(isTRUE(result$estimated))
+  expect_equal(get_pmf(result), prior / sum(prior))
+  expect_equal(result$alpha, conc * prior / sum(prior))
+})
+
+test_that("Dirichlet works with dist_spec prior", {
+  dist <- LogNormal(meanlog = 1, sdlog = 0.5, max = 10)
+  result <- Dirichlet(prior = dist, concentration = 5)
+  expect_s3_class(result, "dist_spec")
+  expect_equal(get_distribution(result), "dirichlet")
+  expected_pmf <- get_pmf(discretise(dist))
+  expect_equal(mean(result), expected_pmf)
+  expect_equal(get_parameters(result)$alpha, 5 * expected_pmf)
+})
