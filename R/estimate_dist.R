@@ -125,7 +125,7 @@
 #' Please cite `primarycensored` if you use this function;
 #' see `citation("primarycensored")`.
 #'
-#' @seealso `vignette("estimate-dist", package = "EpiNow2")` for
+#' @seealso `vignette("estimate_dist_workflow", package = "EpiNow2")` for
 #'   a worked example, and
 #'   [primarycensored::primarycensored-package] for the underlying
 #'   censoring methodology.

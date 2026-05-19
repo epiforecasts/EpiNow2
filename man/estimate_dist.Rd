@@ -182,7 +182,7 @@ Please cite \code{primarycensored} if you use this function;
 see \code{citation("primarycensored")}.
 }
 \seealso{
-\code{vignette("estimate-dist", package = "EpiNow2")} for
+\code{vignette("estimate_dist_workflow", package = "EpiNow2")} for
 a worked example, and
 \link[primarycensored:primarycensored-package]{primarycensored::primarycensored-package} for the underlying
 censoring methodology.
