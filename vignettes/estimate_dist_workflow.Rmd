@@ -51,7 +51,7 @@ true_sdlog <- 0.75
 
 pwindows <- sample.int(2, n, replace = TRUE)
 swindows <- sample.int(2, n, replace = TRUE)
-obs_times <- sample(8:15, n, replace = TRUE)
+obs_times <- sample(seq.int(8, 15), n, replace = TRUE)
 
 delays <- mapply(
   function(pw, sw, D) {
@@ -90,6 +90,22 @@ head(linelist)
 #> 6 2023-01-14 2023-01-16 2023-01-17 2023-01-18 2023-01-27
 ```
 
+The data frame has five columns:
+
+- `pdate_lwr`: lower bound of the primary event date (e.g. date of infection).
+- `pdate_upr`: upper bound of the primary event date.
+- `sdate_lwr`: lower bound of the secondary event date (e.g. date of symptom onset).
+- `sdate_upr`: upper bound of the secondary event date.
+- `obs_date`: the date at which the data were extracted, determining the right truncation point for each observation.
+
+Upper bounds for the primary and secondary event windows default to one day after the lower bounds (daily censoring) if not provided.
+
+Note that the simulation above constructs dates from numeric delays using a dummy origin date.
+If you have numeric delays without dates, you can do the same thing: set `pdate_lwr` to an arbitrary origin (e.g. `as.Date("2020-01-01")`) and derive the other columns by adding the appropriate intervals.
+
+For `obs_date`, use the date the data were sent to you, or the date data collection stopped.
+If neither is available, `estimate_dist()` defaults to `max(sdate_upr)`, which is a reasonable fallback for most situations.
+
 
 ``` r
 observed_delays <- as.numeric(
@@ -118,25 +134,9 @@ ggplot(data.frame(delay = observed_delays), aes(x = delay)) +
 
 ![plot of chunk plot-delays](estimate_dist_workflow-plot-delays-1.png)
 
-The histogram shows the observed delay lower bounds (i.e. `sdate_lwr - pdate_lwr`) from the filtered linelist.
+The histogram shows the observed delay lower bounds (i.e. `sdate_lwr - pdate_lwr`) from the linelist filtered to observed delays.
 The solid line shows the true underlying lognormal density.
 The gap between the two illustrates the bias introduced by censoring and truncation, which `estimate_dist()` corrects for.
-
-The data frame has five columns:
-
-- `pdate_lwr`: lower bound of the primary event date (e.g. date of infection).
-- `pdate_upr`: upper bound of the primary event date.
-- `sdate_lwr`: lower bound of the secondary event date (e.g. date of symptom onset).
-- `sdate_upr`: upper bound of the secondary event date.
-- `obs_date`: the date at which the data were extracted, determining the right truncation point for each observation.
-
-Upper bounds for the primary and secondary event windows default to one day after the lower bounds (daily censoring) if not provided.
-
-Note that the simulation above constructs dates from numeric delays using a dummy origin date.
-If you have numeric delays without dates, you can do the same thing: set `pdate_lwr` to an arbitrary origin (e.g. `as.Date("2020-01-01")`) and derive the other columns by adding the appropriate intervals.
-
-For `obs_date`, use the date the data were sent to you, or the date data collection stopped.
-If neither is available, `estimate_dist()` defaults to `max(sdate_upr)`, which is a reasonable fallback for most situations.
 
 # Setting priors
 
@@ -201,14 +201,14 @@ result
 #> Max delay: 14 | Max obs time: 15
 #> 
 #> Parameter estimates:
-#>    variable    median      mean         sd  lower_90 lower_50  lower_20
-#>      <char>     <num>     <num>      <num>     <num>    <num>     <num>
-#> 1:  meanlog 1.4001531 1.4068572 0.09398806 1.2655999 1.343393 1.3759575
-#> 2:    sdlog 0.7813516 0.7894131 0.07509719 0.6804412 0.733925 0.7642848
+#>    variable    median      mean         sd  lower_90  lower_50  lower_20
+#>      <char>     <num>     <num>      <num>     <num>     <num>     <num>
+#> 1:  meanlog 1.4056177 1.4137366 0.09825299 1.2691133 1.3444051 1.3812598
+#> 2:    sdlog 0.7887098 0.7948499 0.07651496 0.6779388 0.7413345 0.7713787
 #>     upper_20  upper_50  upper_90
 #>        <num>     <num>     <num>
-#> 1: 1.4214566 1.4611444 1.5759207
-#> 2: 0.8008999 0.8365392 0.9237593
+#> 1: 1.4291480 1.4700631 1.5910963
+#> 2: 0.8071156 0.8434789 0.9279094
 ```
 
 For convergence diagnostics, the underlying Stan fit is accessible via `result$fit`.
@@ -216,18 +216,18 @@ For convergence diagnostics, the underlying Stan fit is accessible via `result$f
 
 ``` r
 rstan::summary(result$fit)$summary
-#>                         mean     se_mean         sd         2.5%         25%
-#> params[1]          1.4068572 0.003617471 0.09398806    1.2426296    1.343393
-#> params[2]          0.7894131 0.002818455 0.07509719    0.6621815    0.733925
-#> delay_params[1]    1.4068572 0.003617471 0.09398806    1.2426296    1.343393
-#> delay_params[2]    0.7894131 0.002818455 0.07509719    0.6621815    0.733925
-#> lp__            -374.9899611 0.035684411 0.98070943 -377.5335854 -375.388382
-#>                          50%          75%        97.5%    n_eff     Rhat
-#> params[1]          1.4001531    1.4611444    1.6166435 675.0489 1.003295
-#> params[2]          0.7813516    0.8365392    0.9616258 709.9457 1.004643
-#> delay_params[1]    1.4001531    1.4611444    1.6166435 675.0489 1.003295
-#> delay_params[2]    0.7813516    0.8365392    0.9616258 709.9457 1.004643
-#> lp__            -374.6670125 -374.2767613 -374.0051957 755.3072 1.000937
+#>                         mean     se_mean         sd         2.5%          25%
+#> params[1]          1.4137366 0.003519083 0.09825299    1.2469767    1.3444051
+#> params[2]          0.7948499 0.002799407 0.07651496    0.6558076    0.7413345
+#> delay_params[1]    1.4137366 0.003519083 0.09825299    1.2469767    1.3444051
+#> delay_params[2]    0.7948499 0.002799407 0.07651496    0.6558076    0.7413345
+#> lp__            -375.0538245 0.043387959 1.08204756 -377.9247556 -375.5221757
+#>                          50%          75%        97.5%    n_eff      Rhat
+#> params[1]          1.4056177    1.4700631    1.6381689 779.5294 0.9995899
+#> params[2]          0.7887098    0.8434789    0.9651263 747.0685 0.9988978
+#> delay_params[1]    1.4056177    1.4700631    1.6381689 779.5294 0.9995899
+#> delay_params[2]    0.7887098    0.8434789    0.9651263 747.0685 0.9988978
+#> lp__            -374.6836444 -374.2618460 -374.0030690 621.9483 1.0044502
 ```
 
 We can extract the fitted distribution as a `dist_spec` object using `get_parameters()`.
@@ -243,13 +243,13 @@ params$delay
 #>       mean:
 #>         1.4
 #>       sd:
-#>         0.094
+#>         0.098
 #>   sdlog:
 #>     - normal distribution:
 #>       mean:
 #>         0.79
 #>       sd:
-#>         0.075
+#>         0.077
 ```
 
 # Checking parameter recovery
