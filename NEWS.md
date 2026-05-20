@@ -19,7 +19,7 @@
 
 ## Model changes
 
-- The cumulated non-stationary Gaussian process used to model Rt over time is now mean-centred (`gp -= mean(gp)` in `inst/stan/functions/rt.stan`), so `R0` represents the mean Rt over the trajectory rather than the initial value. This eliminates the `(R0, drift)` ridge in the joint posterior that was responsible for stuck chains and catastrophic R-hat values on some seeds. No API change and no change to the `alpha` prior — verified across previously stuck seeds (R-hat goes from up to 6.10 down to <1.01, treedepth hits from hundreds down to zero).
+- The non-stationary Gaussian process used to model Rt over time now samples in a mean-centred parameterisation internally (`gp -= mean(gp)` in `inst/stan/functions/rt.stan`), eliminating the `(R0, drift)` ridge in the joint posterior that caused stuck chains and catastrophic R-hat values on some seeds. The user-facing interpretation is unchanged: the `prior` argument in `rt_opts()` is still the prior on the initial Rt. This is achieved by sampling the trajectory mean internally and applying the user prior to the derived initial Rt via a new generic `centred_gp_init_lpdf` Stan helper, with Jacobian-correct change of variables (so the joint prior matches the pre-change model). The plumbing (`init_dists`, `init_dist_params`, `pack_init_prior()`, `centred_gp_init_lpdf`) is parameter-agnostic, designed as a prototype for the general time-varying-parameter framework planned for issue #600.
 
 ## Bug fixes
 

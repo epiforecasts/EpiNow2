@@ -70,7 +70,7 @@ ggplot(reported_cases, aes(x =  date, y = confirm)) +
 
 # Parameters
 
-Before running the model we need to decide on some parameter values, in particular any delays, the generation time, and a prior on the reproduction number (the mean Rt over the observation window with the default centred non-stationary GP, otherwise the initial Rt).
+Before running the model we need to decide on some parameter values, in particular any delays, the generation time, and a prior on the initial reproduction number.
 
 ## Delays: incubation period and reporting delay
 

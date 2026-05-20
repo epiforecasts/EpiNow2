@@ -481,6 +481,43 @@ make_param <- function(name, dist = NULL, lower_bound = -Inf) {
   params
 }
 
+##' Pack a dist_spec into stan-side init-prior fields
+##'
+##' For parameters wrapped in a centred non-stationary GP (today: R0), the
+##' user-facing prior in `rt_opts()` is on the initial value of the trajectory
+##' rather than on the sampled internal mean. This helper converts a
+##' `<dist_spec>` into the integer/vector representation consumed by the
+##' generic init-prior loop in `inst/stan/estimate_infections.stan` (data
+##' items `init_dists` and `init_dist_params`).
+##'
+##' Generic over the parameter — designed to lift directly into a future
+##' general time-varying-parameter framework (issue #600).
+##'
+##' @param dist A `<dist_spec>` (LogNormal, Gamma, or Normal).
+##' @return A list with elements `dist_type` (integer code: 0 = lognormal,
+##' 1 = gamma, 2 = normal) and `params` (numeric of length 2 with the
+##' distribution parameters).
+##' @keywords internal
+pack_init_prior <- function(dist) {
+  dist_name <- get_distribution(dist)
+  dist_type <- switch(dist_name,
+    lognormal = 0L,
+    gamma = 1L,
+    normal = 2L,
+    cli_abort(c(
+      "!" = "Init prior distribution {.val {dist_name}} not supported.",
+      "i" = "Use {.fn LogNormal}, {.fn Gamma}, or {.fn Normal}."
+    ))
+  )
+  params <- unlist(get_parameters(dist))
+  if (length(params) != 2) {
+    cli_abort(
+      "Init prior must have exactly 2 distribution parameters; got {length(params)}." # nolint
+    )
+  }
+  list(dist_type = dist_type, params = as.numeric(params))
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
 #' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
 globalVariables(

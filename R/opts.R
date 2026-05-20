@@ -238,15 +238,10 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' reproduction number. Custom settings can be supplied which override the
 #' defaults.
 #'
-#' @param prior A `<dist_spec>` giving the prior of the reproduction number.
-#' With the default non-stationary GP (`gp_on = "R_t-1"`), the cumulated GP
-#' is mean-centred by construction so that this prior is on the mean
-#' reproduction number over the observation window. With the stationary GP
-#' (`gp_on = "R0"`) or with no GP, it is the prior on the initial
-#' reproduction number. Ignored if `use_rt` is `FALSE`. Defaults to a
-#' LogNormal distribution with mean of 1 and standard deviation of 1:
-#' `LogNormal(mean = 1, sd = 1)`. A lower limit of 0 will be enforced
-#' automatically.
+#' @param prior A `<dist_spec>` giving the prior of the initial reproduction
+#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distribution
+#' with mean of 1 and standard deviation of 1: `LogNormal(mean = 1, sd = 1)`.
+#' A lower limit of 0 will be enforced automatically.
 #'
 #' @param use_rt Logical, defaults to `TRUE`. Should Rt be used to generate
 #' infections and hence reported cases.
@@ -346,18 +341,6 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     pop_floor = pop_floor,
     growth_method = arg_match(growth_method)
   )
-  if (!missing(prior) && opts$gp_on == "R_t-1") {
-    cli_warn(c(
-      "!" = "The interpretation of `prior` in {.fn rt_opts} has changed.",
-      "i" = "With the default non-stationary Gaussian process \\
-        ({.code gp_on = \"R_t-1\"}), the cumulated GP is mean-centred, so \\
-        this prior is on the {.strong mean reproduction number over the \\
-        observation window} rather than the initial reproduction number.",
-      ">" = "If you intended the prior to describe the initial Rt, you \\
-        will need to adjust it (or use {.code gp_on = \"R0\"} / no GP)."
-    ))
-  }
-
   # replace default settings with those specified by user
   if (opts$rw > 0) {
     opts$use_breakpoints <- TRUE

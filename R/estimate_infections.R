@@ -181,10 +181,12 @@ estimate_infections <- function(data,
   # Add initial zeroes
   model_data <- pad_reported_cases(model_data, seeding_time)
 
+  # R0 is handled separately from the generic params system: it is wrapped
+  # by the centred non-stationary GP, so its user-facing prior is on the
+  # initial Rt (R[1]) rather than on the sampled internal log-mean.
   params <- list(
     make_param("alpha", gp$alpha, lower_bound = 0),
     make_param("rho", gp$ls, lower_bound = 0),
-    make_param("R0", rt$prior, lower_bound = 0),
     make_param("fraction_observed", obs$scale, lower_bound = 0),
     make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("pop", rt$pop, lower_bound = 0)
@@ -201,6 +203,27 @@ estimate_infections <- function(data,
     forecast = forecast,
     params = params
   )
+
+  # Register R0 as the (single, for now) centred-GP-wrapped parameter with
+  # its user prior applied to the derived initial Rt. The dispatch in
+  # `inst/stan/estimate_infections.stan` (the `init lp` profile block) uses
+  # `param_id_R0` to know which trajectory's initial value to apply the
+  # prior to. Generic plumbing: additional time-varying parameters drop in
+  # alongside R0 by appending to `init_param_ids` / `init_dists` /
+  # `init_dist_params` and adding one dispatch branch in stan.
+  stan_data$param_id_R0 <- stan_data$n_params_variable + 1L
+  if (isTRUE(rt$use_rt)) {
+    init_R <- pack_init_prior(rt$prior)
+    stan_data$n_init_priors <- 1L
+    stan_data$init_param_ids <- array(stan_data$param_id_R0)
+    stan_data$init_dists <- array(init_R$dist_type)
+    stan_data$init_dist_params <- array(init_R$params)
+  } else {
+    stan_data$n_init_priors <- 0L
+    stan_data$init_param_ids <- array(integer(0))
+    stan_data$init_dists <- array(integer(0))
+    stan_data$init_dist_params <- array(numeric(0))
+  }
 
   stan_data <- c(stan_data, create_stan_delays(
     generation_time = generation_time,

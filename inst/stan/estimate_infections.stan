@@ -58,7 +58,10 @@ parameters {
   vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
   // gaussian process
   vector[fixed ? 0 : gp_type == 1 ? 2*M : M] eta;  // unconstrained noise
-  // Rt
+  // Rt — mean log Rt over the window (sampled internally). User prior is on
+  // R[1] (initial Rt) and is applied via centred_gp_init_lpdf in the model
+  // block, with R[1] derived from R_mean + gp_centred[1].
+  array[estimate_r] real<lower = 0> R_mean;
   array[estimate_r] real initial_infections;    // seed infections
   // standard deviation of breakpoint effect
   array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd;
@@ -106,11 +109,11 @@ transformed parameters {
       );
     }
     profile("R0") {
-      real R0 = get_param(
-        param_id_R0, params_fixed_lookup, params_variable_lookup, params_value, params
-      );
+      // R_mean is sampled directly (centred GP scaffolding). The user prior
+      // lives on R[1] (initial Rt), applied in the model block via the
+      // init_priors plumbing.
       R = update_Rt(
-        ot_h, R0, noise, breakpoints, bp_effects, stationary
+        ot_h, R_mean[1], noise, breakpoints, bp_effects, stationary
       );
     }
     profile("infections") {
@@ -228,6 +231,29 @@ model {
         initial_infections, bp_effects, bp_sd, bp_n,
         cases, initial_infections_guess
       );
+    }
+  }
+
+  // Apply user priors on the initial value of any centred-GP-wrapped
+  // parameter (today: R0 -> R[1]). Generic loop so new time-varying
+  // parameters drop in via a one-line dispatch addition below.
+  if (n_init_priors > 0) {
+    profile("init lp") {
+      for (i in 1:n_init_priors) {
+        real init_value;
+        int pid = init_param_ids[i];
+        if (pid == param_id_R0) {
+          init_value = R[1];
+        } else {
+          reject("no time-varying parameter registered for id ", pid);
+        }
+        target += centred_gp_init_lpdf(
+          init_value |
+          init_dists[i],
+          init_dist_params[2 * i - 1],
+          init_dist_params[2 * i]
+        );
+      }
     }
   }
 
