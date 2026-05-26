@@ -13,6 +13,10 @@
 
 - `estimate_delay()` is soft-deprecated in favour of `estimate_dist()`.
 
+## Package changes
+
+- The touchstone continuous benchmarks now also cover `estimate_truncation()`, `estimate_secondary()` and `estimate_dist()` alongside the existing `epinow()` configurations, giving a single standardised view of wall-clock performance across the main user-facing fitting functions.
+
 ## Documentation
 
 - Added a vignette demonstrating delay distribution fitting workflows and posterior validation.

@@ -84,5 +84,48 @@ touchstone::benchmark_run(
   n = 5
 )
 
+# benchmark estimate_truncation on the example truncated dataset
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup.R") },
+  estimate_truncation = { estimate_truncation(
+    data = truncated_cases,
+    stan = stan_opts(
+      cores = 2, samples = 500, chains = 2,
+      control = list(adapt_delta = 0.95)),
+    verbose = interactive()
+  ) },
+  n = 5
+)
+
+# benchmark estimate_secondary on simulated incidence data
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup.R") },
+  estimate_secondary = { estimate_secondary(
+    data = secondary_cases,
+    obs = obs_opts(
+      scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE
+    ),
+    stan = stan_opts(
+      cores = 2, samples = 500, chains = 2,
+      control = list(adapt_delta = 0.95)),
+    verbose = interactive()
+  ) },
+  n = 5
+)
+
+# benchmark estimate_dist on an interval-censored linelist
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup.R") },
+  estimate_dist = { estimate_dist(
+    data = dist_linelist,
+    dist = "lognormal",
+    stan = stan_opts(
+      cores = 2, samples = 500, chains = 2,
+      control = list(adapt_delta = 0.95)),
+    verbose = interactive()
+  ) },
+  n = 5
+)
+
 # create artifacts used downstream in the GitHub Action
 touchstone::benchmark_analyze()
