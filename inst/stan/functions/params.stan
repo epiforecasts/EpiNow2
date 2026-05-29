@@ -107,7 +107,7 @@ void params_lp(vector params, array[] int prior_dist,
 }
 
 /**
- * Apply user prior on the initial value of a centred-GP-wrapped parameter.
+ * Apply user prior on the initial value of a GP-wrapped parameter.
  *
  * When a parameter is wrapped by a centred non-stationary GP, the user-facing
  * prior is on the initial value of the trajectory (X[1]) rather than on the
@@ -115,8 +115,12 @@ void params_lp(vector params, array[] int prior_dist,
  * initial value with the Jacobian correction for the linear-shift transform
  * from log-mean to log-initial.
  *
- * Generic over the parameter — used by R0 today, lifts to any future
- * time-varying parameter (alpha, dispersion, ...) via the same call.
+ * Specific to the GP case: for a random walk or other parameterisation where
+ * the initial value is itself the sampled parameter, the prior applies
+ * directly and this helper is not needed.
+ *
+ * Generic over which parameter the GP wraps — used for R0 today, lifts to any
+ * future GP-driven time-varying parameter via the same call.
  *
  * @param init_value Derived initial value of the trajectory (e.g. R[1]).
  * @param dist_type Prior distribution type (0 = lognormal, 1 = gamma, 2 = normal).
@@ -126,7 +130,7 @@ void params_lp(vector params, array[] int prior_dist,
  *
  * @ingroup parameter_handlers
  */
-real centred_gp_init_lpdf(real init_value, int dist_type, real p1, real p2) {
+real gp_init_lpdf(real init_value, int dist_type, real p1, real p2) {
   if (dist_type == 0) {
     return lognormal_lpdf(init_value | p1, p2) + log(init_value);
   } else if (dist_type == 1) {
@@ -134,7 +138,7 @@ real centred_gp_init_lpdf(real init_value, int dist_type, real p1, real p2) {
   } else if (dist_type == 2) {
     return normal_lpdf(init_value | p1, p2) + log(init_value);
   } else {
-    reject("centred_gp_init_lpdf: dist_type must be 0, 1, or 2");
+    reject("gp_init_lpdf: dist_type must be 0, 1, or 2");
   }
   return 0;
 }

@@ -59,8 +59,8 @@ parameters {
   // gaussian process
   vector[fixed ? 0 : gp_type == 1 ? 2*M : M] eta;  // unconstrained noise
   // Rt — mean log Rt over the window (sampled internally). User prior is on
-  // R[1] (initial Rt) and is applied via centred_gp_init_lpdf in the model
-  // block, with R[1] derived from R_mean + gp_centred[1].
+  // R[1] (initial Rt) and is applied via gp_init_lpdf in the model block,
+  // with R[1] derived from R_mean + gp_centred[1].
   array[estimate_r] real<lower = 0> R_mean;
   array[estimate_r] real initial_infections;    // seed infections
   // standard deviation of breakpoint effect
@@ -247,7 +247,7 @@ model {
         } else {
           reject("no time-varying parameter registered for id ", pid);
         }
-        target += centred_gp_init_lpdf(
+        target += gp_init_lpdf(
           init_value |
           init_dists[i],
           init_dist_params[2 * i - 1],
