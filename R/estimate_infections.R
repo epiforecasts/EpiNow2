@@ -206,7 +206,11 @@ estimate_infections <- function(data,
 
   stan_data$param_id_R0 <- stan_data$n_params_variable + 1L
   init_priors <- if (isTRUE(rt$use_rt)) {
-    list(list(param_id = stan_data$param_id_R0, dist = rt$prior, lower_bound = 0))
+    list(list(
+      param_id = stan_data$param_id_R0,
+      dist = rt$prior,
+      lower_bound = 0
+    ))
   } else {
     list()
   }
