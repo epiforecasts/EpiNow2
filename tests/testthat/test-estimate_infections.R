@@ -269,8 +269,8 @@ test_that("Estimated non-parametric GT concentration anchors posterior", { # nol
     delays = delay_opts(Fixed(0)),
     obs = obs_opts(family = "poisson")
   )
-  sim_cases <- sim[, c("date", "reports")]
-  data.table::setnames(sim_cases, "reports", "confirm")
+  sim_cases <- sim[variable == "reported_cases", c("date", "value")]
+  data.table::setnames(sim_cases, "value", "confirm")
 
   fit_at <- function(conc) {
     suppressWarnings(estimate_infections(
