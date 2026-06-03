@@ -24,6 +24,26 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
 }
 
 /**
+  * Squared spectral indices shared by the Matern kernels
+  *
+  * Returns `square(pi() / (2 * L) * linspaced_vector(M, 1, M))`, the term that
+  * appears in the denominator of every Matern spectral density. The
+  * `linspaced_vector()` call uses data-only bounds and is scaled afterwards so
+  * the function compiles under the data-only argument constraint in older Stan
+  * versions (e.g. the one shipped with rstan).
+  *
+  * @param M Number of basis functions
+  * @param L Length of the interval
+  * @return A vector of squared spectral indices
+  *
+  * @ingroup estimates_smoothing
+  */
+vector matern_indices(int M, real L) {
+  vector[M] indices = linspaced_vector(M, 1, M);
+  return square(pi() / (2 * L) * indices);
+}
+
+/**
   * Spectral density for 1/2 Matern (Ornstein-Uhlenbeck) kernel
   *
   * @param alpha Scaling parameter
@@ -35,10 +55,8 @@ vector diagSPD_EQ(real alpha, real rho, real L, int M) {
   * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
-  vector[M] indices = linspaced_vector(M, 1, M);
-  real factor = 2;
-  vector[M] denom = rho * ((1 / rho)^2 + pow(pi() / 2 / L * indices, 2));
-  return alpha * sqrt(factor * inv(denom));
+  vector[M] denom = 1 / rho + rho * matern_indices(M, L);
+  return alpha * sqrt(2 ./ denom);
 }
 
 /**
@@ -53,10 +71,9 @@ vector diagSPD_Matern12(real alpha, real rho, real L, int M) {
   * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
-  vector[M] indices = linspaced_vector(M, 1, M);
-  real factor = 2 * alpha * pow(sqrt(3) / rho, 1.5);
-  vector[M] denom = (sqrt(3) / rho)^2 + pow((pi() / 2 / L) * indices, 2);
-  return factor * inv(denom);
+  real factor = 2 * alpha * (sqrt(3) / rho)^1.5;
+  vector[M] denom = 3 / square(rho) + matern_indices(M, L);
+  return factor ./ denom;
 }
 
 /**
@@ -71,11 +88,9 @@ vector diagSPD_Matern32(real alpha, real rho, real L, int M) {
   * @ingroup estimates_smoothing
   */
 vector diagSPD_Matern52(real alpha, real rho, real L, int M) {
-  vector[M] indices = linspaced_vector(M, 1, M);
   real factor = 16 * pow(sqrt(5) / rho, 5);
-  vector[M] denom =
-    3 * pow((sqrt(5) / rho)^2 + pow((pi() / 2 / L) * indices, 2), 3);
-  return alpha * sqrt(factor * inv(denom));
+  vector[M] denom = 3 * pow(5 / square(rho) + matern_indices(M, L), 3);
+  return alpha * sqrt(factor ./ denom);
 }
 
 /**
@@ -110,11 +125,8 @@ vector diagSPD_Periodic(real alpha, real rho, int M) {
   * @ingroup estimates_smoothing
   */
 matrix PHI(int N, int M, real L, vector x) {
-  matrix[N, M] phi = sin(
-    diag_post_multiply(
-      rep_matrix(pi() / (2 * L) * (x + L), M), linspaced_vector(M, 1, M)
-    )
-  ) / sqrt(L);
+  row_vector[M] k = linspaced_row_vector(M, 1, M);
+  matrix[N, M] phi = sin((pi() / (2 * L) * (x + L)) * k) / sqrt(L);
   return phi;
 }
 
@@ -130,10 +142,9 @@ matrix PHI(int N, int M, real L, vector x) {
   * @ingroup estimates_smoothing
   */
 matrix PHI_periodic(int N, int M, real w0, vector x) {
-  matrix[N, M] mw0x = diag_post_multiply(
-    rep_matrix(w0 * x, M), linspaced_vector(M, 1, M)
-  );
-  return append_col(cos(mw0x), sin(mw0x));
+  row_vector[M] k = linspaced_row_vector(M, 1, M);
+  matrix[N, M] w0xk = (w0 * x) * k;
+  return append_col(cos(w0xk), sin(w0xk));
 }
 
 /**
@@ -210,7 +221,7 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
     } else if (nu == 2.5) {
       diagSPD = diagSPD_Matern52(alpha, rho, L, M);
     } else {
-      reject("nu must be one of 1/2, 3/2 or 5/2; found nu=", nu);
+      reject("nu must be one of 0.5, 1.5, or 2.5; found nu=", nu);
     }
   }
   return PHI * (diagSPD .* eta);
