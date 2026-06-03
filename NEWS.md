@@ -53,7 +53,7 @@
 
 - Delay distribution discretisation now properly accounts for primary event censoring during model fitting, matching the correction already applied on the R side since v1.8.0. This improves accuracy for short delays where the observation window is large relative to the delay.
 - Left truncation of delay distributions (e.g. excluding generation times of zero) is now handled analytically rather than by zeroing and renormalising, giving more accurate PMFs near the truncation point.
-- Refactored the Gaussian process and convolution Stan functions for efficiency, including a shared `matern_indices()` helper for the Matern spectral densities and outer-product basis function construction in `PHI()` and `PHI_periodic()`.
+- Refactored the Gaussian process, convolution, and observation model Stan functions for efficiency and readability, including a shared `matern_indices()` helper for the Matern spectral densities, outer-product basis function construction in `PHI()` and `PHI_periodic()`, and a shared `reporting_phi()` helper for the negative binomial overdispersion.
 
 ## Package changes
 
