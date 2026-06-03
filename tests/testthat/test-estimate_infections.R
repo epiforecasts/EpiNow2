@@ -310,6 +310,11 @@ test_that("Dirichlet concentration anchors the GT posterior to its prior", { # n
   # keeps it closer to the (shifted) prior than a low one.
   drift_to <- function(p) sum((p - shifted_prior)^2)
   expect_lt(drift_to(tight_pmf), drift_to(loose_pmf))
+
+  # The anchored (tight) fit is still pulled towards the truth by
+  # the data, ending up closer to it than the shifted prior.
+  err_to <- function(p) sum((p - true_gt)^2)
+  expect_lt(err_to(tight_pmf), err_to(shifted_prior))
 })
 
 # Non-integration tests (fast - use one MCMC fit for multiple checks) ----
