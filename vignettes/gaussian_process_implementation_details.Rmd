@@ -160,35 +160,28 @@ These values as well as the prior distributions of relevant parameters can all b
 
 # Modelling the reproduction number
 
-The default `estimate_infections()` model uses the GP to model the first-order difference of $\log R_t$, i.e. the GP supplies the *increments* and the trajectory itself is built by cumulative summation.
-Let $\mathrm{GP}_i$ denote the GP value at time $i$, $R_0$ the initial reproduction number and $T_\mathrm{obs}$ the length of the observation window.
-The non-stationary construction can be written as
+The default `estimate_infections()` model uses the GP to model the first-order difference of $\log R_t$, with the trajectory itself built by cumulative summation of GP values $\mathrm{GP}_i$. Writing $T_\mathrm{obs}$ for the length of the observation window and $R_1$ for the initial reproduction number, the non-stationary construction is
 
 \begin{equation}
-\log R_t = \log R_0 + \sum_{i = 1}^{t - 1} \mathrm{GP}_i
+\log R_t = \log R_1 + \sum_{i = 1}^{t - 1} \mathrm{GP}_i
 \end{equation}
 
-Without further constraint this parameterisation has a ridge in the joint posterior: a constant added to $\log R_0$ and subtracted from the cumulative GP path leaves $\log R_t$ unchanged for all $t$, so $R_0$ and the long-run drift of the GP are not jointly identified.
-This manifests as poor sampler geometry and, for some random seeds, stuck chains and large $\hat R$ values.
+Without further constraint this parameterisation has a ridge in the joint posterior: a constant added to $\log R_1$ and subtracted from the cumulative GP path leaves $\log R_t$ unchanged for all $t$, so $R_1$ and the long-run drift of the GP are not jointly identified, with poor sampler geometry and, on some random seeds, stuck chains and large $\hat R$ as a consequence.
 
-To remove the ridge while preserving the user-facing interpretation of $R_0$ as the prior on the initial reproduction number, we sample the trajectory mean over the observation window as the internal parameter and apply the user's prior to the derived initial value.
-Concretely, with $\bar{\mathrm{GP}} = \frac{1}{T_\mathrm{obs}}\sum_{t = 1}^{T_\mathrm{obs}} \sum_{i = 1}^{t - 1} \mathrm{GP}_i$ the empirical mean of the cumulative path over the observation window, we sample $\log \overline{R}$ (the mean of $\log R_t$ over the observation window) and form
+To remove the ridge while preserving the user-facing interpretation of the prior on $R_1$, we sample the trajectory mean over the observation window as the internal parameter and apply the user's prior to the derived initial value. With $\overline{\mathrm{GP}} = \frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \sum_{i = 1}^{t - 1} \mathrm{GP}_i$ the empirical mean of the cumulative path over the observation window, we sample $\log \overline{R}$ (the mean of $\log R_t$ over the observation window) and form
 
 \begin{equation}
-\log R_t = \log \overline{R} + \sum_{i = 1}^{t - 1} \mathrm{GP}_i - \bar{\mathrm{GP}}
+\log R_t = \log \overline{R} + \sum_{i = 1}^{t - 1} \mathrm{GP}_i - \overline{\mathrm{GP}}
 \end{equation}
 
-so that $\frac{1}{T_\mathrm{obs}}\sum_{t = 1}^{T_\mathrm{obs}} \log R_t = \log \overline{R}$ by construction, breaking the ridge.
-Centring only over the observation window (not the forecast horizon) ensures that the fitted historical $R_t$ does not shift when the forecast horizon is changed.
+so that $\frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \log R_t = \log \overline{R}$ by construction, breaking the ridge. Centring only over the observation window (not the forecast horizon) ensures that the fitted historical $R_t$ does not shift when the forecast horizon is changed.
 
-The user's prior on the initial reproduction number $R_1$ is applied to the derived quantity
+The user's prior on the initial reproduction number is applied to the derived quantity
 
 \begin{equation}
-\log R_1 = \log \overline{R} - \bar{\mathrm{GP}}
+\log R_1 = \log \overline{R} - \overline{\mathrm{GP}}
 \end{equation}
 
-via a change of variables.
-The transformation from $(\log \overline{R}, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ to $(\log R_1, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ is a pure shift, so its Jacobian determinant is one and the only Jacobian term required is the one for the log–natural-scale transform of $R_1$ itself.
-In practice this means the prior contribution is the user-specified density evaluated at $R_1$, plus $\log R_1$ when the prior was specified on the natural scale (lognormal, gamma, truncated normal).
+via a change of variables. The transformation from $(\log \overline{R}, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ to $(\log R_1, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ is a pure shift, so its Jacobian determinant is one and the only Jacobian term required is the one for the log–natural-scale transform of $R_1$ itself. In practice the prior contribution is the user-specified density evaluated at $R_1$, plus $\log R_1$ when the prior was specified on the natural scale (lognormal, gamma, truncated normal).
 
 # References
