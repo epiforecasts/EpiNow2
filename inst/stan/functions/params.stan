@@ -136,7 +136,10 @@ real gp_init_lpdf(real init_value, int dist_type, real p1, real p2) {
   } else if (dist_type == 1) {
     return gamma_lpdf(init_value | p1, p2) + log(init_value);
   } else if (dist_type == 2) {
-    return normal_lpdf(init_value | p1, p2) + log(init_value);
+    // truncated at zero to match the `T[lower, upper]` truncation that
+    // `params_lp` applies when the parameter has a positive lower bound
+    return normal_lpdf(init_value | p1, p2) -
+      normal_lccdf(0 | p1, p2) + log(init_value);
   } else {
     reject("gp_init_lpdf: dist_type must be 0, 1, or 2");
   }
