@@ -234,29 +234,9 @@ model {
     }
   }
 
-  if (n_init_priors > 0) {
-    profile("init lp") {
-      int params_id = 1;
-      for (i in 1:n_init_priors) {
-        real init_value;
-        int pid = init_param_ids[i];
-        if (pid == param_id_R0) {
-          init_value = R[1];
-        } else {
-          reject("no time-varying parameter registered for id ", pid);
-        }
-        apply_prior_lp(
-          init_value, init_dists[i],
-          init_dist_params[params_id], init_dist_params[params_id + 1],
-          init_lower[i], init_upper[i]
-        );
-        // Jacobian for the natural-to-log change of variables. The shift
-        // from sampled log-mean to derived log initial value has Jacobian
-        // determinant one and contributes nothing.
-        target += log(init_value);
-        params_id += 2;
-      }
-    }
+  profile("init lp") {
+    init_priors_lp(init_param_ids, init_dists, init_dist_params,
+                   init_lower, init_upper, param_id_R0, R);
   }
 
   // observed reports from mean of reports (update likelihood)

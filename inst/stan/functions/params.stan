@@ -121,4 +121,47 @@ void params_lp(vector params, array[] int prior_dist,
   }
 }
 
+/**
+ * Apply user priors on the initial values of centred-GP-wrapped trajectories
+ *
+ * For each registered init prior, dispatches on the parameter id to the
+ * corresponding derived initial value, applies the user's truncated prior
+ * via `apply_prior_lp`, and adds the natural-to-log Jacobian (the shift
+ * from sampled log-mean to derived log initial value contributes nothing,
+ * as its Jacobian determinant is one).
+ *
+ * @param init_param_ids Per-prior id of the parameter the prior applies to.
+ * @param init_dists Per-prior distribution code (0: lognormal, 1: gamma,
+ *   2: normal).
+ * @param init_dist_params Flat ragged vector of distribution parameters,
+ *   two per prior.
+ * @param init_lower Per-prior lower bound on the parameter's support.
+ * @param init_upper Per-prior upper bound on the parameter's support.
+ * @param param_id_R0 Registered id of R0.
+ * @param R Reproduction-number trajectory.
+ *
+ * @ingroup parameter_handlers
+ */
+void init_priors_lp(array[] int init_param_ids, array[] int init_dists,
+                    vector init_dist_params,
+                    vector init_lower, vector init_upper,
+                    int param_id_R0, vector R) {
+  int params_id = 1;
+  for (i in 1:num_elements(init_param_ids)) {
+    real init_value;
+    if (init_param_ids[i] == param_id_R0) {
+      init_value = R[1];
+    } else {
+      reject("no init param registered for id ", init_param_ids[i]);
+    }
+    apply_prior_lp(
+      init_value, init_dists[i],
+      init_dist_params[params_id], init_dist_params[params_id + 1],
+      init_lower[i], init_upper[i]
+    );
+    target += log(init_value);
+    params_id += 2;
+  }
+}
+
 
