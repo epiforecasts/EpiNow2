@@ -6,9 +6,10 @@ int<lower = 0> param_id_reporting_overdispersion; // parameter id of reporting_o
 int<lower = 0> param_id_pop; // parameter id of pop
 
 // Priors on the initial value of a centred-GP-wrapped trajectory, applied
-// to the derived initial value via gp_init_lpdf with a change of variables.
-// Ragged layout mirrors prior_dist_params: init_dist_params is a flat vector
-// and per-prior dispatch advances an offset by the appropriate count.
+// to the derived initial value with a change of variables. Ragged layout
+// mirrors prior_dist_params: init_dist_params is a flat vector and the
+// per-prior dispatch in estimate_infections.stan advances an offset by the
+// appropriate count.
 int<lower = 0> n_init_priors;
 array[n_init_priors] int<lower = 1> init_param_ids;
 array[n_init_priors] int<lower = 0> init_dists;

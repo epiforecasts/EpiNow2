@@ -60,7 +60,7 @@ parameters {
   vector[fixed ? 0 : gp_type == 1 ? 2*M : M] eta;  // unconstrained noise
   // Mean Rt over the observation window for the centred GP parameterisation;
   // the user prior on initial Rt is applied to the derived R[1] in the model
-  // block via gp_init_lpdf.
+  // block via the init-prior dispatch.
   array[estimate_r] real<lower = 0> R_mean;
   array[estimate_r] real initial_infections;    // seed infections
   // standard deviation of breakpoint effect
@@ -240,19 +240,33 @@ model {
       for (i in 1:n_init_priors) {
         real init_value;
         int pid = init_param_ids[i];
-        int n_p = init_dist_n_params(init_dists[i]);
         if (pid == param_id_R0) {
           init_value = R[1];
         } else {
           reject("no time-varying parameter registered for id ", pid);
         }
-        target += gp_init_lpdf(
-          init_value |
-          init_dists[i],
-          init_dist_params[params_id:(params_id + n_p - 1)],
-          init_lower[i], init_upper[i]
-        );
-        params_id += n_p;
+        if (init_dists[i] == 0) {
+          init_value ~ lognormal(
+            init_dist_params[params_id], init_dist_params[params_id + 1]
+          ) T[init_lower[i], init_upper[i]];
+          params_id += 2;
+        } else if (init_dists[i] == 1) {
+          init_value ~ gamma(
+            init_dist_params[params_id], init_dist_params[params_id + 1]
+          ) T[init_lower[i], init_upper[i]];
+          params_id += 2;
+        } else if (init_dists[i] == 2) {
+          init_value ~ normal(
+            init_dist_params[params_id], init_dist_params[params_id + 1]
+          ) T[init_lower[i], init_upper[i]];
+          params_id += 2;
+        } else {
+          reject("init dist must be <= 2");
+        }
+        // Jacobian for the natural-to-log change of variables. The shift
+        // from sampled log-mean to derived log initial value has Jacobian
+        // determinant one and contributes nothing.
+        target += log(init_value);
       }
     }
   }
