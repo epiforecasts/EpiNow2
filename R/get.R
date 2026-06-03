@@ -670,7 +670,6 @@ get_predictions.estimate_truncation <- function(
 #' @param object A fitted model object containing fit and args
 #' @param delay_name The name of the delay (e.g., "generation_time")
 #' @return A dist_spec object, or NULL if the delay doesn't exist
-#' @importFrom posterior as_draws_matrix
 #' @keywords internal
 reconstruct_delay <- function(object, delay_name) {
   stan_data <- object$args
@@ -695,8 +694,10 @@ reconstruct_delay <- function(object, delay_name) {
   # Extract NP posterior draws if estimated
   np_posterior <- NULL
   if (stan_data$delay_np_est_length > 0 && !is.null(object$fit)) {
-    np_draws <- object$fit$draws(variables = "delay_np_est_raw")
-    np_posterior <- as_draws_matrix(np_draws)
+    np_draws <- extract_samples(
+      object$fit, pars = "delay_np_est_raw"
+    )$delay_np_est_raw
+    np_posterior <- as.matrix(np_draws)
   }
 
   # Get indices for this delay type
