@@ -205,24 +205,12 @@ estimate_infections <- function(data,
   )
 
   stan_data$param_id_R0 <- stan_data$n_params_variable + 1L
-  if (isTRUE(rt$use_rt)) {
-    init_R <- pack_init_prior(rt$prior, lower_bound = 0)
-    stan_data$n_init_priors <- 1L
-    stan_data$init_param_ids <- array(stan_data$param_id_R0)
-    stan_data$init_dists <- array(init_R$dist_type)
-    stan_data$init_lower <- array(init_R$lower)
-    stan_data$init_upper <- array(init_R$upper)
-    stan_data$init_dist_params_length <- length(init_R$params)
-    stan_data$init_dist_params <- array(init_R$params)
+  init_priors <- if (isTRUE(rt$use_rt)) {
+    list(list(param_id = stan_data$param_id_R0, dist = rt$prior, lower_bound = 0))
   } else {
-    stan_data$n_init_priors <- 0L
-    stan_data$init_param_ids <- array(integer(0))
-    stan_data$init_dists <- array(integer(0))
-    stan_data$init_lower <- array(numeric(0))
-    stan_data$init_upper <- array(numeric(0))
-    stan_data$init_dist_params_length <- 0L
-    stan_data$init_dist_params <- array(numeric(0))
+    list()
   }
+  stan_data <- c(stan_data, make_init_priors(init_priors))
 
   stan_data <- c(stan_data, create_stan_delays(
     generation_time = generation_time,

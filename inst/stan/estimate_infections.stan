@@ -245,28 +245,16 @@ model {
         } else {
           reject("no time-varying parameter registered for id ", pid);
         }
-        if (init_dists[i] == 0) {
-          init_value ~ lognormal(
-            init_dist_params[params_id], init_dist_params[params_id + 1]
-          ) T[init_lower[i], init_upper[i]];
-          params_id += 2;
-        } else if (init_dists[i] == 1) {
-          init_value ~ gamma(
-            init_dist_params[params_id], init_dist_params[params_id + 1]
-          ) T[init_lower[i], init_upper[i]];
-          params_id += 2;
-        } else if (init_dists[i] == 2) {
-          init_value ~ normal(
-            init_dist_params[params_id], init_dist_params[params_id + 1]
-          ) T[init_lower[i], init_upper[i]];
-          params_id += 2;
-        } else {
-          reject("init dist must be <= 2");
-        }
+        apply_prior_lp(
+          init_value, init_dists[i],
+          init_dist_params[params_id], init_dist_params[params_id + 1],
+          init_lower[i], init_upper[i]
+        );
         // Jacobian for the natural-to-log change of variables. The shift
         // from sampled log-mean to derived log initial value has Jacobian
         // determinant one and contributes nothing.
         target += log(init_value);
+        params_id += 2;
       }
     }
   }

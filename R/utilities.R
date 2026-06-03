@@ -513,6 +513,46 @@ pack_init_prior <- function(dist, lower_bound = 0) {
   )
 }
 
+##' Build the stan-side init-prior data block from a list of priors
+##'
+##' Bundles the data items consumed by the init-prior dispatch in
+##' `inst/stan/estimate_infections.stan` (`n_init_priors`, `init_param_ids`,
+##' `init_dists`, `init_lower`, `init_upper`, `init_dist_params_length`,
+##' `init_dist_params`). With no priors, returns empty arrays so callers
+##' (such as forward simulation) satisfy the shared data block.
+##'
+##' @param priors A list of `list(param_id, dist, lower_bound)` entries,
+##' one per init prior; defaults to an empty list.
+##' @return A named list of stan_data fields to be merged in via `c()`.
+##' @keywords internal
+make_init_priors <- function(priors = list()) {
+  if (length(priors) == 0) {
+    return(list(
+      n_init_priors = 0L,
+      init_param_ids = array(integer(0)),
+      init_dists = array(integer(0)),
+      init_lower = array(numeric(0)),
+      init_upper = array(numeric(0)),
+      init_dist_params_length = 0L,
+      init_dist_params = array(numeric(0))
+    ))
+  }
+  packed <- lapply(priors, function(p) {
+    pack_init_prior(p$dist, lower_bound = p$lower_bound %||% 0)
+  })
+  list(
+    n_init_priors = length(priors),
+    init_param_ids = array(vapply(priors, `[[`, integer(1), "param_id")),
+    init_dists = array(vapply(packed, `[[`, integer(1), "dist_type")),
+    init_lower = array(vapply(packed, `[[`, numeric(1), "lower")),
+    init_upper = array(vapply(packed, `[[`, numeric(1), "upper")),
+    init_dist_params_length = sum(
+      vapply(packed, function(p) length(p$params), integer(1))
+    ),
+    init_dist_params = array(unlist(lapply(packed, `[[`, "params")))
+  )
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
 #' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
 globalVariables(

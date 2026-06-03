@@ -198,15 +198,7 @@ simulate_infections <- function(R,
   ## set empty params matrix - variable parameters not supported here
   stan_data$params <- array(dim = c(1, 0))
 
-  ## init priors are not used in forward simulation; supply empty arrays to
-  ## satisfy the shared data block in estimate_infections_params.stan
-  stan_data$n_init_priors <- 0L
-  stan_data$init_param_ids <- array(integer(0))
-  stan_data$init_dists <- array(integer(0))
-  stan_data$init_lower <- array(numeric(0))
-  stan_data$init_upper <- array(numeric(0))
-  stan_data$init_dist_params_length <- 0L
-  stan_data$init_dist_params <- array(numeric(0))
+  stan_data <- c(stan_data, make_init_priors())
 
   ## day of week effect
   if (is.null(day_of_week_effect)) {

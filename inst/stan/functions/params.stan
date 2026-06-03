@@ -64,10 +64,39 @@ vector get_param(int id,
 }
 
 /**
+ * Apply a truncated prior to a value
+ *
+ * Adds the log density of the chosen distribution, truncated to
+ * `[lower, upper]`, to the target.
+ *
+ * @param value Value to apply the prior to (sampled parameter or derived
+ *   quantity).
+ * @param dist Prior distribution type (0: lognormal, 1: gamma, 2: normal).
+ * @param p1 First distribution parameter.
+ * @param p2 Second distribution parameter.
+ * @param lower Lower bound of the parameter's support.
+ * @param upper Upper bound of the parameter's support.
+ *
+ * @ingroup parameter_handlers
+ */
+void apply_prior_lp(real value, int dist,
+                    real p1, real p2,
+                    real lower, real upper) {
+  if (dist == 0) {
+    value ~ lognormal(p1, p2) T[lower, upper];
+  } else if (dist == 1) {
+    value ~ gamma(p1, p2) T[lower, upper];
+  } else if (dist == 2) {
+    value ~ normal(p1, p2) T[lower, upper];
+  } else {
+    reject("dist must be <= 2");
+  }
+}
+
+/**
  * Update log density for parameter priors
  *
- * This function adds the log density contributions from parameter priors
- * to the target, supporting multiple prior distribution types.
+ * Adds the log density contributions from parameter priors to the target.
  *
  * @param params Vector of parameter values
  * @param prior_dist Array of prior distribution types (0: lognormal, 1: gamma, 2: normal)
@@ -83,26 +112,12 @@ void params_lp(vector params, array[] int prior_dist,
   int params_id = 1;
   int num_params = num_elements(params);
   for (id in 1:num_params) {
-    if (prior_dist[id] == 0) { // lognormal
-      params[id] ~
-        lognormal(
-          prior_dist_params[params_id], prior_dist_params[params_id + 1]
-        )
-        T[params_lower[id], params_upper[id]];
-      params_id += 2;
-    } else if (prior_dist[id] == 1) {
-      params[id] ~
-        gamma(prior_dist_params[params_id], prior_dist_params[params_id + 1])
-        T[params_lower[id], params_upper[id]];
-      params_id += 2;
-    } else if (prior_dist[id] == 2) {
-      params[id] ~
-        normal(prior_dist_params[params_id], prior_dist_params[params_id + 1])
-        T[params_lower[id], params_upper[id]];
-      params_id += 2;
-    } else {
-      reject("dist must be <= 2");
-    }
+    apply_prior_lp(
+      params[id], prior_dist[id],
+      prior_dist_params[params_id], prior_dist_params[params_id + 1],
+      params_lower[id], params_upper[id]
+    );
+    params_id += 2;
   }
 }
 
