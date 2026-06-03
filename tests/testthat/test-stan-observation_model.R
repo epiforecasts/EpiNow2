@@ -1,6 +1,17 @@
 skip_on_cran()
 skip_on_os("windows")
 
+test_that("reporting_phi returns overdispersion or Poisson fallback", {
+  reporting_overdispersion <- 0.5
+  # Negative binomial: phi is the inverse square of the overdispersion
+  expect_equal(
+    reporting_phi(reporting_overdispersion, 1),
+    1 / reporting_overdispersion^2
+  )
+  # Poisson: large phi so the negative binomial behaves like a Poisson
+  expect_equal(reporting_phi(reporting_overdispersion, 0), 1e5)
+})
+
 test_that("day_of_week_effect applies day of week effect correctly", {
   reports <- c(100, 200, 300, 400, 500, 600, 700, 800, 900, 1000)
   day_of_week <- c(1, 2, 3, 1, 2, 3, 1, 2, 3, 1)

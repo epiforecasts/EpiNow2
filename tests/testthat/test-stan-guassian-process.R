@@ -24,6 +24,18 @@ test_that("diagSPD_EQ returns correct dimensions and values", {
   expect_equal(result, expected_result, tolerance = 1e-8)
 })
 
+test_that("matern_indices returns correct dimensions and values", {
+  L <- 1.0
+  M <- 5
+  result <- matern_indices(M, L)
+  expect_equal(length(result), M)
+  expect_true(all(result > 0))
+  # Check specific values for known inputs
+  indices <- linspaced_vector(M, 1, M)
+  expected_result <- (pi / (2 * L) * indices)^2
+  expect_equal(result, expected_result, tolerance = 1e-8)
+})
+
 test_that("diagSPD_Matern functions return correct dimensions and values", {
   alpha <- 1.0
   rho <- 2.0
