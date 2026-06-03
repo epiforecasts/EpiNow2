@@ -182,6 +182,6 @@ The user's prior on the initial reproduction number is applied to the derived qu
 \log R_1 = \log \overline{R} - \overline{\mathrm{GP}}
 \end{equation}
 
-via a change of variables. The transformation from $(\log \overline{R}, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ to $(\log R_1, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ is a pure shift, so its Jacobian determinant is one and the only Jacobian term required is the one for the log–natural-scale transform of $R_1$ itself. In practice the prior contribution is the user-specified density evaluated at $R_1$, plus $\log R_1$ when the prior was specified on the natural scale (lognormal, gamma, truncated normal).
+via a change of variables. The transformation from $(\log \overline{R}, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ to $(\log R_1, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ is a pure shift, so its Jacobian determinant is one. The user's prior is a density on $R_1$ on the natural scale, so the only Jacobian term required is $\log R_1$, for the transform between $R_1$ and $\log R_1$.
 
 # References
