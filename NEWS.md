@@ -17,10 +17,6 @@
 - Added a model overview vignette with an architecture diagram showing how the package's models connect.
 - Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
 
-## Model changes
-
-- The non-stationary Gaussian process used to model Rt over time now samples in a mean-centred parameterisation internally (`gp -= mean(gp)` in `inst/stan/functions/rt.stan`), eliminating the `(R0, drift)` ridge in the joint posterior that caused stuck chains and catastrophic R-hat values on some seeds. The user-facing interpretation is unchanged: the `prior` argument in `rt_opts()` is still the prior on the initial Rt. This is achieved by sampling the trajectory mean internally and applying the user prior to the derived initial Rt via a new generic `gp_init_lpdf` Stan helper, with Jacobian-correct change of variables (so the joint prior matches the pre-change model). The plumbing (`init_dists`, `init_dist_params`, `pack_init_prior()`, `gp_init_lpdf`) is parameter-agnostic, designed as a prototype for the general time-varying-parameter framework planned for issue #600.
-
 ## Bug fixes
 
 - Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.
@@ -49,6 +45,7 @@
 
 ## Model changes
 
+- Reparameterised the non-stationary Gaussian process used to model Rt to sample in a mean-centred form internally, eliminating the `(R0, drift)` ridge in the joint posterior that caused stuck chains and catastrophic R-hat values on some seeds. The user-facing interpretation is unchanged: the `prior` argument in `rt_opts()` is still the prior on the initial Rt. Implemented by sampling the trajectory mean internally and applying the user prior to the derived initial Rt via a new generic `gp_init_lpdf` Stan helper, with Jacobian-correct change of variables (so the joint prior matches the pre-change model). The plumbing (`init_dists`, `init_dist_params`, `pack_init_prior()`, `gp_init_lpdf`) is parameter-agnostic, designed as a prototype for the general time-varying-parameter framework.
 - Delay distribution discretisation now properly accounts for primary event censoring during model fitting, matching the correction already applied on the R side since v1.8.0. This improves accuracy for short delays where the observation window is large relative to the delay.
 - Left truncation of delay distributions (e.g. excluding generation times of zero) is now handled analytically rather than by zeroing and renormalising, giving more accurate PMFs near the truncation point.
 
