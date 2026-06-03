@@ -195,6 +195,20 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
   expect_true(is.list(inc_weekly$args))
 })
 
+test_that("estimate_secondary omits reporting_overdispersion under Poisson", {
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+  inc <- estimate_secondary(inc_cases[1:60],
+    obs = obs_opts(
+      family = "poisson",
+      scale = Normal(mean = 0.2, sd = 0.2, max = 1),
+      week_effect = FALSE
+    ),
+    verbose = FALSE
+  )
+  expect_false("reporting_overdispersion" %in% names(get_parameters(inc)))
+})
+
 test_that("estimate_secondary works when only estimating scaling", {
   skip_integration()
   inc_cases <- setup_incidence_data()

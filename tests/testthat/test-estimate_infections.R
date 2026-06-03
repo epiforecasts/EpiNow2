@@ -114,7 +114,10 @@ test_that("estimate_infections successfully returns estimates when accumulating 
 
 test_that("estimate_infections successfully returns estimates using the poisson observation model", {
   skip_integration()
-  test_estimate_infections(reported_cases, obs = obs_opts(family = "poisson"))
+  out <- test_estimate_infections(
+    reported_cases, obs = obs_opts(family = "poisson")
+  )
+  expect_false("reporting_overdispersion" %in% names(get_parameters(out)))
 })
 
 test_that("estimate_infections successfully returns estimates using a fixed Rt", {

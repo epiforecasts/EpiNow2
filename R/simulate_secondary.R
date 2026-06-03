@@ -109,17 +109,14 @@ simulate_secondary <- function(primary,
     )
   }
 
-  if (obs$family == "negbin") {
-    if (get_distribution(obs$dispersion) != "fixed") {
-      cli_abort(
-        c(
-          "!" = "Cannot simulate from uncertain overdispersion.",
-          "i" = "Use fixed overdispersion instead."
-        )
+  if (!is.null(obs$dispersion) &&
+        get_distribution(obs$dispersion) != "fixed") {
+    cli_abort(
+      c(
+        "!" = "Cannot simulate from uncertain overdispersion.",
+        "i" = "Use fixed overdispersion instead."
       )
-    }
-  } else {
-    obs$dispersion <- NULL
+    )
   }
 
   params <- list(

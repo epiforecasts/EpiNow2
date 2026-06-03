@@ -590,8 +590,18 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      scale = Fixed(1),
                      likelihood = TRUE,
                      return_likelihood = FALSE) {
+  family <- arg_match(family)
+  if (family != "negbin") {
+    if (!missing(dispersion)) {
+      cli_warn(
+        "{.field dispersion} is ignored when {.field family} is
+          {.val {family}} and will be dropped."
+      )
+    }
+    dispersion <- NULL
+  }
   obs <- list(
-    family = arg_match(family),
+    family = family,
     dispersion = dispersion,
     weight = weight,
     week_effect = week_effect,
@@ -601,9 +611,10 @@ obs_opts <- function(family = c("negbin", "poisson"),
     return_likelihood = return_likelihood
   )
 
-  for (param in c("dispersion", "scale")) {
-    assert_class(obs[[param]], "dist_spec")
+  if (!is.null(obs$dispersion)) {
+    assert_class(obs$dispersion, "dist_spec")
   }
+  assert_class(obs$scale, "dist_spec")
 
   attr(obs, "class") <- c("obs_opts", class(obs))
   obs
