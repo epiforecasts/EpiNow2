@@ -113,7 +113,7 @@ transformed parameters {
       // lives on R[1] (initial Rt), applied in the model block via the
       // init_priors plumbing.
       R = update_Rt(
-        ot_h, R_mean[1], noise, breakpoints, bp_effects, stationary
+        ot_h, R_mean[1], noise, breakpoints, bp_effects, stationary, ot
       );
     }
     profile("infections") {
