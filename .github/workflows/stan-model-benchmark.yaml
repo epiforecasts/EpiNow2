@@ -153,16 +153,33 @@ jobs:
           cat branch/benchmark-results.md >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
 
-      - name: Post comment
+      - name: Post or update comment
         if: ${{ hashFiles('branch/benchmark-results.md') != '' }}
         uses: actions/github-script@v9
         env:
           BENCHMARK: ${{ steps.output.outputs.BENCHMARK }}
         with:
           script: |
-            github.rest.issues.createComment({
+            const marker = '<!-- epinow2-benchmark-marker -->';
+            const body = `${marker}\n${process.env.BENCHMARK}`;
+            const { data: comments } = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: process.env.BENCHMARK
-            })
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                comment_id: existing.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body,
+              });
+            }
