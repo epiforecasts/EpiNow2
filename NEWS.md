@@ -2,8 +2,11 @@
 
 ## New features
 
+- Added support for all `dist_spec` delay families and `obs_opts()` observation model selection (Poisson or negative binomial) to `estimate_truncation()`. The existing observation model functions (`report_lp`, `report_rng`) are now reused internally.
+- Wired the `likelihood` and `return_likelihood` settings of `obs_opts()` through `estimate_truncation()` so that prior-only fits and `loo`-compatible log-likelihood output are available, matching `estimate_infections()` and `estimate_secondary()`.
 - Added `estimate_dist()` for fitting delay distributions from interval-censored linelist data using Bayesian inference, with support for lognormal, gamma, normal, exponential, and Weibull distributions.
 - Added `Exp()`, `Weibull()`, and `Normal()` distribution constructors.
+- Added `Dirichlet()` and updated `NonParametric()` to support estimating nonparametric delay distributions using a Dirichlet prior, as an alternative to fixed `NonParametric()` or parametric distributions. This uses a gamma normalisation trick for efficient sampling with ragged simplex support in Stan.
 - Added a shared internal helper `check_simulation_input()` that bundles the repeated input data frame validation in `simulate_infections()` and `simulate_secondary()`.
 - Added `as_forecast_sample()` S3 methods for `epinow`, `estimate_infections`, `forecast_secondary`, and `estimate_truncation` objects, allowing direct conversion to `forecast_sample` objects via [`scoringutils::as_forecast_sample()`](https://epiforecasts.io/scoringutils/reference/as_forecast_sample.html) for evaluation.
 
@@ -11,15 +14,25 @@
 
 - `estimate_delay()` is soft-deprecated in favour of `estimate_dist()`.
 
+## Package changes
+
+- The touchstone continuous benchmarks now also cover `estimate_truncation()`, `estimate_secondary()` and `estimate_dist()` alongside the existing `epinow()` configurations, giving a single standardised view of wall-clock performance across the main user-facing fitting functions.
+
 ## Documentation
 
 - Added a vignette demonstrating delay distribution fitting workflows and posterior validation.
+- Added a model definition vignette for `estimate_dist()`.
 - Added a model overview vignette with an architecture diagram showing how the package's models connect.
 - Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
+- The delay distribution fitting vignette has been renamed from `vignette("estimate-dist")` to `vignette("estimate_dist_workflow")` for consistency with the other workflow vignettes; the model definition is at `vignette("estimate_dist")`.
+- Expanded the case studies vignette with additional literature references and public health surveillance examples.
 
 ## Bug fixes
 
 - Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.
+- Centralised the gating of `dispersion` on `family` in `obs_opts()`: `dispersion` is now `NULL` whenever `family != "negbin"`, with a warning if the caller supplied one explicitly. As a result, `reporting_overdispersion` is no longer sampled from its prior in `estimate_infections()`, `estimate_secondary()`, `simulate_infections()` and `estimate_truncation()` when a Poisson observation model is used.
+- Fixed a bug where `estimate_dist()` would fail with a "model fitting timed out or failed" error when observed delays had near-zero variance. Scale parameters are now initialised from the prior when variance cannot be estimated from the data, and a warning is issued.
+- Fixed a bug where `example_truncated` was generated with the old discrete-CDF PMF while `estimate_truncation()` now uses the primarycensored-based PMF, causing biased parameter recovery. The dataset has been regenerated for consistency.
 
 ## Breaking changes
 

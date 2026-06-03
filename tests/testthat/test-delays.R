@@ -258,3 +258,325 @@ test_that("build_delay_name_lookup correctly names parameters", {
       "truncation[1]", "truncation[2]")
   )
 })
+
+test_that("create_stan_delays works with fixed NonParametric", {
+  data <- EpiNow2:::create_stan_delays(
+    delays = delay_opts(
+      dist = NonParametric(c(0.1, 0.6, 0.3))
+    )
+  )
+  expect_equal(data$delay_n_np, 1L)
+  expect_equal(as.numeric(data$delay_np_pmf), c(0.1, 0.6, 0.3))
+  expect_equal(data$delay_n_np_est, 0L)
+  expect_equal(data$delay_np_est_length, 0L)
+  expect_equal(as.numeric(data$delay_np_est_alpha), numeric(0))
+  expect_equal(as.integer(data$delay_np_est_pos), integer(0))
+  expect_equal(as.integer(data$delay_np_est_groups), 1L)
+})
+
+test_that("create_stan_delays handles Dirichlet prior", {
+  pmf <- c(0.1, 0.5, 0.3, 0.1)
+  conc <- 2
+  data <- EpiNow2:::create_stan_delays(
+    delays = delay_opts(
+      dist = NonParametric(Dirichlet(prior = pmf, concentration = conc))
+    )
+  )
+  expect_equal(data$delay_n_np_est, 1L)
+  expect_equal(data$delay_np_est_length, 4L)
+  expect_equal(
+    as.numeric(data$delay_np_est_alpha),
+    conc * pmf
+  )
+  expect_equal(as.integer(data$delay_np_est_pos), 1L:4L)
+  expect_equal(as.integer(data$delay_np_est_which), 1L)
+  expect_equal(
+    as.integer(data$delay_np_est_groups), c(1L, 5L)
+  )
+  # Prior PMF still present in np_pmf
+  expect_equal(as.numeric(data$delay_np_pmf), pmf)
+})
+
+test_that("create_stan_delays skips zero alpha entries", {
+  pmf <- c(0, 0.3, 0.5, 0.2)
+  conc <- 10
+  data <- EpiNow2:::create_stan_delays(
+    generation_time = gt_opts(
+      dist = NonParametric(Dirichlet(prior = pmf, concentration = conc))
+    )
+  )
+  # Only 3 positive entries estimated (zero at t=0 excluded)
+  expect_equal(data$delay_np_est_length, 3L)
+  expect_equal(
+    as.numeric(data$delay_np_est_alpha),
+    conc * pmf[pmf > 0]
+  )
+  # Positions point to indices 2, 3, 4 in delay_np_pmf
+  expect_equal(as.integer(data$delay_np_est_pos), 2L:4L)
+  expect_equal(
+    as.integer(data$delay_np_est_groups), c(1L, 4L)
+  )
+  # Full PMF still in np_pmf including the zero
+  expect_equal(as.numeric(data$delay_np_pmf), pmf)
+})
+
+test_that("create_stan_delays with no NP delays gives safe defaults", {
+  data <- EpiNow2:::create_stan_delays(
+    generation_time = gt_opts(Fixed(1))
+  )
+  expect_equal(data$delay_n_np_est, 0L)
+  expect_equal(data$delay_np_est_length, 0L)
+  expect_equal(as.numeric(data$delay_np_est_alpha), numeric(0))
+  expect_equal(as.integer(data$delay_np_est_pos), integer(0))
+  expect_equal(as.integer(data$delay_np_est_groups), 1L)
+})
+
+test_that("create_stan_delays handles mixed fixed and Dirichlet NP", {
+  fixed_pmf <- c(0.0, 0.5, 0.5)
+  est_pmf <- c(0.1, 0.4, 0.4, 0.1)
+  conc <- 5
+  data <- EpiNow2:::create_stan_delays(
+    generation_time = gt_opts(
+      dist = NonParametric(fixed_pmf)
+    ),
+    delays = delay_opts(
+      dist = NonParametric(Dirichlet(prior = est_pmf, concentration = conc))
+    )
+  )
+  # Two NP delays total
+  expect_equal(data$delay_n_np, 2L)
+  # Only one is estimated
+  expect_equal(data$delay_n_np_est, 1L)
+  # The estimated one is the second NP delay
+  expect_equal(as.integer(data$delay_np_est_which), 2L)
+  expect_equal(
+    as.numeric(data$delay_np_est_alpha),
+    conc * est_pmf
+  )
+  # Positions offset by the fixed PMF (3 elements)
+  expect_equal(as.integer(data$delay_np_est_pos), 4L:7L)
+  expect_equal(data$delay_np_est_length, 4L)
+  expect_equal(
+    as.integer(data$delay_np_est_groups), c(1L, 5L)
+  )
+  # Both PMFs in np_pmf (generation_time first, then delays)
+  expect_equal(
+    as.numeric(data$delay_np_pmf),
+    c(fixed_pmf, est_pmf)
+  )
+})
+
+test_that(
+  "reconstruct_nonparametric returns NonParametric for fixed NP",
+  {
+    stan_data <- list(
+      delay_np_pmf = c(0.2, 0.5, 0.3),
+      delay_np_pmf_groups = c(1L, 4L),
+      delay_np_est_which = integer(0),
+      delay_np_est_groups = 1L,
+      delay_np_est_alpha = numeric(0)
+    )
+    result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 1L
+    )
+    expect_s3_class(result, "dist_spec")
+    expect_false(isTRUE(result$estimated))
+    expect_equal(
+      as.numeric(get_pmf(result)),
+      c(0.2, 0.5, 0.3)
+    )
+  }
+)
+
+test_that(
+  "reconstruct_nonparametric returns NonParametric(pmf = Dirichlet)",
+  {
+    pmf <- c(0.1, 0.4, 0.4, 0.1)
+    conc <- 3
+    alpha <- conc * pmf
+    stan_data <- list(
+      delay_np_pmf = pmf,
+      delay_np_pmf_groups = c(1L, 5L),
+      delay_np_est_which = 1L,
+      delay_np_est_groups = c(1L, 5L),
+      delay_np_est_alpha = alpha,
+      delay_np_est_pos = 1L:4L
+    )
+    result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 1L
+    )
+    expect_true(isTRUE(result$estimated))
+    expect_equal(as.numeric(result$alpha), alpha)
+    expect_equal(as.numeric(get_pmf(result)), pmf)
+  }
+)
+
+test_that(
+  "reconstruct_nonparametric handles mixed fixed and estimated",
+  {
+    fixed_pmf <- c(0.0, 0.5, 0.5)
+    est_pmf <- c(0.1, 0.4, 0.4, 0.1)
+    conc <- 5
+    alpha <- conc * est_pmf
+    stan_data <- list(
+      delay_np_pmf = c(fixed_pmf, est_pmf),
+      delay_np_pmf_groups = c(1L, 4L, 8L),
+      delay_np_est_which = 2L,
+      delay_np_est_groups = c(1L, 5L),
+      delay_np_est_alpha = alpha,
+      delay_np_est_pos = 4L:7L
+    )
+    # First NP delay is fixed
+    fixed_result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 1L
+    )
+    expect_false(isTRUE(fixed_result$estimated))
+    expect_equal(
+      as.numeric(get_pmf(fixed_result)),
+      fixed_pmf
+    )
+    # Second NP delay is estimated
+    est_result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 2L
+    )
+    expect_true(isTRUE(est_result$estimated))
+    expect_equal(as.numeric(est_result$alpha), alpha)
+  }
+)
+
+
+test_that(
+  "reconstruct_nonparametric uses posterior when available",
+  {
+    pmf <- c(0, 0.3, 0.5, 0.2)
+    conc <- 10
+    alpha <- conc * pmf[pmf > 0]
+    stan_data <- list(
+      delay_np_pmf = pmf,
+      delay_np_pmf_groups = c(1L, 5L),
+      delay_np_est_which = 1L,
+      delay_np_est_groups = c(1L, 4L),
+      delay_np_est_alpha = alpha,
+      delay_np_est_pos = 2L:4L
+    )
+    # Simulate posterior draws (3 draws, 3 estimated bins)
+    np_posterior <- matrix(
+      c(3, 5, 2, 2.5, 5.5, 2, 3.5, 4.5, 2),
+      nrow = 3, byrow = TRUE
+    )
+    result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 1L, np_posterior
+    )
+    # Should round-trip as a NonParametric backed by a Dirichlet
+    expect_true(isTRUE(result$estimated))
+    post_alpha <- result$alpha
+    # Structural zero is preserved
+    expect_equal(post_alpha[1], 0)
+    # Free alphas are positive
+    expect_true(all(post_alpha[-1] > 0))
+    # Implied mean PMF is a valid simplex
+    post_pmf <- as.numeric(get_pmf(result))
+    expect_equal(post_pmf[1], 0)
+    expect_equal(sum(post_pmf), 1, tolerance = 1e-10)
+    expect_true(all(post_pmf >= 0))
+  }
+)
+
+test_that(
+  "reconstruct_nonparametric recovers known Dirichlet via moment matching",
+  {
+    ## Draw from a known Dirichlet via the gamma trick (matches the
+    ## Stan parameterisation), feed the unnormalised draws into
+    ## reconstruct_nonparametric, and check the moment-matched alpha
+    ## is close to the truth.
+    set.seed(42)
+    true_alpha <- c(8, 24, 40, 16)
+    n_draws <- 10000L
+    raw_draws <- matrix(
+      rgamma(n_draws * length(true_alpha),
+             shape = rep(true_alpha, each = n_draws), rate = 1),
+      nrow = n_draws
+    )
+    pmf <- c(0, true_alpha / sum(true_alpha))
+    stan_data <- list(
+      delay_np_pmf = pmf,
+      delay_np_pmf_groups = c(1L, length(pmf) + 1L),
+      delay_np_est_which = 1L,
+      delay_np_est_groups = c(1L, length(true_alpha) + 1L),
+      delay_np_est_alpha = true_alpha,
+      delay_np_est_pos = seq.int(2L, length(pmf))
+    )
+    result <- EpiNow2:::reconstruct_nonparametric(
+      stan_data, 1L, raw_draws
+    )
+    recovered <- result$alpha[-1] # drop structural zero at t = 0
+    ## mean simplex
+    expect_equal(
+      recovered / sum(recovered), true_alpha / sum(true_alpha),
+      tolerance = 0.05
+    )
+    ## concentration (alpha0 = sum(alpha)) — this is the part the
+    ## moment-matching solves for, so check it explicitly
+    expect_equal(sum(recovered), sum(true_alpha), tolerance = 0.1)
+    ## and per-bin alphas as a combined sanity check
+    expect_equal(recovered, true_alpha, tolerance = 0.1)
+  }
+)
+
+test_that("build_np_est_data produces expected output", {
+  np_delays <- list(
+    NonParametric(Dirichlet(prior = c(0.1, 0.5, 0.4), concentration = 10))
+  )
+  out <- EpiNow2:::build_np_est_data(np_delays, np_pmf_groups = c(1L, 4L))
+  expect_equal(out$n_np_est, 1L)
+  expect_equal(out$np_est_length, 3L)
+  expect_equal(as.integer(out$np_est_which), 1L)
+  expect_equal(as.numeric(out$np_est_alpha), 10 * c(0.1, 0.5, 0.4))
+  expect_equal(as.integer(out$np_est_pos), 1L:3L)
+  expect_equal(as.integer(out$np_est_groups), c(1L, 4L))
+})
+
+test_that("build_np_est_data drops structural zeros", {
+  np_delays <- list(
+    NonParametric(Dirichlet(prior = c(0, 0.3, 0.5, 0.2), concentration = 10))
+  )
+  out <- EpiNow2:::build_np_est_data(np_delays, np_pmf_groups = c(1L, 5L))
+  # Structural zero excluded from the parameter vector
+  expect_equal(out$np_est_length, 3L)
+  expect_equal(as.numeric(out$np_est_alpha), 10 * c(0.3, 0.5, 0.2))
+  # Positions skip the zero entry but stay 1-indexed in delay_np_pmf
+  expect_equal(as.integer(out$np_est_pos), 2L:4L)
+  expect_equal(as.integer(out$np_est_groups), c(1L, 4L))
+})
+
+test_that("build_np_est_data correctly handles mixed fixed and estimated", {
+  np_delays <- list(
+    NonParametric(c(0.5, 0.5)),
+    NonParametric(Dirichlet(prior = c(0.2, 0.8), concentration = 5))
+  )
+  ## fixed PMF takes positions 1-2, estimated PMF takes 3-4
+  out <- EpiNow2:::build_np_est_data(np_delays, np_pmf_groups = c(1L, 3L, 5L))
+  expect_equal(out$n_np_est, 1L)
+  expect_equal(as.integer(out$np_est_which), 2L)
+  expect_equal(as.integer(out$np_est_pos), 3L:4L)
+  expect_equal(as.numeric(out$np_est_alpha), 5 * c(0.2, 0.8))
+  expect_equal(as.integer(out$np_est_groups), c(1L, 3L))
+})
+
+test_that("build_np_est_data returns empty defaults when none estimated", {
+  out <- EpiNow2:::build_np_est_data(
+    list(NonParametric(c(0.4, 0.6))), np_pmf_groups = c(1L, 3L)
+  )
+  expect_equal(out$n_np_est, 0L)
+  expect_equal(out$np_est_length, 0L)
+  expect_equal(as.numeric(out$np_est_alpha), numeric(0))
+  expect_equal(as.integer(out$np_est_pos), integer(0))
+  expect_equal(as.integer(out$np_est_which), integer(0))
+  expect_equal(as.integer(out$np_est_groups), 1L)
+})
+
+test_that("build_np_est_data returns empty defaults for empty input", {
+  out <- EpiNow2:::build_np_est_data(list(), np_pmf_groups = 1L)
+  expect_equal(out$n_np_est, 0L)
+  expect_equal(out$np_est_length, 0L)
+})
