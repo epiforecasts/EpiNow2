@@ -4,26 +4,21 @@
 \alias{pack_init_prior}
 \title{Pack a dist_spec into stan-side init-prior fields}
 \usage{
-pack_init_prior(dist)
+pack_init_prior(dist, lower_bound = 0)
 }
 \arguments{
 \item{dist}{A \verb{<dist_spec>} (LogNormal, Gamma, or Normal).}
+
+\item{lower_bound}{Numeric, lower bound on the parameter's support.}
 }
 \value{
 A list with elements \code{dist_type} (integer code: 0 = lognormal,
-1 = gamma, 2 = normal) and \code{params} (numeric of length 2 with the
-distribution parameters).
+1 = gamma, 2 = normal), \code{params} (numeric, the distribution parameters),
+\code{lower} and \code{upper} (numeric scalars).
 }
 \description{
-For parameters wrapped in a centred non-stationary GP (today: R0), the
-user-facing prior in \code{rt_opts()} is on the initial value of the trajectory
-rather than on the sampled internal mean. This helper converts a
-\verb{<dist_spec>} into the integer/vector representation consumed by the
-generic init-prior loop in \code{inst/stan/estimate_infections.stan} (data
-items \code{init_dists} and \code{init_dist_params}).
-}
-\details{
-Generic over the parameter — designed to lift directly into a future
-general time-varying-parameter framework (issue #600).
+Converts a \verb{<dist_spec>} into the integer/vector representation consumed
+by the init-prior loop in \code{inst/stan/estimate_infections.stan} (data
+items \code{init_dists}, \code{init_dist_params}, \code{init_lower}, \code{init_upper}).
 }
 \keyword{internal}
