@@ -5,11 +5,14 @@ int<lower = 0> param_id_fraction_observed; // parameter id of fraction_observed
 int<lower = 0> param_id_reporting_overdispersion; // parameter id of reporting_overdispersion
 int<lower = 0> param_id_pop; // parameter id of pop
 
-// Init priors for centred-GP-wrapped parameters. Today only R0 is wrapped
-// (its prior in rt_opts() is on the *initial* Rt, applied to the derived
-// R[1] from the centred GP). Generic shape so additional time-varying
-// parameters can be added without changing the data plumbing.
+// Priors on the initial value of a centred-GP-wrapped trajectory, applied
+// to the derived initial value via gp_init_lpdf with a change of variables.
+// Ragged layout mirrors prior_dist_params: init_dist_params is a flat vector
+// and per-prior dispatch advances an offset by the appropriate count.
 int<lower = 0> n_init_priors;
 array[n_init_priors] int<lower = 1> init_param_ids;
-array[n_init_priors] int<lower = 0, upper = 2> init_dists;
-vector[2 * n_init_priors] init_dist_params;
+array[n_init_priors] int<lower = 0> init_dists;
+vector[n_init_priors] init_lower;
+vector[n_init_priors] init_upper;
+int<lower = 0> init_dist_params_length;
+vector[init_dist_params_length] init_dist_params;

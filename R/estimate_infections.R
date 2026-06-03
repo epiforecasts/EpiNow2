@@ -204,24 +204,23 @@ estimate_infections <- function(data,
     params = params
   )
 
-  # Register R0 as the (single, for now) centred-GP-wrapped parameter with
-  # its user prior applied to the derived initial Rt. The dispatch in
-  # `inst/stan/estimate_infections.stan` (the `init lp` profile block) uses
-  # `param_id_R0` to know which trajectory's initial value to apply the
-  # prior to. Generic plumbing: additional time-varying parameters drop in
-  # alongside R0 by appending to `init_param_ids` / `init_dists` /
-  # `init_dist_params` and adding one dispatch branch in stan.
   stan_data$param_id_R0 <- stan_data$n_params_variable + 1L
   if (isTRUE(rt$use_rt)) {
-    init_R <- pack_init_prior(rt$prior)
+    init_R <- pack_init_prior(rt$prior, lower_bound = 0)
     stan_data$n_init_priors <- 1L
     stan_data$init_param_ids <- array(stan_data$param_id_R0)
     stan_data$init_dists <- array(init_R$dist_type)
+    stan_data$init_lower <- array(init_R$lower)
+    stan_data$init_upper <- array(init_R$upper)
+    stan_data$init_dist_params_length <- length(init_R$params)
     stan_data$init_dist_params <- array(init_R$params)
   } else {
     stan_data$n_init_priors <- 0L
     stan_data$init_param_ids <- array(integer(0))
     stan_data$init_dists <- array(integer(0))
+    stan_data$init_lower <- array(numeric(0))
+    stan_data$init_upper <- array(numeric(0))
+    stan_data$init_dist_params_length <- 0L
     stan_data$init_dist_params <- array(numeric(0))
   }
 

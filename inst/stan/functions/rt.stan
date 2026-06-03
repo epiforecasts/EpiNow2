@@ -51,11 +51,9 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
     } else {
       gp[2:(gp_n + 1)] = noise;
       gp = cumulative_sum(gp);
-      // Identifiability: subtract the trajectory mean over the observation
-      // window so log R0 is the mean log Rt over that window rather than the
-      // initial value. Eliminates the (R0, drift) ridge in the joint posterior.
-      // The centring window is the observation period (not ot_h), so the
-      // fitted historical R does not shift when the forecast horizon changes.
+      // Centre over the observation window so R0 is the mean log Rt over
+      // that window. Removes the (R0, drift) ridge in the joint posterior
+      // and keeps the historical fit invariant to the forecast horizon.
       gp -= mean(gp[1:n_centre]);
     }
     logR = logR + gp;
