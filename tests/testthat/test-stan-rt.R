@@ -4,7 +4,7 @@ skip_on_os("windows")
 # Test update_Rt
 test_that("update_Rt works to produce multiple Rt estimates with a static gaussian process", {
   expect_equal(
-    update_Rt(10, 1.2, rep(0, 9), rep(10, 0), numeric(0), 0),
+    update_Rt(10, 1.2, rep(0, 9), rep(10, 0), numeric(0), 0, 10),
     rep(1.2, 10)
   )
 })
@@ -15,54 +15,54 @@ test_that("update_Rt works to produce multiple Rt estimates with a non-static ga
   #   gp = cumsum(noise) = c(0, 0.1, 0.2, ..., 0.9), mean = 0.45,
   #   centred = c(-0.45, -0.35, ..., 0.45). log Rt = log(1.2) + centred.
   expect_equal(
-    round(update_Rt(10, 1.2, rep(0.1, 9), rep(10, 0), numeric(0), 0), 3),
+    round(update_Rt(10, 1.2, rep(0.1, 9), rep(10, 0), numeric(0), 0, 10), 3),
     c(0.765, 0.846, 0.935, 1.033, 1.141, 1.262, 1.394, 1.541, 1.703, 1.882)
   )
 })
 test_that("update_Rt works to produce multiple Rt estimates with a non-static stationary gaussian process", {
   expect_equal(
-    round(update_Rt(10, 1.2, rep(0.1, 10), rep(10, 0), numeric(0), 1), 3),
+    round(update_Rt(10, 1.2, rep(0.1, 10), rep(10, 0), numeric(0), 1, 10), 3),
     c(1.326, 1.326, 1.326, 1.326, 1.326, 1.326, 1.326, 1.326, 1.326, 1.326)
   )
 })
 test_that("update_Rt works when Rt is fixed", {
   expect_equal(
-    round(update_Rt(10, 1.2, numeric(0), rep(10, 0), numeric(0), 0), 2),
+    round(update_Rt(10, 1.2, numeric(0), rep(10, 0), numeric(0), 0, 10), 2),
     rep(1.2, 10)
   )
   expect_equal(
-    round(update_Rt(10, 1.2, numeric(0), rep(10, 0), numeric(0), 1), 2),
+    round(update_Rt(10, 1.2, numeric(0), rep(10, 0), numeric(0), 1, 10), 2),
     rep(1.2, 10)
   )
 })
 test_that("update_Rt works when Rt is fixed but a breakpoint is present", {
   expect_equal(
-    round(update_Rt(5, 1.2, numeric(0), c(1, 1, 2, 2, 2), 0.1, 0), 2),
+    round(update_Rt(5, 1.2, numeric(0), c(1, 1, 2, 2, 2), 0.1, 0, 5), 2),
     c(1.2, 1.2, rep(1.33, 3))
   )
   expect_equal(
-    round(update_Rt(5, 1.2, numeric(0), c(1, 1, 2, 2, 2), 0.1, 1), 2),
+    round(update_Rt(5, 1.2, numeric(0), c(1, 1, 2, 2, 2), 0.1, 1, 5), 2),
     c(1.2, 1.2, rep(1.33, 3))
   )
   expect_equal(
-    round(update_Rt(5, 1.2, numeric(0), c(1, 2, 3, 3, 3), rep(0.1, 2), 0), 2),
+    round(update_Rt(5, 1.2, numeric(0), c(1, 2, 3, 3, 3), rep(0.1, 2), 0, 5), 2),
     c(1.2, 1.33, rep(1.47, 3))
   )
 })
 test_that("update_Rt works when Rt is variable and a breakpoint is present", {
   expect_equal(
-    round(update_Rt(5, 1.2, rep(0, 4), c(1, 1, 2, 2, 2), 0.1, 0), 2),
+    round(update_Rt(5, 1.2, rep(0, 4), c(1, 1, 2, 2, 2), 0.1, 0, 5), 2),
     c(1.2, 1.2, rep(1.33, 3))
   )
   expect_equal(
-    round(update_Rt(5, 1.2, rep(0, 5), c(1, 1, 2, 2, 2), 0.1, 1), 2),
+    round(update_Rt(5, 1.2, rep(0, 5), c(1, 1, 2, 2, 2), 0.1, 1, 5), 2),
     c(1.2, 1.2, rep(1.33, 3))
   )
   # Non-stationary GP: see explanation in the earlier non-static GP test.
   # Here gp_n = 4, gp_centred = c(-0.2, -0.1, 0, 0.1, 0.2), breakpoint adds
   # 0.1 from t = 3 onward.
   expect_equal(
-    round(update_Rt(5, 1.2, rep(0.1, 4), c(1, 1, 2, 2, 2), 0.1, 0), 3),
+    round(update_Rt(5, 1.2, rep(0.1, 4), c(1, 1, 2, 2, 2), 0.1, 0, 5), 3),
     c(0.982, 1.086, 1.326, 1.466, 1.620)
   )
 })
