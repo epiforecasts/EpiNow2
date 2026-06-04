@@ -72,10 +72,6 @@ test_that("forecast_infections methods respect CrIs argument", {
 test_that("forecast_infections works with cmdstanr backend", {
   skip_integration()
   skip_on_os("windows")
-  # Fit with the cmdstanr backend so the input `fit` is a <CmdStanMCMC>. This
-  # is the path that previously errored: forecast_infections() called
-  # rstan::extract() directly on the fit, which has no method for cmdstanr
-  # objects. The shared fixture is fit with rstan, so it does not exercise it.
   output <- capture.output(suppressMessages(suppressWarnings(
     fit <- estimate_infections(
       EpiNow2::example_confirmed[1:30],
