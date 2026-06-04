@@ -20,10 +20,13 @@
  * @param bps Array of breakpoint indices
  * @param bp_effects Vector of breakpoint effects
  * @param stationary Whether the Gaussian process is stationary (1) or non-stationary (0)
+ * @param n_centre Number of leading positions over which to centre the
+ *   non-stationary GP trajectory. Set to the observation window length so the
+ *   centring is invariant to the forecast horizon. Ignored when stationary.
  * @return A vector of length t containing the updated Rt values
  */
 vector update_Rt(int t, real R0, vector noise, array[] int bps,
-                 vector bp_effects, int stationary) {
+                 vector bp_effects, int stationary, int n_centre) {
   // define control parameters
   int bp_n = num_elements(bp_effects);
   int gp_n = num_elements(noise);
@@ -48,6 +51,10 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
     } else {
       gp[2:(gp_n + 1)] = noise;
       gp = cumulative_sum(gp);
+      // Centre over the observation window so R0 is the mean log Rt over
+      // that window. Removes the (R0, drift) ridge in the joint posterior
+      // and keeps the historical fit invariant to the forecast horizon.
+      gp -= mean(gp[1:n_centre]);
     }
     logR = logR + gp;
   }

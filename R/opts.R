@@ -341,7 +341,6 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     pop_floor = pop_floor,
     growth_method = arg_match(growth_method)
   )
-
   # replace default settings with those specified by user
   if (opts$rw > 0) {
     opts$use_breakpoints <- TRUE

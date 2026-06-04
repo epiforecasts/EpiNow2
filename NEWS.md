@@ -33,6 +33,7 @@
 - Centralised the gating of `dispersion` on `family` in `obs_opts()`: `dispersion` is now `NULL` whenever `family != "negbin"`, with a warning if the caller supplied one explicitly. As a result, `reporting_overdispersion` is no longer sampled from its prior in `estimate_infections()`, `estimate_secondary()`, `simulate_infections()` and `estimate_truncation()` when a Poisson observation model is used.
 - Fixed a bug where `estimate_dist()` would fail with a "model fitting timed out or failed" error when observed delays had near-zero variance. Scale parameters are now initialised from the prior when variance cannot be estimated from the data, and a warning is issued.
 - Fixed a bug where `example_truncated` was generated with the old discrete-CDF PMF while `estimate_truncation()` now uses the primarycensored-based PMF, causing biased parameter recovery. The dataset has been regenerated for consistency.
+- A bug was fixed where `get_parameters()` failed with `$ operator not defined for this S4 class` on a fit with an estimated nonparametric (Dirichlet) delay when using the `rstan` backend. Posterior draws are now extracted in a backend-agnostic way.
 
 ## Breaking changes
 
@@ -58,6 +59,7 @@
 
 ## Model changes
 
+- Reparameterised the non-stationary Gaussian process used to model Rt to sample in a mean-centred form internally, eliminating the `(R0, drift)` ridge in the joint posterior that caused stuck chains and catastrophic R-hat values on some seeds. The user-facing interpretation is unchanged: the `prior` argument in `rt_opts()` is still the prior on the initial Rt. Implemented by sampling the trajectory mean internally and applying the user prior to the derived initial Rt with the Jacobian-correct change of variables, so the joint prior matches the pre-change model. The plumbing (`init_dists`, `init_dist_params`, `pack_init_prior()`) is parameter-agnostic, ready to extend to additional GP-wrapped time-varying parameters.
 - Delay distribution discretisation now properly accounts for primary event censoring during model fitting, matching the correction already applied on the R side since v1.8.0. This improves accuracy for short delays where the observation window is large relative to the delay.
 - Left truncation of delay distributions (e.g. excluding generation times of zero) is now handled analytically rather than by zeroing and renormalising, giving more accurate PMFs near the truncation point.
 - Refactored the Gaussian process, convolution, and observation model Stan functions for efficiency and readability, including a shared `matern_indices()` helper for the Matern spectral densities, outer-product basis function construction in `PHI()` and `PHI_periodic()`, and a shared `reporting_phi()` helper for the negative binomial overdispersion.

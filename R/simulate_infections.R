@@ -209,6 +209,8 @@ simulate_infections <- function(R,
   ## set empty params matrix - variable parameters not supported here
   stan_data$params <- array(dim = c(1, 0))
 
+  stan_data <- c(stan_data, make_init_priors())
+
   ## day of week effect
   if (is.null(day_of_week_effect)) {
     day_of_week_effect <- rep(1, stan_data$week_effect)
