@@ -97,7 +97,7 @@ or, as a specific case of a Gaussian Process, a random walk of arbitrary length 
 
 where $\div$ indicates interval-valued division (i.e. the floor of the division), such that for example $w=1$ indicates a daily and $w=7$ a weekly random walk.
 
-When the random walk option is used, the cumulative path of breakpoint effects is centred over the observation window to remove an identifiability ridge with $\log R_0$. See [Modelling the reproduction number](gaussian_process_implementation_details.html#modelling-the-reproduction-number) in the GP implementation details vignette for the full derivation.
+When the random walk option is used, its contribution to $\log R_t$ is centred over the observation window to remove an identifiability ridge with $\log R_0$. See [Modelling the reproduction number](gaussian_process_implementation_details.html#modelling-the-reproduction-number) in the GP implementation details vignette for the full derivation.
 
 The choice of prior for the time-varying reproduction number impact run-time, smoothness of the estimates and real-time behaviour and may alter the best use-case for the model.
 

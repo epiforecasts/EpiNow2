@@ -40,11 +40,7 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
     bp0[1] = 0;
     bp0[2:(bp_n + 1)] = cumulative_sum(bp_effects);
     vector[t] bp_path = bp0[bps];
-    // Centre over the observation window so R0 is the mean log Rt
-    // contribution from the breakpoint path over that window. Removes the
-    // (R0, drift) ridge in the joint posterior in the same way as the
-    // non-stationary GP centring below, and keeps the historical fit
-    // invariant to the forecast horizon.
+    // Centre over the observation window (same identifiability fix as the GP below).
     bp_path -= mean(bp_path[1:n_centre]);
     logR = logR + bp_path;
   }
