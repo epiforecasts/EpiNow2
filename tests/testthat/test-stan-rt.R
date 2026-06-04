@@ -2,60 +2,72 @@ skip_on_cran()
 skip_on_os("windows")
 
 # Test update_Rt
-test_that("update_Rt works to produce multiple Rt estimates with a static gaussian process", {
+test_that("update_Rt returns R0 everywhere when GP noise is zero", {
   expect_equal(
-    update_Rt(10, 1.2, rep(0, 9), rep(10, 0), numeric(0), 0),
+    update_Rt(10, 1.2, rep(0, 9), integer(0), numeric(0), 0, 10),
     rep(1.2, 10)
   )
 })
-test_that("update_Rt works to produce multiple Rt estimates with a non-static gaussian process", {
+
+test_that("update_Rt with non-stationary GP applies centred cumulative noise", {
+  noise <- rep(0.1, 9)
+  n_centre <- 10
+  gp <- cumsum(c(0, noise))
+  expected <- 1.2 * exp(gp - mean(gp[1:n_centre]))
   expect_equal(
-    round(update_Rt(10, 1.2, rep(0.1, 9), rep(10, 0), numeric(0), 0), 2),
-    c(1.20, 1.33, 1.47, 1.62, 1.79, 1.98, 2.19, 2.42, 2.67, 2.95)
+    update_Rt(10, 1.2, noise, integer(0), numeric(0), 0, n_centre),
+    expected
   )
 })
-test_that("update_Rt works to produce multiple Rt estimates with a non-static stationary gaussian process", {
+
+test_that("update_Rt with stationary GP returns R0 * exp(noise) with no centring", {
+  noise <- rep(0.1, 10)
+  expected <- 1.2 * exp(noise)
   expect_equal(
-    round(update_Rt(10, 1.2, rep(0.1, 10), rep(10, 0), numeric(0), 1), 3),
-    c(1.326, 1.326, 1.326, 1.326, 1.326, 1.326, 1.326, 1.326, 1.326, 1.326)
+    update_Rt(10, 1.2, noise, integer(0), numeric(0), 1, 10),
+    expected
   )
 })
-test_that("update_Rt works when Rt is fixed", {
+
+test_that("update_Rt centring sets the mean of log Rt over the centring window to log R0", {
+  noise <- runif(9, -0.05, 0.05)
+  result <- update_Rt(10, 1.2, noise, integer(0), numeric(0), 0, 10)
+  expect_equal(mean(log(result[1:10])), log(1.2))
+})
+
+test_that("update_Rt is invariant in the centring window when t is extended", {
+  noise <- runif(14, -0.05, 0.05)
+  n_centre <- 10
+  fit_short <- update_Rt(10, 1.2, noise[1:9], integer(0), numeric(0), 0, n_centre)
+  fit_long  <- update_Rt(15, 1.2, noise,     integer(0), numeric(0), 0, n_centre)
+  expect_equal(fit_long[1:n_centre], fit_short)
+})
+
+test_that("update_Rt returns R0 + breakpoint multipliers when noise is empty", {
   expect_equal(
-    round(update_Rt(10, 1.2, numeric(0), rep(10, 0), numeric(0), 0), 2),
-    rep(1.2, 10)
+    update_Rt(5, 1.2, numeric(0), c(1, 1, 2, 2, 2), 0.1, 0, 5),
+    c(1.2, 1.2, 1.2 * exp(rep(0.1, 3)))
   )
   expect_equal(
-    round(update_Rt(10, 1.2, numeric(0), rep(10, 0), numeric(0), 1), 2),
-    rep(1.2, 10)
+    update_Rt(5, 1.2, numeric(0), c(1, 1, 2, 2, 2), 0.1, 1, 5),
+    c(1.2, 1.2, 1.2 * exp(rep(0.1, 3)))
+  )
+  expect_equal(
+    update_Rt(5, 1.2, numeric(0), c(1, 2, 3, 3, 3), rep(0.1, 2), 0, 5),
+    c(1.2, 1.2 * exp(0.1), rep(1.2 * exp(0.2), 3))
   )
 })
-test_that("update_Rt works when Rt is fixed but a breakpoint is present", {
+
+test_that("update_Rt with non-stationary GP and breakpoint adds centred GP + step", {
+  noise <- rep(0.1, 4)
+  bps <- c(1, 1, 2, 2, 2)
+  bp_effects <- 0.1
+  gp <- cumsum(c(0, noise))
+  bp0 <- c(0, cumsum(bp_effects))
+  expected <- 1.2 * exp(gp - mean(gp[1:5]) + bp0[bps])
   expect_equal(
-    round(update_Rt(5, 1.2, numeric(0), c(1, 1, 2, 2, 2), 0.1, 0), 2),
-    c(1.2, 1.2, rep(1.33, 3))
-  )
-  expect_equal(
-    round(update_Rt(5, 1.2, numeric(0), c(1, 1, 2, 2, 2), 0.1, 1), 2),
-    c(1.2, 1.2, rep(1.33, 3))
-  )
-  expect_equal(
-    round(update_Rt(5, 1.2, numeric(0), c(1, 2, 3, 3, 3), rep(0.1, 2), 0), 2),
-    c(1.2, 1.33, rep(1.47, 3))
-  )
-})
-test_that("update_Rt works when Rt is variable and a breakpoint is present", {
-  expect_equal(
-    round(update_Rt(5, 1.2, rep(0, 4), c(1, 1, 2, 2, 2), 0.1, 0), 2),
-    c(1.2, 1.2, rep(1.33, 3))
-  )
-  expect_equal(
-    round(update_Rt(5, 1.2, rep(0, 5), c(1, 1, 2, 2, 2), 0.1, 1), 2),
-    c(1.2, 1.2, rep(1.33, 3))
-  )
-  expect_equal(
-    round(update_Rt(5, 1.2, rep(0.1, 4), c(1, 1, 2, 2, 2), 0.1, 0), 2),
-    c(1.20, 1.33, 1.62, 1.79, 1.98)
+    update_Rt(5, 1.2, noise, bps, bp_effects, 0, 5),
+    expected
   )
 })
 
