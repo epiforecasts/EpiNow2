@@ -191,9 +191,9 @@ by construction, breaking the ridge. Centring only over the observation window (
 The user's prior on the initial reproduction number is then applied to the derived quantity
 
 \begin{equation}
-\log R_1 = \overline{\log R} - \overline{\mathrm{GP}}
+R_1 = \exp(\overline{\log R} - \overline{\mathrm{GP}})
 \end{equation}
 
-via a [change of variables](https://mc-stan.org/docs/stan-users-guide/reparameterization.html#changes-of-variables). With the GP increments held fixed, the transformation from $\overline{\log R}$ to $\log R_1$ is a pure shift by $-\overline{\mathrm{GP}}$, so its Jacobian is one. The user's prior is a density on $R_1$ on the natural scale, so the only Jacobian term required is $\log R_1$, for the transform between $R_1$ and $\log R_1$.
+via a [change of variables](https://mc-stan.org/docs/stan-users-guide/reparameterization.html#changes-of-variables). With the GP increments held fixed, the Jacobian of this transform from $\overline{\log R}$ to $R_1$ is $|dR_1 / d\overline{\log R}| = R_1$, so the log-Jacobian correction added to the target is $\log R_1$.
 
 # References
