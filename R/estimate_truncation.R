@@ -280,7 +280,7 @@ estimate_truncation <- function(data,
 
 #' Plot method for estimate_truncation
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' [plot()] method for class `<estimate_truncation>`. Returns
 #' a plot faceted over each dataset used in fitting with the latest
 #' observations as columns, the data observed at the time (and so truncated)

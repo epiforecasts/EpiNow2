@@ -1,6 +1,6 @@
 #' Fit a Stan Model using the NUTs sampler
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("stable")`
 #' Fits a stan model using [rstan::sampling()]. Provides the optional ability to
 #' run chains using `future` with error catching, timeouts and merging of
 #' completed chains.
@@ -149,7 +149,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
 
 #' Fit a Stan Model using an approximate method
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("stable")`
 #' Fits a stan model using variational inference.
 #'
 #' @inheritParams fit_model_with_nuts

@@ -1,7 +1,7 @@
 #' Estimate Infections, the Time-Varying Reproduction Number and the Rate of
 #' Growth
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("stable")`
 #' Uses a non-parametric approach to reconstruct cases by date of infection
 #' from reported cases. It uses either a generative Rt model or non-parametric
 #' back calculation to estimate underlying latent infections and then maps

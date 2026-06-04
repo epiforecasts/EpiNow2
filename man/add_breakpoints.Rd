@@ -25,7 +25,7 @@ A data.table with \code{breakpoint} set to 1 on each of the specified
 dates.
 }
 \description{
-Add breakpoints to certain dates in a data set.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 }
 \examples{
 reported_cases <- add_breakpoints(example_confirmed, as.Date("2020-03-26"))

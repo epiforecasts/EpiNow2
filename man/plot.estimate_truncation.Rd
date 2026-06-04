@@ -15,7 +15,7 @@
 \code{ggplot2} object
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 \code{\link[=plot]{plot()}} method for class \verb{<estimate_truncation>}. Returns
 a plot faceted over each dataset used in fitting with the latest
 observations as columns, the data observed at the time (and so truncated)

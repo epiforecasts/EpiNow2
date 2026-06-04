@@ -32,7 +32,7 @@ EpiNow2.epinow.estimate_infections.fit (logging in fitting functions).}
 Nothing
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Sets up \code{{futile.logger}} logging, which is integrated into \code{{EpiNow2}}.
 See the documentation for \code{{futile.logger}} for full details. By default
 \code{{EpiNow2}} prints all logs at the "INFO" level and returns them to the

@@ -1,6 +1,6 @@
 #' Setup Logging
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("stable")`
 #' Sets up `{futile.logger}` logging, which is integrated into `{EpiNow2}`.
 #' See the documentation for `{futile.logger}` for full details. By default
 #' `{EpiNow2}` prints all logs at the "INFO" level and returns them to the
@@ -67,7 +67,7 @@ setup_logging <- function(threshold = "INFO", file = NULL,
 
 #' Setup Default Logging
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("stable")`
 #' Sets up default logging. Usage of logging is currently being explored as the
 #' current setup cannot log stan errors or progress.
 #'

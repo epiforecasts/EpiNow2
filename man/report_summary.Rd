@@ -28,7 +28,7 @@ create if not present).}
 A data.table containing formatted and numeric summary measures
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Creates a snapshot summary of estimates. May be removed in later releases as
 S3 methods are enhanced.
 }

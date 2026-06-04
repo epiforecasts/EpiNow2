@@ -1,6 +1,6 @@
 #' Discretised probability mass function
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("stable")`
 #' This function returns the probability mass function of a discretised and
 #' truncated distribution defined by distribution type, maximum value and model
 #' parameters.
@@ -134,7 +134,7 @@ discrete_pmf <- function(distribution =
 
 #' Creates a delay distribution as the sum of two other delay distributions.
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' @return A delay distribution representing the sum of the two delays
 #' @param e1 The first delay distribution (of type <dist_spec>) to
 #' combine.
@@ -223,7 +223,7 @@ discrete_pmf <- function(distribution =
 
 #' Combines multiple delay distributions for further processing
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This combines the parameters so that they can be fed as multiple delay
 #' distributions to [epinow()] or [estimate_infections()].
 #'
@@ -290,7 +290,7 @@ c.dist_spec <- function(...) {
 
 #' Returns the mean of one or more delay distribution
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This works out the mean of all the (parametric / nonparametric) delay
 #' distributions combined in the passed <dist_spec>.
 #'
@@ -368,7 +368,7 @@ sd <- function(x, ...) {
 #' Returns the standard deviation of one or more delay distribution
 #'
 #' @name sd
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This works out the standard deviation of all the (parametric /
 #' nonparametric) delay distributions combined in the passed <dist_spec>.
 #' If any of the parameters are themselves uncertain then `NA` is returned.
@@ -438,7 +438,7 @@ sd.default <- function(x, ...) {
 
 #' Returns the maximum of one or more delay distribution
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This works out the maximum of all the (parametric / nonparametric) delay
 #' distributions combined in the passed <dist_spec> (ignoring any uncertainty
 #' in parameters)
@@ -490,7 +490,7 @@ discretise <- function(x, ...) {
 #' Discretise a <dist_spec>
 #'
 #' @name discretise
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #'
 #' @inherit discrete_pmf sections references
 #' @param x A `<dist_spec>`
@@ -592,7 +592,7 @@ collapse <- function(x, ...) {
 #' Collapse nonparametric distributions in a <dist_spec>
 #'
 #' @name collapse
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This convolves any consecutive nonparametric distributions contained
 #' in the <dist_spec>.
 #' @param x A `<dist_spec>`
@@ -654,7 +654,7 @@ collapse.multi_dist_spec <- function(x, ...) {
 
 #' Prints the parameters of one or more delay distributions
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This displays the parameters of the uncertain and probability mass
 #' functions of fixed delay distributions combined in the passed <dist_spec>.
 #' @param x The `<dist_spec>` to use
@@ -738,7 +738,7 @@ print.dist_spec <- function(x, ...) {
 
 #' Plot PMF and CDF for a dist_spec object
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This function takes a `<dist_spec>` object and plots its probability mass
 #' function (PMF) and cumulative distribution function (CDF) using `{ggplot2}`.
 #'
@@ -857,7 +857,7 @@ plot.dist_spec <- function(x, samples = 50L, res = 1, cumulative = TRUE, ...) {
 
 #' Extract a single element of a composite `<dist_spec>`
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' @param x A composite `dist_spec` object
 #' @param i The index to extract
 #' @importFrom cli cli_abort
@@ -901,7 +901,7 @@ fix_parameters <- function(x, ...) {
 #' Fix the parameters of a `<dist_spec>`
 #'
 #' @name fix_parameters
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' If the given `<dist_spec>` has any uncertainty, it is removed and the
 #' corresponding distribution converted into a fixed one.
 #' @return A `<dist_spec>` object without uncertainty
@@ -979,7 +979,7 @@ is_constrained <- function(x, ...) {
 #' CDF cutoff.
 #'
 #' @name is_constrained
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #'
 #' @param x A `<dist_spec>`
 #' @param ... ignored
@@ -1017,7 +1017,7 @@ is_constrained.multi_dist_spec <- function(x, ...) {
   all(constrained)
 }
 
-#' @description
+#' @description `r lifecycle::badge("stable")`
 #' Constructors for the probability distributions supported by
 #' EpiNow2 as `dist_spec` objects.
 #'
@@ -1260,7 +1260,7 @@ nonparametric_pmf_data <- function(x, i, samples) {
 
 #' Get the names of the natural parameters of a distribution
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' These are the parameters used in the stan models. All other parameter
 #' representations are converted to these using [convert_to_natural()] before
 #' being passed to the stan models.
@@ -1285,7 +1285,7 @@ natural_params <- function(distribution) {
 
 #' Get distribution name from primarycensored Stan dist_id
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' Maps a primarycensored Stan distribution ID back to an EpiNow2
 #' distribution name.
 #' Builds a reverse lookup from
@@ -1311,7 +1311,7 @@ dist_id_to_name <- function(dist_id) {
 
 #' Get the lower bounds of the parameters of a distribution
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This is used to avoid sampling parameter values that have no support.
 #' @return A numeric vector, the lower bounds.
 #' @inheritParams natural_params
@@ -1334,7 +1334,7 @@ lower_bounds <- function(distribution) {
 
 #' Define bounds of a `<dist_spec>`
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This sets attributes for further processing
 #' @param x A `<dist_spec>`.
 #' @param max Numeric, maximum value of the distribution. The distribution will
@@ -1373,7 +1373,7 @@ bound_dist <- function(x, max = Inf, cdf_cutoff = 0) {
 }
 
 #' Extract parameter names
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' Internal function for extracting given parameter names of a distribution
 #' from the environment. Called by `new_dist_spec`
 #'
@@ -1401,7 +1401,7 @@ extract_params <- function(params, distribution) {
 #' Internal function for generating a `dist_spec` given parameters and a
 #' distribution.
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This will convert all parameters to natural parameters before generating
 #' a `dist_spec`. If they have uncertainty this will be done using sampling.
 #' @param params Parameters of the distribution (including `max`)
@@ -1512,7 +1512,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
 
 #' Internal function for converting parameters to natural parameters.
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This is used for preprocessing before generating a `dist_spec` object
 #' from a given set of parameters and distribution
 #' @param params A numerical named parameter vector
@@ -1655,7 +1655,7 @@ get_element <- function(x, id = NULL, element) {
 
 ##' Get parameters from distributions or fitted models
 ##'
-##' @description `r lifecycle::badge("experimental")`
+##' @description `r lifecycle::badge("stable")`
 ##' Generic function to extract parameters. For `dist_spec` objects, extracts
 ##' the distribution parameters (e.g., shape and rate for Gamma). For fitted
 ##' model objects, extracts estimated parameters and delays as `dist_spec`
@@ -1705,7 +1705,7 @@ get_parameters.dist_spec <- function(x, id = NULL, ...) {
 ##' Get the probability mass function of a nonparametric distribution
 ##'
 ##' @inheritParams get_element
-##' @description `r lifecycle::badge("experimental")`
+##' @description `r lifecycle::badge("stable")`
 ##' @return The pmf of the distribution
 ##' @importFrom cli cli_abort
 ##' @export
@@ -1734,7 +1734,7 @@ get_pmf <- function(x, id = NULL) {
 ##' Get the distribution of a `<dist_spec>`
 ##'
 ##' @inheritParams get_element
-##' @description `r lifecycle::badge("experimental")`
+##' @description `r lifecycle::badge("stable")`
 ##' @importFrom cli cli_abort
 ##' @return A character string naming the distribution (or "nonparametric")
 ##' @export

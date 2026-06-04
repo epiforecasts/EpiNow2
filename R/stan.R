@@ -1,5 +1,6 @@
 #' Load and compile an EpiNow2 cmdstanr model
 #'
+#' @description `r lifecycle::badge("stable")`
 #' The function has been adapted from a similar function in the epinowcast
 #' package (Copyright holder: epinowcast authors, under MIT License).
 #'

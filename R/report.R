@@ -1,5 +1,5 @@
 #' Provide Summary Statistics for Estimated Infections and Rt
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("stable")`
 #' Creates a snapshot summary of estimates. May be removed in later releases as
 #' S3 methods are enhanced.
 #'
@@ -113,7 +113,7 @@ report_summary <- function(summarised_estimates,
 
 #' Report plots
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("stable")`
 #' Returns key summary plots for estimates. May be depreciated in later
 #' releases as current S3 methods are enhanced.
 #'

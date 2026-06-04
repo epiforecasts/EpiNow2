@@ -13,7 +13,7 @@ natural_params(distribution)
 A character vector, the natural parameters.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 These are the parameters used in the stan models. All other parameter
 representations are converted to these using \code{\link[=convert_to_natural]{convert_to_natural()}} before
 being passed to the stan models.

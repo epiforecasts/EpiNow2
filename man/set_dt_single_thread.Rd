@@ -10,6 +10,7 @@ set_dt_single_thread()
 an environment in the parent frame named "dt_settings"
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This function sets the threads used by \code{{data.table}} to 1 in the parent
 function and then restores the initial \code{{data.table}} threads when the
 function exits. This is primarily used as an internal function inside of

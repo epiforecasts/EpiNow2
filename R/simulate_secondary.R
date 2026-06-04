@@ -1,8 +1,10 @@
 #' Simulate secondary observations from primary observations
 #'
+#' @description `r lifecycle::badge("stable")`
 #' Simulations are done from a given trajectory of primary observations by
 #' applying any given delays and observation parameters.
 #'
+#' @details
 #' In order to simulate, all parameters that are specified such as the mean and
 #' standard deviation of delays or observation scaling, must be fixed.
 #' Uncertain parameters are not allowed.

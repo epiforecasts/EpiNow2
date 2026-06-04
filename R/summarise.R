@@ -1,6 +1,6 @@
 #' Summarise Real-time Results
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("stable")`
 #' Used internally by `regional_summary` to produce a summary table of results.
 #' May be streamlined in later releases.
 #'
@@ -139,7 +139,7 @@ summarise_results <- function(regions,
 
 #' Regional Summary Output
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("stable")`
 #' Used to produce summary output either internally in `regional_epinow` or
 #'  externally.
 #' @param summary_dir A character string giving the directory
@@ -426,7 +426,7 @@ regional_summary <- function(regional_output = NULL,
 
 #' Summarise rt and cases
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("stable")`
 #' Produces summarised `<data.frame>`s of output across regions.
 #' Used internally by `regional_summary`.
 #'
@@ -521,7 +521,7 @@ summarise_key_measures <- function(regional_results = NULL,
 
 #' Summarise Regional Runtimes
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("stable")`
 #' Used internally by `regional_epinow` to summarise region run times.
 #'
 #' @seealso [regional_summary()] [regional_epinow()]

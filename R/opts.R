@@ -954,7 +954,7 @@ forecast_opts <- function(horizon = 7, accumulate) {
 
 #' Forecast optiong
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("stable")`
 #' Define a list of `_opts()` to pass to [regional_epinow()] `_opts()` accepting
 #' arguments. This is useful when different settings are needed between regions
 #' within a single [regional_epinow()] call. Using [opts_list()] the defaults
@@ -1002,7 +1002,7 @@ opts_list <- function(opts, reported_cases, ...) {
 
 #' Filter Options for a Target Region
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("stable")`
 #' A helper function that allows the selection of region specific settings if
 #' present and otherwise applies the overarching settings.
 #'

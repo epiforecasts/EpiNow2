@@ -333,7 +333,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 
 #' Plot method for estimate_secondary
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' `plot` method for class "estimate_secondary".
 #'
 #' @param x A list of output as produced by `estimate_secondary`
@@ -428,11 +428,13 @@ plot.forecast_secondary <- function(x, primary = FALSE,
 
 #' Convolve and scale a time series
 #'
+#' @description `r lifecycle::badge("stable")`
 #' This applies a lognormal convolution with given, potentially time-varying
 #' parameters representing the parameters of the lognormal distribution used for
 #' the convolution and an optional scaling factor. This is akin to the model
 #' used in [estimate_secondary()] and [simulate_secondary()].
 #'
+#' @details
 #' Up to version 1.4.0 this function was called [simulate_secondary()].
 #'
 #' @param data A `<data.frame>` containing the `date` of report and `primary`
@@ -543,7 +545,7 @@ convolve_and_scale <- function(data, type = c("incidence", "prevalence"),
 
 #' Forecast Secondary Observations Given a Fit from estimate_secondary
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description `r lifecycle::badge("stable")`
 #' This function forecasts secondary observations using the output of
 #' [estimate_secondary()] and either observed primary data or a forecast of
 #' primary observations. See the examples of [estimate_secondary()]

@@ -89,7 +89,7 @@ An \verb{<estimate_infections>} object containing:
 }
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Uses a non-parametric approach to reconstruct cases by date of infection
 from reported cases. It uses either a generative Rt model or non-parametric
 back calculation to estimate underlying latent infections and then maps

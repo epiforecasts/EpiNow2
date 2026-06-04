@@ -29,7 +29,7 @@ run with error catching.}
 A stan model object
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Fits a stan model using \code{\link[rstan:sampling]{rstan::sampling()}}. Provides the optional ability to
 run chains using \code{future} with error catching, timeouts and merging of
 completed chains.

@@ -99,7 +99,7 @@ map_prob_change <- function(var) {
 
 #' Convert Growth Rates to Reproduction numbers.
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("stable")`
 #' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
 #' for justification. Now handled internally by stan so may be removed in
 #' future updates if no user demand.
@@ -120,7 +120,7 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
 
 #' Convert Reproduction Numbers to Growth Rates
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("stable")`
 #' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
 #' for justification. Now handled internally by stan so may be removed in
 #' future updates if no user demand.
@@ -365,6 +365,7 @@ add_day_of_week <- function(dates, week_effect = 7) {
 
 #' Set to Single Threading
 #'
+#' @description `r lifecycle::badge("stable")`
 #' This function sets the threads used by `{data.table}` to 1 in the parent
 #' function and then restores the initial `{data.table}` threads when the
 #' function exits. This is primarily used as an internal function inside of

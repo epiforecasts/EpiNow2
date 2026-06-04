@@ -216,6 +216,7 @@ extract_delays <- function(samples, args) {
 
 #' Extract all samples from a stan fit
 #'
+#' @description `r lifecycle::badge("stable")`
 #' If the `object` argument is a `<stanfit>` object, it simply returns the
 #' result of [rstan::extract()]. If it is a `<CmdStanMCMC>` it returns samples
 #' in the same format as [rstan::extract()] does for `<stanfit>` objects.

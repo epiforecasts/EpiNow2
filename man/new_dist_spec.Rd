@@ -23,7 +23,7 @@ removed. Default: \code{0}, i.e. use the full distribution.}
 A \code{dist_spec} of the given specification.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This will convert all parameters to natural parameters before generating
 a \code{dist_spec}. If they have uncertainty this will be done using sampling.
 }

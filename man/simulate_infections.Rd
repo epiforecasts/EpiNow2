@@ -113,6 +113,7 @@ A data.table of simulated infections (variable \code{infections}) and
 reported cases (variable \code{reported_cases}) by date.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Simulations are done from given initial infections and, potentially
 time-varying, reproduction numbers. Delays and parameters of the observation
 model can be specified using the same options as in \code{\link[=estimate_infections]{estimate_infections()}}.

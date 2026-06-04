@@ -77,7 +77,7 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
 
 #' Estimate Cases by Report Date
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("stable")`
 #' Either extracts or converts reported cases from an input data table. For
 #' output from `estimate_infections` this is a simple filtering step.
 #'
@@ -128,7 +128,7 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
 
 #' Copy Results From Dated Folder to Latest
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("stable")`
 #' Copies output from the dated folder to a latest folder. May be undergo
 #' changes in later releases.
 #'
