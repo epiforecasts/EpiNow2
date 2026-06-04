@@ -17,7 +17,6 @@ specified.}
 A list containing the path to the dated folder and the latest folder
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Sets up a folders for saving results
 }
 \keyword{internal}

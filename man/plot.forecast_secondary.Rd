@@ -23,6 +23,5 @@ output.}
 \item{...}{Pass additional arguments to plot function. Not currently in use.}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Plot method for forecast secondary observations.
 }

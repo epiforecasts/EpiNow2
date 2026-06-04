@@ -18,6 +18,5 @@ A \verb{<data.table>} with summary statistics for the truncation
 distribution parameters.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Returns parameter summary statistics for the fitted truncation model.
 }

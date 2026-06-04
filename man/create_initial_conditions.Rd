@@ -15,7 +15,6 @@ create_initial_conditions(stan_data, params)
 An initial condition generating function
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Uses the output of \code{\link[=create_stan_data]{create_stan_data()}} to create a function which can be
 used to sample from the prior distributions (or as close as possible) for
 parameters. Used in order to initialise each stan chain within a range of

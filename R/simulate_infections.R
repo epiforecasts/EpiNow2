@@ -1,11 +1,9 @@
 #' Simulate infections using the renewal equation
 #'
-#' @description `r lifecycle::badge("stable")`
 #' Simulations are done from given initial infections and, potentially
 #' time-varying, reproduction numbers. Delays and parameters of the observation
 #' model can be specified using the same options as in [estimate_infections()].
 #'
-#' @details
 #' In order to simulate, all parameters that are specified such as the mean and
 #' standard deviation of delays or observation scaling, must be fixed.
 #' Uncertain parameters are not allowed.
@@ -254,7 +252,7 @@ simulate_infections <- function(R,
 #' Forecast infections from a given fit and trajectory of the time-varying
 #' reproduction number
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' This function simulates infections using an existing fit to observed cases
 #' but with a modified time-varying reproduction number. This can be used to
 #' explore forecast models or past counterfactuals. Simulations can be run in

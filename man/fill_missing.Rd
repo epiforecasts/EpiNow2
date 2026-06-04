@@ -65,7 +65,6 @@ values are accumulated (see the documentation of the \code{data} argument in
 \code{\link[=estimate_infections]{estimate_infections()}})
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This function ensures that all days between the first and last date in the
 data are present. It adds an \code{accumulate} column that indicates whether
 modelled observations should be accumulated onto a later data point.

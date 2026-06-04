@@ -17,7 +17,7 @@ combine.}
 A delay distribution representing the sum of the two delays
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Creates a delay distribution as the sum of two other delay distributions.
 }
 \examples{
 # A fixed lognormal distribution with mean 5 and sd 1.

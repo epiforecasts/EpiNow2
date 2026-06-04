@@ -26,7 +26,6 @@ output.}
 A \code{ggplot} object.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 \code{plot} method for class "estimate_secondary".
 }
 \seealso{

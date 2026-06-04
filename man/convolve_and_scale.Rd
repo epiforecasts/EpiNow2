@@ -44,7 +44,6 @@ A \verb{<data.frame>} containing simulated data in the format required by
 \code{\link[=estimate_secondary]{estimate_secondary()}}.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This applies a lognormal convolution with given, potentially time-varying
 parameters representing the parameters of the lognormal distribution used for
 the convolution and an optional scaling factor. This is akin to the model

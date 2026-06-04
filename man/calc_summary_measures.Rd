@@ -25,7 +25,6 @@ all \code{summarise_by} variables.}
 A data.table containing summary statistics by group.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Calculate summary statistics and credible intervals from a \verb{<data.frame>} by
 group.
 }

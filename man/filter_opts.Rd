@@ -16,7 +16,6 @@ call to an \verb{_opts()} function.}
 A list of options
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 A helper function that allows the selection of region specific settings if
 present and otherwise applies the overarching settings.
 }

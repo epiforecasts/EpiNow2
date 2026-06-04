@@ -57,7 +57,6 @@ kernel. They are only used if \code{kernel} is set to "periodic".}
 A \verb{<gp_opts>} object of settings defining the Gaussian process
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the structure of the approximate Gaussian
 process. Custom settings can be supplied which override the defaults.
 }

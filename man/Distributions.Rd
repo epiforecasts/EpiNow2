@@ -76,7 +76,6 @@ A \code{dist_spec} representing a distribution of the given
 specification.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Constructors for the probability distributions supported by
 EpiNow2 as \code{dist_spec} objects.
 }

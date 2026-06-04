@@ -23,6 +23,5 @@ produced by \code{\link[=extract_CrIs]{extract_CrIs()}}.}
 A \code{{ggplot2}} plot.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Adds credible intervals to a plot, either as ribbons or error bars.
 }

@@ -39,8 +39,6 @@ A \verb{<data.frame>} of summary output, either a snapshot summary
 \code{\link[=calc_summary_measures]{calc_summary_measures()}}).
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-
 This function creates summary output from infection estimation objects
 (either \code{estimate_infections} or \code{forecast_infections}). It is used
 internally by \code{\link[=summary.estimate_infections]{summary.estimate_infections()}} and

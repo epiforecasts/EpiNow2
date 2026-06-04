@@ -55,7 +55,6 @@ be returned by the model.}
 An \verb{<obs_opts>} object of observation model settings.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the structure of the observation
 model. Custom settings can be supplied which override the defaults.
 }

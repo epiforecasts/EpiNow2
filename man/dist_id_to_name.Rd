@@ -13,7 +13,6 @@ dist_id_to_name(dist_id)
 A character string distribution name.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Maps a primarycensored Stan distribution ID back to an EpiNow2
 distribution name.
 Builds a reverse lookup from

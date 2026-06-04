@@ -32,7 +32,7 @@ NULL (default) no such grouping is done.}
 A data.table with leading zeros removed.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Filter leading zeros from a data set.
 }
 \examples{
 cases <- data.frame(

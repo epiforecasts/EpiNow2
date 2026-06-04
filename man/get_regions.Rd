@@ -14,6 +14,6 @@ are stored (as produced by \code{\link[=regional_epinow]{regional_epinow()}}).}
 A named character vector containing the results to plot.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Get Folders with Results
 }
 \keyword{internal}

@@ -14,7 +14,6 @@ define the back calculation. Defaults to \code{\link[=backcalc_opts]{backcalc_op
 A list of settings defining the Gaussian process
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Takes the output of \code{\link[=backcalc_opts]{backcalc_opts()}} and converts it into a list understood
 by stan.
 }

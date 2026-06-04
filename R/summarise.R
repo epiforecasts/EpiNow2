@@ -1,6 +1,6 @@
 #' Summarise Real-time Results
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Used internally by `regional_summary` to produce a summary table of results.
 #' May be streamlined in later releases.
 #'
@@ -139,7 +139,7 @@ summarise_results <- function(regions,
 
 #' Regional Summary Output
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Used to produce summary output either internally in `regional_epinow` or
 #'  externally.
 #' @param summary_dir A character string giving the directory
@@ -426,7 +426,7 @@ regional_summary <- function(regional_output = NULL,
 
 #' Summarise rt and cases
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Produces summarised `<data.frame>`s of output across regions.
 #' Used internally by `regional_summary`.
 #'
@@ -521,7 +521,7 @@ summarise_key_measures <- function(regional_results = NULL,
 
 #' Summarise Regional Runtimes
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Used internally by `regional_epinow` to summarise region run times.
 #'
 #' @seealso [regional_summary()] [regional_epinow()]
@@ -592,7 +592,7 @@ regional_runtimes <- function(regional_output = NULL,
 
 #' Calculate Credible Interval
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Adds symmetric a credible interval based on quantiles.
 #' @param samples A data.table containing at least a value variable
 #' @param summarise_by A character vector of variables to group by.
@@ -628,7 +628,7 @@ calc_CrI <- function(samples, summarise_by = NULL, CrI = 0.9) {
 
 #' Calculate Credible Intervals
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Adds symmetric credible intervals based on quantiles.
 #'
 #' @param CrIs Numeric vector of credible intervals to calculate.
@@ -671,7 +671,7 @@ calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
 
 #' Extract Credible Intervals Present
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Helper function to extract the credible intervals present in a
 #' `<data.frame>`.
 #' @param summarised A `<data.frame>` as processed by `calc_CrIs`
@@ -693,7 +693,7 @@ extract_CrIs <- function(summarised) {
 
 #' Calculate Summary Statistics
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Calculate summary statistics from a `<data.frame>` by group.
 #' Currently supports the mean, median and standard deviation.
 #' @return A data.table containing the upper and lower bounds for the specified
@@ -722,7 +722,7 @@ calc_summary_stats <- function(samples, summarise_by = NULL) {
 
 #' Calculate All Summary Measures
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Calculate summary statistics and credible intervals from a `<data.frame>` by
 #' group.
 #'
@@ -769,7 +769,7 @@ calc_summary_measures <- function(samples,
 
 #' Summary output from epinow
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' \code{summary} method for class "epinow". This method inherits from
 #' [summary.estimate_infections()] and supports the same arguments.
 #'
@@ -825,7 +825,7 @@ summary.epinow <- function(object,
 
 #' Summary output from estimate_infections
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' \code{summary} method for class "estimate_infections".
 #'
 #' @param object A list of output as produced by "estimate_infections".
@@ -868,7 +868,7 @@ summary.estimate_infections <- function(object,
 
 #' Summary output from forecast_infections
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' \code{summary} method for class "forecast_infections".
 #'
 #' @param object A list of output as produced by "forecast_infections".
@@ -907,7 +907,7 @@ print.epinowfit <- function(x, ...) {
 
 #' Summarise results from estimate_secondary
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Returns a summary of the fitted secondary model including posterior
 #' parameter estimates with credible intervals.
 #'
@@ -964,7 +964,7 @@ summary.estimate_secondary <- function(object,
 
 #' Summarise results from estimate_truncation
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Returns parameter summary statistics for the fitted truncation model.
 #'
 #' @param object A fitted model object from `estimate_truncation()`

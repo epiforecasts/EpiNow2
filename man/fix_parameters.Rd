@@ -20,7 +20,6 @@ standard deviation from uncertainty given in the \verb{<dist_spec>}}
 A \verb{<dist_spec>} object without uncertainty
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 If the given \verb{<dist_spec>} has any uncertainty, it is removed and the
 corresponding distribution converted into a fixed one.
 }

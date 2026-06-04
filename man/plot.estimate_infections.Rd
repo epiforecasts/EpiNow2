@@ -22,7 +22,6 @@ generated.}
 List of plots as produced by \code{\link[=report_plots]{report_plots()}}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 \code{plot} method for class \verb{<estimate_infections>}.
 }
 \examples{

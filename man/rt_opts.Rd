@@ -93,7 +93,6 @@ An \verb{<rt_opts>} object with settings defining the time-varying
 reproduction number.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the optional arguments for the time-varying
 reproduction number. Custom settings can be supplied which override the
 defaults.

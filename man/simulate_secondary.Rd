@@ -55,7 +55,6 @@ A data.table of simulated secondary observations (column \code{secondary})
 by date.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Simulations are done from a given trajectory of primary observations by
 applying any given delays and observation parameters.
 }

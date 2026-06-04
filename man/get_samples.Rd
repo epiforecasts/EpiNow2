@@ -34,7 +34,6 @@ A \code{data.table} with columns: date, variable, strat, sample, time,
 value, type. Contains all posterior samples for all parameters.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Extracts posterior samples from a fitted model, combining all parameters
 into a single data.table with dates and metadata.
 }

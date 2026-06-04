@@ -1,6 +1,6 @@
 #' Validate data input
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' `check_reports_valid()` checks that the supplied data is a `<data.frame>`,
 #' and that it has the right column names and types. In particular, it checks
 #' that the date column is in date format and does not contain NAs, and that
@@ -53,7 +53,7 @@ check_reports_valid <- function(data,
 
 #' Validate simulation input data frame
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Checks that a data frame intended for simulation has the required `date`
 #' column and a named numeric value column, that the `date` column is in date
 #' format, and that the value column contains non-negative numeric values with
@@ -77,7 +77,7 @@ check_simulation_input <- function(data, value_col) {
 
 #' Validate probability distribution for passing to stan
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' `check_stan_delay()` checks that the supplied data is a `<dist_spec>`,
 #' that it is a supported distribution, and that is has a finite maximum.
 #'
@@ -147,7 +147,7 @@ check_stan_delay <- function(dist) {
 
 #' Validate probability distribution for using as generation time
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' does all the checks in`check_stan_delay()` and additionally makes sure
 #' that if `dist` is nonparametric,  its first element is zero.
 #'

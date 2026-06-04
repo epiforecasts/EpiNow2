@@ -30,7 +30,6 @@ A \verb{<trunc_opts>} object summarising the input truncation
 distribution.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Returns a truncation distribution formatted for usage by
 downstream functions. See \code{\link[=estimate_truncation]{estimate_truncation()}} for an approach to
 estimate these distributions.

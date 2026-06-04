@@ -15,7 +15,7 @@ extract_single_dist(x, i)
 A single \code{dist_spec} object
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Extract a single element of a composite \verb{<dist_spec>}
 }
 \examples{
 dist1 <- LogNormal(mean = 1.6, sd = 0.5, max = 20)

@@ -1,6 +1,6 @@
 #' Clean Nowcasts for a Supplied Date
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' This function removes nowcasts in the format produced by `EpiNow2` from a
 #' target directory for the date supplied.
 #'
@@ -36,7 +36,7 @@ clean_nowcasts <- function(date = Sys.Date(), nowcast_dir = ".") {
 
 #' Format Credible Intervals
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Combines a list of values into formatted credible intervals.
 #'
 #' @param value List of value to map into a string. Requires,
@@ -68,7 +68,7 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 
 #' Categorise the Probability of Change for Rt
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Categorises a numeric variable into "Increasing" (< 0.05),
 #' "Likely increasing" (<0.4), "Stable" (< 0.6),
 #' "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
@@ -99,7 +99,7 @@ map_prob_change <- function(var) {
 
 #' Convert Growth Rates to Reproduction numbers.
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description `r lifecycle::badge("superseded")`
 #' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
 #' for justification. Now handled internally by stan so may be removed in
 #' future updates if no user demand.
@@ -120,7 +120,7 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
 
 #' Convert Reproduction Numbers to Growth Rates
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description `r lifecycle::badge("superseded")`
 #' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
 #' for justification. Now handled internally by stan so may be removed in
 #' future updates if no user demand.
@@ -138,7 +138,7 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 
 #' Allocate Delays into Required Stan Format
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Allocate delays for stan. Used in [delay_opts()].
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
@@ -155,7 +155,7 @@ allocate_delays <- function(delay_var, no_delays) {
 
 #' Allocate Empty Parameters to a List
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Allocate missing parameters to be empty two dimensional arrays. Used
 #' internally by [forecast_infections()].
 #' @param data A list of parameters
@@ -174,7 +174,7 @@ allocate_empty <- function(data, params, n = 0) {
 }
 #' Match User Supplied Arguments with Supported Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Match user supplied arguments with supported options and return a logical
 #' list for internal usage.
 #'
@@ -231,7 +231,7 @@ match_output_arguments <- function(input_args = NULL,
 
 #' Expose internal package stan functions in R
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' his function exposes internal stan functions in R from a user
 #' supplied list of target files. Allows for testing of stan functions in R and
 #' potentially user use in R code.
@@ -265,7 +265,7 @@ expose_stan_fns <- function(files, target_dir, ...) {
 
 #' Convert mean and sd to log mean for a log normal distribution
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Convert from mean and standard deviation to the log mean of the
 #' lognormal distribution. Useful for defining distributions supported by
 #' [estimate_infections()], [epinow()], and [regional_epinow()].
@@ -284,7 +284,7 @@ convert_to_logmean <- function(mean, sd) {
 
 #' Convert mean and sd to log standard deviation for a log normal distribution
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Convert from mean and standard deviation to the log standard deviation of the
 #' lognormal distribution. Useful for defining distributions supported by
 #' [estimate_infections()], [epinow()], and [regional_epinow()].
@@ -365,7 +365,6 @@ add_day_of_week <- function(dates, week_effect = 7) {
 
 #' Set to Single Threading
 #'
-#' @description `r lifecycle::badge("stable")`
 #' This function sets the threads used by `{data.table}` to 1 in the parent
 #' function and then restores the initial `{data.table}` threads when the
 #' function exits. This is primarily used as an internal function inside of

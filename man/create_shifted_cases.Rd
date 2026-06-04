@@ -27,8 +27,6 @@ to apply. Must be odd in order to be defined as a centred average.}
 A \verb{<data.frame>} for shifted reported cases
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-
 This functions creates a data frame of reported cases that has been smoothed
 using a centred partial rolling average (with a period set by
 \code{smoothing_window}) and shifted back in time by some delay. It is used by

@@ -15,7 +15,6 @@
 invisible
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This displays the parameters of the uncertain and probability mass
 functions of fixed delay distributions combined in the passed <dist_spec>.
 }

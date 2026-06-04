@@ -32,7 +32,6 @@ returned.}
 A list of estimates, forecasts and estimated cases by date of report.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Summarises results across regions either from input or from disk. See the
 examples for details.
 }

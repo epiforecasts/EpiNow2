@@ -17,7 +17,6 @@ target folder. As produced by \code{setup_target_folder}.}
 No return value, called for side effects
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Copies output from the dated folder to a latest folder. May be undergo
 changes in later releases.
 }

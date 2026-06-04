@@ -27,7 +27,6 @@ messages be shown.}
 A \code{cmdstanr} model.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 The function has been adapted from a similar function in the epinowcast
 package (Copyright holder: epinowcast authors, under MIT License).
 }

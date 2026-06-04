@@ -28,7 +28,6 @@ prior distributions.}
 Numeric forecast horizon adjusted for the users intention
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Makes sure that a forecast is returned for the user specified time period
 beyond the target date.
 }

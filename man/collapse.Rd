@@ -17,7 +17,6 @@ A \verb{<dist_spec>} where consecutive nonparametric distributions
 have been convolved
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This convolves any consecutive nonparametric distributions contained
 in the <dist_spec>.
 }

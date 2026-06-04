@@ -1,6 +1,6 @@
 ##' Fill missing data in a data set to prepare it for use within the package
 ##'
-##' @description `r lifecycle::badge("stable")`
+##' @description
 ##' This function ensures that all days between the first and last date in the
 ##'   data are present. It adds an `accumulate` column that indicates whether
 ##'   modelled observations should be accumulated onto a later data point.
@@ -244,7 +244,6 @@ add_horizon <- function(data, horizon, accumulate = 1L,
 
 ##' Add breakpoints to certain dates in a data set.
 ##'
-##' @description `r lifecycle::badge("stable")`
 ##' @param dates A vector of dates to use as breakpoints.
 ##' @inheritParams estimate_infections
 ##' @return A data.table with `breakpoint` set to 1 on each of the specified
@@ -273,7 +272,6 @@ add_breakpoints <- function(data, dates = as.Date(character(0))) {
 
 ##' Filter leading zeros from a data set.
 ##'
-##' @description `r lifecycle::badge("stable")`
 ##' @inheritParams estimate_infections
 ##' @inheritParams fill_missing
 ##' @return A data.table with leading zeros removed.

@@ -24,7 +24,6 @@ messages be returned.}
 A list as produced by \code{create_stan_data()}.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This functions allows the user to more easily specify data driven or model
 based priors for \code{\link[=estimate_secondary]{estimate_secondary()}} from example from previous model
 fits using a \verb{<data.frame>} to overwrite other default settings. Note that
