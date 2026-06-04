@@ -160,7 +160,7 @@ These values as well as the prior distributions of relevant parameters can all b
 
 # Modelling the reproduction number
 
-The default `estimate_infections()` model uses [the GP to model the first-order difference of $\log R_t$](estimate_infections.html#time-varying-reproduction-number), with the trajectory itself built by cumulative summation of GP values $\mathrm{GP}_i$. Writing $T_\mathrm{obs}$ for the length of the observation window and $R_1$ for the initial reproduction number, the non-stationary construction is
+The default `estimate_infections()` model uses [the GP to model the first-order difference of $\log R_t$](estimate_infections.html#time-varying-reproduction-number), with the trajectory itself built by cumulative summation of GP values $\mathrm{GP}_i$. Writing $T_\mathrm{obs}$ for the length of the observation window and $R_1$ for the initial reproduction number, this construction is
 
 \begin{equation}
 \log R_t = \log R_1 + \sum_{i = 1}^{t - 1} \mathrm{GP}_i
@@ -168,20 +168,32 @@ The default `estimate_infections()` model uses [the GP to model the first-order 
 
 Without further constraint this parameterisation makes inference difficult: a constant added to $\log R_1$ and subtracted from the cumulative GP path leaves $\log R_t$ unchanged for all $t$, so $R_1$ and the long-run drift of the GP are not jointly identified by the data. The likelihood is flat along this direction (a ridge in the joint posterior), giving the sampler poor geometry and, on some random seeds, stuck chains and large $\hat R$ values.
 
-The standard fix in regression is to centre the predictors so the intercept becomes the response value at the mean of the predictors rather than at zero, which decorrelates the intercept from the slope and gives the sampler a cleaner geometry (this is how [`brms`](https://CRAN.R-project.org/package=brms) parameterises intercepts internally, for example). Here the cumulative GP increments play the role of the slope (they determine the drift of $\log R_t$) and $\log R_1$ plays the role of the intercept; in the uncentred form a constant can be moved between them and every $\log R_t$ is unchanged, which is exactly the ridge above. We apply the same fix to the cumulative GP path: replace $\log R_1$ as the internal parameter with the mean of $\log R_t$ over the observation window, which is well-identified by the data. With $\overline{\mathrm{GP}} = \frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \sum_{i = 1}^{t - 1} \mathrm{GP}_i$ the empirical mean of the cumulative path over the observation window, we sample $\log \overline{R}$ (the mean of $\log R_t$ over the window) and form
+This parallels a common issue in standard regression problems, where the intercept and the slope can trade off against each other unless the predictors are centred. There, a common fix is to [centre the predictors](https://mc-stan.org/docs/stan-users-guide/efficiency-tuning.html#standardizing-predictors) so the intercept becomes the response value at the mean of the predictors rather than at zero, which decorrelates the intercept from the slope and gives the sampler a cleaner geometry; this is how, for example, [`brms`](https://paulbuerkner.com/brms/reference/brmsformula.html#parameterization-of-the-population-level-intercept) parameterises intercepts internally. Here the cumulative GP increments play the role of the slope (they determine the drift of $\log R_t$) and $\log R_1$ plays the role of the intercept; in the uncentred form a constant can be moved between them and every $\log R_t$ is unchanged, which is exactly the ridge above. We apply the same fix to the cumulative GP path: replace $\log R_1$ as the internal parameter with the mean of $\log R_t$ over the observation window, which is well-identified by the data. With
 
 \begin{equation}
-\log R_t = \log \overline{R} + \sum_{i = 1}^{t - 1} \mathrm{GP}_i - \overline{\mathrm{GP}}
+\overline{\mathrm{GP}} = \frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \sum_{i = 1}^{t - 1} \mathrm{GP}_i
 \end{equation}
 
-so that $\frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \log R_t = \log \overline{R}$ by construction, breaking the ridge. Centring only over the observation window (not the forecast horizon) ensures that the fitted historical $R_t$ does not shift when the forecast horizon is changed.
-
-The user's prior on the initial reproduction number is applied to the derived quantity
+the empirical mean of the cumulative path over the observation window, we sample $\overline{\log R}$ (the mean of $\log R_t$ over the observation window) and form
 
 \begin{equation}
-\log R_1 = \log \overline{R} - \overline{\mathrm{GP}}
+\log R_t = \overline{\log R} + \sum_{i = 1}^{t - 1} \mathrm{GP}_i - \overline{\mathrm{GP}}
 \end{equation}
 
-via a change of variables. The transformation from $(\log \overline{R}, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ to $(\log R_1, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ is a pure shift, so its Jacobian determinant is one. The user's prior is a density on $R_1$ on the natural scale, so the only Jacobian term required is $\log R_1$, for the transform between $R_1$ and $\log R_1$.
+so that
+
+\begin{equation}
+\frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \log R_t = \overline{\log R}
+\end{equation}
+
+by construction, breaking the ridge. Centring only over the observation window (not the forecast horizon) ensures that the fitted historical $R_t$ does not shift when the forecast horizon is changed.
+
+The user's prior on the initial reproduction number is then applied to the derived quantity
+
+\begin{equation}
+\log R_1 = \overline{\log R} - \overline{\mathrm{GP}}
+\end{equation}
+
+via a [change of variables](https://mc-stan.org/docs/stan-users-guide/reparameterization.html#changes-of-variables). The transformation from $(\overline{\log R}, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ to $(\log R_1, \mathrm{GP}_1, \dots, \mathrm{GP}_{T_\mathrm{obs} - 1})$ is a pure shift, so its Jacobian determinant is one. The user's prior is a density on $R_1$ on the natural scale, so the only Jacobian term required is $\log R_1$, for the transform between $R_1$ and $\log R_1$.
 
 # References
