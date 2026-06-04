@@ -204,4 +204,8 @@ via a [change of variables](https://mc-stan.org/docs/stan-users-guide/reparamete
 
 so we need to add a Jacobian correction of $\log R_1$ to the target log density.
 
+## Breakpoints
+
+The same identifiability argument applies to any cumulative time-varying contribution to $\log R_t$. When breakpoints are used (see `rt_opts(breakpoints = ...)` and the [breakpoint random walk option](estimate_infections.html#time-varying-reproduction-number)), the cumulative path of breakpoint effects produces an analogous ridge in the joint posterior with $\log R_1$. The breakpoint path is therefore centred over the observation window in the same way as the cumulative GP path above, alongside (or instead of) it, so that $\overline{\log R}$ remains the well-identified internal parameter regardless of which time-varying components are active.
+
 # References
