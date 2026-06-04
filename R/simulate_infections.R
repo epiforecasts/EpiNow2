@@ -280,7 +280,7 @@ simulate_infections <- function(R,
 #' @param verbose Logical defaults to [interactive()]. If the `progressr`
 #' package is available, a progress bar will be shown.
 #' @inheritParams stan_opts
-#' @importFrom rstan extract sampling
+#' @importFrom rstan sampling
 #' @importFrom purrr list_transpose map safely compact
 #' @importFrom data.table rbindlist as.data.table
 #' @importFrom lubridate days
@@ -351,8 +351,8 @@ forecast_infections <- function(estimates,
   assert_integerish(samples, lower = 1, null.ok = TRUE)
   assert_integerish(batch_size, lower = 2)
   assert_logical(verbose)
-  ## extract samples from given stanfit object
-  draws <- extract(estimates$fit,
+  ## extract samples from given stan fit object (rstan or cmdstanr backend)
+  draws <- extract_samples(estimates$fit,
     pars = c(
       "noise", "eta", "lp__", "infections",
       "reports", "imputed_reports", "r",
