@@ -160,13 +160,13 @@ These values as well as the prior distributions of relevant parameters can all b
 
 # Modelling the reproduction number
 
-The default `estimate_infections()` model uses the GP to model the first-order difference of $\log R_t$, with the trajectory itself built by cumulative summation of GP values $\mathrm{GP}_i$ (see the [Time-varying reproduction number section](estimate_infections.html#time-varying-reproduction-number) of the model description vignette). Writing $T_\mathrm{obs}$ for the length of the observation window and $R_1$ for the initial reproduction number, the non-stationary construction is
+The default `estimate_infections()` model uses [the GP to model the first-order difference of $\log R_t$](estimate_infections.html#time-varying-reproduction-number), with the trajectory itself built by cumulative summation of GP values $\mathrm{GP}_i$. Writing $T_\mathrm{obs}$ for the length of the observation window and $R_1$ for the initial reproduction number, the non-stationary construction is
 
 \begin{equation}
 \log R_t = \log R_1 + \sum_{i = 1}^{t - 1} \mathrm{GP}_i
 \end{equation}
 
-Without further constraint this parameterisation has a ridge in the joint posterior: a constant added to $\log R_1$ and subtracted from the cumulative GP path leaves $\log R_t$ unchanged for all $t$, so $R_1$ and the long-run drift of the GP are not jointly identified, with poor sampler geometry and, on some random seeds, stuck chains and large $\hat R$ as a consequence.
+Without further constraint this parameterisation makes inference difficult: a constant added to $\log R_1$ and subtracted from the cumulative GP path leaves $\log R_t$ unchanged for all $t$, so $R_1$ and the long-run drift of the GP are not jointly identified by the data. The likelihood is flat along this direction (a ridge in the joint posterior), giving the sampler poor geometry and, on some random seeds, stuck chains and large $\hat R$ values.
 
 The standard fix in regression is to centre the predictors so the intercept becomes the response value at the mean of the predictors rather than at zero, which decorrelates the intercept from the slope and gives the sampler a cleaner geometry (this is how [`brms`](https://CRAN.R-project.org/package=brms) parameterises intercepts internally, for example). Here the cumulative GP increments play the role of the slope (they determine the drift of $\log R_t$) and $\log R_1$ plays the role of the intercept; in the uncentred form a constant can be moved between them and every $\log R_t$ is unchanged, which is exactly the ridge above. We apply the same fix to the cumulative GP path: replace $\log R_1$ as the internal parameter with the mean of $\log R_t$ over the observation window, which is well-identified by the data. With $\overline{\mathrm{GP}} = \frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \sum_{i = 1}^{t - 1} \mathrm{GP}_i$ the empirical mean of the cumulative path over the observation window, we sample $\log \overline{R}$ (the mean of $\log R_t$ over the window) and form
 
