@@ -22,6 +22,10 @@ The `estimate_truncation()` model infers parameters of the underlying delay dist
 This can be thought of as a Bayesian form of the chain-ladder nowcasting approach implemented in the [baselinenowcast](https://package.epinowcast.org/baselinenowcast/) package, with the added benefit of joint uncertainty quantification and delay estimation.
 For settings requiring time-varying delays or more detailed reporting structure, see the [epinowcast](https://package.epinowcast.org) package.
 
+Both `estimate_truncation()` and `estimate_dist()` return a delay distribution that downstream functions such as `estimate_infections()`, `estimate_secondary()`, or a further call to `estimate_truncation()` can consume, but they differ in the data they expect and the question they answer.
+`estimate_truncation()` takes successive snapshots of aggregate count data (a reporting triangle), while `estimate_dist()` takes individual-level (linelist) data with primary and secondary event dates.
+`estimate_truncation()` also fits an observation and uncertainty model on top of the delay, whereas `estimate_dist()` estimates the delay distribution alone; as a rough decision rule, reach for `estimate_dist()` when you have a linelist and only the delay matters, and for `estimate_truncation()` when you have a reporting triangle and the observation noise is itself part of the question.
+
 ## Model
 
 Given snapshots $C^{i}_{t}$ reflecting reported counts for time $t$ where $i=1\ldots S$ is in order of recency (earliest snapshots first) and $S$ is the number of past snapshots used for estimation, we infer the parameters $\boldsymbol{\theta}$ of a discrete truncation distribution with cumulative mass function $Z(\tau | \boldsymbol{\theta})$.
