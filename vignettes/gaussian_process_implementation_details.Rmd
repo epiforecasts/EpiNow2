@@ -160,7 +160,7 @@ These values as well as the prior distributions of relevant parameters can all b
 
 # Modelling the reproduction number
 
-The default `estimate_infections()` model uses the GP to model the first-order difference of $\log R_t$, with the trajectory itself built by cumulative summation of GP values $\mathrm{GP}_i$. Writing $T_\mathrm{obs}$ for the length of the observation window and $R_1$ for the initial reproduction number, the non-stationary construction is
+The default `estimate_infections()` model uses the GP to model the first-order difference of $\log R_t$, with the trajectory itself built by cumulative summation of GP values $\mathrm{GP}_i$ (see the [Time-varying reproduction number section](estimate_infections.html#time-varying-reproduction-number) of the model description vignette). Writing $T_\mathrm{obs}$ for the length of the observation window and $R_1$ for the initial reproduction number, the non-stationary construction is
 
 \begin{equation}
 \log R_t = \log R_1 + \sum_{i = 1}^{t - 1} \mathrm{GP}_i
