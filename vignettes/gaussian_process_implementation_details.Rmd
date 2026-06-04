@@ -194,6 +194,12 @@ The user's prior on the initial reproduction number is then applied to the deriv
 R_1 = \exp(\overline{\log R} - \overline{\mathrm{GP}})
 \end{equation}
 
-via a [change of variables](https://mc-stan.org/docs/stan-users-guide/reparameterization.html#changes-of-variables). With the GP increments held fixed, the Jacobian of this transform from $\overline{\log R}$ to $R_1$ is $|dR_1 / d\overline{\log R}| = R_1$, so the log-Jacobian correction added to the target is $\log R_1$.
+via a [change of variables](https://mc-stan.org/docs/stan-users-guide/reparameterization.html#changes-of-variables). With the GP increments held fixed, the Jacobian of this transform from $\overline{\log R}$ to $R_1$ is
+
+\begin{equation}
+\left| \frac{d R_1}{d \overline{\log R}} \right| = R_1
+\end{equation}
+
+so the log-Jacobian correction added to the target is $\log R_1$.
 
 # References
