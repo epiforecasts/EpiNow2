@@ -171,19 +171,19 @@ Without further constraint this parameterisation makes inference difficult: a co
 This parallels a common issue in standard regression problems, where the intercept and the slope can trade off against each other unless the predictors are centred. There, a common fix is to [centre the predictors](https://mc-stan.org/docs/stan-users-guide/efficiency-tuning.html#standardizing-predictors) so the intercept becomes the response value at the mean of the predictors rather than at zero, which decorrelates the intercept from the slope and gives the sampler a cleaner geometry; this is how, for example, [`brms`](https://paulbuerkner.com/brms/reference/brmsformula.html#parameterization-of-the-population-level-intercept) parameterises intercepts internally. Here the cumulative GP increments play the role of the slope (they determine the drift of $\log R_t$) and $\log R_1$ plays the role of the intercept; in the uncentred form a constant can be moved between them and every $\log R_t$ is unchanged, which is exactly the ridge above. We apply the same fix to the cumulative GP path: replace $\log R_1$ as the internal parameter with the mean of $\log R_t$ over the observation window, which is well-identified by the data. With
 
 \begin{equation}
-\overline{\mathrm{GP}} = \frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \sum_{i = 1}^{t - 1} \mathrm{GP}_i
+\overline{\mathrm{GP}} = \frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \sum_{i = 1}^{t - 1} \mathrm{GP}_i = \frac{1}{T_\mathrm{obs}} \sum_{i = 1}^{T_\mathrm{obs} - 1} (T_\mathrm{obs} - i) \, \mathrm{GP}_i
 \end{equation}
 
-the empirical mean of the cumulative path over the observation window, we sample $\overline{\log R}$ (the mean of $\log R_t$ over the observation window) and form
+the empirical mean of the cumulative path over the observation window (each $\mathrm{GP}_i$ enters the cumulative sum for every $t \geq i + 1$, hence the linearly decreasing weight in the second form), we sample $\overline{\log R}$ (the mean of $\log R_t$ over the observation window) and form
 
 \begin{equation}
 \log R_t = \overline{\log R} + \sum_{i = 1}^{t - 1} \mathrm{GP}_i - \overline{\mathrm{GP}}
 \end{equation}
 
-so that
+where
 
 \begin{equation}
-\frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \log R_t = \overline{\log R}
+\overline{\log R} = \frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \log R_t
 \end{equation}
 
 by construction, breaking the ridge. Centring only over the observation window (not the forecast horizon) ensures that the fitted historical $R_t$ does not shift when the forecast horizon is changed.
