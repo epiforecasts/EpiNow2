@@ -39,10 +39,10 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
     vector[bp_n + 1] bp0;
     bp0[1] = 0;
     bp0[2:(bp_n + 1)] = cumulative_sum(bp_effects);
-    vector[t] bp_path = bp0[bps];
+    vector[t] bp = bp0[bps];
     // Centre over the observation window (same identifiability fix as the GP below).
-    bp_path -= mean(bp_path[1:n_centre]);
-    logR = logR + bp_path;
+    bp -= mean(bp[1:n_centre]);
+    logR = logR + bp;
   }
   //initialise gaussian process
   if (gp_n) {
@@ -56,9 +56,7 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
     } else {
       gp[2:(gp_n + 1)] = noise;
       gp = cumulative_sum(gp);
-      // Centre over the observation window in the same way as the
-      // breakpoint path above, removing the (R0, drift) ridge in the joint
-      // posterior for the cumulative GP.
+      // Centre over the observation window (same identifiability fix as the BP above).
       gp -= mean(gp[1:n_centre]);
     }
     logR = logR + gp;
