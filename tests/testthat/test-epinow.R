@@ -174,6 +174,35 @@ test_that("epinow can produce partial output as specified", {
   expect_true(!is.null(summary(out)))
 })
 
+test_that("epinow propagates target_date into the forecast horizon", {
+  skip_integration()
+  max_date <- max(reported_cases$date)
+  extra_days <- 3
+  target_date <- as.character(max_date + extra_days)
+  base_horizon <- 7
+  expected_horizon <- base_horizon + extra_days
+
+  output <- capture.output(suppressMessages(suppressWarnings(
+    out <- epinow(
+      data = reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      forecast = forecast_opts(horizon = base_horizon),
+      stan = stan_opts(
+        samples = 25, warmup = 25,
+        cores = 1, chains = 1,
+        control = list(adapt_delta = 0.8)
+      ),
+      target_date = target_date,
+      logs = NULL, verbose = FALSE
+    )
+  )))
+
+  expect_equal(out$args$horizon, expected_horizon)
+  reported <- estimates_by_report_date(out)$summarised
+  expect_equal(max(reported$date), as.Date(target_date) + base_horizon)
+})
+
 test_that("epinow fails as expected when given a short timeout", {
   skip_integration()
   expect_error(suppressWarnings(x <- epinow(

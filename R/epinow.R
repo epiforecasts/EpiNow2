@@ -176,7 +176,9 @@ epinow <- function(data,
     save_input(reported_cases, target_folder)
 
     # make sure the horizon is as specified from the target date --------------
-    horizon <- update_horizon(forecast$horizon, target_date, reported_cases)
+    forecast$horizon <- update_horizon(
+      forecast$horizon, target_date, reported_cases
+    )
 
     estimates <- estimate_infections(
       data = reported_cases,
