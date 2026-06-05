@@ -35,6 +35,7 @@
 - Fixed a bug where `estimate_dist()` would fail with a "model fitting timed out or failed" error when observed delays had near-zero variance. Scale parameters are now initialised from the prior when variance cannot be estimated from the data, and a warning is issued.
 - Fixed a bug where `example_truncated` was generated with the old discrete-CDF PMF while `estimate_truncation()` now uses the primarycensored-based PMF, causing biased parameter recovery. The dataset has been regenerated for consistency.
 - A bug was fixed where `get_parameters()` failed with `$ operator not defined for this S4 class` on a fit with an estimated nonparametric (Dirichlet) delay when using the `rstan` backend. Posterior draws are now extracted in a backend-agnostic way.
+- Fixed a bug where `forecast_infections()` errored when called on an `estimate_infections` object fitted with the `cmdstanr` backend (it was calling `rstan::extract()` directly on the `CmdStanMCMC` fit; now uses the backend-agnostic internal helper).
 
 ## Breaking changes
 
