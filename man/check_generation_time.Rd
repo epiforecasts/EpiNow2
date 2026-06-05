@@ -13,7 +13,6 @@ check_generation_time(dist)
 Called for its side effects.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 does all the checks in\code{check_stan_delay()} and additionally makes sure
 that if \code{dist} is nonparametric,  its first element is zero.
 }

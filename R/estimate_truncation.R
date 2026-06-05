@@ -92,7 +92,7 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 
 #' Estimate truncation of observed data
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Estimates a truncation distribution from multiple snapshots of the same
 #' data source over time. This distribution can then be passed to the
 #' `truncation` argument in [regional_epinow()], [epinow()], and
@@ -280,7 +280,7 @@ estimate_truncation <- function(data,
 
 #' Plot method for estimate_truncation
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description
 #' [plot()] method for class `<estimate_truncation>`. Returns
 #' a plot faceted over each dataset used in fitting with the latest
 #' observations as columns, the data observed at the time (and so truncated)

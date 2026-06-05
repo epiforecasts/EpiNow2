@@ -18,7 +18,6 @@ Defaults to 7.}
 A dataframe of cleaned regional data
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Removes regions with insufficient time points, and provides logging
 information on the input.
 }

@@ -26,7 +26,6 @@ A list of samples and summarised estimates of estimated cases by
 date of report.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 Either extracts or converts reported cases from an input data table. For
 output from \code{estimate_infections} this is a simple filtering step.
 }

@@ -82,7 +82,6 @@ predicted
 }
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Extracts predictions from a fitted model. For \code{estimate_infections()} returns
 predicted reported cases, for \code{estimate_secondary()} returns predicted
 secondary observations. For \code{estimate_truncation()} returns reconstructed

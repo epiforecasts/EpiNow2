@@ -1,6 +1,6 @@
 #' Estimate a Secondary Observation from a Primary Observation
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Estimates the relationship between a primary and secondary observation, for
 #' example hospital admissions and deaths or hospital admissions and bed
 #' occupancy. See [secondary_opts()] for model structure options. See parameter
@@ -264,7 +264,7 @@ estimate_secondary <- function(data,
 
 #' Update estimate_secondary default priors
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' This functions allows the user to more easily specify data driven or model
 #'   based priors for [estimate_secondary()] from example from previous model
 #'   fits using a `<data.frame>` to overwrite other default settings. Note that
@@ -333,7 +333,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 
 #' Plot method for estimate_secondary
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description
 #' `plot` method for class "estimate_secondary".
 #'
 #' @param x A list of output as produced by `estimate_secondary`
@@ -413,7 +413,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 
 #' Plot method for forecast_secondary objects
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Plot method for forecast secondary observations.
 #'
 #' @inheritParams plot.estimate_secondary
@@ -543,7 +543,7 @@ convolve_and_scale <- function(data, type = c("incidence", "prevalence"),
 
 #' Forecast Secondary Observations Given a Fit from estimate_secondary
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description
 #' This function forecasts secondary observations using the output of
 #' [estimate_secondary()] and either observed primary data or a forecast of
 #' primary observations. See the examples of [estimate_secondary()]

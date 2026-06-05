@@ -54,7 +54,6 @@ of forecast secondary observation posterior samples, and \code{forecast} a summa
 of the forecast secondary observation posterior.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This function forecasts secondary observations using the output of
 \code{\link[=estimate_secondary]{estimate_secondary()}} and either observed primary data or a forecast of
 primary observations. See the examples of \code{\link[=estimate_secondary]{estimate_secondary()}}

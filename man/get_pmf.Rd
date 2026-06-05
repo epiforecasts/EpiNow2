@@ -17,7 +17,7 @@ left at its default value of \code{NULL}.}
 The pmf of the distribution
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+Get the probability mass function of a nonparametric distribution
 }
 \examples{
 dist <- discretise(Gamma(shape = 3, rate = 2, max = 10))

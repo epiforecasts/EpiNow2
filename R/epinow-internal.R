@@ -1,6 +1,6 @@
 #' Updates Forecast Horizon Based on Input Data and Target
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Makes sure that a forecast is returned for the user specified time period
 #' beyond the target date.
 #' @inheritParams setup_target_folder
@@ -20,7 +20,7 @@ update_horizon <- function(horizon, target_date, data) {
 
 #' Save Observed Data
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Saves observed data to a target location if given.
 #'
 #' @inheritParams setup_target_folder
@@ -39,7 +39,7 @@ save_input <- function(data, target_folder) {
 
 #' Save Estimated Infections
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Saves output from `estimate_infections` to a target directory.
 #' @param estimates List of data frames as output by `estimate_infections`
 #'
@@ -77,7 +77,7 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
 
 #' Estimate Cases by Report Date
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description
 #' Either extracts or converts reported cases from an input data table. For
 #' output from `estimate_infections` this is a simple filtering step.
 #'
@@ -128,7 +128,7 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
 
 #' Copy Results From Dated Folder to Latest
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description
 #' Copies output from the dated folder to a latest folder. May be undergo
 #' changes in later releases.
 #'
@@ -165,7 +165,7 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
 
 #' Construct Output
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Combines the output produced internally by `epinow` into a single list.
 #'
 #' @param estimated_reported_cases A list of dataframes as produced by

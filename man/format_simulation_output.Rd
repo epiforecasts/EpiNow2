@@ -38,7 +38,6 @@ A list of \verb{<data.frame>}'s each containing the simulated trajectories
 of each parameter, or a single merged data.table if merge = TRUE.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Formats simulation output from Stan models into structured data.tables with
 dates. This is an internal function used by \code{\link[=simulate_infections]{simulate_infections()}} and
 \code{\link[=forecast_infections]{forecast_infections()}} to process simulation results.

@@ -34,7 +34,6 @@ returns only key parameters (delay distribution parameters and scaling
 factors). When \code{type = "parameters"}, returns all or filtered parameters.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Returns a summary of the fitted secondary model including posterior
 parameter estimates with credible intervals.
 }

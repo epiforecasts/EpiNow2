@@ -17,7 +17,6 @@ A list of settings ready to be passed to stan defining
 the Observation Model
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Takes the output of \code{\link[=obs_opts]{obs_opts()}} and converts it into a list understood
 by stan.
 }

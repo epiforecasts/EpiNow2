@@ -17,7 +17,6 @@ Each element of the list is a \code{data.table} with the following columns:
 example_truncated
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 An example dataset of observed cases with truncation applied.
 This data is generated internally for use in the example of
 \code{estimate_truncation()}. For details on how the data is generated, see

@@ -15,7 +15,6 @@ convert_to_logsd(mean, sd)
 The log standard deviation of a lognormal distribution
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Convert from mean and standard deviation to the log standard deviation of the
 lognormal distribution. Useful for defining distributions supported by
 \code{\link[=estimate_infections]{estimate_infections()}}, \code{\link[=epinow]{epinow()}}, and \code{\link[=regional_epinow]{regional_epinow()}}.

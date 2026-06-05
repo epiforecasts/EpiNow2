@@ -16,7 +16,6 @@ parameters. If set to FALSE (the default) then the mean of any uncertain
 parameters will be returned as NA.}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This works out the mean of all the (parametric / nonparametric) delay
 distributions combined in the passed <dist_spec>.
 }

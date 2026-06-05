@@ -29,7 +29,7 @@ A \verb{<dist_spec>} where all distributions with constant parameters are
 nonparametric.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+Discretise a <dist_spec>
 }
 \section{Methodological details}{
 The probability mass function is computed using the \code{{primarycensored}}

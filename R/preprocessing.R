@@ -1,6 +1,6 @@
 ##' Fill missing data in a data set to prepare it for use within the package
 ##'
-##' @description `r lifecycle::badge("experimental")`
+##' @description
 ##' This function ensures that all days between the first and last date in the
 ##'   data are present. It adds an `accumulate` column that indicates whether
 ##'   modelled observations should be accumulated onto a later data point.

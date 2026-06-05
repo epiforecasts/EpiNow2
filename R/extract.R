@@ -1,6 +1,6 @@
 #' Extract samples for a latent state from a Stan model
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Extracts a time-varying latent state from a list of stan output and returns
 #' it as a `<data.table>`.
 #
@@ -291,7 +291,7 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
 
 #' Extract a parameter summary from a Stan object
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Extracts summarised parameter posteriors from a `stanfit` object using
 #' `rstan::summary()` in a format consistent with other summary functions
 #' in `{EpiNow2}`.

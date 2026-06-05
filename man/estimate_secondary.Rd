@@ -88,7 +88,6 @@ An \verb{<estimate_secondary>} object containing:
 }
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Estimates the relationship between a primary and secondary observation, for
 example hospital admissions and deaths or hospital admissions and bed
 occupancy. See \code{\link[=secondary_opts]{secondary_opts()}} for model structure options. See parameter

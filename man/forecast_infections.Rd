@@ -47,7 +47,6 @@ cases from the specified scenario. The structure is similar to
 \code{\link[=estimate_infections]{estimate_infections()}} output but contains \code{samples} rather than \code{fit}.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This function simulates infections using an existing fit to observed cases
 but with a modified time-varying reproduction number. This can be used to
 explore forecast models or past counterfactuals. Simulations can be run in

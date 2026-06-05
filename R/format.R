@@ -1,6 +1,6 @@
 #' Format Posterior Samples
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Summaries posterior samples and adds additional custom variables.
 #'
 #' @param posterior_samples A list of posterior samples as returned by
@@ -51,7 +51,7 @@ format_fit <- function(posterior_samples, horizon, shift, CrIs) {
 
 #' Format Simulation Output from Stan
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Formats simulation output from Stan models into structured data.tables with
 #' dates. This is an internal function used by [simulate_infections()] and
 #' [forecast_infections()] to process simulation results.

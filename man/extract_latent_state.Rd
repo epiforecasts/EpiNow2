@@ -26,7 +26,6 @@ date column}
 }
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Extracts a time-varying latent state from a list of stan output and returns
 it as a \verb{<data.table>}.
 }

@@ -22,7 +22,6 @@ generated.}
 List of plots as produced by \code{\link[=report_plots]{report_plots()}}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 \code{plot} method for class \verb{<estimate_infections>}.
 }
 \examples{

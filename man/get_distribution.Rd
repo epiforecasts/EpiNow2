@@ -17,7 +17,7 @@ left at its default value of \code{NULL}.}
 A character string naming the distribution (or "nonparametric")
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+Get the distribution of a \verb{<dist_spec>}
 }
 \examples{
 dist <- Gamma(shape = 3, rate = 2, max = 10)

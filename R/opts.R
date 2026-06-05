@@ -1,6 +1,6 @@
 #' Generation Time Distribution Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Returns generation time parameters in a format for lower level model use.
 #'
 #' @details Because the discretised renewal equation used in the package does
@@ -74,7 +74,7 @@ generation_time_opts <- gt_opts
 
 #' Secondary Reports Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Returns a list of options defining the secondary model used in
 #' [estimate_secondary()]. This model is a combination of a convolution of
 #' previously observed primary reports combined with current primary reports
@@ -142,7 +142,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 
 #' Delay Distribution Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
 #' @param dist A delay distribution or series of delay distributions. Default is
@@ -187,7 +187,7 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 
 #' Truncation Distribution Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Returns a truncation distribution formatted for usage by
 #' downstream functions. See [estimate_truncation()] for an approach to
 #' estimate these distributions.
@@ -233,7 +233,7 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 
 #' Time-Varying Reproduction Number Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the optional arguments for the time-varying
 #' reproduction number. Custom settings can be supplied which override the
 #' defaults.
@@ -387,7 +387,7 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
 
 #' Back Calculation Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`.
 #'
@@ -442,7 +442,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 
 #' Approximate Gaussian Process Settings
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the structure of the approximate Gaussian
 #' process. Custom settings can be supplied which override the defaults.
 #'
@@ -537,7 +537,7 @@ gp_opts <- function(basis_prop = 0.2,
 # nolint start
 #' Observation Model Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the structure of the observation
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
@@ -621,7 +621,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
 
 #' Stan Sampling Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #'  Defines a list specifying the arguments passed to either [rstan::sampling()]
 #'  or [cmdstanr::sample()]. Custom settings can be supplied which override the
 #'  defaults.
@@ -723,7 +723,7 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
 
 #' Stan Variational Bayes Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the arguments passed to [rstan::vb()] or
 #' [cmdstanr::variational()]. Custom settings can be supplied which override the
 #' defaults.
@@ -819,7 +819,7 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 
 #' Stan Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the arguments passed to underlying stan
 #' backend functions via [stan_sampling_opts()] and [stan_vb_opts()]. Custom
 #' settings can be supplied which override the defaults.
@@ -924,7 +924,7 @@ stan_opts <- function(object = NULL,
 }
 
 #' Forecast options
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the arguments passed to underlying stan
 #' backend functions via [stan_sampling_opts()] and [stan_vb_opts()]. Custom
 #' settings can be supplied which override the defaults.
@@ -953,7 +953,7 @@ forecast_opts <- function(horizon = 7, accumulate) {
 
 #' Forecast optiong
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description
 #' Define a list of `_opts()` to pass to [regional_epinow()] `_opts()` accepting
 #' arguments. This is useful when different settings are needed between regions
 #' within a single [regional_epinow()] call. Using [opts_list()] the defaults
@@ -1001,7 +1001,7 @@ opts_list <- function(opts, reported_cases, ...) {
 
 #' Filter Options for a Target Region
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description
 #' A helper function that allows the selection of region specific settings if
 #' present and otherwise applies the overarching settings.
 #'

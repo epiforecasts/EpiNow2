@@ -15,7 +15,6 @@ extract_params(params, distribution)
 A character vector of parameters and their values.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 Internal function for extracting given parameter names of a distribution
 from the environment. Called by \code{new_dist_spec}
 }

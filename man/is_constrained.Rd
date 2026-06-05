@@ -17,7 +17,8 @@ CDF cutoff.}
 Logical; TRUE if \code{x} is constrained
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+Check if a <dist_spec> is constrained, i.e. has a finite maximum or nonzero
+CDF cutoff.
 }
 \examples{
 # A fixed gamma distribution with mean 5 and sd 1.

@@ -67,7 +67,6 @@ An \verb{<estimate_truncation>} object containing:
 }
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Estimates a truncation distribution from multiple snapshots of the same
 data source over time. This distribution can then be passed to the
 \code{truncation} argument in \code{\link[=regional_epinow]{regional_epinow()}}, \code{\link[=epinow]{epinow()}}, and

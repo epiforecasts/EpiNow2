@@ -57,7 +57,6 @@ cases.}
 A list of summary measures and plots
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Used to produce summary output either internally in \code{regional_epinow} or
 externally.
 }

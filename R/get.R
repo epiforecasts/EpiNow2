@@ -1,6 +1,5 @@
 #' Get Folders with Results
 #'
-#' @description `r lifecycle::badge("stable")`
 #'
 #' @param results_dir A character string giving the directory in which results
 #'  are stored (as produced by [regional_epinow()]).
@@ -23,7 +22,6 @@ get_regions <- function(results_dir) {
 
 #' Get a Single Raw Result
 #'
-#' @description `r lifecycle::badge("stable")`
 #'
 #' @param file Character string giving the result files name.
 #'
@@ -43,7 +41,7 @@ get_raw_result <- function(file, region, date,
 }
 #' Get Combined Regional Results
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Summarises results across regions either from input or from disk. See the
 #' examples for details.
 #'
@@ -176,7 +174,7 @@ get_regional_results <- function(regional_output,
 
 #' Get Regions with Most Reported Cases
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Extract a vector of regions with the most reported cases in a set time
 #' window.
 #'
@@ -231,7 +229,7 @@ get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
 
 #' Get posterior samples from a fitted model
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Extracts posterior samples from a fitted model, combining all parameters
 #' into a single data.table with dates and metadata.
 #'
@@ -384,7 +382,7 @@ format_quantile_predictions <- function(samples, quantiles, forecast_date) {
 
 #' Get predictions from a fitted model
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Extracts predictions from a fitted model. For `estimate_infections()` returns
 #' predicted reported cases, for `estimate_secondary()` returns predicted
 #' secondary observations. For `estimate_truncation()` returns reconstructed

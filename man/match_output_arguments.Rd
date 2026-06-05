@@ -27,7 +27,6 @@ documentation of futile.logger for details. Supported options are "info" and
 A logical vector of named output arguments
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Match user supplied arguments with supported options and return a logical
 list for internal usage.
 }

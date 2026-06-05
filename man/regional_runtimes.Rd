@@ -29,7 +29,6 @@ this automatically updates to TRUE if no directory for saving is specified.}
 A data.table of region run times
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Used internally by \code{regional_epinow} to summarise region run times.
 }
 \examples{

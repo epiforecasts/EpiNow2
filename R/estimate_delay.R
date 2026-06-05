@@ -1,6 +1,6 @@
 #' Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Fits an integer adjusted exponential, gamma or lognormal distribution using
 #' stan.
 #' @param values Numeric vector of values
@@ -112,7 +112,7 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #' Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution
 #' Parameters
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Fits an integer adjusted distribution to a subsampled bootstrap of data and
 #' then integrates the posterior samples into a single set of summary
 #' statistics. Can be used to generate a robust reporting delay that accounts

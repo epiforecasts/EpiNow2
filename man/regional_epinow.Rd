@@ -115,7 +115,6 @@ A list of output stratified at the top level into regional output
 and across region output summary output
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Efficiently runs \code{\link[=epinow]{epinow()}} across multiple regions in an efficient manner
 and conducts basic data checks and cleaning such as removing regions with
 fewer than \code{non_zero_points} as these are unlikely to produce reasonable

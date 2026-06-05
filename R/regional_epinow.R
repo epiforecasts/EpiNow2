@@ -1,6 +1,6 @@
 #' Real-time Rt Estimation, Forecasting and Reporting by Region
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description
 #' Efficiently runs [epinow()] across multiple regions in an efficient manner
 #' and conducts basic data checks and cleaning such as removing regions with
 #' fewer than `non_zero_points` as these are unlikely to produce reasonable
@@ -250,7 +250,7 @@ regional_epinow <- function(data,
 
 #' Clean Regions
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Removes regions with insufficient time points, and provides logging
 #' information on the input.
 #'
@@ -306,7 +306,7 @@ clean_regions <- function(data, non_zero_points) {
 
 #' Run epinow with Regional Processing Code
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description
 #' Internal function that handles calling [epinow()]. Future work will extend
 #' this function to better handle stan logs and allow the user to modify
 #' settings between regions.
@@ -396,7 +396,7 @@ run_region <- function(target_region,
 
 #' Process regional estimate
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description
 #' Internal function that removes output that is not required, and returns
 #' logging information.
 #' @param out List of output returned by [epinow()]
@@ -442,7 +442,7 @@ process_region <- function(out, target_region, timing,
 
 #' Process all Region Estimates
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Internal function that processes the output from multiple [epinow()] runs,
 #' adds summary logging information.
 #' @param regional_out A list of output from multiple runs of

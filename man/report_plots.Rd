@@ -26,7 +26,7 @@ A named list of \code{ggplot2} objects, \code{list(infections, reports, R, growt
 item) and for the leading items.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 Returns key summary plots for estimates. May be depreciated in later
 releases as current S3 methods are enhanced.
 }

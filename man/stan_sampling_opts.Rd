@@ -63,7 +63,6 @@ A list of arguments to pass to \code{\link[rstan:sampling]{rstan::sampling()}} o
 \code{\link[cmdstanr:sample]{cmdstanr::sample()}}.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to either \code{\link[rstan:sampling]{rstan::sampling()}}
 or \code{\link[cmdstanr:sample]{cmdstanr::sample()}}. Custom settings can be supplied which override the
 defaults.

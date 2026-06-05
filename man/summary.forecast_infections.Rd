@@ -36,7 +36,6 @@ specified.}
 Returns a \verb{<data.frame>} of summary output
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 \code{summary} method for class "forecast_infections".
 }
 \seealso{

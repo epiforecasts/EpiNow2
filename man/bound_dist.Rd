@@ -20,6 +20,5 @@ removed. Default: \code{0}, i.e. use the full distribution.}
 a \verb{<dist_spec>} with relevant attributes set that define its bounds
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 This sets attributes for further processing
 }

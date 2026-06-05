@@ -33,7 +33,6 @@ removed. Default: \code{0}, i.e. use the full distribution.}
 A vector representing a probability distribution.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 This function returns the probability mass function of a discretised and
 truncated distribution defined by distribution type, maximum value and model
 parameters.

@@ -16,7 +16,6 @@ column named \code{value_col}.}
 Called for its side effects.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Checks that a data frame intended for simulation has the required \code{date}
 column and a named numeric value column, that the \code{date} column is in date
 format, and that the value column contains non-negative numeric values with
