@@ -1,20 +1,17 @@
 # cran-comments
 
-## Resubmission
+This is a minor release (1.9.0) of EpiNow2.
 
-This is a resubmission. In this version:
+## R CMD check results
 
-- Precompiled slow vignettes (forecasting_multiple_data_streams,
-  prior_choice_guide) to reduce overall check time
-- Reduced samples/iterations in examples to speed up example checks
+0 errors | 0 warnings | 0 notes
 
 ## Test environments
 
-- Local: macOS (aarch64-apple-darwin), R 4.4.2
+- Local: macOS (aarch64-apple-darwin), R release
 - GitHub Actions: ubuntu-latest, R release
 - GitHub Actions: ubuntu-latest, R devel
 - win-builder: R devel (Windows)
-- win-builder: R devel (Debian)
 
 ## Downstream dependencies
 
