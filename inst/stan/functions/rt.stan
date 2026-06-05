@@ -21,8 +21,10 @@
  * @param bp_effects Vector of breakpoint effects
  * @param stationary Whether the Gaussian process is stationary (1) or non-stationary (0)
  * @param n_centre Number of leading positions over which to centre the
- *   non-stationary GP trajectory. Set to the observation window length so the
- *   centring is invariant to the forecast horizon. Ignored when stationary.
+ *   non-stationary GP trajectory and the breakpoint random walk. Set to the
+ *   observation window length so the centring is invariant to the forecast
+ *   horizon. Ignored for the GP branch when `stationary` is 1; the breakpoint
+ *   path is centred whenever breakpoints are present.
  * @return A vector of length t containing the updated Rt values
  */
 vector update_Rt(int t, real R0, vector noise, array[] int bps,
@@ -37,7 +39,10 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
     vector[bp_n + 1] bp0;
     bp0[1] = 0;
     bp0[2:(bp_n + 1)] = cumulative_sum(bp_effects);
-    logR = logR + bp0[bps];
+    vector[t] bp = bp0[bps];
+    // Centre over the observation window (same identifiability fix as the GP below).
+    bp -= mean(bp[1:n_centre]);
+    logR = logR + bp;
   }
   //initialise gaussian process
   if (gp_n) {
@@ -51,9 +56,7 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
     } else {
       gp[2:(gp_n + 1)] = noise;
       gp = cumulative_sum(gp);
-      // Centre over the observation window so R0 is the mean log Rt over
-      // that window. Removes the (R0, drift) ridge in the joint posterior
-      // and keeps the historical fit invariant to the forecast horizon.
+      // Centre over the observation window (same identifiability fix as the BP above).
       gp -= mean(gp[1:n_centre]);
     }
     logR = logR + gp;

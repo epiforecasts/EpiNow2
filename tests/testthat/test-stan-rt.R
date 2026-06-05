@@ -43,28 +43,42 @@ test_that("update_Rt is invariant in the centring window when t is extended", {
   expect_equal(fit_long[1:n_centre], fit_short)
 })
 
-test_that("update_Rt returns R0 + breakpoint multipliers when noise is empty", {
+test_that("update_Rt produces expected output for centred breakpoints with empty noise", {
+  bps1 <- c(1, 1, 2, 2, 2)
+  bp_effects1 <- 0.1
+  bp0_1 <- c(0, cumsum(bp_effects1))
+  bp_path1 <- bp0_1[bps1]
+  expected1 <- 1.2 * exp(bp_path1 - mean(bp_path1[1:5]))
   expect_equal(
-    update_Rt(5, 1.2, numeric(0), c(1, 1, 2, 2, 2), 0.1, 0, 5),
-    c(1.2, 1.2, 1.2 * exp(rep(0.1, 3)))
+    update_Rt(5, 1.2, numeric(0), bps1, bp_effects1, 0, 5),
+    expected1
   )
   expect_equal(
-    update_Rt(5, 1.2, numeric(0), c(1, 1, 2, 2, 2), 0.1, 1, 5),
-    c(1.2, 1.2, 1.2 * exp(rep(0.1, 3)))
+    update_Rt(5, 1.2, numeric(0), bps1, bp_effects1, 1, 5),
+    expected1
   )
+
+  bps2 <- c(1, 2, 3, 3, 3)
+  bp_effects2 <- rep(0.1, 2)
+  bp0_2 <- c(0, cumsum(bp_effects2))
+  bp_path2 <- bp0_2[bps2]
+  expected2 <- 1.2 * exp(bp_path2 - mean(bp_path2[1:5]))
   expect_equal(
-    update_Rt(5, 1.2, numeric(0), c(1, 2, 3, 3, 3), rep(0.1, 2), 0, 5),
-    c(1.2, 1.2 * exp(0.1), rep(1.2 * exp(0.2), 3))
+    update_Rt(5, 1.2, numeric(0), bps2, bp_effects2, 0, 5),
+    expected2
   )
 })
 
-test_that("update_Rt with non-stationary GP and breakpoint adds centred GP + step", {
+test_that("update_Rt correctly handles centred non-stationary GP and breakpoint effects", {
   noise <- rep(0.1, 4)
   bps <- c(1, 1, 2, 2, 2)
   bp_effects <- 0.1
   gp <- cumsum(c(0, noise))
   bp0 <- c(0, cumsum(bp_effects))
-  expected <- 1.2 * exp(gp - mean(gp[1:5]) + bp0[bps])
+  bp_path <- bp0[bps]
+  expected <- 1.2 * exp(
+    gp - mean(gp[1:5]) + bp_path - mean(bp_path[1:5])
+  )
   expect_equal(
     update_Rt(5, 1.2, noise, bps, bp_effects, 0, 5),
     expected
