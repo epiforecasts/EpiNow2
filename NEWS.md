@@ -53,6 +53,7 @@
 - Fixed a bug where `example_truncated` was generated with the old discrete-CDF PMF while `estimate_truncation()` now uses the primarycensored-based PMF, causing biased parameter recovery. The dataset has been regenerated for consistency.
 - Fixed a bug where `get_parameters()` failed with `$ operator not defined for this S4 class` on a fit with an estimated nonparametric (Dirichlet) delay when using the `rstan` backend. Posterior draws are now extracted in a backend-agnostic way.
 - Fixed a bug where `forecast_infections()` errored when called on an `estimate_infections` object fitted with the `cmdstanr` backend (it was calling `rstan::extract()` directly on the `CmdStanMCMC` fit; now uses the backend-agnostic internal helper).
+- A bug was fixed where the trailing entries of `imputed_reports` in `estimate_infections()` output were undefined due to a size mismatch in the Stan generated quantities block.
 
 ## Documentation
 
