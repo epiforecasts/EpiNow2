@@ -64,6 +64,7 @@
 - The delay distribution fitting vignette has been renamed from `vignette("estimate-dist")` to `vignette("estimate_dist_workflow")` for consistency with the other workflow vignettes; the model definition is at `vignette("estimate_dist")`.
 - Added a cross-reference from the `estimate_truncation()` vignette to `estimate_dist()`, summarising when to use each.
 - Expanded the case studies vignette with additional literature references and public health surveillance examples.
+- The lower-accuracy GP example in the `estimate_infections_options` vignette now uses `basis_prop = 0.15` instead of `0.1`, which fits cleanly under the new centred parameterisation.
 
 ## Package changes
 
