@@ -124,14 +124,14 @@ plot(def)
 
 ## Reducing the accuracy of the approximate Gaussian Process
 
-To speed up the calculation of the Gaussian Process we could decrease its accuracy, e.g. decrease the proportion of time points to use as basis functions from the default of 0.2 to 0.1.
+To speed up the calculation of the Gaussian Process we could decrease its accuracy, e.g. decrease the proportion of time points to use as basis functions from the default of 0.2 to 0.15.
 
 ```{r lower_accuracy}
 agp <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(prior = rt_prior),
-  gp = gp_opts(basis_prop = 0.1)
+  gp = gp_opts(basis_prop = 0.15)
 )
 # summarise results
 summary(agp)
