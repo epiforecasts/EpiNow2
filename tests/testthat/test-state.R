@@ -94,10 +94,42 @@ test_that("create_stan_params emits RW state data for fraction_observed", {
   expect_identical(out$state_param_id, array(1L))
   expect_identical(out$state_type, array(0L))
   expect_identical(out$state_link, array(0L))
-  expect_identical(out$state_sd_dist, array(2L))
-  expect_equal(out$state_sd_dist_params, array(c(0, 0.1)))
+  expect_identical(out$state_pos, array(1L))
+  expect_identical(out$n_rw_states, 1L)
+  expect_identical(out$n_gp_states, 0L)
+  expect_identical(out$rw_sd_dist, array(2L))
+  expect_equal(out$rw_sd_dist_params, array(c(0, 0.1)))
   # the level prior flows through the normal parameter machinery
   expect_identical(out$n_params_variable, 1L)
+})
+
+test_that("create_stan_params emits GP state data for fraction_observed", {
+  params <- list(
+    make_param("fraction_observed", GP(mean = Normal(0.5, 0.1)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$n_states, 1L)
+  expect_identical(out$state_type, array(1L))
+  expect_identical(out$state_pos, array(1L))
+  expect_identical(out$n_rw_states, 0L)
+  expect_identical(out$n_gp_states, 1L)
+  expect_identical(out$gp_kernel, array(2L)) # matern default
+  expect_length(out$gp_alpha_dist_params, 2L)
+  expect_length(out$gp_rho_dist_params, 2L)
+})
+
+test_that("create_stan_params rejects periodic kernel states", {
+  params <- list(
+    make_param("fraction_observed", GP(mean = Normal(0.5, 0.1),
+      kernel = "periodic"
+    ), lower_bound = 0)
+  )
+  expect_error(
+    create_stan_params(params, states_supported = "fraction_observed"),
+    "Periodic"
+  )
 })
 
 test_that("create_stan_params is a no-op without states", {
@@ -106,4 +138,6 @@ test_that("create_stan_params is a no-op without states", {
   )
   out <- create_stan_params(params, states_supported = "fraction_observed")
   expect_identical(out$n_states, 0L)
+  expect_identical(out$n_rw_states, 0L)
+  expect_identical(out$n_gp_states, 0L)
 })

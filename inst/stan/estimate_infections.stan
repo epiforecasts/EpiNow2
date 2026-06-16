@@ -57,6 +57,12 @@ transformed data {
 
   // number of random walk steps per time-varying parameter state
   int state_rw_n = ot_h > 1 ? ot_h - 1 : 0;
+  // basis functions and basis matrix for gaussian process states (shared)
+  int gp_M = n_gp_states > 0 ? to_int(ceil(ot_h * gp_basis_prop)) : 0;
+  matrix[n_gp_states > 0 ? ot_h : 0, gp_M] gp_PHI;
+  if (n_gp_states > 0) {
+    gp_PHI = setup_gp(gp_M, gp_boundary_scale, ot_h, 0, 1.0);
+  }
 }
 
 parameters {
@@ -78,8 +84,11 @@ parameters {
   vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
   simplex[week_effect] day_of_week_simplex; // day of week reporting effect
   // time-varying parameter states
-  vector[n_states * state_rw_n] state_rw_steps; // random walk steps
-  vector<lower = 0>[n_states] state_rw_sd;      // random walk step sd
+  vector[n_rw_states * state_rw_n] state_rw_steps; // random walk steps
+  vector<lower = 0>[n_rw_states] state_rw_sd;      // random walk step sd
+  vector[n_gp_states * gp_M] state_gp_eta;         // GP basis coefficients
+  vector<lower = 0>[n_gp_states] state_gp_alpha;   // GP magnitude
+  vector<lower = 0>[n_gp_states] state_gp_rho;     // GP lengthscale
 }
 
 transformed parameters {
@@ -117,14 +126,40 @@ transformed parameters {
 
   // trajectory of the (possibly time-varying) fraction observed; constant when
   // no state is attached to fraction_observed
-  vector[ot_h] fraction_observed_traj = get_param_trajectory(
-    param_id_fraction_observed, ot_h, ot,
-    get_param(
+  vector[ot_h] fraction_observed_traj;
+  {
+    real fo_level = get_param(
       param_id_fraction_observed, params_fixed_lookup, params_variable_lookup,
       params_value, params
-    ),
-    state_param_id, state_link, state_rw_steps, state_rw_n
-  );
+    );
+    int fo_state = 0;
+    for (s in 1:n_states) {
+      if (state_param_id[s] == param_id_fraction_observed) {
+        fo_state = s;
+      }
+    }
+    if (fo_state == 0) {
+      fraction_observed_traj = rep_vector(fo_level, ot_h);
+    } else if (state_type[fo_state] == 0) {
+      int p = state_pos[fo_state];
+      vector[state_rw_n] steps = segment(
+        state_rw_steps, (p - 1) * state_rw_n + 1, state_rw_n
+      );
+      fraction_observed_traj = rw_trajectory(
+        ot_h, fo_level, steps, state_link[fo_state], ot
+      );
+    } else {
+      int p = state_pos[fo_state];
+      vector[gp_M] gp_eta = segment(state_gp_eta, (p - 1) * gp_M + 1, gp_M);
+      vector[ot_h] gp_noise = update_gp(
+        gp_PHI, gp_M, gp_boundary_scale, state_gp_alpha[p],
+        2 * state_gp_rho[p] / ot_h, gp_eta, gp_kernel[p], gp_nu[p]
+      );
+      fraction_observed_traj = gp_trajectory(
+        ot_h, fo_level, gp_noise, state_link[fo_state], ot
+      );
+    }
+  }
 
   // Estimate latent infections
   if (estimate_r) {
@@ -247,14 +282,27 @@ model {
 
   // priors for time-varying parameter states
   profile("state lp") {
-    for (s in 1:n_states) {
+    for (r in 1:n_rw_states) {
       apply_prior_lp(
-        state_rw_sd[s], state_sd_dist[s],
-        state_sd_dist_params[2 * s - 1], state_sd_dist_params[2 * s],
+        state_rw_sd[r], rw_sd_dist[r],
+        rw_sd_dist_params[2 * r - 1], rw_sd_dist_params[2 * r],
         0, positive_infinity()
       );
-      segment(state_rw_steps, (s - 1) * state_rw_n + 1, state_rw_n) ~
-        normal(0, state_rw_sd[s]);
+      segment(state_rw_steps, (r - 1) * state_rw_n + 1, state_rw_n) ~
+        normal(0, state_rw_sd[r]);
+    }
+    for (g in 1:n_gp_states) {
+      apply_prior_lp(
+        state_gp_alpha[g], gp_alpha_dist[g],
+        gp_alpha_dist_params[2 * g - 1], gp_alpha_dist_params[2 * g],
+        0, positive_infinity()
+      );
+      apply_prior_lp(
+        state_gp_rho[g], gp_rho_dist[g],
+        gp_rho_dist_params[2 * g - 1], gp_rho_dist_params[2 * g],
+        0, positive_infinity()
+      );
+      segment(state_gp_eta, (g - 1) * gp_M + 1, gp_M) ~ std_normal();
     }
   }
 

@@ -638,19 +638,31 @@ create_initial_conditions <- function(stan_data, params) {
       mean = param_means, sd = param_sds
     ))
 
-    ## time-varying parameter states (random walk steps + step sd)
-    if (stan_data$n_states > 0) {
-      state_rw_n <- max(0, stan_data$t - stan_data$seeding_time - 1)
-      out$state_rw_sd <- array(
-        truncnorm::rtruncnorm(stan_data$n_states, a = 0, mean = 0, sd = 0.1)
-      )
-      out$state_rw_steps <- array(
-        rnorm(stan_data$n_states * state_rw_n, 0, 0.1)
-      )
-    } else {
-      out$state_rw_sd <- array(numeric(0))
-      out$state_rw_steps <- array(numeric(0))
+    ## time-varying parameter states
+    ## truncnorm::rtruncnorm() returns NULL for n = 0, so guard zero counts
+    rtruncnorm0 <- function(n, ...) {
+      if (n > 0) truncnorm::rtruncnorm(n, ...) else numeric(0)
     }
+    ot_h <- stan_data$t - stan_data$seeding_time
+    state_rw_n <- max(0, ot_h - 1)
+    out$state_rw_sd <- array(
+      rtruncnorm0(stan_data$n_rw_states, a = 0, mean = 0, sd = 0.1)
+    )
+    out$state_rw_steps <- array(
+      rnorm(stan_data$n_rw_states * state_rw_n, 0, 0.1)
+    )
+    gp_m <- if (stan_data$n_gp_states > 0) {
+      ceiling(ot_h * stan_data$gp_basis_prop)
+    } else {
+      0
+    }
+    out$state_gp_eta <- array(rnorm(stan_data$n_gp_states * gp_m, 0, 0.1))
+    out$state_gp_alpha <- array(
+      rtruncnorm0(stan_data$n_gp_states, a = 0, mean = 0, sd = 0.1)
+    )
+    out$state_gp_rho <- array(
+      rtruncnorm0(stan_data$n_gp_states, a = 0, mean = ot_h / 2, sd = ot_h / 4)
+    )
     out
   }
 }
@@ -1040,23 +1052,69 @@ create_stan_params <- function(params, states_supported = character(0)) {
 ##' @keywords internal
 create_state_data <- function(params, state_flags,
                               states_supported = character(0)) {
+  empty <- list(
+    n_states = 0L,
+    state_param_id = array(integer(0)),
+    state_type = array(integer(0)),
+    state_link = array(integer(0)),
+    state_pos = array(integer(0)),
+    n_rw_states = 0L,
+    rw_sd_dist = array(integer(0)),
+    rw_sd_dist_params = array(numeric(0)),
+    n_gp_states = 0L,
+    gp_basis_prop = 0.2,
+    gp_boundary_scale = 1.5,
+    gp_kernel = array(integer(0)),
+    gp_nu = array(numeric(0)),
+    gp_alpha_dist = array(integer(0)),
+    gp_alpha_dist_params = array(numeric(0)),
+    gp_rho_dist = array(integer(0)),
+    gp_rho_dist_params = array(numeric(0))
+  )
   if (!any(state_flags)) {
-    return(list(
-      n_states = 0L,
-      state_param_id = array(integer(0)),
-      state_type = array(integer(0)),
-      state_link = array(integer(0)),
-      state_sd_dist = array(integer(0)),
-      state_sd_dist_params = array(numeric(0))
-    ))
+    return(empty)
+  }
+
+  ## integer code for a simple (lognormal/gamma/normal) prior distribution
+  dist_code <- function(d) {
+    fcase(
+      get_distribution(d) == "lognormal", 0L,
+      get_distribution(d) == "gamma", 1L,
+      get_distribution(d) == "normal", 2L
+    )
+  }
+  ## the two prior parameters, requiring them to be certain (numeric)
+  numeric_params <- function(d, what, name) {
+    pars <- get_parameters(d)
+    if (!all(vapply(pars, is.numeric, logical(1)))) {
+      cli_abort(c(
+        "!" = "The {what} prior for time-varying parameter {.var {name}} cannot
+        have uncertain parameters."
+      ))
+    }
+    as.numeric(unlist(pars))
   }
 
   idx <- which(state_flags)
-  type <- integer(length(idx))
-  link <- integer(length(idx))
-  sd_dist <- integer(length(idx))
-  sd_params <- numeric(0)
-  for (j in seq_along(idx)) {
+  n <- length(idx)
+  param_id <- integer(n)
+  type <- integer(n)
+  link <- integer(n)
+  pos <- integer(n)
+  rw_sd_dist <- integer(0)
+  rw_sd_params <- numeric(0)
+  gp_kernel <- integer(0)
+  gp_nu <- numeric(0)
+  gp_alpha_dist <- integer(0)
+  gp_alpha_params <- numeric(0)
+  gp_rho_dist <- integer(0)
+  gp_rho_params <- numeric(0)
+  gp_basis_prop <- empty$gp_basis_prop
+  gp_boundary_scale <- empty$gp_boundary_scale
+  n_rw <- 0L
+  n_gp <- 0L
+
+  for (j in seq_len(n)) {
     spec <- params[[idx[j]]]$dist
     name <- params[[idx[j]]]$name # nolint: object_usage_linter
     if (!name %in% states_supported) {
@@ -1071,12 +1129,6 @@ create_state_data <- function(params, state_flags,
         "i" = "Currently supported: {.var {states_supported}}."
       ))
     }
-    if (spec$type != "rw") {
-      cli_abort(c(
-        "!" = "Only random walk ({.fn RW}) time-varying parameters are currently
-        supported (parameter {.var {name}})."
-      ))
-    }
     if (spec$anchor != "mean") {
       cli_abort(c(
         "!" = "Only the {.arg mean} anchor is currently supported for time-varying
@@ -1089,31 +1141,62 @@ create_state_data <- function(params, state_flags,
         parameter {.var {name}}."
       ))
     }
-    type[j] <- 0L # random walk
+    param_id[j] <- idx[j]
     link[j] <- 0L # log
-    sd <- spec$settings$sd
-    sd_dist[j] <- fcase(
-      get_distribution(sd) == "lognormal", 0L,
-      get_distribution(sd) == "gamma", 1L,
-      get_distribution(sd) == "normal", 2L
-    )
-    sd_pars <- get_parameters(sd)
-    if (!all(vapply(sd_pars, is.numeric, logical(1)))) {
-      cli_abort(c(
-        "!" = "The step standard deviation prior for time-varying parameter
-        {.var {name}} cannot have uncertain parameters."
+    if (spec$type == "rw") {
+      type[j] <- 0L
+      n_rw <- n_rw + 1L
+      pos[j] <- n_rw
+      sd <- spec$settings$sd
+      rw_sd_dist <- c(rw_sd_dist, dist_code(sd))
+      rw_sd_params <- c(rw_sd_params, numeric_params(sd, "step sd", name))
+    } else {
+      gp <- spec$settings
+      if (gp$kernel == "periodic") {
+        cli_abort(c(
+          "!" = "Periodic kernels are not supported for time-varying parameter
+          {.var {name}}."
+        ))
+      }
+      type[j] <- 1L
+      n_gp <- n_gp + 1L
+      pos[j] <- n_gp
+      gp_kernel <- c(gp_kernel, fcase(
+        gp$kernel == "se", 0L,
+        default = 2L # matern / ou
       ))
+      gp_nu <- c(gp_nu, gp$matern_order)
+      gp_alpha_dist <- c(gp_alpha_dist, dist_code(gp$alpha))
+      gp_alpha_params <- c(
+        gp_alpha_params, numeric_params(gp$alpha, "alpha", name)
+      )
+      gp_rho_dist <- c(gp_rho_dist, dist_code(gp$ls))
+      gp_rho_params <- c(
+        gp_rho_params, numeric_params(gp$ls, "lengthscale", name)
+      )
+      gp_basis_prop <- gp$basis_prop
+      gp_boundary_scale <- gp$boundary_scale
     }
-    sd_params <- c(sd_params, as.numeric(unlist(sd_pars)))
   }
 
   list(
-    n_states = length(idx),
-    state_param_id = array(as.integer(idx)),
+    n_states = n,
+    state_param_id = array(as.integer(param_id)),
     state_type = array(type),
     state_link = array(link),
-    state_sd_dist = array(sd_dist),
-    state_sd_dist_params = array(sd_params)
+    state_pos = array(as.integer(pos)),
+    n_rw_states = n_rw,
+    rw_sd_dist = array(rw_sd_dist),
+    rw_sd_dist_params = array(rw_sd_params),
+    n_gp_states = n_gp,
+    gp_basis_prop = gp_basis_prop,
+    gp_boundary_scale = gp_boundary_scale,
+    gp_kernel = array(gp_kernel),
+    gp_nu = array(gp_nu),
+    gp_alpha_dist = array(gp_alpha_dist),
+    gp_alpha_dist_params = array(gp_alpha_params),
+    gp_rho_dist = array(gp_rho_dist),
+    gp_rho_dist_params = array(gp_rho_params)
   )
 }
 

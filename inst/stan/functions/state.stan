@@ -98,34 +98,33 @@ vector rw_trajectory(int t, real level, vector steps, int link, int n_centre) {
 }
 
 /**
- * Get the trajectory of a (possibly time-varying) parameter
+ * Build a Gaussian process trajectory for a time-varying parameter
  *
- * Returns the time-varying trajectory of the parameter with the given id if a
- * state is attached to it, otherwise a constant trajectory at `level`.
+ * Anchors a stationary (mean-reverting) Gaussian process around a parameter's
+ * level and maps it through the inverse link. The GP noise is supplied directly
+ * (computed via update_gp from the shared basis), so this function only adds the
+ * level and applies the link.
  *
- * @param id Target parameter id
  * @param t Length of the trajectory
- * @param n_centre Centring window for the state
- * @param level Parameter level on the natural scale (from get_param)
- * @param state_param_id Target parameter id of each state
- * @param state_link Link function of each state
- * @param state_rw_steps Flat vector of random walk steps across states
- * @param state_rw_n Number of random walk steps per state
- * @return A vector of length t with the parameter trajectory
+ * @param level Baseline parameter value on the natural scale
+ * @param noise Gaussian process noise (length t)
+ * @param link Link function (0 = log)
+ * @param n_centre Number of leading positions over which to centre the state
+ * @return A vector of length t with the parameter trajectory on the natural scale
  *
  * @ingroup estimates_smoothing
  */
-vector get_param_trajectory(int id, int t, int n_centre, real level,
-                            array[] int state_param_id,
-                            array[] int state_link,
-                            vector state_rw_steps, int state_rw_n) {
-  for (p in 1:num_elements(state_param_id)) {
-    if (state_param_id[p] == id) {
-      vector[state_rw_n] steps = segment(
-        state_rw_steps, (p - 1) * state_rw_n + 1, state_rw_n
-      );
-      return rw_trajectory(t, level, steps, state_link[p], n_centre);
-    }
+vector gp_trajectory(int t, real level, vector noise, int link, int n_centre) {
+  array[t] int bps;
+  for (i in 1:t) {
+    bps[i] = i;
   }
-  return rep_vector(level, t);
+  real intercept_value = link == 0 ? log(level) : level;
+  vector[t] x = update_state(
+    t, rep_vector(intercept_value, t), noise, bps, rep_vector(0.0, 0), 1, n_centre
+  );
+  if (link == 0) {
+    return exp(x);
+  }
+  return x;
 }
