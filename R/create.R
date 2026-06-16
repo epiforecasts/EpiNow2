@@ -894,6 +894,19 @@ create_stan_delays <- function(..., time_points = 1L) {
 ##' @keywords internal
 create_stan_params <- function(params) {
   tparams <- transpose(params)
+  ## time-varying (process) specifications are not yet wired into the models
+  process_params <- vapply(tparams$dist, is_process_spec, logical(1))
+  if (any(process_params)) {
+    tv_params <- tparams$name[process_params] # nolint: object_usage_linter
+    cli_abort(
+      c(
+        "!" = "Time-varying parameter{?s} {.var {tv_params}} ({.cls process_spec})
+        {?is/are} not yet supported by the model.",
+        "i" = "The {.fn GP} and {.fn RW} interface is defined but model wiring is
+        still in progress."
+      )
+    )
+  }
   ## set IDs of any parameters that is NULL to 0 and remove
   null_params <- vapply(tparams$dist, is.null, logical(1))
   null_ids <- rep(0, sum(null_params))
