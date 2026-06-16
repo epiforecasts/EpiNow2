@@ -1,4 +1,4 @@
-// Stan functions from primarycensored version 1.5.0
+// Stan functions from primarycensored version 1.5.1
 real expgrowth_lpdf(real x, real xmin, real xmax, real r) {
   if (x < xmin || x > xmax) {
     return negative_infinity();
@@ -330,8 +330,10 @@ real primarycensored_cdf(data real d, data int dist_id, array[] real params,
     vector[1] y0 = rep_vector(0.0, 1);
     result = ode_rk45(primarycensored_ode, y0, lower_bound, {d}, theta, {d, pwindow}, ids)[1, 1];
 
-    // Apply truncation normalization on log scale for numerical stability
-    if (!is_inf(D) || !is_inf(L)) {
+    // Apply truncation normalization on log scale for numerical stability.
+    // Skip when F(L) = 0 makes it a no-op (positive support, L <= 0).
+    if (!is_inf(D) || L > 0 ||
+        (!is_inf(L) && !dist_has_positive_support(dist_id))) {
       real log_result = log(result);
       vector[2] bounds = primarycensored_truncation_bounds(
         L, D, dist_id, params, pwindow, primary_id, primary_params
@@ -381,8 +383,10 @@ real primarycensored_lcdf(data real d, data int dist_id, array[] real params,
     ));
   }
 
-  // Handle truncation normalization
-  if (!is_inf(D) || !is_inf(L)) {
+  // Handle truncation normalization. Skip when F(L) = 0 makes it a no-op
+  // (positive support, L <= 0) to avoid the cancelling log_diff_exp.
+  if (!is_inf(D) || L > 0 ||
+      (!is_inf(L) && !dist_has_positive_support(dist_id))) {
     vector[2] bounds = primarycensored_truncation_bounds(
       L, D, dist_id, params, pwindow, primary_id, primary_params
     );
@@ -421,8 +425,10 @@ real primarycensored_lpmf(data int d, data int dist_id, array[] real params,
     positive_infinity(), primary_id, primary_params
   );
 
-  // Apply truncation normalization: log((F(d_upper) - F(d)) / (F(D) - F(L)))
-  if (!is_inf(D) || !is_inf(L)) {
+  // Apply truncation normalization: log((F(d_upper) - F(d)) / (F(D) - F(L))).
+  // Skip when F(L) = 0 makes it a no-op (positive support, L <= 0).
+  if (!is_inf(D) || L > 0 ||
+      (!is_inf(L) && !dist_has_positive_support(dist_id))) {
     real log_cdf_D;
     real log_cdf_L;
 

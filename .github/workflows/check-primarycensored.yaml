@@ -33,6 +33,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           install-pandoc: false
+          cache: false
           packages: |
             any::primarycensored
 
