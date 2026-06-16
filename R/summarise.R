@@ -169,6 +169,7 @@ summarise_results <- function(regions,
 #' @importFrom futile.logger flog.info
 #' @importFrom cli cli_abort
 #' @examples
+#' \donttest{
 #' # get example output from regional_epinow model
 #' regional_out <- readRDS(system.file(
 #'   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
@@ -179,6 +180,7 @@ summarise_results <- function(regions,
 #'   data = regional_out$summary$reported_cases
 #' )
 #' names(summary)
+#' }
 regional_summary <- function(regional_output = NULL,
                              data,
                              results_dir = NULL,
