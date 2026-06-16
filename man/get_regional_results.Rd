@@ -36,6 +36,7 @@ Summarises results across regions either from input or from disk. See the
 examples for details.
 }
 \examples{
+data.table::setDTthreads(1) # so the example timing stays single-threaded
 # get example multiregion estimates
 regional_out <- readRDS(system.file(
   package = "EpiNow2", "extdata", "example_regional_epinow.rds"

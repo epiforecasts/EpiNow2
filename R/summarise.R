@@ -169,6 +169,7 @@ summarise_results <- function(regions,
 #' @importFrom futile.logger flog.info
 #' @importFrom cli cli_abort
 #' @examples
+#' data.table::setDTthreads(1) # so the example timing stays single-threaded
 #' # get example output from regional_epinow model
 #' regional_out <- readRDS(system.file(
 #'   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
