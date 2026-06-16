@@ -36,7 +36,6 @@ Summarises results across regions either from input or from disk. See the
 examples for details.
 }
 \examples{
-\donttest{
 # get example multiregion estimates
 regional_out <- readRDS(system.file(
   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
@@ -44,5 +43,4 @@ regional_out <- readRDS(system.file(
 
 # from output
 results <- get_regional_results(regional_out$regional, samples = FALSE)
-}
 }
