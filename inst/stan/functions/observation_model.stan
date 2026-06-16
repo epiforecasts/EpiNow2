@@ -39,6 +39,22 @@ vector scale_obs(vector reports, real fraction_observed) {
 }
 
 /**
+ * Scale observations by a time-varying fraction reported
+ *
+ * Overload of [scale_obs()] for a fraction observed that varies over time.
+ *
+ * @param reports Vector of reports to be scaled.
+ * @param fraction_observed Vector of fraction observed, one per report.
+ *
+ * @return A vector of scaled reports.
+ *
+ * @ingroup observation_model
+ */
+vector scale_obs(vector reports, vector fraction_observed) {
+  return reports .* fraction_observed;
+}
+
+/**
  * Truncate observed data by a truncation distribution
  *
  * This function truncates a vector of reports based on a truncation

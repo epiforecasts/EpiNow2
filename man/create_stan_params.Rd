@@ -4,10 +4,15 @@
 \alias{create_stan_params}
 \title{Create parameters for stan}
 \usage{
-create_stan_params(params)
+create_stan_params(params, states_supported = character(0))
 }
 \arguments{
 \item{params}{A list of \verb{<EpiNow2.params>} as created by \code{\link[=make_param]{make_param()}}}
+
+\item{states_supported}{Character vector of parameter names for which the
+calling model can consume time-varying states (created by \code{\link[=GP]{GP()}} /
+\code{\link[=RW]{RW()}}). Defaults to none, so any state specification raises an error.
+A model passes the names whose state data its stan code handles.}
 }
 \value{
 A list of variables as expected by the stan model

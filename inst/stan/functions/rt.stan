@@ -31,7 +31,7 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
                  vector bp_effects, int stationary, int n_centre) {
   // Rt is a time-varying parameter with a log link: build the trajectory on the
   // log scale via the generic process mechanism, then exponentiate.
-  vector[t] logR = update_process(
+  vector[t] logR = update_state(
     t, rep_vector(log(R0), t), noise, bps, bp_effects, stationary, n_centre
   );
   return exp(logR);

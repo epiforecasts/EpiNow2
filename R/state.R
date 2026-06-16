@@ -1,66 +1,66 @@
-#' Time-varying parameter processes
+#' Time-varying parameters
 #'
 #' @description `r lifecycle::badge("experimental")`
 #'
 #' These constructors mark a model parameter as varying over time, driven by a
-#' stochastic process. `GP()` uses an approximate Gaussian process and `RW()` a
+#' stochastic state. `GP()` uses an approximate Gaussian process and `RW()` a
 #' random walk. They wrap a `<dist_spec>` giving the prior on the value the
-#' parameter reverts to (`mean`, a stationary / mean-reverting process) or on its
-#' initial value (`init`, a process on first differences). Exactly one of `mean`
+#' parameter reverts to (`mean`, a stationary / mean-reverting state) or on its
+#' initial value (`init`, a state on first differences). Exactly one of `mean`
 #' or `init` must be supplied.
 #'
 #' The wrapped prior may itself be a known trajectory (e.g. a `NonParametric()`
-#' built from a data column), in which case the process fits deviations around
+#' built from a data column), in which case the state fits deviations around
 #' that mean. The link function applied to the resulting trajectory (e.g. log for
 #' positive parameters, logit for probabilities) is a property of the parameter
 #' and is set where the parameter is registered, not here.
 #'
 #' @details
-#' The process specification deliberately carries only the value/process part of
-#' a time-varying parameter. The level (whether the overall value is estimated or
+#' The state specification deliberately carries only the value/state part of a
+#' time-varying parameter. The level (whether the overall value is estimated or
 #' `Fixed()`) and the link function are handled where the parameter is used.
 #'
 #' These functions define the user interface for time-varying parameters. Wiring
-#' them into the models is ongoing; passing a process specification where a model
-#' parameter is expected currently raises an informative error.
+#' them into the models is ongoing; passing a state specification where a model
+#' parameter is not yet supported raises an informative error.
 #'
 #' @param mean A `<dist_spec>` giving the prior on the (stationary) mean the
-#'   process reverts to, or a numeric vector giving a known mean trajectory the
-#'   process fits deviations around. Supply either `mean` or `init`, not both.
-#' @param init A `<dist_spec>` giving the prior on the initial value of a process
+#'   state reverts to, or a numeric vector giving a known mean trajectory the
+#'   state fits deviations around. Supply either `mean` or `init`, not both.
+#' @param init A `<dist_spec>` giving the prior on the initial value of a state
 #'   on first differences, or a numeric vector giving known initial value(s).
 #'   Supply either `mean` or `init`, not both.
-#' @return A `<process_spec>` object describing the time-varying process.
-#' @name process
-#' @rdname process
+#' @return A `<state_spec>` object describing the time-varying state.
+#' @name state
+#' @rdname state
 NULL
 
-#' Construct a process specification
+#' Construct a state specification
 #'
-#' @param type Character, the process type (`"gp"` or `"rw"`).
+#' @param type Character, the state type (`"gp"` or `"rw"`).
 #' @param mean,init A `<dist_spec>`; exactly one must be supplied.
-#' @param settings A list of additional process settings (e.g. a `<gp_opts>`
+#' @param settings A list of additional state settings (e.g. a `<gp_opts>`
 #'   object for `"gp"`, or the step standard deviation prior for `"rw"`).
-#' @return A `<process_spec>` object.
+#' @return A `<state_spec>` object.
 #' @importFrom cli cli_abort
 #' @importFrom checkmate assert_class
 #' @keywords internal
-new_process_spec <- function(type, mean, init, settings = list()) {
+new_state_spec <- function(type, mean, init, settings = list()) {
   has_mean <- !missing(mean) && !is.null(mean)
   has_init <- !missing(init) && !is.null(init)
   if (has_mean + has_init != 1) {
     cli_abort(
       c(
         "!" = "Exactly one of {.arg mean} or {.arg init} must be supplied.",
-        "i" = "Use {.arg mean} for a mean-reverting (stationary) process or
-        {.arg init} for a process on first differences."
+        "i" = "Use {.arg mean} for a mean-reverting (stationary) state or
+        {.arg init} for a state on first differences."
       )
     )
   }
   anchor <- if (has_mean) "mean" else "init"
   prior <- if (has_mean) mean else init
   ## the anchor may be a prior (a <dist_spec>) or a known trajectory supplied as
-  ## a numeric vector (the process then fits deviations around it)
+  ## a numeric vector (the state then fits deviations around it)
   if (!is(prior, "dist_spec") && !is.numeric(prior)) {
     cli_abort(
       c(
@@ -71,19 +71,19 @@ new_process_spec <- function(type, mean, init, settings = list()) {
     )
   }
 
-  process <- list(
+  state <- list(
     type = type,
     anchor = anchor,
     prior = prior,
     settings = settings
   )
-  class(process) <- c(
-    paste0(type, "_process"), "process_spec", "list"
+  class(state) <- c(
+    paste0(type, "_state"), "state_spec", "list"
   )
-  process
+  state
 }
 
-#' @rdname process
+#' @rdname state
 #' @param ... Additional Gaussian process settings passed to [gp_opts()] (e.g.
 #'   `ls`, `alpha`, `kernel`).
 #' @export
@@ -93,10 +93,10 @@ new_process_spec <- function(type, mean, init, settings = list()) {
 #' # Gaussian process on first differences
 #' GP(init = Normal(mean = 5, sd = 1))
 GP <- function(mean, init, ...) {
-  new_process_spec("gp", mean, init, settings = gp_opts(...))
+  new_state_spec("gp", mean, init, settings = gp_opts(...))
 }
 
-#' @rdname process
+#' @rdname state
 #' @param sd A `<dist_spec>` giving the prior on the random walk step standard
 #'   deviation. Defaults to a half-normal `Normal(mean = 0, sd = 0.1)` (the lower
 #'   limit of 0 is enforced where the parameter is used).
@@ -109,20 +109,20 @@ GP <- function(mean, init, ...) {
 #' RW(mean = Normal(mean = 5, sd = 1), sd = Normal(mean = 0, sd = 0.05))
 RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1)) {
   assert_class(sd, "dist_spec")
-  new_process_spec("rw", mean, init, settings = list(sd = sd))
+  new_state_spec("rw", mean, init, settings = list(sd = sd))
 }
 
-#' Test whether an object is a time-varying process specification
+#' Test whether an object is a time-varying state specification
 #'
 #' @param x An object to test.
-#' @return Logical, `TRUE` if `x` is a `<process_spec>`.
+#' @return Logical, `TRUE` if `x` is a `<state_spec>`.
 #' @keywords internal
-is_process_spec <- function(x) {
-  inherits(x, "process_spec")
+is_state_spec <- function(x) {
+  inherits(x, "state_spec")
 }
 
 #' @export
-print.process_spec <- function(x, ...) {
+print.state_spec <- function(x, ...) {
   type <- if (x$type == "gp") "Gaussian process" else "random walk"
   variant <- if (x$anchor == "mean") "mean-reverting" else "on first differences"
   cat(

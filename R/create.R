@@ -423,7 +423,9 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     model_type = as.numeric(obs$family == "negbin"),
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
-    obs_scale = as.integer(obs$scale != Fixed(1)),
+    obs_scale = as.integer(
+      is_state_spec(obs$scale) || obs$scale != Fixed(1)
+    ),
     likelihood = as.numeric(obs$likelihood),
     return_likelihood = as.numeric(obs$return_likelihood)
   )
@@ -519,13 +521,14 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   # parameters
   stan_data <- c(
     stan_data,
-    create_stan_params(params)
+    create_stan_params(params, states_supported = "fraction_observed")
   )
 
   # rescale mean shifted prior for back calculation if observation scaling is
-  # used
+  # used; for a time-varying scale use the level (mean) prior
+  scale_level <- if (is_state_spec(obs$scale)) obs$scale$prior else obs$scale
   stan_data$shifted_cases <-
-    stan_data$shifted_cases / mean(obs$scale)
+    stan_data$shifted_cases / mean(scale_level)
   stan_data
 }
 
@@ -577,6 +580,14 @@ create_initial_conditions <- function(stan_data, params) {
   function() {
     out <- create_delay_inits(stan_data)
 
+    ## unwrap time-varying states to their level prior for initialisation
+    state_flags <- vapply(transpose(params)$dist, is_state_spec, logical(1))
+    if (any(state_flags)) {
+      for (i in which(state_flags)) {
+        params[[i]]$dist <- params[[i]]$dist$prior
+      }
+    }
+
     if (stan_data$fixed == 0) {
       out$eta <- array(rnorm(
         ifelse(stan_data$gp_type == 1, stan_data$M * 2, stan_data$M),
@@ -626,6 +637,20 @@ create_initial_conditions <- function(stan_data, params) {
       b = stan_data$params_upper,
       mean = param_means, sd = param_sds
     ))
+
+    ## time-varying parameter states (random walk steps + step sd)
+    if (stan_data$n_states > 0) {
+      state_rw_n <- max(0, stan_data$t - stan_data$seeding_time - 1)
+      out$state_rw_sd <- array(
+        truncnorm::rtruncnorm(stan_data$n_states, a = 0, mean = 0, sd = 0.1)
+      )
+      out$state_rw_steps <- array(
+        rnorm(stan_data$n_states * state_rw_n, 0, 0.1)
+      )
+    } else {
+      out$state_rw_sd <- array(numeric(0))
+      out$state_rw_steps <- array(numeric(0))
+    }
     out
   }
 }
@@ -888,25 +913,17 @@ create_stan_delays <- function(..., time_points = 1L) {
 ##'
 ##' @param params A list of `<EpiNow2.params>` as created by [make_param()]
 ##'
+##' @param states_supported Character vector of parameter names for which the
+##'   calling model can consume time-varying states (created by [GP()] /
+##'   [RW()]). Defaults to none, so any state specification raises an error.
+##'   A model passes the names whose state data its stan code handles.
+##'
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom data.table fcase
 ##' @importFrom purrr transpose
 ##' @keywords internal
-create_stan_params <- function(params) {
+create_stan_params <- function(params, states_supported = character(0)) {
   tparams <- transpose(params)
-  ## time-varying (process) specifications are not yet wired into the models
-  process_params <- vapply(tparams$dist, is_process_spec, logical(1))
-  if (any(process_params)) {
-    tv_params <- tparams$name[process_params] # nolint: object_usage_linter
-    cli_abort(
-      c(
-        "!" = "Time-varying parameter{?s} {.var {tv_params}} ({.cls process_spec})
-        {?is/are} not yet supported by the model.",
-        "i" = "The {.fn GP} and {.fn RW} interface is defined but model wiring is
-        still in progress."
-      )
-    )
-  }
   ## set IDs of any parameters that is NULL to 0 and remove
   null_params <- vapply(tparams$dist, is.null, logical(1))
   null_ids <- rep(0, sum(null_params))
@@ -915,6 +932,18 @@ create_stan_params <- function(params) {
       "param_id", tparams$name[null_params], sep = "_"
     )
     params <- params[!null_params]
+    tparams <- transpose(params)
+  }
+
+  ## extract any time-varying (state) specifications. The parameter's level
+  ## prior flows through the normal parameter machinery; the state is layered
+  ## on top in the model via the data from create_state_data().
+  state_flags <- vapply(tparams$dist, is_state_spec, logical(1))
+  state_data <- create_state_data(params, state_flags, states_supported)
+  if (any(state_flags)) {
+    for (i in which(state_flags)) {
+      params[[i]]$dist <- params[[i]]$dist$prior
+    }
     tparams <- transpose(params)
   }
 
@@ -989,7 +1018,103 @@ create_stan_params <- function(params) {
   if (length(ids) > 0) {
     names(ids) <- paste("param_id", tparams$name, sep = "_")
   }
-  c(ret, as.list(ids), as.list(null_ids))
+  c(ret, state_data, as.list(ids), as.list(null_ids))
+}
+
+##' Create time-varying state data for stan
+##'
+##' Builds the minimal configuration the stan model needs to layer a stochastic
+##' state on top of a parameter's level (see [create_stan_params()]). The
+##' trajectory length and centring window are derived in stan from the modelled
+##' time, so only the state type, link, target parameter and step standard
+##' deviation prior are emitted here.
+##'
+##' @param params A list of `<EpiNow2.params>` after `NULL` parameters have been
+##'   removed, so that positions match the stan parameter ids.
+##' @param state_flags Logical vector flagging which entries of `params` carry
+##'   a state specification.
+##' @param states_supported Character vector of parameter names the calling model
+##'   can consume a time-varying state for. A state on any other parameter errors.
+##' @return A named list of stan data items describing the states.
+##' @importFrom data.table fcase
+##' @keywords internal
+create_state_data <- function(params, state_flags,
+                              states_supported = character(0)) {
+  if (!any(state_flags)) {
+    return(list(
+      n_states = 0L,
+      state_param_id = array(integer(0)),
+      state_type = array(integer(0)),
+      state_link = array(integer(0)),
+      state_sd_dist = array(integer(0)),
+      state_sd_dist_params = array(numeric(0))
+    ))
+  }
+
+  idx <- which(state_flags)
+  type <- integer(length(idx))
+  link <- integer(length(idx))
+  sd_dist <- integer(length(idx))
+  sd_params <- numeric(0)
+  for (j in seq_along(idx)) {
+    spec <- params[[idx[j]]]$dist
+    name <- params[[idx[j]]]$name # nolint: object_usage_linter
+    if (!name %in% states_supported) {
+      if (length(states_supported) == 0) {
+        cli_abort(c(
+          "!" = "Time-varying parameter {.var {name}} ({.cls state_spec}) is not
+          supported by this model."
+        ))
+      }
+      cli_abort(c(
+        "!" = "Time-varying {.var {name}} is not yet supported.",
+        "i" = "Currently supported: {.var {states_supported}}."
+      ))
+    }
+    if (spec$type != "rw") {
+      cli_abort(c(
+        "!" = "Only random walk ({.fn RW}) time-varying parameters are currently
+        supported (parameter {.var {name}})."
+      ))
+    }
+    if (spec$anchor != "mean") {
+      cli_abort(c(
+        "!" = "Only the {.arg mean} anchor is currently supported for time-varying
+        parameter {.var {name}}."
+      ))
+    }
+    if (!is(spec$prior, "dist_spec")) {
+      cli_abort(c(
+        "!" = "Known (numeric) trajectories are not yet supported for time-varying
+        parameter {.var {name}}."
+      ))
+    }
+    type[j] <- 0L # random walk
+    link[j] <- 0L # log
+    sd <- spec$settings$sd
+    sd_dist[j] <- fcase(
+      get_distribution(sd) == "lognormal", 0L,
+      get_distribution(sd) == "gamma", 1L,
+      get_distribution(sd) == "normal", 2L
+    )
+    sd_pars <- get_parameters(sd)
+    if (!all(vapply(sd_pars, is.numeric, logical(1)))) {
+      cli_abort(c(
+        "!" = "The step standard deviation prior for time-varying parameter
+        {.var {name}} cannot have uncertain parameters."
+      ))
+    }
+    sd_params <- c(sd_params, as.numeric(unlist(sd_pars)))
+  }
+
+  list(
+    n_states = length(idx),
+    state_param_id = array(as.integer(idx)),
+    state_type = array(type),
+    state_link = array(link),
+    state_sd_dist = array(sd_dist),
+    state_sd_dist_params = array(sd_params)
+  )
 }
 
 #' Create summary output from infection estimation objects

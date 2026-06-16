@@ -4,7 +4,7 @@ functions {
 #include functions/pmfs.stan
 #include functions/delays.stan
 #include functions/gaussian_process.stan
-#include functions/process.stan
+#include functions/state.stan
 #include functions/rt.stan
 #include functions/infections.stan
 #include functions/observation_model.stan

@@ -562,7 +562,10 @@ gp_opts <- function(basis_prop = 0.2,
 #'   to a fixed value of 1, i.e. no scaling: `Fixed(1)`. A lower limit of zero
 #'   will be enforced automatically. If setting to a prior distribution and no
 #'   overreporting is expected, it might be sensible to set a maximum of 1 via
-#'   the `max` option when declaring the distribution.
+#'   the `max` option when declaring the distribution. `r
+#'   lifecycle::badge("experimental")` May also be a time-varying `<state_spec>`
+#'   created by [RW()] (e.g. `scale = RW(mean = Normal(0.4, 0.05))`) to estimate
+#'   a fraction observed that varies over time.
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
@@ -613,7 +616,11 @@ obs_opts <- function(family = c("negbin", "poisson"),
   if (!is.null(obs$dispersion)) {
     assert_class(obs$dispersion, "dist_spec")
   }
-  assert_class(obs$scale, "dist_spec")
+  ## scale may be a fixed/uncertain value (<dist_spec>) or time-varying
+  ## (<state_spec>, created by GP() / RW())
+  if (!is_state_spec(obs$scale)) {
+    assert_class(obs$scale, "dist_spec")
+  }
 
   attr(obs, "class") <- c("obs_opts", class(obs))
   obs

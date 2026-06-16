@@ -9,7 +9,7 @@ make_param(name, dist = NULL, lower_bound = -Inf)
 \arguments{
 \item{name}{Character, name of the parameter}
 
-\item{dist}{\verb{<dist_spec>} or \verb{<process_spec>}, the (possibly time-varying)
+\item{dist}{\verb{<dist_spec>} or \verb{<state_spec>}, the (possibly time-varying)
 distribution of the parameter; default: NULL}
 
 \item{lower_bound}{Numeric, lower bound for the parameter; default: -Inf}

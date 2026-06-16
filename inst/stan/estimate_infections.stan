@@ -4,7 +4,7 @@ functions {
 #include functions/pmfs.stan
 #include functions/delays.stan
 #include functions/gaussian_process.stan
-#include functions/process.stan
+#include functions/state.stan
 #include functions/rt.stan
 #include functions/infections.stan
 #include functions/observation_model.stan
@@ -21,6 +21,7 @@ data {
 #include data/observation_model.stan
 #include data/params.stan
 #include data/estimate_infections_params.stan
+#include data/states.stan
 }
 
 transformed data {
@@ -53,6 +54,9 @@ transformed data {
   } else {
     initial_infections_guess = 0;
   }
+
+  // number of random walk steps per time-varying parameter state
+  int state_rw_n = ot_h > 1 ? ot_h - 1 : 0;
 }
 
 parameters {
@@ -73,6 +77,9 @@ parameters {
   // normalised within each ragged segment to give a Dirichlet draw
   vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
   simplex[week_effect] day_of_week_simplex; // day of week reporting effect
+  // time-varying parameter states
+  vector[n_states * state_rw_n] state_rw_steps; // random walk steps
+  vector<lower = 0>[n_states] state_rw_sd;      // random walk step sd
 }
 
 transformed parameters {
@@ -108,6 +115,17 @@ transformed parameters {
     }
   }
 
+  // trajectory of the (possibly time-varying) fraction observed; constant when
+  // no state is attached to fraction_observed
+  vector[ot_h] fraction_observed_traj = get_param_trajectory(
+    param_id_fraction_observed, ot_h, ot,
+    get_param(
+      param_id_fraction_observed, params_fixed_lookup, params_variable_lookup,
+      params_value, params
+    ),
+    state_param_id, state_link, state_rw_steps, state_rw_n
+  );
+
   // Estimate latent infections
   if (estimate_r) {
     profile("gt") {
@@ -127,17 +145,13 @@ transformed parameters {
       );
     }
     profile("infections") {
-      real fraction_observed = get_param(
-        param_id_fraction_observed, params_fixed_lookup, params_variable_lookup, params_value,
-        params
-      );
       real pop = get_param(
         param_id_pop, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       infections = generate_infections(
         R, seeding_time, gt_rev_pmf, initial_infections, pop, use_pop, pop_floor,
-        future_time, obs_scale, fraction_observed, 1
+        future_time, obs_scale, fraction_observed_traj[1], 1
       );
     }
   } else {
@@ -177,11 +191,7 @@ transformed parameters {
   // scaling of reported cases by fraction observed
   if (obs_scale) {
     profile("scale") {
-      real fraction_observed = get_param(
-        param_id_fraction_observed, params_fixed_lookup, params_variable_lookup, params_value,
-        params
-      );
-      reports = scale_obs(reports, fraction_observed);
+      reports = scale_obs(reports, fraction_observed_traj);
     }
   }
 
@@ -233,6 +243,19 @@ model {
     params_lp(
       params, prior_dist, prior_dist_params, params_lower, params_upper
     );
+  }
+
+  // priors for time-varying parameter states
+  profile("state lp") {
+    for (s in 1:n_states) {
+      apply_prior_lp(
+        state_rw_sd[s], state_sd_dist[s],
+        state_sd_dist_params[2 * s - 1], state_sd_dist_params[2 * s],
+        0, positive_infinity()
+      );
+      segment(state_rw_steps, (s - 1) * state_rw_n + 1, state_rw_n) ~
+        normal(0, state_rw_sd[s]);
+    }
   }
 
   if (estimate_r) {
