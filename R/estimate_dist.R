@@ -109,7 +109,7 @@
 #' - The primary event distribution is limited to uniform or
 #'   exponential growth with a fixed rate.
 #'   Primary event parameters are not estimated.
-#' - Left truncation is not yet exposed (internally set to 0).
+#' - Left truncation is not yet exposed (internally set to `-Inf`).
 #'
 #' @references
 #' Park SW, et al. (2024) "Estimating epidemiological delay
