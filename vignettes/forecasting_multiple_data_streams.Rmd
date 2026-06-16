@@ -77,7 +77,8 @@ hosp <- simulate_secondary(
 )
 #> ℹ Unconstrained distributon passed as a delay.
 #> ℹ Constraining with default CDF cutoff 0.001.
-#> ℹ To silence this message, specify delay distributions with `max` or `default_cdf_cutoff`.
+#> ℹ To silence this message, specify delay distributions with `max` or
+#>   `default_cdf_cutoff`.
 ```
 
 Using this we then create a combined data set:

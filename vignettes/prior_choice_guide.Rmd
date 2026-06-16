@@ -1010,9 +1010,10 @@ fit_nonmech <- estimate_infections(
   backcalc = backcalc_opts(prior = "reports"),
   stan = stan
 )
-#> Warning: ! No generation time distribution given. Using a fixed generation time of 1 day, i.e. the
-#>   reproduction number is the same as the daily growth rate.
-#> ℹ If this was intended then this warning can be silenced by setting `dist = Fixed(1)`'.
+#> Warning: ! No generation time distribution given. Using a fixed generation time of 1
+#>   day, i.e. the reproduction number is the same as the daily growth rate.
+#> ℹ If this was intended then this warning can be silenced by setting `dist =
+#>   Fixed(1)`'.
 #> Warning: The largest R-hat is NA, indicating chains have not mixed.
 #> Running the chains for more iterations may help. See
 #> https://mc-stan.org/misc/warnings.html#r-hat
