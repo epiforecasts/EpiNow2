@@ -521,7 +521,10 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   # parameters
   stan_data <- c(
     stan_data,
-    create_stan_params(params, states_supported = "fraction_observed")
+    create_stan_params(
+      params,
+      states_supported = c("fraction_observed", "reporting_overdispersion")
+    )
   )
 
   # rescale mean shifted prior for back calculation if observation scaling is

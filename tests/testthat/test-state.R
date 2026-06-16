@@ -132,6 +132,22 @@ test_that("create_stan_params rejects periodic kernel states", {
   )
 })
 
+test_that("create_stan_params emits state data for reporting_overdispersion", {
+  params <- list(
+    make_param("fraction_observed", Normal(0.5, 0.1), lower_bound = 0),
+    make_param("reporting_overdispersion", RW(mean = Normal(0.3, 0.1)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(
+    params,
+    states_supported = c("fraction_observed", "reporting_overdispersion")
+  )
+  expect_identical(out$n_states, 1L)
+  expect_identical(out$state_param_id, array(2L)) # second param
+  expect_identical(out$n_rw_states, 1L)
+})
+
 test_that("create_stan_params is a no-op without states", {
   params <- list(
     make_param("fraction_observed", Normal(0.5, 0.1), lower_bound = 0)

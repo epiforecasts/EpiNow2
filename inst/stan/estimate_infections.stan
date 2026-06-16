@@ -126,40 +126,29 @@ transformed parameters {
 
   // trajectory of the (possibly time-varying) fraction observed; constant when
   // no state is attached to fraction_observed
-  vector[ot_h] fraction_observed_traj;
-  {
-    real fo_level = get_param(
+  vector[ot_h] fraction_observed_traj = get_state_trajectory(
+    param_id_fraction_observed, ot_h, ot,
+    get_param(
       param_id_fraction_observed, params_fixed_lookup, params_variable_lookup,
       params_value, params
-    );
-    int fo_state = 0;
-    for (s in 1:n_states) {
-      if (state_param_id[s] == param_id_fraction_observed) {
-        fo_state = s;
-      }
-    }
-    if (fo_state == 0) {
-      fraction_observed_traj = rep_vector(fo_level, ot_h);
-    } else if (state_type[fo_state] == 0) {
-      int p = state_pos[fo_state];
-      vector[state_rw_n] steps = segment(
-        state_rw_steps, (p - 1) * state_rw_n + 1, state_rw_n
-      );
-      fraction_observed_traj = rw_trajectory(
-        ot_h, fo_level, steps, state_link[fo_state], ot
-      );
-    } else {
-      int p = state_pos[fo_state];
-      vector[gp_M] gp_eta = segment(state_gp_eta, (p - 1) * gp_M + 1, gp_M);
-      vector[ot_h] gp_noise = update_gp(
-        gp_PHI, gp_M, gp_boundary_scale, state_gp_alpha[p],
-        2 * state_gp_rho[p] / ot_h, gp_eta, gp_kernel[p], gp_nu[p]
-      );
-      fraction_observed_traj = gp_trajectory(
-        ot_h, fo_level, gp_noise, state_link[fo_state], ot
-      );
-    }
-  }
+    ),
+    state_param_id, state_type, state_link, state_pos,
+    state_rw_steps, state_rw_n,
+    state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
+    state_gp_alpha, state_gp_rho
+  );
+  // trajectory of the (possibly time-varying) reporting overdispersion
+  vector[ot_h] reporting_overdispersion_traj = get_state_trajectory(
+    param_id_reporting_overdispersion, ot_h, ot,
+    get_param(
+      param_id_reporting_overdispersion, params_fixed_lookup,
+      params_variable_lookup, params_value, params
+    ),
+    state_param_id, state_type, state_link, state_pos,
+    state_rw_steps, state_rw_n,
+    state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
+    state_gp_alpha, state_gp_rho
+  );
 
   // Estimate latent infections
   if (estimate_r) {
@@ -324,12 +313,9 @@ model {
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {
     profile("report lp") {
-      real reporting_overdispersion = get_param(
-        param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
-        params
-      );
       report_lp(
-        cases, case_times, obs_reports, reporting_overdispersion, model_type, obs_weight
+        cases, case_times, obs_reports, reporting_overdispersion_traj[1:ot],
+        model_type, obs_weight
       );
     }
   }
@@ -344,10 +330,6 @@ generated quantities {
   vector[(estimate_r > 0 && use_pop > 0) ? ot_h : 0] R_adj;
 
   profile("generated quantities") {
-    real reporting_overdispersion = get_param(
-      param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
-      params
-    );
     if (!fixed) {
       real rescaled_rho = 2 * get_param(
         param_id_rho, params_fixed_lookup, params_variable_lookup,
@@ -399,16 +381,20 @@ generated quantities {
       vector[ot_h] accumulated_reports =
         accumulate_reports(reports, accumulate);
       imputed_reports = report_rng(
-        accumulated_reports[imputed_times], reporting_overdispersion, model_type
+        accumulated_reports[imputed_times],
+        reporting_overdispersion_traj[imputed_times], model_type
       );
     } else {
-      imputed_reports = report_rng(reports, reporting_overdispersion, model_type);
+      imputed_reports = report_rng(
+        reports, reporting_overdispersion_traj, model_type
+      );
     }
 
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
-        cases, obs_reports[case_times], reporting_overdispersion, model_type, obs_weight
+        cases, obs_reports[case_times], reporting_overdispersion_traj[case_times],
+        model_type, obs_weight
       );
     }
   }

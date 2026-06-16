@@ -128,3 +128,64 @@ vector gp_trajectory(int t, real level, vector noise, int link, int n_centre) {
   }
   return x;
 }
+
+/**
+ * Get the trajectory of a (possibly time-varying) parameter
+ *
+ * Generic dispatch over the registered states: if a state is attached to the
+ * parameter with the given id, builds its trajectory (random walk or Gaussian
+ * process); otherwise returns a constant trajectory at `level`. This lets any
+ * parameter consumed pointwise over time become time-varying with no per-parameter
+ * code beyond the call site.
+ *
+ * @param id Target parameter id
+ * @param t Length of the trajectory
+ * @param n_centre Centring window for the state
+ * @param level Parameter level on the natural scale (from get_param)
+ * @param state_param_id Target parameter id of each state
+ * @param state_type State type of each state (0 = RW, 1 = GP)
+ * @param state_link Link of each state (0 = log)
+ * @param state_pos Index of each state within its type group
+ * @param state_rw_steps Flat random walk steps across RW states
+ * @param state_rw_n Number of random walk steps per RW state
+ * @param state_gp_eta Flat GP basis coefficients across GP states
+ * @param gp_M Number of GP basis functions (shared)
+ * @param gp_PHI Shared GP basis matrix
+ * @param gp_boundary_scale GP boundary scale
+ * @param gp_kernel Kernel of each GP state
+ * @param gp_nu Matern smoothness of each GP state
+ * @param state_gp_alpha GP magnitude of each GP state
+ * @param state_gp_rho GP lengthscale of each GP state
+ * @return A vector of length t with the parameter trajectory
+ *
+ * @ingroup estimates_smoothing
+ */
+vector get_state_trajectory(
+  int id, int t, int n_centre, real level,
+  array[] int state_param_id, array[] int state_type, array[] int state_link,
+  array[] int state_pos,
+  vector state_rw_steps, int state_rw_n,
+  vector state_gp_eta, int gp_M, matrix gp_PHI, real gp_boundary_scale,
+  array[] int gp_kernel, array[] real gp_nu,
+  vector state_gp_alpha, vector state_gp_rho
+) {
+  for (s in 1:num_elements(state_param_id)) {
+    if (state_param_id[s] == id) {
+      int p = state_pos[s];
+      if (state_type[s] == 0) {
+        vector[state_rw_n] steps = segment(
+          state_rw_steps, (p - 1) * state_rw_n + 1, state_rw_n
+        );
+        return rw_trajectory(t, level, steps, state_link[s], n_centre);
+      } else {
+        vector[gp_M] eta = segment(state_gp_eta, (p - 1) * gp_M + 1, gp_M);
+        vector[t] noise = update_gp(
+          gp_PHI, gp_M, gp_boundary_scale, state_gp_alpha[p],
+          2 * state_gp_rho[p] / t, eta, gp_kernel[p], gp_nu[p]
+        );
+        return gp_trajectory(t, level, noise, state_link[s], n_centre);
+      }
+    }
+  }
+  return rep_vector(level, t);
+}

@@ -180,6 +180,41 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
 }
 
 /**
+ * Update log density for reported cases with a time-varying overdispersion
+ *
+ * Overload of [report_lp()] for a reporting overdispersion that varies over
+ * time. `reporting_overdispersion` is indexed at the observation times.
+ *
+ * @param cases Array of observed cases.
+ * @param case_times Array of observation time indices.
+ * @param reports Vector of expected reports.
+ * @param reporting_overdispersion Vector of overdispersion, one per report.
+ * @param model_type Observation model (0 = Poisson, 1 = negative binomial).
+ * @param weight Likelihood weight.
+ *
+ * @ingroup observation_model
+ */
+void report_lp(array[] int cases, array[] int case_times, vector reports,
+               vector reporting_overdispersion, int model_type, real weight) {
+  int n = num_elements(case_times); // number of observations
+  vector[n] obs_reports = reports[case_times]; // reports at observation time
+  if (model_type) {
+    vector[n] phi = inv_square(reporting_overdispersion[case_times]);
+    if (weight == 1) {
+      cases ~ neg_binomial_2(obs_reports, phi);
+    } else {
+      target += neg_binomial_2_lpmf(cases | obs_reports, phi) * weight;
+    }
+  } else {
+    if (weight == 1) {
+      cases ~ poisson(obs_reports);
+    } else {
+      target += poisson_lpmf(cases | obs_reports) * weight;
+    }
+  }
+}
+
+/**
  * Accumulate reports according to a binary flag at each time point
  *
  * This function accumulates reports according to a binary flag at each time
@@ -242,6 +277,36 @@ vector report_log_lik(array[] int cases, vector reports,
   return(log_lik);
 }
 
+/**
+ * Log likelihood with a time-varying overdispersion (overload)
+ *
+ * @param cases Array of observed cases.
+ * @param reports Vector of expected reports.
+ * @param reporting_overdispersion Vector of overdispersion, one per report.
+ * @param model_type Observation model (0 = Poisson, 1 = negative binomial).
+ * @param weight Likelihood weight.
+ * @return A vector of pointwise log likelihood contributions.
+ *
+ * @ingroup observation_model
+ */
+vector report_log_lik(array[] int cases, vector reports,
+                      vector reporting_overdispersion, int model_type,
+                      real weight) {
+  int t = num_elements(reports);
+  vector[t] log_lik;
+  if (model_type == 0) {
+    for (i in 1:t) {
+      log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
+    }
+  } else {
+    for (i in 1:t) {
+      real phi = reporting_phi(reporting_overdispersion[i], model_type);
+      log_lik[i] = neg_binomial_2_lpmf(cases[i] | reports[i], phi) * weight;
+    }
+  }
+  return(log_lik);
+}
+
 
 /**
  * Custom safe version of the negative binomial sampler
@@ -295,6 +360,27 @@ array[] int report_rng(vector reports, real reporting_overdispersion, int model_
   real phi = reporting_phi(reporting_overdispersion, model_type);
 
   for (s in 1:t) {
+    sampled_reports[s] = neg_binomial_2_safe_rng(reports[s], phi);
+  }
+  return(sampled_reports);
+}
+
+/**
+ * Sample reported cases with a time-varying overdispersion (overload)
+ *
+ * @param reports Vector of expected reports.
+ * @param reporting_overdispersion Vector of overdispersion, one per report.
+ * @param model_type Observation model (0 = Poisson, 1 = negative binomial).
+ * @return An array of sampled reported cases.
+ *
+ * @ingroup observation_model
+ */
+array[] int report_rng(vector reports, vector reporting_overdispersion,
+                       int model_type) {
+  int t = num_elements(reports);
+  array[t] int sampled_reports;
+  for (s in 1:t) {
+    real phi = reporting_phi(reporting_overdispersion[s], model_type);
     sampled_reports[s] = neg_binomial_2_safe_rng(reports[s], phi);
   }
   return(sampled_reports);

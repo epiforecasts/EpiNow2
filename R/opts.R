@@ -613,11 +613,11 @@ obs_opts <- function(family = c("negbin", "poisson"),
     return_likelihood = return_likelihood
   )
 
-  if (!is.null(obs$dispersion)) {
+  ## dispersion and scale may each be a fixed/uncertain value (<dist_spec>) or
+  ## time-varying (<state_spec>, created by GP() / RW())
+  if (!is.null(obs$dispersion) && !is_state_spec(obs$dispersion)) {
     assert_class(obs$dispersion, "dist_spec")
   }
-  ## scale may be a fixed/uncertain value (<dist_spec>) or time-varying
-  ## (<state_spec>, created by GP() / RW())
   if (!is_state_spec(obs$scale)) {
     assert_class(obs$scale, "dist_spec")
   }
