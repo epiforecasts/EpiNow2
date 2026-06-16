@@ -4,6 +4,8 @@
 
 - Added support for all `dist_spec` delay families and `obs_opts()` observation model selection (Poisson or negative binomial) to `estimate_truncation()`. The existing observation model functions (`report_lp`, `report_rng`) are now reused internally.
 - Wired the `likelihood` and `return_likelihood` settings of `obs_opts()` through `estimate_truncation()` so that prior-only fits and `loo`-compatible log-likelihood output are available, matching `estimate_infections()` and `estimate_secondary()`.
+- Added a `noise` argument to `estimate_truncation()` that takes a `dist_spec` controlling the additive noise term, replacing the previously hardcoded `sigma ~ normal(0, 1) T[0,]`.
+- `estimate_truncation()` now warns via `check_truncation_obs_opts()` when `obs_opts()` settings unused by the truncation model (`weight`, `week_effect`, `week_length`, `scale`) are set to non-default values.
 - Added `estimate_dist()` for fitting delay distributions from interval-censored linelist data using Bayesian inference, with support for lognormal, gamma, normal, exponential, and Weibull distributions.
 - Added `Exp()`, `Weibull()`, and `Normal()` distribution constructors.
 - Added `Dirichlet()` and updated `NonParametric()` to support estimating nonparametric delay distributions using a Dirichlet prior, as an alternative to fixed `NonParametric()` or parametric distributions. This uses a gamma normalisation trick for efficient sampling with ragged simplex support in Stan.
