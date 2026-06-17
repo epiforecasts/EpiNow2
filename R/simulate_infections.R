@@ -194,9 +194,8 @@ simulate_infections <- function(R,
   }
 
   params <- list(
-    make_param("alpha", NULL),
-    make_param("rho", NULL),
     make_param("R", NULL),
+    make_param("I", NULL),
     make_param("fraction_observed", obs$scale, lower_bound = 0),
     make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("pop", pop, lower_bound = 0)

@@ -913,7 +913,9 @@ extract_scalar_params <- function(x, stan_data) {
     posterior_to_normal(posterior, lookup_idxs[i])
   })
   names(result) <- param_names[valid]
-  result
+  # R and I are the sampled levels of time-varying states (their trajectories are
+  # reported separately), not standalone scalar parameters.
+  result[!names(result) %in% c("R", "I")]
 }
 
 #' @rdname get_parameters

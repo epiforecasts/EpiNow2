@@ -86,14 +86,6 @@ test_that("estimate_infections successfully returns estimates using the infectio
   )
 })
 
-test_that("estimate_infections successfully returns estimates using a periodic kernel", {
-  skip_integration()
-  test_estimate_infections(
-    reported_cases,
-    rt = rt_opts(prior = GP(init = LogNormal(mean = 1, sd = 1), kernel = "periodic"))
-  )
-})
-
 test_that("estimate_infections successfully returns estimates when passed NA values", {
   skip_integration()
   reported_cases_na <- data.table::copy(reported_cases)
@@ -142,7 +134,10 @@ test_that("estimate_infections successfully returns estimates using a single bre
 
 test_that("estimate_infections successfully returns estimates using a random walk", {
   skip_integration()
-  test_estimate_infections(reported_cases, gp = NULL, rt = rt_opts(rw = 7))
+  test_estimate_infections(
+    reported_cases,
+    rt = rt_opts(prior = RW(init = LogNormal(mean = 1, sd = 1)))
+  )
 })
 
 test_that("estimate_infections works without setting a generation time", {
@@ -239,17 +234,6 @@ test_that("estimate_infections can sample from the prior", {
   test_estimate_infections(reported_cases_prior)
 })
 
-test_that("estimate_infections output contains breakpoints effect when breakpoints are present", {
-  skip_integration()
-  data <- data.table::copy(reported_cases)
-  bp_dates <- as.Date(c("2020-02-25", "2020-03-05", "2020-03-15"))
-  data[, breakpoint := ifelse(date %in% bp_dates, 1, 0)]
-  out <- default_estimate_infections(data, gp = NULL)
-  samples <- get_samples(out)
-  expect_true("breakpoints" %in% unique(samples$variable))
-  expect_true(length(unique(samples[variable == "breakpoints"]$strat)) == length(bp_dates))
-})
-
 test_that("estimate_infections output does not contain breakpoints effect when breakpoints are not present", {
   skip_integration()
   data <- data.table::copy(reported_cases)
@@ -292,8 +276,7 @@ test_that("Dirichlet concentration anchors the GT posterior to its prior", { # n
         pmf = Dirichlet(prior = shifted_prior, concentration = conc)
       )),
       delays = delay_opts(Fixed(0)),
-      rt = rt_opts(prior = LogNormal(mean = 1, sd = 0.2), rw = 7),
-      gp = NULL,
+      rt = rt_opts(prior = RW(init = LogNormal(mean = 1, sd = 0.2))),
       stan = stan_opts(
         samples = 500, warmup = 500,
         chains = 2, cores = 1
