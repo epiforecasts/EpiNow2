@@ -346,7 +346,9 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     opts$use_breakpoints <- TRUE
   }
 
-  assert_class(prior, "dist_spec")
+  # the Rt prior may be a constant/uncertain value (<dist_spec>) or a
+  # time-varying state (<state_spec>, created by GP() / RW())
+  assert_class(prior, "param_spec")
 
   if (is.numeric(pop)) {
     lifecycle::deprecate_stop(

@@ -152,6 +152,17 @@ estimate_infections <- function(data,
     rt <- NULL
   }
 
+  if (!is.null(rt) && is_state_spec(rt$prior)) {
+    cli_abort(
+      c(
+        "!" = "A time-varying Rt prior (a {.cls state_spec} from {.fn GP} /
+        {.fn RW} in {.fn rt_opts}) is not yet supported.",
+        "i" = "Wiring Rt through the time-varying parameter machinery is in
+        progress."
+      )
+    )
+  }
+
   # Check verbose settings and set logger to match
   if (verbose) {
     futile.logger::flog.threshold(futile.logger::DEBUG,
