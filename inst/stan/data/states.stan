@@ -4,6 +4,12 @@ array[n_states] int<lower = 1> state_param_id; // target parameter id
 array[n_states] int<lower = 0> state_type; // 0 = random walk, 1 = gaussian process
 array[n_states] int<lower = 0> state_link; // 0 = log
 array[n_states] int<lower = 1> state_pos; // index within its type group
+array[n_states] int<lower = 0> state_anchor; // 0 = mean, 1 = init
+// init-anchor prior on the derived initial value (applied with a Jacobian)
+array[n_states] int<lower = 0> state_init_dist;
+vector[2 * n_states] state_init_dist_params;
+vector[n_states] state_init_lower;
+vector[n_states] state_init_upper;
 
 // random walk states
 int<lower = 0> n_rw_states;

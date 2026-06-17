@@ -150,6 +150,22 @@ transformed parameters {
     state_gp_alpha, state_gp_rho
   );
 
+  // initial value of each state's trajectory (for init-anchor priors)
+  vector[n_states] state_init;
+  for (s in 1:n_states) {
+    state_init[s] = get_state_trajectory(
+      state_param_id[s], ot_h, ot,
+      get_param(
+        state_param_id[s], params_fixed_lookup, params_variable_lookup,
+        params_value, params
+      ),
+      state_param_id, state_type, state_link, state_pos,
+      state_rw_steps, state_rw_n,
+      state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
+      state_gp_alpha, state_gp_rho
+    )[1];
+  }
+
   // Estimate latent infections
   if (estimate_r) {
     profile("gt") {
@@ -265,7 +281,8 @@ model {
   // parameter priors
   profile("param lp") {
     params_lp(
-      params, prior_dist, prior_dist_params, params_lower, params_upper
+      params, prior_dist, prior_dist_params, params_lower, params_upper,
+      params_prior_skip
     );
   }
 
@@ -292,6 +309,20 @@ model {
         0, positive_infinity()
       );
       segment(state_gp_eta, (g - 1) * gp_M + 1, gp_M) ~ std_normal();
+    }
+    // init-anchor states: user prior on the derived initial value (with the
+    // log-link Jacobian), the level itself being free scaffolding
+    for (s in 1:n_states) {
+      if (state_anchor[s]) {
+        apply_prior_lp(
+          state_init[s], state_init_dist[s],
+          state_init_dist_params[2 * s - 1], state_init_dist_params[2 * s],
+          state_init_lower[s], state_init_upper[s]
+        );
+        if (state_link[s] == 0) {
+          target += log(state_init[s]);
+        }
+      }
     }
   }
 

@@ -148,6 +148,43 @@ test_that("create_stan_params emits state data for reporting_overdispersion", {
   expect_identical(out$n_rw_states, 1L)
 })
 
+test_that("create_stan_params emits init-anchor state data (centred + Jacobian)", {
+  params <- list(
+    make_param("fraction_observed", RW(init = Normal(0.4, 0.05)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$state_anchor, array(1L))
+  expect_identical(out$state_init_dist, array(2L)) # normal
+  expect_equal(out$state_init_dist_params, array(c(0.4, 0.05)))
+  # the level's prior is moved off the normal prior path
+  expect_identical(out$params_prior_skip, array(1L))
+})
+
+test_that("mean-anchor states keep their prior on the level", {
+  params <- list(
+    make_param("fraction_observed", RW(mean = Normal(0.4, 0.05)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$state_anchor, array(0L))
+  expect_identical(out$params_prior_skip, array(0L))
+})
+
+test_that("GP init anchor is not yet supported", {
+  params <- list(
+    make_param("fraction_observed", GP(init = Normal(0.4, 0.05)),
+      lower_bound = 0
+    )
+  )
+  expect_error(
+    create_stan_params(params, states_supported = "fraction_observed"),
+    "init.*not yet supported for Gaussian process"
+  )
+})
+
 test_that("create_stan_params is a no-op without states", {
   params <- list(
     make_param("fraction_observed", Normal(0.5, 0.1), lower_bound = 0)

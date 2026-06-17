@@ -1014,12 +1014,24 @@ create_stan_params <- function(params, states_supported = character(0)) {
     prior_dist_params <- numeric(0)
   }
 
+  ## for init-anchored states the level is free scaffolding: its prior is applied
+  ## to the derived initial value instead, so skip it in the normal prior path
+  params_prior_skip <- rep(0L, length(params) - sum(fixed))
+  init_state_ids <- state_data$state_param_id[state_data$state_anchor == 1]
+  for (pid in init_state_ids) {
+    vpos <- params_variable_lookup[pid]
+    if (vpos > 0) {
+      params_prior_skip[vpos] <- 1L
+    }
+  }
+
   ## extract distributions and parameters
   ret <- list(
     n_params_variable = length(params) - sum(fixed),
     n_params_fixed = sum(fixed),
     params_lower = array(params_lower),
     params_upper = array(params_upper),
+    params_prior_skip = array(params_prior_skip),
     params_fixed_lookup = array(params_fixed_lookup),
     params_variable_lookup = array(params_variable_lookup),
     params_value = array(vapply(
@@ -1061,6 +1073,11 @@ create_state_data <- function(params, state_flags,
     state_type = array(integer(0)),
     state_link = array(integer(0)),
     state_pos = array(integer(0)),
+    state_anchor = array(integer(0)),
+    state_init_dist = array(integer(0)),
+    state_init_dist_params = array(numeric(0)),
+    state_init_lower = array(numeric(0)),
+    state_init_upper = array(numeric(0)),
     n_rw_states = 0L,
     rw_sd_dist = array(integer(0)),
     rw_sd_dist_params = array(numeric(0)),
@@ -1104,6 +1121,11 @@ create_state_data <- function(params, state_flags,
   type <- integer(n)
   link <- integer(n)
   pos <- integer(n)
+  anchor <- integer(n)
+  init_dist <- integer(n)
+  init_params <- numeric(2 * n)
+  init_lower <- numeric(n)
+  init_upper <- numeric(n)
   rw_sd_dist <- integer(0)
   rw_sd_params <- numeric(0)
   gp_kernel <- integer(0)
@@ -1132,20 +1154,32 @@ create_state_data <- function(params, state_flags,
         "i" = "Currently supported: {.var {states_supported}}."
       ))
     }
-    if (spec$anchor != "mean") {
-      cli_abort(c(
-        "!" = "Only the {.arg mean} anchor is currently supported for time-varying
-        parameter {.var {name}}."
-      ))
-    }
     if (!is(spec$prior, "dist_spec")) {
       cli_abort(c(
         "!" = "Known (numeric) trajectories are not yet supported for time-varying
         parameter {.var {name}}."
       ))
     }
+    if (spec$anchor == "init" && spec$type == "gp") {
+      cli_abort(c(
+        "!" = "The {.arg init} anchor is not yet supported for Gaussian process
+        ({.fn GP}) states (parameter {.var {name}}); use {.arg mean}."
+      ))
+    }
     param_id[j] <- idx[j]
     link[j] <- 0L # log
+    if (spec$anchor == "init") {
+      ## centred non-stationary state: the level is free scaffolding and the
+      ## user prior is applied to the derived initial value (with a Jacobian)
+      anchor[j] <- 1L
+      packed <- pack_init_prior(
+        spec$prior, lower_bound = params[[idx[j]]]$lower_bound %||% 0
+      )
+      init_dist[j] <- packed$dist_type
+      init_params[(2 * j - 1):(2 * j)] <- packed$params
+      init_lower[j] <- packed$lower
+      init_upper[j] <- packed$upper
+    }
     if (spec$type == "rw") {
       type[j] <- 0L
       n_rw <- n_rw + 1L
@@ -1188,6 +1222,11 @@ create_state_data <- function(params, state_flags,
     state_type = array(type),
     state_link = array(link),
     state_pos = array(as.integer(pos)),
+    state_anchor = array(anchor),
+    state_init_dist = array(init_dist),
+    state_init_dist_params = array(init_params),
+    state_init_lower = array(init_lower),
+    state_init_upper = array(init_upper),
     n_rw_states = n_rw,
     rw_sd_dist = array(rw_sd_dist),
     rw_sd_dist_params = array(rw_sd_params),

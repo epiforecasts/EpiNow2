@@ -122,6 +122,39 @@ void params_lp(vector params, array[] int prior_dist,
 }
 
 /**
+ * Update log density for parameter priors, skipping selected parameters
+ *
+ * Overload of [params_lp()] that skips the prior for parameters flagged in
+ * `params_prior_skip` (their prior is applied elsewhere, e.g. to the derived
+ * initial value of an init-anchored time-varying state).
+ *
+ * @param params Vector of parameter values
+ * @param prior_dist Array of prior distribution types
+ * @param prior_dist_params Vector of prior distribution parameters
+ * @param params_lower Vector of lower bounds for parameters
+ * @param params_upper Vector of upper bounds for parameters
+ * @param params_prior_skip Array, 1 to skip a parameter's prior
+ *
+ * @ingroup parameter_handlers
+ */
+void params_lp(vector params, array[] int prior_dist,
+              vector prior_dist_params, vector params_lower,
+              vector params_upper, array[] int params_prior_skip) {
+  int params_id = 1;
+  int num_params = num_elements(params);
+  for (id in 1:num_params) {
+    if (!params_prior_skip[id]) {
+      apply_prior_lp(
+        params[id], prior_dist[id],
+        prior_dist_params[params_id], prior_dist_params[params_id + 1],
+        params_lower[id], params_upper[id]
+      );
+    }
+    params_id += 2;
+  }
+}
+
+/**
  * Apply user priors on the initial values of centred-GP-wrapped trajectories
  *
  * For each registered init prior, dispatches on the parameter id to the
