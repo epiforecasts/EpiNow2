@@ -5,7 +5,7 @@
 \title{Time-Varying Reproduction Number Options}
 \usage{
 rt_opts(
-  prior = LogNormal(mean = 1, sd = 1),
+  prior = GP(init = LogNormal(mean = 1, sd = 1)),
   use_rt = TRUE,
   rw = 0,
   use_breakpoints = TRUE,
