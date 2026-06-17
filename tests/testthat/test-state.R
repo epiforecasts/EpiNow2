@@ -59,6 +59,16 @@ test_that("RW() validates the step sd prior", {
   expect_error(RW(init = Normal(5, 1), sd = 0.1), "dist_spec")
 })
 
+test_that("dist_spec and state_spec share the param_spec superclass", {
+  expect_s3_class(Normal(5, 1), "param_spec")
+  expect_s3_class(LogNormal(1, 1) + Gamma(2, 1), "param_spec") # multi
+  expect_s3_class(GP(mean = Normal(5, 1)), "param_spec")
+  expect_s3_class(RW(init = Normal(5, 1)), "param_spec")
+  expect_true(is_param_spec(Normal(5, 1)))
+  expect_true(is_param_spec(GP(mean = Normal(5, 1))))
+  expect_false(is_param_spec(5))
+})
+
 test_that("is_state_spec() identifies state specs", {
   expect_true(is_state_spec(GP(mean = Normal(5, 1))))
   expect_true(is_state_spec(RW(init = Normal(5, 1))))

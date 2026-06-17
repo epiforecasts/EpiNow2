@@ -78,7 +78,7 @@ new_state_spec <- function(type, mean, init, settings = list()) {
     settings = settings
   )
   class(state) <- c(
-    paste0(type, "_state"), "state_spec", "list"
+    paste0(type, "_state"), "state_spec", "param_spec", "list"
   )
   state
 }
@@ -119,6 +119,20 @@ RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1)) {
 #' @keywords internal
 is_state_spec <- function(x) {
   inherits(x, "state_spec")
+}
+
+#' Test whether an object is a parameter specification
+#'
+#' A `<param_spec>` is the common superclass of `<dist_spec>` (a constant or
+#' uncertain value) and `<state_spec>` (a time-varying value created by [GP()] or
+#' [RW()]). It is the type accepted wherever a parameter's value may be either
+#' constant or time-varying.
+#'
+#' @param x An object to test.
+#' @return Logical, `TRUE` if `x` is a `<param_spec>`.
+#' @keywords internal
+is_param_spec <- function(x) {
+  inherits(x, "param_spec")
 }
 
 #' @export
