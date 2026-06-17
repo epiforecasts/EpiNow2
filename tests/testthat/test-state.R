@@ -212,3 +212,21 @@ test_that("create_stan_params is a no-op without states", {
   expect_identical(out$n_rw_states, 0L)
   expect_identical(out$n_gp_states, 0L)
 })
+
+test_that("plot.state_spec returns a ggplot of prior draws", {
+  for (spec in list(
+    GP(init = LogNormal(mean = 1, sd = 0.5)),
+    GP(mean = LogNormal(mean = 1, sd = 0.5)),
+    RW(init = LogNormal(mean = 1, sd = 0.5))
+  )) {
+    p <- plot(spec, n = 20, samples = 10)
+    expect_s3_class(p, "ggplot")
+    expect_identical(length(unique(p$data$sample)), 10L)
+    expect_identical(length(unique(p$data$time)), 20L)
+    expect_true(all(p$data$value > 0))
+  }
+})
+
+test_that("plot.state_spec errors for a known trajectory", {
+  expect_error(plot(GP(mean = c(1, 2, 3))), "known")
+})

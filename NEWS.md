@@ -5,6 +5,7 @@
 - Added experimental `GP()` and `RW()` constructors for declaring time-varying parameters, with mean-reverting (`mean`) and first-difference (`init`) variants. `estimate_infections()` now expresses the reproduction number through this interface: `rt_opts(prior = ...)` accepts a constant value or a `GP()`/`RW()` state, replacing the bespoke Rt Gaussian-process code path. Time-varying parameters vary over the observed period and hold their last estimated value through the forecast horizon.
 - The back-calculation (non-mechanistic) model now expresses latent infections through the same time-varying state interface, as a Gaussian process on the log scale anchored at an initial value, configured via `backcalc_opts(prior = GP(...))`. This replaces the previous deconvolution of smoothed shifted reported cases.
 - Gaussian process settings (`ls`, `alpha`, `kernel`, `basis_prop`, etc.) are now arguments of `GP()`, so a Gaussian process is fully specified in one place, e.g. `rt_opts(prior = GP(init = ..., kernel = "se"))`.
+- Added a `plot()` method for `GP()`/`RW()` state specifications that shows prior-predictive trajectories, to help visualise the time-varying behaviour a prior implies before fitting.
 
 ## Deprecations
 

@@ -191,3 +191,120 @@ print.state_spec <- function(x, ...) {
   }
   invisible(x)
 }
+
+#' Draw samples from a `<dist_spec>` prior
+#'
+#' @description Internal helper that draws `n` values from the distribution
+#'   represented by a `<dist_spec>`, resolving any uncertainty in its parameters
+#'   first. Values are constrained to be at least `lower`.
+#' @param d A `<dist_spec>`.
+#' @param n Number of values to draw.
+#' @param lower Lower bound to enforce on the drawn values.
+#' @return A numeric vector of length `n`.
+#' @importFrom stats rlnorm rnorm rgamma
+#' @keywords internal
+sample_dist_values <- function(d, n, lower = -Inf) {
+  d <- fix_parameters(d, strategy = "sample")
+  dist <- get_distribution(d)
+  p <- get_parameters(d)
+  vals <- switch(dist,
+    lognormal = rlnorm(n, p$meanlog, p$sdlog),
+    normal = rnorm(n, p$mean, p$sd),
+    gamma = rgamma(n, shape = p$shape, rate = p$rate),
+    fixed = rep(p$value, n),
+    cli_abort("Cannot sample from a {.val {dist}} prior for a state plot.")
+  )
+  pmax(vals, lower)
+}
+
+#' Gaussian process kernel covariance for prior-predictive state plots
+#'
+#' @param n Number of time points.
+#' @param alpha Gaussian process magnitude.
+#' @param rho Gaussian process lengthscale.
+#' @param kernel Kernel type (one of "se", "matern", "ou", "periodic").
+#' @param matern_order Matern order (used when `kernel` is "matern").
+#' @return An `n` by `n` covariance matrix.
+#' @keywords internal
+state_kernel_cov <- function(n, alpha, rho, kernel, matern_order) {
+  d <- abs(outer(seq_len(n), seq_len(n), "-"))
+  nu <- if (kernel == "ou") 0.5 else matern_order
+  corr <- if (kernel == "se" || is.infinite(nu)) {
+    exp(-0.5 * (d / rho)^2)
+  } else if (nu == 0.5) {
+    exp(-d / rho)
+  } else if (nu == 1.5) {
+    (1 + sqrt(3) * d / rho) * exp(-sqrt(3) * d / rho)
+  } else if (nu == 2.5) {
+    (1 + sqrt(5) * d / rho + 5 * d^2 / (3 * rho^2)) * exp(-sqrt(5) * d / rho)
+  } else {
+    exp(-0.5 * (d / rho)^2)
+  }
+  alpha^2 * corr + diag(1e-6, n)
+}
+
+#' Plot prior-predictive trajectories of a time-varying state
+#'
+#' @description `r lifecycle::badge("experimental")`
+#' Draws sample trajectories from the prior of a `GP()` or `RW()` state
+#' specification to visualise the time-varying behaviour the prior implies
+#' before fitting. Gaussian process draws use the chosen kernel directly (the
+#' model uses an approximation to the same process).
+#'
+#' @param x A `<state_spec>` as created by [GP()] or [RW()].
+#' @param n Integer; number of time points to simulate. Defaults to 50.
+#' @param samples Integer; number of prior trajectories to draw. Defaults to 50.
+#' @param ... Unused.
+#' @return A `<ggplot>` object.
+#' @importFrom ggplot2 ggplot aes geom_line labs theme_bw
+#' @importFrom data.table data.table rbindlist
+#' @importFrom stats rnorm
+#' @method plot state_spec
+#' @export
+#' @examples
+#' plot(GP(init = LogNormal(mean = 1, sd = 0.5)))
+#' plot(RW(mean = Normal(mean = 1, sd = 0.2)))
+plot.state_spec <- function(x, n = 50L, samples = 50L, ...) {
+  if (is.numeric(x$prior)) {
+    cli_abort(
+      "Cannot plot a state with a known (numeric) trajectory; supply a prior."
+    )
+  }
+  init <- x$anchor == "init"
+  level <- sample_dist_values(x$prior, samples, lower = 0)
+
+  traj <- lapply(seq_len(samples), function(s) {
+    if (x$type == "rw") {
+      sd <- sample_dist_values(x$settings$sd, 1, lower = 0)
+      steps <- rnorm(n - 1, 0, sd)
+      dev <- c(0, cumsum(steps))
+    } else {
+      alpha <- sample_dist_values(x$settings$alpha, 1, lower = 0)
+      rho <- sample_dist_values(x$settings$ls, 1, lower = 1e-3)
+      cov <- state_kernel_cov(
+        n, alpha, rho, x$settings$kernel, x$settings$matern_order
+      )
+      noise <- as.numeric(crossprod(chol(cov), rnorm(n)))
+      dev <- if (init) cumsum(noise) else noise
+    }
+    if (init) {
+      log_traj <- log(level[s]) + (dev - dev[1])
+    } else {
+      log_traj <- log(level[s]) + (dev - mean(dev))
+    }
+    data.table::data.table(sample = s, time = seq_len(n), value = exp(log_traj))
+  })
+  traj <- data.table::rbindlist(traj)
+
+  type <- if (x$type == "gp") "Gaussian process" else "random walk"
+  variant <- if (init) "first differences" else "mean-reverting"
+  ggplot2::ggplot(
+    traj, ggplot2::aes(x = time, y = value, group = sample)
+  ) +
+    ggplot2::geom_line(alpha = 0.3) +
+    ggplot2::labs(
+      x = "Time", y = "Value",
+      title = paste0("Prior draws: ", type, " (", variant, ")")
+    ) +
+    ggplot2::theme_bw()
+}
