@@ -30,11 +30,6 @@ Lastly, we set a seed for reproducibility.
 
 ``` r
 library(EpiNow2)
-#> 
-#> Attaching package: 'EpiNow2'
-#> The following object is masked from 'package:stats':
-#> 
-#>     Gamma
 library(data.table)
 library(ggplot2)
 set.seed(6789)

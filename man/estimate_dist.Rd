@@ -141,7 +141,7 @@ normal, exponential, and weibull.
 \item The primary event distribution is limited to uniform or
 exponential growth with a fixed rate.
 Primary event parameters are not estimated.
-\item Left truncation is not yet exposed (internally set to 0).
+\item Left truncation is not yet exposed (internally set to \code{-Inf}).
 }
 }
 }
