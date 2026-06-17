@@ -170,7 +170,7 @@ void params_lp(vector params, array[] int prior_dist,
  *   two per prior.
  * @param init_lower Per-prior lower bound on the parameter's support.
  * @param init_upper Per-prior upper bound on the parameter's support.
- * @param param_id_R0 Registered id of R0.
+ * @param param_id_R Registered id of R.
  * @param R Reproduction-number trajectory.
  *
  * @ingroup parameter_handlers
@@ -178,11 +178,11 @@ void params_lp(vector params, array[] int prior_dist,
 void init_priors_lp(array[] int init_param_ids, array[] int init_dists,
                     vector init_dist_params,
                     vector init_lower, vector init_upper,
-                    int param_id_R0, vector R) {
+                    int param_id_R, vector R) {
   int params_id = 1;
   for (i in 1:num_elements(init_param_ids)) {
     real init_value;
-    if (init_param_ids[i] == param_id_R0) {
+    if (init_param_ids[i] == param_id_R) {
       init_value = R[1];
     } else {
       reject("no init param registered for id ", init_param_ids[i]);

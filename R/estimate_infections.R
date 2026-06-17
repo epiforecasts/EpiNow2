@@ -181,14 +181,14 @@ estimate_infections <- function(data,
   # Add initial zeroes
   model_data <- pad_reported_cases(model_data, seeding_time)
 
-  # Under the renewal model R0 carries the Rt prior (constant or a time-varying
+  # Under the renewal model R carries the Rt prior (constant or a time-varying
   # GP/RW state); the renewal GP lives in that state, so the back-calculation GP
   # hyperparameters (alpha, rho) are only needed when not estimating Rt.
   renewal <- isTRUE(rt$use_rt)
   params <- list(
     make_param("alpha", if (renewal) NULL else gp$alpha, lower_bound = 0),
     make_param("rho", if (renewal) NULL else gp$ls, lower_bound = 0),
-    make_param("R0", if (renewal) rt$prior else NULL, lower_bound = 0),
+    make_param("R", if (renewal) rt$prior else NULL, lower_bound = 0),
     make_param("fraction_observed", obs$scale, lower_bound = 0),
     make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("pop", rt$pop, lower_bound = 0)

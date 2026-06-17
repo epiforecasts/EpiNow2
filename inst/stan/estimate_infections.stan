@@ -175,14 +175,14 @@ transformed parameters {
         delay_dist, 1, 1, 0
       );
     }
-    profile("R0") {
-      // Rt is the trajectory of the R0 state (constant, or a GP/RW). Its level
-      // (R0) is the sampled scaffolding; the user prior is applied to the derived
-      // initial Rt (R[1]) by the state machinery.
+    profile("Rt") {
+      // Rt is the trajectory of the R state (constant, or a GP/RW). The sampled
+      // R parameter is its level; for an init-anchored state the user prior is
+      // applied to the derived initial Rt (R[1]) by the state machinery.
       R = get_state_trajectory(
-        param_id_R0, ot_h, ot,
+        param_id_R, ot_h, ot,
         get_param(
-          param_id_R0, params_fixed_lookup, params_variable_lookup,
+          param_id_R, params_fixed_lookup, params_variable_lookup,
           params_value, params
         ),
         state_param_id, state_type, state_link, state_pos, state_anchor,
@@ -345,7 +345,7 @@ model {
 
   profile("init lp") {
     init_priors_lp(init_param_ids, init_dists, init_dist_params,
-                   init_lower, init_upper, param_id_R0, R);
+                   init_lower, init_upper, param_id_R, R);
   }
 
   // observed reports from mean of reports (update likelihood)
