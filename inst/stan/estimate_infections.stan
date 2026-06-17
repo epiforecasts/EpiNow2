@@ -424,7 +424,8 @@ generated quantities {
       );
     } else {
       imputed_reports = report_rng(
-        reports, reporting_overdispersion_traj, model_type
+        reports[imputed_times], reporting_overdispersion_traj[imputed_times],
+        model_type
       );
     }
 

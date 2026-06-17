@@ -90,7 +90,7 @@ observations.
 
 This can be thought of as a Bayesian form of the chain-ladder
 nowcasting approach in the
-\href{https://package.epinowcast.org/baselinenowcast/}{\code{baselinenowcast}}
+\href{https://baselinenowcast.epinowcast.org/}{\code{baselinenowcast}}
 package. For settings requiring time-varying delays, see
 \href{https://package.epinowcast.org/}{\code{epinowcast}}.
 }

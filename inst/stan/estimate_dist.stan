@@ -21,7 +21,7 @@ data {
   array[n] int<lower=0> pwindow;
 
   // Per-observation left truncation point
-  array[n] real<lower=0> L;
+  array[n] real L;
 
   // Per-observation right truncation time
   array[n] real<lower=0> D;

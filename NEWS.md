@@ -2,50 +2,33 @@
 
 ## New features
 
-- Added experimental `GP()` and `RW()` constructors for declaring time-varying parameters, with mean-reverting (`mean`) and first-difference (`init`) variants. In `estimate_infections()` the observation scaling (`obs_opts(scale = ...)`) and reporting overdispersion (`obs_opts(dispersion = ...)`) can now be made time-varying with a random walk or Gaussian process. Time-varying parameters vary over the observed period and hold their last estimated value through the forecast horizon.
+- Added experimental `GP()` and `RW()` constructors for declaring time-varying parameters, with mean-reverting (`mean`) and first-difference (`init`) variants. `estimate_infections()` now expresses the reproduction number through this interface: `rt_opts(prior = ...)` accepts a constant value or a `GP()`/`RW()` state, replacing the bespoke Rt Gaussian-process code path. Time-varying parameters vary over the observed period and hold their last estimated value through the forecast horizon.
+
+## Deprecations
+
+- The `rw` argument of `rt_opts()` is deprecated; specify a random-walk Rt with `rt_opts(prior = RW(...))`.
+
+# EpiNow2 1.9.0
+
+## New features
+
 - Added support for all `dist_spec` delay families and `obs_opts()` observation model selection (Poisson or negative binomial) to `estimate_truncation()`. The existing observation model functions (`report_lp`, `report_rng`) are now reused internally.
 - Wired the `likelihood` and `return_likelihood` settings of `obs_opts()` through `estimate_truncation()` so that prior-only fits and `loo`-compatible log-likelihood output are available, matching `estimate_infections()` and `estimate_secondary()`.
+- Added a `noise` argument to `estimate_truncation()` that takes a `dist_spec` controlling the additive noise term, replacing the previously hardcoded `sigma ~ normal(0, 1) T[0,]`.
+- `estimate_truncation()` now warns via `check_truncation_obs_opts()` when `obs_opts()` settings unused by the truncation model (`weight`, `week_effect`, `week_length`, `scale`) are set to non-default values.
 - Added `estimate_dist()` for fitting delay distributions from interval-censored linelist data using Bayesian inference, with support for lognormal, gamma, normal, exponential, and Weibull distributions.
 - Added `Exp()`, `Weibull()`, and `Normal()` distribution constructors.
 - Added `Dirichlet()` and updated `NonParametric()` to support estimating nonparametric delay distributions using a Dirichlet prior, as an alternative to fixed `NonParametric()` or parametric distributions. This uses a gamma normalisation trick for efficient sampling with ragged simplex support in Stan.
 - Added a shared internal helper `check_simulation_input()` that bundles the repeated input data frame validation in `simulate_infections()` and `simulate_secondary()`.
 - Added `as_forecast_sample()` S3 methods for `epinow`, `estimate_infections`, `forecast_secondary`, and `estimate_truncation` objects, allowing direct conversion to `forecast_sample` objects via [`scoringutils::as_forecast_sample()`](https://epiforecasts.io/scoringutils/reference/as_forecast_sample.html) for evaluation.
 
-## Deprecations
-
-- `estimate_delay()` is soft-deprecated in favour of `estimate_dist()`.
-
-## Package changes
-
-- The touchstone continuous benchmarks now also cover `estimate_truncation()`, `estimate_secondary()` and `estimate_dist()` alongside the existing `epinow()` configurations, giving a single standardised view of wall-clock performance across the main user-facing fitting functions.
-
-## Documentation
-
-- Added a vignette demonstrating delay distribution fitting workflows and posterior validation.
-- Added a model definition vignette for `estimate_dist()`.
-- Added a model overview vignette with an architecture diagram showing how the package's models connect.
-- Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
-- The delay distribution fitting vignette has been renamed from `vignette("estimate-dist")` to `vignette("estimate_dist_workflow")` for consistency with the other workflow vignettes; the model definition is at `vignette("estimate_dist")`.
-- Added a cross-reference from the `estimate_truncation()` vignette to `estimate_dist()`, summarising when to use each.
-- Expanded the case studies vignette with additional literature references and public health surveillance examples.
-
-## Bug fixes
-
-- Fixed a bug where the `target_date` argument to `epinow()` was silently ignored: the recomputed forecast horizon from `update_horizon()` was never propagated into the call to `estimate_infections()`.
-- Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.
-- Centralised the gating of `dispersion` on `family` in `obs_opts()`: `dispersion` is now `NULL` whenever `family != "negbin"`, with a warning if the caller supplied one explicitly. As a result, `reporting_overdispersion` is no longer sampled from its prior in `estimate_infections()`, `estimate_secondary()`, `simulate_infections()` and `estimate_truncation()` when a Poisson observation model is used.
-- Fixed a bug where `estimate_dist()` would fail with a "model fitting timed out or failed" error when observed delays had near-zero variance. Scale parameters are now initialised from the prior when variance cannot be estimated from the data, and a warning is issued.
-- Fixed a bug where `example_truncated` was generated with the old discrete-CDF PMF while `estimate_truncation()` now uses the primarycensored-based PMF, causing biased parameter recovery. The dataset has been regenerated for consistency.
-- A bug was fixed where `get_parameters()` failed with `$ operator not defined for this S4 class` on a fit with an estimated nonparametric (Dirichlet) delay when using the `rstan` backend. Posterior draws are now extracted in a backend-agnostic way.
-- Fixed a bug where `forecast_infections()` errored when called on an `estimate_infections` object fitted with the `cmdstanr` backend (it was calling `rstan::extract()` directly on the `CmdStanMCMC` fit; now uses the backend-agnostic internal helper).
-
 ## Breaking changes
 
 - Removed deprecated arguments that have been erroring since v1.7.0/v1.8.0:
-  - `gp_opts(ls_mean, ls_sd, ls_min, ls_max)` - use `ls` instead
-  - `gp_opts(alpha_mean, alpha_sd)` - use `alpha` instead
-  - `obs_opts(phi)` - use `dispersion` instead
-  - `obs_opts(na)` - use `fill_missing()` instead
+  - `gp_opts(ls_mean, ls_sd, ls_min, ls_max)`: use `ls` instead
+  - `gp_opts(alpha_mean, alpha_sd)`: use `alpha` instead
+  - `obs_opts(phi)`: use `dispersion` instead
+  - `obs_opts(na)`: use `fill_missing()` instead
   - `estimate_infections(filter_leading_zeros, zero_threshold, horizon)`
   - `estimate_secondary(filter_leading_zeros, zero_threshold)`
   - `epinow(filter_leading_zeros, zero_threshold, horizon)`
@@ -61,19 +44,44 @@
 - `summary.epinow(output)` and `summary.estimate_infections(type = 'samples')` now error.
 - Removed internal function `extract_parameter_samples()`. Use `format_simulation_output()` instead.
 
+## Deprecations
+
+- `estimate_delay()` is soft-deprecated in favour of `estimate_dist()`.
+
 ## Model changes
 
-- Changed the non-stationary Gaussian process used to model Rt to sample in a mean-centred form internally, eliminating the `(R0, drift)` ridge in the joint posterior that caused stuck chains and catastrophic R-hat values on some seeds. The user-facing interpretation is unchanged: the `prior` argument in `rt_opts()` is still the prior on the initial Rt. Implemented by sampling the trajectory mean internally and applying the user prior to the derived initial Rt with the Jacobian-correct change of variables, so the joint prior matches the pre-change model. The plumbing (`init_dists`, `init_dist_params`, `pack_init_prior()`) is parameter-agnostic, ready to extend to additional GP-wrapped time-varying parameters.
+- Changed the non-stationary Gaussian process used to model Rt to sample in a mean-centred form internally, eliminating the `(R0, drift)` ridge in the joint posterior that caused stuck chains and catastrophic R-hat values on some seeds. The user-facing interpretation is unchanged: the `prior` argument in `rt_opts()` is still the prior on the initial Rt. Implemented by sampling the trajectory mean internally and applying the user prior to the derived initial Rt with the Jacobian-correct change of variables, so the joint prior matches the pre-change model.
 - Updated the breakpoint random walk to be centred over the observation window, removing the `(R0, drift)` ridge in the joint posterior alongside the equivalent fix for the non-stationary Gaussian process.
 - Delay distribution discretisation now properly accounts for primary event censoring during model fitting, matching the correction already applied on the R side since v1.8.0. This improves accuracy for short delays where the observation window is large relative to the delay.
 - Left truncation of delay distributions (e.g. excluding generation times of zero) is now handled analytically rather than by zeroing and renormalising, giving more accurate PMFs near the truncation point.
 - Refactored the Gaussian process, convolution, and observation model Stan functions for efficiency and readability, including a shared `matern_indices()` helper for the Matern spectral densities, outer-product basis function construction in `PHI()` and `PHI_periodic()`, and a shared `reporting_phi()` helper for the negative binomial overdispersion.
 
+## Bug fixes
+
+- Fixed a bug where the `target_date` argument to `epinow()` was silently ignored: the recomputed forecast horizon from `update_horizon()` was never propagated into the call to `estimate_infections()`.
+- Fixed a bug in `forecast_infections()` where the summary call to extract dates was using modified args instead of the original fit dimensions, causing a date-dimension mismatch when extending the R trajectory beyond the original observation period.
+- Centralised the gating of `dispersion` on `family` in `obs_opts()`: `dispersion` is now `NULL` whenever `family != "negbin"`, with a warning if the caller supplied one explicitly. As a result, `reporting_overdispersion` is no longer sampled from its prior in `estimate_infections()`, `estimate_secondary()`, `simulate_infections()` and `estimate_truncation()` when a Poisson observation model is used.
+- Fixed a bug where `estimate_dist()` would fail with a "model fitting timed out or failed" error when observed delays had near-zero variance. Scale parameters are now initialised from the prior when variance cannot be estimated from the data, and a warning is issued.
+- Fixed a bug where `example_truncated` was generated with the old discrete-CDF PMF while `estimate_truncation()` now uses the primarycensored-based PMF, causing biased parameter recovery. The dataset has been regenerated for consistency.
+- Fixed a bug where `get_parameters()` failed with `$ operator not defined for this S4 class` on a fit with an estimated nonparametric (Dirichlet) delay when using the `rstan` backend. Posterior draws are now extracted in a backend-agnostic way.
+- Fixed a bug where `forecast_infections()` errored when called on an `estimate_infections` object fitted with the `cmdstanr` backend (it was calling `rstan::extract()` directly on the `CmdStanMCMC` fit; now uses the backend-agnostic internal helper).
+- A bug was fixed where the trailing entries of `imputed_reports` in `estimate_infections()` output were undefined due to a size mismatch in the Stan generated quantities block.
+
+## Documentation
+
+- Added a vignette demonstrating delay distribution fitting workflows and posterior validation.
+- Added a model definition vignette for `estimate_dist()`.
+- Added a model overview vignette with an architecture diagram showing how the package's models connect.
+- Added a model features vignette providing a quick reference to all modelling options with links to detailed documentation.
+- The delay distribution fitting vignette has been renamed from `vignette("estimate-dist")` to `vignette("estimate_dist_workflow")` for consistency with the other workflow vignettes; the model definition is at `vignette("estimate_dist")`.
+- Added a cross-reference from the `estimate_truncation()` vignette to `estimate_dist()`, summarising when to use each.
+- Expanded the case studies vignette with additional literature references and public health surveillance examples.
+- The lower-accuracy GP example in the `estimate_infections_options` vignette now uses `basis_prop = 0.15` instead of `0.1`, which fits cleanly under the new centred parameterisation.
+
 ## Package changes
 
-- Added `estimate_dist()` function for estimating delay distributions with proper handling of interval censoring using Stan/MCMC inference, supporting both rstan and cmdstanr backends.
-- Deprecated `estimate_delay()` in favour of `estimate_dist()`, which correctly accounts for interval censoring and truncation.
-- Added a vignette explaining how EpiNow2 handles delay distributions.
+- The touchstone continuous benchmarks now also cover `estimate_truncation()`, `estimate_secondary()` and `estimate_dist()` alongside the existing `epinow()` configurations, giving a single standardised view of wall-clock performance across the main user-facing fitting functions.
+- Updated the vendored primarycensored Stan code to version 1.5.0 (CRAN release 2026-06-04).
 
 # EpiNow2 1.8.0
 
