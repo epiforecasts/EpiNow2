@@ -131,16 +131,24 @@ GP <- function(mean, init,
 #' @param sd A `<dist_spec>` giving the prior on the random walk step standard
 #'   deviation. Defaults to a half-normal `Normal(mean = 0, sd = 0.1)` (the lower
 #'   limit of 0 is enforced where the parameter is used).
-#' @importFrom checkmate assert_class
+#' @param period Integer; the number of time steps between random walk steps,
+#'   i.e. the value is held constant for `period` steps before changing. Defaults
+#'   to 1 (a step every time point). Set `period = 7` for a weekly random walk.
+#' @importFrom checkmate assert_class assert_integerish
 #' @export
 #' @examples
 #' # random walk with an initial-value prior
 #' RW(init = Normal(mean = 5, sd = 1))
 #' # mean-reverting random walk with a custom step size prior
 #' RW(mean = Normal(mean = 5, sd = 1), sd = Normal(mean = 0, sd = 0.05))
-RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1)) {
+#' # weekly random walk
+#' RW(init = Normal(mean = 5, sd = 1), period = 7)
+RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1) {
   assert_class(sd, "dist_spec")
-  new_state_spec("rw", mean, init, settings = list(sd = sd))
+  assert_integerish(period, lower = 1, len = 1)
+  new_state_spec(
+    "rw", mean, init, settings = list(sd = sd, period = as.integer(period))
+  )
 }
 
 #' Test whether an object is a time-varying state specification

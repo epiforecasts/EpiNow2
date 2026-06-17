@@ -18,7 +18,7 @@ GP(
   w0 = 1
 )
 
-RW(mean, init, sd = Normal(mean = 0, sd = 0.1))
+RW(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1)
 }
 \arguments{
 \item{mean}{A \verb{<dist_spec>} giving the prior on the (stationary) mean the
@@ -57,6 +57,10 @@ kernel. Only used if \code{kernel} is "periodic".}
 \item{sd}{A \verb{<dist_spec>} giving the prior on the random walk step standard
 deviation. Defaults to a half-normal \code{Normal(mean = 0, sd = 0.1)} (the lower
 limit of 0 is enforced where the parameter is used).}
+
+\item{period}{Integer; the number of time steps between random walk steps,
+i.e. the value is held constant for \code{period} steps before changing. Defaults
+to 1 (a step every time point). Set \code{period = 7} for a weekly random walk.}
 }
 \value{
 A \verb{<state_spec>} object describing the time-varying state.
@@ -97,4 +101,6 @@ GP(init = Normal(mean = 5, sd = 1), kernel = "se")
 RW(init = Normal(mean = 5, sd = 1))
 # mean-reverting random walk with a custom step size prior
 RW(mean = Normal(mean = 5, sd = 1), sd = Normal(mean = 0, sd = 0.05))
+# weekly random walk
+RW(init = Normal(mean = 5, sd = 1), period = 7)
 }

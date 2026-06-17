@@ -52,8 +52,10 @@ transformed data {
   // model R varies over the observed reports (ot); under the back-calculation
   // model latent infections vary over the full pre-horizon window (t - horizon).
   int state_obs = estimate_r ? ot : (t - horizon);
-  // number of random walk steps per time-varying parameter state
-  int state_rw_n = state_obs > 1 ? state_obs - 1 : 0;
+  // number of random walk steps per time-varying parameter state (the value is
+  // held constant for `state_rw_period` time points between steps)
+  int state_rw_n =
+    state_obs > 1 ? to_int(ceil(1.0 * state_obs / state_rw_period)) - 1 : 0;
   // basis functions and basis matrix for gaussian process states (shared)
   int gp_M = n_gp_states > 0 ? to_int(ceil(state_obs * gp_basis_prop)) : 0;
   matrix[n_gp_states > 0 ? state_obs : 0, gp_M] gp_PHI;
@@ -105,7 +107,7 @@ transformed parameters {
       params_value, params
     ),
     state_param_id, state_type, state_link, state_pos, state_anchor,
-    state_rw_steps, state_rw_n,
+    state_rw_steps, state_rw_n, state_rw_period,
     state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
     state_gp_alpha, state_gp_rho
   );
@@ -117,7 +119,7 @@ transformed parameters {
       params_variable_lookup, params_value, params
     ),
     state_param_id, state_type, state_link, state_pos, state_anchor,
-    state_rw_steps, state_rw_n,
+    state_rw_steps, state_rw_n, state_rw_period,
     state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
     state_gp_alpha, state_gp_rho
   );
@@ -137,7 +139,7 @@ transformed parameters {
         params_value, params
       ),
       state_param_id, state_type, state_link, state_pos, state_anchor,
-      state_rw_steps, state_rw_n,
+      state_rw_steps, state_rw_n, state_rw_period,
       state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
       state_gp_alpha, state_gp_rho
     )[1];
@@ -164,7 +166,7 @@ transformed parameters {
           params_value, params
         ),
         state_param_id, state_type, state_link, state_pos, state_anchor,
-        state_rw_steps, state_rw_n,
+        state_rw_steps, state_rw_n, state_rw_period,
         state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
         state_gp_alpha, state_gp_rho
       );
@@ -191,7 +193,7 @@ transformed parameters {
           params_value, params
         ),
         state_param_id, state_type, state_link, state_pos, state_anchor,
-        state_rw_steps, state_rw_n,
+        state_rw_steps, state_rw_n, state_rw_period,
         state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
         state_gp_alpha, state_gp_rho
       );

@@ -9,7 +9,7 @@
 
 ## Deprecations
 
-- The `rw` argument and breakpoints (`use_breakpoints` / the data `breakpoint` column) of `rt_opts()` are deprecated; specify a random-walk Rt with `rt_opts(prior = RW(...))`.
+- The `rw` argument and breakpoints (`use_breakpoints` / the data `breakpoint` column) of `rt_opts()` are deprecated; specify a random-walk Rt with `rt_opts(prior = RW(...))`. A step interval is set with `RW(period = ...)`, so the previous `rw = 7` is now `RW(period = 7)`.
 - `gp_opts()` is deprecated; supply Gaussian process settings directly to `GP()`.
 - The `gp` argument of `estimate_infections()`, `epinow()`, and `regional_epinow()` is deprecated; configure the Gaussian process through the model prior (`rt_opts(prior = GP(...))` or `backcalc_opts(prior = GP(...))`).
 - The `prior_window` argument of `backcalc_opts()` is deprecated, and its `prior` argument now takes a `GP()` specification rather than a character string.

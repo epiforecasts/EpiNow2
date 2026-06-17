@@ -84,10 +84,13 @@ vector update_state(int t, vector intercept, vector noise, array[] int bps,
  *
  * @ingroup estimates_smoothing
  */
-vector rw_trajectory(int t, int n_obs, real level, vector steps, int link) {
+vector rw_trajectory(int t, int n_obs, real level, vector steps, int link,
+                     int period) {
+  // the value is held constant for `period` time steps before each random walk
+  // step, so each step applies to a block of `period` time points
   array[n_obs] int bps;
   for (i in 1:n_obs) {
-    bps[i] = i;
+    bps[i] = (i - 1) %/% period + 1;
   }
   real intercept_value = link == 0 ? log(level) : level;
   vector[n_obs] x_obs = update_state(
@@ -169,6 +172,7 @@ vector gp_trajectory(int t, int n_obs, real level, vector noise, int link,
  * @param state_anchor Anchor of each state (0 = mean, 1 = init)
  * @param state_rw_steps Flat random walk steps across RW states
  * @param state_rw_n Number of random walk steps per RW state
+ * @param state_rw_period Number of time steps between random walk steps
  * @param state_gp_eta Flat GP basis coefficients across GP states
  * @param gp_M Number of GP basis functions (shared)
  * @param gp_PHI Shared GP basis matrix
@@ -185,7 +189,7 @@ vector get_state_trajectory(
   int id, int t, int n_obs, real level,
   array[] int state_param_id, array[] int state_type, array[] int state_link,
   array[] int state_pos, array[] int state_anchor,
-  vector state_rw_steps, int state_rw_n,
+  vector state_rw_steps, int state_rw_n, int state_rw_period,
   vector state_gp_eta, int gp_M, matrix gp_PHI, real gp_boundary_scale,
   array[] int gp_kernel, array[] real gp_nu,
   vector state_gp_alpha, vector state_gp_rho
@@ -197,7 +201,9 @@ vector get_state_trajectory(
         vector[state_rw_n] steps = segment(
           state_rw_steps, (p - 1) * state_rw_n + 1, state_rw_n
         );
-        return rw_trajectory(t, n_obs, level, steps, state_link[s]);
+        return rw_trajectory(
+          t, n_obs, level, steps, state_link[s], state_rw_period
+        );
       } else {
         vector[gp_M] eta = segment(state_gp_eta, (p - 1) * gp_M + 1, gp_M);
         vector[n_obs] noise = update_gp(

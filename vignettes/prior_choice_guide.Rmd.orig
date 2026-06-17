@@ -268,7 +268,7 @@ fit_rw <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = RW(init = LogNormal(mean = 2, sd = 0.5))),
+  rt = rt_opts(prior = RW(init = LogNormal(mean = 2, sd = 0.5), period = 7)),
   stan = stan
 )
 ```

@@ -16,6 +16,7 @@ int<lower = 0> n_rw_states;
 // step standard deviation prior: 0 = lognormal, 1 = gamma, 2 = normal
 array[n_rw_states] int<lower = 0> rw_sd_dist;
 vector[2 * n_rw_states] rw_sd_dist_params; // two prior parameters each
+int<lower = 1> state_rw_period; // time steps between random walk steps
 
 // gaussian process states (approximate Hilbert space GP, shared basis)
 int<lower = 0> n_gp_states;

@@ -93,7 +93,7 @@ If instead, we wanted to use the Gaussian process for `testland` and a random wa
 ```{r regional_epinow_multiple, fig.width = 8}
 rt <- opts_list(
   rt_opts(), cases,
-  realland = rt_opts(prior = RW(init = LogNormal(mean = 1, sd = 1)))
+  realland = rt_opts(prior = RW(init = LogNormal(mean = 1, sd = 1), period = 7))
 )
 region_separate_rt <- regional_epinow(
   data = cases,

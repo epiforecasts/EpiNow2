@@ -441,7 +441,8 @@ create_initial_conditions <- function(stan_data, params) {
     } else {
       stan_data$t - stan_data$horizon
     }
-    state_rw_n <- max(0, state_obs - 1)
+    rw_period <- stan_data$state_rw_period %||% 1L
+    state_rw_n <- max(0, ceiling(state_obs / rw_period) - 1)
     out$state_rw_sd <- array(
       rtruncnorm0(stan_data$n_rw_states, a = 0, mean = 0, sd = 0.1)
     )
@@ -877,6 +878,7 @@ create_state_data <- function(params, state_flags,
     n_rw_states = 0L,
     rw_sd_dist = array(integer(0)),
     rw_sd_dist_params = array(numeric(0)),
+    state_rw_period = 1L,
     n_gp_states = 0L,
     gp_basis_prop = 0.2,
     gp_boundary_scale = 1.5,
@@ -924,6 +926,7 @@ create_state_data <- function(params, state_flags,
   init_upper <- numeric(n)
   rw_sd_dist <- integer(0)
   rw_sd_params <- numeric(0)
+  rw_period <- integer(0)
   gp_kernel <- integer(0)
   gp_nu <- numeric(0)
   gp_alpha_dist <- integer(0)
@@ -977,6 +980,7 @@ create_state_data <- function(params, state_flags,
       sd <- spec$settings$sd
       rw_sd_dist <- c(rw_sd_dist, dist_code(sd))
       rw_sd_params <- c(rw_sd_params, numeric_params(sd, "step sd", name))
+      rw_period <- c(rw_period, spec$settings$period %||% 1L)
     } else {
       gp <- spec$settings
       if (gp$kernel == "periodic") {
@@ -1006,6 +1010,15 @@ create_state_data <- function(params, state_flags,
     }
   }
 
+  # a single random walk period is shared across random walk states
+  rw_period <- unique(rw_period)
+  if (length(rw_period) > 1) {
+    cli_abort(c(
+      "!" = "Different random walk periods across states are not yet supported."
+    ))
+  }
+  state_rw_period <- if (length(rw_period) == 1) rw_period else 1L
+
   list(
     n_states = n,
     state_param_id = array(as.integer(param_id)),
@@ -1020,6 +1033,7 @@ create_state_data <- function(params, state_flags,
     n_rw_states = n_rw,
     rw_sd_dist = array(rw_sd_dist),
     rw_sd_dist_params = array(rw_sd_params),
+    state_rw_period = state_rw_period,
     n_gp_states = n_gp,
     gp_basis_prop = gp_basis_prop,
     gp_boundary_scale = gp_boundary_scale,

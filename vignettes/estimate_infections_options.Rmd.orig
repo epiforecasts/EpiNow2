@@ -233,16 +233,16 @@ get_elapsed_time(fixed$fit)
 plot(fixed)
 ```
 
-## Random walk
+## Weekly random walk
 
-Instead of a smooth Gaussian process we might want the reproduction number to change step-wise as a random walk.
-This is done by wrapping the prior in `RW()` instead of `GP()`.
+Instead of a smooth Gaussian process we might want the reproduction number to change step-wise, e.g. every week.
+This is done by wrapping the prior in `RW()` instead of `GP()` and setting the `period` (in days) over which the value is held constant.
 
 ```{r weekly_rw}
 rw <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = RW(init = rt_prior))
+  rt = rt_opts(prior = RW(init = rt_prior, period = 7))
 )
 # summarise results
 summary(rw)
