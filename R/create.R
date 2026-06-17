@@ -511,6 +511,11 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   stan_data <- c(stan_data, create_backcalc_data(backcalc))
   # gaussian process data
   stan_data <- create_gp_data(gp, stan_data)
+  # under the renewal model the GP lives in the R0 state, so the (shared) GP used
+  # by the back-calculation model is switched off
+  if (stan_data$estimate_r > 0) {
+    stan_data$fixed <- 1L
+  }
 
   # observation model data
   stan_data <- c(
@@ -523,7 +528,7 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
     stan_data,
     create_stan_params(
       params,
-      states_supported = c("fraction_observed", "reporting_overdispersion")
+      states_supported = c("R0", "fraction_observed", "reporting_overdispersion")
     )
   )
 

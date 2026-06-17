@@ -69,12 +69,9 @@ transformed data {
 
 parameters {
   vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
-  // gaussian process
+  // gaussian process (back-calculation model only; under the renewal model the
+  // GP lives in the R0 state)
   vector[fixed ? 0 : gp_type == 1 ? 2*M : M] eta;  // unconstrained noise
-  // Mean Rt over the observation window for the centred GP parameterisation;
-  // the user prior on initial Rt is applied to the derived R[1] in the model
-  // block via the init-prior dispatch.
-  array[estimate_r] real<lower = 0> R_mean;
   array[estimate_r] real initial_infections;    // seed infections
   // standard deviation of breakpoint effect
   array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd;
@@ -179,11 +176,19 @@ transformed parameters {
       );
     }
     profile("R0") {
-      // R_mean is sampled directly (centred GP scaffolding). The user prior
-      // lives on R[1] (initial Rt), applied in the model block via the
-      // init_priors plumbing.
-      R = update_Rt(
-        ot_h, R_mean[1], noise, breakpoints, bp_effects, stationary, ot
+      // Rt is the trajectory of the R0 state (constant, or a GP/RW). Its level
+      // (R0) is the sampled scaffolding; the user prior is applied to the derived
+      // initial Rt (R[1]) by the state machinery.
+      R = get_state_trajectory(
+        param_id_R0, ot_h, ot,
+        get_param(
+          param_id_R0, params_fixed_lookup, params_variable_lookup,
+          params_value, params
+        ),
+        state_param_id, state_type, state_link, state_pos, state_anchor,
+        state_rw_steps, state_rw_n,
+        state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
+        state_gp_alpha, state_gp_rho
       );
     }
     profile("infections") {

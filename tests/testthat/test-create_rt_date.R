@@ -47,22 +47,6 @@ test_that("create_rt_data handles breakpoints correctly", {
   expect_equal(result$breakpoints, c(2, 2, 3, 3, 4))
 })
 
-test_that("create_rt_data handles random walk correctly", {
-  result <- create_rt_data(rt_opts(rw = 2),
-    breakpoints = rep(1, 10)
-  )
-
-  expect_equal(result$bp_n, 5)
-  expect_equal(result$breakpoints, c(1, 2, 2, 3, 3, 4, 4, 5, 5, 6))
-})
-
-test_that("create_rt_data throws error for invalid inputs", {
-  expect_error(
-    create_rt_data(rt_opts(rw = 2)),
-    "breakpoints must be supplied when using random walk"
-  )
-})
-
 test_that("create_rt_data handles future projections correctly", {
   result <- create_rt_data(rt_opts(future = "project"), horizon = 7)
 
@@ -77,15 +61,6 @@ test_that("create_rt_data handles zero sum breakpoints", {
   )
 
   expect_equal(result$bp_n, 0)
-})
-
-test_that("create_rt_data adjusts breakpoints for horizon", {
-  result <- create_rt_data(rt_opts(rw = 2, future = "latest"),
-    breakpoints = rep(1, 10),
-    horizon = 3
-  )
-
-  expect_equal(result$breakpoints, c(1, 2, 2, 3, 3, 4, 4, 4, 4, 4))
 })
 
 test_that("create_rt_data warns when fixed population is smaller than cumulative cases", {

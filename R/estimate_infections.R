@@ -152,17 +152,6 @@ estimate_infections <- function(data,
     rt <- NULL
   }
 
-  if (!is.null(rt) && is_state_spec(rt$prior)) {
-    cli_abort(
-      c(
-        "!" = "A time-varying Rt prior (a {.cls state_spec} from {.fn GP} /
-        {.fn RW} in {.fn rt_opts}) is not yet supported.",
-        "i" = "Wiring Rt through the time-varying parameter machinery is in
-        progress."
-      )
-    )
-  }
-
   # Check verbose settings and set logger to match
   if (verbose) {
     futile.logger::flog.threshold(futile.logger::DEBUG,
@@ -192,12 +181,14 @@ estimate_infections <- function(data,
   # Add initial zeroes
   model_data <- pad_reported_cases(model_data, seeding_time)
 
-  # R0 is handled separately from the generic params system: it is wrapped
-  # by the centred non-stationary GP, so its user-facing prior is on the
-  # initial Rt (R[1]) rather than on the sampled internal log-mean.
+  # Under the renewal model R0 carries the Rt prior (constant or a time-varying
+  # GP/RW state); the renewal GP lives in that state, so the back-calculation GP
+  # hyperparameters (alpha, rho) are only needed when not estimating Rt.
+  renewal <- isTRUE(rt$use_rt)
   params <- list(
-    make_param("alpha", gp$alpha, lower_bound = 0),
-    make_param("rho", gp$ls, lower_bound = 0),
+    make_param("alpha", if (renewal) NULL else gp$alpha, lower_bound = 0),
+    make_param("rho", if (renewal) NULL else gp$ls, lower_bound = 0),
+    make_param("R0", if (renewal) rt$prior else NULL, lower_bound = 0),
     make_param("fraction_observed", obs$scale, lower_bound = 0),
     make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("pop", rt$pop, lower_bound = 0)
@@ -215,17 +206,9 @@ estimate_infections <- function(data,
     params = params
   )
 
-  stan_data$param_id_R0 <- stan_data$n_params_variable + 1L
-  init_priors <- if (isTRUE(rt$use_rt)) {
-    list(list(
-      param_id = stan_data$param_id_R0,
-      dist = rt$prior,
-      lower_bound = 0
-    ))
-  } else {
-    list()
-  }
-  stan_data <- c(stan_data, make_init_priors(init_priors))
+  # R0's prior is applied to the derived initial Rt by the state machinery, so
+  # no separate init priors are needed (kept empty for the stan data contract).
+  stan_data <- c(stan_data, make_init_priors())
 
   stan_data <- c(stan_data, create_stan_delays(
     generation_time = generation_time,

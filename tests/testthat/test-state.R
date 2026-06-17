@@ -66,18 +66,6 @@ test_that("rt_opts accepts a time-varying (state) prior", {
   expect_s3_class(rt_opts(prior = LogNormal(1, 1))$prior, "dist_spec")
 })
 
-test_that("a time-varying Rt prior errors until wired", {
-  expect_error(
-    estimate_infections(
-      example_confirmed[1:20],
-      generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(example_reporting_delay),
-      rt = rt_opts(prior = RW(init = LogNormal(1, 1)))
-    ),
-    "not yet supported"
-  )
-})
-
 test_that("dist_spec and state_spec share the param_spec superclass", {
   expect_s3_class(Normal(5, 1), "param_spec")
   expect_s3_class(LogNormal(1, 1) + Gamma(2, 1), "param_spec") # multi

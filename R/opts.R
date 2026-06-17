@@ -321,7 +321,7 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #'
 #' # add a weekly random walk
 #' rt_opts(rw = 7)
-rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
+rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
                     use_rt = TRUE,
                     rw = 0,
                     use_breakpoints = TRUE,
@@ -331,16 +331,33 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     pop_period = c("forecast", "all"),
                     pop_floor = 1.0,
                     growth_method = c("infections", "infectiousness")) {
+  gp_on <- arg_match(gp_on)
+  # gp_on sets the anchor of the default Rt prior: "R_t-1" is a first-difference
+  # GP (init), "R0" a mean-reverting GP (mean). An explicit prior overrides this.
+  if (missing(prior) && gp_on == "R0") {
+    prior <- GP(mean = LogNormal(mean = 1, sd = 1))
+  }
   opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
     future = future,
-    gp_on = arg_match(gp_on),
+    gp_on = gp_on,
     pop_period = arg_match(pop_period),
     pop_floor = pop_floor,
     growth_method = arg_match(growth_method)
   )
+  # rw is superseded by a random-walk prior (rt_opts(prior = RW(...)))
+  if (rw != 0) {
+    lifecycle::deprecate_warn(
+      "1.9.1", "rt_opts(rw)",
+      details = paste(
+        "Specify a random-walk Rt with `rt_opts(prior = RW(...))`.",
+        "The `rw` argument is now ignored."
+      )
+    )
+    opts$rw <- 0
+  }
   # replace default settings with those specified by user
   if (opts$rw > 0) {
     opts$use_breakpoints <- TRUE
