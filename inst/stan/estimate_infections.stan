@@ -330,7 +330,9 @@ generated quantities {
         accumulated_reports[imputed_times], reporting_overdispersion, model_type
       );
     } else {
-      imputed_reports = report_rng(reports, reporting_overdispersion, model_type);
+      imputed_reports = report_rng(
+        reports[imputed_times], reporting_overdispersion, model_type
+      );
     }
 
     // log likelihood of model

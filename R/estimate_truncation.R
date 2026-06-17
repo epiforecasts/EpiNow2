@@ -117,7 +117,7 @@ merge_trunc_pred_obs <- function(observations, predictions) {
 #'
 #' This can be thought of as a Bayesian form of the chain-ladder
 #' nowcasting approach in the
-#' [`baselinenowcast`](https://package.epinowcast.org/baselinenowcast/)
+#' [`baselinenowcast`](https://baselinenowcast.epinowcast.org/)
 #' package. For settings requiring time-varying delays, see
 #' [`epinowcast`](https://package.epinowcast.org/).
 #'

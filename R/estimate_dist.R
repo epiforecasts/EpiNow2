@@ -109,7 +109,7 @@
 #' - The primary event distribution is limited to uniform or
 #'   exponential growth with a fixed rate.
 #'   Primary event parameters are not estimated.
-#' - Left truncation is not yet exposed (internally set to 0).
+#' - Left truncation is not yet exposed (internally set to `-Inf`).
 #'
 #' @references
 #' Park SW, et al. (2024) "Estimating epidemiological delay
@@ -249,7 +249,7 @@ estimate_dist <- function(data,
     n_obs = as.array(as.integer(delay_data$n)),
     pwindow = as.array(as.integer(delay_data$pwindow)),
     D = as.array(as.numeric(delay_data$relative_obs_time)),
-    L = as.array(rep(0.0, nrow(delay_data))),
+    L = as.array(rep(-Inf, nrow(delay_data))),
     dist_id = dist_id,
     primary_id = primary_id,
     n_primary_params = as.integer(length(primary_params)),

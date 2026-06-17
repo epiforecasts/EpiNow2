@@ -65,6 +65,7 @@ get_raw_result <- function(file, region, date,
 #' @importFrom purrr map safely
 #' @importFrom data.table rbindlist
 #' @examples
+#' data.table::setDTthreads(1) # limit threads, for example use only
 #' # get example multiregion estimates
 #' regional_out <- readRDS(system.file(
 #'   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
