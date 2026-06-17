@@ -6,7 +6,7 @@
 
 ## Deprecations
 
-- The `rw` argument of `rt_opts()` is deprecated; specify a random-walk Rt with `rt_opts(prior = RW(...))`.
+- The `rw` argument and breakpoints (`use_breakpoints` / the data `breakpoint` column) of `rt_opts()` are deprecated; specify a random-walk Rt with `rt_opts(prior = RW(...))`.
 
 # EpiNow2 1.9.0
 

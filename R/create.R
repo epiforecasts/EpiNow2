@@ -273,10 +273,25 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     }
   }
 
+  # breakpoints (an out-of-step random walk on Rt) are superseded by the random
+  # walk prior; with Rt expressed as a state they are no longer applied
+  bp_n <- ifelse(rt$use_breakpoints, max(breakpoints) - 1, 0)
+  if (bp_n > 0) {
+    lifecycle::deprecate_warn(
+      "1.9.1", "rt_opts(use_breakpoints)",
+      details = paste(
+        "Breakpoints are superseded by a random-walk Rt prior",
+        "(`rt_opts(prior = RW(...))`) and are now ignored."
+      )
+    )
+    bp_n <- 0
+    breakpoints <- rep(1L, length(breakpoints))
+  }
+
   # map settings to underlying gp stan requirements
   rt_data <- list(
     estimate_r = as.numeric(rt$use_rt),
-    bp_n = ifelse(rt$use_breakpoints, max(breakpoints) - 1, 0),
+    bp_n = bp_n,
     breakpoints = breakpoints,
     future_fixed = as.numeric(future_rt$fixed),
     fixed_from = future_rt$from,

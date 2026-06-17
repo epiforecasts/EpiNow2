@@ -38,13 +38,14 @@ test_that("create_rt_data handles custom rt_opts correctly", {
   expect_equal(result$future_time, 7)
 })
 
-test_that("create_rt_data handles breakpoints correctly", {
-  result <- create_rt_data(rt_opts(use_breakpoints = TRUE),
-    breakpoints = c(1, 0, 1, 0, 1)
+test_that("create_rt_data deprecates and ignores breakpoints", {
+  expect_warning(
+    result <- create_rt_data(rt_opts(use_breakpoints = TRUE),
+      breakpoints = c(1, 0, 1, 0, 1)
+    ),
+    "deprecated"
   )
-
-  expect_equal(result$bp_n, 3)
-  expect_equal(result$breakpoints, c(2, 2, 3, 3, 4))
+  expect_equal(result$bp_n, 0)
 })
 
 test_that("create_rt_data handles future projections correctly", {
