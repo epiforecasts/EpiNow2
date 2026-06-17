@@ -105,14 +105,13 @@ We are now ready to run the model and will in the following show a number of pos
 
 ## Default options
 
-By default the model uses a renewal equation for infections and a Gaussian Process prior for the reproduction number. 
-Putting all the data and parameters together and tweaking the Gaussian Process to have a shorter length scale prior than the default we run.
+By default the model uses a renewal equation for infections and a Gaussian process prior for the reproduction number, specified with `GP()` and anchored at the prior on the initial reproduction number.
 
 ```{r default}
 def <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior)
+  rt = rt_opts(prior = GP(init = rt_prior))
 )
 # summarise results
 summary(def)
@@ -124,14 +123,13 @@ plot(def)
 
 ## Reducing the accuracy of the approximate Gaussian Process
 
-To speed up the calculation of the Gaussian Process we could decrease its accuracy, e.g. decrease the proportion of time points to use as basis functions from the default of 0.2 to 0.15.
+To speed up the calculation of the Gaussian process we could decrease its accuracy, e.g. decrease the proportion of time points to use as basis functions from the default of 0.2 to 0.15, set via the `basis_prop` argument of `GP()`.
 
 ```{r lower_accuracy}
 agp <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
-  gp = gp_opts(basis_prop = 0.15)
+  rt = rt_opts(prior = GP(init = rt_prior, basis_prop = 0.15))
 )
 # summarise results
 summary(agp)
@@ -152,7 +150,7 @@ dep <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(
-    prior = rt_prior,
+    prior = GP(init = rt_prior),
     pop = Normal(mean = 1000000, sd = 1000), future = "latest"
   )
 )
@@ -185,7 +183,7 @@ trunc <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   truncation = trunc_opts(trunc_dist),
-  rt = rt_opts(prior = rt_prior)
+  rt = rt_opts(prior = GP(init = rt_prior))
 )
 # summarise results
 summary(trunc)
@@ -205,7 +203,7 @@ project_rt <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(
-    prior = rt_prior, future = "project"
+    prior = GP(init = rt_prior), future = "project"
   )
 )
 # summarise results
@@ -219,12 +217,13 @@ plot(project_rt)
 ## Fixed reproduction number
 
 We might want to estimate a fixed reproduction number, i.e. assume that it does not change.
+This is done by passing the prior on the reproduction number directly (rather than wrapping it in a time-varying `GP()` or `RW()`).
 
 ```{r fixed}
 fixed <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  gp = NULL
+  rt = rt_opts(prior = rt_prior)
 )
 # summarise results
 summary(fixed)
@@ -234,47 +233,16 @@ get_elapsed_time(fixed$fit)
 plot(fixed)
 ```
 
-## Breakpoints
+## Random walk
 
-Instead of assuming the reproduction number varies freely or is fixed, we can assume that it is fixed but with breakpoints.
-This can be done by adding a `breakpoint` column to the reported case data set.
-e.g. if we think that the reproduction number was constant but would like to allow it to change on the 16th of March 2020 we would define a new case data set using
-
-```{r bp_define}
-bp_cases <- data.table::copy(reported_cases)
-bp_cases <- bp_cases[,
- breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)
-]
-```
-
-We then use this instead of `reported_cases` in the `estimate_infections()` function:
-
-```{r bp}
-bkp <- estimate_infections(bp_cases,
-  generation_time = gt_opts(example_generation_time),
-  delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
-  gp = NULL
-)
-# summarise results
-summary(bkp)
-# elapsed time (in seconds)
-get_elapsed_time(bkp$fit)
-# summary plot
-plot(bkp)
-```
-
-## Weekly random walk
-
-Instead of a smooth Gaussian Process we might want the reproduction number to change step-wise, e.g. every week.
-This can be achieved using the `rw` option which defines the length of the time step in a random walk that the reproduction number is assumed to follow.
+Instead of a smooth Gaussian process we might want the reproduction number to change step-wise as a random walk.
+This is done by wrapping the prior in `RW()` instead of `GP()`.
 
 ```{r weekly_rw}
 rw <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior, rw = 7),
-  gp = NULL
+  rt = rt_opts(prior = RW(init = rt_prior))
 )
 # summarise results
 summary(rw)

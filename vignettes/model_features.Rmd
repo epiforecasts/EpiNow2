@@ -39,7 +39,7 @@ The package's modelling features fall into four groups.
 **Model configuration** controls how the estimation models behave:
 
 - [Reproduction number](#reproduction-number) — `rt_opts()`
-- [Gaussian process](#gaussian-process) — `gp_opts()`
+- [Gaussian process](#gaussian-process) — `GP()`
 - [Delay distributions](#delay-distributions) — `gt_opts()`, `delay_opts()`, `trunc_opts()`
 - [Observation model](#observation-model) — `obs_opts()`
 - [Options summary](#options-summary) — defaults and which models use each
@@ -64,7 +64,7 @@ The package's modelling features fall into four groups.
 | Feature | Argument | Description | See also |
 |---|---|---|---|
 | Renewal equation (default) | `rt = rt_opts(...)` | Generative model using the reproduction number and generation time | [Model definition](estimate_infections.html) |
-| Back-calculation | `rt = NULL`, `backcalc = backcalc_opts(...)` | Non-parametric deconvolution of reported cases | [Model definition](estimate_infections.html) |
+| Back-calculation | `rt = NULL`, `backcalc = backcalc_opts(...)` | Latent infections as a Gaussian process on the log scale | [Model definition](estimate_infections.html) |
 
 See also: [estimate_infections workflow](estimate_infections_workflow.html)
 
@@ -119,9 +119,9 @@ When using the renewal equation, several options control how the time-varying re
 |---|---|---|---|
 | GP on differences of log Rt (default) | `rt_opts(gp_on = "R_t-1")` | Gaussian process applied to successive Rt values | [Options examples](estimate_infections_options.html) |
 | GP on deviations from R0 | `rt_opts(gp_on = "R0")` | Gaussian process applied as deviations from a global mean | [Options examples](estimate_infections_options.html) |
-| Random walk | `rt_opts(rw = 7)` with `gp = NULL` | Piecewise-constant Rt with specified step size | [Options examples](estimate_infections_options.html) |
+| Random walk | `rt_opts(prior = RW(...))` | Step-wise Rt following a random walk | [Options examples](estimate_infections_options.html) |
 | Breakpoints | Add a `breakpoint` column to the input data | Step changes in Rt at user-specified dates; on by default in `rt_opts()`, set `use_breakpoints = FALSE` to disable | [Options examples](estimate_infections_options.html) |
-| Fixed Rt | `gp = NULL` (and default `rt_opts()`) | Constant reproduction number sampled from the prior; no GP, no random walk | [Options examples](estimate_infections_options.html) |
+| Fixed Rt | `rt_opts(prior = LogNormal(...))` | Constant reproduction number sampled from the prior; no GP, no random walk | [Options examples](estimate_infections_options.html) |
 | Population adjustment | `rt_opts(pop = Fixed(N))` | Adjust Rt for susceptible depletion; `pop` accepts any `<dist_spec>` | [Options examples](estimate_infections_options.html) |
 | Growth rate method | `rt_opts(growth_method = "infectiousness")` | Alternative growth rate calculation via infectiousness | [Model definition](estimate_infections.html) |
 
@@ -130,14 +130,14 @@ See also: [estimate_infections model definition](estimate_infections.html), [opt
 ## Gaussian process
 
 The Gaussian process controls the flexibility of the time-varying reproduction number or infection trajectory.
-Configured via `gp_opts()`.
+Configured via `GP()`.
 For kernel mathematics and the Hilbert space spectral approximation see the [GP implementation details](gaussian_process_implementation_details.html) vignette.
 
 | Feature | Argument | Description |
 |---|---|---|
-| Kernel choice | `gp_opts(kernel = ...)` | `"matern"` (default), `"se"`, `"ou"`, or `"periodic"` |
-| Disable GP | `gp = NULL` in `estimate_infections()` | Remove the Gaussian process entirely |
-| Accuracy/speed tradeoff | `gp_opts(basis_prop = ...)` | Higher values increase accuracy; lower values are faster (default 0.2) |
+| Kernel choice | `GP(kernel = ...)` | `"matern"` (default), `"se"`, `"ou"`, or `"periodic"` |
+| Fixed Rt | `rt_opts(prior = LogNormal(...))` | Constant Rt instead of a Gaussian process |
+| Accuracy/speed tradeoff | `GP(basis_prop = ...)` | Higher values increase accuracy; lower values are faster (default 0.2) |
 
 See also: [GP implementation details](gaussian_process_implementation_details.html), [options examples](estimate_infections_options.html), [prior choice guide](prior_choice_guide.html)
 
@@ -186,7 +186,7 @@ The table below summarises the options functions, what they configure, their def
 | Function | Configures | Default | Used by |
 |----------|-----------|---------|---------|
 | `rt_opts()` | Reproduction number model | GP on log Rt differences | `estimate_infections()` |
-| `gp_opts()` | Gaussian process prior | Matern 3/2 kernel | `estimate_infections()` |
+| `GP()` | Gaussian process prior | Matern 3/2 kernel | `estimate_infections()` |
 | `gt_opts()` | Generation time distribution | `Fixed(1)` (degenerate 1-day generation interval; users normally override) | `estimate_infections()` |
 | `delay_opts()` | Reporting delay distributions | `Fixed(0)` (no delay) | `estimate_infections()`, `estimate_secondary()` |
 | `obs_opts()` | Observation model | Negative binomial with day-of-week effect | `estimate_infections()`, `estimate_secondary()` |

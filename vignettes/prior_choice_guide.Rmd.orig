@@ -105,10 +105,10 @@ The following tables list all priors available in `{EpiNow2}`, organised by mode
 | **Random walk** |
 | Step size SD | Renewal only | `rt_opts()` | `rw` | `HalfNormal(0, 0.1)` | Set step size via `rw` argument |
 | **Gaussian Process** |
-| Length scale | Both | `gp_opts()` | `ls` | `LogNormal(mean = 21, sd = 7, max = 60)` | Controls smoothness over time |
-| Magnitude | Both | `gp_opts()` | `alpha` | `Normal(mean = 0, sd = 0.01)` | Controls amplitude of variations |
+| Length scale | Both | `GP()` | `ls` | `LogNormal(mean = 21, sd = 7, max = 60)` | Controls smoothness over time |
+| Magnitude | Both | `GP()` | `alpha` | `Normal(mean = 0, sd = 0.01)` | Controls amplitude of variations |
 | **Back-calculation** |
-| Prior source | Non-mechanistic only | `backcalc_opts()` | `prior` | `"reports"` | Options: "reports", "infections", "none" |
+| Latent infections | Non-mechanistic only | `backcalc_opts()` | `prior` | `GP(init = ...)` | Gaussian process on log-infections |
 | **Observation model** |
 | Overdispersion | Both | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterisation |
 | Scaling | Both | `obs_opts()` | `scale` | `Fixed(1)` | Ascertainment rate |
@@ -207,10 +207,10 @@ This corresponds to a median of 21 days (range 9 to 36 days at 95% prior probabi
 **Example:**
 ```{r gp-length-scale-examples}
 # For outbreak with weekly policy changes
-gp_opts(ls = LogNormal(mean = 7, sd = 3, max = 30))
+GP(init = LogNormal(mean = 1, sd = 1), ls = LogNormal(mean = 7, sd = 3, max = 30))
 
 # For gradually evolving endemic disease
-gp_opts(ls = LogNormal(mean = 28, sd = 10, max = 90))
+GP(init = LogNormal(mean = 1, sd = 1), ls = LogNormal(mean = 28, sd = 10, max = 90))
 ```
 
 ## Gaussian Process magnitude
@@ -238,10 +238,10 @@ For the renewal equation model, this corresponds to a half-normal (since negativ
 **Example:**
 ```{r gp-magnitude-examples}
 # For outbreak with major interventions
-gp_opts(alpha = Normal(mean = 0, sd = 0.05))
+GP(init = LogNormal(mean = 1, sd = 1), alpha = Normal(mean = 0, sd = 0.05))
 
 # For very stable transmission
-gp_opts(alpha = Normal(mean = 0, sd = 0.005))
+GP(init = LogNormal(mean = 1, sd = 1), alpha = Normal(mean = 0, sd = 0.005))
 ```
 
 ## Random walk for $R_t$ (alternative to GP)
@@ -268,8 +268,7 @@ fit_rw <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.5), rw = 7),
-  gp = NULL,  # Disable GP when using random walk
+  rt = rt_opts(prior = RW(init = LogNormal(mean = 2, sd = 0.5))),
   stan = stan
 )
 ```
@@ -622,7 +621,7 @@ estimates <- estimate_infections(
 Ask these questions:
 
 1. **Do I have strong domain knowledge about $R_0$?** → Consider modifying `rt_opts(prior = ...)`
-2. **Does $R_t$ change rapidly or gradually in my setting?** → Consider modifying `gp_opts(ls = ...)`
+2. **Does $R_t$ change rapidly or gradually in my setting?** → Consider modifying the `ls` argument of `GP()`
 3. **Is reporting highly variable or stable?** → Consider modifying `obs_opts(dispersion = ...)` or `obs_opts(family = ...)`
 4. **Are there sudden policy changes?** → Consider using `rt_opts(rw = ...)` instead of GP
 5. **Is recent data truncated?** → Consider adding `trunc_opts(...)`

@@ -88,17 +88,18 @@ region_rt$summary$summarised_results$table
 region_rt$summary$plots$R
 ```
 
-If instead, we wanted to use the Gaussian Process for `testland` and a weekly random walk for `realland` we could specify these separately using the `opts_list()` function from the package and `modifyList()` from `R`.
+If instead, we wanted to use the Gaussian process for `testland` and a random walk for `realland` we could specify these separately using the `opts_list()` function from the package.
 
 ```{r regional_epinow_multiple, fig.width = 8}
-gp <- opts_list(gp_opts(), cases)
-gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
-rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+rt <- opts_list(
+  rt_opts(), cases,
+  realland = rt_opts(prior = RW(init = LogNormal(mean = 1, sd = 1)))
+)
 region_separate_rt <- regional_epinow(
   data = cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt, gp = gp,
+  rt = rt,
   logs = NULL
 )
 ## summary
