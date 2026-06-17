@@ -55,13 +55,15 @@ transformed data {
     initial_infections_guess = 0;
   }
 
+  // Time-varying states vary over the observed window (ot) and hold their last
+  // value through the forecast horizon ("latest" projection).
   // number of random walk steps per time-varying parameter state
-  int state_rw_n = ot_h > 1 ? ot_h - 1 : 0;
+  int state_rw_n = ot > 1 ? ot - 1 : 0;
   // basis functions and basis matrix for gaussian process states (shared)
-  int gp_M = n_gp_states > 0 ? to_int(ceil(ot_h * gp_basis_prop)) : 0;
-  matrix[n_gp_states > 0 ? ot_h : 0, gp_M] gp_PHI;
+  int gp_M = n_gp_states > 0 ? to_int(ceil(ot * gp_basis_prop)) : 0;
+  matrix[n_gp_states > 0 ? ot : 0, gp_M] gp_PHI;
   if (n_gp_states > 0) {
-    gp_PHI = setup_gp(gp_M, gp_boundary_scale, ot_h, 0, 1.0);
+    gp_PHI = setup_gp(gp_M, gp_boundary_scale, ot, 0, 1.0);
   }
 }
 

@@ -641,13 +641,13 @@ create_initial_conditions <- function(stan_data, params) {
       mean = param_means, sd = param_sds
     ))
 
-    ## time-varying parameter states
+    ## time-varying parameter states (vary over the observed window `ot`)
     ## truncnorm::rtruncnorm() returns NULL for n = 0, so guard zero counts
     rtruncnorm0 <- function(n, ...) {
       if (n > 0) truncnorm::rtruncnorm(n, ...) else numeric(0)
     }
-    ot_h <- stan_data$t - stan_data$seeding_time
-    state_rw_n <- max(0, ot_h - 1)
+    ot <- stan_data$t - stan_data$seeding_time - stan_data$horizon
+    state_rw_n <- max(0, ot - 1)
     out$state_rw_sd <- array(
       rtruncnorm0(stan_data$n_rw_states, a = 0, mean = 0, sd = 0.1)
     )
@@ -655,7 +655,7 @@ create_initial_conditions <- function(stan_data, params) {
       rnorm(stan_data$n_rw_states * state_rw_n, 0, 0.1)
     )
     gp_m <- if (stan_data$n_gp_states > 0) {
-      ceiling(ot_h * stan_data$gp_basis_prop)
+      ceiling(ot * stan_data$gp_basis_prop)
     } else {
       0
     }
@@ -664,7 +664,7 @@ create_initial_conditions <- function(stan_data, params) {
       rtruncnorm0(stan_data$n_gp_states, a = 0, mean = 0, sd = 0.1)
     )
     out$state_gp_rho <- array(
-      rtruncnorm0(stan_data$n_gp_states, a = 0, mean = ot_h / 2, sd = ot_h / 4)
+      rtruncnorm0(stan_data$n_gp_states, a = 0, mean = ot / 2, sd = ot / 4)
     )
     out
   }
