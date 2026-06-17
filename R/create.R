@@ -280,7 +280,7 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #'   backcalc_opts(), params = list()
 #' )
 #' }
-create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
+create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
                              forecast, params) {
   cases <- data[(seeding_time + 1):.N]
   cases[, lookup := seq_len(.N)]

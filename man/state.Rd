@@ -6,7 +6,17 @@
 \alias{RW}
 \title{Time-varying parameters}
 \usage{
-GP(mean, init, ...)
+GP(
+  mean,
+  init,
+  basis_prop = 0.2,
+  boundary_scale = 1.5,
+  ls = LogNormal(mean = 21, sd = 7, max = 60),
+  alpha = Normal(mean = 0, sd = 0.01),
+  kernel = c("matern", "se", "ou", "periodic"),
+  matern_order = 3/2,
+  w0 = 1
+)
 
 RW(mean, init, sd = Normal(mean = 0, sd = 0.1))
 }
@@ -19,8 +29,30 @@ state fits deviations around. Supply either \code{mean} or \code{init}, not both
 on first differences, or a numeric vector giving known initial value(s).
 Supply either \code{mean} or \code{init}, not both.}
 
-\item{...}{Additional Gaussian process settings passed to \code{\link[=gp_opts]{gp_opts()}} (e.g.
-\code{ls}, \code{alpha}, \code{kernel}).}
+\item{basis_prop}{Numeric, the proportion of time points to use as basis
+functions for the Gaussian process. Defaults to 0.2.}
+
+\item{boundary_scale}{Numeric, defaults to 1.5. Boundary scale of the
+approximate Gaussian process.}
+
+\item{ls}{A \verb{<dist_spec>} giving the prior on the Gaussian process
+lengthscale (on the scale of days). Defaults to
+\code{LogNormal(mean = 21, sd = 7, max = 60)}.}
+
+\item{alpha}{A \verb{<dist_spec>} giving the prior on the Gaussian process
+magnitude. Defaults to \code{Normal(mean = 0, sd = 0.01)} (a lower limit of 0 is
+enforced where the parameter is used).}
+
+\item{kernel}{Character string, the type of kernel. One of the Matern kernel
+("matern", the default), squared exponential kernel ("se"),
+Ornstein-Uhlenbeck kernel ("ou"), or periodic kernel ("periodic").}
+
+\item{matern_order}{Numeric, defaults to 3/2. Order of the Matern kernel.
+Common choices are 1/2, 3/2, and 5/2. Set automatically for the "se" and
+"ou" kernels. Only used if \code{kernel} is "matern".}
+
+\item{w0}{Numeric, defaults to 1.0. Fundamental frequency for the periodic
+kernel. Only used if \code{kernel} is "periodic".}
 
 \item{sd}{A \verb{<dist_spec>} giving the prior on the random walk step standard
 deviation. Defaults to a half-normal \code{Normal(mean = 0, sd = 0.1)} (the lower
@@ -59,6 +91,8 @@ parameter is not yet supported raises an informative error.
 GP(mean = Normal(mean = 5, sd = 1))
 # Gaussian process on first differences
 GP(init = Normal(mean = 5, sd = 1))
+# Gaussian process with a squared exponential kernel
+GP(init = Normal(mean = 5, sd = 1), kernel = "se")
 # random walk with an initial-value prior
 RW(init = Normal(mean = 5, sd = 1))
 # mean-reverting random walk with a custom step size prior

@@ -410,9 +410,10 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`.
 #'
-#' @param prior `r lifecycle::badge("deprecated")` The back-calculation model
-#' now estimates latent infections as a Gaussian process on the log scale, so
-#' the shifted-case prior is no longer used.
+#' @param prior A `GP()` specification for the latent infections of the
+#' back-calculation model, given as a Gaussian process on the log scale (e.g.
+#' `GP(init = LogNormal(mean = 100, sd = 100))`). Defaults to `NULL`, in which
+#' case a Gaussian process anchored at a data-informed initial value is used.
 #'
 #' @param prior_window `r lifecycle::badge("deprecated")` No longer used, as the
 #' back-calculation model no longer smooths shifted reported cases.
@@ -428,15 +429,15 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
 #' @examples
 #' # default settings
 #' backcalc_opts()
-backcalc_opts <- function(prior = c("reports", "none", "infections"),
-                          prior_window = 14, rt_window = 1) {
-  if (!missing(prior)) {
+backcalc_opts <- function(prior = NULL, prior_window = 14, rt_window = 1) {
+  if (is.character(prior)) {
     lifecycle::deprecate_warn(
-      "1.9.1", "backcalc_opts(prior)",
+      "1.9.1", "backcalc_opts(prior = 'must be a GP() specification')",
       details = "The back-calculation model now estimates latent infections as
-      a Gaussian process on the log scale, so the shifted-case prior is no
-      longer used."
+      a Gaussian process state. Supply a `GP()` specification (e.g.
+      `prior = GP(init = LogNormal(...))`) or leave as the default."
     )
+    prior <- NULL
   }
   if (!missing(prior_window)) {
     lifecycle::deprecate_warn(
@@ -445,7 +446,11 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
       the prior smoothing window is no longer used."
     )
   }
+  if (!is.null(prior)) {
+    assert_class(prior, "state_spec")
+  }
   backcalc <- list(
+    prior = prior,
     rt_window = as.integer(rt_window)
   )
   if (backcalc$rt_window %% 2 == 0) {
@@ -464,8 +469,10 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' Approximate Gaussian Process Settings
 #'
 #' @description
-#' Defines a list specifying the structure of the approximate Gaussian
-#' process. Custom settings can be supplied which override the defaults.
+#' `r lifecycle::badge("deprecated")`
+#' Gaussian process settings are now supplied directly as arguments of [GP()].
+#' This function is retained only for backwards compatibility and will be
+#' removed in a future release.
 #'
 #' @param ls A `<dist_spec>` giving the prior distribution of the lengthscale
 #' parameter of the Gaussian process kernel on the scale of days. Defaults to
@@ -525,6 +532,31 @@ gp_opts <- function(basis_prop = 0.2,
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
                     w0 = 1.0) {
+  lifecycle::deprecate_warn(
+    "1.9.1", "gp_opts()", "GP()",
+    details = "Gaussian process settings are now arguments of `GP()`."
+  )
+  new_gp_settings(
+    basis_prop = basis_prop, boundary_scale = boundary_scale, ls = ls,
+    alpha = alpha, kernel = kernel, matern_order = matern_order, w0 = w0
+  )
+}
+
+#' Build Gaussian process settings
+#'
+#' @description
+#' Internal constructor for the list of Gaussian process settings shared by
+#' [GP()] and the deprecated [gp_opts()].
+#' @inheritParams gp_opts
+#' @return A `<gp_opts>` object of Gaussian process settings.
+#' @keywords internal
+new_gp_settings <- function(basis_prop = 0.2,
+                            boundary_scale = 1.5,
+                            ls = LogNormal(mean = 21, sd = 7, max = 60),
+                            alpha = Normal(mean = 0, sd = 0.01),
+                            kernel = c("matern", "se", "ou", "periodic"),
+                            matern_order = 3 / 2,
+                            w0 = 1.0) {
   kernel <- arg_match(kernel)
   if (kernel == "se") {
     matern_order <- Inf

@@ -84,16 +84,47 @@ new_state_spec <- function(type, mean, init, settings = list()) {
 }
 
 #' @rdname state
-#' @param ... Additional Gaussian process settings passed to [gp_opts()] (e.g.
-#'   `ls`, `alpha`, `kernel`).
+#' @param basis_prop Numeric, the proportion of time points to use as basis
+#'   functions for the Gaussian process. Defaults to 0.2.
+#' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the
+#'   approximate Gaussian process.
+#' @param ls A `<dist_spec>` giving the prior on the Gaussian process
+#'   lengthscale (on the scale of days). Defaults to
+#'   `LogNormal(mean = 21, sd = 7, max = 60)`.
+#' @param alpha A `<dist_spec>` giving the prior on the Gaussian process
+#'   magnitude. Defaults to `Normal(mean = 0, sd = 0.01)` (a lower limit of 0 is
+#'   enforced where the parameter is used).
+#' @param kernel Character string, the type of kernel. One of the Matern kernel
+#'   ("matern", the default), squared exponential kernel ("se"),
+#'   Ornstein-Uhlenbeck kernel ("ou"), or periodic kernel ("periodic").
+#' @param matern_order Numeric, defaults to 3/2. Order of the Matern kernel.
+#'   Common choices are 1/2, 3/2, and 5/2. Set automatically for the "se" and
+#'   "ou" kernels. Only used if `kernel` is "matern".
+#' @param w0 Numeric, defaults to 1.0. Fundamental frequency for the periodic
+#'   kernel. Only used if `kernel` is "periodic".
 #' @export
 #' @examples
 #' # mean-reverting Gaussian process
 #' GP(mean = Normal(mean = 5, sd = 1))
 #' # Gaussian process on first differences
 #' GP(init = Normal(mean = 5, sd = 1))
-GP <- function(mean, init, ...) {
-  new_state_spec("gp", mean, init, settings = gp_opts(...))
+#' # Gaussian process with a squared exponential kernel
+#' GP(init = Normal(mean = 5, sd = 1), kernel = "se")
+GP <- function(mean, init,
+               basis_prop = 0.2,
+               boundary_scale = 1.5,
+               ls = LogNormal(mean = 21, sd = 7, max = 60),
+               alpha = Normal(mean = 0, sd = 0.01),
+               kernel = c("matern", "se", "ou", "periodic"),
+               matern_order = 3 / 2,
+               w0 = 1.0) {
+  new_state_spec(
+    "gp", mean, init,
+    settings = new_gp_settings(
+      basis_prop = basis_prop, boundary_scale = boundary_scale, ls = ls,
+      alpha = alpha, kernel = kernel, matern_order = matern_order, w0 = w0
+    )
+  )
 }
 
 #' @rdname state

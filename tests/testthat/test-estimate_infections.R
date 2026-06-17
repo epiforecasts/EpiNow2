@@ -62,7 +62,9 @@ test_that("estimate_infections successfully returns estimates using a Matern 5/2
   skip_integration()
   test_estimate_infections(
     reported_cases,
-    gp = gp_opts(kernel = "matern", matern_order = 5 / 2)
+    rt = rt_opts(prior = GP(
+      init = LogNormal(mean = 1, sd = 1), kernel = "matern", matern_order = 5 / 2
+    ))
   )
 })
 
@@ -88,7 +90,7 @@ test_that("estimate_infections successfully returns estimates using a periodic k
   skip_integration()
   test_estimate_infections(
     reported_cases,
-    gp = gp_opts(kernel = "periodic")
+    rt = rt_opts(prior = GP(init = LogNormal(mean = 1, sd = 1), kernel = "periodic"))
   )
 })
 
@@ -162,9 +164,16 @@ test_that("estimate_infections works without setting a generation time", {
 
 test_that("estimate_infections works with different kernels", {
   skip_integration()
-  test_estimate_infections(reported_cases, gp = gp_opts(kernel = "se"))
-  test_estimate_infections(reported_cases, gp = gp_opts(kernel = "ou"))
-  test_estimate_infections(reported_cases, gp = gp_opts(matern_order = 5 / 2))
+  i <- LogNormal(mean = 1, sd = 1)
+  test_estimate_infections(
+    reported_cases, rt = rt_opts(prior = GP(init = i, kernel = "se"))
+  )
+  test_estimate_infections(
+    reported_cases, rt = rt_opts(prior = GP(init = i, kernel = "ou"))
+  )
+  test_estimate_infections(
+    reported_cases, rt = rt_opts(prior = GP(init = i, matern_order = 5 / 2))
+  )
 })
 
 test_that("estimate_infections fails as expected when given a very short timeout", {

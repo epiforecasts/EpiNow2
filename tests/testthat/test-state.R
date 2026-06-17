@@ -13,7 +13,7 @@ test_that("GP() constructs a first-difference state spec", {
   expect_identical(gp$anchor, "init")
 })
 
-test_that("GP() forwards settings to gp_opts()", {
+test_that("GP() stores Gaussian process settings", {
   gp <- GP(mean = Normal(mean = 5, sd = 1), kernel = "se")
   expect_identical(gp$settings$kernel, "se")
 })

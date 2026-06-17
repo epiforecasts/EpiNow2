@@ -3,12 +3,15 @@
 ## New features
 
 - Added experimental `GP()` and `RW()` constructors for declaring time-varying parameters, with mean-reverting (`mean`) and first-difference (`init`) variants. `estimate_infections()` now expresses the reproduction number through this interface: `rt_opts(prior = ...)` accepts a constant value or a `GP()`/`RW()` state, replacing the bespoke Rt Gaussian-process code path. Time-varying parameters vary over the observed period and hold their last estimated value through the forecast horizon.
-- The back-calculation (non-mechanistic) model now expresses latent infections through the same time-varying state interface, as a Gaussian process on the log scale anchored at an initial value. This replaces the previous deconvolution of smoothed shifted reported cases.
+- The back-calculation (non-mechanistic) model now expresses latent infections through the same time-varying state interface, as a Gaussian process on the log scale anchored at an initial value, configured via `backcalc_opts(prior = GP(...))`. This replaces the previous deconvolution of smoothed shifted reported cases.
+- Gaussian process settings (`ls`, `alpha`, `kernel`, `basis_prop`, etc.) are now arguments of `GP()`, so a Gaussian process is fully specified in one place, e.g. `rt_opts(prior = GP(init = ..., kernel = "se"))`.
 
 ## Deprecations
 
 - The `rw` argument and breakpoints (`use_breakpoints` / the data `breakpoint` column) of `rt_opts()` are deprecated; specify a random-walk Rt with `rt_opts(prior = RW(...))`.
-- The `prior` and `prior_window` arguments of `backcalc_opts()` are deprecated, as the back-calculation model no longer uses a shifted-case prior.
+- `gp_opts()` is deprecated; supply Gaussian process settings directly to `GP()`.
+- The `gp` argument of `estimate_infections()`, `epinow()`, and `regional_epinow()` is deprecated; configure the Gaussian process through the model prior (`rt_opts(prior = GP(...))` or `backcalc_opts(prior = GP(...))`).
+- The `prior_window` argument of `backcalc_opts()` is deprecated, and its `prior` argument now takes a `GP()` specification rather than a character string.
 
 ## Model changes
 

@@ -4,16 +4,13 @@
 \alias{backcalc_opts}
 \title{Back Calculation Options}
 \usage{
-backcalc_opts(
-  prior = c("reports", "none", "infections"),
-  prior_window = 14,
-  rt_window = 1
-)
+backcalc_opts(prior = NULL, prior_window = 14, rt_window = 1)
 }
 \arguments{
-\item{prior}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} The back-calculation model
-now estimates latent infections as a Gaussian process on the log scale, so
-the shifted-case prior is no longer used.}
+\item{prior}{A \code{GP()} specification for the latent infections of the
+back-calculation model, given as a Gaussian process on the log scale (e.g.
+\code{GP(init = LogNormal(mean = 100, sd = 100))}). Defaults to \code{NULL}, in which
+case a Gaussian process anchored at a data-informed initial value is used.}
 
 \item{prior_window}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} No longer used, as the
 back-calculation model no longer smooths shifted reported cases.}
