@@ -231,7 +231,7 @@ transformed parameters {
   // scaling of reported cases by fraction observed
   if (obs_scale) {
     profile("scale") {
-      reports = scale_obs(reports, fraction_observed_traj);
+      reports = reports .* fraction_observed_traj;
     }
   }
 

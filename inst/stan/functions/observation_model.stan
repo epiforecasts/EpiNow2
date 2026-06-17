@@ -39,22 +39,6 @@ vector scale_obs(vector reports, real fraction_observed) {
 }
 
 /**
- * Scale observations by a time-varying fraction reported
- *
- * Overload of [scale_obs()] for a fraction observed that varies over time.
- *
- * @param reports Vector of reports to be scaled.
- * @param fraction_observed Vector of fraction observed, one per report.
- *
- * @return A vector of scaled reports.
- *
- * @ingroup observation_model
- */
-vector scale_obs(vector reports, vector fraction_observed) {
-  return reports .* fraction_observed;
-}
-
-/**
  * Truncate observed data by a truncation distribution
  *
  * This function truncates a vector of reports based on a truncation
@@ -150,47 +134,11 @@ real reporting_phi(real reporting_overdispersion, int model_type) {
  * @param cases Array of integer observed cases.
  * @param case_times Array of integer time indices for observed cases.
  * @param reports Vector of expected reports.
- * @param reporting_overdispersion Real values for reporting overdispersion.
+ * @param reporting_overdispersion Vector of reporting overdispersion, one per
+ * report (use `rep_vector()` for a constant overdispersion).
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for
  * Negative Binomial).
  * @param weight Real value for weighting the log density contribution.
- *
- * @ingroup observation_model
- */
-void report_lp(array[] int cases, array[] int case_times, vector reports,
-               real reporting_overdispersion, int model_type, real weight) {
-  int n = num_elements(case_times); // number of observations
-  vector[n] obs_reports = reports[case_times]; // reports at observation time
-  if (model_type) {
-    real phi = reporting_phi(reporting_overdispersion, model_type);
-    if (weight == 1) {
-      cases ~ neg_binomial_2(obs_reports, phi);
-    } else {
-      target += neg_binomial_2_lpmf(
-        cases | obs_reports, phi
-      ) * weight;
-    }
-  } else {
-    if (weight == 1) {
-      cases ~ poisson(obs_reports);
-    } else {
-      target += poisson_lpmf(cases | obs_reports) * weight;
-    }
-  }
-}
-
-/**
- * Update log density for reported cases with a time-varying overdispersion
- *
- * Overload of [report_lp()] for a reporting overdispersion that varies over
- * time. `reporting_overdispersion` is indexed at the observation times.
- *
- * @param cases Array of observed cases.
- * @param case_times Array of observation time indices.
- * @param reports Vector of expected reports.
- * @param reporting_overdispersion Vector of overdispersion, one per report.
- * @param model_type Observation model (0 = Poisson, 1 = negative binomial).
- * @param weight Likelihood weight.
  *
  * @ingroup observation_model
  */
@@ -247,7 +195,8 @@ vector accumulate_reports(vector reports, array[] int accumulate) {
  *
  * @param cases Array of integer observed cases.
  * @param reports Vector of expected reports.
- * @param reporting_overdispersion Array of real values for reporting overdispersion.
+ * @param reporting_overdispersion Vector of reporting overdispersion, one per
+ * report (use `rep_vector()` for a constant overdispersion).
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for
  * Negative Binomial).
  * @param weight Real value for weighting the log likelihood contribution.
@@ -257,43 +206,12 @@ vector accumulate_reports(vector reports, array[] int accumulate) {
  * @ingroup observation_model
  */
 vector report_log_lik(array[] int cases, vector reports,
-                      real reporting_overdispersion, int model_type, real weight) {
-  int t = num_elements(reports);
-  vector[t] log_lik;
-
-  // defer to poisson if phi is large, to avoid overflow
-  if (model_type == 0) {
-    for (i in 1:t) {
-      log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
-    }
-  } else {
-    real phi = reporting_phi(reporting_overdispersion, model_type);
-    for (i in 1:t) {
-      log_lik[i] = neg_binomial_2_lpmf(
-        cases[i] | reports[i], phi
-      ) * weight;
-    }
-  }
-  return(log_lik);
-}
-
-/**
- * Log likelihood with a time-varying overdispersion (overload)
- *
- * @param cases Array of observed cases.
- * @param reports Vector of expected reports.
- * @param reporting_overdispersion Vector of overdispersion, one per report.
- * @param model_type Observation model (0 = Poisson, 1 = negative binomial).
- * @param weight Likelihood weight.
- * @return A vector of pointwise log likelihood contributions.
- *
- * @ingroup observation_model
- */
-vector report_log_lik(array[] int cases, vector reports,
                       vector reporting_overdispersion, int model_type,
                       real weight) {
   int t = num_elements(reports);
   vector[t] log_lik;
+
+  // defer to poisson if phi is large, to avoid overflow
   if (model_type == 0) {
     for (i in 1:t) {
       log_lik[i] = poisson_lpmf(cases[i] | reports[i]) * weight;
@@ -346,32 +264,12 @@ int neg_binomial_2_safe_rng(real mu, real phi) {
  * specified model type.
  *
  * @param reports Vector of expected reports.
- * @param reporting_overdispersion Real value for reporting overdispersion.
+ * @param reporting_overdispersion Vector of reporting overdispersion, one per
+ * report (use `rep_vector()` for a constant overdispersion).
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for
  * Negative Binomial).
  *
  * @return An array of integer sampled reports.
- *
- * @ingroup observation_model
- */
-array[] int report_rng(vector reports, real reporting_overdispersion, int model_type) {
-  int t = num_elements(reports);
-  array[t] int sampled_reports;
-  real phi = reporting_phi(reporting_overdispersion, model_type);
-
-  for (s in 1:t) {
-    sampled_reports[s] = neg_binomial_2_safe_rng(reports[s], phi);
-  }
-  return(sampled_reports);
-}
-
-/**
- * Sample reported cases with a time-varying overdispersion (overload)
- *
- * @param reports Vector of expected reports.
- * @param reporting_overdispersion Vector of overdispersion, one per report.
- * @param model_type Observation model (0 = Poisson, 1 = negative binomial).
- * @return An array of sampled reported cases.
  *
  * @ingroup observation_model
  */
