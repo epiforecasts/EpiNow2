@@ -173,16 +173,17 @@ test_that("mean-anchor states keep their prior on the level", {
   expect_identical(out$params_prior_skip, array(0L))
 })
 
-test_that("GP init anchor is not yet supported", {
+test_that("GP init anchor emits non-stationary state data", {
   params <- list(
     make_param("fraction_observed", GP(init = Normal(0.4, 0.05)),
       lower_bound = 0
     )
   )
-  expect_error(
-    create_stan_params(params, states_supported = "fraction_observed"),
-    "init.*not yet supported for Gaussian process"
-  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$state_type, array(1L)) # gp
+  expect_identical(out$state_anchor, array(1L)) # init
+  expect_identical(out$state_init_dist, array(2L)) # normal prior on init
+  expect_identical(out$params_prior_skip, array(1L)) # level is scaffolding
 })
 
 test_that("create_stan_params is a no-op without states", {

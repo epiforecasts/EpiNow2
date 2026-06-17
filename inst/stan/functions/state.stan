@@ -100,29 +100,34 @@ vector rw_trajectory(int t, real level, vector steps, int link, int n_centre) {
 /**
  * Build a Gaussian process trajectory for a time-varying parameter
  *
- * Anchors a stationary (mean-reverting) Gaussian process around a parameter's
- * level and maps it through the inverse link. The GP noise is supplied directly
- * (computed via update_gp from the shared basis), so this function only adds the
- * level and applies the link.
+ * Anchors a Gaussian process around a parameter's level and maps it through the
+ * inverse link. For the `mean` anchor (`anchor = 0`) the GP is stationary
+ * (mean-reverting around the level). For the `init` anchor (`anchor = 1`) the GP
+ * is non-stationary: it models the increments, so the deviation is the
+ * cumulative sum of the GP, centred for identifiability (the same shared basis is
+ * reused). The GP noise is supplied directly (computed via update_gp).
  *
  * @param t Length of the trajectory
  * @param level Baseline parameter value on the natural scale
  * @param noise Gaussian process noise (length t)
  * @param link Link function (0 = log)
  * @param n_centre Number of leading positions over which to centre the state
+ * @param anchor 0 = mean (stationary), 1 = init (non-stationary)
  * @return A vector of length t with the parameter trajectory on the natural scale
  *
  * @ingroup estimates_smoothing
  */
-vector gp_trajectory(int t, real level, vector noise, int link, int n_centre) {
-  array[t] int bps;
-  for (i in 1:t) {
-    bps[i] = i;
+vector gp_trajectory(int t, real level, vector noise, int link, int n_centre,
+                     int anchor) {
+  vector[t] dev;
+  if (anchor == 0) {
+    dev = noise; // stationary
+  } else {
+    dev = cumulative_sum(noise); // non-stationary (GP on increments)
+    dev -= mean(dev[1:n_centre]);
   }
   real intercept_value = link == 0 ? log(level) : level;
-  vector[t] x = update_state(
-    t, rep_vector(intercept_value, t), noise, bps, rep_vector(0.0, 0), 1, n_centre
-  );
+  vector[t] x = intercept_value + dev;
   if (link == 0) {
     return exp(x);
   }
@@ -146,6 +151,7 @@ vector gp_trajectory(int t, real level, vector noise, int link, int n_centre) {
  * @param state_type State type of each state (0 = RW, 1 = GP)
  * @param state_link Link of each state (0 = log)
  * @param state_pos Index of each state within its type group
+ * @param state_anchor Anchor of each state (0 = mean, 1 = init)
  * @param state_rw_steps Flat random walk steps across RW states
  * @param state_rw_n Number of random walk steps per RW state
  * @param state_gp_eta Flat GP basis coefficients across GP states
@@ -163,7 +169,7 @@ vector gp_trajectory(int t, real level, vector noise, int link, int n_centre) {
 vector get_state_trajectory(
   int id, int t, int n_centre, real level,
   array[] int state_param_id, array[] int state_type, array[] int state_link,
-  array[] int state_pos,
+  array[] int state_pos, array[] int state_anchor,
   vector state_rw_steps, int state_rw_n,
   vector state_gp_eta, int gp_M, matrix gp_PHI, real gp_boundary_scale,
   array[] int gp_kernel, array[] real gp_nu,
@@ -183,7 +189,9 @@ vector get_state_trajectory(
           gp_PHI, gp_M, gp_boundary_scale, state_gp_alpha[p],
           2 * state_gp_rho[p] / t, eta, gp_kernel[p], gp_nu[p]
         );
-        return gp_trajectory(t, level, noise, state_link[s], n_centre);
+        return gp_trajectory(
+          t, level, noise, state_link[s], n_centre, state_anchor[s]
+        );
       }
     }
   }

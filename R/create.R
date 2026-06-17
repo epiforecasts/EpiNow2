@@ -1160,12 +1160,6 @@ create_state_data <- function(params, state_flags,
         parameter {.var {name}}."
       ))
     }
-    if (spec$anchor == "init" && spec$type == "gp") {
-      cli_abort(c(
-        "!" = "The {.arg init} anchor is not yet supported for Gaussian process
-        ({.fn GP}) states (parameter {.var {name}}); use {.arg mean}."
-      ))
-    }
     param_id[j] <- idx[j]
     link[j] <- 0L # log
     if (spec$anchor == "init") {

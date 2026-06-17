@@ -132,7 +132,7 @@ transformed parameters {
       param_id_fraction_observed, params_fixed_lookup, params_variable_lookup,
       params_value, params
     ),
-    state_param_id, state_type, state_link, state_pos,
+    state_param_id, state_type, state_link, state_pos, state_anchor,
     state_rw_steps, state_rw_n,
     state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
     state_gp_alpha, state_gp_rho
@@ -144,7 +144,7 @@ transformed parameters {
       param_id_reporting_overdispersion, params_fixed_lookup,
       params_variable_lookup, params_value, params
     ),
-    state_param_id, state_type, state_link, state_pos,
+    state_param_id, state_type, state_link, state_pos, state_anchor,
     state_rw_steps, state_rw_n,
     state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
     state_gp_alpha, state_gp_rho
@@ -159,7 +159,7 @@ transformed parameters {
         state_param_id[s], params_fixed_lookup, params_variable_lookup,
         params_value, params
       ),
-      state_param_id, state_type, state_link, state_pos,
+      state_param_id, state_type, state_link, state_pos, state_anchor,
       state_rw_steps, state_rw_n,
       state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
       state_gp_alpha, state_gp_rho
