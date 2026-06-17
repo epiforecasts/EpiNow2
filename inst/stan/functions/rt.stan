@@ -9,35 +9,6 @@
  */
 
 /**
- * @ingroup rt_estimation
- * @brief Update a vector of effective reproduction numbers (Rt) based on
- * an intercept, breakpoints (i.e. a random walk), and a Gaussian
- * process.
- *
- * @param t Length of the time series
- * @param R0 Initial reproduction number
- * @param noise Vector of Gaussian process noise values
- * @param bps Array of breakpoint indices
- * @param bp_effects Vector of breakpoint effects
- * @param stationary Whether the Gaussian process is stationary (1) or non-stationary (0)
- * @param n_centre Number of leading positions over which to centre the
- *   non-stationary GP trajectory and the breakpoint random walk. Set to the
- *   observation window length so the centring is invariant to the forecast
- *   horizon. Ignored for the GP branch when `stationary` is 1; the breakpoint
- *   path is centred whenever breakpoints are present.
- * @return A vector of length t containing the updated Rt values
- */
-vector update_Rt(int t, real R0, vector noise, array[] int bps,
-                 vector bp_effects, int stationary, int n_centre) {
-  // Rt is a time-varying parameter with a log link: build the trajectory on the
-  // log scale via the generic process mechanism, then exponentiate.
-  vector[t] logR = update_state(
-    t, rep_vector(log(R0), t), noise, bps, bp_effects, stationary, n_centre
-  );
-  return exp(logR);
-}
-
-/**
  * Calculate the log-probability of the reproduction number (Rt) priors
  *
  * This function adds the log density contributions from priors on initial infections

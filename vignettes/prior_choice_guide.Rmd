@@ -1007,7 +1007,6 @@ fit_nonmech <- estimate_infections(
   reported_cases,
   delays = delay_opts(delay),
   rt = NULL,  # No Rt estimation
-  backcalc = backcalc_opts(prior = "reports"),
   stan = stan
 )
 #> Warning: ! No generation time distribution given. Using a fixed generation time of 1

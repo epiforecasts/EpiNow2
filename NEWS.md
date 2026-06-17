@@ -3,10 +3,16 @@
 ## New features
 
 - Added experimental `GP()` and `RW()` constructors for declaring time-varying parameters, with mean-reverting (`mean`) and first-difference (`init`) variants. `estimate_infections()` now expresses the reproduction number through this interface: `rt_opts(prior = ...)` accepts a constant value or a `GP()`/`RW()` state, replacing the bespoke Rt Gaussian-process code path. Time-varying parameters vary over the observed period and hold their last estimated value through the forecast horizon.
+- The back-calculation (non-mechanistic) model now expresses latent infections through the same time-varying state interface, as a Gaussian process on the log scale anchored at an initial value. This replaces the previous deconvolution of smoothed shifted reported cases.
 
 ## Deprecations
 
 - The `rw` argument and breakpoints (`use_breakpoints` / the data `breakpoint` column) of `rt_opts()` are deprecated; specify a random-walk Rt with `rt_opts(prior = RW(...))`.
+- The `prior` and `prior_window` arguments of `backcalc_opts()` are deprecated, as the back-calculation model no longer uses a shifted-case prior.
+
+## Model changes
+
+- Retired the shared "main" Gaussian process used by the back-calculation model along with its supporting machinery (the deconvolution step and the smoothed shifted-case prior). Both the renewal and back-calculation models now build their Gaussian processes through the single time-varying state implementation.
 
 # EpiNow2 1.9.0
 

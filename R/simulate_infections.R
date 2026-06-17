@@ -354,7 +354,7 @@ forecast_infections <- function(estimates,
   ## extract samples from given stan fit object (rstan or cmdstanr backend)
   draws <- extract_samples(estimates$fit,
     pars = c(
-      "noise", "eta", "lp__", "infections",
+      "lp__", "infections",
       "reports", "imputed_reports", "r",
       "gt_mean", "gt_var"
     ),

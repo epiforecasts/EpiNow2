@@ -410,23 +410,12 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`.
 #'
-#' @param prior A character string defaulting to "reports". Defines the prior
-#' to use when deconvolving. Currently implemented options are to use smoothed
-#' mean delay shifted reported cases ("reports"), to use the estimated
-#' infections from the previous time step seeded for the first time step using
-#' mean shifted reported cases ("infections"), or no prior ("none"). Using no
-#' prior will result in poor real time performance. No prior and using
-#' infections are only supported when a Gaussian process is present . If
-#' observed data is not reliable then it a sensible first step is to explore
-#' increasing the `prior_window` wit a sensible second step being to no longer
-#' use reported cases as a prior (i.e set `prior = "none"`).
+#' @param prior `r lifecycle::badge("deprecated")` The back-calculation model
+#' now estimates latent infections as a Gaussian process on the log scale, so
+#' the shifted-case prior is no longer used.
 #'
-#' @param prior_window Integer, defaults to 14 days. The mean centred smoothing
-#' window to apply to mean shifted reports (used as a prior during back
-#' calculation). 7 days is minimum recommended settings as this smooths day of
-#' the week effects but depending on the quality of the data and the amount of
-#' information users wish to use as a prior (higher values equalling a less
-#' informative prior).
+#' @param prior_window `r lifecycle::badge("deprecated")` No longer used, as the
+#' back-calculation model no longer smooths shifted reported cases.
 #'
 #' @param rt_window Integer, defaults to 1. The size of the centred rolling
 #' average to use when estimating Rt. This must be odd so that the central
@@ -441,9 +430,22 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
 #' backcalc_opts()
 backcalc_opts <- function(prior = c("reports", "none", "infections"),
                           prior_window = 14, rt_window = 1) {
+  if (!missing(prior)) {
+    lifecycle::deprecate_warn(
+      "1.9.1", "backcalc_opts(prior)",
+      details = "The back-calculation model now estimates latent infections as
+      a Gaussian process on the log scale, so the shifted-case prior is no
+      longer used."
+    )
+  }
+  if (!missing(prior_window)) {
+    lifecycle::deprecate_warn(
+      "1.9.1", "backcalc_opts(prior_window)",
+      details = "The back-calculation model no longer smooths shifted cases, so
+      the prior smoothing window is no longer used."
+    )
+  }
   backcalc <- list(
-    prior = arg_match(prior),
-    prior_window = prior_window,
     rt_window = as.integer(rt_window)
   )
   if (backcalc$rt_window %% 2 == 0) {

@@ -499,7 +499,6 @@ fit_nonmech <- estimate_infections(
   reported_cases,
   delays = delay_opts(delay),
   rt = NULL,  # No Rt estimation
-  backcalc = backcalc_opts(prior = "reports"),
   stan = stan
 )
 ```
