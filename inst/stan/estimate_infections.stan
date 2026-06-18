@@ -124,27 +124,6 @@ transformed parameters {
     state_gp_alpha, state_gp_rho
   );
 
-  // initial value of each state's trajectory (for init-anchor priors). The
-  // latent infections state (I) spans the full latent timeline (t) and varies
-  // over the pre-horizon window (t - horizon); all other states span the
-  // reports timeline (ot_h) and vary over the observed reports (ot).
-  vector[n_states] state_init;
-  for (s in 1:n_states) {
-    int s_t = state_param_id[s] == param_id_I ? t : ot_h;
-    int s_n = state_param_id[s] == param_id_I ? (t - horizon) : ot;
-    state_init[s] = get_state_trajectory(
-      state_param_id[s], s_t, s_n,
-      get_param(
-        state_param_id[s], params_fixed_lookup, params_variable_lookup,
-        params_value, params
-      ),
-      state_param_id, state_type, state_link, state_pos, state_anchor,
-      state_rw_steps, state_rw_n, state_rw_period,
-      state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
-      state_gp_alpha, state_gp_rho
-    )[1];
-  }
-
   // Estimate latent infections
   if (estimate_r) {
     profile("gt") {
@@ -197,6 +176,24 @@ transformed parameters {
         state_gp_eta, gp_M, gp_PHI, gp_boundary_scale, gp_kernel, gp_nu,
         state_gp_alpha, state_gp_rho
       );
+    }
+  }
+
+  // initial value of each state's trajectory (for init-anchor priors), reusing
+  // the trajectories computed above rather than recomputing them
+  vector[n_states] state_init;
+  for (s in 1:n_states) {
+    int id = state_param_id[s];
+    if (id == param_id_R) {
+      state_init[s] = R[1];
+    } else if (id == param_id_I) {
+      state_init[s] = infections[1];
+    } else if (id == param_id_fraction_observed) {
+      state_init[s] = fraction_observed_traj[1];
+    } else if (id == param_id_reporting_overdispersion) {
+      state_init[s] = reporting_overdispersion_traj[1];
+    } else {
+      reject("no trajectory available for state parameter id ", id);
     }
   }
 
