@@ -281,13 +281,10 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' can exceed the population size, though this effect is negligible when
 #' pop_floor is very small compared to the population size.
 #'
-#' @param gp_on Character string, defaulting to "R_t-1". Indicates how the
-#' Gaussian process, if in use, should be applied to Rt. Currently supported
-#' options are applying the Gaussian process to the last estimated Rt (i.e
-#' Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
-#' = R0 * GP). Both should produced comparable results when data is not sparse
-#' but the method relying on a global mean will revert to this for real time
-#' estimates, which may not be desirable.
+#' @param gp_on `r lifecycle::badge("deprecated")` Choose the Gaussian process
+#' variant through the prior instead: `rt_opts(prior = GP(mean = ...))` for a
+#' mean-reverting (stationary) process, or `rt_opts(prior = GP(init = ...))`
+#' (the default) for one on first differences.
 #'
 #' @param growth_method Method used to compute growth rates from Rt. Options
 #' are "infections" (default) and "infectiousness". The option "infections"
@@ -326,23 +323,27 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
                     rw = 0,
                     use_breakpoints = TRUE,
                     future = "latest",
-                    gp_on = c("R_t-1", "R0"),
+                    gp_on = lifecycle::deprecated(),
                     pop = Fixed(0),
                     pop_period = c("forecast", "all"),
                     pop_floor = 1.0,
                     growth_method = c("infections", "infectiousness")) {
-  gp_on <- arg_match(gp_on)
-  # gp_on sets the anchor of the default Rt prior: "R_t-1" is a first-difference
-  # GP (init), "R0" a mean-reverting GP (mean). An explicit prior overrides this.
-  if (missing(prior) && gp_on == "R0") {
-    prior <- GP(mean = LogNormal(mean = 1, sd = 1))
+  if (lifecycle::is_present(gp_on)) {
+    lifecycle::deprecate_warn(
+      "1.9.1", "rt_opts(gp_on)",
+      details = paste(
+        "Choose the Gaussian process variant through the prior:",
+        "`rt_opts(prior = GP(mean = ...))` for a mean-reverting (stationary)",
+        "process or `rt_opts(prior = GP(init = ...))` (the default) for one on",
+        "first differences."
+      )
+    )
   }
   opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
     future = future,
-    gp_on = gp_on,
     pop_period = arg_match(pop_period),
     pop_floor = pop_floor,
     growth_method = arg_match(growth_method)

@@ -10,7 +10,6 @@ test_that("rt_opts returns expected default values", {
   expect_equal(result$rw, 0)
   expect_equal(result$future, "latest")
   expect_equal(result$pop, Fixed(0))
-  expect_equal(result$gp_on, "R_t-1")
 })
 
 test_that("rt_opts accepts a constant or time-varying Rt prior", {
@@ -44,18 +43,18 @@ test_that("the rw argument is deprecated and ignored", {
   expect_equal(result$rw, 0)
 })
 
-test_that("gp_on sets the anchor of the default Rt prior", {
-  expect_identical(rt_opts()$prior$anchor, "init") # R_t-1 default
-  expect_identical(rt_opts(gp_on = "R0")$prior$anchor, "mean")
-  # an explicit prior overrides gp_on
+test_that("the GP variant is set through the prior anchor", {
+  expect_identical(rt_opts()$prior$anchor, "init") # first differences default
   expect_identical(
-    rt_opts(prior = GP(init = LogNormal(1, 1)), gp_on = "R0")$prior$anchor,
-    "init"
+    rt_opts(prior = GP(mean = LogNormal(1, 1)))$prior$anchor, "mean"
+  )
+  expect_identical(
+    rt_opts(prior = GP(init = LogNormal(1, 1)))$prior$anchor, "init"
   )
 })
 
-test_that("rt_opts validates gp_on argument", {
-  expect_error(rt_opts(gp_on = "invalid"), "must be one")
+test_that("the gp_on argument is deprecated", {
+  expect_warning(rt_opts(gp_on = "R0"), "deprecated")
 })
 
 test_that("rt_opts returns object of correct class", {

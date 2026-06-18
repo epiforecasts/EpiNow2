@@ -19,7 +19,7 @@ For backwards compatibility a list of summary parameters can also be passed.}
 estimation. Defaults to \code{\link[=rt_opts]{rt_opts()}}. To generate new infections using
 the non-mechanistic model instead of the renewal equation model, use
 \code{rt = NULL}. The non-mechanistic model internally uses the setting
-\code{rt = rt_opts(use_rt = FALSE, future = "project", gp_on = "R0")}.}
+\code{rt = rt_opts(use_rt = FALSE, future = "project")}.}
 }
 \value{
 An integer seeding time

@@ -57,7 +57,7 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' estimation. Defaults to [rt_opts()]. To generate new infections using
 #' the non-mechanistic model instead of the renewal equation model, use
 #' `rt = NULL`. The non-mechanistic model internally uses the setting
-#' `rt = rt_opts(use_rt = FALSE, future = "project", gp_on = "R0")`.
+#' `rt = rt_opts(use_rt = FALSE, future = "project")`.
 #'
 #' @param breakpoints An integer vector (binary) indicating the location of
 #' breakpoints.
@@ -93,9 +93,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   if (is.null(rt)) {
     rt <- rt_opts(
       use_rt = FALSE,
-      future = "project",
-      gp_on = "R0",
-      rw = 0
+      future = "project"
     )
   }
   # define future Rt arguments
@@ -179,7 +177,6 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     use_pop =
       as.integer(rt$pop != Fixed(0)) + as.integer(rt$pop_period == "all"),
     pop_floor = pop_floor_value,
-    stationary = as.numeric(rt$gp_on == "R0"),
     future_time = horizon - future_rt$from,
     growth_method = list(
       "infections" = 0, "infectiousness" = 1
