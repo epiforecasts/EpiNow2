@@ -320,8 +320,8 @@ create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
   # parameters
   stan_data <- c(
     stan_data,
-    # Rt (R, renewal model) and latent infections (I, back-calculation model) are
-    # expressed as states; time-varying observation parameters follow later
+    # Rt (R, renewal model) and latent infections (I, back-calculation model)
+    # are expressed as states; time-varying observation parameters follow later
     create_stan_params(params, states_supported = c("R", "I"))
   )
 
@@ -808,8 +808,8 @@ create_stan_params <- function(params, states_supported = character(0)) {
     prior_dist_params <- numeric(0)
   }
 
-  ## for init-anchored states the level is free scaffolding: its prior is applied
-  ## to the derived initial value instead, so skip it in the normal prior path
+  ## for init-anchored states the level is free scaffolding: its prior is
+  ## applied to the derived initial value instead, so skip it in the prior path
   params_prior_skip <- rep(0L, length(params) - sum(fixed))
   init_state_ids <- state_data$state_param_id[state_data$state_anchor == 1]
   for (pid in init_state_ids) {
@@ -854,8 +854,9 @@ create_stan_params <- function(params, states_supported = character(0)) {
 ##'   removed, so that positions match the stan parameter ids.
 ##' @param state_flags Logical vector flagging which entries of `params` carry
 ##'   a state specification.
-##' @param states_supported Character vector of parameter names the calling model
-##'   can consume a time-varying state for. A state on any other parameter errors.
+##' @param states_supported Character vector of parameter names the calling
+##'   model can consume a time-varying state for. A state on any other parameter
+##'   errors.
 ##' @return A named list of stan data items describing the states.
 ##' @importFrom data.table fcase
 ##' @keywords internal
@@ -952,8 +953,8 @@ create_state_data <- function(params, state_flags,
     }
     if (!is(spec$prior, "dist_spec")) {
       cli_abort(c(
-        "!" = "Known (numeric) trajectories are not yet supported for time-varying
-        parameter {.var {name}}."
+        "!" = "Known (numeric) trajectories are not yet supported for
+        time-varying parameter {.var {name}}."
       ))
     }
     param_id[j] <- idx[j]
@@ -974,9 +975,9 @@ create_state_data <- function(params, state_flags,
       type[j] <- 0L
       n_rw <- n_rw + 1L
       pos[j] <- n_rw
-      sd <- spec$settings$sd
-      rw_sd_dist <- c(rw_sd_dist, dist_code(sd))
-      rw_sd_params <- c(rw_sd_params, numeric_params(sd, "step sd", name))
+      step_sd <- spec$settings$sd
+      rw_sd_dist <- c(rw_sd_dist, dist_code(step_sd))
+      rw_sd_params <- c(rw_sd_params, numeric_params(step_sd, "step sd", name))
       rw_period <- c(rw_period, spec$settings$period %||% 1L)
     } else {
       gp <- spec$settings
@@ -991,7 +992,7 @@ create_state_data <- function(params, state_flags,
       pos[j] <- n_gp
       gp_kernel <- c(gp_kernel, fcase(
         gp$kernel == "se", 0L,
-        default = 2L # matern / ou
+        default = 2L # matern or ou
       ))
       gp_nu <- c(gp_nu, gp$matern_order)
       gp_alpha_dist <- c(gp_alpha_dist, dist_code(gp$alpha))

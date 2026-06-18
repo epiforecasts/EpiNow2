@@ -67,9 +67,9 @@
 #' @inheritParams create_rt_data
 #' @inheritParams create_backcalc_data
 #' @param gp `r lifecycle::badge("deprecated")` Configure the Gaussian process
-#' through the relevant model's prior instead: `rt_opts(prior = GP(...))` for the
-#' renewal model or `backcalc_opts(prior = GP(...))` for the back-calculation
-#' model.
+#' through the relevant model's prior instead: `rt_opts(prior = GP(...))` for
+#' the renewal model or `backcalc_opts(prior = GP(...))` for the
+#' back-calculation model.
 #' @inheritParams create_obs_model
 #' @inheritParams fit_model_with_nuts
 #' @importFrom data.table data.table copy merge.data.table as.data.table
@@ -192,11 +192,12 @@ estimate_infections <- function(data,
   model_data <- pad_reported_cases(model_data, seeding_time)
 
   # The reproduction number (renewal model) and latent infections
-  # (back-calculation model) are both expressed as states: R carries the Rt prior
-  # and I a Gaussian process on log-infections. Each state's GP carries its own
-  # hyperparameters, so there are no separate alpha/rho parameters and no shared
-  # "main" GP. The infections state is taken from `backcalc_opts(prior = ...)`,
-  # defaulting to a GP anchored at a data-informed initial value (I0).
+  # (back-calculation model) are both expressed as states: R carries the Rt
+  # prior and I a Gaussian process on log-infections. Each state's GP carries
+  # its own hyperparameters, so there are no separate alpha/rho parameters and
+  # no shared "main" GP. The infections state is taken from
+  # `backcalc_opts(prior = ...)`, defaulting to a GP anchored at a data-informed
+  # initial value (I0).
   renewal <- isTRUE(rt$use_rt)
   if (renewal) {
     i_prior <- NULL

@@ -11,8 +11,9 @@
 #'
 #' The wrapped prior may itself be a known trajectory (e.g. a `NonParametric()`
 #' built from a data column), in which case the state fits deviations around
-#' that mean. The link function applied to the resulting trajectory (e.g. log for
-#' positive parameters, logit for probabilities) is a property of the parameter
+#' that mean. The link function applied to the resulting trajectory (e.g. log
+#' for positive parameters, logit for probabilities) is a property of the
+#' parameter
 #' and is set where the parameter is registered, not here.
 #'
 #' @details
@@ -129,11 +130,12 @@ GP <- function(mean, init,
 
 #' @rdname state
 #' @param sd A `<dist_spec>` giving the prior on the random walk step standard
-#'   deviation. Defaults to a half-normal `Normal(mean = 0, sd = 0.1)` (the lower
-#'   limit of 0 is enforced where the parameter is used).
+#'   deviation. Defaults to a half-normal `Normal(mean = 0, sd = 0.1)` (the
+#'   lower limit of 0 is enforced where the parameter is used).
 #' @param period Integer; the number of time steps between random walk steps,
-#'   i.e. the value is held constant for `period` steps before changing. Defaults
-#'   to 1 (a step every time point). Set `period = 7` for a weekly random walk.
+#'   i.e. the value is held constant for `period` steps before changing.
+#'   Defaults to 1 (a step every time point). Set `period = 7` for a weekly
+#'   random walk.
 #' @importFrom checkmate assert_class assert_integerish
 #' @export
 #' @examples
@@ -163,9 +165,9 @@ is_state_spec <- function(x) {
 #' Test whether an object is a parameter specification
 #'
 #' A `<param_spec>` is the common superclass of `<dist_spec>` (a constant or
-#' uncertain value) and `<state_spec>` (a time-varying value created by [GP()] or
-#' [RW()]). It is the type accepted wherever a parameter's value may be either
-#' constant or time-varying.
+#' uncertain value) and `<state_spec>` (a time-varying value created by [GP()]
+#' or [RW()]). It is the type accepted wherever a parameter's value may be
+#' either constant or time-varying.
 #'
 #' @param x An object to test.
 #' @return Logical, `TRUE` if `x` is a `<param_spec>`.
@@ -177,7 +179,11 @@ is_param_spec <- function(x) {
 #' @export
 print.state_spec <- function(x, ...) {
   type <- if (x$type == "gp") "Gaussian process" else "random walk"
-  variant <- if (x$anchor == "mean") "mean-reverting" else "on first differences"
+  variant <- if (x$anchor == "mean") {
+    "mean-reverting"
+  } else {
+    "on first differences"
+  }
   cat(
     "Time-varying parameter: ", type, " (", variant, ")\n", sep = ""
   )
@@ -213,14 +219,16 @@ print.state_spec <- function(x, ...) {
 #' @keywords internal
 sample_dist_values <- function(d, n, lower = -Inf) {
   d <- fix_parameters(d, strategy = "sample")
-  dist <- get_distribution(d)
+  dist_family <- get_distribution(d)
   p <- get_parameters(d)
-  vals <- switch(dist,
+  vals <- switch(dist_family,
     lognormal = rlnorm(n, p$meanlog, p$sdlog),
     normal = rnorm(n, p$mean, p$sd),
     gamma = rgamma(n, shape = p$shape, rate = p$rate),
     fixed = rep(p$value, n),
-    cli_abort("Cannot sample from a {.val {dist}} prior for a state plot.")
+    cli_abort(
+      "Cannot sample from a {.val {dist_family}} prior for a state plot."
+    )
   )
   pmax(vals, lower)
 }
@@ -283,16 +291,16 @@ plot.state_spec <- function(x, n = 50L, samples = 50L, ...) {
 
   traj <- lapply(seq_len(samples), function(s) {
     if (x$type == "rw") {
-      sd <- sample_dist_values(x$settings$sd, 1, lower = 0)
-      steps <- rnorm(n - 1, 0, sd)
+      step_sd <- sample_dist_values(x$settings$sd, 1, lower = 0)
+      steps <- rnorm(n - 1, 0, step_sd)
       dev <- c(0, cumsum(steps))
     } else {
       alpha <- sample_dist_values(x$settings$alpha, 1, lower = 0)
       rho <- sample_dist_values(x$settings$ls, 1, lower = 1e-3)
-      cov <- state_kernel_cov(
+      kernel_cov <- state_kernel_cov(
         n, alpha, rho, x$settings$kernel, x$settings$matern_order
       )
-      noise <- as.numeric(crossprod(chol(cov), rnorm(n)))
+      noise <- as.numeric(crossprod(chol(kernel_cov), rnorm(n)))
       dev <- if (init) cumsum(noise) else noise
     }
     if (init) {
