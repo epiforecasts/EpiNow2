@@ -49,7 +49,7 @@ We can then run the `epinow()` function with the same arguments as `estimate_inf
 res <- epinow(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
+  rt = rt_opts(prior = GP(init = rt_prior)),
   logs = NULL
 )
 plot(res)
@@ -79,7 +79,7 @@ region_rt <- regional_epinow(
   data = cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
+  rt = rt_opts(prior = GP(init = rt_prior)),
   logs = NULL
 )
 ## summary

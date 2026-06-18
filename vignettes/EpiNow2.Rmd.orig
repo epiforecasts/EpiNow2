@@ -94,7 +94,7 @@ estimates <- epinow(
   data = reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+  rt = rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 0.2))),
   stan = stan_opts(cores = 4),
   verbose = interactive()
 )

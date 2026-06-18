@@ -42,7 +42,7 @@ We can then run the `epinow()` function with the same arguments as `estimate_inf
 res <- epinow(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
+  rt = rt_opts(prior = GP(init = rt_prior)),
   logs = NULL
 )
 plot(res)
@@ -76,57 +76,58 @@ region_rt <- regional_epinow(
   data = cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
+  rt = rt_opts(prior = GP(init = rt_prior)),
   logs = NULL
 )
 ## summary
 region_rt$summary$summarised_results$table
 #>      Region New infections per day Expected change in reports
 #>      <char>                 <char>                     <fctr>
-#> 1: realland    2249 (1388 -- 3630)          Likely decreasing
-#> 2: testland    2250 (1378 -- 3720)          Likely decreasing
+#> 1: realland    2242 (1403 -- 3693)          Likely decreasing
+#> 2: testland    2222 (1361 -- 3627)          Likely decreasing
 #>    Effective reproduction no.           Rate of growth
 #>                        <char>                   <char>
-#> 1:         0.89 (0.71 -- 1.1) -0.028 (-0.093 -- 0.036)
-#> 2:         0.89 (0.71 -- 1.1) -0.029 (-0.095 -- 0.042)
+#> 1:         0.89 (0.72 -- 1.1) -0.028 (-0.091 -- 0.039)
+#> 2:         0.89 (0.71 -- 1.1)  -0.03 (-0.093 -- 0.038)
 #>    Doubling/halving time (days)
 #>                          <char>
-#> 1:             -24 (19 -- -7.5)
-#> 2:             -24 (17 -- -7.3)
+#> 1:             -25 (18 -- -7.6)
+#> 2:             -23 (18 -- -7.5)
 ## plot
 region_rt$summary$plots$R
 ```
 
 ![plot of chunk regional_epinow](epinow-regional_epinow-1.png)
 
-If instead, we wanted to use the Gaussian Process for `testland` and a weekly random walk for `realland` we could specify these separately using the `opts_list()` function from the package and `modifyList()` from `R`.
+If instead, we wanted to use the Gaussian process for `testland` and a random walk for `realland` we could specify these separately using the `opts_list()` function from the package.
 
 
 ``` r
-gp <- opts_list(gp_opts(), cases)
-gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
-rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+rt <- opts_list(
+  rt_opts(), cases,
+  realland = rt_opts(prior = RW(init = LogNormal(mean = 1, sd = 1), period = 7))
+)
 region_separate_rt <- regional_epinow(
   data = cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt, gp = gp,
+  rt = rt,
   logs = NULL
 )
 ## summary
 region_separate_rt$summary$summarised_results$table
 #>      Region New infections per day Expected change in reports
 #>      <char>                 <char>                     <fctr>
-#> 1: realland    2037 (1024 -- 3864)          Likely decreasing
-#> 2: testland      1975 (46 -- 3612)          Likely decreasing
+#> 1: realland    2019 (1060 -- 3792)          Likely decreasing
+#> 2: testland    2247 (1399 -- 3661)          Likely decreasing
 #>    Effective reproduction no.           Rate of growth
 #>                        <char>                   <char>
-#> 1:         0.85 (0.62 -- 1.2)   -0.04 (-0.11 -- 0.038)
-#> 2:         0.95 (0.74 -- 1.7) -0.011 (-0.086 -- 0.049)
+#> 1:          0.85 (0.6 -- 1.2)  -0.041 (-0.11 -- 0.042)
+#> 2:         0.89 (0.72 -- 1.1) -0.029 (-0.089 -- 0.035)
 #>    Doubling/halving time (days)
 #>                          <char>
-#> 1:             -17 (18 -- -6.2)
-#> 2:               -60 (14 -- -8)
+#> 1:             -17 (17 -- -6.1)
+#> 2:             -24 (20 -- -7.8)
 ## plot
 region_separate_rt$summary$plots$R
 ```

@@ -117,10 +117,9 @@ When using the renewal equation, several options control how the time-varying re
 
 | Feature | Argument | Description | See also |
 |---|---|---|---|
-| GP on differences of log Rt (default) | `rt_opts(gp_on = "R_t-1")` | Gaussian process applied to successive Rt values | [Options examples](estimate_infections_options.html) |
-| GP on deviations from R0 | `rt_opts(gp_on = "R0")` | Gaussian process applied as deviations from a global mean | [Options examples](estimate_infections_options.html) |
-| Random walk | `rt_opts(prior = RW(...))` | Step-wise Rt following a random walk | [Options examples](estimate_infections_options.html) |
-| Breakpoints | Add a `breakpoint` column to the input data | Step changes in Rt at user-specified dates; on by default in `rt_opts()`, set `use_breakpoints = FALSE` to disable | [Options examples](estimate_infections_options.html) |
+| GP on first differences of log Rt (default) | `rt_opts(prior = GP(init = ...))` | Gaussian process applied to successive Rt values | [Options examples](estimate_infections_options.html) |
+| Mean-reverting GP on log Rt | `rt_opts(prior = GP(mean = ...))` | Gaussian process applied as deviations from a global mean | [Options examples](estimate_infections_options.html) |
+| Random walk | `rt_opts(prior = RW(...))` | Step-wise Rt following a random walk; set the interval with `RW(period = n)` | [Options examples](estimate_infections_options.html) |
 | Fixed Rt | `rt_opts(prior = LogNormal(...))` | Constant reproduction number sampled from the prior; no GP, no random walk | [Options examples](estimate_infections_options.html) |
 | Population adjustment | `rt_opts(pop = Fixed(N))` | Adjust Rt for susceptible depletion; `pop` accepts any `<dist_spec>` | [Options examples](estimate_infections_options.html) |
 | Growth rate method | `rt_opts(growth_method = "infectiousness")` | Alternative growth rate calculation via infectiousness | [Model definition](estimate_infections.html) |
