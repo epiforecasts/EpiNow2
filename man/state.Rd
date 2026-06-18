@@ -55,12 +55,13 @@ Common choices are 1/2, 3/2, and 5/2. Set automatically for the "se" and
 kernel. Only used if \code{kernel} is "periodic".}
 
 \item{sd}{A \verb{<dist_spec>} giving the prior on the random walk step standard
-deviation. Defaults to a half-normal \code{Normal(mean = 0, sd = 0.1)} (the lower
-limit of 0 is enforced where the parameter is used).}
+deviation. Defaults to a half-normal \code{Normal(mean = 0, sd = 0.1)} (the
+lower limit of 0 is enforced where the parameter is used).}
 
 \item{period}{Integer; the number of time steps between random walk steps,
-i.e. the value is held constant for \code{period} steps before changing. Defaults
-to 1 (a step every time point). Set \code{period = 7} for a weekly random walk.}
+i.e. the value is held constant for \code{period} steps before changing.
+Defaults to 1 (a step every time point). Set \code{period = 7} for a weekly
+random walk.}
 }
 \value{
 A \verb{<state_spec>} object describing the time-varying state.
@@ -77,8 +78,9 @@ or \code{init} must be supplied.
 
 The wrapped prior may itself be a known trajectory (e.g. a \code{NonParametric()}
 built from a data column), in which case the state fits deviations around
-that mean. The link function applied to the resulting trajectory (e.g. log for
-positive parameters, logit for probabilities) is a property of the parameter
+that mean. The link function applied to the resulting trajectory (e.g. log
+for positive parameters, logit for probabilities) is a property of the
+parameter
 and is set where the parameter is registered, not here.
 }
 \details{

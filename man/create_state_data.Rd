@@ -13,8 +13,9 @@ removed, so that positions match the stan parameter ids.}
 \item{state_flags}{Logical vector flagging which entries of \code{params} carry
 a state specification.}
 
-\item{states_supported}{Character vector of parameter names the calling model
-can consume a time-varying state for. A state on any other parameter errors.}
+\item{states_supported}{Character vector of parameter names the calling
+model can consume a time-varying state for. A state on any other parameter
+errors.}
 }
 \value{
 A named list of stan data items describing the states.

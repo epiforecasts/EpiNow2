@@ -14,8 +14,8 @@ Logical, \code{TRUE} if \code{x} is a \verb{<param_spec>}.
 }
 \description{
 A \verb{<param_spec>} is the common superclass of \verb{<dist_spec>} (a constant or
-uncertain value) and \verb{<state_spec>} (a time-varying value created by \code{\link[=GP]{GP()}} or
-\code{\link[=RW]{RW()}}). It is the type accepted wherever a parameter's value may be either
-constant or time-varying.
+uncertain value) and \verb{<state_spec>} (a time-varying value created by \code{\link[=GP]{GP()}}
+or \code{\link[=RW]{RW()}}). It is the type accepted wherever a parameter's value may be
+either constant or time-varying.
 }
 \keyword{internal}
