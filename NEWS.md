@@ -1,5 +1,7 @@
 # EpiNow2 (development version)
 
+# EpiNow2 1.9.0
+
 ## New features
 
 - Added experimental `GP()` and `RW()` constructors for declaring time-varying parameters, with mean-reverting (`mean`) and first-difference (`init`) variants. `estimate_infections()` now expresses the reproduction number through this interface: `rt_opts(prior = ...)` accepts a constant value or a `GP()`/`RW()` state, replacing the bespoke Rt Gaussian-process code path. Time-varying parameters vary over the observed period and hold their last estimated value through the forecast horizon.
