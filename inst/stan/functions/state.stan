@@ -1,169 +1,126 @@
 /**
  * Time-varying parameter states
  *
- * General mechanism underlying time-varying parameters: build a trajectory by
- * combining a baseline (intercept) with a breakpoint random walk and a Gaussian
- * process. Components combine additively on the scale on which the trajectory is
- * built (the link scale); callers apply the inverse link (e.g. `exp` for a log
- * link) as appropriate.
+ * Build a parameter trajectory by combining a baseline (level) with a
+ * stochastic deviation: a random walk (`rw_trajectory`) or an approximate
+ * Gaussian process (`gp_trajectory`). Each builder is self-contained;
+ * `get_state_trajectory` is a thin shell that dispatches to the right one for a
+ * given parameter, or returns a constant trajectory when the parameter is not
+ * time-varying.
+ *
+ * Three windows describe a trajectory:
+ *  - `t`: total length (observation window + forecast horizon);
+ *  - `n_free`: the window over which the state varies freely; it holds its last
+ *    value constant from `n_free + 1` to `t`. Set by the `future` setting
+ *    ("latest" fixes at the observation end, "project" extends over the whole
+ *    horizon);
+ *  - `n_centre`: the leading window over which an init-anchored (non-stationary)
+ *    state is centred for identifiability. This is the observation window, so
+ *    centring is invariant to how far the state is projected.
+ *
+ * Components combine additively on the link scale; the trajectory is returned on
+ * the natural scale (the inverse link is applied here, e.g. `exp` for a log
+ * link).
  *
  * @ingroup estimates_smoothing
  */
-
-/**
- * Build a time-varying trajectory on the link scale
- *
- * @param t Length of the time series
- * @param intercept Vector of length t giving the baseline (link-scale) value.
- *   Constant for a static mean, or a known mean trajectory the state fits
- *   deviations around.
- * @param noise Vector of Gaussian process noise values (empty for no GP)
- * @param bps Array of breakpoint indices
- * @param bp_effects Vector of breakpoint effects (empty for no random walk)
- * @param stationary Whether the Gaussian process is stationary (1) or
- *   non-stationary (0)
- * @param n_centre Number of leading positions over which to centre the
- *   non-stationary GP trajectory and the breakpoint random walk. Set to the
- *   observation window length so the centring is invariant to the forecast
- *   horizon. Ignored for the GP branch when `stationary` is 1; the breakpoint
- *   path is centred whenever breakpoints are present.
- * @return A vector of length t with the combined link-scale trajectory
- *
- * @ingroup estimates_smoothing
- */
-vector update_state(int t, vector intercept, vector noise, array[] int bps,
-                      vector bp_effects, int stationary, int n_centre) {
-  int bp_n = num_elements(bp_effects);
-  int gp_n = num_elements(noise);
-  vector[t] x = intercept;
-  // breakpoints + random walk
-  if (bp_n) {
-    vector[bp_n + 1] bp0;
-    bp0[1] = 0;
-    bp0[2:(bp_n + 1)] = cumulative_sum(bp_effects);
-    vector[t] bp = bp0[bps];
-    // Centre over the observation window for identifiability.
-    bp -= mean(bp[1:n_centre]);
-    x += bp;
-  }
-  // gaussian process
-  if (gp_n) {
-    vector[t] gp = rep_vector(0, t);
-    if (stationary) {
-      gp[1:gp_n] = noise;
-      // fix future gp based on last estimated
-      if (t > gp_n) {
-        gp[(gp_n + 1):t] = rep_vector(noise[gp_n], t - gp_n);
-      }
-    } else {
-      gp[2:(gp_n + 1)] = noise;
-      gp = cumulative_sum(gp);
-      // Centre over the observation window for identifiability.
-      gp -= mean(gp[1:n_centre]);
-    }
-    x += gp;
-  }
-  return x;
-}
 
 /**
  * Build a random-walk trajectory for a time-varying parameter
  *
- * Anchors a centred random walk around a parameter's level and maps it through
- * the inverse link. The walk varies over the observed window (`n_obs`) and holds
- * its last value through the remainder of the trajectory (the forecast horizon);
- * the centring over `n_obs` makes the level identifiable, mirroring the
- * mean-reverting Rt parameterisation.
+ * The walk is the cumulative sum of `steps`, expanded so each step applies to a
+ * block of `period` time points, centred over the observation window
+ * (`n_centre`) so the level is identifiable, then held constant beyond the free
+ * window (`n_free`) through the forecast horizon.
  *
- * @param t Length of the trajectory (observed window + forecast horizon)
- * @param n_obs Length of the observed window the walk varies over
+ * @param t Total trajectory length
+ * @param n_free Window over which the walk varies (holds its last value after)
+ * @param n_centre Leading window used to centre the walk for identifiability
  * @param level Baseline parameter value on the natural scale
- * @param steps Random walk steps (length n_obs - 1)
+ * @param steps Random walk steps (one per period block, less one)
  * @param link Link function (0 = log)
- * @return A vector of length t with the parameter trajectory on the natural scale
+ * @param period Number of time points between random walk steps
+ * @return A vector of length t with the parameter trajectory (natural scale)
  *
  * @ingroup estimates_smoothing
  */
-vector rw_trajectory(int t, int n_obs, real level, vector steps, int link,
-                     int period) {
-  // the value is held constant for `period` time steps before each random walk
-  // step, so each step applies to a block of `period` time points
-  array[n_obs] int bps;
-  for (i in 1:n_obs) {
-    bps[i] = (i - 1) %/% period + 1;
+vector rw_trajectory(int t, int n_free, int n_centre, real level, vector steps,
+                     int link, int period) {
+  real intercept = link == 0 ? log(level) : level;
+  vector[t] x = rep_vector(intercept, t);
+  int n_steps = num_elements(steps);
+  if (n_steps > 0) {
+    vector[n_steps + 1] cum;
+    cum[1] = 0;
+    cum[2:(n_steps + 1)] = cumulative_sum(steps);
+    // expand each step to a block of `period` time points over the free window
+    vector[n_free] walk;
+    for (i in 1:n_free) {
+      walk[i] = cum[(i - 1) %/% period + 1];
+    }
+    // centre over the observation window for identifiability
+    walk -= mean(walk[1:n_centre]);
+    x[1:n_free] += walk;
+    if (t > n_free) {
+      x[(n_free + 1):t] = rep_vector(x[n_free], t - n_free); // hold last value
+    }
   }
-  real intercept_value = link == 0 ? log(level) : level;
-  vector[n_obs] x_obs = update_state(
-    n_obs, rep_vector(intercept_value, n_obs), rep_vector(0.0, 0), bps, steps, 0,
-    n_obs
-  );
-  vector[t] x;
-  x[1:n_obs] = x_obs;
-  if (t > n_obs) {
-    x[(n_obs + 1):t] = rep_vector(x_obs[n_obs], t - n_obs); // hold last value
-  }
-  if (link == 0) {
-    return exp(x);
-  }
-  return x;
+  return link == 0 ? exp(x) : x;
 }
 
 /**
  * Build a Gaussian process trajectory for a time-varying parameter
  *
- * Anchors a Gaussian process around a parameter's level and maps it through the
- * inverse link. For the `mean` anchor (`anchor = 0`) the GP is stationary
- * (mean-reverting around the level). For the `init` anchor (`anchor = 1`) the GP
- * is non-stationary: it models the increments, so the deviation is the
- * cumulative sum of the GP, centred for identifiability (the same shared basis is
- * reused). The GP varies over the observed window (`n_obs`) and holds its last
- * value through the remainder of the trajectory (the forecast horizon). The GP
- * noise is supplied directly (computed via update_gp).
+ * For the `mean` anchor (`anchor = 0`) the GP is stationary (mean-reverting
+ * around the level). For the `init` anchor (`anchor = 1`) the GP models the
+ * increments, so the deviation is the cumulative sum of the GP noise, centred
+ * over the observation window (`n_centre`) for identifiability. The GP varies
+ * over the free window (`n_free`) and holds its last value through the remainder
+ * of the trajectory. GP noise is supplied directly (computed via update_gp).
  *
- * @param t Length of the trajectory (observed window + forecast horizon)
- * @param n_obs Length of the observed window the GP varies over
+ * @param t Total trajectory length
+ * @param n_free Window over which the GP varies (holds its last value after)
+ * @param n_centre Leading window used to centre an init-anchored GP
  * @param level Baseline parameter value on the natural scale
- * @param noise Gaussian process noise (length n_obs)
+ * @param noise Gaussian process noise (length n_free)
  * @param link Link function (0 = log)
  * @param anchor 0 = mean (stationary), 1 = init (non-stationary)
- * @return A vector of length t with the parameter trajectory on the natural scale
+ * @return A vector of length t with the parameter trajectory (natural scale)
  *
  * @ingroup estimates_smoothing
  */
-vector gp_trajectory(int t, int n_obs, real level, vector noise, int link,
-                     int anchor) {
-  vector[n_obs] dev;
+vector gp_trajectory(int t, int n_free, int n_centre, real level, vector noise,
+                     int link, int anchor) {
+  real intercept = link == 0 ? log(level) : level;
+  vector[n_free] dev;
   if (anchor == 0) {
-    dev = noise; // stationary
+    dev = noise; // stationary (mean-reverting)
   } else {
     dev = cumulative_sum(noise); // non-stationary (GP on increments)
-    dev -= mean(dev[1:n_obs]);
+    dev -= mean(dev[1:n_centre]); // centre over the observation window
   }
-  real intercept_value = link == 0 ? log(level) : level;
   vector[t] x;
-  x[1:n_obs] = intercept_value + dev;
-  if (t > n_obs) {
-    x[(n_obs + 1):t] = rep_vector(x[n_obs], t - n_obs); // hold last value
+  x[1:n_free] = intercept + dev;
+  if (t > n_free) {
+    x[(n_free + 1):t] = rep_vector(x[n_free], t - n_free); // hold last value
   }
-  if (link == 0) {
-    return exp(x);
-  }
-  return x;
+  return link == 0 ? exp(x) : x;
 }
 
 /**
  * Get the trajectory of a (possibly time-varying) parameter
  *
- * Generic dispatch over the registered states: if a state is attached to the
+ * Thin dispatch over the registered states: if a state is attached to the
  * parameter with the given id, builds its trajectory (random walk or Gaussian
  * process); otherwise returns a constant trajectory at `level`. This lets any
- * parameter consumed pointwise over time become time-varying with no per-parameter
- * code beyond the call site.
+ * parameter consumed pointwise over time become time-varying with no
+ * per-parameter code beyond the call site.
  *
  * @param id Target parameter id
- * @param t Length of the trajectory (observed window + forecast horizon)
- * @param n_obs Length of the observed window the state varies over (it holds its
- *   last value through the remaining forecast horizon)
+ * @param t Total trajectory length (observation window + forecast horizon)
+ * @param n_free Window over which the state varies (it holds its last value
+ *   through the remaining forecast horizon)
+ * @param n_centre Leading window used to centre an init-anchored state
  * @param level Parameter level on the natural scale (from get_param)
  * @param state_param_id Target parameter id of each state
  * @param state_type State type of each state (0 = RW, 1 = GP)
@@ -186,7 +143,7 @@ vector gp_trajectory(int t, int n_obs, real level, vector noise, int link,
  * @ingroup estimates_smoothing
  */
 vector get_state_trajectory(
-  int id, int t, int n_obs, real level,
+  int id, int t, int n_free, int n_centre, real level,
   array[] int state_param_id, array[] int state_type, array[] int state_link,
   array[] int state_pos, array[] int state_anchor,
   vector state_rw_steps, int state_rw_n, int state_rw_period,
@@ -202,16 +159,16 @@ vector get_state_trajectory(
           state_rw_steps, (p - 1) * state_rw_n + 1, state_rw_n
         );
         return rw_trajectory(
-          t, n_obs, level, steps, state_link[s], state_rw_period
+          t, n_free, n_centre, level, steps, state_link[s], state_rw_period
         );
       } else {
         vector[gp_M] eta = segment(state_gp_eta, (p - 1) * gp_M + 1, gp_M);
-        vector[n_obs] noise = update_gp(
+        vector[n_free] noise = update_gp(
           gp_PHI, gp_M, gp_boundary_scale, state_gp_alpha[p],
-          2 * state_gp_rho[p] / n_obs, eta, gp_kernel[p], gp_nu[p]
+          2 * state_gp_rho[p] / n_free, eta, gp_kernel[p], gp_nu[p]
         );
         return gp_trajectory(
-          t, n_obs, level, noise, state_link[s], state_anchor[s]
+          t, n_free, n_centre, level, noise, state_link[s], state_anchor[s]
         );
       }
     }

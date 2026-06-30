@@ -47,11 +47,26 @@ transformed data {
     initial_infections_guess = 0;
   }
 
-  // Time-varying states vary over an observation window and hold their last
-  // value through the forecast horizon ("latest" projection). Under the renewal
-  // model R varies over the observed reports (ot); under the back-calculation
-  // model latent infections vary over the full pre-horizon window (t - horizon).
-  int state_obs = estimate_r ? ot : (t - horizon);
+  // Time-varying states. The observation window runs to the end of the data
+  // (ot under the renewal model, t - horizon under back-calculation); the full
+  // window additionally spans the forecast horizon.
+  int state_data_window = estimate_r ? ot : (t - horizon);
+  int state_full_window = estimate_r ? ot_h : t;
+  // The free-noise window is where the state varies before being held constant.
+  // "project" (state_future_fixed = 0) lets it vary over the whole horizon;
+  // otherwise it is fixed from `state_future_from` relative to the data end.
+  int state_obs;
+  if (state_future_fixed == 0) {
+    state_obs = state_full_window;
+  } else {
+    state_obs = state_data_window + state_future_from;
+    if (state_obs < 1) state_obs = 1;
+    if (state_obs > state_full_window) state_obs = state_full_window;
+  }
+  // Init-anchored states are centred over the observation window (never beyond
+  // it), so the identifiability anchor is invariant to projection.
+  int state_centre =
+    state_data_window < state_obs ? state_data_window : state_obs;
   // number of random walk steps per time-varying parameter state (the value is
   // held constant for `state_rw_period` time points between steps)
   int state_rw_n =
@@ -101,7 +116,7 @@ transformed parameters {
   // trajectory of the (possibly time-varying) fraction observed; constant when
   // no state is attached to fraction_observed
   vector[ot_h] fraction_observed_traj = get_state_trajectory(
-    param_id_fraction_observed, ot_h, ot,
+    param_id_fraction_observed, ot_h, state_obs, state_centre,
     get_param(
       param_id_fraction_observed, params_fixed_lookup, params_variable_lookup,
       params_value, params
@@ -113,7 +128,7 @@ transformed parameters {
   );
   // trajectory of the (possibly time-varying) reporting overdispersion
   vector[ot_h] reporting_overdispersion_traj = get_state_trajectory(
-    param_id_reporting_overdispersion, ot_h, ot,
+    param_id_reporting_overdispersion, ot_h, state_obs, state_centre,
     get_param(
       param_id_reporting_overdispersion, params_fixed_lookup,
       params_variable_lookup, params_value, params
@@ -139,7 +154,7 @@ transformed parameters {
       // R parameter is its level; for an init-anchored state the user prior is
       // applied to the derived initial Rt (R[1]) by the state machinery.
       R = get_state_trajectory(
-        param_id_R, ot_h, ot,
+        param_id_R, ot_h, state_obs, state_centre,
         get_param(
           param_id_R, params_fixed_lookup, params_variable_lookup,
           params_value, params
@@ -166,7 +181,7 @@ transformed parameters {
     // the forecast horizon
     profile("infections") {
       infections = get_state_trajectory(
-        param_id_I, t, t - horizon,
+        param_id_I, t, state_obs, state_centre,
         get_param(
           param_id_I, params_fixed_lookup, params_variable_lookup,
           params_value, params

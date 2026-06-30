@@ -4,7 +4,7 @@
 \alias{new_state_spec}
 \title{Construct a state specification}
 \usage{
-new_state_spec(type, mean, init, settings = list())
+new_state_spec(type, mean, init, settings = list(), future = "latest")
 }
 \arguments{
 \item{type}{Character, the state type (\code{"gp"} or \code{"rw"}).}
@@ -13,6 +13,11 @@ new_state_spec(type, mean, init, settings = list())
 
 \item{settings}{A list of additional state settings (e.g. a \verb{<gp_opts>}
 object for \code{"gp"}, or the step standard deviation prior for \code{"rw"}).}
+
+\item{future}{What the state does over the forecast horizon. One of
+\code{"latest"} (hold the last estimated value flat, the default), \code{"project"}
+(let the state keep varying), or an integer giving the point, relative to
+the forecast horizon, from which it is held constant. See \code{\link[=GP]{GP()}}.}
 }
 \value{
 A \verb{<state_spec>} object.

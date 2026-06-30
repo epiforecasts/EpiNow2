@@ -9,7 +9,7 @@ rt_opts(
   use_rt = TRUE,
   rw = 0,
   use_breakpoints = TRUE,
-  future = "latest",
+  future = lifecycle::deprecated(),
   gp_on = lifecycle::deprecated(),
   pop = Fixed(0),
   pop_period = c("forecast", "all"),
@@ -37,13 +37,10 @@ are fit jointly with a global non-parametric effect and so represent a
 conservative estimate of break point changes (alter this by setting
 \code{gp = NULL}).}
 
-\item{future}{A character string or integer. This argument indicates how to
-set future Rt values. Supported options are to project using the Rt model
-("project"), to use the latest estimate based on partial data ("latest"),
-to use the latest estimate based on data that is over 50\% complete
-("estimate"). If an integer is supplied then the Rt estimate from this many
-days into the future (or past if negative) past will be used forwards in
-time.}
+\item{future}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Set what the reproduction
+number does over the forecast horizon on the prior instead, e.g.
+\code{rt_opts(prior = GP(init = ..., future = "project"))} or
+\code{rt_opts(prior = RW(..., future = ...))}.}
 
 \item{gp_on}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Choose the Gaussian process
 variant through the prior instead: \code{rt_opts(prior = GP(mean = ...))} for a

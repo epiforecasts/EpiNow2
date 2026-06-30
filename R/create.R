@@ -57,7 +57,7 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' estimation. Defaults to [rt_opts()]. To generate new infections using
 #' the non-mechanistic model instead of the renewal equation model, use
 #' `rt = NULL`. The non-mechanistic model internally uses the setting
-#' `rt = rt_opts(use_rt = FALSE, future = "project")`.
+#' `rt = rt_opts(use_rt = FALSE)`.
 #'
 #' @param breakpoints An integer vector (binary) indicating the location of
 #' breakpoints.
@@ -91,10 +91,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
                            delay = 0, horizon = 0, data = NULL) {
   # Define if GP is on or off
   if (is.null(rt)) {
-    rt <- rt_opts(
-      use_rt = FALSE,
-      future = "project"
-    )
+    rt <- rt_opts(use_rt = FALSE)
   }
   # define future Rt arguments
   future_rt <- create_future_rt(
@@ -157,7 +154,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   bp_n <- ifelse(rt$use_breakpoints, max(breakpoints) - 1, 0)
   if (bp_n > 0) {
     lifecycle::deprecate_warn(
-      "1.9.1", "rt_opts(use_breakpoints)",
+      "1.10.0", "rt_opts(use_breakpoints)",
       details = paste(
         "Breakpoints are superseded by a random-walk Rt prior",
         "(`rt_opts(prior = RW(...))`) and are now ignored."
@@ -172,8 +169,6 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     estimate_r = as.numeric(rt$use_rt),
     bp_n = bp_n,
     breakpoints = breakpoints,
-    future_fixed = as.numeric(future_rt$fixed),
-    fixed_from = future_rt$from,
     use_pop =
       as.integer(rt$pop != Fixed(0)) + as.integer(rt$pop_period == "all"),
     pop_floor = pop_floor_value,
@@ -426,17 +421,29 @@ create_initial_conditions <- function(stan_data, params) {
       mean = param_means, sd = param_sds
     ))
 
-    ## time-varying parameter states vary over an observation window: the
-    ## observed reports (ot) under the renewal model, or the full pre-horizon
-    ## window (t - horizon) for the back-calculation infections state.
+    ## time-varying states vary over a free-noise window, mirroring the
+    ## computation in the Stan model (transformed data). The observation window
+    ## runs to the end of the data; the `future` setting (state_future_fixed /
+    ## state_future_from) sets how far the state varies into the horizon.
     ## truncnorm::rtruncnorm() returns NULL for n = 0, so guard zero counts
     rtruncnorm0 <- function(n, ...) {
       if (n > 0) truncnorm::rtruncnorm(n, ...) else numeric(0)
     }
-    state_obs <- if (stan_data$estimate_r == 1) {
+    data_window <- if (stan_data$estimate_r == 1) {
       stan_data$t - stan_data$seeding_time - stan_data$horizon
     } else {
       stan_data$t - stan_data$horizon
+    }
+    full_window <- if (stan_data$estimate_r == 1) {
+      stan_data$t - stan_data$seeding_time
+    } else {
+      stan_data$t
+    }
+    state_future_from <- stan_data$state_future_from %||% 0L
+    state_obs <- if ((stan_data$state_future_fixed %||% 1L) == 0) {
+      full_window
+    } else {
+      min(full_window, max(1, data_window + state_future_from))
     }
     rw_period <- stan_data$state_rw_period %||% 1L
     state_rw_n <- max(0, ceiling(state_obs / rw_period) - 1)
@@ -873,6 +880,8 @@ create_state_data <- function(params, state_flags,
     state_init_dist_params = array(numeric(0)),
     state_init_lower = array(numeric(0)),
     state_init_upper = array(numeric(0)),
+    state_future_fixed = 1L,
+    state_future_from = 0L,
     n_rw_states = 0L,
     rw_sd_dist = array(integer(0)),
     rw_sd_dist_params = array(numeric(0)),
@@ -910,6 +919,22 @@ create_state_data <- function(params, state_flags,
     }
     as.numeric(unlist(pars))
   }
+  ## resolve a state's `future` setting into the (fixed, from) pair the model
+  ## uses to size the free-noise window over the forecast horizon
+  resolve_future <- function(future, name) {
+    if (is.numeric(future)) {
+      return(list(fixed = 1L, from = as.integer(future)))
+    }
+    switch(future,
+      latest = list(fixed = 1L, from = 0L),
+      project = list(fixed = 0L, from = 0L),
+      estimate = cli_abort(c(
+        "!" = "{.code future = \"estimate\"} is not yet supported for
+        time-varying parameter {.var {name}}.",
+        "i" = "Use {.val latest}, {.val project}, or a numeric offset."
+      ))
+    )
+  }
 
   idx <- which(state_flags)
   n <- length(idx)
@@ -922,6 +947,8 @@ create_state_data <- function(params, state_flags,
   init_params <- numeric(2 * n)
   init_lower <- numeric(n)
   init_upper <- numeric(n)
+  future_fixed <- integer(n)
+  future_from <- integer(n)
   rw_sd_dist <- integer(0)
   rw_sd_params <- numeric(0)
   rw_period <- integer(0)
@@ -959,6 +986,9 @@ create_state_data <- function(params, state_flags,
     }
     param_id[j] <- idx[j]
     link[j] <- 0L # log
+    resolved_future <- resolve_future(spec$future %||% "latest", name)
+    future_fixed[j] <- resolved_future$fixed
+    future_from[j] <- resolved_future$from
     if (spec$anchor == "init") {
       ## centred non-stationary state: the level is free scaffolding and the
       ## user prior is applied to the derived initial value (with a Jacobian)
@@ -1017,6 +1047,16 @@ create_state_data <- function(params, state_flags,
   }
   state_rw_period <- if (length(rw_period) == 1) rw_period else 1L
 
+  # a single forecast-horizon (`future`) behaviour is shared across states
+  future_pairs <- unique(data.frame(fixed = future_fixed, from = future_from))
+  if (nrow(future_pairs) > 1) {
+    cli_abort(c(
+      "!" = "Different {.arg future} settings across time-varying states are not
+      yet supported.",
+      "i" = "Use the same {.arg future} for every state in the model."
+    ))
+  }
+
   list(
     n_states = n,
     state_param_id = array(as.integer(param_id)),
@@ -1028,6 +1068,8 @@ create_state_data <- function(params, state_flags,
     state_init_dist_params = array(init_params),
     state_init_lower = array(init_lower),
     state_init_upper = array(init_upper),
+    state_future_fixed = future_pairs$fixed,
+    state_future_from = future_pairs$from,
     n_rw_states = n_rw,
     rw_sd_dist = array(rw_sd_dist),
     rw_sd_dist_params = array(rw_sd_params),

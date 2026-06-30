@@ -42,11 +42,17 @@ NULL
 #' @param mean,init A `<dist_spec>`; exactly one must be supplied.
 #' @param settings A list of additional state settings (e.g. a `<gp_opts>`
 #'   object for `"gp"`, or the step standard deviation prior for `"rw"`).
+#' @param future What the state does over the forecast horizon. One of
+#'   `"latest"` (hold the last estimated value flat, the default), `"project"`
+#'   (let the state keep varying), or an integer giving the point, relative to
+#'   the forecast horizon, from which it is held constant. See [GP()].
 #' @return A `<state_spec>` object.
 #' @importFrom cli cli_abort
 #' @importFrom checkmate assert_class
 #' @keywords internal
-new_state_spec <- function(type, mean, init, settings = list()) {
+new_state_spec <- function(type, mean, init, settings = list(),
+                           future = "latest") {
+  future <- validate_future(future)
   has_mean <- !missing(mean) && !is.null(mean)
   has_init <- !missing(init) && !is.null(init)
   if (has_mean + has_init != 1) {
@@ -76,12 +82,27 @@ new_state_spec <- function(type, mean, init, settings = list()) {
     type = type,
     anchor = anchor,
     prior = prior,
+    future = future,
     settings = settings
   )
   class(state) <- c(
     paste0(type, "_state"), "state_spec", "param_spec", "list"
   )
   state
+}
+
+#' Validate a forecast-horizon `future` setting for a state
+#'
+#' @param future A character string (`"latest"`, `"project"`, `"estimate"`) or
+#'   an integer giving the point from which the state is held fixed.
+#' @return The validated `future`: an integer, or one of the allowed strings.
+#' @keywords internal
+validate_future <- function(future) {
+  if (is.numeric(future)) {
+    assert_integerish(future, len = 1, any.missing = FALSE)
+    return(as.integer(future))
+  }
+  match.arg(future, c("latest", "project", "estimate"))
 }
 
 #' @rdname state
@@ -103,6 +124,13 @@ new_state_spec <- function(type, mean, init, settings = list()) {
 #'   "ou" kernels. Only used if `kernel` is "matern".
 #' @param w0 Numeric, defaults to 1.0. Fundamental frequency for the periodic
 #'   kernel. Only used if `kernel` is "periodic".
+#' @param future What the state does over the forecast horizon. One of
+#'   `"latest"` (the default; the last estimated value is held flat through the
+#'   horizon), `"project"` (the state keeps varying into the future), or an
+#'   integer giving the point, relative to the forecast horizon, from which the
+#'   state is held constant (a negative value fixes it that many steps before
+#'   the horizon starts). A single `future` setting applies to every
+#'   time-varying state in a model.
 #' @export
 #' @examples
 #' # mean-reverting Gaussian process
@@ -111,6 +139,8 @@ new_state_spec <- function(type, mean, init, settings = list()) {
 #' GP(init = Normal(mean = 5, sd = 1))
 #' # Gaussian process with a squared exponential kernel
 #' GP(init = Normal(mean = 5, sd = 1), kernel = "se")
+#' # project the Gaussian process into the forecast horizon
+#' GP(init = Normal(mean = 5, sd = 1), future = "project")
 GP <- function(mean, init,
                basis_prop = 0.2,
                boundary_scale = 1.5,
@@ -118,13 +148,15 @@ GP <- function(mean, init,
                alpha = Normal(mean = 0, sd = 0.01),
                kernel = c("matern", "se", "ou", "periodic"),
                matern_order = 3 / 2,
-               w0 = 1.0) {
+               w0 = 1.0,
+               future = "latest") {
   new_state_spec(
     "gp", mean, init,
     settings = new_gp_settings(
       basis_prop = basis_prop, boundary_scale = boundary_scale, ls = ls,
       alpha = alpha, kernel = kernel, matern_order = matern_order, w0 = w0
-    )
+    ),
+    future = future
   )
 }
 
@@ -145,11 +177,15 @@ GP <- function(mean, init,
 #' RW(mean = Normal(mean = 5, sd = 1), sd = Normal(mean = 0, sd = 0.05))
 #' # weekly random walk
 #' RW(init = Normal(mean = 5, sd = 1), period = 7)
-RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1) {
+#' # project the random walk into the forecast horizon
+#' RW(init = Normal(mean = 5, sd = 1), future = "project")
+RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1,
+               future = "latest") {
   assert_class(sd, "dist_spec")
   assert_integerish(period, lower = 1, len = 1)
   new_state_spec(
-    "rw", mean, init, settings = list(sd = sd, period = as.integer(period))
+    "rw", mean, init, settings = list(sd = sd, period = as.integer(period)),
+    future = future
   )
 }
 
@@ -202,6 +238,14 @@ print.state_spec <- function(x, ...) {
   if (x$type == "rw") {
     cat("- step sd prior:\n", sep = "")
     print(x$settings$sd)
+  }
+  if (!identical(x$future, "latest")) {
+    future_label <- if (is.numeric(x$future)) {
+      paste0("fixed from ", x$future)
+    } else {
+      x$future
+    }
+    cat("- forecast horizon: ", future_label, "\n", sep = "")
   }
   invisible(x)
 }

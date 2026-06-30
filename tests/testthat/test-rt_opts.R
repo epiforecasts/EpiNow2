@@ -18,17 +18,24 @@ test_that("rt_opts accepts a constant or time-varying Rt prior", {
 })
 
 test_that("rt_opts handles custom inputs correctly", {
-  result <- suppressWarnings(rt_opts(
-    prior = LogNormal(mean = 2, sd = 0.5),
-    use_rt = FALSE,
-    future = "project",
-    pop = Normal(mean = 1000000, sd = 100)
-  ))
+  expect_warning(
+    result <- rt_opts(
+      prior = LogNormal(mean = 2, sd = 0.5),
+      use_rt = FALSE,
+      pop = Normal(mean = 1000000, sd = 100)
+    ),
+    "ignored"
+  )
 
   expect_null(result$prior)
   expect_false(result$use_rt)
-  expect_equal(result$future, "project")
   expect_equal(result$pop, Normal(mean = 1000000, sd = 100))
+})
+
+test_that("the future argument is deprecated but carried onto the prior", {
+  lifecycle::expect_deprecated(rt <- rt_opts(future = "project"))
+  expect_equal(rt$future, "project")
+  expect_identical(rt$prior$future, "project")
 })
 
 test_that("rt_opts errors when pop is passed as numeric", {

@@ -286,6 +286,11 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' mean-reverting (stationary) process, or `rt_opts(prior = GP(init = ...))`
 #' (the default) for one on first differences.
 #'
+#' @param future `r lifecycle::badge("deprecated")` Set what the reproduction
+#' number does over the forecast horizon on the prior instead, e.g.
+#' `rt_opts(prior = GP(init = ..., future = "project"))` or
+#' `rt_opts(prior = RW(..., future = ...))`.
+#'
 #' @param growth_method Method used to compute growth rates from Rt. Options
 #' are "infections" (default) and "infectiousness". The option "infections"
 #' uses the classical approach, i.e. computing the log derivative on the number
@@ -322,7 +327,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
                     use_rt = TRUE,
                     rw = 0,
                     use_breakpoints = TRUE,
-                    future = "latest",
+                    future = lifecycle::deprecated(),
                     gp_on = lifecycle::deprecated(),
                     pop = Fixed(0),
                     pop_period = c("forecast", "all"),
@@ -330,7 +335,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
                     growth_method = c("infections", "infectiousness")) {
   if (lifecycle::is_present(gp_on)) {
     lifecycle::deprecate_warn(
-      "1.9.1", "rt_opts(gp_on)",
+      "1.10.0", "rt_opts(gp_on)",
       details = paste(
         "Choose the Gaussian process variant through the prior:",
         "`rt_opts(prior = GP(mean = ...))` for a mean-reverting (stationary)",
@@ -339,11 +344,28 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
       )
     )
   }
+  # `future` is superseded by the `future` argument of GP() / RW()
+  future_val <- "latest"
+  if (lifecycle::is_present(future)) {
+    lifecycle::deprecate_warn(
+      "1.10.0", "rt_opts(future)",
+      details = paste(
+        "Set the forecast-horizon behaviour on the Rt prior instead, e.g.",
+        "`rt_opts(prior = GP(init = ..., future = \"project\"))` or",
+        "`rt_opts(prior = RW(..., future = ...))`."
+      )
+    )
+    future_val <- validate_future(future)
+    # carry the setting onto the prior state so existing behaviour is preserved
+    if (is_state_spec(prior)) {
+      prior$future <- future_val
+    }
+  }
   opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
-    future = future,
+    future = future_val,
     pop_period = arg_match(pop_period),
     pop_floor = pop_floor,
     growth_method = arg_match(growth_method)
@@ -351,7 +373,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
   # rw is superseded by a random-walk prior (rt_opts(prior = RW(...)))
   if (rw != 0) {
     lifecycle::deprecate_warn(
-      "1.9.1", "rt_opts(rw)",
+      "1.10.0", "rt_opts(rw)",
       details = paste(
         "Specify a random-walk Rt with `rt_opts(prior = RW(...))`.",
         "The `rw` argument is now ignored."
@@ -433,7 +455,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
 backcalc_opts <- function(prior = NULL, prior_window = 14, rt_window = 1) {
   if (is.character(prior)) {
     lifecycle::deprecate_warn(
-      "1.9.1", "backcalc_opts(prior = 'must be a GP() specification')",
+      "1.10.0", "backcalc_opts(prior = 'must be a GP() specification')",
       details = "The back-calculation model now estimates latent infections as
       a Gaussian process state. Supply a `GP()` specification (e.g.
       `prior = GP(init = LogNormal(...))`) or leave as the default."
@@ -442,7 +464,7 @@ backcalc_opts <- function(prior = NULL, prior_window = 14, rt_window = 1) {
   }
   if (!missing(prior_window)) {
     lifecycle::deprecate_warn(
-      "1.9.1", "backcalc_opts(prior_window)",
+      "1.10.0", "backcalc_opts(prior_window)",
       details = "The back-calculation model no longer smooths shifted cases, so
       the prior smoothing window is no longer used."
     )
@@ -534,7 +556,7 @@ gp_opts <- function(basis_prop = 0.2,
                     matern_order = 3 / 2,
                     w0 = 1.0) {
   lifecycle::deprecate_warn(
-    "1.9.1", "gp_opts()", "GP()",
+    "1.10.0", "gp_opts()", "GP()",
     details = "Gaussian process settings are now arguments of `GP()`."
   )
   new_gp_settings(

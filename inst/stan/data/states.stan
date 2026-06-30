@@ -10,6 +10,11 @@ array[n_states] int<lower = 0> state_init_dist;
 vector[2 * n_states] state_init_dist_params;
 vector[n_states] state_init_lower;
 vector[n_states] state_init_upper;
+// forecast-horizon behaviour (shared across states): if state_future_fixed the
+// state is held constant from `state_future_from` (relative to the observation
+// end) onwards; otherwise it varies over the whole horizon ("project")
+int<lower = 0, upper = 1> state_future_fixed;
+int state_future_from;
 
 // random walk states
 int<lower = 0> n_rw_states;

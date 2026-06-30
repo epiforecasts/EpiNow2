@@ -15,10 +15,11 @@ GP(
   alpha = Normal(mean = 0, sd = 0.01),
   kernel = c("matern", "se", "ou", "periodic"),
   matern_order = 3/2,
-  w0 = 1
+  w0 = 1,
+  future = "latest"
 )
 
-RW(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1)
+RW(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1, future = "latest")
 }
 \arguments{
 \item{mean}{A \verb{<dist_spec>} giving the prior on the (stationary) mean the
@@ -53,6 +54,14 @@ Common choices are 1/2, 3/2, and 5/2. Set automatically for the "se" and
 
 \item{w0}{Numeric, defaults to 1.0. Fundamental frequency for the periodic
 kernel. Only used if \code{kernel} is "periodic".}
+
+\item{future}{What the state does over the forecast horizon. One of
+\code{"latest"} (the default; the last estimated value is held flat through the
+horizon), \code{"project"} (the state keeps varying into the future), or an
+integer giving the point, relative to the forecast horizon, from which the
+state is held constant (a negative value fixes it that many steps before the
+horizon starts). A single \code{future} setting applies to every time-varying
+state in a model.}
 
 \item{sd}{A \verb{<dist_spec>} giving the prior on the random walk step standard
 deviation. Defaults to a half-normal \code{Normal(mean = 0, sd = 0.1)} (the
@@ -99,10 +108,14 @@ GP(mean = Normal(mean = 5, sd = 1))
 GP(init = Normal(mean = 5, sd = 1))
 # Gaussian process with a squared exponential kernel
 GP(init = Normal(mean = 5, sd = 1), kernel = "se")
+# project the Gaussian process into the forecast horizon
+GP(init = Normal(mean = 5, sd = 1), future = "project")
 # random walk with an initial-value prior
 RW(init = Normal(mean = 5, sd = 1))
 # mean-reverting random walk with a custom step size prior
 RW(mean = Normal(mean = 5, sd = 1), sd = Normal(mean = 0, sd = 0.05))
 # weekly random walk
 RW(init = Normal(mean = 5, sd = 1), period = 7)
+# project the random walk into the forecast horizon
+RW(init = Normal(mean = 5, sd = 1), future = "project")
 }
