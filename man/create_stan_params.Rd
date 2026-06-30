@@ -4,7 +4,7 @@
 \alias{create_stan_params}
 \title{Create parameters for stan}
 \usage{
-create_stan_params(params, states_supported = character(0))
+create_stan_params(params, states_supported = character(0), seeding_time = 0L)
 }
 \arguments{
 \item{params}{A list of \verb{<EpiNow2.params>} as created by \code{\link[=make_param]{make_param()}}}

@@ -4,7 +4,12 @@
 \alias{create_state_data}
 \title{Create time-varying state data for stan}
 \usage{
-create_state_data(params, state_flags, states_supported = character(0))
+create_state_data(
+  params,
+  state_flags,
+  states_supported = character(0),
+  seeding_time = 0L
+)
 }
 \arguments{
 \item{params}{A list of \verb{<EpiNow2.params>} after \code{NULL} parameters have been

@@ -317,7 +317,9 @@ create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
     stan_data,
     # Rt (R, renewal model) and latent infections (I, back-calculation model)
     # are expressed as states; time-varying observation parameters follow later
-    create_stan_params(params, states_supported = c("R", "I"))
+    create_stan_params(
+      params, states_supported = c("R", "I"), seeding_time = seeding_time
+    )
   )
 
   stan_data
@@ -738,7 +740,8 @@ create_stan_delays <- function(..., time_points = 1L) {
 ##' @importFrom data.table fcase
 ##' @importFrom purrr transpose
 ##' @keywords internal
-create_stan_params <- function(params, states_supported = character(0)) {
+create_stan_params <- function(params, states_supported = character(0),
+                               seeding_time = 0L) {
   tparams <- transpose(params)
   ## set IDs of any parameters that is NULL to 0 and remove
   null_params <- vapply(tparams$dist, is.null, logical(1))
@@ -755,7 +758,9 @@ create_stan_params <- function(params, states_supported = character(0)) {
   ## prior flows through the normal parameter machinery; the state is layered
   ## on top in the model via the data from create_state_data().
   state_flags <- vapply(tparams$dist, is_state_spec, logical(1))
-  state_data <- create_state_data(params, state_flags, states_supported)
+  state_data <- create_state_data(
+    params, state_flags, states_supported, seeding_time = seeding_time
+  )
   if (any(state_flags)) {
     for (i in which(state_flags)) {
       params[[i]]$dist <- params[[i]]$dist$prior
@@ -868,7 +873,8 @@ create_stan_params <- function(params, states_supported = character(0)) {
 ##' @importFrom data.table fcase
 ##' @keywords internal
 create_state_data <- function(params, state_flags,
-                              states_supported = character(0)) {
+                              states_supported = character(0),
+                              seeding_time = 0L) {
   empty <- list(
     n_states = 0L,
     state_param_id = array(integer(0)),
@@ -920,19 +926,17 @@ create_state_data <- function(params, state_flags,
     as.numeric(unlist(pars))
   }
   ## resolve a state's `future` setting into the (fixed, from) pair the model
-  ## uses to size the free-noise window over the forecast horizon
-  resolve_future <- function(future, name) {
+  ## uses to size the free-noise window over the forecast horizon. "estimate"
+  ## fixes the state a seeding time before the end of the data, where the most
+  ## recent estimates are least informed.
+  resolve_future <- function(future) {
     if (is.numeric(future)) {
       return(list(fixed = 1L, from = as.integer(future)))
     }
     switch(future,
       latest = list(fixed = 1L, from = 0L),
       project = list(fixed = 0L, from = 0L),
-      estimate = cli_abort(c(
-        "!" = "{.code future = \"estimate\"} is not yet supported for
-        time-varying parameter {.var {name}}.",
-        "i" = "Use {.val latest}, {.val project}, or a numeric offset."
-      ))
+      estimate = list(fixed = 1L, from = -as.integer(seeding_time))
     )
   }
 
@@ -986,7 +990,7 @@ create_state_data <- function(params, state_flags,
     }
     param_id[j] <- idx[j]
     link[j] <- 0L # log
-    resolved_future <- resolve_future(spec$future %||% "latest", name)
+    resolved_future <- resolve_future(spec$future %||% "latest")
     future_fixed[j] <- resolved_future$fixed
     future_from[j] <- resolved_future$from
     if (spec$anchor == "init") {

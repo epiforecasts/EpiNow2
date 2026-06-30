@@ -137,6 +137,39 @@ test_that("create_stan_params emits GP state data for fraction_observed", {
   expect_length(out$gp_rho_dist_params, 2L)
 })
 
+test_that("create_stan_params resolves the future setting into model data", {
+  gp <- function(future) {
+    make_param(
+      "R", GP(init = LogNormal(mean = 1, sd = 0.5), future = future),
+      lower_bound = 0
+    )
+  }
+  latest <- create_stan_params(
+    list(make_param("R", GP(init = LogNormal(mean = 1, sd = 0.5)),
+      lower_bound = 0)),
+    states_supported = "R", seeding_time = 7
+  )
+  expect_identical(latest$state_future_fixed, 1L)
+  expect_identical(latest$state_future_from, 0L)
+
+  project <- create_stan_params(
+    list(gp("project")), states_supported = "R", seeding_time = 7
+  )
+  expect_identical(project$state_future_fixed, 0L)
+
+  # "estimate" fixes the state a seeding time before the end of the data
+  estimate <- create_stan_params(
+    list(gp("estimate")), states_supported = "R", seeding_time = 7
+  )
+  expect_identical(estimate$state_future_fixed, 1L)
+  expect_identical(estimate$state_future_from, -7L)
+
+  fixed_from <- create_stan_params(
+    list(gp(-3L)), states_supported = "R", seeding_time = 7
+  )
+  expect_identical(fixed_from$state_future_from, -3L)
+})
+
 test_that("create_stan_params rejects periodic kernel states", {
   params <- list(
     make_param("fraction_observed", GP(mean = Normal(0.5, 0.1),

@@ -57,11 +57,12 @@ kernel. Only used if \code{kernel} is "periodic".}
 
 \item{future}{What the state does over the forecast horizon. One of
 \code{"latest"} (the default; the last estimated value is held flat through the
-horizon), \code{"project"} (the state keeps varying into the future), or an
-integer giving the point, relative to the forecast horizon, from which the
-state is held constant (a negative value fixes it that many steps before
-the horizon starts). A single \code{future} setting applies to every
-time-varying state in a model.}
+horizon), \code{"project"} (the state keeps varying into the future),
+\code{"estimate"} (held from a seeding time before the end of the data, where the
+most recent values are least informed), or an integer giving the point,
+relative to the forecast horizon, from which the state is held constant (a
+negative value fixes it that many steps before the horizon starts). A single
+\code{future} setting applies to every time-varying state in a model.}
 
 \item{sd}{A \verb{<dist_spec>} giving the prior on the random walk step standard
 deviation. Defaults to a half-normal \code{Normal(mean = 0, sd = 0.1)} (the

@@ -44,8 +44,9 @@ NULL
 #'   object for `"gp"`, or the step standard deviation prior for `"rw"`).
 #' @param future What the state does over the forecast horizon. One of
 #'   `"latest"` (hold the last estimated value flat, the default), `"project"`
-#'   (let the state keep varying), or an integer giving the point, relative to
-#'   the forecast horizon, from which it is held constant. See [GP()].
+#'   (let the state keep varying), `"estimate"` (hold from a seeding time before
+#'   the end of the data), or an integer giving the point, relative to the
+#'   forecast horizon, from which it is held constant. See [GP()].
 #' @return A `<state_spec>` object.
 #' @importFrom cli cli_abort
 #' @importFrom checkmate assert_class
@@ -126,11 +127,12 @@ validate_future <- function(future) {
 #'   kernel. Only used if `kernel` is "periodic".
 #' @param future What the state does over the forecast horizon. One of
 #'   `"latest"` (the default; the last estimated value is held flat through the
-#'   horizon), `"project"` (the state keeps varying into the future), or an
-#'   integer giving the point, relative to the forecast horizon, from which the
-#'   state is held constant (a negative value fixes it that many steps before
-#'   the horizon starts). A single `future` setting applies to every
-#'   time-varying state in a model.
+#'   horizon), `"project"` (the state keeps varying into the future),
+#'   `"estimate"` (held from a seeding time before the end of the data, where
+#'   the most recent values are least informed), or an integer giving the point,
+#'   relative to the forecast horizon, from which the state is held constant (a
+#'   negative value fixes it that many steps before the horizon starts). A
+#'   single `future` setting applies to every time-varying state in a model.
 #' @export
 #' @examples
 #' # mean-reverting Gaussian process
