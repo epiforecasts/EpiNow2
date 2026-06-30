@@ -115,7 +115,7 @@ transformed parameters {
 
   // trajectory of the (possibly time-varying) fraction observed; constant when
   // no state is attached to fraction_observed
-  vector[ot_h] fraction_observed_traj = get_state_trajectory(
+  vector[ot_h] fraction_observed = get_state_trajectory(
     param_id_fraction_observed, ot_h, state_obs, state_centre,
     get_param(
       param_id_fraction_observed, params_fixed_lookup, params_variable_lookup,
@@ -127,7 +127,7 @@ transformed parameters {
     state_gp_alpha, state_gp_rho
   );
   // trajectory of the (possibly time-varying) reporting overdispersion
-  vector[ot_h] reporting_overdispersion_traj = get_state_trajectory(
+  vector[ot_h] reporting_overdispersion = get_state_trajectory(
     param_id_reporting_overdispersion, ot_h, state_obs, state_centre,
     get_param(
       param_id_reporting_overdispersion, params_fixed_lookup,
@@ -172,7 +172,7 @@ transformed parameters {
       );
       infections = generate_infections(
         R, seeding_time, gt_rev_pmf, initial_infections, pop, use_pop, pop_floor,
-        future_time, obs_scale, fraction_observed_traj[1], 1
+        future_time, obs_scale, fraction_observed[1], 1
       );
     }
   } else {
@@ -204,9 +204,9 @@ transformed parameters {
     } else if (id == param_id_I) {
       state_init[s] = infections[1];
     } else if (id == param_id_fraction_observed) {
-      state_init[s] = fraction_observed_traj[1];
+      state_init[s] = fraction_observed[1];
     } else if (id == param_id_reporting_overdispersion) {
-      state_init[s] = reporting_overdispersion_traj[1];
+      state_init[s] = reporting_overdispersion[1];
     } else {
       reject("no trajectory available for state parameter id ", id);
     }
@@ -240,7 +240,7 @@ transformed parameters {
   // scaling of reported cases by fraction observed
   if (obs_scale) {
     profile("scale") {
-      reports = reports .* fraction_observed_traj;
+      reports = reports .* fraction_observed;
     }
   }
 
@@ -347,7 +347,7 @@ model {
   if (likelihood) {
     profile("report lp") {
       report_lp(
-        cases, case_times, obs_reports, reporting_overdispersion_traj[1:ot],
+        cases, case_times, obs_reports, reporting_overdispersion[1:ot],
         model_type, obs_weight
       );
     }
@@ -407,11 +407,11 @@ generated quantities {
         accumulate_reports(reports, accumulate);
       imputed_reports = report_rng(
         accumulated_reports[imputed_times],
-        reporting_overdispersion_traj[imputed_times], model_type
+        reporting_overdispersion[imputed_times], model_type
       );
     } else {
       imputed_reports = report_rng(
-        reports[imputed_times], reporting_overdispersion_traj[imputed_times],
+        reports[imputed_times], reporting_overdispersion[imputed_times],
         model_type
       );
     }
@@ -419,7 +419,7 @@ generated quantities {
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
-        cases, obs_reports[case_times], reporting_overdispersion_traj[case_times],
+        cases, obs_reports[case_times], reporting_overdispersion[case_times],
         model_type, obs_weight
       );
     }
