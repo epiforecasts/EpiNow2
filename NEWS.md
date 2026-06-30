@@ -1,5 +1,7 @@
 # EpiNow2 (development version)
 
+# EpiNow2 1.9.0
+
 ## New features
 
 - Added an experimental interface for declaring time-varying model parameters: the `GP()` (approximate Gaussian process) and `RW()` (random walk) constructors. Each takes a prior on either the value the parameter reverts to (`mean`, a mean-reverting state) or its initial value (`init`, a state on first differences), the relevant Gaussian process settings (`ls`, `alpha`, `kernel`, `basis_prop`, and so on), and a `future` argument that sets what the parameter does over the forecast horizon: `"latest"` holds the last estimated value flat, `"project"` keeps it varying, or an integer fixes it from a chosen point. `estimate_infections()` uses this interface for the reproduction number, so `rt_opts(prior = ...)` takes a constant value or a `GP()`/`RW()` state.
