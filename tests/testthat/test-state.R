@@ -149,25 +149,25 @@ test_that("create_stan_params resolves the future setting into model data", {
       lower_bound = 0)),
     states_supported = "R", seeding_time = 7
   )
-  expect_identical(latest$state_future_fixed, 1L)
-  expect_identical(latest$state_future_from, 0L)
+  expect_equal(as.integer(latest$state_future_fixed), 1L)
+  expect_equal(as.integer(latest$state_future_from), 0L)
 
   project <- create_stan_params(
     list(gp("project")), states_supported = "R", seeding_time = 7
   )
-  expect_identical(project$state_future_fixed, 0L)
+  expect_equal(as.integer(project$state_future_fixed), 0L)
 
   # "estimate" fixes the state a seeding time before the end of the data
   estimate <- create_stan_params(
     list(gp("estimate")), states_supported = "R", seeding_time = 7
   )
-  expect_identical(estimate$state_future_fixed, 1L)
-  expect_identical(estimate$state_future_from, -7L)
+  expect_equal(as.integer(estimate$state_future_fixed), 1L)
+  expect_equal(as.integer(estimate$state_future_from), -7L)
 
   fixed_from <- create_stan_params(
     list(gp(-3L)), states_supported = "R", seeding_time = 7
   )
-  expect_identical(fixed_from$state_future_from, -3L)
+  expect_equal(as.integer(fixed_from$state_future_from), -3L)
 })
 
 test_that("create_stan_params rejects periodic kernel states", {

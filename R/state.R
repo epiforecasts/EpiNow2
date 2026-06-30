@@ -131,8 +131,7 @@ validate_future <- function(future) {
 #'   `"estimate"` (held from a seeding time before the end of the data, where
 #'   the most recent values are least informed), or an integer giving the point,
 #'   relative to the forecast horizon, from which the state is held constant (a
-#'   negative value fixes it that many steps before the horizon starts). A
-#'   single `future` setting applies to every time-varying state in a model.
+#'   negative value fixes it that many steps before the horizon starts).
 #' @export
 #' @examples
 #' # mean-reverting Gaussian process

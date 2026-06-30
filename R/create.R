@@ -423,50 +423,54 @@ create_initial_conditions <- function(stan_data, params) {
       mean = param_means, sd = param_sds
     ))
 
-    ## time-varying states vary over a free-noise window, mirroring the
-    ## computation in the Stan model (transformed data). The observation window
-    ## runs to the end of the data; the `future` setting (state_future_fixed /
-    ## state_future_from) sets how far the state varies into the horizon.
+    ## time-varying states each have their own free-noise window (set by their
+    ## `future`), mirroring the Stan transformed-data computation, so the ragged
+    ## random walk step and GP coefficient vectors are sized per state.
     ## truncnorm::rtruncnorm() returns NULL for n = 0, so guard zero counts
     rtruncnorm0 <- function(n, ...) {
       if (n > 0) truncnorm::rtruncnorm(n, ...) else numeric(0)
     }
-    data_window <- if (stan_data$estimate_r == 1) {
-      stan_data$t - stan_data$seeding_time - stan_data$horizon
-    } else {
-      stan_data$t - stan_data$horizon
+    n_states <- stan_data$n_states %||% 0L
+    n_rw_steps <- 0L
+    n_gp_coef <- 0L
+    gp_free <- numeric(0) # free-noise window of each GP state (for rho init)
+    if (n_states > 0) {
+      rw_period <- stan_data$state_rw_period %||% 1L
+      ot_h <- stan_data$t - stan_data$seeding_time
+      for (s in seq_len(n_states)) {
+        total <- if (stan_data$state_param_id[s] == stan_data$param_id_I) {
+          stan_data$t
+        } else {
+          ot_h
+        }
+        data_window <- total - stan_data$horizon
+        free <- if (stan_data$state_future_fixed[s] == 0) {
+          total
+        } else {
+          min(total, max(1, data_window + stan_data$state_future_from[s]))
+        }
+        if (stan_data$state_type[s] == 0) {
+          n_rw_steps <- n_rw_steps + max(0, ceiling(free / rw_period) - 1)
+        } else {
+          n_gp_coef <- n_gp_coef +
+            ceiling(free * stan_data$gp_basis_prop[stan_data$state_pos[s]])
+          gp_free <- c(gp_free, free)
+        }
+      }
     }
-    full_window <- if (stan_data$estimate_r == 1) {
-      stan_data$t - stan_data$seeding_time
-    } else {
-      stan_data$t
-    }
-    state_future_from <- stan_data$state_future_from %||% 0L
-    state_obs <- if ((stan_data$state_future_fixed %||% 1L) == 0) {
-      full_window
-    } else {
-      min(full_window, max(1, data_window + state_future_from))
-    }
-    rw_period <- stan_data$state_rw_period %||% 1L
-    state_rw_n <- max(0, ceiling(state_obs / rw_period) - 1)
     out$state_rw_sd <- array(
-      rtruncnorm0(stan_data$n_rw_states, a = 0, mean = 0, sd = 0.1)
+      rtruncnorm0(stan_data$n_rw_states %||% 0L, a = 0, mean = 0, sd = 0.1)
     )
-    out$state_rw_steps <- array(
-      rnorm(stan_data$n_rw_states * state_rw_n, 0, 0.1)
-    )
-    gp_m <- if (stan_data$n_gp_states > 0) {
-      ceiling(state_obs * stan_data$gp_basis_prop)
-    } else {
-      0
-    }
-    out$state_gp_eta <- array(rnorm(stan_data$n_gp_states * gp_m, 0, 0.1))
+    out$state_rw_steps <- array(rnorm(n_rw_steps, 0, 0.1))
+    out$state_gp_eta <- array(rnorm(n_gp_coef, 0, 0.1))
     out$state_gp_alpha <- array(
-      rtruncnorm0(stan_data$n_gp_states, a = 0, mean = 0, sd = 0.1)
+      rtruncnorm0(stan_data$n_gp_states %||% 0L, a = 0, mean = 0, sd = 0.1)
     )
+    rho_scale <- if (length(gp_free) > 0) mean(gp_free) else 1
     out$state_gp_rho <- array(
       rtruncnorm0(
-        stan_data$n_gp_states, a = 0, mean = state_obs / 2, sd = state_obs / 4
+        stan_data$n_gp_states %||% 0L, a = 0,
+        mean = rho_scale / 2, sd = rho_scale / 4
       )
     )
     out
@@ -886,15 +890,15 @@ create_state_data <- function(params, state_flags,
     state_init_dist_params = array(numeric(0)),
     state_init_lower = array(numeric(0)),
     state_init_upper = array(numeric(0)),
-    state_future_fixed = 1L,
-    state_future_from = 0L,
+    state_future_fixed = array(integer(0)),
+    state_future_from = array(integer(0)),
     n_rw_states = 0L,
     rw_sd_dist = array(integer(0)),
     rw_sd_dist_params = array(numeric(0)),
     state_rw_period = 1L,
     n_gp_states = 0L,
-    gp_basis_prop = 0.2,
-    gp_boundary_scale = 1.5,
+    gp_basis_prop = array(numeric(0)),
+    gp_boundary_scale = array(numeric(0)),
     gp_kernel = array(integer(0)),
     gp_nu = array(numeric(0)),
     gp_alpha_dist = array(integer(0)),
@@ -962,8 +966,8 @@ create_state_data <- function(params, state_flags,
   gp_alpha_params <- numeric(0)
   gp_rho_dist <- integer(0)
   gp_rho_params <- numeric(0)
-  gp_basis_prop <- empty$gp_basis_prop
-  gp_boundary_scale <- empty$gp_boundary_scale
+  gp_basis_prop <- numeric(0)
+  gp_boundary_scale <- numeric(0)
   n_rw <- 0L
   n_gp <- 0L
 
@@ -1037,8 +1041,8 @@ create_state_data <- function(params, state_flags,
       gp_rho_params <- c(
         gp_rho_params, numeric_params(gp$ls, "lengthscale", name)
       )
-      gp_basis_prop <- gp$basis_prop
-      gp_boundary_scale <- gp$boundary_scale
+      gp_basis_prop <- c(gp_basis_prop, gp$basis_prop)
+      gp_boundary_scale <- c(gp_boundary_scale, gp$boundary_scale)
     }
   }
 
@@ -1051,16 +1055,6 @@ create_state_data <- function(params, state_flags,
   }
   state_rw_period <- if (length(rw_period) == 1) rw_period else 1L
 
-  # a single forecast-horizon (`future`) behaviour is shared across states
-  future_pairs <- unique(data.frame(fixed = future_fixed, from = future_from))
-  if (nrow(future_pairs) > 1) {
-    cli_abort(c(
-      "!" = "Different {.arg future} settings across time-varying states are not
-      yet supported.",
-      "i" = "Use the same {.arg future} for every state in the model."
-    ))
-  }
-
   list(
     n_states = n,
     state_param_id = array(as.integer(param_id)),
@@ -1072,15 +1066,15 @@ create_state_data <- function(params, state_flags,
     state_init_dist_params = array(init_params),
     state_init_lower = array(init_lower),
     state_init_upper = array(init_upper),
-    state_future_fixed = future_pairs$fixed,
-    state_future_from = future_pairs$from,
+    state_future_fixed = array(as.integer(future_fixed)),
+    state_future_from = array(as.integer(future_from)),
     n_rw_states = n_rw,
     rw_sd_dist = array(rw_sd_dist),
     rw_sd_dist_params = array(rw_sd_params),
     state_rw_period = state_rw_period,
     n_gp_states = n_gp,
-    gp_basis_prop = gp_basis_prop,
-    gp_boundary_scale = gp_boundary_scale,
+    gp_basis_prop = array(gp_basis_prop),
+    gp_boundary_scale = array(gp_boundary_scale),
     gp_kernel = array(gp_kernel),
     gp_nu = array(gp_nu),
     gp_alpha_dist = array(gp_alpha_dist),

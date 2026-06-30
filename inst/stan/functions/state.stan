@@ -116,24 +116,29 @@ vector gp_trajectory(int t, int n_free, int n_centre, real level, vector noise,
  * parameter consumed pointwise over time become time-varying with no
  * per-parameter code beyond the call site.
  *
+ * Each state carries its own free-noise window and, for GP states, its own
+ * basis (built here from that window); states share nothing beyond the flat
+ * coefficient vectors indexed by per-state offsets.
+ *
  * @param id Target parameter id
  * @param t Total trajectory length (observation window + forecast horizon)
- * @param n_free Window over which the state varies (it holds its last value
- *   through the remaining forecast horizon)
- * @param n_centre Leading window used to centre an init-anchored state
  * @param level Parameter level on the natural scale (from get_param)
  * @param state_param_id Target parameter id of each state
  * @param state_type State type of each state (0 = RW, 1 = GP)
  * @param state_link Link of each state (0 = log)
  * @param state_pos Index of each state within its type group
  * @param state_anchor Anchor of each state (0 = mean, 1 = init)
+ * @param state_n_free Free-noise window of each state (holds its last value
+ *   through the remaining forecast horizon)
+ * @param state_n_centre Leading window used to centre an init-anchored state
  * @param state_rw_steps Flat random walk steps across RW states
- * @param state_rw_n Number of random walk steps per RW state
+ * @param state_rw_n Number of random walk steps of each state
+ * @param state_rw_offset Offset of each state into state_rw_steps
  * @param state_rw_period Number of time steps between random walk steps
  * @param state_gp_eta Flat GP basis coefficients across GP states
- * @param gp_M Number of GP basis functions (shared)
- * @param gp_PHI Shared GP basis matrix
- * @param gp_boundary_scale GP boundary scale
+ * @param state_gp_M Number of GP basis functions of each state
+ * @param state_gp_offset Offset of each state into state_gp_eta
+ * @param gp_boundary_scale GP boundary scale of each GP state
  * @param gp_kernel Kernel of each GP state
  * @param gp_nu Matern smoothness of each GP state
  * @param state_gp_alpha GP magnitude of each GP state
@@ -143,32 +148,41 @@ vector gp_trajectory(int t, int n_free, int n_centre, real level, vector noise,
  * @ingroup estimates_smoothing
  */
 vector get_state_trajectory(
-  int id, int t, int n_free, int n_centre, real level,
+  int id, int t, real level,
   array[] int state_param_id, array[] int state_type, array[] int state_link,
   array[] int state_pos, array[] int state_anchor,
-  vector state_rw_steps, int state_rw_n, int state_rw_period,
-  vector state_gp_eta, int gp_M, matrix gp_PHI, real gp_boundary_scale,
-  array[] int gp_kernel, array[] real gp_nu,
+  array[] int state_n_free, array[] int state_n_centre,
+  vector state_rw_steps, array[] int state_rw_n, array[] int state_rw_offset,
+  int state_rw_period,
+  vector state_gp_eta, array[] int state_gp_M, array[] int state_gp_offset,
+  array[] real gp_boundary_scale, array[] int gp_kernel, array[] real gp_nu,
   vector state_gp_alpha, vector state_gp_rho
 ) {
   for (s in 1:num_elements(state_param_id)) {
     if (state_param_id[s] == id) {
-      int p = state_pos[s];
+      int nf = state_n_free[s];
+      int nc = state_n_centre[s];
       if (state_type[s] == 0) {
-        vector[state_rw_n] steps = segment(
-          state_rw_steps, (p - 1) * state_rw_n + 1, state_rw_n
+        vector[state_rw_n[s]] steps = segment(
+          state_rw_steps, state_rw_offset[s] + 1, state_rw_n[s]
         );
         return rw_trajectory(
-          t, n_free, n_centre, level, steps, state_link[s], state_rw_period
+          t, nf, nc, level, steps, state_link[s], state_rw_period
         );
       } else {
-        vector[gp_M] eta = segment(state_gp_eta, (p - 1) * gp_M + 1, gp_M);
-        vector[n_free] noise = update_gp(
-          gp_PHI, gp_M, gp_boundary_scale, state_gp_alpha[p],
-          2 * state_gp_rho[p] / n_free, eta, gp_kernel[p], gp_nu[p]
+        int p = state_pos[s];
+        int M = state_gp_M[s];
+        vector[M] eta = segment(state_gp_eta, state_gp_offset[s] + 1, M);
+        // each GP state builds its own basis from its own window; the basis is
+        // data-only, so it could be hoisted to transformed data if profiling
+        // shows it matters
+        matrix[nf, M] phi = setup_gp(M, gp_boundary_scale[p], nf, 0, 1.0);
+        vector[nf] noise = update_gp(
+          phi, M, gp_boundary_scale[p], state_gp_alpha[p],
+          2 * state_gp_rho[p] / nf, eta, gp_kernel[p], gp_nu[p]
         );
         return gp_trajectory(
-          t, n_free, n_centre, level, noise, state_link[s], state_anchor[s]
+          t, nf, nc, level, noise, state_link[s], state_anchor[s]
         );
       }
     }
