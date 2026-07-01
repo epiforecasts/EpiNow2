@@ -1,0 +1,24 @@
+pandoc: 3.8.3
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  case-studies: case-studies.html
+  delays: delays.html
+  epinow: epinow.html
+  EpiNow2: EpiNow2.html
+  estimate_dist_workflow: estimate_dist_workflow.html
+  estimate_dist: estimate_dist.html
+  estimate_infections_options: estimate_infections_options.html
+  estimate_infections_workflow: estimate_infections_workflow.html
+  estimate_infections: estimate_infections.html
+  estimate_secondary: estimate_secondary.html
+  estimate_truncation: estimate_truncation.html
+  forecasting_multiple_data_streams: forecasting_multiple_data_streams.html
+  gaussian_process_implementation_details: gaussian_process_implementation_details.html
+  model_features: model_features.html
+  model_overview: model_overview.html
+  prior_choice_guide: prior_choice_guide.html
+last_built: 2026-07-01T12:59Z
+urls:
+  reference: https://epiforecasts.io/EpiNow2/reference
+  article: https://epiforecasts.io/EpiNow2/articles
