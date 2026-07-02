@@ -148,28 +148,6 @@ matrix PHI_periodic(int N, int M, real w0, vector x) {
 }
 
 /**
-  * Setup Gaussian process noise dimensions
-  *
-  * @param ot_h Observation time horizon
-  * @param t Total time points
-  * @param horizon Forecast horizon
-  * @param estimate_r Indicator if estimating r
-  * @param stationary Indicator if stationary
-  * @param future_fixed Indicator if future is fixed
-  * @param fixed_from Fixed point from
-  * @return Number of noise terms
-  *
-  * @ingroup estimates_smoothing
-  */
-int setup_noise(int ot_h, int t, int horizon, int estimate_r,
-                int stationary, int future_fixed, int fixed_from) {
-  int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h - 1) : t;
-  int noise_terms =
-    future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
-  return noise_terms;
-}
-
-/**
   * Setup approximate Gaussian process
   *
   * @param M Number of basis functions
@@ -225,16 +203,5 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
     }
   }
   return PHI * (diagSPD .* eta);
-}
-
-/**
-  * Priors for Gaussian process (excluding length scale)
-  *
-  * @param eta Vector of noise terms
-  *
-  * @ingroup estimates_smoothing
-  */
-void gaussian_process_lp(vector eta) {
-  eta ~ std_normal();
 }
 

@@ -66,7 +66,10 @@
 #' @inheritParams create_stan_data
 #' @inheritParams create_rt_data
 #' @inheritParams create_backcalc_data
-#' @inheritParams create_gp_data
+#' @param gp `r lifecycle::badge("deprecated")` Configure the Gaussian process
+#' through the relevant model's prior instead: `rt_opts(prior = GP(...))` for
+#' the renewal model or `backcalc_opts(prior = GP(...))` for the
+#' back-calculation model.
 #' @inheritParams create_obs_model
 #' @inheritParams fit_model_with_nuts
 #' @importFrom data.table data.table copy merge.data.table as.data.table
@@ -123,7 +126,7 @@ estimate_infections <- function(data,
                                 truncation = trunc_opts(),
                                 rt = rt_opts(),
                                 backcalc = backcalc_opts(),
-                                gp = gp_opts(),
+                                gp = NULL,
                                 obs = obs_opts(),
                                 forecast = forecast_opts(),
                                 stan = stan_opts(),
@@ -136,7 +139,14 @@ estimate_infections <- function(data,
   assert_class(truncation, "trunc_opts")
   assert_class(rt, "rt_opts", null.ok = TRUE)
   assert_class(backcalc, "backcalc_opts")
-  assert_class(gp, "gp_opts", null.ok = TRUE)
+  if (!is.null(gp)) {
+    lifecycle::deprecate_warn(
+      "1.10.0", "estimate_infections(gp)",
+      details = "Configure the Gaussian process through the relevant model's
+      prior instead: `rt_opts(prior = GP(...))` for the renewal model or
+      `backcalc_opts(prior = GP(...))` for the back-calculation model."
+    )
+  }
   assert_class(obs, "obs_opts")
   if (is.null(forecast)) {
     forecast <- forecast_opts(horizon = 0)
@@ -181,12 +191,28 @@ estimate_infections <- function(data,
   # Add initial zeroes
   model_data <- pad_reported_cases(model_data, seeding_time)
 
-  # R0 is handled separately from the generic params system: it is wrapped
-  # by the centred non-stationary GP, so its user-facing prior is on the
-  # initial Rt (R[1]) rather than on the sampled internal log-mean.
+  # The reproduction number (renewal model) and latent infections
+  # (back-calculation model) are both expressed as states: R carries the Rt
+  # prior and I a Gaussian process on log-infections. Each state's GP carries
+  # its own hyperparameters, so there are no separate alpha/rho parameters and
+  # no shared "main" GP. The infections state is taken from
+  # `backcalc_opts(prior = ...)`, defaulting to a GP anchored at a data-informed
+  # initial value (I0).
+  renewal <- isTRUE(rt$use_rt)
+  if (renewal) {
+    i_prior <- NULL
+  } else if (!is.null(backcalc$prior)) {
+    i_prior <- backcalc$prior
+  } else {
+    i0_guess <- mean(head(data$confirm[!is.na(data$confirm)], 7))
+    if (!is.finite(i0_guess) || i0_guess <= 0) {
+      i0_guess <- 1
+    }
+    i_prior <- GP(init = LogNormal(mean = i0_guess, sd = i0_guess))
+  }
   params <- list(
-    make_param("alpha", gp$alpha, lower_bound = 0),
-    make_param("rho", gp$ls, lower_bound = 0),
+    make_param("R", if (renewal) rt$prior else NULL, lower_bound = 0),
+    make_param("I", i_prior, lower_bound = 0),
     make_param("fraction_observed", obs$scale, lower_bound = 0),
     make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("pop", rt$pop, lower_bound = 0)
@@ -197,24 +223,15 @@ estimate_infections <- function(data,
     model_data,
     seeding_time = seeding_time,
     rt = rt,
-    gp = gp,
     obs = obs,
     backcalc = backcalc,
     forecast = forecast,
     params = params
   )
 
-  stan_data$param_id_R0 <- stan_data$n_params_variable + 1L
-  init_priors <- if (isTRUE(rt$use_rt)) {
-    list(list(
-      param_id = stan_data$param_id_R0,
-      dist = rt$prior,
-      lower_bound = 0
-    ))
-  } else {
-    list()
-  }
-  stan_data <- c(stan_data, make_init_priors(init_priors))
+  # R0's prior is applied to the derived initial Rt by the state machinery, so
+  # no separate init priors are needed (kept empty for the stan data contract).
+  stan_data <- c(stan_data, make_init_priors())
 
   stan_data <- c(stan_data, create_stan_delays(
     generation_time = generation_time,

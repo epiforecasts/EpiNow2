@@ -4,30 +4,16 @@
 \alias{backcalc_opts}
 \title{Back Calculation Options}
 \usage{
-backcalc_opts(
-  prior = c("reports", "none", "infections"),
-  prior_window = 14,
-  rt_window = 1
-)
+backcalc_opts(prior = NULL, prior_window = 14, rt_window = 1)
 }
 \arguments{
-\item{prior}{A character string defaulting to "reports". Defines the prior
-to use when deconvolving. Currently implemented options are to use smoothed
-mean delay shifted reported cases ("reports"), to use the estimated
-infections from the previous time step seeded for the first time step using
-mean shifted reported cases ("infections"), or no prior ("none"). Using no
-prior will result in poor real time performance. No prior and using
-infections are only supported when a Gaussian process is present . If
-observed data is not reliable then it a sensible first step is to explore
-increasing the \code{prior_window} wit a sensible second step being to no longer
-use reported cases as a prior (i.e set \code{prior = "none"}).}
+\item{prior}{A \code{GP()} specification for the latent infections of the
+back-calculation model, given as a Gaussian process on the log scale (e.g.
+\code{GP(init = LogNormal(mean = 100, sd = 100))}). Defaults to \code{NULL}, in which
+case a Gaussian process anchored at a data-informed initial value is used.}
 
-\item{prior_window}{Integer, defaults to 14 days. The mean centred smoothing
-window to apply to mean shifted reports (used as a prior during back
-calculation). 7 days is minimum recommended settings as this smooths day of
-the week effects but depending on the quality of the data and the amount of
-information users wish to use as a prior (higher values equalling a less
-informative prior).}
+\item{prior_window}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} No longer used, as the
+back-calculation model no longer smooths shifted reported cases.}
 
 \item{rt_window}{Integer, defaults to 1. The size of the centred rolling
 average to use when estimating Rt. This must be odd so that the central

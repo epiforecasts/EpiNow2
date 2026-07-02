@@ -13,125 +13,6 @@ get_accumulate <- function(data) {
   }
 }
 
-#' Create Delay Shifted Cases
-#'
-#'
-#' This functions creates a data frame of reported cases that has been smoothed
-#' using a centred partial rolling average (with a period set by
-#' `smoothing_window`) and shifted back in time by some delay. It is used by
-#' [estimate_infections()] to generate the mean shifted prior on which the back
-#' calculation method (see [backcalc_opts()]) is based.
-#'
-#' @details
-#' The function first shifts all the data back in time by `shift` days (thus
-#' discarding the first `shift` days of data) and then applies a centred
-#' rolling mean of length `smoothing_window` to the shifted data except for
-#' the final period. The final period (the forecast horizon plus half the
-#' smoothing window) is instead replaced by a log-linear model fit (with 1
-#' added to the data for fitting to avoid zeroes and later subtracted again),
-#' projected to the end of the forecast horizon. The initial part of the data
-#' (corresponding to the length of the smoothing window) is then removed, and
-#' any non-integer resulting values rounded up.
-#'
-#' @param smoothing_window Numeric, the rolling average smoothing window
-#' to apply. Must be odd in order to be defined as a centred average.
-#'
-#' @param shift Numeric, mean delay shift to apply.
-#'
-#' @inheritParams estimate_infections
-#' @inheritParams create_stan_data
-#' @importFrom data.table copy shift frollmean fifelse .N
-#' @importFrom stats lm
-#' @importFrom runner mean_run
-#' @return A `<data.frame>` for shifted reported cases
-#' @keywords internal
-#' @examples
-#' \dontrun{
-#' shift <- 7
-#' horizon <- 7
-#' smoothing_window <- 14
-#' ## add NAs for horizon
-#' cases <- add_horizon(example_confirmed[1:30], horizon)
-#' ## add zeroes initially
-#' cases <- data.table::rbindlist(list(
-#'   data.table::data.table(
-#'     date = seq(
-#'       min(cases$date) - 10,
-#'       min(cases$date) - 1,
-#'       by = "days"
-#'     ),
-#'     confirm = 0, breakpoint = 0
-#'   ),
-#'   cases
-#' ))
-#' create_shifted_cases(cases, shift, smoothing_window, horizon)
-#' }
-create_shifted_cases <- function(data, shift,
-                                 smoothing_window, horizon) {
-  shifted_reported_cases <- copy(data)
-  ## turn initial NAs into zeroes
-  shifted_reported_cases[cumsum(!is.na(confirm)) == 0L, confirm := 0.0]
-  ## pad with additional zeroes
-  shifted_reported_cases <- pad_reported_cases(data, smoothing_window, 0.0)
-
-  if ("accumulate" %in% colnames(data)) {
-    shifted_reported_cases[
-      is.na(confirm) & accumulate,
-      confirm := 0
-    ]
-  }
-  shifted_reported_cases[
-    ,
-    confirm := data.table::shift(confirm,
-      n = shift,
-      type = "lead", fill = NA
-    )
-  ][
-    ,
-    confirm := runner::mean_run(
-      confirm,
-      k = smoothing_window, lag = -floor(smoothing_window / 2)
-    )
-  ]
-
-  ## Forecast trend on reported cases using the last week of data
-  final_period <- shifted_reported_cases[!is.na(confirm)][
-    max(1, .N - smoothing_window):.N
-  ][
-    ,
-    t := seq_len(.N)
-  ]
-  lm_model <- stats::lm(log(confirm + 1) ~ t, data = final_period)
-  ## Estimate unreported future infections using a log linear model
-  shifted_reported_cases <- shifted_reported_cases[
-    date >= min(final_period$date), t := seq_len(.N)
-  ][
-    ,
-    confirm := data.table::fifelse(
-      !is.na(t) & t >= 0,
-      exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t) - 1,
-      confirm
-    )
-  ][, t := NULL]
-
-  ## Drop median generation interval initial values
-  shifted_reported_cases <- shifted_reported_cases[
-    ,
-    confirm := ceiling(confirm)
-  ]
-  shifted_reported_cases <- shifted_reported_cases[-(1:smoothing_window)]
-  if (anyNA(shifted_reported_cases$confirm)) {
-    cli::cli_abort(
-      c(
-        "!" = "Some values are missing after prior smoothing. Consider
-        increasing the smoothing using the {.var prior_window} argument in
-        {.fn backcalc_opts}."
-      )
-    )
-  }
-  shifted_reported_cases
-}
-
 #' Construct the Required Future Rt assumption
 #'
 #' @description
@@ -176,7 +57,7 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' estimation. Defaults to [rt_opts()]. To generate new infections using
 #' the non-mechanistic model instead of the renewal equation model, use
 #' `rt = NULL`. The non-mechanistic model internally uses the setting
-#' `rt = rt_opts(use_rt = FALSE, future = "project", gp_on = "R0")`.
+#' `rt = rt_opts(use_rt = FALSE)`.
 #'
 #' @param breakpoints An integer vector (binary) indicating the location of
 #' breakpoints.
@@ -210,12 +91,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
                            delay = 0, horizon = 0, data = NULL) {
   # Define if GP is on or off
   if (is.null(rt)) {
-    rt <- rt_opts(
-      use_rt = FALSE,
-      future = "project",
-      gp_on = "R0",
-      rw = 0
-    )
+    rt <- rt_opts(use_rt = FALSE)
   }
   # define future Rt arguments
   future_rt <- create_future_rt(
@@ -273,17 +149,29 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     }
   }
 
+  # breakpoints (an out-of-step random walk on Rt) are superseded by the random
+  # walk prior; with Rt expressed as a state they are no longer applied
+  bp_n <- ifelse(rt$use_breakpoints, max(breakpoints) - 1, 0)
+  if (bp_n > 0) {
+    lifecycle::deprecate_warn(
+      "1.10.0", "rt_opts(use_breakpoints)",
+      details = paste(
+        "Breakpoints are superseded by a random-walk Rt prior",
+        "(`rt_opts(prior = RW(...))`) and are now ignored."
+      )
+    )
+    bp_n <- 0
+    breakpoints <- rep(1L, length(breakpoints))
+  }
+
   # map settings to underlying gp stan requirements
   rt_data <- list(
     estimate_r = as.numeric(rt$use_rt),
-    bp_n = ifelse(rt$use_breakpoints, max(breakpoints) - 1, 0),
+    bp_n = bp_n,
     breakpoints = breakpoints,
-    future_fixed = as.numeric(future_rt$fixed),
-    fixed_from = future_rt$from,
     use_pop =
       as.integer(rt$pop != Fixed(0)) + as.integer(rt$pop_period == "all"),
     pop_floor = pop_floor_value,
-    stationary = as.numeric(rt$gp_on == "R0"),
     future_time = horizon - future_rt$from,
     growth_method = list(
       "infections" = 0, "infectiousness" = 1
@@ -306,86 +194,8 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 #' @keywords internal
 create_backcalc_data <- function(backcalc = backcalc_opts()) {
   list(
-    rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
-    backcalc_prior = data.table::fcase(
-      backcalc$prior == "none", 0,
-      backcalc$prior == "reports", 1,
-      backcalc$prior == "infections", 2,
-      default = 0
-    )
+    rt_half_window = as.integer((backcalc$rt_window - 1) / 2)
   )
-}
-
-#' Create Gaussian Process Data
-#'
-#' @description
-#' Takes the output of [gp_opts()] and converts it into a list understood by
-#' stan.
-#' @param gp A list of options as generated by [gp_opts()] to define the
-#' Gaussian process. Defaults to [gp_opts()]. Set to `NULL` to disable the
-#' Gaussian process.
-#' @param data A list containing the following numeric values:
-#' `t`, `seeding_time`, `horizon`.
-#' @importFrom data.table fcase
-#' @seealso [gp_opts()]
-#' @return A list of settings defining the Gaussian process
-#' @keywords internal
-#' @examples
-#' \dontrun{
-#' # define input data required
-#' data <- list(
-#'   t = 30,
-#'   seeding_time = 7,
-#'   horizon = 7
-#' )
-#'
-#' # default gaussian process data
-#' create_gp_data(data = data)
-#'
-#' # settings when no gaussian process is desired
-#' create_gp_data(NULL, data)
-#'
-#' # custom lengthscale
-#' create_gp_data(gp_opts(ls = LogNormal(mean = 14, sd = 7)), data)
-#' }
-create_gp_data <- function(gp = gp_opts(), data) {
-  # Define if GP is on or off
-  if (is.null(gp)) {
-    fixed <- TRUE
-    data$stationary <- 1
-    gp <- gp_opts()
-  } else {
-    fixed <- FALSE
-  }
-
-  est_time <- data$t - data$seeding_time
-  if (data$future_fixed > 0) {
-    est_time <- est_time + data$fixed_from - data$horizon
-  }
-  if (data$stationary == 1) {
-    est_time <- est_time - 1
-  }
-
-  # basis functions
-  M <- ceiling(est_time * gp$basis_prop)
-
-  # map settings to underlying gp stan requirements
-  gp_data <- list(
-    fixed = as.numeric(fixed),
-    M = M,
-    L = gp$boundary_scale,
-    gp_type = data.table::fcase(
-      gp$kernel == "se", 0,
-      gp$kernel == "periodic", 1,
-      gp$kernel == "matern" || gp$kernel == "ou", 2,
-      default = 2
-    ),
-    nu = gp$matern_order,
-    w0 = gp$w0
-  )
-
-  gp_data <- c(data, gp_data)
-  gp_data
 }
 
 #' Create Observation Model Settings
@@ -423,7 +233,9 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     model_type = as.numeric(obs$family == "negbin"),
     week_effect = ifelse(obs$week_effect, obs$week_length, 1),
     obs_weight = obs$weight,
-    obs_scale = as.integer(obs$scale != Fixed(1)),
+    obs_scale = as.integer(
+      is_state_spec(obs$scale) || obs$scale != Fixed(1)
+    ),
     likelihood = as.numeric(obs$likelihood),
     return_likelihood = as.numeric(obs$return_likelihood)
   )
@@ -445,7 +257,6 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' [get_seeding_time()].
 #'
 #' @inheritParams estimate_infections
-#' @inheritParams create_gp_data
 #' @inheritParams create_obs_model
 #' @inheritParams create_rt_data
 #' @inheritParams create_backcalc_data
@@ -458,10 +269,10 @@ create_obs_model <- function(obs = obs_opts(), dates) {
 #' \dontrun{
 #' create_stan_data(
 #'   example_confirmed, 7, rt_opts(), gp_opts(), obs_opts(), 7,
-#'   backcalc_opts(), create_shifted_cases(example_confirmed, 7, 14, 7)
+#'   backcalc_opts(), params = list()
 #' )
 #' }
-create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
+create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
                              forecast, params) {
   cases <- data[(seeding_time + 1):.N]
   cases[, lookup := seq_len(.N)]
@@ -469,18 +280,6 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   accumulate <- get_accumulate(cases)
   imputed_times <- cases[!accumulate, lookup]
   confirmed_cases <- cases[1:(.N - forecast$horizon)]$confirm
-  if (is.null(rt)) {
-    shifted_cases <- create_shifted_cases(
-      data,
-      shift = seeding_time,
-      smoothing_window = backcalc$prior_window,
-      horizon = forecast$horizon
-    )
-    shifted_confirmed_cases <- shifted_cases$confirm
-  } else {
-    shifted_confirmed_cases <- array(numeric(0))
-  }
-
 
   stan_data <- list(
     cases = confirmed_cases[!is.na(confirmed_cases)],
@@ -491,7 +290,6 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
     lt = length(case_times),
     it = length(imputed_times),
     t = length(data$date),
-    shifted_cases = shifted_confirmed_cases,
     burn_in = 0,
     seeding_time = seeding_time,
     horizon = forecast$horizon
@@ -507,8 +305,6 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   )
   # backcalculation settings
   stan_data <- c(stan_data, create_backcalc_data(backcalc))
-  # gaussian process data
-  stan_data <- create_gp_data(gp, stan_data)
 
   # observation model data
   stan_data <- c(
@@ -519,13 +315,13 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
   # parameters
   stan_data <- c(
     stan_data,
-    create_stan_params(params)
+    # Rt (R, renewal model) and latent infections (I, back-calculation model)
+    # are expressed as states; time-varying observation parameters follow later
+    create_stan_params(
+      params, states_supported = c("R", "I"), seeding_time = seeding_time
+    )
   )
 
-  # rescale mean shifted prior for back calculation if observation scaling is
-  # used
-  stan_data$shifted_cases <-
-    stan_data$shifted_cases / mean(obs$scale)
   stan_data
 }
 
@@ -577,14 +373,14 @@ create_initial_conditions <- function(stan_data, params) {
   function() {
     out <- create_delay_inits(stan_data)
 
-    if (stan_data$fixed == 0) {
-      out$eta <- array(rnorm(
-        ifelse(stan_data$gp_type == 1, stan_data$M * 2, stan_data$M),
-        mean = 0, sd = 0.1
-      ))
-    } else {
-      out$eta <- array(numeric(0))
+    ## unwrap time-varying states to their level prior for initialisation
+    state_flags <- vapply(transpose(params)$dist, is_state_spec, logical(1))
+    if (any(state_flags)) {
+      for (i in which(state_flags)) {
+        params[[i]]$dist <- params[[i]]$dist$prior
+      }
     }
+
     if (stan_data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1))
     } else {
@@ -626,6 +422,57 @@ create_initial_conditions <- function(stan_data, params) {
       b = stan_data$params_upper,
       mean = param_means, sd = param_sds
     ))
+
+    ## time-varying states each have their own free-noise window (set by their
+    ## `future`), mirroring the Stan transformed-data computation, so the ragged
+    ## random walk step and GP coefficient vectors are sized per state.
+    ## truncnorm::rtruncnorm() returns NULL for n = 0, so guard zero counts
+    rtruncnorm0 <- function(n, ...) {
+      if (n > 0) truncnorm::rtruncnorm(n, ...) else numeric(0)
+    }
+    n_states <- stan_data$n_states %||% 0L
+    n_rw_steps <- 0L
+    n_gp_coef <- 0L
+    gp_free <- numeric(0) # free-noise window of each GP state (for rho init)
+    if (n_states > 0) {
+      rw_period <- stan_data$state_rw_period %||% 1L
+      ot_h <- stan_data$t - stan_data$seeding_time
+      for (s in seq_len(n_states)) {
+        total <- if (stan_data$state_param_id[s] == stan_data$param_id_I) {
+          stan_data$t
+        } else {
+          ot_h
+        }
+        data_window <- total - stan_data$horizon
+        free <- if (stan_data$state_future_fixed[s] == 0) {
+          total
+        } else {
+          min(total, max(1, data_window + stan_data$state_future_from[s]))
+        }
+        if (stan_data$state_type[s] == 0) {
+          n_rw_steps <- n_rw_steps + max(0, ceiling(free / rw_period) - 1)
+        } else {
+          n_gp_coef <- n_gp_coef +
+            ceiling(free * stan_data$gp_basis_prop[stan_data$state_pos[s]])
+          gp_free <- c(gp_free, free)
+        }
+      }
+    }
+    out$state_rw_sd <- array(
+      rtruncnorm0(stan_data$n_rw_states %||% 0L, a = 0, mean = 0, sd = 0.1)
+    )
+    out$state_rw_steps <- array(rnorm(n_rw_steps, 0, 0.1))
+    out$state_gp_eta <- array(rnorm(n_gp_coef, 0, 0.1))
+    out$state_gp_alpha <- array(
+      rtruncnorm0(stan_data$n_gp_states %||% 0L, a = 0, mean = 0, sd = 0.1)
+    )
+    rho_scale <- if (length(gp_free) > 0) mean(gp_free) else 1
+    out$state_gp_rho <- array(
+      rtruncnorm0(
+        stan_data$n_gp_states %||% 0L, a = 0,
+        mean = rho_scale / 2, sd = rho_scale / 4
+      )
+    )
     out
   }
 }
@@ -888,11 +735,17 @@ create_stan_delays <- function(..., time_points = 1L) {
 ##'
 ##' @param params A list of `<EpiNow2.params>` as created by [make_param()]
 ##'
+##' @param states_supported Character vector of parameter names for which the
+##'   calling model can consume time-varying states (created by [GP()] /
+##'   [RW()]). Defaults to none, so any state specification raises an error.
+##'   A model passes the names whose state data its stan code handles.
+##'
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom data.table fcase
 ##' @importFrom purrr transpose
 ##' @keywords internal
-create_stan_params <- function(params) {
+create_stan_params <- function(params, states_supported = character(0),
+                               seeding_time = 0L) {
   tparams <- transpose(params)
   ## set IDs of any parameters that is NULL to 0 and remove
   null_params <- vapply(tparams$dist, is.null, logical(1))
@@ -902,6 +755,20 @@ create_stan_params <- function(params) {
       "param_id", tparams$name[null_params], sep = "_"
     )
     params <- params[!null_params]
+    tparams <- transpose(params)
+  }
+
+  ## extract any time-varying (state) specifications. The parameter's level
+  ## prior flows through the normal parameter machinery; the state is layered
+  ## on top in the model via the data from create_state_data().
+  state_flags <- vapply(tparams$dist, is_state_spec, logical(1))
+  state_data <- create_state_data(
+    params, state_flags, states_supported, seeding_time = seeding_time
+  )
+  if (any(state_flags)) {
+    for (i in which(state_flags)) {
+      params[[i]]$dist <- params[[i]]$dist$prior
+    }
     tparams <- transpose(params)
   }
 
@@ -957,12 +824,24 @@ create_stan_params <- function(params) {
     prior_dist_params <- numeric(0)
   }
 
+  ## for init-anchored states the level is free scaffolding: its prior is
+  ## applied to the derived initial value instead, so skip it in the prior path
+  params_prior_skip <- rep(0L, length(params) - sum(fixed))
+  init_state_ids <- state_data$state_param_id[state_data$state_anchor == 1]
+  for (pid in init_state_ids) {
+    vpos <- params_variable_lookup[pid]
+    if (vpos > 0) {
+      params_prior_skip[vpos] <- 1L
+    }
+  }
+
   ## extract distributions and parameters
   ret <- list(
     n_params_variable = length(params) - sum(fixed),
     n_params_fixed = sum(fixed),
     params_lower = array(params_lower),
     params_upper = array(params_upper),
+    params_prior_skip = array(params_prior_skip),
     params_fixed_lookup = array(params_fixed_lookup),
     params_variable_lookup = array(params_variable_lookup),
     params_value = array(vapply(
@@ -976,7 +855,233 @@ create_stan_params <- function(params) {
   if (length(ids) > 0) {
     names(ids) <- paste("param_id", tparams$name, sep = "_")
   }
-  c(ret, as.list(ids), as.list(null_ids))
+  c(ret, state_data, as.list(ids), as.list(null_ids))
+}
+
+##' Create time-varying state data for stan
+##'
+##' Builds the minimal configuration the stan model needs to layer a stochastic
+##' state on top of a parameter's level (see [create_stan_params()]). The
+##' trajectory length and centring window are derived in stan from the modelled
+##' time, so only the state type, link, target parameter and step standard
+##' deviation prior are emitted here.
+##'
+##' @param params A list of `<EpiNow2.params>` after `NULL` parameters have been
+##'   removed, so that positions match the stan parameter ids.
+##' @param state_flags Logical vector flagging which entries of `params` carry
+##'   a state specification.
+##' @param states_supported Character vector of parameter names the calling
+##'   model can consume a time-varying state for. A state on any other parameter
+##'   errors.
+##' @return A named list of stan data items describing the states.
+##' @importFrom data.table fcase
+##' @keywords internal
+create_state_data <- function(params, state_flags,
+                              states_supported = character(0),
+                              seeding_time = 0L) {
+  empty <- list(
+    n_states = 0L,
+    state_param_id = array(integer(0)),
+    state_type = array(integer(0)),
+    state_link = array(integer(0)),
+    state_pos = array(integer(0)),
+    state_anchor = array(integer(0)),
+    state_init_dist = array(integer(0)),
+    state_init_dist_params = array(numeric(0)),
+    state_init_lower = array(numeric(0)),
+    state_init_upper = array(numeric(0)),
+    state_future_fixed = array(integer(0)),
+    state_future_from = array(integer(0)),
+    n_rw_states = 0L,
+    rw_sd_dist = array(integer(0)),
+    rw_sd_dist_params = array(numeric(0)),
+    state_rw_period = 1L,
+    n_gp_states = 0L,
+    gp_basis_prop = array(numeric(0)),
+    gp_boundary_scale = array(numeric(0)),
+    gp_kernel = array(integer(0)),
+    gp_nu = array(numeric(0)),
+    gp_alpha_dist = array(integer(0)),
+    gp_alpha_dist_params = array(numeric(0)),
+    gp_rho_dist = array(integer(0)),
+    gp_rho_dist_params = array(numeric(0))
+  )
+  if (!any(state_flags)) {
+    return(empty)
+  }
+
+  ## integer code for a simple (lognormal/gamma/normal) prior distribution
+  dist_code <- function(d) {
+    fcase(
+      get_distribution(d) == "lognormal", 0L,
+      get_distribution(d) == "gamma", 1L,
+      get_distribution(d) == "normal", 2L
+    )
+  }
+  ## the two prior parameters, requiring them to be certain (numeric)
+  numeric_params <- function(d, what, name) {
+    pars <- get_parameters(d)
+    if (!all(vapply(pars, is.numeric, logical(1)))) {
+      cli_abort(c(
+        "!" = "The {what} prior for time-varying parameter {.var {name}} cannot
+        have uncertain parameters."
+      ))
+    }
+    as.numeric(unlist(pars))
+  }
+  ## resolve a state's `future` setting into the (fixed, from) pair the model
+  ## uses to size the free-noise window over the forecast horizon. "estimate"
+  ## fixes the state a seeding time before the end of the data, where the most
+  ## recent estimates are least informed.
+  resolve_future <- function(future) {
+    if (is.numeric(future)) {
+      return(list(fixed = 1L, from = as.integer(future)))
+    }
+    switch(future,
+      latest = list(fixed = 1L, from = 0L),
+      project = list(fixed = 0L, from = 0L),
+      estimate = list(fixed = 1L, from = -as.integer(seeding_time))
+    )
+  }
+
+  idx <- which(state_flags)
+  n <- length(idx)
+  param_id <- integer(n)
+  type <- integer(n)
+  link <- integer(n)
+  pos <- integer(n)
+  anchor <- integer(n)
+  init_dist <- integer(n)
+  init_params <- numeric(2 * n)
+  init_lower <- numeric(n)
+  init_upper <- numeric(n)
+  future_fixed <- integer(n)
+  future_from <- integer(n)
+  rw_sd_dist <- integer(0)
+  rw_sd_params <- numeric(0)
+  rw_period <- integer(0)
+  gp_kernel <- integer(0)
+  gp_nu <- numeric(0)
+  gp_alpha_dist <- integer(0)
+  gp_alpha_params <- numeric(0)
+  gp_rho_dist <- integer(0)
+  gp_rho_params <- numeric(0)
+  gp_basis_prop <- numeric(0)
+  gp_boundary_scale <- numeric(0)
+  n_rw <- 0L
+  n_gp <- 0L
+
+  for (j in seq_len(n)) {
+    spec <- params[[idx[j]]]$dist
+    name <- params[[idx[j]]]$name # nolint: object_usage_linter
+    if (!name %in% states_supported) {
+      if (length(states_supported) == 0) {
+        cli_abort(c(
+          "!" = "Time-varying parameter {.var {name}} ({.cls state_spec}) is not
+          supported by this model."
+        ))
+      }
+      cli_abort(c(
+        "!" = "Time-varying {.var {name}} is not yet supported.",
+        "i" = "Currently supported: {.var {states_supported}}."
+      ))
+    }
+    if (!is(spec$prior, "dist_spec")) {
+      cli_abort(c(
+        "!" = "Known (numeric) trajectories are not yet supported for
+        time-varying parameter {.var {name}}."
+      ))
+    }
+    param_id[j] <- idx[j]
+    link[j] <- 0L # log
+    resolved_future <- resolve_future(spec$future %||% "latest")
+    future_fixed[j] <- resolved_future$fixed
+    future_from[j] <- resolved_future$from
+    if (spec$anchor == "init") {
+      ## centred non-stationary state: the level is free scaffolding and the
+      ## user prior is applied to the derived initial value (with a Jacobian)
+      anchor[j] <- 1L
+      packed <- pack_init_prior(
+        spec$prior, lower_bound = params[[idx[j]]]$lower_bound %||% 0
+      )
+      init_dist[j] <- packed$dist_type
+      init_params[(2 * j - 1):(2 * j)] <- packed$params
+      init_lower[j] <- packed$lower
+      init_upper[j] <- packed$upper
+    }
+    if (spec$type == "rw") {
+      type[j] <- 0L
+      n_rw <- n_rw + 1L
+      pos[j] <- n_rw
+      step_sd <- spec$settings$sd
+      rw_sd_dist <- c(rw_sd_dist, dist_code(step_sd))
+      rw_sd_params <- c(rw_sd_params, numeric_params(step_sd, "step sd", name))
+      rw_period <- c(rw_period, spec$settings$period %||% 1L)
+    } else {
+      gp <- spec$settings
+      if (gp$kernel == "periodic") {
+        cli_abort(c(
+          "!" = "Periodic kernels are not supported for time-varying parameter
+          {.var {name}}."
+        ))
+      }
+      type[j] <- 1L
+      n_gp <- n_gp + 1L
+      pos[j] <- n_gp
+      gp_kernel <- c(gp_kernel, fcase(
+        gp$kernel == "se", 0L,
+        default = 2L # matern or ou
+      ))
+      gp_nu <- c(gp_nu, gp$matern_order)
+      gp_alpha_dist <- c(gp_alpha_dist, dist_code(gp$alpha))
+      gp_alpha_params <- c(
+        gp_alpha_params, numeric_params(gp$alpha, "alpha", name)
+      )
+      gp_rho_dist <- c(gp_rho_dist, dist_code(gp$ls))
+      gp_rho_params <- c(
+        gp_rho_params, numeric_params(gp$ls, "lengthscale", name)
+      )
+      gp_basis_prop <- c(gp_basis_prop, gp$basis_prop)
+      gp_boundary_scale <- c(gp_boundary_scale, gp$boundary_scale)
+    }
+  }
+
+  # a single random walk period is shared across random walk states
+  rw_period <- unique(rw_period)
+  if (length(rw_period) > 1) {
+    cli_abort(c(
+      "!" = "Different random walk periods across states are not yet supported."
+    ))
+  }
+  state_rw_period <- if (length(rw_period) == 1) rw_period else 1L
+
+  list(
+    n_states = n,
+    state_param_id = array(as.integer(param_id)),
+    state_type = array(type),
+    state_link = array(link),
+    state_pos = array(as.integer(pos)),
+    state_anchor = array(anchor),
+    state_init_dist = array(init_dist),
+    state_init_dist_params = array(init_params),
+    state_init_lower = array(init_lower),
+    state_init_upper = array(init_upper),
+    state_future_fixed = array(as.integer(future_fixed)),
+    state_future_from = array(as.integer(future_from)),
+    n_rw_states = n_rw,
+    rw_sd_dist = array(rw_sd_dist),
+    rw_sd_dist_params = array(rw_sd_params),
+    state_rw_period = state_rw_period,
+    n_gp_states = n_gp,
+    gp_basis_prop = array(gp_basis_prop),
+    gp_boundary_scale = array(gp_boundary_scale),
+    gp_kernel = array(gp_kernel),
+    gp_nu = array(gp_nu),
+    gp_alpha_dist = array(gp_alpha_dist),
+    gp_alpha_dist_params = array(gp_alpha_params),
+    gp_rho_dist = array(gp_rho_dist),
+    gp_rho_dist_params = array(gp_rho_params)
+  )
 }
 
 #' Create summary output from infection estimation objects

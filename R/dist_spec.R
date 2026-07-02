@@ -281,7 +281,8 @@ c.dist_spec <- function(...) {
     dist_specs <- unlist(dist_specs, recursive = FALSE)
     attributes(dist_specs) <- convolution_attributes
   } else {
-    attr(dist_specs, "class") <- c("multi_dist_spec", "dist_spec", "list")
+    attr(dist_specs, "class") <-
+      c("multi_dist_spec", "dist_spec", "param_spec", "list")
   }
 
   dist_specs
@@ -1497,7 +1498,7 @@ new_dist_spec <- function(params, distribution, max = Inf, cdf_cutoff = 0) {
     }
   }
   ## add class attribute
-  attr(ret, "class") <- c("dist_spec", "list")
+  attr(ret, "class") <- c("dist_spec", "param_spec", "list")
 
   ## apply bounds
   ret <- bound_dist(ret, max, cdf_cutoff)

@@ -467,7 +467,8 @@ stable_convolve <- function(a, b) {
 ##' Internal function to create a parameter list
 ##'
 ##' @param name Character, name of the parameter
-##' @param dist `<dist_spec>`, the distribution of the parameter; default: NULL
+##' @param dist `<dist_spec>` or `<state_spec>`, the (possibly time-varying)
+##'   distribution of the parameter; default: NULL
 ##' @param lower_bound Numeric, lower bound for the parameter; default: -Inf
 ##' @return A list with the parameter details, classed as "EpiNow2.param"
 ##' @keywords internal

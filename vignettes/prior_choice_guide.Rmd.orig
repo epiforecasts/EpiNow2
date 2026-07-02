@@ -101,14 +101,14 @@ The following tables list all priors available in `{EpiNow2}`, organised by mode
 | Component | Model | Function | Parameter | Default | Notes |
 |-----------|-------|----------|-----------|---------|-------|
 | **Reproduction number (Rt)** |
-| Initial R₀ / mean Rt | Renewal only | `rt_opts()` | `prior` | `LogNormal(mean = 1, sd = 1)` | When choosing `gp_on = "R0"`, reverts to this when no data |
+| Initial / mean Rt | Renewal only | `rt_opts()` | `prior` | `GP(init = LogNormal(mean = 1, sd = 1))` | Initial value (`GP(init=)`) or mean (`GP(mean=)`) of the reproduction number |
 | **Random walk** |
-| Step size SD | Renewal only | `rt_opts()` | `rw` | `HalfNormal(0, 0.1)` | Set step size via `rw` argument |
+| Step size SD | Renewal only | `RW()` | `sd` | `Normal(0, 0.1)` | Random-walk step sd; interval set with `period` |
 | **Gaussian Process** |
-| Length scale | Both | `gp_opts()` | `ls` | `LogNormal(mean = 21, sd = 7, max = 60)` | Controls smoothness over time |
-| Magnitude | Both | `gp_opts()` | `alpha` | `Normal(mean = 0, sd = 0.01)` | Controls amplitude of variations |
+| Length scale | Both | `GP()` | `ls` | `LogNormal(mean = 21, sd = 7, max = 60)` | Controls smoothness over time |
+| Magnitude | Both | `GP()` | `alpha` | `Normal(mean = 0, sd = 0.01)` | Controls amplitude of variations |
 | **Back-calculation** |
-| Prior source | Non-mechanistic only | `backcalc_opts()` | `prior` | `"reports"` | Options: "reports", "infections", "none" |
+| Latent infections | Non-mechanistic only | `backcalc_opts()` | `prior` | `GP(init = ...)` | Gaussian process on log-infections |
 | **Observation model** |
 | Overdispersion | Both | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterisation |
 | Scaling | Both | `obs_opts()` | `scale` | `Fixed(1)` | Ascertainment rate |
@@ -149,8 +149,8 @@ This section explains what effects you can expect from modifying each prior, and
 
 **What it controls:** The prior distribution for the reproduction number. Its role depends on the Gaussian Process specification:
 
-- **Differenced GP** (default, `gp_on = "R_t-1"`): This is the prior for $R_0$ at the start of the time series. When there is no data (e.g., early in the time series before the seeding period ends, or when doing real-time estimates of delayed quantities), $R_t$ reverts to the last estimated value but with expanding uncertainty as the zero-centered GP of differences continues.
-- **Stationary GP** (`gp_on = "R0"`): This is the prior mean that $R_t$ reverts to throughout the time series when there is no data (e.g., early in the time series, or near the present when there are delays). Useful when you want estimates of $R_t$ to return to a baseline value in the absence of information.
+- **GP on first differences** (`GP(init = ...)`, the default): This is the prior for $R$ at the start of the time series. When there is no data (e.g., early in the time series before the seeding period ends, or when doing real-time estimates of delayed quantities), $R_t$ reverts to the last estimated value but with expanding uncertainty as the zero-centered GP of differences continues.
+- **Mean-reverting GP** (`GP(mean = ...)`): This is the prior mean that $R_t$ reverts to throughout the time series when there is no data (e.g., early in the time series, or near the present when there are delays). Useful when you want estimates of $R_t$ to return to a baseline value in the absence of information.
 
 **Default:** `LogNormal(mean = 1, sd = 1)`
 
@@ -171,17 +171,14 @@ This default corresponds to a median of 1 (range 0.4 to 2.7 at 95% prior probabi
 **Example:**
 
 ```{r r0-prior-examples}
-# For a measles outbreak with strong prior knowledge
-rt_opts(prior = LogNormal(mean = 15, sd = 2))
+# For a measles outbreak with strong prior knowledge on the initial value
+rt_opts(prior = GP(init = LogNormal(mean = 15, sd = 2)))
 
-# For uncertain but likely growing outbreak
-rt_opts(prior = LogNormal(mean = 2, sd = 1))
+# For an uncertain but likely growing outbreak
+rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 1)))
 
-# Stationary GP reverting to R_t = 2 when no data
-rt_opts(
-  prior = LogNormal(mean = 2, sd = 0.5),
-  gp_on = "R0"
-)
+# Mean-reverting (stationary) GP reverting to R_t = 2 when there is no data
+rt_opts(prior = GP(mean = LogNormal(mean = 2, sd = 0.5)))
 ```
 
 ## Gaussian Process length scale
@@ -207,10 +204,10 @@ This corresponds to a median of 21 days (range 9 to 36 days at 95% prior probabi
 **Example:**
 ```{r gp-length-scale-examples}
 # For outbreak with weekly policy changes
-gp_opts(ls = LogNormal(mean = 7, sd = 3, max = 30))
+GP(init = LogNormal(mean = 1, sd = 1), ls = LogNormal(mean = 7, sd = 3, max = 30))
 
 # For gradually evolving endemic disease
-gp_opts(ls = LogNormal(mean = 28, sd = 10, max = 90))
+GP(init = LogNormal(mean = 1, sd = 1), ls = LogNormal(mean = 28, sd = 10, max = 90))
 ```
 
 ## Gaussian Process magnitude
@@ -238,28 +235,28 @@ For the renewal equation model, this corresponds to a half-normal (since negativ
 **Example:**
 ```{r gp-magnitude-examples}
 # For outbreak with major interventions
-gp_opts(alpha = Normal(mean = 0, sd = 0.05))
+GP(init = LogNormal(mean = 1, sd = 1), alpha = Normal(mean = 0, sd = 0.05))
 
 # For very stable transmission
-gp_opts(alpha = Normal(mean = 0, sd = 0.005))
+GP(init = LogNormal(mean = 1, sd = 1), alpha = Normal(mean = 0, sd = 0.005))
 ```
 
 ## Random walk for $R_t$ (alternative to GP)
 
 **What it controls:** Step-wise changes in $R_t$ at fixed intervals instead of smooth GP changes.
 
-**Default:** Not used (GP is default). When enabled via `rt_opts(rw = 7)`, the prior SD is `HalfNormal(0, 0.1)`.
+**Default:** Not used (GP is default). When enabled via `rt_opts(prior = RW(...))`, the prior step SD is `Normal(0, 0.1)` and the step interval is set with `period`.
 
 **Expected impact of changes:**
 
-- **Shorter steps (e.g., `rw = 1`)**: $R_t$ can change daily. Very flexible, like a short GP length scale. Fast to compute but may overfit.
-- **Longer steps (e.g., `rw = 7` or `rw = 14`)**: $R_t$ constant within each week/fortnight. Appropriate when transmission changes are discrete (policy changes) rather than continuous.
+- **Shorter steps (e.g., `RW(period = 1)`)**: $R_t$ can change daily. Very flexible, like a short GP length scale. Fast to compute but may overfit.
+- **Longer steps (e.g., `RW(period = 7)` or `RW(period = 14)`)**: $R_t$ constant within each week/fortnight. Appropriate when transmission changes are discrete (policy changes) rather than continuous.
 
 **When to modify:**
 
 - Use random walk instead of GP when you believe transmission changes are discrete rather than smooth
-- Use weekly (`rw = 7`) when transmission dynamics change at weekly intervals
-- Use daily (`rw = 1`) for maximum flexibility with fast computation (but risk overfitting)
+- Use weekly (`RW(period = 7)`) when transmission dynamics change at weekly intervals
+- Use daily (`RW(period = 1)`) for maximum flexibility with fast computation (but risk overfitting)
 
 **Example:**
 ```{r random-walk-example}
@@ -268,8 +265,7 @@ fit_rw <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.5), rw = 7),
-  gp = NULL,  # Disable GP when using random walk
+  rt = rt_opts(prior = RW(init = LogNormal(mean = 2, sd = 0.5), period = 7)),
   stan = stan
 )
 ```
@@ -490,7 +486,7 @@ fit_renewal <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.5)),
+  rt = rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 0.5))),
   stan = stan
 )
 
@@ -499,7 +495,6 @@ fit_nonmech <- estimate_infections(
   reported_cases,
   delays = delay_opts(delay),
   rt = NULL,  # No Rt estimation
-  backcalc = backcalc_opts(prior = "reports"),
   stan = stan
 )
 ```
@@ -623,7 +618,7 @@ estimates <- estimate_infections(
 Ask these questions:
 
 1. **Do I have strong domain knowledge about $R_0$?** → Consider modifying `rt_opts(prior = ...)`
-2. **Does $R_t$ change rapidly or gradually in my setting?** → Consider modifying `gp_opts(ls = ...)`
+2. **Does $R_t$ change rapidly or gradually in my setting?** → Consider modifying the `ls` argument of `GP()`
 3. **Is reporting highly variable or stable?** → Consider modifying `obs_opts(dispersion = ...)` or `obs_opts(family = ...)`
 4. **Are there sudden policy changes?** → Consider using `rt_opts(rw = ...)` instead of GP
 5. **Is recent data truncated?** → Consider adding `trunc_opts(...)`
@@ -638,7 +633,7 @@ estimates_r0 <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2.5, sd = 0.5)),
+  rt = rt_opts(prior = GP(init = LogNormal(mean = 2.5, sd = 0.5))),
   stan = stan
 )
 
@@ -716,7 +711,7 @@ If you encounter convergence problems after changing priors, consider:
 
 **Problem:** Setting GP length scale to 1-2 days, expecting very flexible $R_t$.
 
-**Solution:** If you want daily flexibility, use a random walk (`rt_opts(rw = 1)`) rather than GP with very short length scale. GPs with length scale <7 days often struggle.
+**Solution:** If you want daily flexibility, use a random walk (`rt_opts(prior = RW(period = 1))`) rather than GP with very short length scale. GPs with length scale <7 days often struggle.
 
 ## Pitfall 5: Forgetting the max parameter
 
