@@ -72,6 +72,8 @@ navbar:
         href: articles/estimate_dist_workflow.html
       - text: Forecasting multiple data streams
         href: articles/forecasting_multiple_data_streams.html
+      - text: Forecasting and forecast evaluation
+        href: articles/forecasting.html
       - text: "---"
       - text: Production use
       - text: Using epinow() for running in production mode
@@ -109,6 +111,7 @@ articles:
   contents:
   - estimate_dist_workflow
   - forecasting_multiple_data_streams
+  - forecasting
 - title: Production use
   navbar: Production
   contents:
