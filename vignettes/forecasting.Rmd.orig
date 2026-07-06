@@ -188,21 +188,23 @@ so it projects the recent growth forward and over-shoots the peak.
 
 To score the forecast we convert the fit to a `forecast_sample` object with
 `as_forecast_sample()`, supplying the full observed series.
-Setting `horizon = 0` keeps only the forecast period (dates on or after the
-forecast date).
+We set `horizon = 1` so only genuinely out-of-sample predictions (one day
+ahead or more) are scored; the cutoff day itself (horizon 0) was used for
+fitting and would not be a fair test.
 
 ```{r score-single}
-single <- as_forecast_sample(fit, observations = reported, horizon = 0)
+single <- as_forecast_sample(fit, observations = reported, horizon = 1)
 single_scores <- score(single)
 summarise_scores(single_scores, by = "forecast_date")[
-  , .(forecast_date, crps = round(crps, 1))
+  , .(forecast_date, crps = round(crps, 1), bias = round(bias, 2))
 ]
 ```
 
-The CRPS summarises the whole predictive distribution against the
-observation, with lower values better.
-On its own this number is hard to interpret; it is useful when comparing
-models, which is what we do next.
+`score()` returns several metrics; here we show the CRPS, which summarises the
+whole predictive distribution against the observation (lower is better), and
+the bias, which is positive when the forecast sits above the observations.
+A single number is hard to interpret on its own; scores are most useful when
+comparing models, which is what we do next.
 
 # Three models
 
@@ -240,11 +242,15 @@ models <- list(
 
 # Backtesting across forecast dates
 
-We backtest each model from three forecast dates: one while the epidemic is
-still growing, one just before the peak, and one at the peak.
+We backtest each model from three forecast dates chosen to span the phases of
+the epidemic: one while it is still growing, one around the peak, and one
+during the decline.
+Contrasting phases matters because susceptible depletion only shapes the
+forecast near and after the peak; early in the growth phase it is almost
+irrelevant.
 
 ```{r forecast-dates}
-forecast_dates <- as.Date(c("2023-03-04", "2023-03-18", "2023-03-25"))
+forecast_dates <- as.Date(c("2023-03-04", "2023-03-22", "2023-04-01"))
 ```
 
 Refitting three models at three dates is nine fits.
@@ -269,25 +275,84 @@ fit_model <- function(rt, data) {
 }
 ```
 
-We loop over the models and dates, collecting the sample-level predictions
-from each fit with `get_predictions()`.
-Tagging each set of predictions with its model lets us score them together.
+We loop over the models and dates, fitting each combination once.
+From each fit we keep the sample-level predictions (with `get_predictions()`,
+for scoring) and a summary of the forecast trajectory (with `summary()`, for
+plotting).
+Tagging each set with its model and forecast date lets us combine them.
 
 ```{r backtest, results = "hide"}
-forecasts <- rbindlist(lapply(names(models), function(model) {
-  rbindlist(lapply(forecast_dates, function(fdate) {
-    fit_d <- fit_model(models[[model]], reported[date <= fdate])
-    preds <- get_predictions(fit_d, format = "sample")
-    preds[, model := model]
-    preds
-  }))
+backtests <- unlist(
+  lapply(names(models), function(model) {
+    lapply(forecast_dates, function(fdate) {
+      fit_d <- fit_model(models[[model]], reported[date <= fdate])
+      list(model = model, forecast_date = fdate, fit = fit_d)
+    })
+  }),
+  recursive = FALSE
+)
+
+forecasts <- rbindlist(lapply(backtests, function(b) {
+  preds <- get_predictions(b$fit, format = "sample")
+  preds[, model := b$model]
+  preds
+}))
+
+trajectories <- rbindlist(lapply(backtests, function(b) {
+  traj <- summary(b$fit, type = "parameters")[
+    variable == "reported_cases" & type == "forecast"
+  ]
+  traj[, `:=`(model = b$model, forecast_date = b$forecast_date)]
+  traj
 }))
 ```
+
+## Visualising the backtested forecasts
+
+Before scoring, we plot the forecast trajectories themselves.
+Each panel is a forecast date; the ribbons are the 50% and 90% credible
+intervals, the lines are the posterior medians, and the points are the
+observed data before and after the forecast date (dashed line).
+
+```{r plot-backtests, fig.height = 8}
+obs_windows <- rbindlist(lapply(forecast_dates, function(fd) {
+  reported[date >= fd - 28 & date <= fd + 14][, forecast_date := fd]
+}))
+
+ggplot(trajectories, aes(x = date)) +
+  geom_ribbon(
+    aes(ymin = lower_90, ymax = upper_90, fill = model), alpha = 0.15
+  ) +
+  geom_ribbon(
+    aes(ymin = lower_50, ymax = upper_50, fill = model), alpha = 0.3
+  ) +
+  geom_line(aes(y = median, colour = model)) +
+  geom_point(data = obs_windows, aes(y = confirm), size = 0.8) +
+  geom_vline(
+    data = data.frame(forecast_date = forecast_dates),
+    aes(xintercept = forecast_date), linetype = "dashed"
+  ) +
+  facet_wrap(~forecast_date, scales = "free", ncol = 1) +
+  labs(
+    x = "Date", y = "Reported cases", colour = "Model", fill = "Model",
+    title = "Backtested forecasts by forecast date"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+During growth the three models agree and all track the data.
+Around the peak the default model keeps climbing while the fixed-population
+model bends over with the observations; the uncertain-population model sits
+between the two.
+In the decline the recent downturn is already visible in the data, so all
+three project a fall and the gap between them narrows again.
 
 # Scoring
 
 We merge the forecasts with the observed values and build a single
-`forecast_sample` object.
+`forecast_sample` object, keeping only out-of-sample horizons (`horizon > 0`)
+as we did for the single forecast.
 Adding `model` to the forecast unit keeps the three models separate when
 scoring.
 
@@ -303,54 +368,105 @@ fc <- as_forecast_sample(
   predicted = "predicted",
   sample_id = "sample"
 )
+```
+
+Reported cases span several orders of magnitude over an epidemic, so a score
+on the natural scale is dominated by the largest counts near the peak.
+Scoring on the log scale instead rewards getting the relative size right, and
+matters more when small counts (for example early growth or the tail of the
+decline) are important.
+We use `transform_forecasts()` with `log_shift` to add log-transformed
+forecasts alongside the originals, which `score()` then scores together,
+labelling each with a `scale` column.
+
+```{r score}
+fc <- transform_forecasts(fc, fun = log_shift, offset = 1)
 scores <- score(fc)
 ```
 
-Averaging the CRPS by model gives the headline comparison.
+`summarise_scores()` returns the full default metric set.
+Rather than reduce everything to the CRPS we keep the metrics and show them
+per model and scale.
 
 ```{r scores-by-model}
-summarise_scores(scores, by = "model")[
-  order(crps), .(model, crps = round(crps, 1))
+overall <- as.data.table(
+  summarise_scores(scores, by = c("model", "scale"))
+)
+num_cols <- names(overall)[vapply(overall, is.numeric, logical(1))]
+overall[, (num_cols) := lapply(.SD, signif, 3), .SDcols = num_cols]
+overall[order(scale, crps)]
+```
+
+On both scales the fixed-population model scores best overall, and its bias is
+closest to zero.
+The default model has a large positive bias: it over-predicts, because it
+projects growth through the peak.
+The uncertain-population model improves on the default but falls short of the
+fixed one, with `overprediction` and `dispersion` components in between:
+with the population estimated rather than known, it cannot pin down when
+depletion will bite.
+The `log_score` column is density-based and unstable for sample forecasts (it
+can be infinite), so we rely on the sample-friendly CRPS here.
+
+Breaking the natural-scale CRPS down by forecast date shows how the ranking
+shifts across the epidemic's phases.
+
+```{r scores-by-date}
+by_date <- summarise_scores(
+  scores, by = c("model", "forecast_date", "scale")
+)
+by_date[scale == "natural"][
+  order(forecast_date, crps),
+  .(forecast_date, model, crps = round(crps, 1))
 ]
 ```
 
-The fixed-population model forecasts best by a wide margin.
-Knowing the population at risk lets it anticipate the turnover.
-The uncertain-population model improves on the default but falls well short
-of the fixed one: with the population estimated rather than known, the model
-cannot pin down when depletion will bite.
+During growth (early March) the three models are close.
+Around the peak (late March) the fixed-population model pulls well ahead as
+the default over-projects the turnover.
+In the decline (early April) the models converge again, because the downturn
+is already in the data by the time the forecast is made.
+Depletion is only decisive when the turning point lies ahead of the data.
 
-Breaking the scores down by forecast horizon shows where the difference
-comes from.
+Breaking the scores down by horizon and scale shows the same story over the
+forecast window.
 
 ```{r scores-by-horizon}
-by_horizon <- summarise_scores(scores, by = c("model", "horizon"))
+by_horizon <- summarise_scores(
+  scores, by = c("model", "horizon", "scale")
+)
 
 ggplot(by_horizon, aes(x = horizon, y = crps, colour = model)) +
   geom_line() +
-  geom_point() +
+  geom_point(size = 1) +
+  facet_wrap(~scale, scales = "free_y") +
   labs(
     x = "Forecast horizon (days)", y = "Mean CRPS", colour = "Model",
-    title = "Forecast error by horizon"
+    title = "Forecast error by horizon and scale"
   ) +
   theme_minimal() +
   theme(legend.position = "bottom")
 ```
 
-At short horizons the models are close, because depletion has little effect
-over a few days.
-The gap opens at longer horizons, spanning the peak, where the default model
-keeps projecting growth while the fixed-population model bends the forecast
-over in line with the observations.
+On the natural scale the gap between models opens at longer horizons, where
+the forecasts run into the peak.
+On the log scale the differences are smaller and steadier, because log
+scoring down-weights the large counts that dominate the natural scale.
 
 # Conclusion
 
 Forecasting projects the reproduction number forward; backtesting refits at
 past dates and scores the forecasts against what actually happened.
-Here the model that knew the population at risk forecast the turnover best,
-while estimating the population from a single curve gave much smaller gains.
-Susceptible depletion is only useful forecast information when you have
-external knowledge of the population at risk.
+Contrasting forecast dates across the epidemic showed that the model which
+knew the population at risk forecast the turnover best around the peak, while
+during early growth and the later decline the three models were close.
+Susceptible depletion is only useful forecast information when the turning
+point still lies ahead and you have external knowledge of the population at
+risk.
+
+Scoring on both the natural and log scales gave a fuller picture: the natural
+scale is dominated by the large counts near the peak, while the log scale
+weighs relative errors across the whole curve.
 
 Two caveats.
 We used pathfinder for the backtest, which trades some accuracy for speed;
