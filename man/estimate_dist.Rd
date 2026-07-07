@@ -95,7 +95,7 @@ An \verb{<estimate_dist>} object (inheriting from
 \item{args}{The Stan data list used for fitting.}
 \item{data}{The input data.}
 }
-Use \code{\link[=get_parameters]{get_parameters()}} to extract the fitted \verb{<dist_spec>}.
+Use \code{\link[distspec:get_parameters]{distspec::get_parameters()}} to extract the fitted \verb{<dist_spec>}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}

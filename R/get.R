@@ -916,7 +916,15 @@ extract_scalar_params <- function(x, stan_data) {
   result
 }
 
-#' @rdname get_parameters
+#' Extract parameters from EpiNow2 model fits
+#'
+#' @description
+#' S3 methods for [distspec::get_parameters()] that extract the estimated delay
+#' distribution and scalar parameters from fitted EpiNow2 model objects.
+#' @param x A fitted EpiNow2 model object.
+#' @param ... Not used.
+#' @return A named list of parameters.
+#' @rdname get_parameters_methods
 #' @export
 get_parameters.epinowfit <- function(x, ...) {
   stan_data <- x$args
@@ -926,7 +934,7 @@ get_parameters.epinowfit <- function(x, ...) {
   )
 }
 
-#' @rdname get_parameters
+#' @rdname get_parameters_methods
 #' @export
 get_parameters.estimate_dist <- function(x, ...) {
   dist_spec <- .extract_to_dist_spec(

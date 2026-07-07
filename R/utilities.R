@@ -553,8 +553,34 @@ make_init_priors <- function(priors = list()) {
   )
 }
 
+#' Get distribution name from primarycensored Stan dist_id
+#'
+#' @description
+#' Maps a primarycensored Stan distribution ID back to an EpiNow2
+#' distribution name.
+#' Builds a reverse lookup from
+#' `primarycensored::pcd_stan_dist_id()` for supported distributions.
+#' @param dist_id Integer Stan distribution ID from primarycensored.
+#' @return A character string distribution name.
+#' @keywords internal
+dist_id_to_name <- function(dist_id) {
+  supported <- c(
+    "lognormal", "gamma", "weibull", "exp", "normal"
+  )
+  ids <- vapply(
+    supported, primarycensored::pcd_stan_dist_id, integer(1)
+  )
+  result <- supported[ids == dist_id]
+  if (length(result) == 0) {
+    cli::cli_abort(
+      "Unknown distribution ID {dist_id}."
+    )
+  }
+  result
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
-#' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
+#' @importFrom stats rlnorm rnorm rpois runif var rgamma pnorm
 globalVariables(
   c(
     "bottom", "cases", "confidence", "confirm", "country_code", "crps",

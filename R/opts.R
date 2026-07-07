@@ -24,8 +24,12 @@
 #' @importFrom cli cli_warn cli_abort col_blue
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [Gamma()] [LogNormal()] [Fixed()]
+#' @seealso [distspec::Distributions] for how to specify the probability
+#' distributions (e.g. `Gamma()`, `LogNormal()`, `Fixed()`), provided by the
+#' \pkg{distspec} package and attached automatically with EpiNow2.
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Gamma()] [distspec::LogNormal()]
+#' [distspec::Fixed()]
 #' @export
 #' @examples
 #' # default settings with a fixed generation time of 1
@@ -150,8 +154,8 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @inheritParams generation_time_opts
 #' @importFrom cli cli_abort
 #' @return A `<delay_opts>` object summarising the input delay distributions.
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Distributions]
 #' `vignette("delays")` for background on delay distributions
 #' @export
 #' @examples
@@ -209,8 +213,8 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Distributions]
 #' @export
 #' @examples
 #' # no truncation

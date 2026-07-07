@@ -65,6 +65,11 @@ generation_time_opts(
 gt_opts(example_generation_time)
 }
 \seealso{
-\code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
-\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=Gamma]{Gamma()}} \code{\link[=LogNormal]{LogNormal()}} \code{\link[=Fixed]{Fixed()}}
+\link[distspec:Distributions]{distspec::Distributions} for how to specify the probability
+distributions (e.g. \code{Gamma()}, \code{LogNormal()}, \code{Fixed()}), provided by the
+\pkg{distspec} package and attached automatically with EpiNow2.
+
+\code{\link[distspec:convert_to_logmean]{distspec::convert_to_logmean()}} \code{\link[distspec:convert_to_logsd]{distspec::convert_to_logsd()}}
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[distspec:Distributions]{distspec::Gamma()}} \code{\link[distspec:Distributions]{distspec::LogNormal()}}
+\code{\link[distspec:Distributions]{distspec::Fixed()}}
 }

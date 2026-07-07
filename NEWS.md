@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Package changes
+
+- The probability distribution interface (`Gamma()`, `LogNormal()`, `NonParametric()`, `discretise()`, `get_pmf()`, and related functions) has been moved to the standalone `distspec` package, which EpiNow2 now depends on. These functions are attached when EpiNow2 is loaded, so existing code continues to work unchanged.
+
 # EpiNow2 1.9.0
 
 ## New features
