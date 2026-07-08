@@ -515,17 +515,17 @@ make_init_priors <- function(priors = list()) {
   )
 }
 
-#' Get distribution name from primarycensored Stan dist_id
+#' Map a primarycensored Stan distribution ID to a distspec distribution
 #'
 #' @description
-#' Maps a primarycensored Stan distribution ID back to an EpiNow2
+#' Maps a `primarycensored` Stan distribution ID back to a `distspec`
 #' distribution name.
 #' Builds a reverse lookup from
 #' `primarycensored::pcd_stan_dist_id()` for supported distributions.
 #' @param dist_id Integer Stan distribution ID from primarycensored.
 #' @return A character string distribution name.
 #' @keywords internal
-dist_id_to_name <- function(dist_id) {
+pcd_stan_id_to_distribution <- function(dist_id) {
   supported <- c(
     "lognormal", "gamma", "weibull", "exp", "normal"
   )
