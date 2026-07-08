@@ -3,11 +3,7 @@
 #' @import methods
 #' @import rstantools
 #' @importFrom rstan sampling extract
-#' @importFrom distspec Dirichlet Fixed Gamma LogNormal NonParametric Normal
-#' @importFrom distspec bound_dist convert_to_logmean convert_to_logsd
-#' @importFrom distspec discretise fix_parameters get_distribution
-#' @importFrom distspec get_parameters get_pmf is_constrained lower_bounds
-#' @importFrom distspec natural_params ndist new_dist_spec sd
+#' @import distspec
 #' @useDynLib EpiNow2, .registration=TRUE
 "_PACKAGE"
 
