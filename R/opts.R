@@ -198,7 +198,7 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #'
 #' @param dist A delay distribution or series of delay distributions reflecting
 #' the truncation. It can be specified using the probability distributions
-#' interface in `EpiNow2` (See `?EpiNow2::Distributions`) or estimated using
+#' interface in `distspec` (See `?distspec::Distributions`) or estimated using
 #' [estimate_truncation()], which returns a `dist` object, suited
 #' for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
 #' no truncation.
