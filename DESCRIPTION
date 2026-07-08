@@ -160,6 +160,8 @@ LinkingTo:
     StanHeaders (>= 2.26.0)
 Additional_repositories:
     https://production.r-multiverse.org/2026-06-15
+Remotes:
+    epiforecasts/distspec
 Biarch: true
 Config/testthat/edition: 3
 Config/Needs/dev:
