@@ -70,6 +70,6 @@ distributions (e.g. \code{Gamma()}, \code{LogNormal()}, \code{Fixed()}), provide
 \pkg{distspec} package and attached automatically with EpiNow2.
 
 \code{\link[distspec:convert_to_logmean]{distspec::convert_to_logmean()}} \code{\link[distspec:convert_to_logsd]{distspec::convert_to_logsd()}}
-\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[distspec:Distributions]{distspec::Gamma()}} \code{\link[distspec:Distributions]{distspec::LogNormal()}}
-\code{\link[distspec:Distributions]{distspec::Fixed()}}
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[distspec:Gamma]{distspec::Gamma()}} \code{\link[distspec:LogNormal]{distspec::LogNormal()}}
+\code{\link[distspec:Fixed]{distspec::Fixed()}}
 }
