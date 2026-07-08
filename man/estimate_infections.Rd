@@ -148,7 +148,7 @@ options(old_opts)
 }
 }
 \seealso{
-\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[distspec:get_parameters]{distspec::get_parameters()}}
+\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[distspec:get_parameters]{get_parameters()}}
 \code{\link[=epinow]{epinow()}} \code{\link[=regional_epinow]{regional_epinow()}} \code{\link[=forecast_infections]{forecast_infections()}}
 \code{\link[=estimate_truncation]{estimate_truncation()}}
 }
