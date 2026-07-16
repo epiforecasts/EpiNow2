@@ -129,14 +129,10 @@ void params_lp(vector params, array[] int prior_dist,
  * then applies the user's truncated prior via `apply_prior_lp`.
  *
  * The prior is declared on a derived value (e.g. `R[1]`) while the sampler
- * moves on the log of a different parameter (e.g. `R_mean`). The two are
- * related by an offset that is itself a function of other parameters, so the
- * Jacobian of the sampled-to-derived map must be taken relative to the
- * sampled value: `log(init_value) - log(sampled_value)`. Stan already adds
- * `log(sampled_value)` for the `<lower = 0>` transform, so adding only
- * `log(init_value)` would leave a spurious `+log(sampled_value)` tilt in the
- * target, biasing the prior upwards and tilting the (otherwise unidentified)
- * centring offset.
+ * moves on a different parameter (e.g. `R_mean`), whose `<lower = 0>`
+ * transform already contributes `log(sampled_value)` to the target. The
+ * Jacobian of the sampled-to-derived map is therefore taken relative to the
+ * sampled value, `log(init_value) - log(sampled_value)`.
  *
  * @param init_param_ids Per-prior id of the parameter the prior applies to.
  * @param init_dists Per-prior distribution code (0: lognormal, 1: gamma,

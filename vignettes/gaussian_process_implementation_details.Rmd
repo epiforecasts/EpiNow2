@@ -204,12 +204,10 @@ via a [change of variables](https://mc-stan.org/docs/stan-users-guide/reparamete
 
 contributing $\log R_1$ to the target log density.
 
-The internal parameter is declared as a positive real $\overline{R} = \exp(\overline{\log R})$, so Stan supplies $\log \overline{R}$ itself as the Jacobian of its own log transform. The correction that remains to be added by hand is therefore the difference
+The internal parameter is declared as a positive real $\overline{R} = \exp(\overline{\log R})$, so Stan supplies $\log \overline{R}$ itself as the Jacobian of its own log transform. The correction added by hand is therefore the difference
 
 \begin{equation}
 \log R_1 - \log \overline{R} = - \overline{\mathrm{GP}}.
 \end{equation}
-
-Adding the full $\log R_1$ on top of the term Stan already supplies would leave a spurious $\log \overline{R}$ in the target. That tilts the prior on $R_1$ upwards by a factor of $\exp(\sigma^2)$, for $\sigma$ the standard deviation of the prior on $\log R_1$, and tilts the centring offset $\overline{\mathrm{GP}}$ along with it.
 
 # References
