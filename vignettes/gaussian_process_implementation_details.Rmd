@@ -210,4 +210,6 @@ The internal parameter is declared as a positive real $\overline{R} = \exp(\over
 \log R_1 - \log \overline{R} = - \overline{\mathrm{GP}}.
 \end{equation}
 
+A breakpoint random walk, when used, is centred over the observation window in the same way and enters $\log R_t$ as a further additive term. Its contribution to the offset between $\log R_1$ and $\overline{\log R}$ adds to $-\overline{\mathrm{GP}}$, and since it too is a deterministic function of the other parameters that does not involve $\overline{\log R}$, the change of variables and its Jacobian are unchanged.
+
 # References
