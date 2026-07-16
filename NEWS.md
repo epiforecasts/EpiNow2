@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Bug fixes
+
+- A bug was fixed where the prior on the initial reproduction number was applied with an incorrect Jacobian, shifting it upwards by a factor of `exp(sdlog^2)`. A `LogNormal(mean = 2, sd = 1)` prior was applied as though it had a mean of 2.5.
+
 # EpiNow2 1.9.0
 
 ## New features
