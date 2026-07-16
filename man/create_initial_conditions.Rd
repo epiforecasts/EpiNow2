@@ -4,12 +4,16 @@
 \alias{create_initial_conditions}
 \title{Create Initial Conditions Generating Function}
 \usage{
-create_initial_conditions(stan_data, params)
+create_initial_conditions(stan_data, params, rt_prior = NULL)
 }
 \arguments{
 \item{stan_data}{A list of data as produced by \code{\link[=create_stan_data]{create_stan_data()}}.}
 
 \item{params}{A list of \verb{<EpiNow2.params>} as created by \code{\link[=make_param]{make_param()}}}
+
+\item{rt_prior}{A \verb{<dist_spec>} giving the prior on the initial
+reproduction number, used to seed \code{R_mean}. \code{NULL} when the reproduction
+number is not estimated.}
 }
 \value{
 An initial condition generating function

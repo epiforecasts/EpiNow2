@@ -568,12 +568,15 @@ create_delay_inits <- function(stan_data) {
 #' plausible values.
 #' @param stan_data A list of data as produced by [create_stan_data()].
 #' @inheritParams create_stan_params
+#' @param rt_prior A `<dist_spec>` giving the prior on the initial
+#'   reproduction number, used to seed `R_mean`. `NULL` when the reproduction
+#'   number is not estimated.
 #' @return An initial condition generating function
 #' @importFrom purrr map2_dbl transpose
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom data.table fcase
 #' @keywords internal
-create_initial_conditions <- function(stan_data, params) {
+create_initial_conditions <- function(stan_data, params, rt_prior = NULL) {
   function() {
     out <- create_delay_inits(stan_data)
 
@@ -587,8 +590,21 @@ create_initial_conditions <- function(stan_data, params) {
     }
     if (stan_data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1))
+      ## seed R_mean from its prior so chains start near the configured
+      ## reproduction number rather than from stan's default random init on
+      ## the unconstrained scale, which spans exp(-2) to exp(2)
+      if (is.null(rt_prior)) {
+        out$R_mean <- array(1)
+      } else {
+        out$R_mean <- array(truncnorm::rtruncnorm(
+          1, a = 0, b = max(rt_prior),
+          mean = mean(rt_prior, ignore_uncertainty = FALSE),
+          sd = sd(rt_prior, ignore_uncertainty = FALSE) * 0.1
+        ))
+      }
     } else {
       out$initial_infections <- array(numeric(0))
+      out$R_mean <- array(numeric(0))
     }
 
     if (stan_data$bp_n > 0) {
