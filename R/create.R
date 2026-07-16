@@ -568,15 +568,12 @@ create_delay_inits <- function(stan_data) {
 #' plausible values.
 #' @param stan_data A list of data as produced by [create_stan_data()].
 #' @inheritParams create_stan_params
-#' @param rt_prior A `<dist_spec>` giving the prior on the initial
-#'   reproduction number, used to seed `R_mean`. `NULL` when the reproduction
-#'   number is not estimated.
 #' @return An initial condition generating function
 #' @importFrom purrr map2_dbl transpose
 #' @importFrom truncnorm rtruncnorm
 #' @importFrom data.table fcase
 #' @keywords internal
-create_initial_conditions <- function(stan_data, params, rt_prior = NULL) {
+create_initial_conditions <- function(stan_data, params) {
   function() {
     out <- create_delay_inits(stan_data)
 
@@ -590,17 +587,22 @@ create_initial_conditions <- function(stan_data, params, rt_prior = NULL) {
     }
     if (stan_data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1))
-      ## seed R_mean from its prior so chains start near the configured
-      ## reproduction number rather than from stan's default random init on
-      ## the unconstrained scale, which spans exp(-2) to exp(2)
-      if (is.null(rt_prior)) {
-        out$R_mean <- array(1)
+      ## seed R_mean tightly around the initial-Rt prior (carried in stan_data
+      ## by make_init_priors()) so chains start near the configured
+      ## reproduction number
+      if (stan_data$n_init_priors > 0) {
+        p1 <- stan_data$init_dist_params[1]
+        p2 <- stan_data$init_dist_params[2]
+        r_mean <- switch(stan_data$init_dists[1] + 1L,
+          exp(rnorm(1, p1, p2 * 0.1)),        # lognormal: jitter on log scale
+          rgamma(1, shape = p1, rate = p2),   # gamma
+          rnorm(1, p1, p2 * 0.1)              # normal
+        )
+        out$R_mean <- array(
+          min(max(r_mean, stan_data$init_lower[1]), stan_data$init_upper[1])
+        )
       } else {
-        out$R_mean <- array(truncnorm::rtruncnorm(
-          1, a = 0, b = max(rt_prior),
-          mean = mean(rt_prior, ignore_uncertainty = FALSE),
-          sd = sd(rt_prior, ignore_uncertainty = FALSE) * 0.1
-        ))
+        out$R_mean <- array(1)
       }
     } else {
       out$initial_infections <- array(numeric(0))

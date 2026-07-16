@@ -227,10 +227,7 @@ estimate_infections <- function(data,
   stan_args <- create_stan_args(
     stan = stan,
     data = stan_data,
-    init = create_initial_conditions(
-      stan_data, params,
-      rt_prior = if (isTRUE(rt$use_rt)) rt$prior else NULL
-    ),
+    init = create_initial_conditions(stan_data, params),
     verbose = verbose
   )
 
