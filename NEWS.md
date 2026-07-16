@@ -1,8 +1,8 @@
 # EpiNow2 (development version)
 
-## Model changes
+## Package changes
 
-- The default number of warmup iterations in `stan_sampling_opts()` was increased from 250 to 500 to reduce intermittent non-convergence of individual chains.
+- Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
 
 # EpiNow2 1.9.0
 

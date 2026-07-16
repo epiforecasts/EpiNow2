@@ -349,7 +349,7 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
   assert_class(prior, "dist_spec")
 
   if (is.numeric(pop)) {
-    lifecycle::deprecate_stop(
+    deprecate_stop(
       "1.9.0",
       "rt_opts(pop = 'must be a `<dist_spec>`')",
       details = paste(
