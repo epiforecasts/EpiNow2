@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Documentation
+
+- Added a vignette on forecasting and forecast evaluation with scoringutils.
+
 # EpiNow2 1.9.0
 
 ## New features

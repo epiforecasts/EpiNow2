@@ -9,6 +9,10 @@ athowes
 avallecam
 backcalc
 backcalculation
+backtest
+backtested
+backtesting
+backtests
 Bisaloo
 BMC
 bp
@@ -21,6 +25,7 @@ cli
 CMD
 cmdstanr
 CMF
+CRPS
 cmfs
 CMMID
 codecov
@@ -162,6 +167,7 @@ parallisation
 parameterisations
 parameterised
 params
+pathfinder
 pcarbo
 pearsonca
 philturk
@@ -197,6 +203,7 @@ Sanjat
 SARS
 sbfnk
 schiller
+scoringutils
 sd
 sdlog
 se
@@ -207,6 +214,7 @@ sophiemeakin
 st
 stan
 stanfit
+susceptibles
 Susswein
 testland
 th
