@@ -82,13 +82,13 @@ create_shifted_cases <- function(data, shift,
   }
   shifted_reported_cases[
     ,
-    confirm := data.table::shift(confirm,
+    confirm := shift(confirm,
       n = shift,
       type = "lead", fill = NA
     )
   ][
     ,
-    confirm := runner::mean_run(
+    confirm := mean_run(
       confirm,
       k = smoothing_window, lag = -floor(smoothing_window / 2)
     )
@@ -101,13 +101,13 @@ create_shifted_cases <- function(data, shift,
     ,
     t := seq_len(.N)
   ]
-  lm_model <- stats::lm(log(confirm + 1) ~ t, data = final_period)
+  lm_model <- lm(log(confirm + 1) ~ t, data = final_period)
   ## Estimate unreported future infections using a log linear model
   shifted_reported_cases <- shifted_reported_cases[
     date >= min(final_period$date), t := seq_len(.N)
   ][
     ,
-    confirm := data.table::fifelse(
+    confirm := fifelse(
       !is.na(t) & t >= 0,
       exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t) - 1,
       confirm
@@ -121,7 +121,7 @@ create_shifted_cases <- function(data, shift,
   ]
   shifted_reported_cases <- shifted_reported_cases[-(1:smoothing_window)]
   if (anyNA(shifted_reported_cases$confirm)) {
-    cli::cli_abort(
+    cli_abort(
       c(
         "!" = "Some values are missing after prior smoothing. Consider
         increasing the smoothing using the {.var prior_window} argument in
@@ -307,7 +307,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 create_backcalc_data <- function(backcalc = backcalc_opts()) {
   list(
     rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
-    backcalc_prior = data.table::fcase(
+    backcalc_prior = fcase(
       backcalc$prior == "none", 0,
       backcalc$prior == "reports", 1,
       backcalc$prior == "infections", 2,
@@ -374,7 +374,7 @@ create_gp_data <- function(gp = gp_opts(), data) {
     fixed = as.numeric(fixed),
     M = M,
     L = gp$boundary_scale,
-    gp_type = data.table::fcase(
+    gp_type = fcase(
       gp$kernel == "se", 0,
       gp$kernel == "periodic", 1,
       gp$kernel == "matern" || gp$kernel == "ou", 2,
@@ -538,7 +538,7 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
 create_delay_inits <- function(stan_data) {
   out <- list()
   if (stan_data$delay_n_p > 0) {
-    out$delay_params <- array(truncnorm::rtruncnorm(
+    out$delay_params <- array(rtruncnorm(
       n = stan_data$delay_params_length, a = stan_data$delay_params_lower,
       mean = stan_data$delay_params_mean, sd = stan_data$delay_params_sd * 0.1
     ))
@@ -571,6 +571,7 @@ create_delay_inits <- function(stan_data) {
 #' @return An initial condition generating function
 #' @importFrom purrr map2_dbl transpose
 #' @importFrom truncnorm rtruncnorm
+#' @importFrom stats rlnorm rgamma rnorm
 #' @importFrom data.table fcase
 #' @keywords internal
 create_initial_conditions <- function(stan_data, params) {
@@ -587,16 +588,18 @@ create_initial_conditions <- function(stan_data, params) {
     }
     if (stan_data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1))
-      ## seed R_mean tightly around the initial-Rt prior (carried in stan_data
-      ## by make_init_priors()) so chains start near the configured
-      ## reproduction number
+      ## seed R_mean from the initial-Rt prior (carried in stan_data by
+      ## make_init_priors()) so chains start near the configured reproduction
+      ## number. A stopgap until derived-prior parameters are initialised
+      ## through the shared path (#1481). The distribution code is one of those
+      ## packed by pack_init_prior() (0: lognormal, 1: gamma, 2: normal).
       if (stan_data$n_init_priors > 0) {
         p1 <- stan_data$init_dist_params[1]
         p2 <- stan_data$init_dist_params[2]
         r_mean <- switch(stan_data$init_dists[1] + 1L,
-          exp(rnorm(1, p1, p2 * 0.1)),        # lognormal: jitter on log scale
-          rgamma(1, shape = p1, rate = p2),   # gamma
-          rnorm(1, p1, p2 * 0.1)              # normal
+          rlnorm(1, p1, p2),
+          rgamma(1, shape = p1, rate = p2),
+          rnorm(1, p1, p2)
         )
         out$R_mean <- array(
           min(max(r_mean, stan_data$init_lower[1]), stan_data$init_upper[1])
@@ -610,7 +613,7 @@ create_initial_conditions <- function(stan_data, params) {
     }
 
     if (stan_data$bp_n > 0) {
-      out$bp_sd <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
+      out$bp_sd <- array(rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
       out$bp_effects <- array(rnorm(stan_data$bp_n, 0, 0.1))
     } else {
       out$bp_sd <- array(numeric(0))
@@ -638,7 +641,7 @@ create_initial_conditions <- function(stan_data, params) {
       ignore_uncertainty = FALSE,
       FUN.VALUE = numeric(1)
     )
-    out$params <- array(truncnorm::rtruncnorm(
+    out$params <- array(rtruncnorm(
       stan_data$n_params_variable,
       a = stan_data$params_lower,
       b = stan_data$params_upper,
