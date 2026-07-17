@@ -863,7 +863,7 @@ create_stan_delays <- function(..., time_points = 1L) {
   ## set lower bounds
   ret$params_lower <- array(unname(as.numeric(flatten(
     map(flat_delays[parametric], function(x) {
-      lower_bounds(get_distribution(x))[names(get_parameters(x))]
+      lower_bounds(x)[names(get_parameters(x))]
     })
   ))))
   ## assign prior weights
