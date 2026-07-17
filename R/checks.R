@@ -157,7 +157,11 @@ check_stan_delay <- function(dist) {
 check_generation_time <- function(dist) {
   # Do the standard delay checks
   check_stan_delay(dist)
-  ## check for nonparametric with nonzero first element
+  ## check for nonparametric with nonzero first element; an estimated
+  ## (Dirichlet-backed) delay has no fixed PMF, so resolve any uncertainty to
+  ## the prior mean before inspecting the first element (its first element is
+  ## zero exactly when the prior puts no mass there)
+  dist <- fix_parameters(dist, strategy = "mean")
   nonzero_first_element <- vapply(seq_len(ndist(dist)), function(i) {
     get_distribution(dist, i) == "nonparametric" && get_pmf(dist, i)[1] > 0
   }, logical(1))
