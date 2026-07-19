@@ -229,10 +229,6 @@ estimate_infections <- function(data,
     params = params
   )
 
-  # R0's prior is applied to the derived initial Rt by the state machinery, so
-  # no separate init priors are needed (kept empty for the stan data contract).
-  stan_data <- c(stan_data, make_init_priors())
-
   stan_data <- c(stan_data, create_stan_delays(
     generation_time = generation_time,
     reporting = delays,

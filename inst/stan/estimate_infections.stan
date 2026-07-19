@@ -363,11 +363,6 @@ model {
     }
   }
 
-  profile("init lp") {
-    init_priors_lp(init_param_ids, init_dists, init_dist_params,
-                   init_lower, init_upper, param_id_R, R);
-  }
-
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {
     profile("report lp") {
