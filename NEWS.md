@@ -4,6 +4,10 @@
 
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
 
+## Bug fixes
+
+- A bug was fixed where the mean reproduction number over the observation window was left uninitialised, so chains started from a value drawn across the whole of `exp(-2)` to `exp(2)` rather than from the user's Rt prior.
+
 # EpiNow2 1.9.0
 
 ## New features
