@@ -5,11 +5,11 @@
 \alias{generation_time_opts}
 \title{Generation Time Distribution Options}
 \usage{
-gt_opts(dist = Fixed(1), default_cdf_cutoff = 0.001, weight_prior = TRUE)
+gt_opts(dist = Fixed(1), default_cdf_cutoff = 0.999, weight_prior = TRUE)
 
 generation_time_opts(
   dist = Fixed(1),
-  default_cdf_cutoff = 0.001,
+  default_cdf_cutoff = 0.999,
   weight_prior = TRUE
 )
 }

@@ -4,7 +4,7 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = Fixed(0), default_cdf_cutoff = 0.001, weight_prior = FALSE)
+trunc_opts(dist = Fixed(0), default_cdf_cutoff = 0.999, weight_prior = FALSE)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions reflecting
