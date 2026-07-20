@@ -49,7 +49,7 @@
 #'
 #' # An example generation time
 #' gt_opts(example_generation_time)
-gt_opts <- function(dist = Fixed(1), default_cdf_cutoff = 0.001,
+gt_opts <- function(dist = Fixed(1), default_cdf_cutoff = 0.999,
                     weight_prior = TRUE) {
   if (missing(dist)) {
     cli_warn(
@@ -176,7 +176,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
+delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.999,
                        weight_prior = TRUE) {
   assert_class(dist, "dist_spec")
   ## apply default CDF cutoff if `dist` is unconstrained
@@ -222,7 +222,7 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #'
 #' # truncation dist
 #' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
+trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.999,
                        weight_prior = FALSE) {
   assert_class(dist, "dist_spec")
   ## apply default CDF cutoff if `dist` is unconstrained
