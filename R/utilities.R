@@ -393,7 +393,8 @@ set_dt_single_thread <- function() {
   setDTthreads(1)
 
   do.call("on.exit",
-    list(quote(setDTthreads(dt_settings$dt_previous_threads))),
+    # nolint next: namespace_linter. Runs in the caller's frame, not ours.
+    list(quote(data.table::setDTthreads(dt_settings$dt_previous_threads))),
     envir = parent.frame()
   )
 }
