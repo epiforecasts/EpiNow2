@@ -96,18 +96,18 @@ get_regional_results <- function(regional_output,
       out <- list()
 
       if (samples) {
-        samples <- purrr::map(
+        samples <- map(
           regions, ~ load_data(
             samples_path, .,
             result_dir = results_dir,
             date = date
           )[[1]]
         )
-        samples <- data.table::rbindlist(samples, idcol = "region", fill = TRUE)
+        samples <- rbindlist(samples, idcol = "region", fill = TRUE)
         out$samples <- samples
       }
       # get incidence values and combine
-      summarised <- purrr::map(
+      summarised <- map(
         regions, ~ load_data(
           summarised_path,
           .,
@@ -115,7 +115,7 @@ get_regional_results <- function(regional_output,
           date = date
         )[[1]]
       )
-      summarised <- data.table::rbindlist(
+      summarised <- rbindlist(
         summarised,
         idcol = "region", fill = TRUE
       )
@@ -139,14 +139,14 @@ get_regional_results <- function(regional_output,
     estimates_out <- list()
 
     if (samples) {
-      samp <- purrr::map(regional_output, get_samples)
-      samp <- data.table::rbindlist(samp, idcol = "region", fill = TRUE)
+      samp <- map(regional_output, get_samples)
+      samp <- rbindlist(samp, idcol = "region", fill = TRUE)
       estimates_out$samples <- samp
     }
-    summarised <- purrr::map(
+    summarised <- map(
       regional_output, summary, type = "parameters"
     )
-    summarised <- data.table::rbindlist(
+    summarised <- rbindlist(
       summarised,
       idcol = "region", fill = TRUE
     )
@@ -155,7 +155,7 @@ get_regional_results <- function(regional_output,
 
     if (forecast) {
       erc_out <- list()
-      erc_data <- purrr::map(regional_output, estimates_by_report_date)
+      erc_data <- map(regional_output, estimates_by_report_date)
       if (samples) {
         samp <- purrr::map(erc_data, ~ .$samples)
         samp <- data.table::rbindlist(samp, idcol = "region", fill = TRUE)
