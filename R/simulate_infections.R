@@ -74,7 +74,7 @@ simulate_infections <- function(R,
                                 growth_method = c("infections",
                                                   "infectiousness")) {
   if (is.numeric(pop)) {
-    lifecycle::deprecate_stop(
+    deprecate_stop(
       "1.9.0",
       "simulate_infections(pop = 'must be a `<dist_spec>`')",
       details = paste(

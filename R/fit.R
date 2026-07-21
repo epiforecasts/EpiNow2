@@ -33,7 +33,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   args$future <- NULL
 
   log_msg <- create_sampling_log_message(args, method)
-  futile.logger::flog.debug(
+  flog.debug(
     log_msg,
     id,
     name = "EpiNow2.epinow.estimate_infections.fit"
@@ -49,7 +49,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
   fit_chain <- function(chain, stan_args, max_time, catch = FALSE) {
     stan_args$chain_id <- chain
     if (inherits(stan_args$object, "stanmodel")) {
-      sample_func <- rstan::sampling
+      sample_func <- sampling
     } else if (inherits(stan_args$object, "CmdStanModel")) {
       sample_func <- stan_args$object$sample
       stan_args$object <- NULL
@@ -57,30 +57,30 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     if (catch) {
       fit <- tryCatch(
         withCallingHandlers(
-          R.utils::withTimeout(do.call(sample_func, stan_args),
+          withTimeout(do.call(sample_func, stan_args),
             timeout = max_time,
             onTimeout = "silent"
           ),
           warning = function(w) {
-            futile.logger::flog.warn(
+            flog.warn(
               "%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
               name = "EpiNow2.epinow.estimate_infections.fit"
             )
-            rlang::cnd_muffle(w)
+            cnd_muffle(w)
           }
         ),
         error = function(e) {
           error_text <- sprintf(
             "%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call)
           )
-          futile.logger::flog.error(error_text,
+          flog.error(error_text,
             name = "EpiNow2.epinow.estimate_infections.fit"
           )
           NULL
         }
       )
     } else {
-      fit <- R.utils::withTimeout(do.call(sample_func, stan_args),
+      fit <- withTimeout(do.call(sample_func, stan_args),
         timeout = max_time,
         onTimeout = "silent"
       )
@@ -107,11 +107,11 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     if (stuck_chains > 0) {
       fits[seq_len(stuck_chains)] <- NULL
     }
-    fit <- purrr::compact(fits)
+    fit <- compact(fits)
     if (length(fit) == 0) {
       fit <- NULL
       if (is.null(fit)) {
-        rlang::abort(
+        abort(
           "all chains failed - try inspecting the output for errors or",
           " increasing the max_execution_time"
         )
@@ -119,18 +119,18 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     } else {
       failed_chains <- chains - length(fit)
       if (failed_chains > 0) {
-        futile.logger::flog.warn(
+        flog.warn(
           "%s: %s chains failed or were timed out.", id, failed_chains,
           name = "EpiNow2.fit"
         )
         if ((chains - failed_chains) < 2) {
-          rlang::abort(
+          abort(
             "model fitting failed as too few chains were returned to assess",
             " convergence (2 or more required)"
           )
         }
       }
-      fit <- rstan::sflist2stanfit(fit)
+      fit <- sflist2stanfit(fit)
     }
   } else {
     fit <- fit_chain(seq_len(args$chains),
@@ -141,7 +141,7 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
       fit <- NULL
     }
     if (is.null(fit)) {
-      rlang::abort("model fitting was timed out or failed")
+      abort("model fitting was timed out or failed")
     }
   }
   fit
@@ -165,7 +165,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   method <- args$method
   args$method <- NULL
   log_msg <- create_sampling_log_message(args, method)
-  futile.logger::flog.debug(
+  flog.debug(
     log_msg,
     id,
     name = "EpiNow2.epinow.estimate_infections.fit"
@@ -181,7 +181,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   fit_approximate <- function(stan_args) {
     if (inherits(stan_args$object, "stanmodel")) {
       if (method == "vb") {
-        sample_func <- rstan::vb
+        sample_func <- vb
       } else {
         cli_abort(
           c(
@@ -226,7 +226,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
   }
 
   if (is.null(fit)) {
-    futile.logger::flog.error(
+    flog.error(
       paste(
         "%s: Fitting failed - try increasing stan_args$trials or inspecting",
         "the model input"
@@ -234,7 +234,7 @@ fit_model_approximate <- function(args, future = FALSE, id = "stan") {
       id,
       name = "EpiNow2.fit"
     )
-    rlang::abort(paste("Approximate inference failed due to:", error))
+    abort(paste("Approximate inference failed due to:", error))
   }
   fit
 }

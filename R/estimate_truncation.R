@@ -17,32 +17,32 @@
 #' @keywords internal
 prepare_truncation_obs <- function(data, trunc_max) {
   # Convert to data.tables and find common date range
-  dirty_obs <- purrr::map(data, data.table::as.data.table)
+  dirty_obs <- map(data, as.data.table)
   earliest_date <- max(
     as.Date(
-      purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])
+      map_chr(dirty_obs, function(x) x[, as.character(min(date))])
     )
   )
-  dirty_obs <- purrr::map(dirty_obs, function(x) x[date >= earliest_date])
+  dirty_obs <- map(dirty_obs, function(x) x[date >= earliest_date])
 
   # Order by number of rows (shortest first)
-  nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
+  nrow_obs <- order(map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
 
   # Merge all observations into a single data.table with columns named 1, 2, ...
-  obs <- purrr::map(dirty_obs, data.table::copy)
-  obs <- purrr::map(seq_along(obs), ~ obs[[.]][, (as.character(.)) := confirm][
+  obs <- map(dirty_obs, copy)
+  obs <- map(seq_along(obs), ~ obs[[.]][, (as.character(.)) := confirm][
     ,
     confirm := NULL
   ])
-  obs <- purrr::reduce(obs, merge, all = TRUE)
+  obs <- reduce(obs, merge, all = TRUE)
 
   # Calculate observation start point and distance metrics
   obs_start <- max(nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1, 1)
-  obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
+  obs_dist <- map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
 
   # Create observation matrix (replacing NAs with 0)
-  obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
+  obs_data <- obs[, -1][, map(.SD, ~ ifelse(is.na(.), 0, .))]
   obs_data <- as.matrix(obs_data[obs_start:.N])
 
   list(
@@ -70,24 +70,24 @@ prepare_truncation_obs <- function(data, trunc_max) {
 #' @keywords internal
 merge_trunc_pred_obs <- function(observations, predictions) {
   # Get latest observations for reference
-  last_obs <- data.table::as.data.table(observations[[length(observations)]])
+  last_obs <- as.data.table(observations[[length(observations)]])
   last_obs <- last_obs[, .(date, last_confirm = confirm)]
 
   # Get truncated observations from each snapshot with report_date
 
-  obs_list <- purrr::map(observations, function(obs) {
-    obs_dt <- data.table::as.data.table(obs)
+  obs_list <- map(observations, function(obs) {
+    obs_dt <- as.data.table(obs)
     obs_dt[, report_date := max(date)]
     obs_dt
   })
-  obs_combined <- data.table::rbindlist(obs_list)
+  obs_combined <- rbindlist(obs_list)
 
   # Merge predictions with observations
-  result <- data.table::merge.data.table(
+  result <- merge.data.table(
     predictions, obs_combined[, .(date, confirm, report_date)],
     by = c("date", "report_date")
   )
-  data.table::merge.data.table(result, last_obs, by = "date")
+  merge.data.table(result, last_obs, by = "date")
 }
 
 #' Estimate truncation of observed data
@@ -300,56 +300,56 @@ plot.estimate_truncation <- function(x, ...) {
   preds <- get_predictions(x)
   plot_data <- merge_trunc_pred_obs(x$observations, preds)
 
-  p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = date, y = last_confirm)) +
-    ggplot2::geom_col(
+  p <- ggplot(plot_data, aes(x = date, y = last_confirm)) +
+    geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
     ) +
-    ggplot2::geom_point(
+    geom_point(
       data = plot_data,
-      ggplot2::aes(x = date, y = confirm)
+      aes(x = date, y = confirm)
     ) +
-    ggplot2::facet_wrap(~report_date, scales = "free")
+    facet_wrap(~report_date, scales = "free")
 
   p <- plot_CrIs(p, extract_CrIs(plot_data),
     alpha = 0.8, linewidth = 1
   )
 
   p +
-    ggplot2::theme_bw() +
-    ggplot2::labs(
+    theme_bw() +
+    labs(
       y = "Reports", x = "Date", col = "Type", fill = "Type"
     ) +
-    ggplot2::scale_x_date(date_breaks = "day", date_labels = "%b %d") +
-    ggplot2::scale_y_continuous(labels = scales::comma) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+    scale_x_date(date_breaks = "day", date_labels = "%b %d") +
+    scale_y_continuous(labels = comma) +
+    theme(axis.text.x = ggplot2::element_text(angle = 90))
 }
 
 #' @export
 #' @method $ estimate_truncation
 `$.estimate_truncation` <- function(x, name) {
   switch(name,
-    dist = lifecycle::deprecate_stop(
+    dist = deprecate_stop(
       "1.9.0",
       I("estimate_truncation()$dist"),
       I("get_parameters(x)[['truncation']]")
     ),
-    obs = lifecycle::deprecate_stop(
+    obs = deprecate_stop(
       "1.9.0",
       I("estimate_truncation()$obs"),
       I("get_predictions() and observations")
     ),
-    data = lifecycle::deprecate_stop(
+    data = deprecate_stop(
       "1.9.0",
       I("estimate_truncation()$data"),
       I("estimate_truncation()$args")
     ),
-    last_obs = lifecycle::deprecate_stop(
+    last_obs = deprecate_stop(
       "1.9.0",
       I("estimate_truncation()$last_obs"),
       details = "Use the last element of `observations` instead."
     ),
-    cmf = lifecycle::deprecate_stop(
+    cmf = deprecate_stop(
       "1.9.0",
       I("estimate_truncation()$cmf"),
       I("get_parameters(x)[['truncation']]")

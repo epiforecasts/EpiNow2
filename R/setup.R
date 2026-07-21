@@ -36,23 +36,23 @@ setup_logging <- function(threshold = "INFO", file = NULL,
   cli_inform(
     "Logging threshold set at {threshold} for the name logger"
   )
-  futile.logger::flog.threshold(threshold, name = name)
+  flog.threshold(threshold, name = name)
 
   if (!is.null(file)) {
     if (mirror_to_console) {
       cli_inform(
         "Writing {col_blue(name)} logs to the console and: {.file {file}}."
       )
-      futile.logger::flog.appender(
-        futile.logger::appender.tee(file),
+      flog.appender(
+        appender.tee(file),
         name = name
       )
     } else {
       cli_inform(
         "Writing {col_blue(name)} logs to: {.file {file}}."
       )
-      futile.logger::flog.appender(
-        futile.logger::appender.file(file),
+      flog.appender(
+        appender.file(file),
         name = name
       )
     }
@@ -60,7 +60,7 @@ setup_logging <- function(threshold = "INFO", file = NULL,
     cli_inform(
       "Writing {col_blue(name)} logs to the console."
     )
-    futile.logger::flog.appender(futile.logger::appender.console(), name = name)
+    flog.appender(futile.logger::appender.console(), name = name)
   }
   invisible(NULL)
 }
@@ -98,7 +98,7 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
     log_path$regional_epinow <- file.path(logs, "regional-epinow")
     log_path$epinow <- file.path(logs, "epinow")
 
-    purrr::walk(log_path, function(path) {
+    walk(log_path, function(path) {
       if (!dir.exists(path)) {
         dir.create(path, recursive = TRUE)
       }
@@ -116,8 +116,8 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
     )
   } else {
     # Suppress logging by setting threshold to FATAL
-    futile.logger::flog.threshold(futile.logger::FATAL)
-    futile.logger::flog.threshold(futile.logger::FATAL, name = "EpiNow2.epinow")
+    flog.threshold(futile.logger::FATAL)
+    flog.threshold(futile.logger::FATAL, name = "EpiNow2.epinow")
   }
   invisible(NULL)
 }
@@ -165,7 +165,7 @@ setup_future <- function(data,
     )
   }
   if (length(strategies) > 2 || length(strategies) == 0) {
-    futile.logger::flog.error("1 or 2 strategies should be used")
+    flog.error("1 or 2 strategies should be used")
     cli_abort(
       c(
         "!" = "{.var strategies} must either be of length 1 or 2."
@@ -173,7 +173,7 @@ setup_future <- function(data,
     )
   }
   if (is.null(data$region)) {
-    futile.logger::flog.error("Reported cases must contain a region")
+    flog.error("Reported cases must contain a region")
     cli_abort(
       c(
         "!" = "Exactly 2 strategies should be used."
@@ -182,7 +182,7 @@ setup_future <- function(data,
   }
   if (length(strategies) == 1) {
     workers <- parallelly::availableCores()
-    futile.logger::flog.info(
+    flog.info(
       "Using %s workers with 1 core per worker",
       workers
     )
@@ -199,7 +199,7 @@ setup_future <- function(data,
     )
     cores_per_worker <- max(1, round(parallelly::availableCores() / workers, 0))
 
-    futile.logger::flog.info(
+    flog.info(
       "Using %s workers with %s cores per worker",
       workers, cores_per_worker
     )
@@ -223,8 +223,8 @@ setup_future <- function(data,
 #' @return A data table
 #' @keywords internal
 setup_dt <- function(data) {
-  suppressMessages(data.table::setDTthreads(threads = 1))
-  data.table::setDT(data)
+  suppressMessages(setDTthreads(threads = 1))
+  setDT(data)
 }
 
 #' Setup Target Folder for Saving

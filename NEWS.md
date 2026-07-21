@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Package changes
+
+- Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
+
 ## Bug fixes
 
 - A bug was fixed where the mean reproduction number over the observation window was left uninitialised, so chains started from a value drawn across the whole of `exp(-2)` to `exp(2)` rather than from the user's Rt prior.

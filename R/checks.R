@@ -253,7 +253,7 @@ check_truncation_length <- function(stan_args, time_points) {
 
   # Check if any truncation PMF exceeds time_points
   if (any(trunc_pmf_lengths > time_points)) {
-    cli::cli_warn(
+    cli_warn(
       c(
         "!" = "The truncation distribution is longer than the observed time
         period.",

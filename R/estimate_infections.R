@@ -154,7 +154,7 @@ estimate_infections <- function(data,
 
   # Check verbose settings and set logger to match
   if (verbose) {
-    futile.logger::flog.threshold(futile.logger::DEBUG,
+    flog.threshold(futile.logger::DEBUG,
       name = "EpiNow2.epinow.estimate_infections"
     )
   }
@@ -270,12 +270,12 @@ estimate_infections <- function(data,
 #' @method $ estimate_infections
 `$.estimate_infections` <- function(x, name) {
   switch(name,
-    samples = lifecycle::deprecate_stop(
+    samples = deprecate_stop(
       "1.9.0",
       I("estimate_infections()$samples"),
       "get_samples()"
     ),
-    summarised = lifecycle::deprecate_stop(
+    summarised = deprecate_stop(
       "1.9.0",
       I("estimate_infections()$summarised"),
       I("summary(type = 'parameters')")

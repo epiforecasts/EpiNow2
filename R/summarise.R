@@ -61,7 +61,7 @@ summarise_results <- function(regions,
 
     load_data <- purrr::safely(get_result) # nolint
 
-    estimates <- purrr::map(
+    estimates <- map(
       regions, ~ load_data(file = "summary.rds", region = .)[[1]]
     )
     names(estimates) <- regions
@@ -69,16 +69,16 @@ summarise_results <- function(regions,
     estimates <- summaries
   }
 
-  estimates <- data.table::rbindlist(estimates, idcol = "region", fill = TRUE)
+  estimates <- rbindlist(estimates, idcol = "region", fill = TRUE)
   numeric_estimates <-
-    data.table::copy(estimates)[measure %in% c(
+    copy(estimates)[measure %in% c(
       "New infections per day",
       "Effective reproduction no."
     )][
       ,
       .(
-        data.table::data.table(region, measure, estimate),
-        data.table::rbindlist(numeric_estimate, fill = TRUE)
+        data.table(region, measure, estimate),
+        rbindlist(numeric_estimate, fill = TRUE)
       )
     ][
       ,
@@ -89,7 +89,7 @@ summarise_results <- function(regions,
     ][, measure := NULL]
 
 
-  numeric_estimates <- data.table::merge.data.table(numeric_estimates,
+  numeric_estimates <- merge.data.table(numeric_estimates,
     estimates[measure == "Expected change in reports"][
       ,
       .(region,
@@ -101,7 +101,7 @@ summarise_results <- function(regions,
   )
   # rank countries by incidence countries
   high_inc_regions <- unique(
-    data.table::setorderv(numeric_estimates, cols = "median", order = -1)$region
+    setorderv(numeric_estimates, cols = "median", order = -1)$region
   )
 
   numeric_estimates <- numeric_estimates[
@@ -121,7 +121,7 @@ summarise_results <- function(regions,
     ))
   ]
 
-  estimates <- data.table::dcast(
+  estimates <- dcast(
     estimates, region ~ ...,
     value.var = "estimate"
   )
@@ -191,13 +191,13 @@ regional_summary <- function(regional_output = NULL,
                              plot = TRUE,
                              max_plot = 10,
                              ...) {
-  reported_cases <- data.table::setDT(data)
+  reported_cases <- setDT(data)
   if (is.null(summary_dir)) {
-    futile.logger::flog.info(
+    flog.info(
       "No summary directory specified so returning summary output"
     )
   } else {
-    futile.logger::flog.info("Saving summary to : %s", summary_dir)
+    flog.info("Saving summary to : %s", summary_dir)
   }
 
   if (!is.null(results_dir) && !is.null(regional_output)) {
@@ -213,7 +213,7 @@ regional_summary <- function(regional_output = NULL,
 
   if (is.null(regional_output)) {
     if (!is.null(results_dir)) {
-      futile.logger::flog.info("Extracting results from: %s", results_dir)
+      flog.info("Extracting results from: %s", results_dir)
       regions <- get_regions(results_dir)
       if (is.null(target_date)) {
         target_date <- "latest"
@@ -221,10 +221,10 @@ regional_summary <- function(regional_output = NULL,
     }
   } else {
     regions <- names(regional_output)
-    regional_output <- purrr::compact(regional_output)
+    regional_output <- compact(regional_output)
   }
 
-  futile.logger::flog.trace("Getting regional results")
+  flog.trace("Getting regional results")
   # get estimates
   results <- get_regional_results(regional_output,
     results_dir = results_dir,
@@ -242,13 +242,13 @@ regional_summary <- function(regional_output = NULL,
       dir.create(summary_dir, recursive = TRUE)
     }
     saveRDS(latest_date, file.path(summary_dir, "latest_date.rds"))
-    data.table::fwrite(
+    fwrite(
       reported_cases, file.path(summary_dir, "reported_cases.csv")
     )
   }
 
   if (!is.null(regional_output)) {
-    regional_summaries <- purrr::map(regional_output, function(x) {
+    regional_summaries <- map(regional_output, function(x) {
       latest_date <- max(x$observations$date, na.rm = TRUE)
       summarised <- summary(x, type = "parameters")
       summarised <- summarised[date == latest_date]
@@ -258,7 +258,7 @@ regional_summary <- function(regional_output = NULL,
   } else {
     regional_summaries <- NULL
   }
-  futile.logger::flog.trace("Summarising results")
+  flog.trace("Summarising results")
 
   # summarise results to csv
   sum_key_measures <- summarise_key_measures(
@@ -290,10 +290,10 @@ regional_summary <- function(regional_output = NULL,
   summarised_results$data <- force_factor(summarised_results$data)
 
   if (!is.null(summary_dir)) {
-    data.table::fwrite(
+    fwrite(
       summarised_results$table, file.path(summary_dir, "summary_table.csv")
     )
-    data.table::fwrite(
+    fwrite(
       summarised_results$data, file.path(summary_dir, "summary_data.csv")
     )
   }
@@ -323,7 +323,7 @@ regional_summary <- function(regional_output = NULL,
       save_ggplot <- function(plot, name, height = 12, width = 12, ...) {
         suppressWarnings(
           suppressMessages(
-            ggplot2::ggsave(file.path(summary_dir, name),
+            ggsave(file.path(summary_dir, name),
               plot,
               dpi = 300, width = width,
               height = height, ...
@@ -332,7 +332,7 @@ regional_summary <- function(regional_output = NULL,
         )
       }
       save_ggplot(summary_plot, "summary_plot.png",
-        width = data.table::fcase(
+        width = fcase(
           length(regions) > 60 & length(regions) > 120, 36,
           length(regions) > 60 & length(regions) <= 120, 24,
           default = 12
@@ -355,9 +355,9 @@ regional_summary <- function(regional_output = NULL,
 
     high_plots$summary <- NULL
     high_plots <-
-      purrr::map(
+      map(
         high_plots,
-        ~ . + ggplot2::facet_wrap(~region, scales = "free_y", ncol = 2)
+        ~ . + facet_wrap(~region, scales = "free_y", ncol = 2)
       )
 
     if (!is.null(summary_dir)) {
@@ -367,7 +367,7 @@ regional_summary <- function(regional_output = NULL,
     }
 
     if (all_regions) {
-      plots_per_row <- data.table::fcase(
+      plots_per_row <- fcase(
         length(regions) > 60 & length(regions) > 120, 8,
         length(regions) > 60 & length(regions) <= 120, 5,
         default = 3
@@ -380,9 +380,9 @@ regional_summary <- function(regional_output = NULL,
       )
 
       plots$summary <- NULL
-      plots <- purrr::map(
+      plots <- map(
         plots,
-        ~ . + ggplot2::facet_wrap(~region,
+        ~ . + facet_wrap(~region,
           scales = "free_y",
           ncol = plots_per_row
         )
@@ -477,14 +477,14 @@ summarise_key_measures <- function(regional_results = NULL,
     if (!is.null(dof)) {
       df[, (cols) := round(.SD, dof), .SDcols = cols]
     }
-    data.table::setorderv(df, cols = c("region", "date", "type", "strat"))
-    data.table::setnames(df, "region", type)
+    setorderv(df, cols = c("region", "date", "type", "strat"))
+    setnames(df, "region", type)
     df
   }
 
   save_variable <- function(df, name) {
     if (!is.null(summary_dir)) {
-      data.table::fwrite(df, paste0(summary_dir, "/", name, ".csv"))
+      fwrite(df, paste0(summary_dir, "/", name, ".csv"))
     }
   }
   out <- list()
@@ -552,20 +552,20 @@ regional_runtimes <- function(regional_output = NULL,
     )
   }
   if (is.null(target_folder)) {
-    futile.logger::flog.info(
+    flog.info(
       "No target directory specified so returning timings"
     )
     return_output <- TRUE
   } else {
-    futile.logger::flog.info(
+    flog.info(
       "Saving timings information to : %s", target_folder
     )
   }
   if (!is.null(regional_output)) {
-    timings <- data.table::data.table(
+    timings <- data.table(
       region = names(regional_output),
       # purrr::map_vec will preserve the difftime class
-      time = unlist(purrr::map_vec(regional_output, ~ .$timing))
+      time = unlist(map_vec(regional_output, ~ .$timing))
     )
   } else {
     if (is.null(target_date)) {
@@ -573,16 +573,16 @@ regional_runtimes <- function(regional_output = NULL,
     }
     safe_read <- purrr::safely(readRDS) # nolint
     regions <- get_regions(target_folder)
-    timings <- data.table::data.table(
+    timings <- data.table(
       region = regions,
-      time = unlist(purrr::map(regions, ~ safe_read(file.path(
+      time = unlist(map(regions, ~ safe_read(file.path(
         target_folder, ., target_date,
         "runtime.rds"
       )))[[1]])
     )
   }
   if (!is.null(target_folder)) {
-    data.table::fwrite(timings, file.path(target_folder, "runtimes.csv"))
+    fwrite(timings, file.path(target_folder, "runtimes.csv"))
   }
   if (return_output) {
     timings
@@ -611,13 +611,13 @@ regional_runtimes <- function(regional_output = NULL,
 #' # add 90% credible interval grouped by type
 #' calc_CrI(samples, summarise_by = "type")
 calc_CrI <- function(samples, summarise_by = NULL, CrI = 0.9) {
-  samples <- data.table::setDT(samples)
+  samples <- setDT(samples)
   CrI_half <- CrI / 2
   lower_CrI <- 0.5 - CrI_half
   upper_CrI <- 0.5 + CrI_half
   CrI_scale <- round(100 * CrI, 1)
   with_CrI <-
-    data.table::copy(samples)[, .(
+    copy(samples)[, .(
       value = quantile(value, c(lower_CrI, upper_CrI), na.rm = TRUE),
       CrI = c(paste0("lower_", CrI_scale), paste0("upper_", CrI_scale))
     ),
@@ -650,20 +650,20 @@ calc_CrI <- function(samples, summarise_by = NULL, CrI = 0.9) {
 #' calc_CrIs(samples, summarise_by = "type")
 calc_CrIs <- function(samples, summarise_by = NULL, CrIs = c(0.2, 0.5, 0.9)) {
   CrIs <- sort(CrIs)
-  with_CrIs <- purrr::map(CrIs, ~ calc_CrI(
+  with_CrIs <- map(CrIs, ~ calc_CrI(
     samples = samples,
     summarise_by = summarise_by,
     CrI = .
   ))
 
-  with_CrIs <- data.table::rbindlist(with_CrIs)
+  with_CrIs <- rbindlist(with_CrIs)
   scale_CrIs <- round(CrIs * 100, 1)
   # nolint start
   order_CrIs <- c(
     paste0("lower_", rev(scale_CrIs)), paste0("upper_", scale_CrIs)
   )
   # nolint end
-  with_CrIs <- data.table::dcast(
+  with_CrIs <- dcast(
     with_CrIs, ... ~ factor(CrI, levels = order_CrIs),
     value.var = "value"
   )
@@ -709,9 +709,9 @@ extract_CrIs <- function(summarised) {
 #' #  by type
 #' calc_summary_stats(samples, summarise_by = "type")
 calc_summary_stats <- function(samples, summarise_by = NULL) {
-  samples <- data.table::setDT(samples)
+  samples <- setDT(samples)
   sum_stats <-
-    data.table::copy(samples)[, .(
+    copy(samples)[, .(
       median = median(value, na.rm = TRUE),
       mean = mean(value, na.rm = TRUE),
       sd = sd(value, na.rm = TRUE)
@@ -763,7 +763,7 @@ calc_summary_measures <- function(samples,
   )
 
   summarised <- sum_stats[CrIs, on = summarise_by]
-  data.table::setorderv(summarised, cols = order_by)
+  setorderv(summarised, cols = order_by)
   summarised
 }
 
@@ -808,7 +808,7 @@ summary.epinow <- function(object,
 
   # Handle deprecated output argument
   if (!is.null(output)) {
-    lifecycle::deprecate_stop(
+    deprecate_stop(
       "1.9.0",
       "summary.epinow(output)",
       "summary.epinow(type)",
@@ -857,7 +857,7 @@ summary.estimate_infections <- function(object,
                                         CrIs = c(0.2, 0.5, 0.9), ...) {
   # Handle deprecated type = "samples" before arg_match
   if (length(type) == 1 && type == "samples") {
-    lifecycle::deprecate_stop(
+    deprecate_stop(
       "1.9.0",
       "summary.estimate_infections(type = 'samples')",
       "get_samples()"
@@ -996,7 +996,7 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
     as.integer(gsub(".*\\[(\\d+)\\]", "\\1", out$variable))
   )
   if (anyNA(idx)) {
-    cli::cli_warn("Could not parse parameter indices from variable names")
+    cli_warn("Could not parse parameter indices from variable names")
     return(out)
   }
   out[, variable := param_names[idx]]
@@ -1037,12 +1037,12 @@ summary.estimate_dist <- function(object,
 
   # Build long-format samples table
   samples_list <- lapply(seq_along(param_names), function(i) {
-    data.table::data.table(
+    data.table(
       variable = param_names[i],
       value = param_mat[, i]
     )
   })
-  param_samples <- data.table::rbindlist(samples_list)
+  param_samples <- rbindlist(samples_list)
 
   out <- calc_summary_measures(
     param_samples,
@@ -1091,7 +1091,7 @@ print.summary.estimate_dist <- function(x, ...) {
   }
   cat("\n\n")
   cat("Parameter estimates:\n")
-  print(data.table::as.data.table(x), ...)
+  print(as.data.table(x), ...)
   invisible(x)
 }
 

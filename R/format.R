@@ -19,7 +19,7 @@
 format_fit <- function(posterior_samples, horizon, shift, CrIs) {
   format_out <- list()
   # bind all samples together
-  format_out$samples <- data.table::rbindlist(
+  format_out$samples <- rbindlist(
     posterior_samples,
     fill = TRUE, idcol = "variable"
   )
@@ -30,7 +30,7 @@ format_fit <- function(posterior_samples, horizon, shift, CrIs) {
   # add type based on horizon
   format_out$samples <- format_out$samples[
     ,
-    type := data.table::fcase(
+    type := fcase(
       date > (max(date, na.rm = TRUE) - horizon),
       "forecast",
       date > (max(date, na.rm = TRUE) - horizon - shift),
@@ -200,7 +200,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
 #' @return A `data.table` combining all parameters with variable column
 #' @keywords internal
 combine_tv_and_static_params <- function(time_varying_list, raw_samples, args) {
-  combined_tv <- data.table::rbindlist(
+  combined_tv <- rbindlist(
     time_varying_list, fill = TRUE, idcol = "variable"
   )
 
@@ -208,7 +208,7 @@ combine_tv_and_static_params <- function(time_varying_list, raw_samples, args) {
     extract_delays(raw_samples, args = args),
     extract_parameters(raw_samples, args = args)
   )
-  data.table::rbindlist(c(list(combined_tv), static_params), fill = TRUE)
+  rbindlist(c(list(combined_tv), static_params), fill = TRUE)
 }
 
 #' Format raw Stan samples with dates and metadata
@@ -316,7 +316,7 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
 
   combined <- combined[
     ,
-    type := data.table::fcase(
+    type := fcase(
       date > (max(date, na.rm = TRUE) - horizon),
       "forecast",
       date > (max(date, na.rm = TRUE) - horizon - shift),
