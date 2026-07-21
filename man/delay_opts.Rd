@@ -4,7 +4,7 @@
 \alias{delay_opts}
 \title{Delay Distribution Options}
 \usage{
-delay_opts(dist = Fixed(0), default_cdf_cutoff = 0.001, weight_prior = TRUE)
+delay_opts(dist = Fixed(0), default_cdf_cutoff = 0.999, weight_prior = TRUE)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions. Default is
