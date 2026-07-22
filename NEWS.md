@@ -13,6 +13,27 @@
 
 ## New features
 
+- Added an experimental interface for declaring time-varying model parameters: the `GP()` (approximate Gaussian process) and `RW()` (random walk) constructors. Each takes a prior on either the value the parameter reverts to (`mean`, a mean-reverting state) or its initial value (`init`, a state on first differences), the relevant Gaussian process settings (`ls`, `alpha`, `kernel`, `basis_prop`, and so on), and a `future` argument that sets what the parameter does over the forecast horizon: `"latest"` holds the last estimated value flat, `"project"` keeps it varying, `"estimate"` holds it from a seeding time before the end of the data, or an integer fixes it from a chosen point. `estimate_infections()` uses this interface for the reproduction number, so `rt_opts(prior = ...)` takes a constant value or a `GP()`/`RW()` state.
+- The back-calculation (non-mechanistic) model represents latent infections through the same interface, as a Gaussian process on the log scale anchored at an initial value, set with `backcalc_opts(prior = GP(...))`. This replaces the earlier deconvolution of smoothed, shifted reported cases.
+- Added a `plot()` method for `GP()`/`RW()` specifications that draws prior-predictive trajectories, so you can see what a prior implies before fitting.
+
+## Deprecations
+
+- The `rw` argument and breakpoints (`use_breakpoints` / the data `breakpoint` column) of `rt_opts()` are deprecated; specify a random-walk Rt with `rt_opts(prior = RW(...))`. A step interval is set with `RW(period = ...)`, so the previous `rw = 7` is now `RW(period = 7)`.
+- `gp_opts()` is deprecated; supply Gaussian process settings directly to `GP()`.
+- The `gp_on` argument of `rt_opts()` is deprecated; choose a mean-reverting (stationary) or first-difference Gaussian process with `rt_opts(prior = GP(mean = ...))` or `rt_opts(prior = GP(init = ...))`.
+- The `future` argument of `rt_opts()` is deprecated; set the forecast-horizon behaviour on the Rt prior, e.g. `rt_opts(prior = GP(..., future = "project"))`.
+- The `gp` argument of `estimate_infections()`, `epinow()`, and `regional_epinow()` is deprecated; configure the Gaussian process through the model prior (`rt_opts(prior = GP(...))` or `backcalc_opts(prior = GP(...))`).
+- The `prior_window` argument of `backcalc_opts()` is deprecated, and its `prior` argument now takes a `GP()` specification rather than a character string.
+
+## Model changes
+
+- Retired the shared "main" Gaussian process used by the back-calculation model along with its supporting machinery (the deconvolution step and the smoothed shifted-case prior). Both the renewal and back-calculation models now build their Gaussian processes through the single time-varying state implementation.
+
+# EpiNow2 1.9.0
+
+## New features
+
 - Added support for all `dist_spec` delay families and `obs_opts()` observation model selection (Poisson or negative binomial) to `estimate_truncation()`. The existing observation model functions (`report_lp`, `report_rng`) are now reused internally.
 - Wired the `likelihood` and `return_likelihood` settings of `obs_opts()` through `estimate_truncation()` so that prior-only fits and `loo`-compatible log-likelihood output are available, matching `estimate_infections()` and `estimate_secondary()`.
 - Added a `noise` argument to `estimate_truncation()` that takes a `dist_spec` controlling the additive noise term, replacing the previously hardcoded `sigma ~ normal(0, 1) T[0,]`.

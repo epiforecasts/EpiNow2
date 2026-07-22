@@ -17,7 +17,7 @@ create_rt_data(
 estimation. Defaults to \code{\link[=rt_opts]{rt_opts()}}. To generate new infections using
 the non-mechanistic model instead of the renewal equation model, use
 \code{rt = NULL}. The non-mechanistic model internally uses the setting
-\code{rt = rt_opts(use_rt = FALSE, future = "project", gp_on = "R0")}.}
+\code{rt = rt_opts(use_rt = FALSE)}.}
 
 \item{breakpoints}{An integer vector (binary) indicating the location of
 breakpoints.}

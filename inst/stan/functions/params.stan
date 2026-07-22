@@ -122,53 +122,35 @@ void params_lp(vector params, array[] int prior_dist,
 }
 
 /**
- * Apply user priors on the initial values of centred-GP-wrapped trajectories
+ * Update log density for parameter priors, skipping selected parameters
  *
- * For each registered init prior, dispatches on the parameter id to the
- * corresponding derived initial value and to the parameter actually sampled,
- * then applies the user's truncated prior via `apply_prior_lp`.
+ * Overload of [params_lp()] that skips the prior for parameters flagged in
+ * `params_prior_skip` (their prior is applied elsewhere, e.g. to the derived
+ * initial value of an init-anchored time-varying state).
  *
- * The prior is declared on a derived value (e.g. `R[1]`) while the sampler
- * moves on a different parameter (e.g. `R_mean`), whose `<lower = 0>`
- * transform already contributes `log(sampled_value)` to the target. The
- * Jacobian of the sampled-to-derived map is therefore taken relative to the
- * sampled value, `log(init_value) - log(sampled_value)`.
- *
- * @param init_param_ids Per-prior id of the parameter the prior applies to.
- * @param init_dists Per-prior distribution code (0: lognormal, 1: gamma,
- *   2: normal).
- * @param init_dist_params Flat ragged vector of distribution parameters,
- *   two per prior.
- * @param init_lower Per-prior lower bound on the parameter's support.
- * @param init_upper Per-prior upper bound on the parameter's support.
- * @param param_id_R0 Registered id of R0.
- * @param R Reproduction-number trajectory.
- * @param R_mean Sampled mean reproduction number over the centring window.
+ * @param params Vector of parameter values
+ * @param prior_dist Array of prior distribution types
+ * @param prior_dist_params Vector of prior distribution parameters
+ * @param params_lower Vector of lower bounds for parameters
+ * @param params_upper Vector of upper bounds for parameters
+ * @param params_prior_skip Array, 1 to skip a parameter's prior
  *
  * @ingroup parameter_handlers
  */
-void init_priors_lp(array[] int init_param_ids, array[] int init_dists,
-                    vector init_dist_params,
-                    vector init_lower, vector init_upper,
-                    int param_id_R0, vector R, array[] real R_mean) {
+void params_lp(vector params, array[] int prior_dist,
+              vector prior_dist_params, vector params_lower,
+              vector params_upper, array[] int params_prior_skip) {
   int params_id = 1;
-  for (i in 1:num_elements(init_param_ids)) {
-    real init_value;
-    real sampled_value;
-    if (init_param_ids[i] == param_id_R0) {
-      init_value = R[1];
-      sampled_value = R_mean[1];
-    } else {
-      reject("no init param registered for id ", init_param_ids[i]);
+  int num_params = num_elements(params);
+  for (id in 1:num_params) {
+    if (!params_prior_skip[id]) {
+      apply_prior_lp(
+        params[id], prior_dist[id],
+        prior_dist_params[params_id], prior_dist_params[params_id + 1],
+        params_lower[id], params_upper[id]
+      );
     }
-    apply_prior_lp(
-      init_value, init_dists[i],
-      init_dist_params[params_id], init_dist_params[params_id + 1],
-      init_lower[i], init_upper[i]
-    );
-    target += log(init_value) - log(sampled_value);
     params_id += 2;
   }
 }
-
 

@@ -281,13 +281,15 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' can exceed the population size, though this effect is negligible when
 #' pop_floor is very small compared to the population size.
 #'
-#' @param gp_on Character string, defaulting to "R_t-1". Indicates how the
-#' Gaussian process, if in use, should be applied to Rt. Currently supported
-#' options are applying the Gaussian process to the last estimated Rt (i.e
-#' Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
-#' = R0 * GP). Both should produced comparable results when data is not sparse
-#' but the method relying on a global mean will revert to this for real time
-#' estimates, which may not be desirable.
+#' @param gp_on `r lifecycle::badge("deprecated")` Choose the Gaussian process
+#' variant through the prior instead: `rt_opts(prior = GP(mean = ...))` for a
+#' mean-reverting (stationary) process, or `rt_opts(prior = GP(init = ...))`
+#' (the default) for one on first differences.
+#'
+#' @param future `r lifecycle::badge("deprecated")` Set what the reproduction
+#' number does over the forecast horizon on the prior instead, e.g.
+#' `rt_opts(prior = GP(init = ..., future = "project"))` or
+#' `rt_opts(prior = RW(..., future = ...))`.
 #'
 #' @param growth_method Method used to compute growth rates from Rt. Options
 #' are "infections" (default) and "infectiousness". The option "infections"
@@ -321,32 +323,72 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #'
 #' # add a weekly random walk
 #' rt_opts(rw = 7)
-rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
+rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
                     use_rt = TRUE,
                     rw = 0,
                     use_breakpoints = TRUE,
-                    future = "latest",
-                    gp_on = c("R_t-1", "R0"),
+                    future = lifecycle::deprecated(),
+                    gp_on = lifecycle::deprecated(),
                     pop = Fixed(0),
                     pop_period = c("forecast", "all"),
                     pop_floor = 1.0,
                     growth_method = c("infections", "infectiousness")) {
+  if (lifecycle::is_present(gp_on)) {
+    lifecycle::deprecate_warn(
+      "1.10.0", "rt_opts(gp_on)",
+      details = paste(
+        "Choose the Gaussian process variant through the prior:",
+        "`rt_opts(prior = GP(mean = ...))` for a mean-reverting (stationary)",
+        "process or `rt_opts(prior = GP(init = ...))` (the default) for one on",
+        "first differences."
+      )
+    )
+  }
+  # `future` is superseded by the `future` argument of GP() / RW()
+  future_val <- "latest"
+  if (lifecycle::is_present(future)) {
+    lifecycle::deprecate_warn(
+      "1.10.0", "rt_opts(future)",
+      details = paste(
+        "Set the forecast-horizon behaviour on the Rt prior instead, e.g.",
+        "`rt_opts(prior = GP(init = ..., future = \"project\"))` or",
+        "`rt_opts(prior = RW(..., future = ...))`."
+      )
+    )
+    future_val <- validate_future(future)
+    # carry the setting onto the prior state so existing behaviour is preserved
+    if (is_state_spec(prior)) {
+      prior$future <- future_val
+    }
+  }
   opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
-    future = future,
-    gp_on = arg_match(gp_on),
+    future = future_val,
     pop_period = arg_match(pop_period),
     pop_floor = pop_floor,
     growth_method = arg_match(growth_method)
   )
+  # rw is superseded by a random-walk prior (rt_opts(prior = RW(...)))
+  if (rw != 0) {
+    lifecycle::deprecate_warn(
+      "1.10.0", "rt_opts(rw)",
+      details = paste(
+        "Specify a random-walk Rt with `rt_opts(prior = RW(...))`.",
+        "The `rw` argument is now ignored."
+      )
+    )
+    opts$rw <- 0
+  }
   # replace default settings with those specified by user
   if (opts$rw > 0) {
     opts$use_breakpoints <- TRUE
   }
 
-  assert_class(prior, "dist_spec")
+  # the Rt prior may be a constant/uncertain value (<dist_spec>) or a
+  # time-varying state (<state_spec>, created by GP() / RW())
+  assert_class(prior, "param_spec")
 
   if (is.numeric(pop)) {
     deprecate_stop(
@@ -391,23 +433,13 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`.
 #'
-#' @param prior A character string defaulting to "reports". Defines the prior
-#' to use when deconvolving. Currently implemented options are to use smoothed
-#' mean delay shifted reported cases ("reports"), to use the estimated
-#' infections from the previous time step seeded for the first time step using
-#' mean shifted reported cases ("infections"), or no prior ("none"). Using no
-#' prior will result in poor real time performance. No prior and using
-#' infections are only supported when a Gaussian process is present . If
-#' observed data is not reliable then it a sensible first step is to explore
-#' increasing the `prior_window` wit a sensible second step being to no longer
-#' use reported cases as a prior (i.e set `prior = "none"`).
+#' @param prior A `GP()` specification for the latent infections of the
+#' back-calculation model, given as a Gaussian process on the log scale (e.g.
+#' `GP(init = LogNormal(mean = 100, sd = 100))`). Defaults to `NULL`, in which
+#' case a Gaussian process anchored at a data-informed initial value is used.
 #'
-#' @param prior_window Integer, defaults to 14 days. The mean centred smoothing
-#' window to apply to mean shifted reports (used as a prior during back
-#' calculation). 7 days is minimum recommended settings as this smooths day of
-#' the week effects but depending on the quality of the data and the amount of
-#' information users wish to use as a prior (higher values equalling a less
-#' informative prior).
+#' @param prior_window `r lifecycle::badge("deprecated")` No longer used, as the
+#' back-calculation model no longer smooths shifted reported cases.
 #'
 #' @param rt_window Integer, defaults to 1. The size of the centred rolling
 #' average to use when estimating Rt. This must be odd so that the central
@@ -420,11 +452,28 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
 #' @examples
 #' # default settings
 #' backcalc_opts()
-backcalc_opts <- function(prior = c("reports", "none", "infections"),
-                          prior_window = 14, rt_window = 1) {
+backcalc_opts <- function(prior = NULL, prior_window = 14, rt_window = 1) {
+  if (is.character(prior)) {
+    lifecycle::deprecate_warn(
+      "1.10.0", "backcalc_opts(prior = 'must be a GP() specification')",
+      details = "The back-calculation model now estimates latent infections as
+      a Gaussian process state. Supply a `GP()` specification (e.g.
+      `prior = GP(init = LogNormal(...))`) or leave as the default."
+    )
+    prior <- NULL
+  }
+  if (!missing(prior_window)) {
+    lifecycle::deprecate_warn(
+      "1.10.0", "backcalc_opts(prior_window)",
+      details = "The back-calculation model no longer smooths shifted cases, so
+      the prior smoothing window is no longer used."
+    )
+  }
+  if (!is.null(prior)) {
+    assert_class(prior, "state_spec")
+  }
   backcalc <- list(
-    prior = arg_match(prior),
-    prior_window = prior_window,
+    prior = prior,
     rt_window = as.integer(rt_window)
   )
   if (backcalc$rt_window %% 2 == 0) {
@@ -443,8 +492,10 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' Approximate Gaussian Process Settings
 #'
 #' @description
-#' Defines a list specifying the structure of the approximate Gaussian
-#' process. Custom settings can be supplied which override the defaults.
+#' `r lifecycle::badge("deprecated")`
+#' Gaussian process settings are now supplied directly as arguments of [GP()].
+#' This function is retained only for backwards compatibility and will be
+#' removed in a future release.
 #'
 #' @param ls A `<dist_spec>` giving the prior distribution of the lengthscale
 #' parameter of the Gaussian process kernel on the scale of days. Defaults to
@@ -504,6 +555,31 @@ gp_opts <- function(basis_prop = 0.2,
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
                     w0 = 1.0) {
+  lifecycle::deprecate_warn(
+    "1.10.0", "gp_opts()", "GP()",
+    details = "Gaussian process settings are now arguments of `GP()`."
+  )
+  new_gp_settings(
+    basis_prop = basis_prop, boundary_scale = boundary_scale, ls = ls,
+    alpha = alpha, kernel = kernel, matern_order = matern_order, w0 = w0
+  )
+}
+
+#' Build Gaussian process settings
+#'
+#' @description
+#' Internal constructor for the list of Gaussian process settings shared by
+#' [GP()] and the deprecated [gp_opts()].
+#' @inheritParams gp_opts
+#' @return A `<gp_opts>` object of Gaussian process settings.
+#' @keywords internal
+new_gp_settings <- function(basis_prop = 0.2,
+                            boundary_scale = 1.5,
+                            ls = LogNormal(mean = 21, sd = 7, max = 60),
+                            alpha = Normal(mean = 0, sd = 0.01),
+                            kernel = c("matern", "se", "ou", "periodic"),
+                            matern_order = 3 / 2,
+                            w0 = 1.0) {
   kernel <- arg_match(kernel)
   if (kernel == "se") {
     matern_order <- Inf
@@ -562,7 +638,10 @@ gp_opts <- function(basis_prop = 0.2,
 #'   to a fixed value of 1, i.e. no scaling: `Fixed(1)`. A lower limit of zero
 #'   will be enforced automatically. If setting to a prior distribution and no
 #'   overreporting is expected, it might be sensible to set a maximum of 1 via
-#'   the `max` option when declaring the distribution.
+#'   the `max` option when declaring the distribution. `r
+#'   lifecycle::badge("experimental")` May also be a time-varying `<state_spec>`
+#'   created by [RW()] (e.g. `scale = RW(mean = Normal(0.4, 0.05))`) to estimate
+#'   a fraction observed that varies over time.
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
@@ -610,10 +689,12 @@ obs_opts <- function(family = c("negbin", "poisson"),
     return_likelihood = return_likelihood
   )
 
+  ## dispersion and scale may each be a constant/uncertain value or time-varying
+  ## (created by GP() / RW()); both are <param_spec>
   if (!is.null(obs$dispersion)) {
-    assert_class(obs$dispersion, "dist_spec")
+    assert_class(obs$dispersion, "param_spec")
   }
-  assert_class(obs$scale, "dist_spec")
+  assert_class(obs$scale, "param_spec")
 
   attr(obs, "class") <- c("obs_opts", class(obs))
   obs

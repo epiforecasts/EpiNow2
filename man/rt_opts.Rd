@@ -5,12 +5,12 @@
 \title{Time-Varying Reproduction Number Options}
 \usage{
 rt_opts(
-  prior = LogNormal(mean = 1, sd = 1),
+  prior = GP(init = LogNormal(mean = 1, sd = 1)),
   use_rt = TRUE,
   rw = 0,
   use_breakpoints = TRUE,
-  future = "latest",
-  gp_on = c("R_t-1", "R0"),
+  future = lifecycle::deprecated(),
+  gp_on = lifecycle::deprecated(),
   pop = Fixed(0),
   pop_period = c("forecast", "all"),
   pop_floor = 1,
@@ -37,21 +37,15 @@ are fit jointly with a global non-parametric effect and so represent a
 conservative estimate of break point changes (alter this by setting
 \code{gp = NULL}).}
 
-\item{future}{A character string or integer. This argument indicates how to
-set future Rt values. Supported options are to project using the Rt model
-("project"), to use the latest estimate based on partial data ("latest"),
-to use the latest estimate based on data that is over 50\% complete
-("estimate"). If an integer is supplied then the Rt estimate from this many
-days into the future (or past if negative) past will be used forwards in
-time.}
+\item{future}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Set what the reproduction
+number does over the forecast horizon on the prior instead, e.g.
+\code{rt_opts(prior = GP(init = ..., future = "project"))} or
+\code{rt_opts(prior = RW(..., future = ...))}.}
 
-\item{gp_on}{Character string, defaulting to "R_t-1". Indicates how the
-Gaussian process, if in use, should be applied to Rt. Currently supported
-options are applying the Gaussian process to the last estimated Rt (i.e
-Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
-= R0 * GP). Both should produced comparable results when data is not sparse
-but the method relying on a global mean will revert to this for real time
-estimates, which may not be desirable.}
+\item{gp_on}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Choose the Gaussian process
+variant through the prior instead: \code{rt_opts(prior = GP(mean = ...))} for a
+mean-reverting (stationary) process, or \code{rt_opts(prior = GP(init = ...))}
+(the default) for one on first differences.}
 
 \item{pop}{A \verb{<dist_spec>} giving the initial susceptible population size.
 Used to adjust Rt estimates based on the proportion of the population that

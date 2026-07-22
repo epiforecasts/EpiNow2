@@ -4,6 +4,7 @@ functions {
 #include functions/pmfs.stan
 #include functions/delays.stan
 #include functions/gaussian_process.stan
+#include functions/state.stan
 #include functions/rt.stan
 #include functions/infections.stan
 #include functions/observation_model.stan
@@ -120,7 +121,9 @@ generated quantities {
       }
       // simulate reported cases
       imputed_reports[i] = report_rng(
-        to_vector(reports[i]), reporting_overdispersion[i], model_type
+        to_vector(reports[i]),
+        rep_vector(reporting_overdispersion[i], num_elements(reports[i])),
+        model_type
       );
       r[i] = to_row_vector(calculate_growth(
         to_vector(infections[i]), seeding_time, gt_rev_pmf, growth_method

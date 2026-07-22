@@ -6,6 +6,7 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
     "primarycensored.stan",
     "convolve.stan", "gaussian_process.stan", "pmfs.stan",
     "observation_model.stan", "secondary.stan",
+    "state.stan",
     "rt.stan", "infections.stan", "delays.stan", "generated_quantities.stan"
   )
   if (!(tolower(Sys.info()[["sysname"]]) %in% "windows")) {

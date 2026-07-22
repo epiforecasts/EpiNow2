@@ -94,7 +94,7 @@ estimates <- epinow(
   data = reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+  rt = rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 0.2))),
   stan = stan_opts(cores = 4),
   verbose = interactive()
 )
@@ -103,9 +103,9 @@ names(estimates)
 
 The default model uses a Gaussian process to estimate time-varying transmission, which provides flexible estimates but can take several minutes to run. If speed is a priority, there are several alternatives:
 
-- Use a weekly random walk instead of the Gaussian process (`rt = rt_opts(..., rw = 7)` with `gp = NULL`), as shown in the `regional_epinow()` example below.
+- Use a random walk instead of the Gaussian process (`rt = rt_opts(prior = RW(...))`), as shown in the `regional_epinow()` example below.
 - Use variational inference for fast but unreliable approximate results (`stan = stan_opts(method = "vb")`).
-- Reduce the accuracy of the Gaussian process approximation (see `?gp_opts`).
+- Reduce the accuracy of the Gaussian process approximation (see the `basis_prop` argument of `?GP`).
 
 For examples of different model configurations, see the [estimate_infections_options](estimate_infections_options.html) vignette.
 
@@ -162,9 +162,8 @@ estimates <- regional_epinow(
   data = reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2), rw = 7),
+  rt = rt_opts(prior = RW(init = LogNormal(mean = 2, sd = 0.2), period = 7)),
   obs = obs,
-  gp = NULL,
   stan = stan_opts(cores = 4, samples = 1000),
   logs = NULL
 )
