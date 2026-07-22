@@ -200,13 +200,13 @@ estimate_dist <- function(data,
   primary_id <- switch(primary,
     "uniform" = 1L,
     "expgrowth" = 2L,
-    cli::cli_abort(c(
+    cli_abort(c(
       "x" = "Unsupported primary distribution: {primary}",
       "i" = "Supported: uniform, expgrowth"
     ))
   )
   if (primary == "expgrowth" && length(primary_params) != 1) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "x" = paste(
         "primary_params must be a single numeric value",
         "(growth rate) when primary = \"expgrowth\""
@@ -216,7 +216,7 @@ estimate_dist <- function(data,
 
   # Validate prior names
   if (!setequal(names(priors), param_names)) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "x" = "Invalid prior names for {dist} distribution",
       "i" = paste(
         "Expected: {paste(param_names, collapse = ', ')};",
@@ -285,7 +285,7 @@ estimate_dist <- function(data,
   near_zero_var <- wvar <= eps
 
   if (near_zero_var) {
-    cli::cli_warn(c(
+    cli_warn(c(
       paste(
         "Near-zero variance in observed delays;",
         "scale parameters cannot be estimated and will",
@@ -390,7 +390,7 @@ estimate_dist <- function(data,
   tryCatch(
     primarycensored::pcd_stan_dist_id(pc_name, "delay"),
     error = function(e) {
-      cli::cli_abort(c(
+      cli_abort(c(
         "x" = "Unsupported distribution: {dist}",
         "i" = "Supported: lognormal, gamma, normal, exp, weibull"
       ))
@@ -410,7 +410,7 @@ estimate_dist <- function(data,
     "normal" = c("mean", "sd"),
     "exp" = "rate",
     "weibull" = c("shape", "scale"),
-    cli::cli_abort(c(
+    cli_abort(c(
       "x" = "Unsupported distribution: {dist}",
       "i" = "Supported: lognormal, gamma, normal, exp, weibull"
     ))
@@ -445,7 +445,7 @@ estimate_dist <- function(data,
   required <- c("pdate_lwr", "sdate_lwr")
   missing_cols <- setdiff(required, names(data))
   if (length(missing_cols) > 0) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "x" = paste(
         "Data frame must have columns:",
         toString(required)
@@ -464,7 +464,7 @@ estimate_dist <- function(data,
   } else {
     data$pdate_upr <- data$pdate_lwr + 1
     if (verbose) {
-      cli::cli_inform(
+      cli_inform(
         "Assuming daily primary censoring \\
         (pdate_upr = pdate_lwr + 1)"
       )
@@ -475,7 +475,7 @@ estimate_dist <- function(data,
   } else {
     data$sdate_upr <- data$sdate_lwr + 1
     if (verbose) {
-      cli::cli_inform(
+      cli_inform(
         "Assuming daily secondary censoring \\
         (sdate_upr = sdate_lwr + 1)"
       )
@@ -486,7 +486,7 @@ estimate_dist <- function(data,
   } else {
     data$obs_date <- max(data$sdate_upr)
     if (verbose) {
-      cli::cli_inform(
+      cli_inform(
         "No obs_date supplied, using \\
         max(sdate_upr): {max(data$obs_date)}"
       )
@@ -503,17 +503,17 @@ estimate_dist <- function(data,
 
   # Check upper bounds >= lower bounds
   if (any(data$pdate_upr <= data$pdate_lwr)) {
-    cli::cli_abort(
+    cli_abort(
       "pdate_upr must be > pdate_lwr for all rows"
     )
   }
   if (any(data$sdate_upr <= data$sdate_lwr)) {
-    cli::cli_abort(
+    cli_abort(
       "sdate_upr must be > sdate_lwr for all rows"
     )
   }
   if (any(data$obs_date <= data$pdate_lwr)) {
-    cli::cli_abort(
+    cli_abort(
       "obs_date must be > pdate_lwr for all rows"
     )
   }
@@ -545,7 +545,7 @@ estimate_dist <- function(data,
   # Check for negative delays (sdate_lwr < pdate_lwr)
   n_negative <- sum(delay_lwr < 0)
   if (n_negative > 0) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "x" = paste(
         "{n_negative} observation(s) have sdate_lwr",
         "earlier than pdate_lwr (negative delay)"
@@ -557,7 +557,7 @@ estimate_dist <- function(data,
   # Validate obs_date >= sdate_upr for each observation
   bad_trunc <- relative_obs_time < delay_upr
   if (any(bad_trunc)) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "x" = paste(
         "{sum(bad_trunc)} observation(s) have obs_date",
         "earlier than sdate_upr"
@@ -576,7 +576,7 @@ estimate_dist <- function(data,
   threshold <- max_delay * obs_time_threshold
   far_from_truncation <- relative_obs_time > threshold
   if (verbose && any(far_from_truncation)) {
-    cli::cli_inform(
+    cli_inform(
       paste(
         "Setting {sum(far_from_truncation)} observation(s)",
         "with obs_time > {round(threshold, 1)} to",

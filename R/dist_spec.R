@@ -95,7 +95,7 @@ discrete_pmf <- function(distribution =
   if (!missing(cdf_cutoff) && cdf_cutoff > 0) {
     ## max from CDF cutoff using primarycensored quantile function
     cdf_cutoff_max <- do.call(
-      primarycensored::qprimarycensored,
+      qprimarycensored,
       c(
         list(
           p = 1 - cdf_cutoff,
@@ -116,7 +116,7 @@ discrete_pmf <- function(distribution =
 
   ## compute double censored PMF using primarycensored
   pmf <- do.call(
-    primarycensored::dprimarycensored,
+    dprimarycensored,
     c(
       list(
         x = seq(0, max_value - width, by = width),
@@ -432,7 +432,7 @@ sd.multi_dist_spec <- function(x, ...) {
 }
 #' @export
 sd.default <- function(x, ...) {
-  stats::sd(x)
+  stats::sd(x) # nolint: namespace_linter. `sd` is overridden by a generic here.
 }
 
 #' Returns the maximum of one or more delay distribution
@@ -1298,7 +1298,7 @@ dist_id_to_name <- function(dist_id) {
   )
   result <- supported[ids == dist_id]
   if (length(result) == 0) {
-    cli::cli_abort(
+    cli_abort(
       "Unknown distribution ID {dist_id}."
     )
   }

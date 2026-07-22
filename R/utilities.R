@@ -15,12 +15,12 @@
 #' @export
 clean_nowcasts <- function(date = Sys.Date(), nowcast_dir = ".") {
   dirs <- list.dirs(nowcast_dir, recursive = FALSE)
-  purrr::walk(
+  walk(
     dirs,
     function(dir) {
       remove_dir <- file.path(dir, date)
       if (dir.exists(remove_dir)) {
-        futile.logger::flog.info("Removing files from: %s", remove_dir)
+        flog.info("Removing files from: %s", remove_dir)
         lapply(
           list.files(file.path(remove_dir)),
           function(file) {
@@ -83,7 +83,7 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #'
 #' map_prob_change(var)
 map_prob_change <- function(var) {
-  var <- data.table::fcase(
+  var <- fcase(
     var < 0.05, "Increasing",
     var < 0.4, "Likely increasing",
     var < 0.6, "Stable",
@@ -197,9 +197,9 @@ match_output_arguments <- function(input_args = NULL,
                                    logger = NULL,
                                    level = "info") {
   if (level == "info") {
-    flog_fn <- futile.logger::flog.info
+    flog_fn <- flog.info
   } else if (level == "debug") {
-    flog_fn <- futile.logger::flog.debug
+    flog_fn <- flog.debug
   }
   # make supported args a logical vector
   output_args <- rep(FALSE, length(supported_args))
@@ -251,7 +251,7 @@ expose_stan_fns <- function(files, target_dir, ...) {
   functions <- paste0(
     "\n functions{ \n",
     paste(
-      purrr::map_chr(
+      map_chr(
         files,
         ~ paste(readLines(file.path(target_dir, .)), collapse = "\n")
       ),
@@ -259,7 +259,7 @@ expose_stan_fns <- function(files, target_dir, ...) {
     ),
     "\n }"
   )
-  rstan::expose_stan_functions(rstan::stanc(model_code = functions), ...)
+  expose_stan_functions(stanc(model_code = functions), ...)
   invisible(NULL)
 }
 
@@ -355,7 +355,7 @@ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
 #' }
 add_day_of_week <- function(dates, week_effect = 7) {
   if (week_effect == 7) {
-    day_of_week <- lubridate::wday(dates, week_start = 1)
+    day_of_week <- wday(dates, week_start = 1)
   } else {
     day_of_week <- as.numeric(dates - min(dates)) %% week_effect
     day_of_week <- ifelse(day_of_week == 0, week_effect, day_of_week)
@@ -386,13 +386,14 @@ add_day_of_week <- function(dates, week_effect = 7) {
 #' }
 #' @export
 set_dt_single_thread <- function() {
-  a <- list2env(x = list(dt_previous_threads = data.table::getDTthreads()))
+  a <- list2env(x = list(dt_previous_threads = getDTthreads()))
 
   assign(deparse(substitute(dt_settings)), a, envir = parent.frame())
 
-  data.table::setDTthreads(1)
+  setDTthreads(1)
 
   do.call("on.exit",
+    # nolint next: namespace_linter. Runs in the caller's frame, not ours.
     list(quote(data.table::setDTthreads(dt_settings$dt_previous_threads))),
     envir = parent.frame()
   )

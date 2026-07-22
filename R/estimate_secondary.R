@@ -172,7 +172,7 @@ estimate_secondary <- function(data,
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
-  reports <- data.table::as.data.table(data)
+  reports <- as.data.table(data)
 
   secondary_reports <-
     reports[, list(date, confirm = secondary)]
@@ -290,7 +290,7 @@ estimate_secondary <- function(data,
 #' data <- list(obs_scale_mean = 4, obs_scale_sd = 3)
 #' update_secondary_args(data, priors)
 update_secondary_args <- function(data, priors, verbose = TRUE) {
-  priors <- data.table::as.data.table(priors)
+  priors <- as.data.table(priors)
   if (!missing(priors) && !is.null(priors) && nrow(priors) > 0) {
     if (verbose) {
       cli_inform(
@@ -367,10 +367,10 @@ plot.estimate_secondary <- function(x, primary = FALSE,
   predictions <- merge(predictions, x$observations, by = "date", all = TRUE)
 
   if (!is.null(new_obs)) {
-    new_obs <- data.table::as.data.table(new_obs)
+    new_obs <- as.data.table(new_obs)
     new_obs <- new_obs[, .(date, secondary)]
     predictions <- predictions[, secondary := NULL]
-    predictions <- data.table::merge.data.table(
+    predictions <- merge.data.table(
       predictions, new_obs,
       all = TRUE, by = "date"
     )
@@ -382,33 +382,33 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     predictions <- predictions[date <= to]
   }
 
-  p <- ggplot2::ggplot(predictions, ggplot2::aes(x = date, y = secondary)) +
-    ggplot2::geom_col(
+  p <- ggplot(predictions, aes(x = date, y = secondary)) +
+    geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
     )
 
   if (primary) {
     p <- p +
-      ggplot2::geom_point(
+      geom_point(
         data = predictions,
-        ggplot2::aes(y = primary),
+        aes(y = primary),
         alpha = 0.4, size = 0.8
       ) +
-      ggplot2::geom_line(
+      geom_line(
         data = predictions,
-        ggplot2::aes(y = primary), alpha = 0.4
+        aes(y = primary), alpha = 0.4
       )
   }
   p <- plot_CrIs(p, extract_CrIs(predictions),
     alpha = 0.6, linewidth = 1
   )
   p +
-    ggplot2::theme_bw() +
-    ggplot2::labs(y = "Reports per day", x = "Date") +
-    ggplot2::scale_x_date(date_breaks = "week", date_labels = "%b %d") +
-    ggplot2::scale_y_continuous(labels = scales::comma) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+    theme_bw() +
+    labs(y = "Reports per day", x = "Date") +
+    scale_x_date(date_breaks = "week", date_labels = "%b %d") +
+    scale_y_continuous(labels = comma) +
+    theme(axis.text.x = ggplot2::element_text(angle = 90))
 }
 
 #' Plot method for forecast_secondary objects
@@ -496,15 +496,15 @@ convolve_and_scale <- function(data, type = c("incidence", "prevalence"),
                                delay_max = 30, ...) {
   type <- arg_match(type)
   family <- arg_match(family)
-  data <- data.table::as.data.table(data)
-  data <- data.table::copy(data)
+  data <- as.data.table(data)
+  data <- copy(data)
   data <- data[, index := seq_len(.N)]
   # apply scaling
   data <- data[, scaled := scaling * primary]
   # add convolution
   data <- data[
     ,
-    conv := purrr::pmap_dbl(
+    conv := pmap_dbl(
       list(i = index, m = meanlog, s = sdlog),
       function(i, m, s) {
         discretised_lognormal_pmf_conv(
@@ -531,9 +531,9 @@ convolve_and_scale <- function(data, type = c("incidence", "prevalence"),
   data <- data[!is.na(secondary)]
   # apply observation model
   if (family == "poisson") {
-    data <- data[, secondary := purrr::map_dbl(secondary, ~ rpois(1, .))]
+    data <- data[, secondary := map_dbl(secondary, ~ rpois(1, .))]
   } else if (family == "negbin") {
-    data <- data[, secondary := purrr::map_dbl(
+    data <- data[, secondary := map_dbl(
       secondary, ~ rnbinom(1, mu = .), ...
     )]
   }
@@ -605,7 +605,7 @@ forecast_secondary <- function(estimate,
                                CrIs = c(0.2, 0.5, 0.9)) {
   ## deal with input if data frame
   if (inherits(primary, "data.frame")) {
-    primary <- data.table::as.data.table(primary)
+    primary <- as.data.table(primary)
     if (is.null(primary$sample)) {
       if (is.null(samples)) {
         samples <- 1000
@@ -655,11 +655,11 @@ forecast_secondary <- function(estimate,
     .(sample = as.numeric(unlist(sample))),
     by = c("date", "value")
   ]
-  primary_fit <- data.table::rbindlist(
+  primary_fit <- rbindlist(
     list(primary_fit, updated_primary),
     use.names = TRUE
   )
-  data.table::setorderv(primary_fit, c("sample", "date"))
+  setorderv(primary_fit, c("sample", "date"))
 
   # update data with primary samples and day of week
   stan_data$primary <- t(
@@ -674,7 +674,7 @@ forecast_secondary <- function(estimate,
 
   # extract samples for posterior of estimates
   posterior_samples <- sample(stan_data$n, stan_data$n, replace = TRUE)
-  draws <- purrr::map(draws, function(x) as.matrix(x[posterior_samples, ]))
+  draws <- map(draws, function(x) as.matrix(x[posterior_samples, ]))
   # combine with data
   stan_data <- c(stan_data, draws)
 
@@ -714,7 +714,7 @@ forecast_secondary <- function(estimate,
     summarise_by = "date",
     CrIs = CrIs
   )
-  summarised <- summarised[, purrr::map(.SD, round, digits = 1)]
+  summarised <- summarised[, map(.SD, round, digits = 1)]
 
   # construct output
   out <- list()
@@ -724,20 +724,20 @@ forecast_secondary <- function(estimate,
   preds_with_obs <- merge(
     get_predictions(estimate), estimate$observations, by = "date"
   )
-  forecast_obs <- data.table::rbindlist(
+  forecast_obs <- rbindlist(
     list(
       preds_with_obs[, .(date, primary, secondary)],
-      data.table::copy(primary)[, .(primary = median(value)), by = "date"]
+      copy(primary)[, .(primary = median(value)), by = "date"]
     ),
     use.names = TRUE, fill = TRUE
   )
-  data.table::setorderv(forecast_obs, "date")
+  setorderv(forecast_obs, "date")
   # add in predictions in estimate_secondary format
-  out$predictions <- data.table::merge.data.table(summarised,
+  out$predictions <- merge.data.table(summarised,
     forecast_obs,
     by = "date", all = TRUE
   )
-  data.table::setcolorder(
+  setcolorder(
     out$predictions, c("date", "primary", "secondary", "mean", "sd")
   )
   # Store observations for compatibility with estimate_secondary methods
@@ -767,21 +767,21 @@ forecast_secondary <- function(estimate,
 `$.estimate_secondary` <- function(x, name) {
   switch(name,
     predictions = {
-      lifecycle::deprecate_stop(
+      deprecate_stop(
         "1.9.0",
         I("estimate_secondary()$predictions"),
         "get_predictions()"
       )
     },
     posterior = {
-      lifecycle::deprecate_stop(
+      deprecate_stop(
         "1.9.0",
         I("estimate_secondary()$posterior"),
         "get_samples()"
       )
     },
     data = {
-      lifecycle::deprecate_stop(
+      deprecate_stop(
         "1.9.0",
         I("estimate_secondary()$data"),
         I("estimate_secondary()$observations")
