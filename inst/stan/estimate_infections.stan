@@ -347,7 +347,11 @@ model {
           state_init_lower[s], state_init_upper[s]
         );
         if (state_link[s] == 0) {
-          target += log(state_init[s]);
+          real state_level = get_param(
+            state_param_id[s], params_fixed_lookup, params_variable_lookup,
+            params_value, params
+          );
+          target += log(state_init[s]) - log(state_level);
         }
       }
     }

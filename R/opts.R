@@ -391,7 +391,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
   assert_class(prior, "param_spec")
 
   if (is.numeric(pop)) {
-    lifecycle::deprecate_stop(
+    deprecate_stop(
       "1.9.0",
       "rt_opts(pop = 'must be a `<dist_spec>`')",
       details = paste(
@@ -712,7 +712,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
 #'  as many processors as the hardware and RAM allow (up to the number of
 #'  chains).
 #'
-#' @param warmup Numeric, defaults to 250. Number of warmup samples per chain.
+#' @param warmup Numeric, defaults to 500. Number of warmup samples per chain.
 #'
 #' @param samples Numeric, default 2000. Overall number of posterior samples.
 #' When using multiple chains iterations per chain is samples / chains.
@@ -752,7 +752,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
 #' @examples
 #' stan_sampling_opts(samples = 2000)
 stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
-                               warmup = 250,
+                               warmup = 500,
                                samples = 2000,
                                chains = 4,
                                control = list(),

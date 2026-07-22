@@ -680,3 +680,28 @@ test_that("as_forecast_sample.epinow dispatches and surfaces failed-run errors",
     "failed"
   )
 })
+
+test_that("estimate_infections recovers the prior on the initial Rt", {
+  skip_integration()
+  # The Rt prior is applied to the derived initial Rt rather than to the
+  # sampled parameter, so it depends on a hand-written Jacobian. Switching the
+  # likelihood off leaves the prior as the only contribution to the target,
+  # which lets the recovered prior be checked against the requested one.
+  prior <- LogNormal(mean = 2, sd = 1)
+  pars <- get_parameters(prior)
+  fit <- suppressWarnings(estimate_infections(
+    reported_cases,
+    generation_time = gt_opts(example_generation_time),
+    rt = rt_opts(prior = prior),
+    gp = NULL,
+    obs = obs_opts(likelihood = FALSE),
+    stan = stan_opts(
+      warmup = 500, samples = 4000, chains = 2, seed = 42L,
+      control = list(adapt_delta = 0.8)
+    ),
+    verbose = FALSE
+  ))
+  log_R1 <- log(rstan::extract(fit$fit, pars = "R")$R[, 1])
+  expect_equal(mean(log_R1), unname(pars$meanlog), tolerance = 0.05)
+  expect_equal(sd(log_R1), unname(pars$sdlog), tolerance = 0.1)
+})

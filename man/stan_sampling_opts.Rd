@@ -6,7 +6,7 @@
 \usage{
 stan_sampling_opts(
   cores = getOption("mc.cores", 1L),
-  warmup = 250,
+  warmup = 500,
   samples = 2000,
   chains = 4,
   control = list(),
@@ -24,7 +24,7 @@ which defaults to 1 but it is recommended to set the mc.cores option to be
 as many processors as the hardware and RAM allow (up to the number of
 chains).}
 
-\item{warmup}{Numeric, defaults to 250. Number of warmup samples per chain.}
+\item{warmup}{Numeric, defaults to 500. Number of warmup samples per chain.}
 
 \item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}

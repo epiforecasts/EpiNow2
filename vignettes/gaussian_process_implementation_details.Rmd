@@ -196,12 +196,20 @@ The user's prior on the initial reproduction number is then applied to the deriv
 R_1 = \exp(\overline{\log R} - \overline{\mathrm{GP}})
 \end{equation}
 
-via a [change of variables](https://mc-stan.org/docs/stan-users-guide/reparameterization.html#changes-of-variables). The Jacobian of this transform is
+via a [change of variables](https://mc-stan.org/docs/stan-users-guide/reparameterization.html#changes-of-variables). Stan explores $\overline{\log R}$ on the unconstrained scale, so the prior placed there must carry the Jacobian of the map to $R_1$,
 
 \begin{equation}
-\left| \frac{\partial R_1}{\partial \overline{\log R}} \right| = R_1
+\left| \frac{\partial R_1}{\partial \overline{\log R}} \right| = R_1,
 \end{equation}
 
-so we need to add a Jacobian correction of $\log R_1$ to the target log density.
+contributing $\log R_1$ to the target log density.
+
+The internal parameter is declared as a positive real $\overline{R} = \exp(\overline{\log R})$, so Stan supplies $\log \overline{R}$ itself as the Jacobian of its own log transform. The correction added by hand is therefore the difference
+
+\begin{equation}
+\log R_1 - \log \overline{R} = - \overline{\mathrm{GP}}.
+\end{equation}
+
+A breakpoint random walk, when used, is centred over the observation window in the same way and enters $\log R_t$ as a further additive term. Its contribution to the offset between $\log R_1$ and $\overline{\log R}$ adds to $-\overline{\mathrm{GP}}$, and since it too is a deterministic function of the other parameters that does not involve $\overline{\log R}$, the change of variables and its Jacobian are unchanged.
 
 # References
