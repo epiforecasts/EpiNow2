@@ -4,12 +4,12 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = Fixed(0), default_cdf_cutoff = 0.001, weight_prior = FALSE)
+trunc_opts(dist = Fixed(0), default_cdf_cutoff = 0.999, weight_prior = FALSE)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions reflecting
 the truncation. It can be specified using the probability distributions
-interface in \code{EpiNow2} (See \code{?EpiNow2::Distributions}) or estimated using
+interface in \code{distspec} (See \code{?distspec::Distributions}) or estimated using
 \code{\link[=estimate_truncation]{estimate_truncation()}}, which returns a \code{dist} object, suited
 for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
 no truncation.}
@@ -42,6 +42,6 @@ trunc_opts()
 trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
 }
 \seealso{
-\code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
-\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link{Distributions}}
+\code{\link[distspec:convert_to_logmean]{distspec::convert_to_logmean()}} \code{\link[distspec:convert_to_logsd]{distspec::convert_to_logsd()}}
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \link[distspec:Distributions]{distspec::Distributions}
 }

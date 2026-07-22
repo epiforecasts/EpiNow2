@@ -181,6 +181,6 @@ options(old_opts)
 }
 }
 \seealso{
-\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[=get_parameters]{get_parameters()}}
+\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[distspec:get_parameters]{get_parameters()}}
 \code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=forecast_infections]{forecast_infections()}} \code{\link[=regional_epinow]{regional_epinow()}}
 }

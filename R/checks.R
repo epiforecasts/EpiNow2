@@ -129,17 +129,17 @@ check_stan_delay <- function(dist) {
     )
   }
   if (is.null(attr(dist, "cdf_cutoff"))) {
-    attr(dist, "cdf_cutoff") <- 0
+    attr(dist, "cdf_cutoff") <- 1
   }
   assert_numeric(attr(dist, "cdf_cutoff"), lower = 0, upper = 1)
   # Check that `dist` has a finite maximum
-  if (any(is.infinite(max(dist))) && attr(dist, "cdf_cutoff") == 0) {
+  if (any(is.infinite(max(dist))) && attr(dist, "cdf_cutoff") == 1) {
     cli_abort(
       c(
         "i" = "All distributions passed to the model need to have a
       {col_blue(\"finite maximum\")}, which can be achieved either by
       setting {.var max} or, if using a distribution with fixed parameters,
-      non-zero {.var cdf_cutoff}."
+      a {.var cdf_cutoff} below 1."
       )
     )
   }
@@ -157,7 +157,11 @@ check_stan_delay <- function(dist) {
 check_generation_time <- function(dist) {
   # Do the standard delay checks
   check_stan_delay(dist)
-  ## check for nonparametric with nonzero first element
+  ## check for nonparametric with nonzero first element; an estimated
+  ## (Dirichlet-backed) delay has no fixed PMF, so resolve any uncertainty to
+  ## the prior mean before inspecting the first element (its first element is
+  ## zero exactly when the prior puts no mass there)
+  dist <- fix_parameters(dist, strategy = "mean")
   nonzero_first_element <- vapply(seq_len(ndist(dist)), function(i) {
     get_distribution(dist, i) == "nonparametric" && get_pmf(dist, i)[1] > 0
   }, logical(1))
@@ -253,7 +257,7 @@ check_truncation_length <- function(stan_args, time_points) {
 
   # Check if any truncation PMF exceeds time_points
   if (any(trunc_pmf_lengths > time_points)) {
-    cli::cli_warn(
+    cli_warn(
       c(
         "!" = "The truncation distribution is longer than the observed time
         period.",

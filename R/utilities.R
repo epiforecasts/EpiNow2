@@ -263,44 +263,6 @@ expose_stan_fns <- function(files, target_dir, ...) {
   invisible(NULL)
 }
 
-#' Convert mean and sd to log mean for a log normal distribution
-#'
-#' @description
-#' Convert from mean and standard deviation to the log mean of the
-#' lognormal distribution. Useful for defining distributions supported by
-#' [estimate_infections()], [epinow()], and [regional_epinow()].
-#' @param mean Numeric, mean of a distribution
-#' @param sd Numeric, standard deviation of a distribution
-#'
-#' @return The log mean of a lognormal distribution
-#' @export
-#'
-#' @examples
-#'
-#' convert_to_logmean(2, 1)
-convert_to_logmean <- function(mean, sd) {
-  log(mean^2 / sqrt(sd^2 + mean^2))
-}
-
-#' Convert mean and sd to log standard deviation for a log normal distribution
-#'
-#' @description
-#' Convert from mean and standard deviation to the log standard deviation of the
-#' lognormal distribution. Useful for defining distributions supported by
-#' [estimate_infections()], [epinow()], and [regional_epinow()].
-#' @param mean Numeric, mean of a distribution
-#' @param sd Numeric, standard deviation of a distribution
-#'
-#' @return The log standard deviation of a lognormal distribution
-#' @export
-#'
-#' @examples
-#'
-#' convert_to_logsd(2, 1)
-convert_to_logsd <- function(mean, sd) {
-  sqrt(log(1 + (sd^2 / mean^2)))
-}
-
 discretised_lognormal_pmf <- function(meanlog, sdlog, max_d, reverse = FALSE) {
   pmf <- plnorm(1:(max_d + 1), meanlog, sdlog) -
     plnorm(0:max_d, meanlog, sdlog)
@@ -553,8 +515,34 @@ make_init_priors <- function(priors = list()) {
   )
 }
 
+#' Map a primarycensored Stan distribution ID to a distspec distribution
+#'
+#' @description
+#' Maps a `primarycensored` Stan distribution ID back to a `distspec`
+#' distribution name.
+#' Builds a reverse lookup from
+#' `primarycensored::pcd_stan_dist_id()` for supported distributions.
+#' @param dist_id Integer Stan distribution ID from primarycensored.
+#' @return A character string distribution name.
+#' @keywords internal
+pcd_stan_id_to_distribution <- function(dist_id) {
+  supported <- c(
+    "lognormal", "gamma", "weibull", "exp", "normal"
+  )
+  ids <- vapply(
+    supported, primarycensored::pcd_stan_dist_id, integer(1)
+  )
+  result <- supported[ids == dist_id]
+  if (length(result) == 0) {
+    cli::cli_abort(
+      "Unknown distribution ID {dist_id}."
+    )
+  }
+  result
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
-#' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
+#' @importFrom stats rlnorm rnorm rpois runif var rgamma pnorm
 globalVariables(
   c(
     "bottom", "cases", "confidence", "confirm", "country_code", "crps",

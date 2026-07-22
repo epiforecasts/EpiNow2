@@ -738,8 +738,9 @@ create_stan_args <- function(stan = stan_opts(),
 ##' are left untouched at sampling time.
 ##'
 ##' @param np_delays A list of nonparametric `dist_spec` objects in
-##'   their original order. Each estimated entry must carry an
-##'   `$alpha` numeric vector aligned with its PMF.
+##'   their original order. Each estimated entry carries a Dirichlet
+##'   prior (its `$pmf` is a `dist_spec`) whose `alpha` is aligned
+##'   with its PMF.
 ##' @param np_pmf_groups Integer vector of 1-indexed PMF group
 ##'   boundaries (output of `create_stan_delays()`).
 ##' @return A named list with `n_np_est`, `np_est_which`,
@@ -748,9 +749,7 @@ create_stan_args <- function(stan = stan_opts(),
 ##'   estimated.
 ##' @keywords internal
 build_np_est_data <- function(np_delays, np_pmf_groups) {
-  np_estimated <- vapply(
-    np_delays, function(x) isTRUE(x$estimated), logical(1)
-  )
+  np_estimated <- vapply(np_delays, has_uncertainty, logical(1))
   est_np_indices <- which(np_estimated)
   est_np_delays <- np_delays[np_estimated]
   n_np_est <- sum(np_estimated)
@@ -769,7 +768,7 @@ build_np_est_data <- function(np_delays, np_pmf_groups) {
   all_alphas <- list()
   all_pos <- list()
   for (k in seq_along(est_np_delays)) {
-    alpha_k <- est_np_delays[[k]]$alpha
+    alpha_k <- get_parameters(est_np_delays[[k]]$pmf)$alpha
     np_id <- est_np_indices[k]
     pmf_start <- np_pmf_groups[np_id]
     positive <- which(alpha_k > 0)
@@ -789,6 +788,11 @@ build_np_est_data <- function(np_delays, np_pmf_groups) {
     np_est_length = sum(est_np_lengths)
   )
 }
+
+# The fixed PMF of a nonparametric delay. An estimated (Dirichlet-backed) delay
+# has no fixed PMF, so its prior mean is used as a placeholder of the right
+# length; Stan overwrites those entries with the estimated simplex.
+np_fixed_pmf <- function(x) get_pmf(fix_parameters(x, strategy = "mean"))
 
 ##' Create delay variables for stan
 ##'
@@ -831,7 +835,7 @@ create_stan_delays <- function(..., time_points = 1L) {
     length(get_parameters(x))
   }, numeric(1)))
   nonparam_length <- unname(vapply(flat_delays[!parametric], function(x) {
-    length(x$pmf)
+    length(np_fixed_pmf(x))
   }, numeric(1)))
   distributions <- unname(as.character(
     map(flat_delays[parametric], get_distribution)
@@ -864,7 +868,7 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$max <- array(max_delay[parametric])
 
   ret$np_pmf <- array(unname(as.numeric(
-    flatten(map(flat_delays[!parametric], get_pmf))
+    flatten(map(flat_delays[!parametric], np_fixed_pmf))
   )))
   ## get non zero length delay pmf lengths
   ret$np_pmf_groups <- array(c(0, cumsum(nonparam_length)) + 1)
@@ -884,7 +888,7 @@ create_stan_delays <- function(..., time_points = 1L) {
   ## set lower bounds
   ret$params_lower <- array(unname(as.numeric(flatten(
     map(flat_delays[parametric], function(x) {
-      lower_bounds(get_distribution(x))[names(get_parameters(x))]
+      lower_bounds(x)[names(get_parameters(x))]
     })
   ))))
   ## assign prior weights

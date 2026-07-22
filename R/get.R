@@ -96,18 +96,18 @@ get_regional_results <- function(regional_output,
       out <- list()
 
       if (samples) {
-        samples <- purrr::map(
+        samples <- map(
           regions, ~ load_data(
             samples_path, .,
             result_dir = results_dir,
             date = date
           )[[1]]
         )
-        samples <- data.table::rbindlist(samples, idcol = "region", fill = TRUE)
+        samples <- rbindlist(samples, idcol = "region", fill = TRUE)
         out$samples <- samples
       }
       # get incidence values and combine
-      summarised <- purrr::map(
+      summarised <- map(
         regions, ~ load_data(
           summarised_path,
           .,
@@ -115,7 +115,7 @@ get_regional_results <- function(regional_output,
           date = date
         )[[1]]
       )
-      summarised <- data.table::rbindlist(
+      summarised <- rbindlist(
         summarised,
         idcol = "region", fill = TRUE
       )
@@ -139,14 +139,14 @@ get_regional_results <- function(regional_output,
     estimates_out <- list()
 
     if (samples) {
-      samp <- purrr::map(regional_output, get_samples)
-      samp <- data.table::rbindlist(samp, idcol = "region", fill = TRUE)
+      samp <- map(regional_output, get_samples)
+      samp <- rbindlist(samp, idcol = "region", fill = TRUE)
       estimates_out$samples <- samp
     }
-    summarised <- purrr::map(
+    summarised <- map(
       regional_output, summary, type = "parameters"
     )
-    summarised <- data.table::rbindlist(
+    summarised <- rbindlist(
       summarised,
       idcol = "region", fill = TRUE
     )
@@ -155,14 +155,14 @@ get_regional_results <- function(regional_output,
 
     if (forecast) {
       erc_out <- list()
-      erc_data <- purrr::map(regional_output, estimates_by_report_date)
+      erc_data <- map(regional_output, estimates_by_report_date)
       if (samples) {
-        samp <- purrr::map(erc_data, ~ .$samples)
-        samp <- data.table::rbindlist(samp, idcol = "region", fill = TRUE)
+        samp <- map(erc_data, ~ .$samples)
+        samp <- rbindlist(samp, idcol = "region", fill = TRUE)
         erc_out$samples <- samp
       }
-      summarised <- purrr::map(erc_data, ~ .$summarised)
-      summarised <- data.table::rbindlist(
+      summarised <- map(erc_data, ~ .$summarised)
+      summarised <- rbindlist(
         summarised,
         idcol = "region", fill = TRUE
       )
@@ -194,17 +194,17 @@ get_regional_results <- function(regional_output,
 get_regions_with_most_reports <- function(data,
                                           time_window = 7,
                                           no_regions = 6) {
-  most_reports <- data.table::copy(data)
+  most_reports <- copy(data)
   most_reports <-
     most_reports[,
-      .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(time_window))],
+      .SD[date >= (max(date, na.rm = TRUE) - days(time_window))],
       by = "region"
     ]
   most_reports <- most_reports[,
     .(confirm = sum(confirm, na.rm = TRUE)),
     by = "region"
   ]
-  most_reports <- data.table::setorderv(
+  most_reports <- setorderv(
     most_reports,
     cols = "confirm", order = -1
   )
@@ -281,7 +281,7 @@ get_samples.epinow <- function(object, ...) {
 #' @rdname get_samples
 #' @export
 get_samples.forecast_infections <- function(object, ...) {
-  data.table::copy(object$samples)
+  copy(object$samples)
 }
 
 #' @rdname get_samples
@@ -309,7 +309,7 @@ get_samples.estimate_secondary <- function(object, ...) {
   if (!"type" %in% names(samples)) samples[, type := NA_character_]
 
   # Reorder columns to match estimate_infections format
-  data.table::setcolorder(
+  setcolorder(
     samples,
     c("variable", "time", "date", "sample", "value", "strat", "type")
   )
@@ -320,7 +320,7 @@ get_samples.estimate_secondary <- function(object, ...) {
 #' @rdname get_samples
 #' @export
 get_samples.forecast_secondary <- function(object, ...) {
-  data.table::copy(object$samples)
+  copy(object$samples)
 }
 
 #' @rdname get_samples
@@ -347,7 +347,7 @@ format_sample_predictions <- function(samples, forecast_date) {
   predictions <- samples[, .(date, sample, predicted = value)]
   predictions[, forecast_date := forecast_date]
   predictions[, horizon := as.numeric(date - forecast_date)]
-  data.table::setcolorder(
+  setcolorder(
     predictions,
     c("forecast_date", "date", "horizon", "sample", "predicted")
   )
@@ -374,7 +374,7 @@ format_quantile_predictions <- function(samples, quantiles, forecast_date) {
   predictions[, quantile_level := rep(quantiles, .N / length(quantiles))]
   predictions[, forecast_date := forecast_date]
   predictions[, horizon := as.numeric(date - forecast_date)]
-  data.table::setcolorder(
+  setcolorder(
     predictions,
     c("forecast_date", "date", "horizon", "quantile_level", "predicted")
   )
@@ -434,7 +434,7 @@ get_predictions.estimate_infections <- function(
     CrIs = c(0.2, 0.5, 0.9),
     quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
     ...) {
-  format <- rlang::arg_match(format)
+  format <- arg_match(format)
 
   # Get samples for reported cases
   samples <- get_samples(object)
@@ -463,7 +463,7 @@ get_predictions.estimate_secondary <- function(
     CrIs = c(0.2, 0.5, 0.9),
     quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
     ...) {
-  format <- rlang::arg_match(format)
+  format <- arg_match(format)
 
   # Get samples for simulated secondary observations
   samples <- get_samples(object)
@@ -492,7 +492,7 @@ get_predictions.forecast_infections <- function(
     CrIs = c(0.2, 0.5, 0.9),
     quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
     ...) {
-  format <- rlang::arg_match(format)
+  format <- arg_match(format)
 
   samples <- object$samples[variable == "reported_cases"]
   forecast_date <- max(object$observations$date, na.rm = TRUE)
@@ -515,7 +515,7 @@ get_predictions.forecast_secondary <- function(
     CrIs = c(0.2, 0.5, 0.9),
     quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
     ...) {
-  format <- rlang::arg_match(format)
+  format <- arg_match(format)
 
   # forecast_secondary$samples only contains sim_secondary, no filtering needed
   samples <- object$samples
@@ -528,7 +528,7 @@ get_predictions.forecast_secondary <- function(
 
   switch(format,
     summary = {
-      preds <- data.table::copy(object$predictions)
+      preds <- copy(object$predictions)
       preds[, c("primary", "secondary") := NULL]
       preds
     },
@@ -545,17 +545,17 @@ get_predictions.estimate_truncation <- function(
     CrIs = c(0.2, 0.5, 0.9),
     quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
     ...) {
-  format <- rlang::arg_match(format)
+  format <- arg_match(format)
 
   # Process input observations to get dates
-  dirty_obs <- purrr::map(object$observations, data.table::as.data.table)
+  dirty_obs <- map(object$observations, as.data.table)
   earliest_date <- max(
     as.Date(
-      purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])
+      map_chr(dirty_obs, function(x) x[, as.character(min(date))])
     )
   )
-  dirty_obs <- purrr::map(dirty_obs, function(x) x[date >= earliest_date])
-  nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
+  dirty_obs <- map(dirty_obs, function(x) x[date >= earliest_date])
+  nrow_obs <- order(map_dbl(dirty_obs, nrow))
   dirty_obs <- dirty_obs[nrow_obs]
 
   obs_sets <- object$args$obs_sets
@@ -587,7 +587,7 @@ get_predictions.estimate_truncation <- function(
       if (!is.null(estimates$n_eff)) estimates[, "n_eff" := NULL]
       if (!is.null(estimates$Rhat)) estimates[, "Rhat" := NULL]
 
-      result <- data.table::merge.data.table(
+      result <- merge.data.table(
         target_obs[, .(date, idx)],
         estimates,
         by = "idx", all.x = TRUE
@@ -596,13 +596,13 @@ get_predictions.estimate_truncation <- function(
       result[order(date)][, idx := NULL]
     }
 
-    predictions <- purrr::map(seq_len(obs_sets), link_preds)
-    data.table::rbindlist(predictions)
+    predictions <- map(seq_len(obs_sets), link_preds)
+    rbindlist(predictions)
   } else {
     # Both "sample" and "quantile" need raw samples first
     raw_samples <- extract_samples(object$fit, pars = "recon_obs")
-    recon_samples <- data.table::as.data.table(raw_samples$recon_obs)
-    recon_samples <- data.table::melt(recon_samples,
+    recon_samples <- as.data.table(raw_samples$recon_obs)
+    recon_samples <- melt(recon_samples,
       measure.vars = seq_len(ncol(recon_samples)),
       variable.name = "obs_idx",
       value.name = "predicted"
@@ -618,7 +618,7 @@ get_predictions.estimate_truncation <- function(
       target_obs[, obs_idx := seq_len(.N)]
 
       samples_subset <- recon_samples[dataset == index]
-      result <- data.table::merge.data.table(
+      result <- merge.data.table(
         target_obs[, .(date, obs_idx)],
         samples_subset[, .(obs_idx, sample, predicted)],
         by = "obs_idx"
@@ -633,12 +633,12 @@ get_predictions.estimate_truncation <- function(
       result
     }
 
-    predictions <- purrr::map(seq_len(obs_sets), link_samples)
-    predictions <- data.table::rbindlist(predictions)
+    predictions <- map(seq_len(obs_sets), link_samples)
+    predictions <- rbindlist(predictions)
 
     if (format == "sample") {
       # Reorder columns for sample format
-      data.table::setcolorder(
+      setcolorder(
         predictions,
         c("dataset", "forecast_date", "date", "horizon", "sample", "predicted")
       )
@@ -652,7 +652,7 @@ get_predictions.estimate_truncation <- function(
       predictions[
         , quantile_level := rep(quantiles, .N / length(quantiles))
       ]
-      data.table::setcolorder(
+      setcolorder(
         predictions,
         c("dataset", "forecast_date", "date", "horizon",
           "quantile_level", "predicted")
@@ -748,7 +748,7 @@ posterior_to_normal <- function(posterior, idx) {
 #' @return A `dist_spec` object representing the delay distribution
 #' @keywords internal
 reconstruct_parametric <- function(stan_data, param_id, posterior) {
-  dist_type <- dist_id_to_name(stan_data$delay_dist[param_id])
+  dist_type <- pcd_stan_id_to_distribution(stan_data$delay_dist[param_id])
   dist_max <- stan_data$delay_max[param_id]
 
   # Get parameter indices and values
@@ -868,7 +868,7 @@ extract_delay_params <- function(x, stan_data) {
   delay_names <- sub("^delay_id_", "", delay_id_vars[valid])
 
   # Build named list directly
-  result <- purrr::map(delay_names, function(name) reconstruct_delay(x, name))
+  result <- map(delay_names, function(name) reconstruct_delay(x, name))
   names(result) <- delay_names
   result
 }
@@ -909,14 +909,22 @@ extract_scalar_params <- function(x, stan_data) {
   valid <- valid & !is.na(lookup_idxs) & lookup_idxs > 0 &
     lookup_idxs <= nrow(posterior)
 
-  result <- purrr::map(which(valid), function(i) {
+  result <- map(which(valid), function(i) {
     posterior_to_normal(posterior, lookup_idxs[i])
   })
   names(result) <- param_names[valid]
   result
 }
 
-#' @rdname get_parameters
+#' Extract parameters from EpiNow2 model fits
+#'
+#' @description
+#' S3 methods for [distspec::get_parameters()] that extract the estimated delay
+#' distribution and scalar parameters from fitted EpiNow2 model objects.
+#' @param x A fitted EpiNow2 model object.
+#' @param ... Not used.
+#' @return A named list of parameters.
+#' @rdname get_parameters_methods
 #' @export
 get_parameters.epinowfit <- function(x, ...) {
   stan_data <- x$args
@@ -926,7 +934,7 @@ get_parameters.epinowfit <- function(x, ...) {
   )
 }
 
-#' @rdname get_parameters
+#' @rdname get_parameters_methods
 #' @export
 get_parameters.estimate_dist <- function(x, ...) {
   dist_spec <- .extract_to_dist_spec(

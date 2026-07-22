@@ -114,7 +114,8 @@ URL: https://epiforecasts.io/EpiNow2/,
     https://github.com/epiforecasts/EpiNow2
 BugReports: https://github.com/epiforecasts/EpiNow2/issues
 Depends:
-    R (>= 3.5.0)
+    R (>= 3.5.0),
+    distspec
 Imports:
     checkmate,
     cli,
@@ -159,6 +160,8 @@ LinkingTo:
     StanHeaders (>= 2.26.0)
 Additional_repositories:
     https://production.r-multiverse.org/2026-06-15
+Remotes:
+    epiforecasts/distspec
 Biarch: true
 Config/testthat/edition: 3
 Config/Needs/dev:
