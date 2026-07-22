@@ -125,10 +125,14 @@ void params_lp(vector params, array[] int prior_dist,
  * Apply user priors on the initial values of centred-GP-wrapped trajectories
  *
  * For each registered init prior, dispatches on the parameter id to the
- * corresponding derived initial value, applies the user's truncated prior
- * via `apply_prior_lp`, and adds the natural-to-log Jacobian (the shift
- * from sampled log-mean to derived log initial value contributes nothing,
- * as its Jacobian determinant is one).
+ * corresponding derived initial value and to the parameter actually sampled,
+ * then applies the user's truncated prior via `apply_prior_lp`.
+ *
+ * The prior is declared on a derived value (e.g. `R[1]`) while the sampler
+ * moves on a different parameter (e.g. `R_mean`), whose `<lower = 0>`
+ * transform already contributes `log(sampled_value)` to the target. The
+ * Jacobian of the sampled-to-derived map is therefore taken relative to the
+ * sampled value, `log(init_value) - log(sampled_value)`.
  *
  * @param init_param_ids Per-prior id of the parameter the prior applies to.
  * @param init_dists Per-prior distribution code (0: lognormal, 1: gamma,
@@ -139,18 +143,21 @@ void params_lp(vector params, array[] int prior_dist,
  * @param init_upper Per-prior upper bound on the parameter's support.
  * @param param_id_R0 Registered id of R0.
  * @param R Reproduction-number trajectory.
+ * @param R_mean Sampled mean reproduction number over the centring window.
  *
  * @ingroup parameter_handlers
  */
 void init_priors_lp(array[] int init_param_ids, array[] int init_dists,
                     vector init_dist_params,
                     vector init_lower, vector init_upper,
-                    int param_id_R0, vector R) {
+                    int param_id_R0, vector R, array[] real R_mean) {
   int params_id = 1;
   for (i in 1:num_elements(init_param_ids)) {
     real init_value;
+    real sampled_value;
     if (init_param_ids[i] == param_id_R0) {
       init_value = R[1];
+      sampled_value = R_mean[1];
     } else {
       reject("no init param registered for id ", init_param_ids[i]);
     }
@@ -159,7 +166,7 @@ void init_priors_lp(array[] int init_param_ids, array[] int init_dists,
       init_dist_params[params_id], init_dist_params[params_id + 1],
       init_lower[i], init_upper[i]
     );
-    target += log(init_value);
+    target += log(init_value) - log(sampled_value);
     params_id += 2;
   }
 }
