@@ -156,13 +156,13 @@ knitr::kable(summary(estimates))
 
 
 
-|measure                      |estimate                |
-|:----------------------------|:-----------------------|
-|New infections per day       |2240 (1363 -- 3709)     |
-|Expected change in reports   |Likely decreasing       |
-|Effective reproduction no.   |0.89 (0.72 -- 1.1)      |
-|Rate of growth               |-0.03 (-0.096 -- 0.038) |
-|Doubling/halving time (days) |-23 (18 -- -7.2)        |
+|measure                      |estimate                 |
+|:----------------------------|:------------------------|
+|New infections per day       |2264 (1393 -- 3707)      |
+|Expected change in reports   |Likely decreasing        |
+|Effective reproduction no.   |0.9 (0.72 -- 1.1)        |
+|Rate of growth               |-0.027 (-0.095 -- 0.037) |
+|Doubling/halving time (days) |-25 (19 -- -7.3)         |
 
 
 
@@ -173,20 +173,20 @@ Summarised parameter estimates can also easily be returned, either filtered for 
 head(summary(estimates, type = "parameters", params = "R"))
 #>          date variable strat     type   median     mean         sd lower_90
 #>        <Date>   <char> <int>   <char>    <num>    <num>      <num>    <num>
-#> 1: 2020-02-22        R    NA estimate 2.178490 2.184456 0.12007169 1.993521
-#> 2: 2020-02-23        R    NA estimate 2.143038 2.146818 0.10919319 1.972582
-#> 3: 2020-02-24        R    NA estimate 2.104298 2.107843 0.10069813 1.947632
-#> 4: 2020-02-25        R    NA estimate 2.062887 2.067720 0.09427498 1.918777
-#> 5: 2020-02-26        R    NA estimate 2.022027 2.026632 0.08946219 1.886428
-#> 6: 2020-02-27        R    NA estimate 1.980695 1.984750 0.08574980 1.851349
+#> 1: 2020-02-22        R    NA estimate 2.179068 2.183598 0.11275125 2.005295
+#> 2: 2020-02-23        R    NA estimate 2.141301 2.145704 0.10327042 1.986750
+#> 3: 2020-02-24        R    NA estimate 2.102250 2.106414 0.09604347 1.957726
+#> 4: 2020-02-25        R    NA estimate 2.063437 2.065940 0.09074339 1.923252
+#> 5: 2020-02-26        R    NA estimate 2.021761 2.024501 0.08691702 1.889365
+#> 6: 2020-02-27        R    NA estimate 1.979622 1.982302 0.08407564 1.850222
 #>    lower_50 lower_20 upper_20 upper_50 upper_90
 #>       <num>    <num>    <num>    <num>    <num>
-#> 1: 2.104145 2.150307 2.208533 2.262534 2.385199
-#> 2: 2.073533 2.115388 2.167645 2.217938 2.330660
-#> 3: 2.040771 2.078324 2.128667 2.170718 2.280794
-#> 4: 2.001783 2.041288 2.085802 2.126371 2.227861
-#> 5: 1.963473 2.000645 2.045253 2.083873 2.180490
-#> 6: 1.924749 1.959991 2.003451 2.040541 2.132498
+#> 1: 2.107301 2.149202 2.207317 2.254546 2.378791
+#> 2: 2.074646 2.114693 2.168833 2.209331 2.331336
+#> 3: 2.037935 2.079124 2.126700 2.165530 2.279731
+#> 4: 2.002830 2.040503 2.086115 2.122010 2.230435
+#> 5: 1.962925 2.000990 2.043690 2.078613 2.176145
+#> 6: 1.922390 1.959716 2.001465 2.034873 2.126182
 ```
 
 Reported cases can be extracted using `get_predictions()` which returns summarised estimates by default.
@@ -194,22 +194,22 @@ Reported cases can be extracted using `get_predictions()` which returns summaris
 
 ``` r
 head(get_predictions(estimates))
-#>          date median     mean        sd lower_90 lower_50 lower_20 upper_20
-#>        <Date>  <num>    <num>     <num>    <num>    <num>    <num>    <num>
-#> 1: 2020-02-22     35  35.9840  9.774483       21       29     33.0       38
-#> 2: 2020-02-23     53  53.5585 13.729998       33       44     49.0       56
-#> 3: 2020-02-24     64  65.2305 15.386804       42       55     60.6       68
-#> 4: 2020-02-25     72  73.1890 16.513589       48       61     68.0       76
-#> 5: 2020-02-26     82  83.2085 18.383280       56       70     78.0       87
-#> 6: 2020-02-27    119 120.7925 24.347502       84      104    113.0      125
+#>          date median     mean       sd lower_90 lower_50 lower_20 upper_20
+#>        <Date>  <num>    <num>    <num>    <num>    <num>    <num>    <num>
+#> 1: 2020-02-22     36  36.1120  9.52002       21       30     33.0       38
+#> 2: 2020-02-23     52  53.0055 13.00777       34       44     49.0       55
+#> 3: 2020-02-24     64  64.9965 14.91773       42       54     61.0       68
+#> 4: 2020-02-25     73  73.5895 16.48004       49       62     68.6       77
+#> 5: 2020-02-26     82  83.4130 18.62796       55       70     78.0       87
+#> 6: 2020-02-27    118 119.7920 25.41188       81      102    112.0      124
 #>    upper_50 upper_90
 #>       <num>    <num>
-#> 1:       42       53
-#> 2:       62       78
-#> 3:       74       93
-#> 4:       84      103
-#> 5:       94      116
-#> 6:      137      162
+#> 1:       42    53.00
+#> 2:       61    76.00
+#> 3:       74    91.00
+#> 4:       84   102.00
+#> 5:       95   116.00
+#> 6:      135   164.05
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
@@ -281,8 +281,8 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 |Region   |New infections per day |Expected change in reports |Effective reproduction no. |Rate of growth          |Doubling/halving time (days) |
 |:--------|:----------------------|:--------------------------|:--------------------------|:-----------------------|:----------------------------|
-|realland |1987 (1029 -- 4104)    |Likely decreasing          |0.84 (0.61 -- 1.2)         |-0.044 (-0.11 -- 0.044) |-16 (16 -- -6)               |
-|testland |3965 (2135 -- 7945)    |Likely decreasing          |0.85 (0.62 -- 1.2)         |-0.043 (-0.11 -- 0.038) |-16 (18 -- -6.2)             |
+|realland |2052 (1101 -- 3614)    |Likely decreasing          |0.85 (0.63 -- 1.1)         |-0.04 (-0.11 -- 0.034)  |-17 (21 -- -6.4)             |
+|testland |3995 (2139 -- 7407)    |Likely decreasing          |0.85 (0.63 -- 1.1)         |-0.042 (-0.11 -- 0.033) |-17 (21 -- -6.3)             |
 
 
 
