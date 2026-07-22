@@ -1,0 +1,7 @@
+<map id="report_rng" name="report_rng">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,85,56"/>
+<area shape="rect" id="Node000002" href="$group__handlers__and__helpers.html#ga457f8b223f165bb020afb7d8dc4cfddd" title=" " alt="" coords="133,5,301,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="85,35,117,30,118,36,86,40"/>
+<area shape="rect" id="Node000003" href="$group__observation__model.html#ga9c486bd82af40c82d5bd70cf77a3971b" title=" " alt="" coords="169,55,264,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="86,46,155,56,154,61,85,52"/>
+</map>

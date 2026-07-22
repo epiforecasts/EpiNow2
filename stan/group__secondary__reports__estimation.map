@@ -1,0 +1,5 @@
+<map id="Secondary Reports Estimation" name="Secondary Reports Estimation">
+<area shape="rect" id="Node000002" href="$group__estimates__smoothing.html" title="Functions for smoothing estimates using Gaussian processes." alt="" coords="248,5,392,31"/>
+<area shape="rect" id="Node000003" href="$group__observation__model.html" title="Functions for modeling the observation process." alt="" coords="255,55,384,80"/>
+<area shape="rect" id="Node000001" title="Functions for estimating secondary epidemiological reports." alt="" coords="5,31,200,56"/>
+</map>
