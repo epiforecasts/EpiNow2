@@ -15,7 +15,7 @@ apply_truncation <- function(index, data, dist, meanlog = NULL, sdlog = NULL) {
 
   # Only lognormal truncation is supported
   if (!identical(dist$distribution, "lognormal")) {
-    cli::cli_abort(
+    cli_abort(
       "apply_truncation currently supports lognormal truncation only."
     )
   }
@@ -31,7 +31,7 @@ apply_truncation <- function(index, data, dist, meanlog = NULL, sdlog = NULL) {
   # Use primarycensored to compute the PMF, consistent with the
   # Stan model's discretised_pmf (which uses primarycensored_sone_pmf_vectorized
   # with pwindow=1, uniform primary, D=max_d+1).
-  pmf <- primarycensored::dprimarycensored(
+  pmf <- dprimarycensored(
     0:max_d,
     pdist = plnorm,
     pwindow = 1, swindow = 1, D = max_d + 1,
@@ -40,7 +40,7 @@ apply_truncation <- function(index, data, dist, meanlog = NULL, sdlog = NULL) {
   cmf <- cumsum(pmf)
   cmf <- rev(cmf)[-1]
 
-  trunc_data <- data.table::copy(data)[1:(.N - index)]
+  trunc_data <- copy(data)[1:(.N - index)]
   trunc_data[
     (.N - length(cmf) + 1):.N, confirm := as.integer(confirm * cmf)
   ]
@@ -59,7 +59,7 @@ trunc <- LogNormal(
 
 # Use the make_truncated_data() function to generate example data for
 # an example using estimate_truncation()
-example_truncated <- purrr::map(
+example_truncated <- map(
   seq(20, 0, -5),
   apply_truncation,
   data = reported_cases,
