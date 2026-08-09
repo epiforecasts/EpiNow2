@@ -21,8 +21,8 @@ example_estimate_infections <- estimate_infections(reported_cases,
 )
 
 cases <- example_confirmed[1:60]
-cases <- data.table::rbindlist(list(
-  data.table::copy(cases)[, region := "testland"],
+cases <- rbindlist(list(
+  copy(cases)[, region := "testland"],
   cases[, region := "realland"]
 ))
 

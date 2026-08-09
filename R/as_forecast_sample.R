@@ -75,7 +75,7 @@ as_forecast_sample.estimate_infections <- function(data, observations,
 as_forecast_sample.epinow <- function(data, observations,
                                       horizon = 0, ...) {
   if (!is.null(data$error)) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "Cannot convert a failed {.fn epinow} run to a {.cls forecast_sample}.",
       "i" = "The run failed with error: {data$error}"
     ))
@@ -124,7 +124,7 @@ as_forecast_sample.estimate_truncation <- function(data, observations,
     reason = "to convert EpiNow2 outputs to forecast_sample objects."
   )
   if (missing(observations)) {
-    cli::cli_abort(
+    cli_abort(
       "{.arg observations} must be supplied to score predictions."
     )
   }
@@ -134,16 +134,16 @@ as_forecast_sample.estimate_truncation <- function(data, observations,
   assert_date(observations$date, any.missing = FALSE, unique = TRUE)
   assert_numeric(observations[[observed_col]], lower = 0)
 
-  observations <- data.table::as.data.table(observations)
+  observations <- as.data.table(observations)
   predictions <- get_predictions(data, format = "sample")
   keep <- predictions$horizon >= horizon
   predictions <- predictions[keep]
 
   obs <- observations[, c("date", observed_col), with = FALSE]
-  data.table::setnames(obs, observed_col, "observed")
+  setnames(obs, observed_col, "observed")
   forecasts <- merge(predictions, obs, by = "date")
   if (nrow(forecasts) == 0L) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "No predictions remain after merging with {.arg observations}.",
       "i" = "Check that {.arg observations} covers the prediction dates and \\
             that the {.arg horizon} filter is not too restrictive."
