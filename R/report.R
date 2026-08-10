@@ -22,8 +22,8 @@ report_summary <- function(summarised_estimates,
                            rt_samples, target_folder = NULL,
                            return_numeric = FALSE) {
   # set input to data.table
-  summarised_estimates <- data.table::setDT(summarised_estimates)
-  rt_samples <- data.table::setDT(rt_samples)
+  summarised_estimates <- setDT(summarised_estimates)
+  rt_samples <- setDT(rt_samples)
 
   CrIs <- extract_CrIs(summarised_estimates)
   max_CrI <- max(CrIs)
@@ -40,7 +40,7 @@ report_summary <- function(summarised_estimates,
   R_latest <- summarised_estimates[variable == "R"][
     ,
     variable := NULL
-  ][, purrr::map(.SD, signif, digits = 2)]
+  ][, map(.SD, signif, digits = 2)]
 
   # estimate probability of control
   prob_control <- rt_samples[
@@ -55,14 +55,14 @@ report_summary <- function(summarised_estimates,
     variable := NULL
   ][
     ,
-    purrr::map(.SD, ~ signif(as.integer(.)), 2)
+    map(.SD, ~ signif(as.integer(.)), 2)
   ]
 
   # get individual estimates
   r_latest <- summarised_estimates[variable == "growth_rate"][
     ,
     variable := NULL
-  ][, purrr::map(.SD, signif, digits = 2)]
+  ][, map(.SD, signif, digits = 2)]
 
   doubling_time <- function(r) {
     signif(log(2) * 1 / r, 2)
@@ -72,11 +72,11 @@ report_summary <- function(summarised_estimates,
     variable := NULL
   ][
     ,
-    purrr::map(.SD, doubling_time)
+    map(.SD, doubling_time)
   ]
 
   # regional summary
-  summary_estimates <- data.table::data.table(
+  summary_estimates <- data.table(
     measure = c(
       "New infections per day",
       "Expected change in reports",
@@ -157,8 +157,8 @@ report_summary <- function(summarised_estimates,
 report_plots <- function(summarised_estimates, reported,
                          target_folder = NULL, ...) {
   # set input to data.table
-  summarised_estimates <- data.table::setDT(summarised_estimates)
-  reported <- data.table::setDT(reported)
+  summarised_estimates <- setDT(summarised_estimates)
+  reported <- setDT(reported)
 
   # infections plot
   infections <- plot_estimates(
@@ -192,25 +192,25 @@ report_plots <- function(summarised_estimates, reported,
   plot_summary <- suppressWarnings(
     suppressMessages(
       reports +
-        ggplot2::theme(legend.position = "none") +
-        ggplot2::theme(
-          axis.text.x = ggplot2::element_blank(),
-          axis.title.x = ggplot2::element_blank(),
-          axis.ticks.x = ggplot2::element_blank()
+        theme(legend.position = "none") +
+        theme(
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank()
         ) +
-        ggplot2::labs(tag = "A") +
+        labs(tag = "A") +
         infections +
-        ggplot2::theme(legend.position = "none") +
-        ggplot2::theme(
-          axis.text.x = ggplot2::element_blank(),
-          axis.title.x = ggplot2::element_blank(),
-          axis.ticks.x = ggplot2::element_blank()
+        theme(legend.position = "none") +
+        theme(
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank()
         ) +
-        ggplot2::labs(tag = "B") +
+        labs(tag = "B") +
         R_plot +
-        ggplot2::labs(tag = "C") +
-        patchwork::plot_layout(ncol = 1) &
-        ggplot2::scale_x_date(
+        labs(tag = "C") +
+        plot_layout(ncol = 1) &
+        scale_x_date(
           date_breaks = "1 week",
           date_labels = "%b %d",
           limits = c(
@@ -243,7 +243,7 @@ report_plots <- function(summarised_estimates, reported,
         summary = "summary_plot.png"
       ))
       mapply(
-        ggplot2::ggsave,
+        ggsave,
         filename = pths, plot = plots,
         width = wd, height = ht, dpi = dpi
       )

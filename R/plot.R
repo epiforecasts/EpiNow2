@@ -27,14 +27,14 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth,
     if (style == "ribbon") {
       if (index == 1) {
         p <- p +
-          ggplot2::geom_ribbon(
-            ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
+          geom_ribbon(
+            aes(ymin = .data[[bottom]], ymax = .data[[top]]),
             alpha = 0.2, linewidth = linewidth
           )
       } else {
         p <- p +
-          ggplot2::geom_ribbon(
-            ggplot2::aes(
+          geom_ribbon(
+            aes(
               ymin = .data[[bottom]], ymax = .data[[top]],
               col = NULL
             ),
@@ -45,8 +45,8 @@ plot_CrIs <- function(plot, CrIs, alpha, linewidth,
       # linerange style - graduated linewidths (narrower CrIs drawn thicker)
       lw <- c(6, 4, 1.5)[min(index, 3)]
       p <- p +
-        ggplot2::geom_linerange(
-          ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
+        geom_linerange(
+          aes(ymin = .data[[bottom]], ymax = .data[[top]]),
           linewidth = lw
         )
     }
@@ -119,9 +119,9 @@ plot_estimates <- function(estimate, reported, ylab, hline,
                            ),
                            style = c("ribbon", "linerange")) {
   # convert input to data.table
-  estimate <- data.table::as.data.table(estimate)
+  estimate <- as.data.table(estimate)
   if (!missing(reported)) {
-    reported <- data.table::as.data.table(reported)
+    reported <- as.data.table(reported)
   }
 
   # map type to presentation form
@@ -144,7 +144,7 @@ plot_estimates <- function(estimate, reported, ylab, hline,
 
     if (!all(is.na(reported$confirm))) {
       if (length(cols) > 1) {
-        max_cases_to_plot <- data.table::copy(reported)[,
+        max_cases_to_plot <- copy(reported)[,
           .(max = round(max(confirm, na.rm = TRUE) * max_plot, 0)),
           by = cols
         ]
@@ -162,32 +162,32 @@ plot_estimates <- function(estimate, reported, ylab, hline,
   }
 
   # initialise plot
-  p <- ggplot2::ggplot(
-    estimate, ggplot2::aes(x = date, col = type, fill = type)
+  p <- ggplot(
+    estimate, aes(x = date, col = type, fill = type)
   )
 
   # add in reported data if present (either as column or as a line)
   if (!missing(reported)) {
     if (obs_as_col) {
       p <- p +
-        ggplot2::geom_col(
+        geom_col(
           data = reported[
             date >= min(estimate$date, na.rm = TRUE) &
               date <= max(estimate$date, na.rm = TRUE)
           ],
-          ggplot2::aes(y = confirm), fill = "grey", col = "white",
+          aes(y = confirm), fill = "grey", col = "white",
           show.legend = FALSE, na.rm = TRUE
         )
     } else {
       p <- p +
-        ggplot2::geom_line(
+        geom_line(
           data = reported,
-          ggplot2::aes(y = confirm, fill = NULL),
+          aes(y = confirm, fill = NULL),
           linewidth = 1.1, alpha = 0.5, col = "black", na.rm = TRUE
         ) +
-        ggplot2::geom_point(
+        geom_point(
           data = reported,
-          ggplot2::aes(y = confirm, fill = NULL),
+          aes(y = confirm, fill = NULL),
           linewidth = 1.1, alpha = 1, col = "black",
           show.legend = FALSE, na.rm = TRUE
         )
@@ -196,7 +196,7 @@ plot_estimates <- function(estimate, reported, ylab, hline,
 
   # plot estimates
   p <- p +
-    ggplot2::geom_vline(
+    geom_vline(
       xintercept = orig_estimate[
         type == "Estimate based on partial data"
       ][date == max(date)]$date,
@@ -210,20 +210,20 @@ plot_estimates <- function(estimate, reported, ylab, hline,
 
   # add plot theming
   p <- p +
-    ggplot2::theme_bw() +
-    ggplot2::theme(legend.position = "bottom") +
-    ggplot2::scale_color_brewer(palette = "Dark2") +
+    theme_bw() +
+    theme(legend.position = "bottom") +
+    scale_color_brewer(palette = "Dark2") +
     ggplot2::scale_fill_brewer(palette = "Dark2") +
-    ggplot2::labs(y = ylab, x = "Date", col = "Type", fill = "Type") +
-    ggplot2::expand_limits(y = 0) +
-    ggplot2::scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
-    ggplot2::scale_y_continuous(labels = scales::comma) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+    labs(y = ylab, x = "Date", col = "Type", fill = "Type") +
+    expand_limits(y = 0) +
+    scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+    scale_y_continuous(labels = comma) +
+    theme(axis.text.x = ggplot2::element_text(angle = 90))
 
   # add in a horizontal line if required
   if (!missing(hline)) {
     p <- p +
-      ggplot2::geom_hline(yintercept = hline, linetype = 2)
+      geom_hline(yintercept = hline, linetype = 2)
   }
   p
 }
@@ -262,7 +262,7 @@ plot_summary <- function(summary_results,
                          log_cases = FALSE,
                          max_cases) {
   # set input to data.table
-  summary_results <- data.table::setDT(summary_results)
+  summary_results <- setDT(summary_results)
 
   # extract CrIs
   CrIs <- extract_CrIs(summary_results)
@@ -270,7 +270,7 @@ plot_summary <- function(summary_results,
 
   # generic plotting function
   inner_plot <- function(df) {
-    p <- ggplot2::ggplot(df, ggplot2::aes(
+    p <- ggplot(df, aes(
       x = region,
       col = `Expected change in reports`
     ))
@@ -281,8 +281,8 @@ plot_summary <- function(summary_results,
       bottom <- paste0("lower_", CrI)
       top <- paste0("upper_", CrI)
       p <- p +
-        ggplot2::geom_linerange(
-          ggplot2::aes(ymin = .data[[bottom]], ymax = .data[[top]]),
+        geom_linerange(
+          aes(ymin = .data[[bottom]], ymax = .data[[top]]),
           alpha = ifelse(index == 1, 0.4, alpha_per_CrI),
           linewidth = 4
         )
@@ -290,10 +290,10 @@ plot_summary <- function(summary_results,
     }
 
     p <- p +
-      ggplot2::geom_hline(yintercept = 1, linetype = 2) +
-      ggplot2::facet_wrap(~metric, ncol = 1, scales = "free_y") +
-      ggplot2::theme_bw() +
-      ggplot2::scale_color_manual(values = c(
+      geom_hline(yintercept = 1, linetype = 2) +
+      facet_wrap(~metric, ncol = 1, scales = "free_y") +
+      theme_bw() +
+      scale_color_manual(values = c(
         Increasing = "#e75f00",
         "Likely increasing" = "#fd9e49",
         "Likely decreasing" = "#5fa2ce",
@@ -322,25 +322,25 @@ plot_summary <- function(summary_results,
     inner_plot(
       summary_results[metric == "New infections per day"]
     ) +
-    ggplot2::labs(x = x_lab, y = "") +
-    ggplot2::expand_limits(y = 0) +
-    ggplot2::theme(
-      axis.title.x = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_blank()
+    labs(x = x_lab, y = "") +
+    expand_limits(y = 0) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.text.x = element_blank()
     ) +
-    ggplot2::theme(legend.position = "none")
+    theme(legend.position = "none")
 
   if (log_cases) {
     cases_plot <- cases_plot +
       ggplot2::scale_y_log10(
-        labels = scales::comma,
+        labels = comma,
         limits = c(NA, ifelse(!missing(max_cases), max_cases, NA)),
         oob = scales::squish
       )
   } else {
     cases_plot <- cases_plot +
-      ggplot2::scale_y_continuous(
-        labels = scales::comma,
+      scale_y_continuous(
+        labels = comma,
         limits = c(NA, ifelse(!missing(max_cases), max_cases, NA)),
         oob = scales::squish
       )
@@ -349,18 +349,18 @@ plot_summary <- function(summary_results,
   # rt plot
   rt_data <- summary_results[metric == "Effective reproduction no."]
   uppers <- grepl("upper_", colnames(rt_data), fixed = TRUE) # nolint
-  max_rt <- max(data.table::copy(rt_data)[, ..uppers], na.rm = TRUE)
+  max_rt <- max(copy(rt_data)[, ..uppers], na.rm = TRUE)
   rt_plot <-
     inner_plot(rt_data) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90)) +
-    ggplot2::theme(legend.position = "bottom") +
-    ggplot2::guides(col = ggplot2::guide_legend(nrow = 2)) +
-    ggplot2::labs(x = x_lab, y = "") +
-    ggplot2::expand_limits(y = c(0, min(max_rt, 4))) +
-    ggplot2::coord_cartesian(ylim = c(0, min(max_rt, 4)))
+    theme(axis.text.x = ggplot2::element_text(angle = 90)) +
+    theme(legend.position = "bottom") +
+    guides(col = guide_legend(nrow = 2)) +
+    labs(x = x_lab, y = "") +
+    expand_limits(y = c(0, min(max_rt, 4))) +
+    coord_cartesian(ylim = c(0, min(max_rt, 4)))
 
   # join plots together
-  cases_plot + rt_plot + patchwork::plot_layout(ncol = 1)
+  cases_plot + rt_plot + plot_layout(ncol = 1)
 }
 
 #' Plot method for estimate_infections
