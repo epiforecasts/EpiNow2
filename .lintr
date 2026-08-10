@@ -18,5 +18,6 @@ linters: linters_with_tags(
 exclusions: c(
     list.files("tests", recursive = TRUE, full.names = TRUE),
     list.files("inst", recursive = TRUE, full.names = TRUE),
+    list.files("data-raw", recursive = TRUE, full.names = TRUE),
     "R/stanmodels.R", "R/deprecated.R"
   )

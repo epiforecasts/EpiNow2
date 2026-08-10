@@ -194,9 +194,9 @@ add_horizon <- function(data, horizon, accumulate = 1L,
   assert_integerish(accumulate, lower = 1)
   assert_date(data$date, any.missing = FALSE)
 
-  reported_cases <- data.table::setDT(data)
+  reported_cases <- setDT(data)
   if (horizon > 0) {
-    reported_cases_future <- data.table::copy(reported_cases)[,
+    reported_cases_future <- copy(reported_cases)[,
       .(date = seq(max(date) + 1, max(date) + horizon, by = "days")),
       by = by
     ]
@@ -257,7 +257,7 @@ add_breakpoints <- function(data, dates = as.Date(character(0))) {
   assert_names(colnames(data), must.include = "date")
   assert_date(dates)
   assert_date(data$date, any.missing = FALSE)
-  reported_cases <- data.table::setDT(data)
+  reported_cases <- setDT(data)
   if (is.null(reported_cases$breakpoint)) {
     reported_cases$breakpoint <- 0
   }
@@ -291,7 +291,7 @@ filter_leading_zeros <- function(data, obs_column = "confirm", by = NULL) {
     colnames(data),
     must.include = c("date", by, obs_column)
   )
-  reported_cases <- data.table::setDT(data)
+  reported_cases <- setDT(data)
   reported_cases <- reported_cases[order(date)][
     date >= min(date[get(obs_column)[!is.na(get(obs_column))] > 0])
   ]
@@ -319,7 +319,7 @@ apply_zero_threshold <- function(data, threshold = Inf,
                                  obs_column = "confirm") {
   assert_data_frame(data)
   assert_numeric(threshold)
-  reported_cases <- data.table::setDT(data)
+  reported_cases <- setDT(data)
 
   # Calculate `average_7_day` which for rows with `confirm == 0`
   # (the only instance where this is being used) equates to the 7-day
@@ -328,7 +328,7 @@ apply_zero_threshold <- function(data, threshold = Inf,
     reported_cases[
       ,
       `:=`(average_7_day = (
-        data.table::frollsum(get(obs_column), n = 8, na.rm = TRUE)
+        frollsum(get(obs_column), n = 8, na.rm = TRUE)
       ) / 7)
     ]
   # Check case counts preceding zero case counts and set to 7 day average if

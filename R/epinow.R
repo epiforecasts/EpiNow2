@@ -307,7 +307,7 @@ epinow <- function(data,
 epinow_compat_extract <- function(x, name) {
   switch(name,
     estimates = {
-      lifecycle::deprecate_stop(
+      deprecate_stop(
         "1.9.0",
         I("epinow()$estimates"),
         details = paste(
@@ -317,28 +317,28 @@ epinow_compat_extract <- function(x, name) {
       )
     },
     estimated_reported_cases = {
-      lifecycle::deprecate_stop(
+      deprecate_stop(
         "1.9.0",
         I("epinow()$estimated_reported_cases"),
         "estimates_by_report_date()"
       )
     },
     summary = {
-      lifecycle::deprecate_stop(
+      deprecate_stop(
         "1.9.0",
         I("epinow()$summary"),
         "summary()"
       )
     },
     plots = {
-      lifecycle::deprecate_stop(
+      deprecate_stop(
         "1.9.0",
         I("epinow()$plots"),
         "plot()"
       )
     },
     estimate_infections = {
-      lifecycle::deprecate_stop(
+      deprecate_stop(
         "1.9.0",
         I("epinow()$estimate_infections"),
         details = paste(
