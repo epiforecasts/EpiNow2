@@ -535,7 +535,7 @@ pcd_stan_id_to_distribution <- function(dist_id) {
   )
   result <- supported[ids == dist_id]
   if (length(result) == 0) {
-    cli::cli_abort(
+    cli_abort(
       "Unknown distribution ID {dist_id}."
     )
   }
