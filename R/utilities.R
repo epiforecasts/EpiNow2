@@ -525,13 +525,14 @@ make_init_priors <- function(priors = list()) {
 #' `primarycensored::pcd_stan_dist_id()` for supported distributions.
 #' @param dist_id Integer Stan distribution ID from primarycensored.
 #' @return A character string distribution name.
+#' @importFrom primarycensored pcd_stan_dist_id
 #' @keywords internal
 pcd_stan_id_to_distribution <- function(dist_id) {
   supported <- c(
     "lognormal", "gamma", "weibull", "exp", "normal"
   )
   ids <- vapply(
-    supported, primarycensored::pcd_stan_dist_id, integer(1)
+    supported, pcd_stan_dist_id, integer(1)
   )
   result <- supported[ids == dist_id]
   if (length(result) == 0) {

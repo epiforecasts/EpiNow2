@@ -212,6 +212,7 @@ importFrom(lubridate,
 )
 importFrom(patchwork,plot_layout)
 importFrom(posterior,mcse_mean)
+importFrom(primarycensored,pcd_stan_dist_id)
 importFrom(purrr,
   compact,
   flatten,

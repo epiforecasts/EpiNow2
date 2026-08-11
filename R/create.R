@@ -900,7 +900,7 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret$weight[weight_priors] <- time_points
   ## assign distribution
   ret$dist <- array(vapply(
-    distributions, primarycensored::pcd_stan_dist_id, integer(1)
+    distributions, pcd_stan_dist_id, integer(1)
   ))
 
   names(ret) <- paste("delay", names(ret), sep = "_")
