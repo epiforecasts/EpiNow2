@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Bug fixes
+
+- A bug was fixed where a degenerate day-of-week simplex was sampled when the weekly reporting effect was disabled, producing a spurious convergence warning.
+
 ## Package changes
 
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
