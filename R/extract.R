@@ -29,12 +29,23 @@ extract_latent_state <- function(param, samples, dates) {
   }
 
   state <- samples[[param]]
-  # A conditionally-declared array parameter (e.g. `array[1] simplex[n]`)
-  # arrives with a length-1 leading array dimension (iterations x 1 x n);
-  # collapse it so the state is a plain iterations-by-time matrix.
+  # rstan returns a parameter with the iteration dimension first, followed by
+  # the parameter's own dimensions. This function extracts a single latent
+  # dimension (indexed by `dates`), so any extra dimensions must be singletons
+  # (e.g. a conditionally declared `array[1] simplex[n]` arrives as
+  # iterations x 1 x n). Drop those singletons; a parameter with more than one
+  # genuine latent dimension cannot be flattened unambiguously, so error.
   state_dim <- dim(state)
-  if (length(state_dim) == 3L && state_dim[2L] == 1L) {
-    state <- matrix(state, nrow = state_dim[1L], ncol = state_dim[3L])
+  if (length(state_dim) > 2L) {
+    latent_dim <- state_dim[-1L]
+    if (sum(latent_dim != 1L) > 1L) {
+      cli_abort(c(
+        "Cannot extract {.val {param}} as a latent state.",
+        "i" = "Expected a single latent dimension but found dimensions
+               {.val {state_dim}}."
+      ))
+    }
+    state <- matrix(state, nrow = state_dim[1L], ncol = prod(latent_dim))
   }
 
   param_df <- as.data.table(
