@@ -360,7 +360,7 @@ forecast_infections <- function(estimates,
     ),
     include = FALSE
   )
-  draws <- collapse_day_of_week_simplex(draws)
+  draws <- prepare_day_of_week_simplex(draws, estimates$args$week_effect)
 
   # set samples if missing
   R_samples <- dim(draws$R)[1]
@@ -455,9 +455,6 @@ forecast_infections <- function(estimates,
     ## prepare data for stan command
     stan_data <- c(
       list(n = dim(draws$R)[1], initial_as_scale = 1), draws, estimates_args
-    )
-    stan_data$day_of_week_simplex <- default_day_of_week_simplex(
-      stan_data$day_of_week_simplex, stan_data$n, stan_data$week_effect
     )
 
     ## allocate empty parameters

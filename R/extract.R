@@ -67,47 +67,36 @@ extract_latent_state <- function(param, samples, dates) {
 }
 
 
-#' Collapse the redundant array dimension of day-of-week simplex draws
+#' Normalise day-of-week simplex draws for the simulation models
 #'
-#' `day_of_week_simplex` is declared `array[1] simplex[week_effect]` in the
-#' fitting models, so [rstan::extract()] returns it as a
-#' samples x 1 x week_effect array. The simulation models and the per-sample
-#' matrix handling in the forecast functions expect a samples x week_effect
-#' matrix, so drop the length-1 dimension when it is present.
+#' The fitting models declare `day_of_week_simplex` as
+#' `array[week_effect > 1 ? 1 : 0] simplex[week_effect]`. Keyed on `week_effect`
+#' (rather than sniffing the shape of the draws): when the weekly effect is on
+#' it is extracted as a samples x 1 x week_effect array, so drop the length-1
+#' dimension; when off it is absent from the posterior, so supply a flat
+#' (no-effect) default. Either way the result is a plain samples x week_effect
+#' matrix that flows through the generic per-sample draw handling in the
+#' forecast functions like any other parameter.
 #'
 #' @param draws A named list of posterior draws from [extract_samples()].
-#' @return `draws` with `day_of_week_simplex` reshaped to a matrix if present.
+#' @param week_effect The weekly period (1 when the effect is off).
+#' @return `draws` with `day_of_week_simplex` as a samples x week_effect matrix.
 #' @keywords internal
-collapse_day_of_week_simplex <- function(draws) {
-  dow <- draws$day_of_week_simplex
-  if (!is.null(dow) && length(dim(dow)) == 3L) {
-    dow_dim <- dim(dow)
+prepare_day_of_week_simplex <- function(draws, week_effect) {
+  if (week_effect > 1) {
+    dow_dim <- dim(draws$day_of_week_simplex)
     draws$day_of_week_simplex <- matrix(
-      dow, nrow = dow_dim[1L], ncol = dow_dim[3L]
+      draws$day_of_week_simplex, nrow = dow_dim[1L], ncol = dow_dim[3L]
+    )
+  } else {
+    n_samples <- max(vapply(
+      draws, function(x) if (is.null(dim(x))) 0L else dim(x)[1L], integer(1)
+    ))
+    draws$day_of_week_simplex <- matrix(
+      1 / week_effect, nrow = n_samples, ncol = week_effect
     )
   }
   draws
-}
-
-
-#' Supply a default day-of-week simplex for the simulation models
-#'
-#' The fitting models declare `day_of_week_simplex` as
-#' `array[week_effect > 1 ? 1 : 0] simplex[week_effect]`, so it is absent from
-#' the posterior when the weekly effect is off. The simulation models still
-#' require it as `array[n, week_effect]` data, so supply a flat (no-effect)
-#' default in that case; otherwise return the draws unchanged.
-#'
-#' @param simplex The day-of-week simplex draws, or `NULL` if absent.
-#' @param n Number of simulated samples.
-#' @param week_effect The weekly period (1 when the effect is off).
-#' @return An `n` x `week_effect` matrix.
-#' @keywords internal
-default_day_of_week_simplex <- function(simplex, n, week_effect) {
-  if (is.null(simplex)) {
-    return(matrix(1 / week_effect, nrow = n, ncol = week_effect))
-  }
-  simplex
 }
 
 

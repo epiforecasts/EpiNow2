@@ -638,7 +638,7 @@ forecast_secondary <- function(estimate,
     ),
     include = FALSE
   )
-  draws <- collapse_day_of_week_simplex(draws)
+  draws <- prepare_day_of_week_simplex(draws, estimate$args$week_effect)
 
   # extract data from stanfit
   stan_data <- estimate$args
@@ -679,9 +679,6 @@ forecast_secondary <- function(estimate,
   draws <- map(draws, function(x) as.matrix(x[posterior_samples, ]))
   # combine with data
   stan_data <- c(stan_data, draws)
-  stan_data$day_of_week_simplex <- default_day_of_week_simplex(
-    stan_data$day_of_week_simplex, stan_data$n, stan_data$week_effect
-  )
 
   # allocate empty parameters
   stan_data <- allocate_empty(
