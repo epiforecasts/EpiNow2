@@ -561,6 +561,12 @@ get_predictions.estimate_truncation <- function(
   obs_sets <- object$args$obs_sets
   trunc_max <- object$args$delay_max[1]
 
+  # `recon_obs` is a ragged flat vector: dataset i owns the cell range
+  # obs_group[i]:(obs_group[i + 1] - 1), matching the Stan model's layout.
+  end_t <- object$args$t - object$args$obs_dist
+  start_t <- pmax(1L, end_t - trunc_max)
+  obs_group <- cumsum(c(1L, end_t - start_t + 1L))
+
   if (format == "summary") {
     # Extract reconstructed observations summary statistics
     recon_obs <- extract_stan_param(object$fit, "recon_obs",
@@ -569,13 +575,8 @@ get_predictions.estimate_truncation <- function(
     )
     recon_obs <- recon_obs[, id := variable][, variable := NULL]
 
-    # Assign dataset index using modulo
-    recon_obs <- recon_obs[, dataset := seq_len(.N)][
-      ,
-      dataset := dataset %% obs_sets
-    ][
-      dataset == 0, dataset := obs_sets
-    ]
+    # Assign each cell to its dataset via the ragged group boundaries
+    recon_obs <- recon_obs[, dataset := findInterval(seq_len(.N), obs_group)]
 
     # Link predictions to dates
     link_preds <- function(index) {
@@ -609,7 +610,9 @@ get_predictions.estimate_truncation <- function(
     )
     recon_samples[, obs_idx := as.integer(obs_idx)]
     recon_samples[, sample := seq_len(.N), by = obs_idx]
-    recon_samples[, dataset := ((obs_idx - 1) %% obs_sets) + 1]
+    # ragged: map global cell to dataset, then to a local within-dataset index
+    recon_samples[, dataset := findInterval(obs_idx, obs_group)]
+    recon_samples[, obs_idx := obs_idx - obs_group[dataset] + 1L]
 
     # Link samples to dates
     link_samples <- function(index) {

@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Bug fixes
+
+- A bug was fixed where `get_predictions()` on an `estimate_truncation()` result assigned reconstructed observations to the wrong datasets and dates.
+
 ## Package changes
 
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
