@@ -361,6 +361,20 @@ forecast_infections <- function(estimates,
     include = FALSE
   )
 
+  # `day_of_week_simplex` is declared `array[1] simplex[week_effect]` in the
+  # fitting model, so rstan returns it with a redundant length-1 dimension
+  # (samples x 1 x week_effect). Drop it so the draws are a plain
+  # samples-by-week_effect matrix, matching the simulation model's
+  # `array[n, week_effect]` input and the per-sample matrix handling below.
+  if (!is.null(draws$day_of_week_simplex) &&
+        length(dim(draws$day_of_week_simplex)) == 3L) {
+    dow_dim <- dim(draws$day_of_week_simplex)
+    draws$day_of_week_simplex <- matrix(
+      draws$day_of_week_simplex,
+      nrow = dow_dim[1L], ncol = dow_dim[3L]
+    )
+  }
+
   # set samples if missing
   R_samples <- dim(draws$R)[1]
   if (is.null(samples)) {
