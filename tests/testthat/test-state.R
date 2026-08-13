@@ -1,0 +1,265 @@
+test_that("GP() constructs a mean-reverting state spec", {
+  gp <- GP(mean = Normal(mean = 5, sd = 1))
+  expect_s3_class(gp, "state_spec")
+  expect_s3_class(gp, "gp_state")
+  expect_identical(gp$type, "gp")
+  expect_identical(gp$anchor, "mean")
+  expect_s3_class(gp$prior, "dist_spec")
+  expect_s3_class(gp$settings, "gp_opts")
+})
+
+test_that("GP() constructs a first-difference state spec", {
+  gp <- GP(init = Normal(mean = 5, sd = 1))
+  expect_identical(gp$anchor, "init")
+})
+
+test_that("GP() stores Gaussian process settings", {
+  gp <- GP(mean = Normal(mean = 5, sd = 1), kernel = "se")
+  expect_identical(gp$settings$kernel, "se")
+})
+
+test_that("RW() constructs a state spec with a step sd prior", {
+  rw <- RW(init = Normal(mean = 5, sd = 1))
+  expect_s3_class(rw, "state_spec")
+  expect_s3_class(rw, "rw_state")
+  expect_identical(rw$type, "rw")
+  expect_identical(rw$anchor, "init")
+  expect_s3_class(rw$settings$sd, "dist_spec")
+})
+
+test_that("RW() accepts a custom step sd prior", {
+  rw <- RW(mean = Normal(mean = 5, sd = 1), sd = Normal(mean = 0, sd = 0.05))
+  expect_identical(rw$anchor, "mean")
+  expect_equal(mean(rw$settings$sd), 0)
+})
+
+test_that("state constructors accept a known trajectory vector", {
+  gp <- GP(mean = c(1, 2, 3, 2, 1))
+  expect_true(is.numeric(gp$prior))
+  expect_identical(gp$anchor, "mean")
+
+  rw <- RW(init = c(5, 5, 5))
+  expect_true(is.numeric(rw$prior))
+})
+
+test_that("state constructors require exactly one of mean/init", {
+  expect_error(GP(), "Exactly one")
+  expect_error(
+    GP(mean = Normal(5, 1), init = Normal(5, 1)), "Exactly one"
+  )
+  expect_error(RW(), "Exactly one")
+})
+
+test_that("state constructors reject invalid anchors", {
+  expect_error(GP(mean = "a"), "dist_spec.*numeric")
+  expect_error(RW(init = list(1)), "dist_spec.*numeric")
+})
+
+test_that("RW() validates the step sd prior", {
+  expect_error(RW(init = Normal(5, 1), sd = 0.1), "dist_spec")
+})
+
+test_that("rt_opts accepts a time-varying (state) prior", {
+  expect_s3_class(rt_opts(prior = GP(init = LogNormal(1, 1)))$prior, "state_spec")
+  expect_s3_class(rt_opts(prior = RW(init = LogNormal(1, 1)))$prior, "rw_state")
+  # a constant prior is still accepted
+  expect_s3_class(rt_opts(prior = LogNormal(1, 1))$prior, "dist_spec")
+})
+
+test_that("dist_spec and state_spec share the param_spec superclass", {
+  expect_s3_class(Normal(5, 1), "param_spec")
+  expect_s3_class(LogNormal(1, 1) + Gamma(2, 1), "param_spec") # multi
+  expect_s3_class(GP(mean = Normal(5, 1)), "param_spec")
+  expect_s3_class(RW(init = Normal(5, 1)), "param_spec")
+  expect_true(is_param_spec(Normal(5, 1)))
+  expect_true(is_param_spec(GP(mean = Normal(5, 1))))
+  expect_false(is_param_spec(5))
+})
+
+test_that("is_state_spec() identifies state specs", {
+  expect_true(is_state_spec(GP(mean = Normal(5, 1))))
+  expect_true(is_state_spec(RW(init = Normal(5, 1))))
+  expect_false(is_state_spec(Normal(5, 1)))
+  expect_false(is_state_spec(5))
+})
+
+test_that("state specs print without error", {
+  expect_output(print(GP(mean = Normal(5, 1))), "Gaussian process")
+  expect_output(print(RW(init = Normal(5, 1))), "random walk")
+  expect_output(print(GP(mean = c(1, 2, 3))), "known mean trajectory")
+})
+
+test_that("create_stan_params errors on unsupported time-varying parameters", {
+  params <- list(
+    make_param("alpha", RW(mean = Normal(0.5, 0.1)), lower_bound = 0)
+  )
+  expect_error(create_stan_params(params), "not supported by this model")
+  expect_error(
+    create_stan_params(params, states_supported = "fraction_observed"),
+    "is not yet supported"
+  )
+})
+
+test_that("create_stan_params emits RW state data for fraction_observed", {
+  params <- list(
+    make_param("fraction_observed", RW(mean = Normal(0.5, 0.1)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$n_states, 1L)
+  expect_identical(out$state_param_id, array(1L))
+  expect_identical(out$state_type, array(0L))
+  expect_identical(out$state_link, array(0L))
+  expect_identical(out$state_pos, array(1L))
+  expect_identical(out$n_rw_states, 1L)
+  expect_identical(out$n_gp_states, 0L)
+  expect_identical(out$rw_sd_dist, array(2L))
+  expect_equal(out$rw_sd_dist_params, array(c(0, 0.1)))
+  # the level prior flows through the normal parameter machinery
+  expect_identical(out$n_params_variable, 1L)
+})
+
+test_that("create_stan_params emits GP state data for fraction_observed", {
+  params <- list(
+    make_param("fraction_observed", GP(mean = Normal(0.5, 0.1)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$n_states, 1L)
+  expect_identical(out$state_type, array(1L))
+  expect_identical(out$state_pos, array(1L))
+  expect_identical(out$n_rw_states, 0L)
+  expect_identical(out$n_gp_states, 1L)
+  expect_identical(out$gp_kernel, array(2L)) # matern default
+  expect_length(out$gp_alpha_dist_params, 2L)
+  expect_length(out$gp_rho_dist_params, 2L)
+})
+
+test_that("create_stan_params resolves the future setting into model data", {
+  gp <- function(future) {
+    make_param(
+      "R", GP(init = LogNormal(mean = 1, sd = 0.5), future = future),
+      lower_bound = 0
+    )
+  }
+  latest <- create_stan_params(
+    list(make_param("R", GP(init = LogNormal(mean = 1, sd = 0.5)),
+      lower_bound = 0)),
+    states_supported = "R", seeding_time = 7
+  )
+  expect_equal(as.integer(latest$state_future_fixed), 1L)
+  expect_equal(as.integer(latest$state_future_from), 0L)
+
+  project <- create_stan_params(
+    list(gp("project")), states_supported = "R", seeding_time = 7
+  )
+  expect_equal(as.integer(project$state_future_fixed), 0L)
+
+  # "estimate" fixes the state a seeding time before the end of the data
+  estimate <- create_stan_params(
+    list(gp("estimate")), states_supported = "R", seeding_time = 7
+  )
+  expect_equal(as.integer(estimate$state_future_fixed), 1L)
+  expect_equal(as.integer(estimate$state_future_from), -7L)
+
+  fixed_from <- create_stan_params(
+    list(gp(-3L)), states_supported = "R", seeding_time = 7
+  )
+  expect_equal(as.integer(fixed_from$state_future_from), -3L)
+})
+
+test_that("create_stan_params rejects periodic kernel states", {
+  params <- list(
+    make_param("fraction_observed", GP(mean = Normal(0.5, 0.1),
+      kernel = "periodic"
+    ), lower_bound = 0)
+  )
+  expect_error(
+    create_stan_params(params, states_supported = "fraction_observed"),
+    "Periodic"
+  )
+})
+
+test_that("create_stan_params emits state data for reporting_overdispersion", {
+  params <- list(
+    make_param("fraction_observed", Normal(0.5, 0.1), lower_bound = 0),
+    make_param("reporting_overdispersion", RW(mean = Normal(0.3, 0.1)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(
+    params,
+    states_supported = c("fraction_observed", "reporting_overdispersion")
+  )
+  expect_identical(out$n_states, 1L)
+  expect_identical(out$state_param_id, array(2L)) # second param
+  expect_identical(out$n_rw_states, 1L)
+})
+
+test_that("create_stan_params emits init-anchor state data (centred + Jacobian)", {
+  params <- list(
+    make_param("fraction_observed", RW(init = Normal(0.4, 0.05)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$state_anchor, array(1L))
+  expect_identical(out$state_init_dist, array(2L)) # normal
+  expect_equal(out$state_init_dist_params, array(c(0.4, 0.05)))
+  # the level's prior is moved off the normal prior path
+  expect_identical(out$params_prior_skip, array(1L))
+})
+
+test_that("mean-anchor states keep their prior on the level", {
+  params <- list(
+    make_param("fraction_observed", RW(mean = Normal(0.4, 0.05)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$state_anchor, array(0L))
+  expect_identical(out$params_prior_skip, array(0L))
+})
+
+test_that("GP init anchor emits non-stationary state data", {
+  params <- list(
+    make_param("fraction_observed", GP(init = Normal(0.4, 0.05)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$state_type, array(1L)) # gp
+  expect_identical(out$state_anchor, array(1L)) # init
+  expect_identical(out$state_init_dist, array(2L)) # normal prior on init
+  expect_identical(out$params_prior_skip, array(1L)) # level is scaffolding
+})
+
+test_that("create_stan_params is a no-op without states", {
+  params <- list(
+    make_param("fraction_observed", Normal(0.5, 0.1), lower_bound = 0)
+  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$n_states, 0L)
+  expect_identical(out$n_rw_states, 0L)
+  expect_identical(out$n_gp_states, 0L)
+})
+
+test_that("plot.state_spec returns a ggplot of prior draws", {
+  for (spec in list(
+    GP(init = LogNormal(mean = 1, sd = 0.5)),
+    GP(mean = LogNormal(mean = 1, sd = 0.5)),
+    RW(init = LogNormal(mean = 1, sd = 0.5))
+  )) {
+    p <- plot(spec, n = 20, samples = 10)
+    expect_s3_class(p, "ggplot")
+    expect_identical(length(unique(p$data$sample)), 10L)
+    expect_identical(length(unique(p$data$time)), 20L)
+    expect_true(all(p$data$value > 0))
+  }
+})
+
+test_that("plot.state_spec errors for a known trajectory", {
+  expect_error(plot(GP(mean = c(1, 2, 3))), "known")
+})

@@ -43,7 +43,9 @@ applied to map latent infections (convolved to date of report).  Defaults
 to a fixed value of 1, i.e. no scaling: \code{Fixed(1)}. A lower limit of zero
 will be enforced automatically. If setting to a prior distribution and no
 overreporting is expected, it might be sensible to set a maximum of 1 via
-the \code{max} option when declaring the distribution.}
+the \code{max} option when declaring the distribution. \verb{r lifecycle::badge("experimental")} May also be a time-varying \verb{<state_spec>}
+created by \code{\link[=RW]{RW()}} (e.g. \code{scale = RW(mean = Normal(0.4, 0.05))}) to estimate
+a fraction observed that varies over time.}
 
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
 included in the model.}

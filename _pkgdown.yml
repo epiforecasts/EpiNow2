@@ -184,6 +184,7 @@ reference:
   contents:
   - Distributions
   - contains("dist_spec")
+  - state
   - bound_dist
   - collapse
   - discretise

@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{pack_init_prior}
 \alias{pack_init_prior}
-\title{Pack a dist_spec into stan-side init-prior fields}
+\title{Pack a dist_spec into stan-side init-anchor prior fields}
 \usage{
 pack_init_prior(dist, lower_bound = 0)
 }
@@ -18,7 +18,8 @@ A list with elements \code{dist_type} (integer code: 0 = lognormal,
 }
 \description{
 Converts a \verb{<dist_spec>} into the integer/vector representation consumed
-by the init-prior loop in \code{inst/stan/estimate_infections.stan} (data
-items \code{init_dists}, \code{init_dist_params}, \code{init_lower}, \code{init_upper}).
+by the init-anchor prior of a time-varying state in
+\code{inst/stan/functions/state.stan} (data items \code{state_init_dist},
+\code{state_init_dist_params}, \code{state_init_lower}, \code{state_init_upper}).
 }
 \keyword{internal}

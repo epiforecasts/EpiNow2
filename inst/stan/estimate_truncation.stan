@@ -112,7 +112,7 @@ model {
       report_lp(
         obs[start_t[i]:(start_t[i] + n_t - 1), i],
         segment(case_times, 1, n_t), trunc_obs[1:n_t, i],
-        reporting_overdispersion, model_type, 1
+        rep_vector(reporting_overdispersion, n_t), model_type, 1
       );
     }
   }
@@ -139,7 +139,8 @@ generated quantities {
     for (i in 1:(obs_sets - 1)) {
       int n_t = end_t[i] - start_t[i] + 1;
       array[n_t] int sampled = report_rng(
-        trunc_obs[1:n_t, i], reporting_overdispersion, model_type
+        trunc_obs[1:n_t, i], rep_vector(reporting_overdispersion, n_t),
+        model_type
       );
       for (j in 1:n_t) {
         gen_obs[j, i] = sampled[j];
@@ -150,7 +151,8 @@ generated quantities {
       if (return_likelihood) {
         vector[n_t] cell_log_lik = report_log_lik(
           obs[start_t[i]:(start_t[i] + n_t - 1), i],
-          trunc_obs[1:n_t, i], reporting_overdispersion, model_type, 1
+          trunc_obs[1:n_t, i], rep_vector(reporting_overdispersion, n_t),
+          model_type, 1
         );
         log_lik[(log_lik_idx + 1):(log_lik_idx + n_t)] = cell_log_lik;
         log_lik_idx += n_t;

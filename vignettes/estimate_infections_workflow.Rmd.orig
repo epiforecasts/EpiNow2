@@ -202,7 +202,7 @@ For example, if the user believes that at the very start of the data the reprodu
 
 ```{r results = 'hide'}
 rt_prior <- LogNormal(mean = 2, sd = 1)
-rt_opts(prior = rt_prior)
+rt_opts(prior = GP(init = rt_prior))
 ```
 
 ## Weighing delay priors
@@ -222,7 +222,7 @@ def <- estimate_infections(
   reported_cases,
   generation_time = gt_opts(generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
+  rt = rt_opts(prior = GP(init = rt_prior)),
   forecast = forecast_opts(horizon = 7)
 )
 ```
