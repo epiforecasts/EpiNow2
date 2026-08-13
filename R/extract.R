@@ -67,6 +67,50 @@ extract_latent_state <- function(param, samples, dates) {
 }
 
 
+#' Collapse the redundant array dimension of day-of-week simplex draws
+#'
+#' `day_of_week_simplex` is declared `array[1] simplex[week_effect]` in the
+#' fitting models, so [rstan::extract()] returns it as a
+#' samples x 1 x week_effect array. The simulation models and the per-sample
+#' matrix handling in the forecast functions expect a samples x week_effect
+#' matrix, so drop the length-1 dimension when it is present.
+#'
+#' @param draws A named list of posterior draws from [extract_samples()].
+#' @return `draws` with `day_of_week_simplex` reshaped to a matrix if present.
+#' @keywords internal
+collapse_day_of_week_simplex <- function(draws) {
+  dow <- draws$day_of_week_simplex
+  if (!is.null(dow) && length(dim(dow)) == 3L) {
+    dow_dim <- dim(dow)
+    draws$day_of_week_simplex <- matrix(
+      dow, nrow = dow_dim[1L], ncol = dow_dim[3L]
+    )
+  }
+  draws
+}
+
+
+#' Supply a default day-of-week simplex for the simulation models
+#'
+#' The fitting models declare `day_of_week_simplex` as
+#' `array[week_effect > 1 ? 1 : 0] simplex[week_effect]`, so it is absent from
+#' the posterior when the weekly effect is off. The simulation models still
+#' require it as `array[n, week_effect]` data, so supply a flat (no-effect)
+#' default in that case; otherwise return the draws unchanged.
+#'
+#' @param simplex The day-of-week simplex draws, or `NULL` if absent.
+#' @param n Number of simulated samples.
+#' @param week_effect The weekly period (1 when the effect is off).
+#' @return An `n` x `week_effect` matrix.
+#' @keywords internal
+default_day_of_week_simplex <- function(simplex, n, week_effect) {
+  if (is.null(simplex)) {
+    return(matrix(1 / week_effect, nrow = n, ncol = week_effect))
+  }
+  simplex
+}
+
+
 #' Extract samples from all parameters
 #'
 #' @param samples Extracted stan model (using [rstan::extract()])
