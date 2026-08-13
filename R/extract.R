@@ -28,10 +28,19 @@ extract_latent_state <- function(param, samples, dates) {
     return(NULL)
   }
 
+  state <- samples[[param]]
+  # A conditionally-declared array parameter (e.g. `array[1] simplex[n]`)
+  # arrives with a length-1 leading array dimension (iterations x 1 x n);
+  # collapse it so the state is a plain iterations-by-time matrix.
+  state_dim <- dim(state)
+  if (length(state_dim) == 3L && state_dim[2L] == 1L) {
+    state <- matrix(state, nrow = state_dim[1L], ncol = state_dim[3L])
+  }
+
   param_df <- as.data.table(
     t(
       as.data.table(
-        samples[[param]]
+        state
       )
     )
   )
