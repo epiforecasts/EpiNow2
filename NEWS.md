@@ -1,5 +1,9 @@
 # EpiNow2 (development version)
 
+## Bug fixes
+
+- A bug was fixed where `estimate_infections()` could emit a spurious "the largest R-hat is NA" convergence warning caused by deterministic intermediate quantities being stored in the fit; these are no longer monitored.
+
 ## Package changes
 
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
