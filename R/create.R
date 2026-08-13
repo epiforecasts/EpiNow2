@@ -619,13 +619,9 @@ create_initial_conditions <- function(stan_data, params) {
       out$bp_sd <- array(numeric(0))
       out$bp_effects <- array(numeric(0))
     }
-    if (stan_data$week_effect > 1) {
-      # array[1] simplex[week_effect]: a single uniform simplex
-      out$day_of_week_simplex <- array(
-        1 / stan_data$week_effect,
-        dim = c(1, stan_data$week_effect)
-      )
-    }
+    # day_of_week_simplex (array[1] simplex[week_effect]) is left to Stan's
+    # default initialisation: an explicit init for this conditionally-sized
+    # array-of-simplex is read inconsistently across rstan versions.
     tparams <- transpose(params)
     null <- vapply(tparams$dist, is.null, logical(1))
     fixed <- vapply(
