@@ -749,7 +749,7 @@ print.dist_spec <- function(x, ...) {
 #'   addition to the probability mass function
 #' @param ... ignored
 #' @importFrom ggplot2 aes geom_col geom_step facet_wrap vars theme_bw
-#' scale_color_brewer
+#' @importFrom ggplot2 scale_color_brewer
 #' @importFrom data.table data.table rbindlist
 #' @importFrom cli cli_abort
 #' @export
