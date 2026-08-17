@@ -5,9 +5,9 @@
 \alias{get_parameters.estimate_dist}
 \title{Extract parameters from EpiNow2 model fits}
 \usage{
-\method{get_parameters}{epinowfit}(x, ...)
+get_parameters.epinowfit(x, ...)
 
-\method{get_parameters}{estimate_dist}(x, ...)
+get_parameters.estimate_dist(x, ...)
 }
 \arguments{
 \item{x}{A fitted EpiNow2 model object.}
