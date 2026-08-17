@@ -727,8 +727,10 @@ create_stan_args <- function(stan = stan_opts(),
   # warning. Drop it from the monitored parameters so no R-hat is computed for
   # it. Only rstan computes R-hat and supports `pars`/`include`; cmdstanr does
   # not need this, and the simulation models (`fixed_param`) are unaffected.
+  # Skip if `pars` is already set so a caller-supplied selection is respected.
   if (!fixed_param && isTRUE(data$week_effect == 1) &&
-        inherits(stan_args$object, "stanmodel")) {
+        inherits(stan_args$object, "stanmodel") &&
+        is.null(stan_args$pars)) {
     stan_args$pars <- "day_of_week_simplex"
     stan_args$include <- FALSE
   }
