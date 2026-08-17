@@ -2,6 +2,8 @@
 
 ## Bug fixes
 
+- A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
+- A bug was fixed where `estimate_infections()` could emit a spurious "the largest R-hat is NA" convergence warning caused by deterministic delay PMFs being monitored; these are no longer monitored.
 - A bug was fixed where `get_predictions()` on an `estimate_truncation()` result assigned reconstructed observations to the wrong datasets and dates.
 
 ## Package changes
