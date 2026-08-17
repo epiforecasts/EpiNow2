@@ -146,155 +146,183 @@ export(update_secondary_args)
 import(Rcpp)
 import(methods)
 import(rstantools)
-importFrom(R.utils,isDirectory)
-importFrom(R.utils,withTimeout)
-importFrom(checkmate,assert_character)
-importFrom(checkmate,assert_class)
-importFrom(checkmate,assert_data_frame)
-importFrom(checkmate,assert_date)
-importFrom(checkmate,assert_integer)
-importFrom(checkmate,assert_integerish)
-importFrom(checkmate,assert_list)
-importFrom(checkmate,assert_logical)
-importFrom(checkmate,assert_names)
-importFrom(checkmate,assert_number)
-importFrom(checkmate,assert_numeric)
-importFrom(checkmate,assert_path_for_output)
-importFrom(checkmate,assert_string)
-importFrom(checkmate,assert_subset)
-importFrom(checkmate,test_data_frame)
-importFrom(checkmate,test_numeric)
-importFrom(cli,cli_abort)
-importFrom(cli,cli_inform)
-importFrom(cli,cli_warn)
-importFrom(cli,col_blue)
-importFrom(cli,col_red)
-importFrom(data.table,":=")
-importFrom(data.table,.N)
-importFrom(data.table,CJ)
-importFrom(data.table,as.data.table)
-importFrom(data.table,copy)
-importFrom(data.table,data.table)
-importFrom(data.table,dcast)
-importFrom(data.table,fcase)
-importFrom(data.table,fifelse)
-importFrom(data.table,frollmean)
-importFrom(data.table,frollsum)
-importFrom(data.table,fwrite)
-importFrom(data.table,getDTthreads)
-importFrom(data.table,melt)
-importFrom(data.table,merge.data.table)
-importFrom(data.table,nafill)
-importFrom(data.table,rbindlist)
-importFrom(data.table,setDT)
-importFrom(data.table,setDTthreads)
-importFrom(data.table,setcolorder)
-importFrom(data.table,setkey)
-importFrom(data.table,setnames)
-importFrom(data.table,setorder)
-importFrom(data.table,setorderv)
-importFrom(data.table,shift)
-importFrom(futile.logger,appender.file)
-importFrom(futile.logger,appender.tee)
-importFrom(futile.logger,flog.appender)
-importFrom(futile.logger,flog.debug)
-importFrom(futile.logger,flog.error)
-importFrom(futile.logger,flog.fatal)
-importFrom(futile.logger,flog.info)
-importFrom(futile.logger,flog.threshold)
-importFrom(futile.logger,flog.trace)
-importFrom(futile.logger,flog.warn)
-importFrom(futile.logger,ftry)
-importFrom(ggplot2,.data)
-importFrom(ggplot2,aes)
-importFrom(ggplot2,coord_cartesian)
-importFrom(ggplot2,element_blank)
-importFrom(ggplot2,expand_limits)
-importFrom(ggplot2,facet_wrap)
-importFrom(ggplot2,geom_col)
-importFrom(ggplot2,geom_hline)
-importFrom(ggplot2,geom_line)
-importFrom(ggplot2,geom_linerange)
-importFrom(ggplot2,geom_point)
-importFrom(ggplot2,geom_ribbon)
-importFrom(ggplot2,geom_step)
-importFrom(ggplot2,geom_vline)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,ggplot_build)
-importFrom(ggplot2,ggsave)
-importFrom(ggplot2,guide_legend)
-importFrom(ggplot2,guides)
-importFrom(ggplot2,labs)
-importFrom(ggplot2,scale_color_brewer)
-importFrom(ggplot2,scale_color_manual)
-importFrom(ggplot2,scale_x_date)
-importFrom(ggplot2,scale_y_continuous)
-importFrom(ggplot2,theme)
-importFrom(ggplot2,theme_bw)
-importFrom(ggplot2,vars)
-importFrom(lifecycle,deprecate_soft)
-importFrom(lifecycle,deprecate_stop)
-importFrom(lifecycle,deprecate_warn)
-importFrom(lubridate,days)
-importFrom(lubridate,wday)
+importFrom(R.utils,
+  isDirectory,
+  withTimeout
+)
+importFrom(checkmate,
+  assert_character,
+  assert_class,
+  assert_data_frame,
+  assert_date,
+  assert_integer,
+  assert_integerish,
+  assert_list,
+  assert_logical,
+  assert_names,
+  assert_number,
+  assert_numeric,
+  assert_path_for_output,
+  assert_string,
+  assert_subset,
+  test_data_frame,
+  test_numeric
+)
+importFrom(cli,
+  cli_abort,
+  cli_inform,
+  cli_warn,
+  col_blue,
+  col_red
+)
+importFrom(data.table,
+  ":=",
+  .N,
+  CJ,
+  as.data.table,
+  copy,
+  data.table,
+  dcast,
+  fcase,
+  fifelse,
+  frollmean,
+  frollsum,
+  fwrite,
+  getDTthreads,
+  melt,
+  merge.data.table,
+  nafill,
+  rbindlist,
+  setDT,
+  setDTthreads,
+  setcolorder,
+  setkey,
+  setnames,
+  setorder,
+  setorderv,
+  shift
+)
+importFrom(futile.logger,
+  appender.file,
+  appender.tee,
+  flog.appender,
+  flog.debug,
+  flog.error,
+  flog.fatal,
+  flog.info,
+  flog.threshold,
+  flog.trace,
+  flog.warn,
+  ftry
+)
+importFrom(ggplot2,
+  .data,
+  aes,
+  coord_cartesian,
+  element_blank,
+  expand_limits,
+  facet_wrap,
+  geom_col,
+  geom_hline,
+  geom_line,
+  geom_linerange,
+  geom_point,
+  geom_ribbon,
+  geom_step,
+  geom_vline,
+  ggplot,
+  ggplot_build,
+  ggsave,
+  guide_legend,
+  guides,
+  labs,
+  scale_color_brewer,
+  scale_color_manual,
+  scale_x_date,
+  scale_y_continuous,
+  theme,
+  theme_bw,
+  vars
+)
+importFrom(lifecycle,
+  deprecate_soft,
+  deprecate_stop,
+  deprecate_warn
+)
+importFrom(lubridate,
+  days,
+  wday
+)
 importFrom(patchwork,plot_layout)
 importFrom(posterior,mcse_mean)
-importFrom(primarycensored,dprimarycensored)
-importFrom(primarycensored,qprimarycensored)
-importFrom(purrr,compact)
-importFrom(purrr,flatten)
-importFrom(purrr,keep)
-importFrom(purrr,list_assign)
-importFrom(purrr,list_transpose)
-importFrom(purrr,map)
-importFrom(purrr,map2_dbl)
-importFrom(purrr,map_chr)
-importFrom(purrr,map_dbl)
-importFrom(purrr,map_vec)
-importFrom(purrr,pmap_dbl)
-importFrom(purrr,quietly)
-importFrom(purrr,reduce)
-importFrom(purrr,safely)
-importFrom(purrr,transpose)
-importFrom(purrr,walk)
-importFrom(rlang,"%||%")
-importFrom(rlang,abort)
-importFrom(rlang,arg_match)
-importFrom(rlang,cnd_muffle)
-importFrom(rstan,expose_stan_functions)
-importFrom(rstan,extract)
-importFrom(rstan,sampling)
-importFrom(rstan,sflist2stanfit)
-importFrom(rstan,stanc)
-importFrom(rstan,summary)
-importFrom(rstan,vb)
+importFrom(primarycensored,
+  dprimarycensored,
+  qprimarycensored
+)
+importFrom(purrr,
+  compact,
+  flatten,
+  keep,
+  list_assign,
+  list_transpose,
+  map,
+  map2_dbl,
+  map_chr,
+  map_dbl,
+  map_vec,
+  pmap_dbl,
+  quietly,
+  reduce,
+  safely,
+  transpose,
+  walk
+)
+importFrom(rlang,
+  "%||%",
+  abort,
+  arg_match,
+  cnd_muffle
+)
+importFrom(rstan,
+  expose_stan_functions,
+  extract,
+  sampling,
+  sflist2stanfit,
+  stanc,
+  summary,
+  vb
+)
 importFrom(runner,mean_run)
 importFrom(scales,comma)
-importFrom(stats,aggregate)
-importFrom(stats,glm)
-importFrom(stats,lm)
-importFrom(stats,median)
-importFrom(stats,na.omit)
-importFrom(stats,pexp)
-importFrom(stats,pgamma)
-importFrom(stats,plnorm)
-importFrom(stats,pnorm)
-importFrom(stats,pweibull)
-importFrom(stats,quantile)
-importFrom(stats,quasipoisson)
-importFrom(stats,rexp)
-importFrom(stats,rgamma)
-importFrom(stats,rlnorm)
-importFrom(stats,rnorm)
-importFrom(stats,rpois)
-importFrom(stats,runif)
-importFrom(stats,sd)
-importFrom(stats,uniroot)
-importFrom(stats,var)
-importFrom(stats,weighted.mean)
+importFrom(stats,
+  aggregate,
+  glm,
+  lm,
+  median,
+  na.omit,
+  pexp,
+  pgamma,
+  plnorm,
+  pnorm,
+  pweibull,
+  quantile,
+  quasipoisson,
+  rexp,
+  rgamma,
+  rlnorm,
+  rnorm,
+  rpois,
+  runif,
+  sd,
+  uniroot,
+  var,
+  weighted.mean
+)
 importFrom(truncnorm,rtruncnorm)
-importFrom(utils,capture.output)
-importFrom(utils,head)
-importFrom(utils,modifyList)
-importFrom(utils,tail)
+importFrom(utils,
+  capture.output,
+  head,
+  modifyList,
+  tail
+)
 useDynLib(EpiNow2, .registration=TRUE)
