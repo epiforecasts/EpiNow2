@@ -619,9 +619,11 @@ create_initial_conditions <- function(stan_data, params) {
       out$bp_sd <- array(numeric(0))
       out$bp_effects <- array(numeric(0))
     }
-    # day_of_week_simplex (array[1] simplex[week_effect]) is left to Stan's
-    # default initialisation: an explicit init for this conditionally-sized
-    # array-of-simplex is read inconsistently across rstan versions.
+    if (stan_data$week_effect > 0) {
+      out$day_of_week_simplex <- array(
+        rep(1 / stan_data$week_effect, stan_data$week_effect)
+      )
+    }
     tparams <- transpose(params)
     null <- vapply(tparams$dist, is.null, logical(1))
     fixed <- vapply(
@@ -720,6 +722,16 @@ create_stan_args <- function(stan = stan_opts(),
   )
   stan_args <- modifyList(stan_args, stan)
   stan_args$return_fit <- NULL
+  # When the weekly effect is off, `day_of_week_simplex` is a degenerate
+  # constant `simplex[1]` whose NA R-hat would trigger a spurious convergence
+  # warning. Drop it from the monitored parameters so no R-hat is computed for
+  # it. Only rstan computes R-hat and supports `pars`/`include`; cmdstanr does
+  # not need this, and the simulation models (`fixed_param`) are unaffected.
+  if (!fixed_param && isTRUE(data$week_effect == 1) &&
+        inherits(stan_args$object, "stanmodel")) {
+    stan_args$pars <- "day_of_week_simplex"
+    stan_args$include <- FALSE
+  }
   stan_args
 }
 

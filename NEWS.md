@@ -2,7 +2,7 @@
 
 ## Bug fixes
 
-- A bug was fixed where a degenerate day-of-week simplex was sampled when the weekly reporting effect was disabled, producing a spurious convergence warning.
+- A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
 
 ## Package changes
 

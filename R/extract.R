@@ -28,30 +28,10 @@ extract_latent_state <- function(param, samples, dates) {
     return(NULL)
   }
 
-  state <- samples[[param]]
-  # rstan returns a parameter with the iteration dimension first, followed by
-  # the parameter's own dimensions. This function extracts a single latent
-  # dimension (indexed by `dates`), so any extra dimensions must be singletons
-  # (e.g. a conditionally declared `array[1] simplex[n]` arrives as
-  # iterations x 1 x n). Drop those singletons; a parameter with more than one
-  # genuine latent dimension cannot be flattened unambiguously, so error.
-  state_dim <- dim(state)
-  if (length(state_dim) > 2L) {
-    latent_dim <- state_dim[-1L]
-    if (sum(latent_dim != 1L) > 1L) {
-      cli_abort(c(
-        "Cannot extract {.val {param}} as a latent state.",
-        "i" = "Expected a single latent dimension but found dimensions
-               {.val {state_dim}}."
-      ))
-    }
-    state <- matrix(state, nrow = state_dim[1L], ncol = prod(latent_dim))
-  }
-
   param_df <- as.data.table(
     t(
       as.data.table(
-        state
+        samples[[param]]
       )
     )
   )
@@ -64,39 +44,6 @@ extract_latent_state <- function(param, samples, dates) {
   param_df <- param_df[, var := NULL][, sample := seq_len(.N), by = .(time)]
   param_df <- param_df[, date := dates, by = .(sample)]
   param_df[, .(time, date, sample, value)]
-}
-
-
-#' Normalise day-of-week simplex draws for the simulation models
-#'
-#' The fitting models declare `day_of_week_simplex` as
-#' `array[week_effect > 1 ? 1 : 0] simplex[week_effect]`. Keyed on `week_effect`
-#' (rather than sniffing the shape of the draws): when the weekly effect is on
-#' it is extracted as a samples x 1 x week_effect array, so drop the length-1
-#' dimension; when off it is absent from the posterior, so supply a flat
-#' (no-effect) default. Either way the result is a plain samples x week_effect
-#' matrix that flows through the generic per-sample draw handling in the
-#' forecast functions like any other parameter.
-#'
-#' @param draws A named list of posterior draws from [extract_samples()].
-#' @param week_effect The weekly period (1 when the effect is off).
-#' @return `draws` with `day_of_week_simplex` as a samples x week_effect matrix.
-#' @keywords internal
-prepare_day_of_week_simplex <- function(draws, week_effect) {
-  if (week_effect > 1) {
-    dow_dim <- dim(draws$day_of_week_simplex)
-    draws$day_of_week_simplex <- matrix(
-      draws$day_of_week_simplex, nrow = dow_dim[1L], ncol = dow_dim[3L]
-    )
-  } else {
-    n_samples <- max(vapply(
-      draws, function(x) if (is.null(dim(x))) 0L else dim(x)[1L], integer(1)
-    ))
-    draws$day_of_week_simplex <- matrix(
-      1 / week_effect, nrow = n_samples, ncol = week_effect
-    )
-  }
-  draws
 }
 
 

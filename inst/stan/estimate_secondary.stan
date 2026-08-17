@@ -37,7 +37,7 @@ parameters{
   // raw gamma values for estimated nonparametric delay PMFs;
   // normalised within each ragged segment to give a Dirichlet draw
   vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
-  array[week_effect > 1 ? 1 : 0] simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
+  simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
 }
 
@@ -87,7 +87,7 @@ transformed parameters {
 
   // weekly reporting effect
   if (week_effect > 1) {
-    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex[1]);
+    secondary = day_of_week_effect(secondary, day_of_week, day_of_week_simplex);
   }
 
   // truncate near time cases to observed reports
