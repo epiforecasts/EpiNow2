@@ -722,14 +722,8 @@ create_stan_args <- function(stan = stan_opts(),
   )
   stan_args <- modifyList(stan_args, stan)
   stan_args$return_fit <- NULL
-  # Some monitored quantities are deterministic and yield an NA R-hat, which
-  # makes rstan warn that chains have not mixed: the constant delay PMFs when
-  # the distributions are fixed, and the day-of-week simplex (`simplex[1]`)
-  # when the weekly effect is off. They are internal to Stan and never read
-  # back in R, so drop them from the monitored parameters. Only rstan supports
-  # `pars`/`include` and computes R-hat; cmdstanr and the simulation models
-  # (`fixed_param`) are unaffected. Skip if `pars` is already set so a
-  # caller-supplied selection is respected.
+  # Drop Stan-internal deterministic quantities from rstan monitoring: their
+  # NA R-hat would otherwise trigger a spurious convergence warning.
   if (!fixed_param && inherits(stan_args$object, "stanmodel") &&
         is.null(stan_args$pars)) {
     exclude <- character(0)
