@@ -722,17 +722,27 @@ create_stan_args <- function(stan = stan_opts(),
   )
   stan_args <- modifyList(stan_args, stan)
   stan_args$return_fit <- NULL
-  # When the weekly effect is off, `day_of_week_simplex` is a degenerate
-  # constant `simplex[1]` whose NA R-hat would trigger a spurious convergence
-  # warning. Drop it from the monitored parameters so no R-hat is computed for
-  # it. Only rstan computes R-hat and supports `pars`/`include`; cmdstanr does
-  # not need this, and the simulation models (`fixed_param`) are unaffected.
-  # Skip if `pars` is already set so a caller-supplied selection is respected.
-  if (!fixed_param && isTRUE(data$week_effect == 1) &&
-        inherits(stan_args$object, "stanmodel") &&
+  # Some monitored quantities are deterministic and yield an NA R-hat, which
+  # makes rstan warn that chains have not mixed: the constant delay PMFs when
+  # the distributions are fixed, and the day-of-week simplex (`simplex[1]`)
+  # when the weekly effect is off. They are internal to Stan and never read
+  # back in R, so drop them from the monitored parameters. Only rstan supports
+  # `pars`/`include` and computes R-hat; cmdstanr and the simulation models
+  # (`fixed_param`) are unaffected. Skip if `pars` is already set so a
+  # caller-supplied selection is respected.
+  if (!fixed_param && inherits(stan_args$object, "stanmodel") &&
         is.null(stan_args$pars)) {
-    stan_args$pars <- "day_of_week_simplex"
-    stan_args$include <- FALSE
+    exclude <- character(0)
+    if (identical(model, "estimate_infections")) {
+      exclude <- c(exclude, "delay_np_pmf_use", "gt_rev_pmf")
+    }
+    if (isTRUE(data$week_effect == 1)) {
+      exclude <- c(exclude, "day_of_week_simplex")
+    }
+    if (length(exclude) > 0) {
+      stan_args$pars <- exclude
+      stan_args$include <- FALSE
+    }
   }
   stan_args
 }
