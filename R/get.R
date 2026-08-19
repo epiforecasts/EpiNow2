@@ -575,7 +575,6 @@ get_predictions.estimate_truncation <- function(
     )
     recon_obs <- recon_obs[, id := variable][, variable := NULL]
 
-    # Assign each cell to its dataset via the ragged group boundaries
     recon_obs <- recon_obs[, dataset := findInterval(seq_len(.N), obs_group)]
 
     # Link predictions to dates

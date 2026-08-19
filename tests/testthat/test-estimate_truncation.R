@@ -156,13 +156,11 @@ test_that("estimate_truncation can return values from simulated data and plot
 
 test_that("get_predictions correctly maps reconstructions to datasets and dates", {
   n_sets <- length(example_truncated)
-  # sample/quantile formats carry an explicit `dataset` column, where the
-  # modulo dataset-misassignment bug this fix corrects was visible.
+  # "sample" and "quantile" both carry an explicit `dataset` column to check
   for (fmt in c("sample", "quantile")) {
     preds <- get_predictions(default_est, format = fmt)
-    # one dataset per input snapshot
     expect_setequal(unique(preds$dataset), seq_len(n_sets))
-    # each dataset spans several dates, not a single date (the old bug)
+    # each dataset spans several dates
     dates_per_dataset <- preds[, data.table::uniqueN(date), by = "dataset"]
     expect_true(all(dates_per_dataset$V1 > 1))
   }
