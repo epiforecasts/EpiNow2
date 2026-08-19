@@ -36,9 +36,7 @@ transformed data{
     end_t[i] = t - obs_dist[i];
     start_t[i] = max(1, end_t[i] - delay_type_max[delay_id_truncation]);
   }
-  // 1-indexed cumulative cell boundaries per observation set, so each set's
-  // cells are the ragged segment obs_group[i]:(obs_group[i + 1] - 1) (same
-  // layout as delay_np_pmf_groups and log_lik below)
+  // ragged cell boundaries: set i owns obs_group[i]:(obs_group[i + 1] - 1)
   array[obs_sets + 1] int obs_group;
   obs_group[1] = 1;
   for (i in 1:obs_sets) {

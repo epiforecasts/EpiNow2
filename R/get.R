@@ -561,8 +561,7 @@ get_predictions.estimate_truncation <- function(
   obs_sets <- object$args$obs_sets
   trunc_max <- object$args$delay_max[1]
 
-  # `recon_obs` is a ragged flat vector: dataset i owns the cell range
-  # obs_group[i]:(obs_group[i + 1] - 1), matching the Stan model's layout.
+  # ragged cell boundaries: dataset i owns obs_group[i]:(obs_group[i + 1] - 1)
   end_t <- object$args$t - object$args$obs_dist
   start_t <- pmax(1L, end_t - trunc_max)
   obs_group <- cumsum(c(1L, end_t - start_t + 1L))
