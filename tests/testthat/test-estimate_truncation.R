@@ -154,6 +154,23 @@ test_that("estimate_truncation can return values from simulated data and plot
   expect_error(plot(est), NA)
 })
 
+test_that("get_predictions correctly maps reconstructions to datasets and dates", {
+  n_sets <- length(example_truncated)
+  # "sample" and "quantile" both carry an explicit `dataset` column to check
+  for (fmt in c("sample", "quantile")) {
+    preds <- get_predictions(default_est, format = fmt)
+    dates <- unique(preds[, c("dataset", "date")])[order(dataset, date)]
+    # every input snapshot is reconstructed
+    expect_setequal(unique(dates$dataset), seq_len(n_sets))
+    counts <- dates[, .N, by = "dataset"]
+    expect_true(all(counts$N > 1))
+    # each dataset reconstructs a contiguous daily run of its own dates; the old
+    # modulo mapping attributed every obs_sets-th cell instead, leaving gaps
+    gaps <- dates[, list(max_gap = max(as.integer(diff(date)))), by = "dataset"]
+    expect_true(all(gaps$max_gap == 1))
+  }
+})
+
 test_that("as_forecast_sample.estimate_truncation produces a valid forecast_sample", {
   skip_if_not_installed("scoringutils")
 

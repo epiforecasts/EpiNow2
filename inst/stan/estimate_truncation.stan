@@ -25,7 +25,6 @@ transformed data{
   int delay_id_truncation = 1;
   array[obs_sets] int<lower = 1> end_t;
   array[obs_sets] int<lower = 1> start_t;
-  int n_obs_cells = 0;
 
   array[delay_types] int delay_type_max;
   delay_type_max = get_delay_type_max(
@@ -37,9 +36,14 @@ transformed data{
     end_t[i] = t - obs_dist[i];
     start_t[i] = max(1, end_t[i] - delay_type_max[delay_id_truncation]);
   }
-  for (i in 1:(obs_sets - 1)) {
-    n_obs_cells += end_t[i] - start_t[i] + 1;
+  // ragged cell boundaries: set i owns obs_group[i]:(obs_group[i + 1] - 1)
+  array[obs_sets + 1] int obs_group;
+  obs_group[1] = 1;
+  for (i in 1:obs_sets) {
+    obs_group[i + 1] = obs_group[i] + (end_t[i] - start_t[i] + 1);
   }
+  int n_obs_cells = obs_group[obs_sets] - 1;        // sets 1..(obs_sets - 1)
+  int n_recon_cells = obs_group[obs_sets + 1] - 1;  // all sets
   array[delay_type_max[delay_id_truncation] + 1] int case_times =
     linspaced_int_array(
       delay_type_max[delay_id_truncation] + 1,
@@ -62,8 +66,7 @@ transformed parameters {
     delay_np_est_pos, delay_np_est_raw
   );
 
-  matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] trunc_obs =
-    rep_matrix(0, delay_type_max[delay_id_truncation] + 1, obs_sets - 1);
+  vector[n_obs_cells] trunc_obs;  // ragged: sets 1..(obs_sets - 1)
   vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf =
     get_delay_rev_pmf(
       delay_id_truncation, delay_type_max[delay_id_truncation] + 1,
@@ -82,7 +85,7 @@ transformed parameters {
     // apply truncation to latest dataset to map back to previous data sets and
     // add noise term
     for (i in 1:(obs_sets - 1)) {
-      trunc_obs[1:(end_t[i] - start_t[i] + 1), i] =
+      trunc_obs[obs_group[i]:(obs_group[i + 1] - 1)] =
         truncate_obs(last_obs[start_t[i]:end_t[i]], trunc_rev_cmf, 0) + sigma;
     }
   }
@@ -111,7 +114,8 @@ model {
       int n_t = end_t[i] - start_t[i] + 1;
       report_lp(
         obs[start_t[i]:(start_t[i] + n_t - 1), i],
-        segment(case_times, 1, n_t), trunc_obs[1:n_t, i],
+        segment(case_times, 1, n_t),
+        trunc_obs[obs_group[i]:(obs_group[i + 1] - 1)],
         reporting_overdispersion, model_type, 1
       );
     }
@@ -119,13 +123,12 @@ model {
 }
 
 generated quantities {
-  matrix[delay_type_max[delay_id_truncation] + 1, obs_sets] recon_obs =
-    rep_matrix(0, delay_type_max[delay_id_truncation] + 1, obs_sets);
-  matrix[delay_type_max[delay_id_truncation] + 1, obs_sets - 1] gen_obs;
+  vector[n_recon_cells] recon_obs;  // ragged: all sets
+  vector[n_obs_cells] gen_obs;      // ragged: sets 1..(obs_sets - 1)
   vector[return_likelihood ? n_obs_cells : 0] log_lik;
   // reconstruct all truncated datasets using posterior of truncation dist
   for (i in 1:obs_sets) {
-    recon_obs[1:(end_t[i] - start_t[i] + 1), i] = truncate_obs(
+    recon_obs[obs_group[i]:(obs_group[i + 1] - 1)] = truncate_obs(
       to_vector(obs[start_t[i]:end_t[i], i]), trunc_rev_cmf, 1
     );
   }
@@ -139,18 +142,15 @@ generated quantities {
     for (i in 1:(obs_sets - 1)) {
       int n_t = end_t[i] - start_t[i] + 1;
       array[n_t] int sampled = report_rng(
-        trunc_obs[1:n_t, i], reporting_overdispersion, model_type
+        trunc_obs[obs_group[i]:(obs_group[i + 1] - 1)],
+        reporting_overdispersion, model_type
       );
-      for (j in 1:n_t) {
-        gen_obs[j, i] = sampled[j];
-      }
-      for (j in (n_t + 1):(delay_type_max[delay_id_truncation] + 1)) {
-        gen_obs[j, i] = 0;
-      }
+      gen_obs[obs_group[i]:(obs_group[i + 1] - 1)] = to_vector(sampled);
       if (return_likelihood) {
         vector[n_t] cell_log_lik = report_log_lik(
           obs[start_t[i]:(start_t[i] + n_t - 1), i],
-          trunc_obs[1:n_t, i], reporting_overdispersion, model_type, 1
+          trunc_obs[obs_group[i]:(obs_group[i + 1] - 1)],
+          reporting_overdispersion, model_type, 1
         );
         log_lik[(log_lik_idx + 1):(log_lik_idx + n_t)] = cell_log_lik;
         log_lik_idx += n_t;
