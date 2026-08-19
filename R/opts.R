@@ -24,8 +24,12 @@
 #' @importFrom cli cli_warn cli_abort col_blue
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [Gamma()] [LogNormal()] [Fixed()]
+#' @seealso [distspec::Distributions] for how to specify the probability
+#' distributions (e.g. `Gamma()`, `LogNormal()`, `Fixed()`), provided by the
+#' \pkg{distspec} package and attached automatically with EpiNow2.
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Gamma()] [distspec::LogNormal()]
+#' [distspec::Fixed()]
 #' @export
 #' @examples
 #' # default settings with a fixed generation time of 1
@@ -45,7 +49,7 @@
 #'
 #' # An example generation time
 #' gt_opts(example_generation_time)
-gt_opts <- function(dist = Fixed(1), default_cdf_cutoff = 0.001,
+gt_opts <- function(dist = Fixed(1), default_cdf_cutoff = 0.999,
                     weight_prior = TRUE) {
   if (missing(dist)) {
     cli_warn(
@@ -150,8 +154,8 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @inheritParams generation_time_opts
 #' @importFrom cli cli_abort
 #' @return A `<delay_opts>` object summarising the input delay distributions.
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Distributions]
 #' `vignette("delays")` for background on delay distributions
 #' @export
 #' @examples
@@ -172,7 +176,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
+delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.999,
                        weight_prior = TRUE) {
   assert_class(dist, "dist_spec")
   ## apply default CDF cutoff if `dist` is unconstrained
@@ -194,7 +198,7 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #'
 #' @param dist A delay distribution or series of delay distributions reflecting
 #' the truncation. It can be specified using the probability distributions
-#' interface in `EpiNow2` (See `?EpiNow2::Distributions`) or estimated using
+#' interface in `distspec` (See `?distspec::Distributions`) or estimated using
 #' [estimate_truncation()], which returns a `dist` object, suited
 #' for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
 #' no truncation.
@@ -209,8 +213,8 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Distributions]
 #' @export
 #' @examples
 #' # no truncation
@@ -218,7 +222,7 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #'
 #' # truncation dist
 #' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
+trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.999,
                        weight_prior = FALSE) {
   assert_class(dist, "dist_spec")
   ## apply default CDF cutoff if `dist` is unconstrained

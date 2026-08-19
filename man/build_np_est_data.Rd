@@ -8,8 +8,9 @@ build_np_est_data(np_delays, np_pmf_groups)
 }
 \arguments{
 \item{np_delays}{A list of nonparametric \code{dist_spec} objects in
-their original order. Each estimated entry must carry an
-\verb{$alpha} numeric vector aligned with its PMF.}
+their original order. Each estimated entry carries a Dirichlet
+prior (its \verb{$pmf} is a \code{dist_spec}) whose \code{alpha} is aligned
+with its PMF.}
 
 \item{np_pmf_groups}{Integer vector of 1-indexed PMF group
 boundaries (output of \code{create_stan_delays()}).}

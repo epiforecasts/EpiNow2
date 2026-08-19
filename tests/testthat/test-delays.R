@@ -87,7 +87,7 @@ test_that("truncation parameters can be specified in different ways", {
 test_that("distributions incompatible with stan models are caught", {
   expect_error(suppressMessages(gt_opts(
     Gamma(2, 2),
-    default_cdf_cutoff = 0
+    default_cdf_cutoff = 1
   )), "maximum")
   expect_error(delay_opts(
     Normal(2, 2, max = 10)
@@ -380,7 +380,7 @@ test_that(
       stan_data, 1L
     )
     expect_s3_class(result, "dist_spec")
-    expect_false(isTRUE(result$estimated))
+    expect_false(inherits(result$pmf, "dist_spec"))
     expect_equal(
       as.numeric(get_pmf(result)),
       c(0.2, 0.5, 0.3)
@@ -405,9 +405,11 @@ test_that(
     result <- EpiNow2:::reconstruct_nonparametric(
       stan_data, 1L
     )
-    expect_true(isTRUE(result$estimated))
-    expect_equal(as.numeric(result$alpha), alpha)
-    expect_equal(as.numeric(get_pmf(result)), pmf)
+    expect_true(inherits(result$pmf, "dist_spec"))
+    expect_equal(as.numeric(get_parameters(result$pmf)$alpha), alpha)
+    expect_equal(
+      as.numeric(get_pmf(fix_parameters(result, strategy = "mean"))), pmf
+    )
   }
 )
 
@@ -430,7 +432,7 @@ test_that(
     fixed_result <- EpiNow2:::reconstruct_nonparametric(
       stan_data, 1L
     )
-    expect_false(isTRUE(fixed_result$estimated))
+    expect_false(inherits(fixed_result$pmf, "dist_spec"))
     expect_equal(
       as.numeric(get_pmf(fixed_result)),
       fixed_pmf
@@ -439,8 +441,8 @@ test_that(
     est_result <- EpiNow2:::reconstruct_nonparametric(
       stan_data, 2L
     )
-    expect_true(isTRUE(est_result$estimated))
-    expect_equal(as.numeric(est_result$alpha), alpha)
+    expect_true(inherits(est_result$pmf, "dist_spec"))
+    expect_equal(as.numeric(get_parameters(est_result$pmf)$alpha), alpha)
   }
 )
 
@@ -468,14 +470,14 @@ test_that(
       stan_data, 1L, np_posterior
     )
     # Should round-trip as a NonParametric backed by a Dirichlet
-    expect_true(isTRUE(result$estimated))
-    post_alpha <- result$alpha
+    expect_true(inherits(result$pmf, "dist_spec"))
+    post_alpha <- get_parameters(result$pmf)$alpha
     # Structural zero is preserved
     expect_equal(post_alpha[1], 0)
     # Free alphas are positive
     expect_true(all(post_alpha[-1] > 0))
     # Implied mean PMF is a valid simplex
-    post_pmf <- as.numeric(get_pmf(result))
+    post_pmf <- as.numeric(get_pmf(fix_parameters(result, strategy = "mean")))
     expect_equal(post_pmf[1], 0)
     expect_equal(sum(post_pmf), 1, tolerance = 1e-10)
     expect_true(all(post_pmf >= 0))
@@ -509,7 +511,8 @@ test_that(
     result <- EpiNow2:::reconstruct_nonparametric(
       stan_data, 1L, raw_draws
     )
-    recovered <- result$alpha[-1] # drop structural zero at t = 0
+    ## drop the structural zero at t = 0
+    recovered <- get_parameters(result$pmf)$alpha[-1]
     ## mean simplex
     expect_equal(
       recovered / sum(recovered), true_alpha / sum(true_alpha),

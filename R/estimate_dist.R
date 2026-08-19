@@ -388,7 +388,7 @@ estimate_dist <- function(data,
     dist
   )
   tryCatch(
-    primarycensored::pcd_stan_dist_id(pc_name, "delay"),
+    pcd_stan_dist_id(pc_name, "delay"),
     error = function(e) {
       cli_abort(c(
         "x" = "Unsupported distribution: {dist}",
