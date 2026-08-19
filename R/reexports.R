@@ -1,9 +1,16 @@
 # Distribution interface re-exported from distspec for backwards compatibility.
 
-# Warn only when a re-exported function is called via the `EpiNow2::` prefix
-# (the usage being deprecated). Bare calls resolve here too, because EpiNow2
-# sits above distspec on the search path, but are left silent since they were
-# never the target and behave identically to distspec.
+#' Warn on `EpiNow2::` use of a re-exported distribution function
+#'
+#' Helper for the deprecated re-exports in this file. When the function was
+#' called via the `EpiNow2::` prefix (the usage being deprecated) it issues a
+#' deprecation warning pointing to \pkg{distspec}. Bare calls resolve here too,
+#' because EpiNow2 sits above distspec on the search path, but are left silent
+#' since they behave identically to distspec and were never the target.
+#'
+#' @param name Name of the re-exported function, used in the message.
+#' @return `NULL`, invisibly; called for the deprecation-warning side effect.
+#' @keywords internal
 reexport_deprecate <- function(name) {
   fn <- sys.call(-1L)[[1L]]
   if (is.call(fn) && identical(fn[[1L]], quote(`::`))) {
