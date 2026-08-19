@@ -360,6 +360,12 @@ forecast_infections <- function(estimates,
     ),
     include = FALSE
   )
+  # day_of_week_simplex is dropped from the fit when the weekly effect is off;
+  # supply the flat simplex the simulation model requires.
+  if (estimates$args$week_effect == 1) {
+    n_samples <- max(vapply(draws, NROW, integer(1)))
+    draws$day_of_week_simplex <- matrix(1, nrow = n_samples, ncol = 1)
+  }
 
   # set samples if missing
   R_samples <- dim(draws$R)[1]

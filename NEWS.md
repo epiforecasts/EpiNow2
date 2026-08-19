@@ -1,5 +1,10 @@
 # EpiNow2 (development version)
 
+## Bug fixes
+
+- A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
+- A bug was fixed where `estimate_infections()` could emit a spurious "the largest R-hat is NA" convergence warning caused by deterministic delay PMFs being monitored; these are no longer monitored.
+
 ## Package changes
 
 - Moved the probability distribution interface (`Gamma()`, `LogNormal()`, `NonParametric()`, `discretise()`, `get_pmf()`, `convert_to_logmean()`, `convert_to_logsd()`, and related functions) to the standalone `distspec` package, which EpiNow2 now depends on. These functions are attached when EpiNow2 is loaded, so existing code continues to work unchanged. They are also re-exported from EpiNow2 (deprecated) so that the `EpiNow2::` form keeps resolving; the re-exports will be removed in a future release.

@@ -722,6 +722,22 @@ create_stan_args <- function(stan = stan_opts(),
   )
   stan_args <- modifyList(stan_args, stan)
   stan_args$return_fit <- NULL
+  # Drop Stan-internal deterministic quantities from rstan monitoring: their
+  # NA R-hat would otherwise trigger a spurious convergence warning.
+  if (!fixed_param && inherits(stan_args$object, "stanmodel") &&
+        is.null(stan_args$pars)) {
+    exclude <- character(0)
+    if (identical(model, "estimate_infections")) {
+      exclude <- c(exclude, "delay_np_pmf_use", "gt_rev_pmf")
+    }
+    if (isTRUE(data$week_effect == 1)) {
+      exclude <- c(exclude, "day_of_week_simplex")
+    }
+    if (length(exclude) > 0) {
+      stan_args$pars <- exclude
+      stan_args$include <- FALSE
+    }
+  }
   stan_args
 }
 
