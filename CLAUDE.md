@@ -87,7 +87,14 @@ test_that("calc_CrI works as expected with default arguments", {
 - Don't reference issue numbers - those are for PRs, not NEWS
 - Don't mention code generators/reviewers or @ mentions
 - Keep entries relatively short (default: 1 sentence, but can be more if needed)
-- Organize by section: "Package changes", "Model changes", "Bug fixes", "Documentation"
+- Organise by section: "New features", "Breaking changes", "Model changes",
+  "Package changes", "Bug fixes", "Documentation"
+- Add your bullet to a section that already exists rather than creating a
+  heading. The development section is seeded with all standard headings,
+  empty, when the version is bumped, and the release PR removes any that are
+  still empty. This keeps parallel PRs from colliding on the headings
+  themselves, and lets `NEWS.md merge=union` in `.gitattributes` resolve the
+  bullets automatically
 - Start with action verbs: "Added", "Fixed", "Updated", "Changed"
 - Bug fixes often start: "A bug was fixed where..."
 
