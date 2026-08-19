@@ -1,0 +1,3 @@
+# Bullets are independent lines, so keep both sides instead of conflicting
+# when parallel PRs each add a news item.
+NEWS.md merge=union
