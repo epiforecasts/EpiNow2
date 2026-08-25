@@ -638,10 +638,7 @@ new_gp_settings <- function(basis_prop = 0.2,
 #'   to a fixed value of 1, i.e. no scaling: `Fixed(1)`. A lower limit of zero
 #'   will be enforced automatically. If setting to a prior distribution and no
 #'   overreporting is expected, it might be sensible to set a maximum of 1 via
-#'   the `max` option when declaring the distribution. `r
-#'   lifecycle::badge("experimental")` May also be a time-varying `<state_spec>`
-#'   created by [RW()] (e.g. `scale = RW(mean = Normal(0.4, 0.05))`) to estimate
-#'   a fraction observed that varies over time.
+#'   the `max` option when declaring the distribution.
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
