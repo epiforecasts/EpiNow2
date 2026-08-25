@@ -74,7 +74,7 @@ simulate_infections <- function(R,
                                 growth_method = c("infections",
                                                   "infectiousness")) {
   if (is.numeric(pop)) {
-    lifecycle::deprecate_stop(
+    deprecate_stop(
       "1.9.0",
       "simulate_infections(pop = 'must be a `<dist_spec>`')",
       details = paste(
@@ -357,6 +357,12 @@ forecast_infections <- function(estimates,
     ),
     include = FALSE
   )
+  # day_of_week_simplex is dropped from the fit when the weekly effect is off;
+  # supply the flat simplex the simulation model requires.
+  if (estimates$args$week_effect == 1) {
+    n_samples <- max(vapply(draws, NROW, integer(1)))
+    draws$day_of_week_simplex <- matrix(1, nrow = n_samples, ncol = 1)
+  }
 
   # set samples if missing
   R_samples <- dim(draws$R)[1]

@@ -447,6 +447,7 @@ references:
     email: mlysy@uwaterloo.ca
   - family-names: Johnson
     given-names: Andrew
+    email: andrew.johnson@arjohnsonau.com
   year: '2026'
   doi: 10.32614/CRAN.package.rstantools
   version: '>= 2.2.0'
@@ -781,19 +782,25 @@ references:
   url: https://rcppcore.github.io/RcppParallel/
   repository: https://CRAN.R-project.org/package=RcppParallel
   authors:
+  - family-names: Ushey
+    given-names: Kevin
+    email: kevin@rstudio.com
+    orcid: https://orcid.org/0000-0003-2880-7407
   - family-names: Allaire
     given-names: JJ
     email: jj@rstudio.com
   - family-names: Francois
     given-names: Romain
-  - family-names: Ushey
-    given-names: Kevin
-    email: kevin@rstudio.com
   - family-names: Vandenbrouck
     given-names: Gregory
   - family-names: Geelnard
     given-names: Marcus
+  - family-names: Eddelbuettel
+    given-names: Dirk
+    email: edd@debian.org
+    orcid: https://orcid.org/0000-0001-6419-907X
   - name: Intel
+  - name: UXL Foundation
   year: '2026'
   doi: 10.32614/CRAN.package.RcppParallel
   version: '>= 5.0.1'

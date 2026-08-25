@@ -225,8 +225,8 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
     )
 
 
-    dist_samples <- purrr::list_transpose(dist_samples, simplify = FALSE)
-    dist_samples <- purrr::map(dist_samples, unlist)
+    dist_samples <- list_transpose(dist_samples, simplify = FALSE)
+    dist_samples <- map(dist_samples, unlist)
   }
 
   params <- lapply(dist_samples, function(x) {
@@ -266,7 +266,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' # vignette("estimate_dist_workflow") for date-based usage
 #' }
 estimate_delay <- function(delays, ...) {
-  lifecycle::deprecate_warn(
+  deprecate_warn(
     when = "1.9.0",
     what = "estimate_delay()",
     with = "estimate_dist()"
