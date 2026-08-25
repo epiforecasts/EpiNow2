@@ -1058,7 +1058,7 @@ forecast_opts <- function(horizon = 7, accumulate) {
 #' @examples
 #' # uses example case vector
 #' cases <- example_confirmed[1:40]
-#' cases <- rbindlist(list(
+#' cases <- data.table::rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]
 #' ))
