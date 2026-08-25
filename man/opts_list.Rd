@@ -29,7 +29,7 @@ necessary (either within \code{\link[=opts_list]{opts_list()}} or externally).
 \examples{
 # uses example case vector
 cases <- example_confirmed[1:40]
-cases <- data.table::rbindlist(list(
+cases <- rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]
 ))
