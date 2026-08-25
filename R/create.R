@@ -153,7 +153,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   # walk prior; with Rt expressed as a state they are no longer applied
   bp_n <- ifelse(rt$use_breakpoints, max(breakpoints) - 1, 0)
   if (bp_n > 0) {
-    lifecycle::deprecate_warn(
+    deprecate_warn(
       "1.10.0", "rt_opts(use_breakpoints)",
       details = paste(
         "Breakpoints are superseded by a random-walk Rt prior",
@@ -334,7 +334,7 @@ create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
 create_delay_inits <- function(stan_data) {
   out <- list()
   if (stan_data$delay_n_p > 0) {
-    out$delay_params <- array(truncnorm::rtruncnorm(
+    out$delay_params <- array(rtruncnorm(
       n = stan_data$delay_params_length, a = stan_data$delay_params_lower,
       mean = stan_data$delay_params_mean, sd = stan_data$delay_params_sd * 0.1
     ))
@@ -388,7 +388,7 @@ create_initial_conditions <- function(stan_data, params) {
     }
 
     if (stan_data$bp_n > 0) {
-      out$bp_sd <- array(truncnorm::rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
+      out$bp_sd <- array(rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
       out$bp_effects <- array(rnorm(stan_data$bp_n, 0, 0.1))
     } else {
       out$bp_sd <- array(numeric(0))
@@ -416,7 +416,7 @@ create_initial_conditions <- function(stan_data, params) {
       ignore_uncertainty = FALSE,
       FUN.VALUE = numeric(1)
     )
-    out$params <- array(truncnorm::rtruncnorm(
+    out$params <- array(rtruncnorm(
       stan_data$n_params_variable,
       a = stan_data$params_lower,
       b = stan_data$params_upper,
@@ -426,9 +426,9 @@ create_initial_conditions <- function(stan_data, params) {
     ## time-varying states each have their own free-noise window (set by their
     ## `future`), mirroring the Stan transformed-data computation, so the ragged
     ## random walk step and GP coefficient vectors are sized per state.
-    ## truncnorm::rtruncnorm() returns NULL for n = 0, so guard zero counts
+    ## rtruncnorm() returns NULL for n = 0, so guard zero counts
     rtruncnorm0 <- function(n, ...) {
-      if (n > 0) truncnorm::rtruncnorm(n, ...) else numeric(0)
+      if (n > 0) rtruncnorm(n, ...) else numeric(0)
     }
     n_states <- stan_data$n_states %||% 0L
     n_rw_steps <- 0L

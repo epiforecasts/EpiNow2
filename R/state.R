@@ -353,19 +353,19 @@ plot.state_spec <- function(x, n = 50L, samples = 50L, ...) {
     } else {
       log_traj <- log(level[s]) + (dev - mean(dev))
     }
-    data.table::data.table(sample = s, time = seq_len(n), value = exp(log_traj))
+    data.table(sample = s, time = seq_len(n), value = exp(log_traj))
   })
-  traj <- data.table::rbindlist(traj)
+  traj <- rbindlist(traj)
 
   type <- if (x$type == "gp") "Gaussian process" else "random walk"
   variant <- if (init) "first differences" else "mean-reverting"
-  ggplot2::ggplot(
-    traj, ggplot2::aes(x = time, y = value, group = sample)
+  ggplot(
+    traj, aes(x = time, y = value, group = sample)
   ) +
-    ggplot2::geom_line(alpha = 0.3) +
-    ggplot2::labs(
+    geom_line(alpha = 0.3) +
+    labs(
       x = "Time", y = "Value",
       title = paste0("Prior draws: ", type, " (", variant, ")")
     ) +
-    ggplot2::theme_bw()
+    theme_bw()
 }

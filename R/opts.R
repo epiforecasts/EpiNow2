@@ -334,7 +334,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
                     pop_floor = 1.0,
                     growth_method = c("infections", "infectiousness")) {
   if (lifecycle::is_present(gp_on)) {
-    lifecycle::deprecate_warn(
+    deprecate_warn(
       "1.10.0", "rt_opts(gp_on)",
       details = paste(
         "Choose the Gaussian process variant through the prior:",
@@ -347,7 +347,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
   # `future` is superseded by the `future` argument of GP() / RW()
   future_val <- "latest"
   if (lifecycle::is_present(future)) {
-    lifecycle::deprecate_warn(
+    deprecate_warn(
       "1.10.0", "rt_opts(future)",
       details = paste(
         "Set the forecast-horizon behaviour on the Rt prior instead, e.g.",
@@ -372,7 +372,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
   )
   # rw is superseded by a random-walk prior (rt_opts(prior = RW(...)))
   if (rw != 0) {
-    lifecycle::deprecate_warn(
+    deprecate_warn(
       "1.10.0", "rt_opts(rw)",
       details = paste(
         "Specify a random-walk Rt with `rt_opts(prior = RW(...))`.",
@@ -454,7 +454,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
 #' backcalc_opts()
 backcalc_opts <- function(prior = NULL, prior_window = 14, rt_window = 1) {
   if (is.character(prior)) {
-    lifecycle::deprecate_warn(
+    deprecate_warn(
       "1.10.0", "backcalc_opts(prior = 'must be a GP() specification')",
       details = "The back-calculation model now estimates latent infections as
       a Gaussian process state. Supply a `GP()` specification (e.g.
@@ -463,7 +463,7 @@ backcalc_opts <- function(prior = NULL, prior_window = 14, rt_window = 1) {
     prior <- NULL
   }
   if (!missing(prior_window)) {
-    lifecycle::deprecate_warn(
+    deprecate_warn(
       "1.10.0", "backcalc_opts(prior_window)",
       details = "The back-calculation model no longer smooths shifted cases, so
       the prior smoothing window is no longer used."
@@ -555,7 +555,7 @@ gp_opts <- function(basis_prop = 0.2,
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
                     w0 = 1.0) {
-  lifecycle::deprecate_warn(
+  deprecate_warn(
     "1.10.0", "gp_opts()", "GP()",
     details = "Gaussian process settings are now arguments of `GP()`."
   )
@@ -1058,7 +1058,7 @@ forecast_opts <- function(horizon = 7, accumulate) {
 #' @examples
 #' # uses example case vector
 #' cases <- example_confirmed[1:40]
-#' cases <- data.table::rbindlist(list(
+#' cases <- rbindlist(list(
 #'   data.table::copy(cases)[, region := "testland"],
 #'   cases[, region := "realland"]
 #' ))

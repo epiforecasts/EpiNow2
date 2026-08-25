@@ -140,7 +140,7 @@ estimate_infections <- function(data,
   assert_class(rt, "rt_opts", null.ok = TRUE)
   assert_class(backcalc, "backcalc_opts")
   if (!is.null(gp)) {
-    lifecycle::deprecate_warn(
+    deprecate_warn(
       "1.10.0", "estimate_infections(gp)",
       details = "Configure the Gaussian process through the relevant model's
       prior instead: `rt_opts(prior = GP(...))` for the renewal model or
