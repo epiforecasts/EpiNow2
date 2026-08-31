@@ -24,8 +24,8 @@ jobs:
         id: generate_token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          # The client id is public app metadata, not a secret. app-id is
-          # deprecated in favour of it.
+          # The client id is public app metadata, not a secret like the key
+          # below, so it is written here rather than stored alongside it.
           client-id: Iv23liO6XAGL0YY9eHLU
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
