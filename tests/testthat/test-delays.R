@@ -87,11 +87,21 @@ test_that("truncation parameters can be specified in different ways", {
 test_that("distributions incompatible with stan models are caught", {
   expect_error(suppressMessages(gt_opts(
     Gamma(2, 2),
-    default_cdf_cutoff = 1
+    default_cdf_max = 1
   )), "maximum")
   expect_error(delay_opts(
     Normal(2, 2, max = 10)
   ), "lognormal")
+})
+
+test_that("deprecated default_cdf_cutoff maps to default_cdf_max", {
+  expect_warning(
+    dist <- suppressMessages(
+      delay_opts(LogNormal(mean = 2, sd = 1), default_cdf_cutoff = 0.9)
+    ),
+    "deprecated"
+  )
+  expect_equal(attr(dist, "cdf_max"), 0.9)
 })
 
 test_that("create_stan_delays creates delay_id_* variables with correct names", {

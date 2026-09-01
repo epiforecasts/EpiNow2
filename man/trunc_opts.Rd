@@ -4,7 +4,12 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = Fixed(0), default_cdf_cutoff = 0.999, weight_prior = FALSE)
+trunc_opts(
+  dist = Fixed(0),
+  default_cdf_max = getOption("EpiNow2.cdf_max", 0.999),
+  weight_prior = FALSE,
+  default_cdf_cutoff = lifecycle::deprecated()
+)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions reflecting
@@ -14,16 +19,19 @@ interface in \code{distspec} (See \code{?distspec::Distributions}) or estimated 
 for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
 no truncation.}
 
-\item{default_cdf_cutoff}{Numeric; default CDF cutoff to be used if an
-unconstrained distribution is passed as \code{dist}. If \code{dist} is already
-constrained by having a maximum or CDF cutoff this is ignored. Note that
-this can only be done for <dist_spec> objects with fixed parameters.}
+\item{default_cdf_max}{Numeric; default CDF level to keep the distribution up
+to if an unconstrained distribution is passed as \code{dist}. If \code{dist} is
+already constrained by having a maximum or CDF level this is ignored. Note
+that this can only be done for <dist_spec> objects with fixed parameters.}
 
 \item{weight_prior}{Logical; if TRUE, the truncation prior will be weighted
 by the number of observation data points, in doing so approximately placing
 an independent prior at each time step and usually preventing the
 posteriors from shifting. If FALSE (default), no weight will be applied,
 i.e. the truncation distribution will be treated as a single parameter.}
+
+\item{default_cdf_cutoff}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use
+\code{default_cdf_max} instead.}
 }
 \value{
 A \verb{<trunc_opts>} object summarising the input truncation
