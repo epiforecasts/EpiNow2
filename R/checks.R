@@ -128,18 +128,18 @@ check_stan_delay <- function(dist) {
       )
     )
   }
-  if (is.null(attr(dist, "cdf_cutoff"))) {
-    attr(dist, "cdf_cutoff") <- 1
+  if (is.null(attr(dist, "cdf_max"))) {
+    attr(dist, "cdf_max") <- 1
   }
-  assert_numeric(attr(dist, "cdf_cutoff"), lower = 0, upper = 1)
+  assert_numeric(attr(dist, "cdf_max"), lower = 0, upper = 1)
   # Check that `dist` has a finite maximum
-  if (any(is.infinite(max(dist))) && attr(dist, "cdf_cutoff") == 1) {
+  if (any(is.infinite(max(dist))) && attr(dist, "cdf_max") == 1) {
     cli_abort(
       c(
         "i" = "All distributions passed to the model need to have a
       {col_blue(\"finite maximum\")}, which can be achieved either by
       setting {.var max} or, if using a distribution with fixed parameters,
-      a {.var cdf_cutoff} below 1."
+      a {.var cdf_max} below 1."
       )
     )
   }
@@ -191,7 +191,7 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
         "!" = "The PMF tail has {col_blue(span)} consecutive value{?s} smaller
         than {col_blue(tol)}.",
         "i" = "This will increase run times with very small increases in
-        accuracy. Consider using the `cdf_cutoff` argument when constructing
+        accuracy. Consider using the `cdf_max` argument when constructing
         the distribution object, or using the `bound_dist()` function."
       ),
       .frequency = "regularly",
