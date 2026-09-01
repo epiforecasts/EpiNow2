@@ -57,7 +57,7 @@ gt_opts <- function(dist = Fixed(1),
                     default_cdf_cutoff = lifecycle::deprecated()) {
   cdf_max_set <- !missing(default_cdf_max)
   if (lifecycle::is_present(default_cdf_cutoff)) {
-    lifecycle::deprecate_warn(
+    deprecate_warn(
       "1.10.0", "gt_opts(default_cdf_cutoff)", "gt_opts(default_cdf_max)"
     )
     default_cdf_max <- default_cdf_cutoff
@@ -193,7 +193,7 @@ delay_opts <- function(dist = Fixed(0),
   assert_class(dist, "dist_spec")
   cdf_max_set <- !missing(default_cdf_max)
   if (lifecycle::is_present(default_cdf_cutoff)) {
-    lifecycle::deprecate_warn(
+    deprecate_warn(
       "1.10.0", "delay_opts(default_cdf_cutoff)", "delay_opts(default_cdf_max)"
     )
     default_cdf_max <- default_cdf_cutoff
@@ -247,7 +247,7 @@ trunc_opts <- function(dist = Fixed(0),
   assert_class(dist, "dist_spec")
   cdf_max_set <- !missing(default_cdf_max)
   if (lifecycle::is_present(default_cdf_cutoff)) {
-    lifecycle::deprecate_warn(
+    deprecate_warn(
       "1.10.0", "trunc_opts(default_cdf_cutoff)", "trunc_opts(default_cdf_max)"
     )
     default_cdf_max <- default_cdf_cutoff
