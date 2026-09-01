@@ -41,138 +41,138 @@ NULL
 #' @export
 Gamma <- function(...) {
   reexport_deprecate("Gamma")
-  distspec::Gamma(...)
+  distspec::Gamma(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 LogNormal <- function(...) {
   reexport_deprecate("LogNormal")
-  distspec::LogNormal(...)
+  distspec::LogNormal(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 Normal <- function(...) {
   reexport_deprecate("Normal")
-  distspec::Normal(...)
+  distspec::Normal(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 Fixed <- function(...) {
   reexport_deprecate("Fixed")
-  distspec::Fixed(...)
+  distspec::Fixed(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 Exp <- function(...) {
   reexport_deprecate("Exp")
-  distspec::Exp(...)
+  distspec::Exp(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 Weibull <- function(...) {
   reexport_deprecate("Weibull")
-  distspec::Weibull(...)
+  distspec::Weibull(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 Dirichlet <- function(...) {
   reexport_deprecate("Dirichlet")
-  distspec::Dirichlet(...)
+  distspec::Dirichlet(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 NonParametric <- function(...) {
   reexport_deprecate("NonParametric")
-  distspec::NonParametric(...)
+  distspec::NonParametric(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 discretise <- function(...) {
   reexport_deprecate("discretise")
-  distspec::discretise(...)
+  distspec::discretise(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 discretize <- function(...) {
   reexport_deprecate("discretize")
-  distspec::discretize(...)
+  distspec::discretize(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 get_pmf <- function(...) {
   reexport_deprecate("get_pmf")
-  distspec::get_pmf(...)
+  distspec::get_pmf(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 convert_to_logmean <- function(...) {
   reexport_deprecate("convert_to_logmean")
-  distspec::convert_to_logmean(...)
+  distspec::convert_to_logmean(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 convert_to_logsd <- function(...) {
   reexport_deprecate("convert_to_logsd")
-  distspec::convert_to_logsd(...)
+  distspec::convert_to_logsd(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 fix_parameters <- function(...) {
   reexport_deprecate("fix_parameters")
-  distspec::fix_parameters(...)
+  distspec::fix_parameters(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 get_distribution <- function(...) {
   reexport_deprecate("get_distribution")
-  distspec::get_distribution(...)
+  distspec::get_distribution(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 get_parameters <- function(...) {
   reexport_deprecate("get_parameters")
-  distspec::get_parameters(...)
+  distspec::get_parameters(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 is_constrained <- function(...) {
   reexport_deprecate("is_constrained")
-  distspec::is_constrained(...)
+  distspec::is_constrained(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 bound_dist <- function(...) {
   reexport_deprecate("bound_dist")
-  distspec::bound_dist(...)
+  distspec::bound_dist(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 collapse <- function(...) {
   reexport_deprecate("collapse")
-  distspec::collapse(...)
+  distspec::collapse(...) # nolint: namespace_linter.
 }
 
 #' @rdname distspec-reexports
 #' @export
 new_dist_spec <- function(...) {
   reexport_deprecate("new_dist_spec")
-  distspec::new_dist_spec(...)
+  distspec::new_dist_spec(...) # nolint: namespace_linter.
 }
