@@ -186,18 +186,18 @@ def <- estimate_infections(reported_cases,
 summary(def)
 #>                         measure                 estimate
 #>                          <char>                   <char>
-#> 1:       New infections per day      2196 (1373 -- 3556)
+#> 1:       New infections per day      2258 (1392 -- 3684)
 #> 2:   Expected change in reports        Likely decreasing
-#> 3:   Effective reproduction no.       0.89 (0.71 -- 1.1)
-#> 4:               Rate of growth -0.031 (-0.097 -- 0.034)
-#> 5: Doubling/halving time (days)         -23 (20 -- -7.2)
+#> 3:   Effective reproduction no.        0.9 (0.72 -- 1.1)
+#> 4:               Rate of growth -0.027 (-0.091 -- 0.035)
+#> 5: Doubling/halving time (days)         -25 (20 -- -7.6)
 # elapsed time (in seconds)
 get_elapsed_time(def$fit)
 #>         warmup sample
-#> chain:1 51.688 14.776
-#> chain:2 44.533 16.303
-#> chain:3 46.709 18.709
-#> chain:4 53.842 20.750
+#> chain:1 45.291 11.600
+#> chain:2 44.270 19.491
+#> chain:3 22.761 16.990
+#> chain:4 43.600 10.589
 # summary plot
 plot(def)
 ```
@@ -218,20 +218,20 @@ agp <- estimate_infections(reported_cases,
 )
 # summarise results
 summary(agp)
-#>                         measure                 estimate
-#>                          <char>                   <char>
-#> 1:       New infections per day      2213 (1328 -- 3682)
-#> 2:   Expected change in reports        Likely decreasing
-#> 3:   Effective reproduction no.       0.89 (0.71 -- 1.1)
-#> 4:               Rate of growth -0.029 (-0.094 -- 0.037)
-#> 5: Doubling/halving time (days)         -24 (19 -- -7.3)
+#>                         measure                estimate
+#>                          <char>                  <char>
+#> 1:       New infections per day     2237 (1354 -- 3714)
+#> 2:   Expected change in reports       Likely decreasing
+#> 3:   Effective reproduction no.      0.89 (0.71 -- 1.1)
+#> 4:               Rate of growth -0.03 (-0.096 -- 0.037)
+#> 5: Doubling/halving time (days)        -23 (19 -- -7.2)
 # elapsed time (in seconds)
 get_elapsed_time(agp$fit)
 #>         warmup sample
-#> chain:1 41.297 19.604
-#> chain:2 49.544 22.628
-#> chain:3 45.034 15.246
-#> chain:4 44.896 24.419
+#> chain:1 42.256 19.051
+#> chain:2 43.924 16.892
+#> chain:3 38.819 22.547
+#> chain:4 34.964 15.101
 # summary plot
 plot(agp)
 ```
@@ -254,22 +254,26 @@ dep <- estimate_infections(reported_cases,
     pop = Normal(mean = 1000000, sd = 1000), future = "latest"
   )
 )
+#> Warning: There were 1 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(dep)
-#>                         measure                 estimate
-#>                          <char>                   <char>
-#> 1:       New infections per day      2217 (1383 -- 3657)
-#> 2:   Expected change in reports        Likely decreasing
-#> 3:   Effective reproduction no.       0.89 (0.72 -- 1.1)
-#> 4:               Rate of growth -0.029 (-0.094 -- 0.038)
-#> 5: Doubling/halving time (days)         -24 (18 -- -7.4)
+#>                         measure              estimate
+#>                          <char>                <char>
+#> 1:       New infections per day   2212 (1347 -- 3626)
+#> 2:   Expected change in reports     Likely decreasing
+#> 3:   Effective reproduction no.     0.89 (0.7 -- 1.1)
+#> 4:               Rate of growth -0.03 (-0.1 -- 0.036)
+#> 5: Doubling/halving time (days)      -23 (19 -- -6.8)
 # elapsed time (in seconds)
 get_elapsed_time(dep$fit)
 #>         warmup sample
-#> chain:1 76.277 24.076
-#> chain:2 71.143 22.417
-#> chain:3 64.918 27.207
-#> chain:4 57.896 23.839
+#> chain:1 66.551 19.946
+#> chain:2 58.765 13.434
+#> chain:3 55.826 19.673
+#> chain:4 56.138 21.854
 # summary plot
 plot(dep)
 ```
@@ -310,18 +314,18 @@ trunc <- estimate_infections(reported_cases,
 summary(trunc)
 #>                         measure               estimate
 #>                          <char>                 <char>
-#> 1:       New infections per day    3627 (2198 -- 6336)
+#> 1:       New infections per day    3615 (2189 -- 6191)
 #> 2:   Expected change in reports      Likely increasing
-#> 3:   Effective reproduction no.      1.1 (0.85 -- 1.3)
-#> 4:               Rate of growth 0.02 (-0.047 -- 0.097)
-#> 5: Doubling/halving time (days)        35 (7.1 -- -15)
+#> 3:   Effective reproduction no.      1.1 (0.84 -- 1.3)
+#> 4:               Rate of growth 0.018 (-0.05 -- 0.094)
+#> 5: Doubling/halving time (days)        38 (7.3 -- -14)
 # elapsed time (in seconds)
 get_elapsed_time(trunc$fit)
 #>         warmup sample
-#> chain:1 48.221 15.066
-#> chain:2 51.337 17.153
-#> chain:3 51.464 22.987
-#> chain:4 52.126 21.368
+#> chain:1 40.860 18.557
+#> chain:2 44.517 12.329
+#> chain:3 40.555 13.639
+#> chain:4 39.348 16.493
 # summary plot
 plot(trunc)
 ```
@@ -342,26 +346,26 @@ project_rt <- estimate_infections(reported_cases,
     prior = rt_prior, future = "project"
   )
 )
-#> Warning: There were 1 divergent transitions after warmup. See
+#> Warning: There were 3 divergent transitions after warmup. See
 #> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 #> to find out why this is a problem and how to eliminate them.
 #> Warning: Examine the pairs() plot to diagnose sampling problems
 # summarise results
 summary(project_rt)
-#>                         measure                estimate
-#>                          <char>                  <char>
-#> 1:       New infections per day     2226 (1357 -- 3778)
-#> 2:   Expected change in reports       Likely decreasing
-#> 3:   Effective reproduction no.      0.89 (0.71 -- 1.1)
-#> 4:               Rate of growth -0.03 (-0.097 -- 0.045)
-#> 5: Doubling/halving time (days)        -23 (15 -- -7.2)
+#>                         measure                 estimate
+#>                          <char>                   <char>
+#> 1:       New infections per day      2251 (1380 -- 3620)
+#> 2:   Expected change in reports        Likely decreasing
+#> 3:   Effective reproduction no.        0.9 (0.71 -- 1.1)
+#> 4:               Rate of growth -0.027 (-0.095 -- 0.038)
+#> 5: Doubling/halving time (days)         -26 (18 -- -7.3)
 # elapsed time (in seconds)
 get_elapsed_time(project_rt$fit)
 #>         warmup sample
-#> chain:1 46.886 13.645
-#> chain:2 54.025 12.465
-#> chain:3 52.194 15.571
-#> chain:4 37.635 14.774
+#> chain:1 44.044 23.422
+#> chain:2 47.413 23.217
+#> chain:3 51.150 13.101
+#> chain:4 47.704 23.336
 # summary plot
 plot(project_rt)
 ```
@@ -383,18 +387,18 @@ fixed <- estimate_infections(reported_cases,
 summary(fixed)
 #>                         measure               estimate
 #>                          <char>                 <char>
-#> 1:       New infections per day 19435 (11164 -- 35721)
+#> 1:       New infections per day 18767 (10937 -- 34526)
 #> 2:   Expected change in reports             Increasing
 #> 3:   Effective reproduction no.       1.2 (1.2 -- 1.3)
-#> 4:               Rate of growth  0.054 (0.039 -- 0.07)
-#> 5: Doubling/halving time (days)         13 (9.9 -- 18)
+#> 4:               Rate of growth 0.053 (0.039 -- 0.069)
+#> 5: Doubling/halving time (days)          13 (10 -- 18)
 # elapsed time (in seconds)
 get_elapsed_time(fixed$fit)
 #>         warmup sample
-#> chain:1  3.874  1.718
-#> chain:2  3.280  1.611
-#> chain:3  3.848  2.164
-#> chain:4  3.428  1.676
+#> chain:1  3.398  1.674
+#> chain:2  3.459  1.532
+#> chain:3  2.077  1.484
+#> chain:4  3.378  1.230
 # summary plot
 plot(fixed)
 ```
@@ -429,18 +433,18 @@ bkp <- estimate_infections(bp_cases,
 summary(bkp)
 #>                         measure                  estimate
 #>                          <char>                    <char>
-#> 1:       New infections per day       2297 (1924 -- 2757)
+#> 1:       New infections per day       2314 (1938 -- 2779)
 #> 2:   Expected change in reports                Decreasing
 #> 3:   Effective reproduction no.        0.9 (0.87 -- 0.92)
-#> 4:               Rate of growth -0.028 (-0.035 -- -0.022)
+#> 4:               Rate of growth -0.028 (-0.034 -- -0.021)
 #> 5: Doubling/halving time (days)          -25 (-32 -- -20)
 # elapsed time (in seconds)
 get_elapsed_time(bkp$fit)
 #>         warmup sample
-#> chain:1  6.394  3.968
-#> chain:2  6.609  3.648
-#> chain:3  6.782  5.307
-#> chain:4  5.920  3.785
+#> chain:1  6.294  3.875
+#> chain:2  5.602  3.164
+#> chain:3  5.835  5.380
+#> chain:4  5.813  4.595
 # summary plot
 plot(bkp)
 ```
@@ -462,20 +466,20 @@ rw <- estimate_infections(reported_cases,
 )
 # summarise results
 summary(rw)
-#>                         measure                estimate
-#>                          <char>                  <char>
-#> 1:       New infections per day     2024 (1038 -- 3844)
-#> 2:   Expected change in reports       Likely decreasing
-#> 3:   Effective reproduction no.      0.85 (0.61 -- 1.1)
-#> 4:               Rate of growth -0.041 (-0.11 -- 0.036)
-#> 5: Doubling/halving time (days)        -17 (19 -- -6.1)
+#>                         measure               estimate
+#>                          <char>                 <char>
+#> 1:       New infections per day    2036 (1071 -- 4000)
+#> 2:   Expected change in reports      Likely decreasing
+#> 3:   Effective reproduction no.     0.85 (0.62 -- 1.2)
+#> 4:               Rate of growth -0.042 (-0.11 -- 0.04)
+#> 5: Doubling/halving time (days)       -17 (17 -- -6.4)
 # elapsed time (in seconds)
 get_elapsed_time(rw$fit)
 #>         warmup sample
-#> chain:1 15.679 14.561
-#> chain:2 18.129 15.174
-#> chain:3 19.758 17.222
-#> chain:4 17.739 13.441
+#> chain:1 13.442 12.037
+#> chain:2 16.945 12.010
+#> chain:3 16.079 11.261
+#> chain:4 17.039 11.760
 # summary plot
 plot(rw)
 ```
@@ -494,20 +498,20 @@ no_delay <- estimate_infections(
 )
 # summarise results
 summary(no_delay)
-#>                         measure                  estimate
-#>                          <char>                    <char>
-#> 1:       New infections per day       2799 (2397 -- 3274)
-#> 2:   Expected change in reports                Decreasing
-#> 3:   Effective reproduction no.       0.89 (0.81 -- 0.98)
-#> 4:               Rate of growth -0.031 (-0.064 -- 0.0022)
-#> 5: Doubling/halving time (days)          -22 (310 -- -11)
+#>                         measure                 estimate
+#>                          <char>                   <char>
+#> 1:       New infections per day      2792 (2404 -- 3296)
+#> 2:   Expected change in reports               Decreasing
+#> 3:   Effective reproduction no.      0.89 (0.81 -- 0.97)
+#> 4:               Rate of growth -0.031 (-0.063 -- 0.001)
+#> 5: Doubling/halving time (days)         -22 (690 -- -11)
 # elapsed time (in seconds)
 get_elapsed_time(no_delay$fit)
 #>         warmup sample
-#> chain:1 44.501 23.019
-#> chain:2 45.219 21.287
-#> chain:3 48.963 21.041
-#> chain:4 47.075 22.101
+#> chain:1 51.339 16.928
+#> chain:2 44.689 20.008
+#> chain:3 45.209 17.958
+#> chain:4 42.393 20.914
 # summary plot
 plot(no_delay)
 ```
@@ -534,7 +538,7 @@ non_parametric <- estimate_infections(reported_cases,
 summary(non_parametric)
 #>                         measure                  estimate
 #>                          <char>                    <char>
-#> 1:       New infections per day       2544 (2505 -- 2579)
+#> 1:       New infections per day       2543 (2501 -- 2585)
 #> 2:   Expected change in reports                Decreasing
 #> 3:   Effective reproduction no.       0.92 (0.83 -- 0.96)
 #> 4:               Rate of growth -0.024 (-0.025 -- -0.022)
@@ -542,10 +546,10 @@ summary(non_parametric)
 # elapsed time (in seconds)
 get_elapsed_time(non_parametric$fit)
 #>         warmup sample
-#> chain:1  5.472  0.805
-#> chain:2  5.513  0.805
-#> chain:3  5.512  0.826
-#> chain:4  5.499  0.829
+#> chain:1  4.297  0.520
+#> chain:2  6.080  0.366
+#> chain:3  4.672  0.725
+#> chain:4  4.839  0.844
 # summary plot
 plot(non_parametric)
 ```
