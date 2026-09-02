@@ -63,7 +63,8 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
           ),
           warning = function(w) {
             flog.warn(
-              "%s (chain: %s): %s - %s", id, chain, w$message, toString(w$call),
+              "%s (chain: %s): %s - %s", id, toString(chain), w$message,
+              toString(w$call),
               name = "EpiNow2.epinow.estimate_infections.fit"
             )
             cnd_muffle(w)
@@ -71,7 +72,8 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
         ),
         error = function(e) {
           error_text <- sprintf(
-            "%s (chain: %s): %s - %s", id, chain, e$message, toString(e$call)
+            "%s (chain: %s): %s - %s", id, toString(chain), e$message,
+            toString(e$call)
           )
           flog.error(error_text,
             name = "EpiNow2.epinow.estimate_infections.fit"
