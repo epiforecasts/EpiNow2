@@ -12,7 +12,9 @@ apply_default_cdf_max(dist, default_cdf_max, cdf_max_set)
 \item{default_cdf_max}{Numeric; default CDF level to keep the distribution up
 to if an unconstrained distribution is passed as \code{dist}. If \code{dist} is
 already constrained by having a maximum or CDF level this is ignored. Note
-that this can only be done for <dist_spec> objects with fixed parameters.}
+that this can only be done for <dist_spec> objects with fixed parameters.
+Defaults to \code{getOption("EpiNow2.cdf_max", 0.999)}, so a session-wide
+default can be set with, e.g., \code{options(EpiNow2.cdf_max = 0.995)}.}
 
 \item{cdf_max_set}{Logical; whether the default CDF level has been set by
 the user; if yes and \code{dist} is constrained a warning is issued}
