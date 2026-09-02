@@ -919,6 +919,7 @@ create_state_data <- function(params, state_flags,
     n_rw_states = 0L,
     rw_sd_dist = array(integer(0)),
     rw_sd_dist_params = array(numeric(0)),
+    rw_sd_upper = array(numeric(0)),
     state_rw_period = 1L,
     n_gp_states = 0L,
     gp_basis_prop = array(numeric(0)),
@@ -927,8 +928,10 @@ create_state_data <- function(params, state_flags,
     gp_nu = array(numeric(0)),
     gp_alpha_dist = array(integer(0)),
     gp_alpha_dist_params = array(numeric(0)),
+    gp_alpha_upper = array(numeric(0)),
     gp_rho_dist = array(integer(0)),
-    gp_rho_dist_params = array(numeric(0))
+    gp_rho_dist_params = array(numeric(0)),
+    gp_rho_upper = array(numeric(0))
   )
   if (!any(state_flags)) {
     return(empty)
@@ -983,13 +986,16 @@ create_state_data <- function(params, state_flags,
   future_from <- integer(n)
   rw_sd_dist <- integer(0)
   rw_sd_params <- numeric(0)
+  rw_sd_upper <- numeric(0)
   rw_period <- integer(0)
   gp_kernel <- integer(0)
   gp_nu <- numeric(0)
   gp_alpha_dist <- integer(0)
   gp_alpha_params <- numeric(0)
+  gp_alpha_upper <- numeric(0)
   gp_rho_dist <- integer(0)
   gp_rho_params <- numeric(0)
+  gp_rho_upper <- numeric(0)
   gp_basis_prop <- numeric(0)
   gp_boundary_scale <- numeric(0)
   n_rw <- 0L
@@ -1040,6 +1046,7 @@ create_state_data <- function(params, state_flags,
       step_sd <- spec$settings$sd
       rw_sd_dist <- c(rw_sd_dist, dist_code(step_sd))
       rw_sd_params <- c(rw_sd_params, numeric_params(step_sd, "step sd", name))
+      rw_sd_upper <- c(rw_sd_upper, max(step_sd))
       rw_period <- c(rw_period, spec$settings$period %||% 1L)
     } else {
       gp <- spec$settings
@@ -1061,10 +1068,12 @@ create_state_data <- function(params, state_flags,
       gp_alpha_params <- c(
         gp_alpha_params, numeric_params(gp$alpha, "alpha", name)
       )
+      gp_alpha_upper <- c(gp_alpha_upper, max(gp$alpha))
       gp_rho_dist <- c(gp_rho_dist, dist_code(gp$ls))
       gp_rho_params <- c(
         gp_rho_params, numeric_params(gp$ls, "lengthscale", name)
       )
+      gp_rho_upper <- c(gp_rho_upper, max(gp$ls))
       gp_basis_prop <- c(gp_basis_prop, gp$basis_prop)
       gp_boundary_scale <- c(gp_boundary_scale, gp$boundary_scale)
     }
@@ -1095,6 +1104,7 @@ create_state_data <- function(params, state_flags,
     n_rw_states = n_rw,
     rw_sd_dist = array(rw_sd_dist),
     rw_sd_dist_params = array(rw_sd_params),
+    rw_sd_upper = array(rw_sd_upper),
     state_rw_period = state_rw_period,
     n_gp_states = n_gp,
     gp_basis_prop = array(gp_basis_prop),
@@ -1103,8 +1113,10 @@ create_state_data <- function(params, state_flags,
     gp_nu = array(gp_nu),
     gp_alpha_dist = array(gp_alpha_dist),
     gp_alpha_dist_params = array(gp_alpha_params),
+    gp_alpha_upper = array(gp_alpha_upper),
     gp_rho_dist = array(gp_rho_dist),
-    gp_rho_dist_params = array(gp_rho_params)
+    gp_rho_dist_params = array(gp_rho_params),
+    gp_rho_upper = array(gp_rho_upper)
   )
 }
 

@@ -21,6 +21,7 @@ int<lower = 0> n_rw_states;
 // step standard deviation prior: 0 = lognormal, 1 = gamma, 2 = normal
 array[n_rw_states] int<lower = 0> rw_sd_dist;
 vector[2 * n_rw_states] rw_sd_dist_params; // two prior parameters each
+vector[n_rw_states] rw_sd_upper; // upper truncation of the step-sd prior
 int<lower = 1> state_rw_period; // time steps between random walk steps
 
 // gaussian process states (approximate Hilbert space GP; each state has its own
@@ -32,5 +33,7 @@ array[n_gp_states] int<lower = 0> gp_kernel; // 0 = SE, 2 = Matern
 array[n_gp_states] real gp_nu; // Matern smoothness
 array[n_gp_states] int<lower = 0> gp_alpha_dist; // magnitude prior
 vector[2 * n_gp_states] gp_alpha_dist_params;
+vector[n_gp_states] gp_alpha_upper; // upper truncation of the magnitude prior
 array[n_gp_states] int<lower = 0> gp_rho_dist; // lengthscale prior
 vector[2 * n_gp_states] gp_rho_dist_params;
+vector[n_gp_states] gp_rho_upper; // upper truncation of the lengthscale prior

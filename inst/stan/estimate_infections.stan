@@ -314,19 +314,19 @@ model {
       apply_prior_lp(
         state_rw_sd[r], rw_sd_dist[r],
         rw_sd_dist_params[2 * r - 1], rw_sd_dist_params[2 * r],
-        0, positive_infinity()
+        0, rw_sd_upper[r]
       );
     }
     for (g in 1:n_gp_states) {
       apply_prior_lp(
         state_gp_alpha[g], gp_alpha_dist[g],
         gp_alpha_dist_params[2 * g - 1], gp_alpha_dist_params[2 * g],
-        0, positive_infinity()
+        0, gp_alpha_upper[g]
       );
       apply_prior_lp(
         state_gp_rho[g], gp_rho_dist[g],
         gp_rho_dist_params[2 * g - 1], gp_rho_dist_params[2 * g],
-        0, positive_infinity()
+        0, gp_rho_upper[g]
       );
     }
     // ragged random walk step priors, indexed by per-state offsets
