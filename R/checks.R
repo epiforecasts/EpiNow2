@@ -128,18 +128,18 @@ check_stan_delay <- function(dist) {
       )
     )
   }
-  if (is.null(attr(dist, "cdf_cutoff"))) {
-    attr(dist, "cdf_cutoff") <- 0
+  if (is.null(attr(dist, "cdf_max"))) {
+    attr(dist, "cdf_max") <- 1
   }
-  assert_numeric(attr(dist, "cdf_cutoff"), lower = 0, upper = 1)
+  assert_numeric(attr(dist, "cdf_max"), lower = 0, upper = 1)
   # Check that `dist` has a finite maximum
-  if (any(is.infinite(max(dist))) && attr(dist, "cdf_cutoff") == 0) {
+  if (any(is.infinite(max(dist))) && attr(dist, "cdf_max") == 1) {
     cli_abort(
       c(
         "i" = "All distributions passed to the model need to have a
       {col_blue(\"finite maximum\")}, which can be achieved either by
       setting {.var max} or, if using a distribution with fixed parameters,
-      non-zero {.var cdf_cutoff}."
+      a {.var cdf_max} below 1."
       )
     )
   }
@@ -157,7 +157,11 @@ check_stan_delay <- function(dist) {
 check_generation_time <- function(dist) {
   # Do the standard delay checks
   check_stan_delay(dist)
-  ## check for nonparametric with nonzero first element
+  ## check for nonparametric with nonzero first element; an estimated
+  ## (Dirichlet-backed) delay has no fixed PMF, so resolve any uncertainty to
+  ## the prior mean before inspecting the first element (its first element is
+  ## zero exactly when the prior puts no mass there)
+  dist <- fix_parameters(dist, strategy = "mean")
   nonzero_first_element <- vapply(seq_len(ndist(dist)), function(i) {
     get_distribution(dist, i) == "nonparametric" && get_pmf(dist, i)[1] > 0
   }, logical(1))
@@ -187,7 +191,7 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
         "!" = "The PMF tail has {col_blue(span)} consecutive value{?s} smaller
         than {col_blue(tol)}.",
         "i" = "This will increase run times with very small increases in
-        accuracy. Consider using the `cdf_cutoff` argument when constructing
+        accuracy. Consider using the `cdf_max` argument when constructing
         the distribution object, or using the `bound_dist()` function."
       ),
       .frequency = "regularly",

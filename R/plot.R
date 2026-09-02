@@ -252,7 +252,8 @@ plot_estimates <- function(estimate, reported, ylab, hline,
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_linerange geom_hline facet_wrap
 #' @importFrom ggplot2 theme guides labs expand_limits guide_legend
-#' @importFrom ggplot2 scale_color_manual .data coord_cartesian
+#' @importFrom ggplot2 scale_color_manual scale_color_brewer .data
+#' @importFrom ggplot2 coord_cartesian
 #' @importFrom ggplot2 theme_bw element_blank scale_y_continuous
 #' @importFrom scales comma
 #' @importFrom patchwork plot_layout

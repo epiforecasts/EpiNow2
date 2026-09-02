@@ -5,12 +5,18 @@
 \alias{generation_time_opts}
 \title{Generation Time Distribution Options}
 \usage{
-gt_opts(dist = Fixed(1), default_cdf_cutoff = 0.001, weight_prior = TRUE)
+gt_opts(
+  dist = Fixed(1),
+  default_cdf_max = getOption("EpiNow2.cdf_max", 0.999),
+  weight_prior = TRUE,
+  default_cdf_cutoff = lifecycle::deprecated()
+)
 
 generation_time_opts(
   dist = Fixed(1),
-  default_cdf_cutoff = 0.001,
-  weight_prior = TRUE
+  default_cdf_max = getOption("EpiNow2.cdf_max", 0.999),
+  weight_prior = TRUE,
+  default_cdf_cutoff = lifecycle::deprecated()
 )
 }
 \arguments{
@@ -19,10 +25,12 @@ distribution is given a fixed generation time of 1 will be assumed.  If
 passing a nonparametric distribution the first element should be zero (see
 \emph{Details} section)}
 
-\item{default_cdf_cutoff}{Numeric; default CDF cutoff to be used if an
-unconstrained distribution is passed as \code{dist}. If \code{dist} is already
-constrained by having a maximum or CDF cutoff this is ignored. Note that
-this can only be done for <dist_spec> objects with fixed parameters.}
+\item{default_cdf_max}{Numeric; default CDF level to keep the distribution up
+to if an unconstrained distribution is passed as \code{dist}. If \code{dist} is
+already constrained by having a maximum or CDF level this is ignored. Note
+that this can only be done for <dist_spec> objects with fixed parameters.
+Defaults to \code{getOption("EpiNow2.cdf_max", 0.999)}, so a session-wide
+default can be set with, e.g., \code{options(EpiNow2.cdf_max = 0.995)}.}
 
 \item{weight_prior}{Logical; if TRUE (default), any priors given in \code{dist}
 will be weighted by the number of observation data points, in doing so
@@ -30,6 +38,9 @@ approximately placing an independent prior at each time step and usually
 preventing the posteriors from shifting. If FALSE, no weight
 will be applied, i.e. any parameters in \code{dist} will be treated as a single
 parameters.}
+
+\item{default_cdf_cutoff}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use
+\code{default_cdf_max} instead.}
 }
 \value{
 A \verb{<generation_time_opts>} object summarising the input delay
@@ -65,6 +76,11 @@ generation_time_opts(
 gt_opts(example_generation_time)
 }
 \seealso{
-\code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
-\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[=Gamma]{Gamma()}} \code{\link[=LogNormal]{LogNormal()}} \code{\link[=Fixed]{Fixed()}}
+\link[distspec:Distributions]{distspec::Distributions} for how to specify the probability
+distributions (e.g. \code{Gamma()}, \code{LogNormal()}, \code{Fixed()}), provided by the
+\pkg{distspec} package and attached automatically with EpiNow2.
+
+\code{\link[distspec:convert_to_logmean]{distspec::convert_to_logmean()}} \code{\link[distspec:convert_to_logsd]{distspec::convert_to_logsd()}}
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link[distspec:Gamma]{distspec::Gamma()}} \code{\link[distspec:LogNormal]{distspec::LogNormal()}}
+\code{\link[distspec:Fixed]{distspec::Fixed()}}
 }

@@ -179,20 +179,6 @@ reference:
   - report_plots
   - report_summary
 
-- title: Distribution Functions
-  desc: Functions to define and parameterise distributions
-  contents:
-  - Distributions
-  - contains("dist_spec")
-  - bound_dist
-  - collapse
-  - discretise
-  - fix_parameters
-  - get_parameters
-  - get_pmf
-  - get_distribution
-  - is_constrained
-
 - title: Fit Delay Distributions
   desc: Functions to fit delay distributions
   contents:
@@ -236,8 +222,6 @@ reference:
   contents:
   - run_region
   - expose_stan_fns
-  - convert_to_logmean
-  - convert_to_logsd
   - growth_to_R
   - R_to_growth
   - update_secondary_args

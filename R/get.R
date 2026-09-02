@@ -749,7 +749,7 @@ posterior_to_normal <- function(posterior, idx) {
 #' @return A `dist_spec` object representing the delay distribution
 #' @keywords internal
 reconstruct_parametric <- function(stan_data, param_id, posterior) {
-  dist_type <- dist_id_to_name(stan_data$delay_dist[param_id])
+  dist_type <- pcd_stan_id_to_distribution(stan_data$delay_dist[param_id])
   dist_max <- stan_data$delay_max[param_id]
 
   # Get parameter indices and values
@@ -917,7 +917,15 @@ extract_scalar_params <- function(x, stan_data) {
   result
 }
 
-#' @rdname get_parameters
+#' Extract parameters from EpiNow2 model fits
+#'
+#' @description
+#' S3 methods for [distspec::get_parameters()] that extract the estimated delay
+#' distribution and scalar parameters from fitted EpiNow2 model objects.
+#' @param x A fitted EpiNow2 model object.
+#' @param ... Not used.
+#' @return A named list of parameters.
+#' @rdname get_parameters_methods
 #' @export
 get_parameters.epinowfit <- function(x, ...) {
   stan_data <- x$args
@@ -927,7 +935,7 @@ get_parameters.epinowfit <- function(x, ...) {
   )
 }
 
-#' @rdname get_parameters
+#' @rdname get_parameters_methods
 #' @export
 get_parameters.estimate_dist <- function(x, ...) {
   dist_spec <- .extract_to_dist_spec(
