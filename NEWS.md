@@ -18,8 +18,11 @@
 - A bug was fixed where `get_predictions()` on an `estimate_truncation()` result assigned reconstructed observations to the wrong datasets and dates.
 - A bug was fixed where the prior on the initial reproduction number was applied with an incorrect Jacobian, shifting it upwards by a factor of `exp(sdlog^2)`. A `LogNormal(mean = 2, sd = 1)` prior was applied as though it had a mean of 2.5.
 - A bug was fixed where the mean reproduction number over the observation window was left uninitialised, so chains started from a value drawn across the whole of `exp(-2)` to `exp(2)` rather than from the user's Rt prior.
+- A bug was fixed where warnings raised while fitting `estimate_secondary()` and `estimate_truncation()` were logged once per chain, duplicating each message when all chains were fitted in a single call.
 
 ## Documentation
+
+- The prior choice guide vignette now draws more samples in its `estimate_secondary()` examples to avoid low tail effective sample size warnings in the rendered output.
 
 ## Internal
 
