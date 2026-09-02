@@ -373,6 +373,11 @@ create_initial_conditions <- function(stan_data, params) {
   function() {
     out <- create_delay_inits(stan_data)
 
+    ## rtruncnorm() errors on zero-length input, so guard n = 0 counts
+    rtruncnorm0 <- function(n, ...) {
+      if (n > 0) rtruncnorm(n, ...) else numeric(0)
+    }
+
     ## unwrap time-varying states to their level prior for initialisation
     state_flags <- vapply(transpose(params)$dist, is_state_spec, logical(1))
     if (any(state_flags)) {
@@ -416,7 +421,7 @@ create_initial_conditions <- function(stan_data, params) {
       ignore_uncertainty = FALSE,
       FUN.VALUE = numeric(1)
     )
-    out$params <- array(rtruncnorm(
+    out$params <- array(rtruncnorm0(
       stan_data$n_params_variable,
       a = stan_data$params_lower,
       b = stan_data$params_upper,
@@ -426,10 +431,6 @@ create_initial_conditions <- function(stan_data, params) {
     ## time-varying states each have their own free-noise window (set by their
     ## `future`), mirroring the Stan transformed-data computation, so the ragged
     ## random walk step and GP coefficient vectors are sized per state.
-    ## rtruncnorm() returns NULL for n = 0, so guard zero counts
-    rtruncnorm0 <- function(n, ...) {
-      if (n > 0) rtruncnorm(n, ...) else numeric(0)
-    }
     n_states <- stan_data$n_states %||% 0L
     n_rw_steps <- 0L
     n_gp_coef <- 0L
