@@ -20,12 +20,18 @@
 #'   preventing the posteriors from shifting. If FALSE, no weight
 #'   will be applied, i.e. any parameters in `dist` will be treated as a single
 #'   parameters.
-#' @inheritParams apply_default_cdf_cutoff
+#' @inheritParams apply_default_cdf_max
+#' @param default_cdf_cutoff `r lifecycle::badge("deprecated")` Use
+#'   `default_cdf_max` instead.
 #' @importFrom cli cli_warn cli_abort col_blue
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [Gamma()] [LogNormal()] [Fixed()]
+#' @seealso [distspec::Distributions] for how to specify the probability
+#' distributions (e.g. `Gamma()`, `LogNormal()`, `Fixed()`), provided by the
+#' \pkg{distspec} package and attached automatically with EpiNow2.
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Gamma()] [distspec::LogNormal()]
+#' [distspec::Fixed()]
 #' @export
 #' @examples
 #' # default settings with a fixed generation time of 1
@@ -45,8 +51,18 @@
 #'
 #' # An example generation time
 #' gt_opts(example_generation_time)
-gt_opts <- function(dist = Fixed(1), default_cdf_cutoff = 0.001,
-                    weight_prior = TRUE) {
+gt_opts <- function(dist = Fixed(1),
+                    default_cdf_max = getOption("EpiNow2.cdf_max", 0.999),
+                    weight_prior = TRUE,
+                    default_cdf_cutoff = lifecycle::deprecated()) {
+  cdf_max_set <- !missing(default_cdf_max)
+  if (lifecycle::is_present(default_cdf_cutoff)) {
+    deprecate_warn(
+      "1.10.0", "gt_opts(default_cdf_cutoff)", "gt_opts(default_cdf_max)"
+    )
+    default_cdf_max <- 1 - default_cdf_cutoff
+    cdf_max_set <- TRUE
+  }
   if (missing(dist)) {
     cli_warn(
       c(
@@ -58,10 +74,8 @@ gt_opts <- function(dist = Fixed(1), default_cdf_cutoff = 0.001,
       )
     )
   }
-  ## apply default CDF cutoff if `dist` is unconstrained
-  dist <- apply_default_cdf_cutoff(
-    dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
-  )
+  ## apply default CDF level if `dist` is unconstrained
+  dist <- apply_default_cdf_max(dist, default_cdf_max, cdf_max_set)
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("generation_time_opts", class(dist))
   check_generation_time(dist)
@@ -150,8 +164,8 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @inheritParams generation_time_opts
 #' @importFrom cli cli_abort
 #' @return A `<delay_opts>` object summarising the input delay distributions.
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Distributions]
 #' `vignette("delays")` for background on delay distributions
 #' @export
 #' @examples
@@ -172,13 +186,21 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
-                       weight_prior = TRUE) {
+delay_opts <- function(dist = Fixed(0),
+                       default_cdf_max = getOption("EpiNow2.cdf_max", 0.999),
+                       weight_prior = TRUE,
+                       default_cdf_cutoff = lifecycle::deprecated()) {
   assert_class(dist, "dist_spec")
-  ## apply default CDF cutoff if `dist` is unconstrained
-  dist <- apply_default_cdf_cutoff(
-    dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
-  )
+  cdf_max_set <- !missing(default_cdf_max)
+  if (lifecycle::is_present(default_cdf_cutoff)) {
+    deprecate_warn(
+      "1.10.0", "delay_opts(default_cdf_cutoff)", "delay_opts(default_cdf_max)"
+    )
+    default_cdf_max <- 1 - default_cdf_cutoff
+    cdf_max_set <- TRUE
+  }
+  ## apply default CDF level if `dist` is unconstrained
+  dist <- apply_default_cdf_max(dist, default_cdf_max, cdf_max_set)
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("delay_opts", class(dist))
   check_stan_delay(dist)
@@ -194,7 +216,7 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #'
 #' @param dist A delay distribution or series of delay distributions reflecting
 #' the truncation. It can be specified using the probability distributions
-#' interface in `EpiNow2` (See `?EpiNow2::Distributions`) or estimated using
+#' interface in `distspec` (See `?distspec::Distributions`) or estimated using
 #' [estimate_truncation()], which returns a `dist` object, suited
 #' for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
 #' no truncation.
@@ -209,8 +231,8 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Distributions]
 #' @export
 #' @examples
 #' # no truncation
@@ -218,13 +240,21 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #'
 #' # truncation dist
 #' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
-                       weight_prior = FALSE) {
+trunc_opts <- function(dist = Fixed(0),
+                       default_cdf_max = getOption("EpiNow2.cdf_max", 0.999),
+                       weight_prior = FALSE,
+                       default_cdf_cutoff = lifecycle::deprecated()) {
   assert_class(dist, "dist_spec")
-  ## apply default CDF cutoff if `dist` is unconstrained
-  dist <- apply_default_cdf_cutoff(
-    dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
-  )
+  cdf_max_set <- !missing(default_cdf_max)
+  if (lifecycle::is_present(default_cdf_cutoff)) {
+    deprecate_warn(
+      "1.10.0", "trunc_opts(default_cdf_cutoff)", "trunc_opts(default_cdf_max)"
+    )
+    default_cdf_max <- 1 - default_cdf_cutoff
+    cdf_max_set <- TRUE
+  }
+  ## apply default CDF level if `dist` is unconstrained
+  dist <- apply_default_cdf_max(dist, default_cdf_max, cdf_max_set)
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("trunc_opts", class(dist))
   check_stan_delay(dist)
@@ -1098,37 +1128,41 @@ filter_opts <- function(opts, region) {
   out
 }
 
-#' Apply default CDF cutoff to a <dist_spec> if it is unconstrained
+#' Apply default CDF level to a <dist_spec> if it is unconstrained
 #'
 #' @param dist A <dist_spec>
-#' @param default_cdf_cutoff Numeric; default CDF cutoff to be used if an
-#'   unconstrained distribution is passed as `dist`. If `dist` is already
-#'   constrained by having a maximum or CDF cutoff this is ignored. Note that
-#'   this can only be done for <dist_spec> objects with fixed parameters.
-#' @param cdf_cutoff_set Logical; whether the default CDF cutoff has been set by
+#' @param default_cdf_max Numeric; default CDF level to keep the distribution up
+#'   to if an unconstrained distribution is passed as `dist`. If `dist` is
+#'   already constrained by having a maximum or CDF level this is ignored. Note
+#'   that this can only be done for <dist_spec> objects with fixed parameters.
+#'   Defaults to `getOption("EpiNow2.cdf_max", 0.999)`, so a session-wide
+#'   default can be set with, e.g., `options(EpiNow2.cdf_max = 0.995)`.
+#' @param cdf_max_set Logical; whether the default CDF level has been set by
 #'   the user; if yes and `dist` is constrained a warning is issued
 #' @importFrom cli cli_inform cli_warn
 #'
-#' @return A <dist_spec> with the default CDF cutoff set if previously not
+#' @return A <dist_spec> with the default CDF level set if previously not
 #'   constrained
 #' @keywords internal
-apply_default_cdf_cutoff <- function(dist, default_cdf_cutoff, cdf_cutoff_set) {
+apply_default_cdf_max <- function(dist, default_cdf_max, cdf_max_set) {
   if (!is_constrained(dist) && !anyNA(sd(dist))) {
     # nolint start: duplicate_argument_linter
     cli_inform(
       c(
         "i" = "Unconstrained distributon passed as a delay. ",
-        "i" = "Constraining with default CDF cutoff {default_cdf_cutoff}.",
+        "i" = "Constraining with default CDF level {default_cdf_max}.",
         "i" = "To silence this message, specify delay distributions
-      with {.var max} or {.var default_cdf_cutoff}."
+      with {.var max} or {.var default_cdf_max}."
       )
     )
     # nolint end
-    attr(dist, "cdf_cutoff") <- default_cdf_cutoff
-  } else if (cdf_cutoff_set) {
+    dist <- distspec::bound_dist( # nolint: namespace_linter.
+      dist, cdf_max = default_cdf_max
+    )
+  } else if (cdf_max_set) {
     cli_warn(
       c(
-        "!" = "Ignoring given default CDF cutoff.",
+        "!" = "Ignoring given default CDF level.",
         "i" = "Distribution is already constrained."
       )
     )

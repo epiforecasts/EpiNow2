@@ -8,17 +8,24 @@
 
 ## Package changes
 
+- Moved the probability distribution interface (`Gamma()`, `LogNormal()`, `NonParametric()`, `discretise()`, `get_pmf()`, `convert_to_logmean()`, `convert_to_logsd()`, and related functions) to the standalone `distspec` package, which EpiNow2 now depends on. These functions are attached when EpiNow2 is loaded, so existing code continues to work unchanged. They are also re-exported from EpiNow2 (deprecated) so that the `EpiNow2::` form keeps resolving; the re-exports will be removed in a future release.
+- Adapted the internal nonparametric-delay handling to `distspec`'s revised representation of estimated (Dirichlet-backed) distributions, which now hold their Dirichlet prior in `$pmf` rather than a separate `$estimated`/`$alpha` and a cached mean PMF. Behaviour for estimated nonparametric delays is unchanged.
+- `gt_opts()`, `delay_opts()` and `trunc_opts()` gain a `default_cdf_max` argument: the CDF level to keep an unconstrained fixed distribution up to (default `0.999`, where `1` leaves it unbounded), following `distspec`'s `cdf_max` (EpiNow2 now requires `distspec` >= 0.2.0). The default can be set globally with `options(EpiNow2.cdf_max = ...)`. The previous `default_cdf_cutoff` argument (the tail probability to drop) is deprecated; a value `x` is equivalent to `default_cdf_max = 1 - x`.
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
 
 ## Bug fixes
 
 - A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
 - A bug was fixed where `estimate_infections()` could emit a spurious "the largest R-hat is NA" convergence warning caused by deterministic delay PMFs being monitored; these are no longer monitored.
+- A bug was fixed where `estimate_secondary()` emitted the same spurious "the largest R-hat is NA" convergence warning from a deterministic delay PMF being monitored; it is no longer monitored.
 - A bug was fixed where `get_predictions()` on an `estimate_truncation()` result assigned reconstructed observations to the wrong datasets and dates.
 - A bug was fixed where the prior on the initial reproduction number was applied with an incorrect Jacobian, shifting it upwards by a factor of `exp(sdlog^2)`. A `LogNormal(mean = 2, sd = 1)` prior was applied as though it had a mean of 2.5.
 - A bug was fixed where the mean reproduction number over the observation window was left uninitialised, so chains started from a value drawn across the whole of `exp(-2)` to `exp(2)` rather than from the user's Rt prior.
+- A bug was fixed where warnings raised while fitting `estimate_secondary()` and `estimate_truncation()` were logged once per chain, duplicating each message when all chains were fitted in a single call.
 
 ## Documentation
+
+- The prior choice guide vignette now draws more samples in its `estimate_secondary()` examples to avoid low tail effective sample size warnings in the rendered output.
 
 ## Internal
 

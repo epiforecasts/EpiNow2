@@ -83,8 +83,18 @@ delay <- example_incubation_period + reporting_delay
 # Fast Stan settings for vignette building
 # (Use default settings for actual analyses)
 stan <- stan_opts(
-  samples = 100,
-  warmup = 100,
+  samples = 500,
+  warmup = 250,
+  chains = 2,
+  control = list(adapt_delta = 0.9)
+)
+
+# estimate_secondary() needs a few more post-warmup samples for a stable tail
+# effective sample size at these fast settings; the other models are fine with
+# `stan` above.
+stan_secondary <- stan_opts(
+  samples = 1000,
+  warmup = 500,
   chains = 2,
   control = list(adapt_delta = 0.9)
 )
@@ -528,7 +538,7 @@ from primary observations (cases, admissions) with a delay and scaling.
 fit_secondary_fixed <- estimate_secondary(
   secondary_data,
   delays = delay_opts(LogNormal(mean = 14, sd = 5, max = 30)),
-  stan = stan
+  stan = stan_secondary
 )
 
 # Uncertain delay (long time series)
@@ -541,7 +551,7 @@ fit_secondary_uncertain <- estimate_secondary(
       max = 30
     )
   ),
-  stan = stan
+  stan = stan_secondary
 )
 ```
 

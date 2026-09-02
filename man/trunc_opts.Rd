@@ -4,26 +4,36 @@
 \alias{trunc_opts}
 \title{Truncation Distribution Options}
 \usage{
-trunc_opts(dist = Fixed(0), default_cdf_cutoff = 0.001, weight_prior = FALSE)
+trunc_opts(
+  dist = Fixed(0),
+  default_cdf_max = getOption("EpiNow2.cdf_max", 0.999),
+  weight_prior = FALSE,
+  default_cdf_cutoff = lifecycle::deprecated()
+)
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions reflecting
 the truncation. It can be specified using the probability distributions
-interface in \code{EpiNow2} (See \code{?EpiNow2::Distributions}) or estimated using
+interface in \code{distspec} (See \code{?distspec::Distributions}) or estimated using
 \code{\link[=estimate_truncation]{estimate_truncation()}}, which returns a \code{dist} object, suited
 for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
 no truncation.}
 
-\item{default_cdf_cutoff}{Numeric; default CDF cutoff to be used if an
-unconstrained distribution is passed as \code{dist}. If \code{dist} is already
-constrained by having a maximum or CDF cutoff this is ignored. Note that
-this can only be done for <dist_spec> objects with fixed parameters.}
+\item{default_cdf_max}{Numeric; default CDF level to keep the distribution up
+to if an unconstrained distribution is passed as \code{dist}. If \code{dist} is
+already constrained by having a maximum or CDF level this is ignored. Note
+that this can only be done for <dist_spec> objects with fixed parameters.
+Defaults to \code{getOption("EpiNow2.cdf_max", 0.999)}, so a session-wide
+default can be set with, e.g., \code{options(EpiNow2.cdf_max = 0.995)}.}
 
 \item{weight_prior}{Logical; if TRUE, the truncation prior will be weighted
 by the number of observation data points, in doing so approximately placing
 an independent prior at each time step and usually preventing the
 posteriors from shifting. If FALSE (default), no weight will be applied,
 i.e. the truncation distribution will be treated as a single parameter.}
+
+\item{default_cdf_cutoff}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use
+\code{default_cdf_max} instead.}
 }
 \value{
 A \verb{<trunc_opts>} object summarising the input truncation
@@ -42,6 +52,6 @@ trunc_opts()
 trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
 }
 \seealso{
-\code{\link[=convert_to_logmean]{convert_to_logmean()}} \code{\link[=convert_to_logsd]{convert_to_logsd()}}
-\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \code{\link{Distributions}}
+\code{\link[distspec:convert_to_logmean]{distspec::convert_to_logmean()}} \code{\link[distspec:convert_to_logsd]{distspec::convert_to_logsd()}}
+\code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \link[distspec:Distributions]{distspec::Distributions}
 }

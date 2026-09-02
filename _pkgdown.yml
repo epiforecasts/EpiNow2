@@ -179,20 +179,10 @@ reference:
   - report_plots
   - report_summary
 
-- title: Distribution Functions
-  desc: Functions to define and parameterise distributions
+- title: Time-varying parameters
+  desc: Functions to declare time-varying model parameters
   contents:
-  - Distributions
-  - contains("dist_spec")
   - state
-  - bound_dist
-  - collapse
-  - discretise
-  - fix_parameters
-  - get_parameters
-  - get_pmf
-  - get_distribution
-  - is_constrained
 
 - title: Fit Delay Distributions
   desc: Functions to fit delay distributions
@@ -237,8 +227,6 @@ reference:
   contents:
   - run_region
   - expose_stan_fns
-  - convert_to_logmean
-  - convert_to_logsd
   - growth_to_R
   - R_to_growth
   - update_secondary_args

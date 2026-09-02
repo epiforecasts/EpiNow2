@@ -69,7 +69,7 @@ plot(reporting_delay)
 ```
 
 The `max` argument right-truncates the distribution at a given value, discarding probability mass beyond that point and renormalising.
-Alternatively, `cdf_cutoff` can be used to set the truncation point based on a tail probability threshold.
+Alternatively, `cdf_max` sets the truncation point at the value where the CDF reaches a given level (e.g. `cdf_max = 0.999` keeps the distribution up to its 99.9th percentile).
 
 When parameters carry uncertainty, _EpiNow2_ samples from the prior during fitting, propagating that uncertainty into the final estimates.
 
@@ -120,7 +120,7 @@ For parametric distributions with uncertain parameters, the convolution is handl
 Delay distributions must be truncated to a finite support for use in the discrete-time model.
 Shorter distributions reduce the cost of the convolution step in the model, so choosing a sensible truncation point can noticeably improve run time.
 The `max` argument right-truncates the distribution at a given value, discarding probability mass beyond that point and renormalising.
-Alternatively, `cdf_cutoff` sets the truncation point at the value where the CDF reaches a given threshold.
+Alternatively, `cdf_max` sets the truncation point at the value where the CDF reaches a given level.
 
 ```{r truncation}
 # Long tail retained
