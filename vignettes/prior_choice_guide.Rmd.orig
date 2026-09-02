@@ -83,8 +83,8 @@ delay <- example_incubation_period + reporting_delay
 # Fast Stan settings for vignette building
 # (Use default settings for actual analyses)
 stan <- stan_opts(
-  samples = 100,
-  warmup = 100,
+  samples = 500,
+  warmup = 250,
   chains = 2,
   control = list(adapt_delta = 0.9)
 )
