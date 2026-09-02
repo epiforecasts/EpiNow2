@@ -60,7 +60,7 @@ gt_opts <- function(dist = Fixed(1),
     deprecate_warn(
       "1.10.0", "gt_opts(default_cdf_cutoff)", "gt_opts(default_cdf_max)"
     )
-    default_cdf_max <- default_cdf_cutoff
+    default_cdf_max <- 1 - default_cdf_cutoff
     cdf_max_set <- TRUE
   }
   if (missing(dist)) {
@@ -196,7 +196,7 @@ delay_opts <- function(dist = Fixed(0),
     deprecate_warn(
       "1.10.0", "delay_opts(default_cdf_cutoff)", "delay_opts(default_cdf_max)"
     )
-    default_cdf_max <- default_cdf_cutoff
+    default_cdf_max <- 1 - default_cdf_cutoff
     cdf_max_set <- TRUE
   }
   ## apply default CDF level if `dist` is unconstrained
@@ -250,7 +250,7 @@ trunc_opts <- function(dist = Fixed(0),
     deprecate_warn(
       "1.10.0", "trunc_opts(default_cdf_cutoff)", "trunc_opts(default_cdf_max)"
     )
-    default_cdf_max <- default_cdf_cutoff
+    default_cdf_max <- 1 - default_cdf_cutoff
     cdf_max_set <- TRUE
   }
   ## apply default CDF level if `dist` is unconstrained
@@ -1076,7 +1076,7 @@ apply_default_cdf_max <- function(dist, default_cdf_max, cdf_max_set) {
       )
     )
     # nolint end
-    attr(dist, "cdf_max") <- default_cdf_max
+    dist <- bound_dist(dist, cdf_max = default_cdf_max)
   } else if (cdf_max_set) {
     cli_warn(
       c(

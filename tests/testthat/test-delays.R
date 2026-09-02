@@ -94,14 +94,14 @@ test_that("distributions incompatible with stan models are caught", {
   ), "lognormal")
 })
 
-test_that("deprecated default_cdf_cutoff maps to default_cdf_max", {
+test_that("deprecated default_cdf_cutoff maps to 1 - x as default_cdf_max", {
   expect_warning(
     dist <- suppressMessages(
-      delay_opts(LogNormal(mean = 2, sd = 1), default_cdf_cutoff = 0.9)
+      delay_opts(LogNormal(mean = 2, sd = 1), default_cdf_cutoff = 0.001)
     ),
     "deprecated"
   )
-  expect_equal(attr(dist, "cdf_max"), 0.9)
+  expect_equal(attr(dist, "cdf_max"), 0.999)
 })
 
 test_that("create_stan_delays creates delay_id_* variables with correct names", {
