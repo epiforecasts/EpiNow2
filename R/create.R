@@ -727,8 +727,11 @@ create_stan_args <- function(stan = stan_opts(),
   if (!fixed_param && inherits(stan_args$object, "stanmodel") &&
         is.null(stan_args$pars)) {
     exclude <- character(0)
+    if (model %in% c("estimate_infections", "estimate_secondary")) {
+      exclude <- c(exclude, "delay_np_pmf_use")
+    }
     if (identical(model, "estimate_infections")) {
-      exclude <- c(exclude, "delay_np_pmf_use", "gt_rev_pmf")
+      exclude <- c(exclude, "gt_rev_pmf")
     }
     if (isTRUE(data$week_effect == 1)) {
       exclude <- c(exclude, "day_of_week_simplex")
