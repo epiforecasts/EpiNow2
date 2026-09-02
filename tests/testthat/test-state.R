@@ -66,12 +66,13 @@ test_that("rt_opts accepts a time-varying (state) prior", {
   expect_s3_class(rt_opts(prior = LogNormal(1, 1))$prior, "dist_spec")
 })
 
-test_that("dist_spec and state_spec share the param_spec superclass", {
-  expect_s3_class(Normal(5, 1), "param_spec")
-  expect_s3_class(LogNormal(1, 1) + Gamma(2, 1), "param_spec") # multi
+test_that("is_param_spec() accepts both dist_spec and state_spec", {
+  # dist_spec values count as parameter specs via their own class
+  expect_true(is_param_spec(Normal(5, 1)))
+  expect_true(is_param_spec(LogNormal(1, 1) + Gamma(2, 1))) # multi
+  # state_spec values carry the param_spec class directly
   expect_s3_class(GP(mean = Normal(5, 1)), "param_spec")
   expect_s3_class(RW(init = Normal(5, 1)), "param_spec")
-  expect_true(is_param_spec(Normal(5, 1)))
   expect_true(is_param_spec(GP(mean = Normal(5, 1))))
   expect_false(is_param_spec(5))
 })

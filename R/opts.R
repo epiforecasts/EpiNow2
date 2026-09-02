@@ -418,7 +418,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
 
   # the Rt prior may be a constant/uncertain value (<dist_spec>) or a
   # time-varying state (<state_spec>, created by GP() / RW())
-  assert_class(prior, "param_spec")
+  assert_param_spec(prior)
 
   if (is.numeric(pop)) {
     deprecate_stop(
@@ -719,9 +719,9 @@ obs_opts <- function(family = c("negbin", "poisson"),
   ## dispersion and scale may each be a constant/uncertain value or time-varying
   ## (created by GP() / RW()); both are <param_spec>
   if (!is.null(obs$dispersion)) {
-    assert_class(obs$dispersion, "param_spec")
+    assert_param_spec(obs$dispersion)
   }
-  assert_class(obs$scale, "param_spec")
+  assert_param_spec(obs$scale)
 
   attr(obs, "class") <- c("obs_opts", class(obs))
   obs

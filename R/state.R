@@ -201,16 +201,40 @@ is_state_spec <- function(x) {
 
 #' Test whether an object is a parameter specification
 #'
-#' A `<param_spec>` is the common superclass of `<dist_spec>` (a constant or
-#' uncertain value) and `<state_spec>` (a time-varying value created by [GP()]
-#' or [RW()]). It is the type accepted wherever a parameter's value may be
-#' either constant or time-varying.
+#' A parameter specification is either a `<dist_spec>` (a constant or uncertain
+#' value, defined in the \pkg{distspec} package) or a `<state_spec>` (a
+#' time-varying value created by [GP()] or [RW()]). It is the type accepted
+#' wherever a parameter's value may be either constant or time-varying. A
+#' `<state_spec>` carries the `param_spec` class; a `<dist_spec>` is recognised
+#' by its own class.
 #'
 #' @param x An object to test.
-#' @return Logical, `TRUE` if `x` is a `<param_spec>`.
+#' @return Logical, `TRUE` if `x` is a `<dist_spec>` or a `<state_spec>`.
 #' @keywords internal
 is_param_spec <- function(x) {
-  inherits(x, "param_spec")
+  inherits(x, "param_spec") || inherits(x, "dist_spec")
+}
+
+#' Assert that an object is a parameter specification
+#'
+#' @param x An object to check.
+#' @param name Name used to refer to `x` in the error message.
+#' @return Invisibly returns `x` if it is a parameter specification; otherwise
+#' aborts.
+#' @keywords internal
+assert_param_spec <- function(x, name = deparse(substitute(x))) {
+  if (!is_param_spec(x)) {
+    cli_abort(
+      c(
+        "{.arg {name}} must be a fixed distribution or a time-varying state.",
+        "i" = "Supply a {.cls dist_spec} (e.g. from {.fn Fixed} or
+               {.fn LogNormal}) or a {.cls state_spec} (from {.fn GP} or
+               {.fn RW})."
+      ),
+      class = "epinow2_invalid_param_spec"
+    )
+  }
+  invisible(x)
 }
 
 #' @export
