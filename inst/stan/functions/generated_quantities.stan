@@ -128,9 +128,9 @@ vector calculate_growth_infness(vector infections, int seeding_time,
   int mean_gen = to_int(round( // round weighted mean to nearest int
     dot_product(reverse(linspaced_vector(gt_length, 1, gt_length)), gt_rev_pmf)
     ));
-  // a shifted growth rate needs more modeled points than the mean generation
-  // time, otherwise the shift below would index out of range
-  if (ot <= mean_gen) {
+  // a shifted growth rate needs at least two modeled points beyond the mean
+  // generation time; otherwise the shift below would index out of range
+  if (ot <= mean_gen + 1) {
     reject(
       "infections vector must be longer than seeding_time by more than the ",
       "mean generation time."
