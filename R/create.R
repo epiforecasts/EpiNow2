@@ -459,18 +459,26 @@ create_initial_conditions <- function(stan_data, params) {
         }
       }
     }
+    ## initial draws stay within each prior's truncation bounds (b = *_upper),
+    ## otherwise a bounded prior gives -Inf density at the initial value
     out$state_rw_sd <- array(
-      rtruncnorm0(stan_data$n_rw_states %||% 0L, a = 0, mean = 0, sd = 0.1)
+      rtruncnorm0(
+        stan_data$n_rw_states %||% 0L, a = 0, b = stan_data$rw_sd_upper,
+        mean = 0, sd = 0.1
+      )
     )
     out$state_rw_steps <- array(rnorm(n_rw_steps, 0, 0.1))
     out$state_gp_eta <- array(rnorm(n_gp_coef, 0, 0.1))
     out$state_gp_alpha <- array(
-      rtruncnorm0(stan_data$n_gp_states %||% 0L, a = 0, mean = 0, sd = 0.1)
+      rtruncnorm0(
+        stan_data$n_gp_states %||% 0L, a = 0, b = stan_data$gp_alpha_upper,
+        mean = 0, sd = 0.1
+      )
     )
     rho_scale <- if (length(gp_free) > 0) mean(gp_free) else 1
     out$state_gp_rho <- array(
       rtruncnorm0(
-        stan_data$n_gp_states %||% 0L, a = 0,
+        stan_data$n_gp_states %||% 0L, a = 0, b = stan_data$gp_rho_upper,
         mean = rho_scale / 2, sd = rho_scale / 4
       )
     )
