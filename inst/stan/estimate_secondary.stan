@@ -132,7 +132,7 @@ model {
     );
     report_lp(
       obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      reporting_overdispersion, model_type, 1
+      rep_vector(reporting_overdispersion, t - burn_in), model_type, 1
     );
   }
 }
@@ -147,13 +147,14 @@ generated quantities {
     );
     // simulate secondary reports
     sim_secondary = report_rng(
-      secondary[(burn_in + 1):t], reporting_overdispersion, model_type
+      secondary[(burn_in + 1):t],
+      rep_vector(reporting_overdispersion, t - burn_in), model_type
     );
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
         obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-        reporting_overdispersion, model_type, obs_weight
+        rep_vector(reporting_overdispersion, t - burn_in), model_type, obs_weight
       );
     }
   }
