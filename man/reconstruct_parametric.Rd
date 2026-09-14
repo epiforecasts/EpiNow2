@@ -21,4 +21,9 @@ A \code{dist_spec} object representing the delay distribution
 Helper function to reconstruct a single parametric delay component from
 Stan data and posterior samples.
 }
+\details{
+A parameter is treated as estimated when its prior sd is positive and not
+\code{NA}; \code{NA} prior sd (which would make the comparison \code{NA}) is therefore
+correctly treated as a fixed, non-estimated parameter.
+}
 \keyword{internal}
