@@ -96,7 +96,8 @@ is to return all options.}
 create if not present).}
 
 \item{target_date}{Date, defaults to maximum found in the data if not
-specified.}
+specified. Passing a character string is deprecated; it is converted to a
+\verb{<Date>} with a warning.}
 
 \item{logs}{Character path indicating the target folder in which to store log
 information. Defaults to the temporary directory if not specified. Default
