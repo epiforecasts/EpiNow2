@@ -338,9 +338,6 @@ test_that("estimate_truncation accepts a non-default noise prior", {
   # so sigma is no longer in the variable parameter set.
   expect_named(get_parameters(est), c("truncation", "reporting_overdispersion"))
   expect_s3_class(get_parameters(est)$truncation, "dist_spec")
-  # the fully-reported entries of `trunc_obs` are constant when the noise
-  # term is fixed rather than estimated; they should not be monitored, or
-  # they would otherwise report an NA R-hat and a spuriously low ESS
   fit_summary <- rstan::summary(est$fit)$summary
   expect_false(anyNA(fit_summary[, "Rhat"]))
   expect_true(all(fit_summary[, "n_eff"] >= 100))

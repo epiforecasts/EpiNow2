@@ -736,9 +736,6 @@ create_stan_args <- function(stan = stan_opts(),
       exclude <- c(exclude, "gt_rev_pmf")
     }
     if (identical(model, "estimate_truncation")) {
-      # the last entries of each reconstructed dataset are always fully
-      # reported by construction, so they are constant whenever the noise
-      # term is fixed rather than estimated
       exclude <- c(exclude, "trunc_obs")
     }
     if (isTRUE(data$week_effect == 1)) {
