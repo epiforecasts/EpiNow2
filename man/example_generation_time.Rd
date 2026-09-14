@@ -11,7 +11,6 @@ A \code{dist_spec} object summarising the distribution
 example_generation_time
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 An example of a generation time estimate. See here for details:
 https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/generation-time.R
 }

@@ -1,4 +1,5 @@
 functions {
+#include functions/primarycensored.stan
 #include functions/convolve.stan
 #include functions/pmfs.stan
 #include functions/delays.stan
@@ -33,11 +34,20 @@ transformed data{
 parameters{
   // observation model
   vector<lower = delay_params_lower>[delay_params_length] delay_params;
+  // raw gamma values for estimated nonparametric delay PMFs;
+  // normalised within each ragged segment to give a Dirichlet draw
+  vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
   simplex[week_effect] day_of_week_simplex;  // day of week reporting effect
   vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
 }
 
 transformed parameters {
+  // combined fixed + estimated nonparametric delay PMF
+  vector[delay_np_pmf_length] delay_np_pmf_use = combine_np_pmf(
+    delay_np_pmf, delay_n_np_est, delay_np_est_groups,
+    delay_np_est_pos, delay_np_est_raw
+  );
+
   vector<lower=0>[t] secondary;
   // calculate secondary reports from primary
 
@@ -47,23 +57,24 @@ transformed parameters {
 
     // scaling of primary reports by fraction observed
     if (obs_scale) {
-      real frac_obs = get_param(
-        param_id_frac_obs, params_fixed_lookup, params_variable_lookup, params_value,
+      real fraction_observed = get_param(
+        param_id_fraction_observed, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
-      scaled = scale_obs(primary, frac_obs);
+      scaled = scale_obs(primary, fraction_observed);
     } else {
       scaled = primary;
     }
 
-    if (delay_id) {
-      vector[delay_type_max[delay_id] + 1] delay_rev_pmf = get_delay_rev_pmf(
-        delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
-        delay_types_groups, delay_max, delay_np_pmf,
-        delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-        0, 1, 0
-      );
-      convolved = convolved + convolve_to_report(scaled, delay_rev_pmf, 0);
+    if (delay_id_reporting) {
+      vector[delay_type_max[delay_id_reporting] + 1] reporting_rev_pmf =
+        get_delay_rev_pmf(
+          delay_id_reporting, delay_type_max[delay_id_reporting] + 1,
+          delay_types_p, delay_types_id, delay_types_groups, delay_max,
+          delay_np_pmf_use, delay_np_pmf_groups, delay_params, delay_params_groups,
+          delay_dist, 0, 1, 0
+        );
+      convolved = convolved + convolve_to_report(scaled, reporting_rev_pmf, 0);
     } else {
       convolved = convolved + scaled;
     }
@@ -80,13 +91,14 @@ transformed parameters {
   }
 
   // truncate near time cases to observed reports
-  if (trunc_id) {
-    vector[delay_type_max[trunc_id]] trunc_rev_cmf = get_delay_rev_pmf(
-      trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
-      delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-      0, 1, 1
-    );
+  if (delay_id_truncation) {
+    vector[delay_type_max[delay_id_truncation] + 1] trunc_rev_cmf =
+      get_delay_rev_pmf(
+        delay_id_truncation, delay_type_max[delay_id_truncation] + 1,
+        delay_types_p, delay_types_id, delay_types_groups, delay_max,
+        delay_np_pmf_use, delay_np_pmf_groups, delay_params, delay_params_groups,
+        delay_dist, 0, 1, 1
+      );
     secondary = truncate_obs(secondary, trunc_rev_cmf, 0);
   }
 
@@ -104,6 +116,7 @@ model {
     delay_params, delay_params_mean, delay_params_sd, delay_params_groups,
     delay_dist, delay_weight
   );
+  delays_np_lp(delay_np_est_raw, delay_np_est_alpha);
 
   // parameter priors
   profile("param lp") {
@@ -113,13 +126,13 @@ model {
   }
   // observed secondary reports from mean of secondary reports (update likelihood)
   if (likelihood) {
-    real dispersion = get_param(
-      param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
+    real reporting_overdispersion = get_param(
+      param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     report_lp(
       obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      dispersion, model_type, 1
+      reporting_overdispersion, model_type, 1
     );
   }
 }
@@ -128,19 +141,19 @@ generated quantities {
   array[t - burn_in] int sim_secondary;
   vector[return_likelihood > 1 ? t - burn_in : 0] log_lik;
   {
-    real dispersion = get_param(
-      param_id_dispersion, params_fixed_lookup, params_variable_lookup, params_value,
+    real reporting_overdispersion = get_param(
+      param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
     // simulate secondary reports
     sim_secondary = report_rng(
-      secondary[(burn_in + 1):t], dispersion, model_type
+      secondary[(burn_in + 1):t], reporting_overdispersion, model_type
     );
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
         obs[(burn_in + 1):t], secondary[(burn_in + 1):t],
-        dispersion, model_type, obs_weight
+        reporting_overdispersion, model_type, obs_weight
       );
     }
   }

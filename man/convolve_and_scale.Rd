@@ -88,5 +88,5 @@ cases <- convolve_and_scale(cases, type = "prevalence")
 cases
 }
 \seealso{
-estimate_secondary
+\code{\link[=estimate_secondary]{estimate_secondary()}}
 }

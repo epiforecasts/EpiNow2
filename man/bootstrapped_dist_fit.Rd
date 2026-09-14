@@ -42,7 +42,6 @@ printed.}
 A \verb{<dist_spec>} object summarising the bootstrapped distribution
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Fits an integer adjusted distribution to a subsampled bootstrap of data and
 then integrates the posterior samples into a single set of summary
 statistics. Can be used to generate a robust reporting delay that accounts
@@ -53,9 +52,11 @@ current case load.
 \examples{
 \donttest{
 # lognormal
+# bootstraps and samples have been reduced for this example
+# for real analyses, use more
 delays <- rlnorm(500, log(5), 1)
 out <- bootstrapped_dist_fit(delays,
-  samples = 1000, bootstraps = 10,
+  samples = 500, bootstraps = 2,
   dist = "lognormal"
 )
 out

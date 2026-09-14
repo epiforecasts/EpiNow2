@@ -1,10 +1,11 @@
-# Resubmission comment
+## Release type
 
-The `utils` package is now imported, addressing a NOTE in the previous submission.
+Minor release of EpiNow2 (1.9.0).
 
-The errors in CRAN checks are hopefully fixed in this patch version.
+## R CMD check results
 
-# Rationale for submission
+0 errors | 0 warnings | 2 notes (related to being a Stan-based package).
 
-This is a patch release in response to an upstream issue in `rstan`, as flagged in CRAN checks.
+## Downstream dependencies
 
+None on CRAN.

@@ -17,9 +17,7 @@ estimate_secondary(
   priors = NULL,
   model = NULL,
   weigh_delay_priors = FALSE,
-  verbose = interactive(),
-  filter_leading_zeros = FALSE,
-  zero_threshold = Inf
+  verbose = interactive()
 )
 }
 \arguments{
@@ -80,24 +78,16 @@ parameters.}
 
 \item{verbose}{Logical, should model fitting progress be returned. Defaults
 to \code{\link[=interactive]{interactive()}}.}
-
-\item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
-start of the time series be filtered out.}
-
-\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
-to Inf. Indicates if detected zero cases are meaningful by using a threshold
-number of cases based on the 7-day average. If the average is above this
-threshold then the zero is replaced using \code{fill}.}
 }
 \value{
-A list containing: \code{predictions} (a \verb{<data.frame>} ordered by date
-with the primary, and secondary observations, and a summary of the model
-estimated secondary observations), \code{posterior} which contains a summary of
-the entire model posterior, \code{data} (a list of data used to fit the
-model), and \code{fit} (the \code{stanfit} object).
+An \verb{<estimate_secondary>} object containing:
+\itemize{
+\item \code{fit}: The stan fit object.
+\item \code{args}: A list of arguments used for fitting (stan data).
+\item \code{observations}: The input data (\verb{<data.frame>}).
+}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Estimates the relationship between a primary and secondary observation, for
 example hospital admissions and deaths or hospital admissions and bed
 occupancy. See \code{\link[=secondary_opts]{secondary_opts()}} for model structure options. See parameter
@@ -177,4 +167,7 @@ plot(prev_preds, new_obs = cases, from = "2020-06-01")
 
 options(old_opts)
 }
+}
+\seealso{
+\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[=get_parameters]{get_parameters()}}
 }

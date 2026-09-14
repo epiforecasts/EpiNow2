@@ -3,6 +3,7 @@
 #' @import methods
 #' @import rstantools
 #' @importFrom rstan sampling extract
+#' @import distspec
 #' @useDynLib EpiNow2, .registration=TRUE
 "_PACKAGE"
 

@@ -11,7 +11,6 @@ A \code{dist_spec} object summarising the distribution
 example_incubation_period
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 An example of an incubation period estimate. See here for details:
 https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/incubation-period.R # nolint
 }

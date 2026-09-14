@@ -1,6 +1,5 @@
 #' Get Folders with Results
 #'
-#' @description `r lifecycle::badge("stable")`
 #'
 #' @param results_dir A character string giving the directory in which results
 #'  are stored (as produced by [regional_epinow()]).
@@ -23,7 +22,6 @@ get_regions <- function(results_dir) {
 
 #' Get a Single Raw Result
 #'
-#' @description `r lifecycle::badge("stable")`
 #'
 #' @param file Character string giving the result files name.
 #'
@@ -43,7 +41,7 @@ get_raw_result <- function(file, region, date,
 }
 #' Get Combined Regional Results
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Summarises results across regions either from input or from disk. See the
 #' examples for details.
 #'
@@ -67,6 +65,7 @@ get_raw_result <- function(file, region, date,
 #' @importFrom purrr map safely
 #' @importFrom data.table rbindlist
 #' @examples
+#' data.table::setDTthreads(1) # limit threads, for example use only
 #' # get example multiregion estimates
 #' regional_out <- readRDS(system.file(
 #'   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
@@ -97,18 +96,18 @@ get_regional_results <- function(regional_output,
       out <- list()
 
       if (samples) {
-        samples <- purrr::map(
+        samples <- map(
           regions, ~ load_data(
             samples_path, .,
             result_dir = results_dir,
             date = date
           )[[1]]
         )
-        samples <- data.table::rbindlist(samples, idcol = "region", fill = TRUE)
+        samples <- rbindlist(samples, idcol = "region", fill = TRUE)
         out$samples <- samples
       }
       # get incidence values and combine
-      summarised <- purrr::map(
+      summarised <- map(
         regions, ~ load_data(
           summarised_path,
           .,
@@ -116,7 +115,7 @@ get_regional_results <- function(regional_output,
           date = date
         )[[1]]
       )
-      summarised <- data.table::rbindlist(
+      summarised <- rbindlist(
         summarised,
         idcol = "region", fill = TRUE
       )
@@ -136,35 +135,47 @@ get_regional_results <- function(regional_output,
       )
     }
   } else {
-    get_estimates_data <- function(data) {
-      out <- list()
+    out <- list()
+    estimates_out <- list()
+
+    if (samples) {
+      samp <- map(regional_output, get_samples)
+      samp <- rbindlist(samp, idcol = "region", fill = TRUE)
+      estimates_out$samples <- samp
+    }
+    summarised <- map(
+      regional_output, summary, type = "parameters"
+    )
+    summarised <- rbindlist(
+      summarised,
+      idcol = "region", fill = TRUE
+    )
+    estimates_out$summarised <- summarised
+    out$estimates <- estimates_out
+
+    if (forecast) {
+      erc_out <- list()
+      erc_data <- map(regional_output, estimates_by_report_date)
       if (samples) {
-        samples <- purrr::map(regional_output, ~ .[[data]]$samples)
-        samples <- data.table::rbindlist(samples, idcol = "region", fill = TRUE)
-        out$samples <- samples
+        samp <- map(erc_data, ~ .$samples)
+        samp <- rbindlist(samp, idcol = "region", fill = TRUE)
+        erc_out$samples <- samp
       }
-      # get incidence values and combine
-      summarised <- purrr::map(regional_output, ~ .[[data]]$summarised)
-      summarised <- data.table::rbindlist(
+      summarised <- map(erc_data, ~ .$summarised)
+      summarised <- rbindlist(
         summarised,
         idcol = "region", fill = TRUE
       )
-      out$summarised <- summarised
-      out
-    }
-    out <- list()
-    out$estimates <- get_estimates_data("estimates")
-    if (forecast) {
-      out$estimated_reported_cases <-
-        get_estimates_data("estimated_reported_cases")
+      erc_out$summarised <- summarised
+      out$estimated_reported_cases <- erc_out
     }
   }
-  return(out)
+  out
 }
 
 #' Get Regions with Most Reported Cases
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Extract a vector of regions with the most reported cases in a set time
 #' window.
 #'
@@ -183,22 +194,21 @@ get_regional_results <- function(regional_output,
 get_regions_with_most_reports <- function(data,
                                           time_window = 7,
                                           no_regions = 6) {
-  most_reports <- data.table::copy(data)
+  most_reports <- copy(data)
   most_reports <-
     most_reports[,
-      .SD[date >= (max(date, na.rm = TRUE) - lubridate::days(time_window))],
+      .SD[date >= (max(date, na.rm = TRUE) - days(time_window))],
       by = "region"
     ]
   most_reports <- most_reports[,
     .(confirm = sum(confirm, na.rm = TRUE)),
     by = "region"
   ]
-  most_reports <- data.table::setorderv(
+  most_reports <- setorderv(
     most_reports,
     cols = "confirm", order = -1
   )
-  most_reports <- most_reports[1:no_regions][!is.na(region)]$region
-  return(most_reports)
+  most_reports[1:no_regions][!is.na(region)]$region
 }
 
 ##' Estimate seeding time from delays and generation time
@@ -212,8 +222,726 @@ get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
   # Estimate the mean delay -----------------------------------------------
   seeding_time <- sum(mean(delays, ignore_uncertainty = TRUE))
   if (!is.null(rt)) {
-    ## make sure we have at least (length of total gt pmf - 1) seeding time
+    ## make sure we have at least max(generation_time) seeding time
     seeding_time <- max(seeding_time, sum(max(generation_time)))
   }
-  return(max(round(seeding_time), 1))
+  max(round(seeding_time), 1)
+}
+
+#' Get posterior samples from a fitted model
+#'
+#' @description
+#' Extracts posterior samples from a fitted model, combining all parameters
+#' into a single data.table with dates and metadata.
+#'
+#' @param object A fitted model object (e.g., from `estimate_infections()`)
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A `data.table` with columns: date, variable, strat, sample, time,
+#'   value, type. Contains all posterior samples for all parameters.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # After fitting a model
+#' samples <- get_samples(fit)
+#' # Filter to specific parameters
+#' R_samples <- samples[variable == "R"]
+#' }
+get_samples <- function(object, ...) {
+  UseMethod("get_samples")
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.estimate_infections <- function(object, ...) {
+  raw_samples <- extract_samples(object$fit)
+
+  format_samples_with_dates(
+    raw_samples = raw_samples,
+    args = object$args,
+    observations = object$observations
+  )
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.epinow <- function(object, ...) {
+  # If the epinow run failed (e.g., timeout), throw an informative error
+  if (!is.null(object$error)) {
+    cli_abort(c(
+      "Cannot extract samples from a failed epinow run.",
+      "i" = "The run failed with error: {object$error}"
+    ))
+  }
+  # Otherwise delegate to the underlying estimate_infections method
+  get_samples.estimate_infections(object, ...)
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.forecast_infections <- function(object, ...) {
+  copy(object$samples)
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.estimate_secondary <- function(object, ...) {
+  # Extract raw posterior samples from the fit
+  raw_samples <- extract_samples(object$fit)
+
+  # Extract time-varying parameters
+  burn_in <- object$args$burn_in
+  dates <- object$observations[(burn_in + 1):.N]$date
+  time_varying <- list(
+    sim_secondary = extract_latent_state("sim_secondary", raw_samples, dates)
+  )
+
+  # Combine with static parameters
+  samples <- combine_tv_and_static_params(
+    time_varying, raw_samples, object$args
+  )
+
+  # Add placeholder columns for consistency with estimate_infections format
+  if (!"date" %in% names(samples)) samples[, date := as.Date(NA)]
+  if (!"strat" %in% names(samples)) samples[, strat := NA_character_]
+  if (!"time" %in% names(samples)) samples[, time := NA_integer_]
+  if (!"type" %in% names(samples)) samples[, type := NA_character_]
+
+  # Reorder columns to match estimate_infections format
+  setcolorder(
+    samples,
+    c("variable", "time", "date", "sample", "value", "strat", "type")
+  )
+
+  samples[]
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.forecast_secondary <- function(object, ...) {
+  copy(object$samples)
+}
+
+#' @rdname get_samples
+#' @export
+get_samples.estimate_truncation <- function(object, ...) {
+  raw_samples <- extract_samples(object$fit)
+  # extract_delays returns data.table with variable column
+
+  samples <- extract_delays(raw_samples, args = object$args)
+  samples[]
+}
+
+#' Format sample predictions
+#'
+#' Helper function to format posterior samples into the structure expected by
+#' [scoringutils::as_forecast_sample()].
+#'
+#' @param samples Data.table with date, sample, and value columns
+#' @param forecast_date Date when the forecast was made
+#' @return Data.table with columns: forecast_date, date, horizon, sample,
+#'   predicted
+#' @keywords internal
+format_sample_predictions <- function(samples, forecast_date) {
+  predictions <- samples[, .(date, sample, predicted = value)]
+  predictions[, forecast_date := forecast_date]
+  predictions[, horizon := as.numeric(date - forecast_date)]
+  setcolorder(
+    predictions,
+    c("forecast_date", "date", "horizon", "sample", "predicted")
+  )
+  predictions[]
+}
+
+#' Format quantile predictions
+#'
+#' Helper function to format posterior samples into quantiles in the structure
+#' expected by [scoringutils::as_forecast_quantile()].
+#'
+#' @param samples Data.table with date and value columns
+#' @param quantiles Numeric vector of quantile levels
+#' @param forecast_date Date when the forecast was made
+#' @return Data.table with columns: forecast_date, date, horizon,
+#'   quantile_level, predicted
+#' @keywords internal
+format_quantile_predictions <- function(samples, quantiles, forecast_date) {
+  predictions <- samples[
+    ,
+    .(predicted = quantile(value, probs = quantiles)),
+    by = date
+  ]
+  predictions[, quantile_level := rep(quantiles, .N / length(quantiles))]
+  predictions[, forecast_date := forecast_date]
+  predictions[, horizon := as.numeric(date - forecast_date)]
+  setcolorder(
+    predictions,
+    c("forecast_date", "date", "horizon", "quantile_level", "predicted")
+  )
+  predictions[]
+}
+
+#' Get predictions from a fitted model
+#'
+#' @description
+#' Extracts predictions from a fitted model. For `estimate_infections()` returns
+#' predicted reported cases, for `estimate_secondary()` returns predicted
+#' secondary observations. For `estimate_truncation()` returns reconstructed
+#' observations adjusted for truncation.
+#'
+#' @param object A fitted model object (e.g., from `estimate_infections()`,
+#'   `estimate_secondary()`, or `estimate_truncation()`)
+#' @param format Character string specifying the output format:
+#'   - `"summary"` (default): summary statistics (mean, sd, median, CrIs)
+#'   - `"sample"`: raw posterior samples for
+#'     [scoringutils::as_forecast_sample()]
+#'   - `"quantile"`: quantile predictions for
+#'     [scoringutils::as_forecast_quantile()]
+#' @param CrIs Numeric vector of credible intervals to return. Defaults to
+#'   c(0.2, 0.5, 0.9). Only used when `format = "summary"`.
+#' @param quantiles Numeric vector of quantile levels to return. Defaults to
+#'   c(0.05, 0.25, 0.5, 0.75, 0.95). Only used when `format = "quantile"`.
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A `data.table` with columns depending on `format`:
+#'   - `format = "summary"`: date, mean, sd, median, and credible intervals
+#'   - `format = "sample"`: forecast_date, date, horizon, sample, predicted
+#'   - `format = "quantile"`: forecast_date, date, horizon, quantile_level,
+#'     predicted
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # After fitting a model
+#' # Get summary predictions (default)
+#' predictions <- get_predictions(fit)
+#'
+#' # Get sample-level predictions for scoringutils
+#' samples <- get_predictions(fit, format = "sample")
+#'
+#' # Get quantile predictions for scoringutils
+#' quantiles <- get_predictions(fit, format = "quantile")
+#' }
+get_predictions <- function(object, ...) {
+  UseMethod("get_predictions")
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.estimate_infections <- function(
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...) {
+  format <- arg_match(format)
+
+  # Get samples for reported cases
+  samples <- get_samples(object)
+  reported_samples <- samples[variable == "reported_cases"]
+  forecast_date <- max(object$observations$date, na.rm = TRUE)
+
+  switch(format,
+    summary = calc_summary_measures(
+      reported_samples,
+      summarise_by = "date",
+      order_by = "date",
+      CrIs = CrIs
+    ),
+    sample = format_sample_predictions(reported_samples, forecast_date),
+    quantile = format_quantile_predictions(
+      reported_samples, quantiles, forecast_date
+    )
+  )
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.estimate_secondary <- function(
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...) {
+  format <- arg_match(format)
+
+  # Get samples for simulated secondary observations
+  samples <- get_samples(object)
+  sim_secondary_samples <- samples[variable == "sim_secondary"]
+  forecast_date <- max(object$observations$date, na.rm = TRUE)
+
+  switch(format,
+    summary = calc_summary_measures(
+      sim_secondary_samples,
+      summarise_by = "date",
+      order_by = "date",
+      CrIs = CrIs
+    ),
+    sample = format_sample_predictions(sim_secondary_samples, forecast_date),
+    quantile = format_quantile_predictions(
+      sim_secondary_samples, quantiles, forecast_date
+    )
+  )
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.forecast_infections <- function(
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...) {
+  format <- arg_match(format)
+
+  samples <- object$samples[variable == "reported_cases"]
+  forecast_date <- max(object$observations$date, na.rm = TRUE)
+
+  switch(format,
+    summary = {
+      predictions <- object$summarised[variable == "reported_cases"]
+      predictions[, !"variable"]
+    },
+    sample = format_sample_predictions(samples, forecast_date),
+    quantile = format_quantile_predictions(samples, quantiles, forecast_date)
+  )
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.forecast_secondary <- function(
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...) {
+  format <- arg_match(format)
+
+  # forecast_secondary$samples only contains sim_secondary, no filtering needed
+  samples <- object$samples
+  # forecast_date is the last date with observed secondary (training period end)
+  obs_dates <- object$observations[!is.na(secondary)]$date
+  if (length(obs_dates) == 0L) {
+    obs_dates <- object$observations$date
+  }
+  forecast_date <- max(obs_dates, na.rm = TRUE)
+
+  switch(format,
+    summary = {
+      preds <- copy(object$predictions)
+      preds[, c("primary", "secondary") := NULL]
+      preds
+    },
+    sample = format_sample_predictions(samples, forecast_date),
+    quantile = format_quantile_predictions(samples, quantiles, forecast_date)
+  )
+}
+
+#' @rdname get_predictions
+#' @export
+get_predictions.estimate_truncation <- function(
+  object,
+  format = c("summary", "sample", "quantile"),
+  CrIs = c(0.2, 0.5, 0.9),
+  quantiles = c(0.05, 0.25, 0.5, 0.75, 0.95),
+  ...) {
+  format <- arg_match(format)
+
+  # Process input observations to get dates
+  dirty_obs <- map(object$observations, as.data.table)
+  earliest_date <- max(
+    as.Date(
+      map_chr(dirty_obs, function(x) x[, as.character(min(date))])
+    )
+  )
+  dirty_obs <- map(dirty_obs, function(x) x[date >= earliest_date])
+  nrow_obs <- order(map_dbl(dirty_obs, nrow))
+  dirty_obs <- dirty_obs[nrow_obs]
+
+  obs_sets <- object$args$obs_sets
+  trunc_max <- object$args$delay_max[1]
+
+  # ragged cell boundaries: dataset i owns obs_group[i]:(obs_group[i + 1] - 1)
+  end_t <- object$args$t - object$args$obs_dist
+  start_t <- pmax(1L, end_t - trunc_max)
+  obs_group <- cumsum(c(1L, end_t - start_t + 1L))
+
+  if (format == "summary") {
+    # Extract reconstructed observations summary statistics
+    recon_obs <- extract_stan_param(object$fit, "recon_obs",
+      CrIs = CrIs,
+      var_names = TRUE
+    )
+    recon_obs <- recon_obs[, id := variable][, variable := NULL]
+
+    recon_obs <- recon_obs[, dataset := findInterval(seq_len(.N), obs_group)]
+
+    # Link predictions to dates
+    link_preds <- function(index) {
+      target_obs <- dirty_obs[[index]][, idx := .N - 0:(.N - 1)]
+      target_obs <- target_obs[idx < trunc_max]
+      estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
+      estimates <- estimates[, lapply(.SD, as.integer)]
+      estimates <- estimates[, idx := .N - 0:(.N - 1)]
+      if (!is.null(estimates$n_eff)) estimates[, "n_eff" := NULL]
+      if (!is.null(estimates$Rhat)) estimates[, "Rhat" := NULL]
+
+      result <- merge.data.table(
+        target_obs[, .(date, idx)],
+        estimates,
+        by = "idx", all.x = TRUE
+      )
+      result[, report_date := max(target_obs$date)]
+      result[order(date)][, idx := NULL]
+    }
+
+    predictions <- map(seq_len(obs_sets), link_preds)
+    rbindlist(predictions)
+  } else {
+    # Both "sample" and "quantile" need raw samples first
+    raw_samples <- extract_samples(object$fit, pars = "recon_obs")
+    recon_samples <- as.data.table(raw_samples$recon_obs)
+    recon_samples <- melt(recon_samples,
+      measure.vars = seq_len(ncol(recon_samples)),
+      variable.name = "obs_idx",
+      value.name = "predicted"
+    )
+    recon_samples[, obs_idx := as.integer(obs_idx)]
+    recon_samples[, sample := seq_len(.N), by = obs_idx]
+    # ragged: map global cell to dataset, then to a local within-dataset index
+    recon_samples[, dataset := findInterval(obs_idx, obs_group)]
+    recon_samples[, obs_idx := obs_idx - obs_group[dataset] + 1L]
+
+    # Link samples to dates
+    link_samples <- function(index) {
+      target_obs <- dirty_obs[[index]][, idx := .N - 0:(.N - 1)]
+      target_obs <- target_obs[idx < trunc_max]
+      target_obs[, obs_idx := seq_len(.N)]
+
+      samples_subset <- recon_samples[dataset == index]
+      result <- merge.data.table(
+        target_obs[, .(date, obs_idx)],
+        samples_subset[, .(obs_idx, sample, predicted)],
+        by = "obs_idx"
+      )[, obs_idx := NULL]
+
+      # Add forecast metadata
+      forecast_date <- max(target_obs$date, na.rm = TRUE)
+      result[, forecast_date := forecast_date]
+      result[, horizon := as.numeric(date - forecast_date)]
+      result[, dataset := index]
+
+      result
+    }
+
+    predictions <- map(seq_len(obs_sets), link_samples)
+    predictions <- rbindlist(predictions)
+
+    if (format == "sample") {
+      # Reorder columns for sample format
+      setcolorder(
+        predictions,
+        c("dataset", "forecast_date", "date", "horizon", "sample", "predicted")
+      )
+    } else {
+      # format == "quantile": aggregate to quantiles
+      predictions <- predictions[
+        ,
+        .(predicted = quantile(predicted, probs = quantiles)),
+        by = .(dataset, forecast_date, date, horizon)
+      ]
+      predictions[
+        , quantile_level := rep(quantiles, .N / length(quantiles))
+      ]
+      setcolorder(
+        predictions,
+        c("dataset", "forecast_date", "date", "horizon",
+          "quantile_level", "predicted")
+      )
+    }
+
+    predictions[]
+  }
+}
+
+
+#' Reconstruct a dist_spec from stored stan data and posterior
+#'
+#' @param object A fitted model object containing fit and args
+#' @param delay_name The name of the delay (e.g., "generation_time")
+#' @return A dist_spec object, or NULL if the delay doesn't exist
+#' @keywords internal
+reconstruct_delay <- function(object, delay_name) {
+  stan_data <- object$args
+
+  # Get the delay ID for this named delay
+  delay_id <- stan_data[[paste0("delay_id_", delay_name)]]
+  if (is.null(delay_id) || delay_id == 0) {
+    return(NULL)
+  }
+
+  types_groups <- stan_data$delay_types_groups
+  if (is.null(types_groups)) {
+    return(NULL)
+  }
+
+  # Extract posterior if parameters were estimated
+  posterior <- NULL
+  if (stan_data$delay_params_length > 0 && !is.null(object$fit)) {
+    posterior <- extract_stan_param(object$fit, params = "delay_params")
+  }
+
+  # Extract NP posterior draws if estimated
+  np_posterior <- NULL
+  if (stan_data$delay_np_est_length > 0 && !is.null(object$fit)) {
+    np_draws <- extract_samples(
+      object$fit, pars = "delay_np_est_raw"
+    )$delay_np_est_raw
+    np_posterior <- as.matrix(np_draws)
+  }
+
+  # Get indices for this delay type
+  delay_indices <- seq(types_groups[delay_id], types_groups[delay_id + 1] - 1)
+  types_p <- stan_data$delay_types_p[delay_indices]
+
+  # Reconstruct each delay component
+  delay_list <- lapply(seq_along(delay_indices), function(i) {
+    idx <- delay_indices[i]
+    type_id <- stan_data$delay_types_id[idx]
+
+    if (types_p[i] == 1) {
+      reconstruct_parametric(stan_data, type_id, posterior)
+    } else {
+      reconstruct_nonparametric(
+        stan_data, type_id, np_posterior
+      )
+    }
+  })
+
+  if (length(delay_list) == 1) delay_list[[1]] else do.call(c, delay_list)
+}
+
+#' Create a Normal distribution from posterior samples
+#'
+#' Helper function to create a Normal distribution from a row of posterior
+#' summary statistics, with consistent rounding.
+#'
+#' @param posterior Data frame with `mean` and `sd` columns from Stan output
+#' @param idx Integer index into the posterior data frame
+#' @return A `Normal` distribution object
+#' @keywords internal
+posterior_to_normal <- function(posterior, idx) {
+  Normal(
+    mean = round(posterior$mean[idx], 3),
+    sd = round(posterior$sd[idx], 3)
+  )
+}
+
+#' Reconstruct a parametric delay distribution
+#'
+#' Helper function to reconstruct a single parametric delay component from
+#' Stan data and posterior samples.
+#'
+#' @param stan_data List of Stan data containing delay specification
+#' @param param_id Integer index into the parametric delay arrays
+#' @param posterior Data frame with posterior mean and sd for delay_params,
+#'   or NULL if not estimated
+#' @return A `dist_spec` object representing the delay distribution
+#' @keywords internal
+reconstruct_parametric <- function(stan_data, param_id, posterior) {
+  dist_type <- pcd_stan_id_to_distribution(stan_data$delay_dist[param_id])
+  dist_max <- stan_data$delay_max[param_id]
+
+  # Get parameter indices and values
+  param_idx <- seq(
+    stan_data$delay_params_groups[param_id],
+    stan_data$delay_params_groups[param_id + 1] - 1
+  )
+  prior_mean <- stan_data$delay_params_mean[param_idx]
+  prior_sd <- stan_data$delay_params_sd[param_idx]
+
+  # Build parameters: posterior if estimated, fixed or prior otherwise
+  # NA handling: if prior_sd[j] is NA, then prior_sd[j] > 0 evaluates to NA,
+  # and NA && !is.na(NA) -> NA && FALSE -> FALSE, so estimated = FALSE.
+  # This correctly treats NA prior_sd as a fixed (non-estimated) parameter.
+  param_names <- natural_params(dist_type)
+  parameters <- lapply(seq_along(prior_mean), function(j) {
+    estimated <- prior_sd[j] > 0 && !is.na(prior_sd[j])
+    if (estimated && !is.null(posterior)) {
+      posterior_to_normal(posterior, param_idx[j])
+    } else if (prior_sd[j] == 0 || is.na(prior_sd[j])) {
+      prior_mean[j]
+    } else {
+      Normal(prior_mean[j], prior_sd[j])
+    }
+  })
+  names(parameters) <- param_names
+
+  new_dist_spec(params = parameters, max = dist_max, distribution = dist_type)
+}
+
+#' Reconstruct a nonparametric delay distribution
+#'
+#' Reconstruct a nonparametric delay from Stan data.
+#'
+#' For estimated delays, returns `NonParametric(pmf = Dirichlet(...))`,
+#' using either the prior alpha (no fit available) or a moment-matched
+#' Dirichlet whose mean equals the posterior mean of the simplex and
+#' whose concentration matches the average per-bin posterior variance.
+#' For fixed delays, returns the `NonParametric` PMF as supplied.
+#'
+#' @param stan_data List of Stan data containing delay
+#'   specification
+#' @param np_id Integer index into the nonparametric delay PMF
+#'   arrays
+#' @param np_posterior Matrix of posterior draws for
+#'   `delay_np_est_raw` (draws x parameters), or NULL
+#' @return A `dist_spec` object representing the nonparametric
+#'   delay
+#' @keywords internal
+reconstruct_nonparametric <- function(stan_data, np_id,
+                                      np_posterior = NULL) {
+  pmf_idx <- seq(
+    stan_data$delay_np_pmf_groups[np_id],
+    stan_data$delay_np_pmf_groups[np_id + 1] - 1
+  )
+  prior_pmf <- stan_data$delay_np_pmf[pmf_idx]
+
+  # Check if this NP delay was estimated
+  est_pos <- match(np_id, stan_data$delay_np_est_which)
+  if (!is.na(est_pos)) {
+    alpha_idx <- seq(
+      stan_data$delay_np_est_groups[est_pos],
+      stan_data$delay_np_est_groups[est_pos + 1] - 1
+    )
+    pos_idx <- stan_data$delay_np_est_pos[alpha_idx]
+    pmf_start <- stan_data$delay_np_pmf_groups[np_id]
+    local_pos <- pos_idx - pmf_start + 1L
+
+    full_alpha <- rep(0, length(prior_pmf))
+    if (!is.null(np_posterior)) {
+      ## Moment-match the posterior simplex draws to a Dirichlet so
+      ## the summary round-trips as a prior. For Dirichlet(alpha)
+      ## with concentration alpha0 = sum(alpha) and means
+      ## mu_i = alpha_i / alpha0, the per-bin variance is
+      ## mu_i (1 - mu_i) / (alpha0 + 1), so alpha0 = mu(1-mu)/v - 1.
+      ## We average alpha0 across bins with non-degenerate variance
+      ## to dampen Monte Carlo noise. See Minka (2000),
+      ## "Estimating a Dirichlet distribution".
+      raw_draws <- np_posterior[, alpha_idx, drop = FALSE]
+      normed <- raw_draws / rowSums(raw_draws)
+      mu <- colMeans(normed)
+      v <- apply(normed, 2, var)
+      alpha0_per_bin <- mu * (1 - mu) / v - 1
+      keep <- is.finite(alpha0_per_bin) & alpha0_per_bin > 0
+      alpha0 <- if (any(keep)) mean(alpha0_per_bin[keep]) else 1
+      full_alpha[local_pos] <- alpha0 * mu
+    } else {
+      full_alpha[local_pos] <- stan_data$delay_np_est_alpha[alpha_idx]
+    }
+    NonParametric(pmf = Dirichlet(alpha = full_alpha))
+  } else {
+    NonParametric(pmf = prior_pmf)
+  }
+}
+
+#' Extract delay distributions from a fitted model
+#'
+#' @description Internal helper to extract delay distributions from the
+#' `delay_id_*` variables in stan data.
+#'
+#' @param x A fitted model object with `$fit` and `$args` components.
+#' @param stan_data The stan data list from `x$args`.
+#'
+#' @return A named list of `dist_spec` objects representing the posterior
+#' distributions of delay parameters.
+#' @keywords internal
+extract_delay_params <- function(x, stan_data) {
+  delay_id_vars <- grep("^delay_id_", names(stan_data), value = TRUE)
+
+
+  # Filter to valid delays (id > 0) and extract names upfront
+  valid <- vapply(delay_id_vars, function(v) {
+    id <- stan_data[[v]]
+    !is.null(id) && id > 0
+  }, logical(1))
+
+  delay_names <- sub("^delay_id_", "", delay_id_vars[valid])
+
+  # Build named list directly
+  result <- map(delay_names, function(name) reconstruct_delay(x, name))
+  names(result) <- delay_names
+  result
+}
+
+#' Extract scalar parameters from a fitted model
+#'
+#' @description Internal helper to extract scalar parameters (e.g.,
+#' `fraction_observed`) from the params array based on `param_id_*` variables.
+#'
+#' @param x A fitted model object with `$fit` and `$args` components.
+#' @param stan_data The stan data list from `x$args`.
+#'
+#' @return A named list of `dist_spec` objects representing the posterior
+#' distributions of scalar parameters.
+#' @keywords internal
+extract_scalar_params <- function(x, stan_data) {
+  lookup <- stan_data$params_variable_lookup
+  has_params <- !is.null(lookup) && any(lookup > 0) && !is.null(x$fit)
+  if (!has_params) {
+    return(list())
+  }
+
+  posterior <- extract_stan_param(x$fit, params = "params")
+  if (is.null(posterior) || nrow(posterior) == 0) {
+    return(list())
+  }
+
+  param_id_vars <- grep("^param_id_", names(stan_data), value = TRUE)
+  param_names <- sub("^param_id_", "", param_id_vars)
+  ids <- vapply(param_id_vars, function(v) {
+    id <- stan_data[[v]]
+    if (is.null(id) || is.na(id)) 0L else as.integer(id)
+  }, integer(1))
+
+  valid <- ids > 0
+  lookup_idxs <- rep(NA_integer_, length(ids))
+  lookup_idxs[valid] <- lookup[ids[valid]]
+  valid <- valid & !is.na(lookup_idxs) & lookup_idxs > 0 &
+    lookup_idxs <= nrow(posterior)
+
+  result <- map(which(valid), function(i) {
+    posterior_to_normal(posterior, lookup_idxs[i])
+  })
+  names(result) <- param_names[valid]
+  result
+}
+
+#' Extract parameters from EpiNow2 model fits
+#'
+#' @description
+#' S3 methods for [distspec::get_parameters()] that extract the estimated delay
+#' distribution and scalar parameters from fitted EpiNow2 model objects.
+#' @param x A fitted EpiNow2 model object.
+#' @param ... Not used.
+#' @return A named list of parameters.
+#' @rdname get_parameters_methods
+#' @export
+get_parameters.epinowfit <- function(x, ...) {
+  stan_data <- x$args
+  c(
+    extract_delay_params(x, stan_data),
+    extract_scalar_params(x, stan_data)
+  )
+}
+
+#' @rdname get_parameters_methods
+#' @export
+get_parameters.estimate_dist <- function(x, ...) {
+  dist_spec <- .extract_to_dist_spec(
+    fit = x$fit,
+    dist = x$args$dist,
+    max_value = x$args$max_value
+  )
+  list(delay = dist_spec)
 }

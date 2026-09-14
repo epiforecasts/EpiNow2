@@ -25,7 +25,6 @@ create if not present).}
 No return value, called for side effects
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Saves observed data to a target location if given.
 }
 \keyword{internal}

@@ -19,19 +19,21 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout PR branch
+        uses: actions/checkout@v7
+        with:
+          path: branch
+
+      - name: Checkout main branch
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          path: main
 
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          packages: |
-            local::.
-            here
-            purrr
-            stan-dev/cmdstanr
+          extra-repositories: https://production.r-multiverse.org/2026-06-15
 
       - name: Install cmdstan
         uses: epinowcast/actions/install-cmdstan@v1
@@ -39,36 +41,146 @@ jobs:
           cmdstan-version: 'latest'
           num-cores: 2
 
-      - name: Checkout main branch in parallel and move to separate dir
-        run: |
-          mv inst/stan inst/stan-branch
-          git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin main
-          git checkout origin/main inst/stan
-          mv inst/stan inst/stan-main
-          mv inst/stan-branch inst/stan
+      # Install dependencies for both versions into separate libraries
+      - name: Install main branch dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: main
+          packages: |
+            local::.
+            here
+            purrr
+            primarycensored
+            any::cmdstanr
 
-      - name: Benchmark
+      - name: Benchmark main branch (estimate_infections)
+        id: benchmark-main
+        continue-on-error: true
+        working-directory: main
         run: |
-          Rscript inst/dev/benchmark.R
+          # Use benchmark scripts from PR branch (main may not have them)
+          Rscript ../branch/inst/dev/benchmark-single.R main
+
+      - name: Benchmark main branch (estimate_dist)
+        id: benchmark-main-dist
+        continue-on-error: true
+        working-directory: main
+        run: |
+          Rscript ../branch/inst/dev/benchmark-estimate-dist.R main
+
+      - name: Install PR branch dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: branch
+          packages: |
+            local::.
+            primarycensored
+            any::cmdstanr
+
+      - name: Benchmark PR branch (estimate_infections)
+        working-directory: branch
+        run: |
+          Rscript inst/dev/benchmark-single.R branch
+
+      - name: Benchmark PR branch (estimate_dist)
+        working-directory: branch
+        run: |
+          Rscript inst/dev/benchmark-estimate-dist.R branch
+
+      # Compare results
+      - name: Compare benchmarks (estimate_infections)
+        id: compare
+        if: steps.benchmark-main.outcome == 'success'
+        working-directory: branch
+        run: |
+          Rscript inst/dev/benchmark-compare.R \
+            ../main/main-profiles.csv \
+            branch-profiles.csv \
+            benchmark-infections.md
+
+      - name: Compare benchmarks (estimate_dist)
+        id: compare-dist
+        if: steps.benchmark-main-dist.outcome == 'success'
+        working-directory: branch
+        run: |
+          Rscript inst/dev/benchmark-compare.R \
+            ../main/main-dist-profiles.csv \
+            branch-dist-profiles.csv \
+            benchmark-dist.md
+
+      - name: Combine benchmark results
+        working-directory: branch
+        run: |
+          if [ ! -f benchmark-infections.md ] \
+            && [ ! -f benchmark-dist.md ]; then
+            echo "No benchmark results to combine; skipping."
+            exit 0
+          fi
+          : > benchmark-results.md
+          if [ -f benchmark-infections.md ]; then
+            echo "## estimate_infections" >> benchmark-results.md
+            echo "" >> benchmark-results.md
+            cat benchmark-infections.md >> benchmark-results.md
+            echo "" >> benchmark-results.md
+          fi
+          if [ -f benchmark-dist.md ]; then
+            echo "## estimate_dist" >> benchmark-results.md
+            echo "" >> benchmark-results.md
+            cat benchmark-dist.md >> benchmark-results.md
+            echo "" >> benchmark-results.md
+          fi
+
+      - name: Note if main benchmarks failed
+        if: >-
+          steps.benchmark-main.outcome == 'failure' ||
+          steps.benchmark-main-dist.outcome == 'failure'
+        working-directory: branch
+        run: |
+          if [ "${{ steps.benchmark-main.outcome }}" = "failure" ]; then
+            echo "" >> benchmark-results.md
+            echo "Main branch estimate_infections benchmark failed (likely due to interface changes)." >> benchmark-results.md
+          fi
+          if [ "${{ steps.benchmark-main-dist.outcome }}" = "failure" ]; then
+            echo "" >> benchmark-results.md
+            echo "Main branch estimate_dist benchmark failed (likely due to interface changes)." >> benchmark-results.md
+          fi
 
       - id: output
         name: Output to environment variable
-        if: ${{ hashFiles('inst/dev/benchmark-results.md') != '' }}
+        if: ${{ hashFiles('branch/benchmark-results.md') != '' }}
         run: |
-          echo 'BENCHMARK<<EOF' > $GITHUB_OUTPUT
-          cat inst/dev/benchmark-results.md >> $GITHUB_OUTPUT
+          echo 'BENCHMARK<<EOF' >> $GITHUB_OUTPUT
+          cat branch/benchmark-results.md >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
 
-      - name: Post comment
-        if: ${{ hashFiles('inst/dev/benchmark-results.md') != '' }}
-        uses: actions/github-script@v7
+      - name: Post or update comment
+        if: ${{ hashFiles('branch/benchmark-results.md') != '' }}
+        uses: actions/github-script@v9
         env:
           BENCHMARK: ${{ steps.output.outputs.BENCHMARK }}
         with:
           script: |
-            github.rest.issues.createComment({
+            const marker = '<!-- epinow2-benchmark-marker -->';
+            const body = `${marker}\n${process.env.BENCHMARK}`;
+            const comments = await github.paginate(github.rest.issues.listComments, {
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: process.env.BENCHMARK
-            })
+              per_page: 100,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                comment_id: existing.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body,
+              });
+            }

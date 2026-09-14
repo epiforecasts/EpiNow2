@@ -1,9 +1,8 @@
 Type: Package
 Package: EpiNow2
-Title: Estimate Real-Time Case Counts and Time-Varying
-    Epidemiological Parameters
-Version: 1.7.1.9000
-Authors@R: 
+Title: Estimate and Forecast Real-Time Infection Dynamics
+Version: 1.9.0.9000
+Authors@R:
     c(person(given = "Sam",
              family = "Abbott",
              role = c("aut"),
@@ -41,6 +40,11 @@ Authors@R:
              role = "aut",
              email = "james.azam@lshtm.ac.uk",
              comment = c(ORCID = "0000-0001-5782-7330")),
+      person(given = "Adrian",
+             family = "Lison",
+             role = "aut",
+             email = "adrian.lison@bsse.ethz.ch",
+             comment = c(ORCID = "0000-0002-6822-8437")),
       person(given = "Robin",
              family = "Thompson",
              role = "ctb",
@@ -48,7 +52,7 @@ Authors@R:
       person(given = "Sophie",
              family = "Meakin",
              role = "ctb",
-             email = "sophie.meaking@lshtm.ac.uk"),
+             email = "sophie.meakin@lshtm.ac.uk"),
       person(given = "James",
              family = "Munday",
              role = "ctb",
@@ -71,7 +75,7 @@ Authors@R:
       person(given = "Lloyd",
              family = "Chapman",
              role = "ctb",
-             email = "lloyd.chapman1@lshtm.ac.uk "),
+             email = "lloyd.chapman1@lshtm.ac.uk"),
       person(given = "Andrew",
              family = "Johnson",
              role = "ctb",
@@ -86,28 +90,32 @@ Authors@R:
              role = "ctb",
              email = "adamthowes@gmail.com",
              comment = c(ORCID = "0000-0003-2386-4031")),
-      person(given = "EpiForecasts",
-             role = "aut"),
       person(given = "Sebastian",
              family = "Funk",
              role = c("aut", "cre"),
              email = "sebastian.funk@lshtm.ac.uk",
              comment = c(ORCID = "0000-0002-2842-3406"))
     )
-Description: Estimates the time-varying reproduction number,
-    rate of spread, and doubling time using a range of open-source tools
-    (Abbott et al. (2020) <doi:10.12688/wellcomeopenres.16006.1>), and
-    current best practices (Gostic et al. (2020)
-    <doi:10.1101/2020.06.18.20134858>).  It aims to help users avoid some
-    of the limitations of naive implementations in a framework that is
-    informed by community feedback and is actively supported.
+Description: Estimates the time-varying reproduction number, rate of
+    spread, and doubling time using a renewal equation approach combined
+    with Bayesian inference via Stan. Supports Gaussian process and
+    random walk priors for modelling changes in
+    transmission over time. Accounts for delays between infection and
+    observation (incubation period, reporting delays), right-truncation
+    in recent data, day-of-week effects, and observation overdispersion.
+    Can estimate relationships between primary and secondary outcomes
+    (e.g., cases to hospitalisations or deaths) and forecast both. Runs
+    across multiple regions in parallel. Based on
+    Abbott et al. (2020) <doi:10.12688/wellcomeopenres.16006.1> and
+    Gostic et al. (2020) <doi:10.1101/2020.06.18.20134858>.
 License: MIT + file LICENSE
 URL: https://epiforecasts.io/EpiNow2/,
     https://epiforecasts.io/EpiNow2/dev/,
     https://github.com/epiforecasts/EpiNow2
 BugReports: https://github.com/epiforecasts/EpiNow2/issues
-Depends: 
-    R (>= 3.5.0)
+Depends:
+    R (>= 3.5.0),
+    distspec (>= 0.2.0)
 Imports:
     checkmate,
     cli,
@@ -119,9 +127,10 @@ Imports:
     methods,
     patchwork,
     posterior,
+    primarycensored,
     purrr,
     R.utils (>= 2.0.0),
-    Rcpp (>= 0.12.0), 
+    Rcpp (>= 0.12.0),
     rlang (>= 0.4.7),
     rstan (>= 2.26.0),
     rstantools (>= 2.2.0),
@@ -132,19 +141,17 @@ Imports:
     utils
 Suggests:
     cmdstanr,
-    covr,
     future,
     future.apply,
-    here,
     knitr,
-    precommit,
+    parallelly,
     progressr,
     rmarkdown,
+    scoringutils,
     spelling,
     testthat,
-    usethis,
     withr
-LinkingTo: 
+LinkingTo:
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
     RcppEigen (>= 0.3.3.3.0),
@@ -152,9 +159,19 @@ LinkingTo:
     rstan (>= 2.26.0),
     StanHeaders (>= 2.26.0)
 Additional_repositories:
-    https://stan-dev.r-universe.dev
+    https://production.r-multiverse.org/2026-06-15
 Biarch: true
 Config/testthat/edition: 3
+Config/Needs/dev:
+    covr,
+    here,
+    hexSticker,
+    lintr,
+    magick,
+    pkgdown,
+    precommit,
+    styler,
+    usethis
 Encoding: UTF-8
 Language: en-GB
 LazyData: true

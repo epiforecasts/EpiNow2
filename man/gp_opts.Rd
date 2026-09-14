@@ -7,18 +7,11 @@
 gp_opts(
   basis_prop = 0.2,
   boundary_scale = 1.5,
-  ls_mean = 21,
-  ls_sd = 7,
-  ls_min = 0,
-  ls_max = 60,
   ls = LogNormal(mean = 21, sd = 7, max = 60),
   alpha = Normal(mean = 0, sd = 0.01),
   kernel = c("matern", "se", "ou", "periodic"),
   matern_order = 3/2,
-  matern_type,
-  w0 = 1,
-  alpha_mean,
-  alpha_sd
+  w0 = 1
 )
 }
 \arguments{
@@ -32,14 +25,6 @@ proportion of basis functions. See (Riutort-Mayol et al. 2020
 \item{boundary_scale}{Numeric, defaults to 1.5. Boundary scale of the
 approximate Gaussian process. See (Riutort-Mayol et al. 2020
 \url{https://arxiv.org/abs/2004.11408}) for advice on updating this default.}
-
-\item{ls_mean}{Deprecated; use \code{ls} instead.}
-
-\item{ls_sd}{Deprecated; use \code{ls} instead.}
-
-\item{ls_min}{Deprecated; use \code{ls} instead.}
-
-\item{ls_max}{Deprecated; use \code{ls} instead.}
 
 \item{ls}{A \verb{<dist_spec>} giving the prior distribution of the lengthscale
 parameter of the Gaussian process kernel on the scale of days. Defaults to
@@ -65,21 +50,13 @@ Common choices are 1/2, 3/2, and 5/2. If \code{kernel} is set
 to "ou", \code{matern_order} will be automatically set to 1/2. Only used if
 the kernel is set to "matern".}
 
-\item{matern_type}{Deprecated; Numeric, defaults to 3/2. Order of Matérn
-Kernel to use. Currently, the orders 1/2, 3/2, 5/2 and Inf are supported.}
-
 \item{w0}{Numeric, defaults to 1.0. Fundamental frequency for periodic
 kernel. They are only used if \code{kernel} is set to "periodic".}
-
-\item{alpha_mean}{Deprecated; use \code{alpha} instead.}
-
-\item{alpha_sd}{Deprecated; use \code{alpha} instead.}
 }
 \value{
 A \verb{<gp_opts>} object of settings defining the Gaussian process
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the structure of the approximate Gaussian
 process. Custom settings can be supplied which override the defaults.
 }

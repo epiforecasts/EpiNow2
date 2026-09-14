@@ -24,46 +24,45 @@ simulate <- function(data,
 
   seeding_time <- get_seeding_time(delays, generation_time, rt)
 
-  reported_cases <- default_fill_missing_obs(data, obs, "confirm")
+  ## add forecast horizon if forecasting is required
   if (forecast$horizon > 0) {
-    reported_cases <- add_horizon(
-      reported_cases, forecast$horizon, forecast$accumulate
+    horizon_args <- list(
+      data = data,
+      horizon = forecast$horizon
     )
+    if (!is.null(forecast$accumulate)) {
+      horizon_args$accumulate <- forecast$accumulate
+    }
+    data <- do.call(add_horizon, horizon_args)
   }
-  reported_cases <- create_clean_reported_cases(
-    reported_cases,
-    filter_leading_zeros = TRUE,
-    zero_threshold = Inf
+
+  # Add breakpoints column
+  data <- add_breakpoints(data)
+
+  # Determine seeding time
+  seeding_time <- get_seeding_time(delays, generation_time, rt)
+
+  # Add initial zeroes
+  data <- pad_reported_cases(data, seeding_time)
+
+  params <- list(
+    make_param("alpha", gp$alpha, lower_bound = 0),
+    make_param("rho", gp$ls, lower_bound = 0),
+    make_param("R0", rt$prior, lower_bound = 0),
+    make_param("frac_obs", obs$scale, lower_bound = 0),
+    make_param("dispersion", obs$dispersion, lower_bound = 0)
   )
-  reported_cases <- data.table::rbindlist(list(
-    data.table::data.table(
-      date = seq(
-        min(reported_cases$date) - seeding_time - backcalc$prior_window,
-        min(reported_cases$date) - 1,
-        by = "days"
-      ),
-      confirm = 0, accumulate = FALSE, breakpoint = 0
-    ),
-    reported_cases[, .(date, confirm, accumulate, breakpoint)]
-  ))
-  shifted_cases <- create_shifted_cases(
-    reported_cases,
-    seeding_time,
-    backcalc$prior_window,
-    forecast$horizon
-  )
-  reported_cases <- reported_cases[-(1:backcalc$prior_window)]
 
   # Define stan model parameters
   stan_data <- create_stan_data(
-    reported_cases,
+    data,
     seeding_time = seeding_time,
     rt = rt,
     gp = gp,
     obs = obs,
     backcalc = backcalc,
-    shifted_cases = shifted_cases$confirm,
-    forecast = forecast
+    forecast = forecast,
+    params = params
   )
 
   stan_data <- c(stan_data, create_stan_delays(
@@ -74,7 +73,7 @@ simulate <- function(data,
   ))
 
   if (is.null(inits)) {
-    init <- create_initial_conditions(stan_data)
+    init <- create_initial_conditions(stan_data, params)
     inits <- init()
   } else {
     if (stan_data$bp_n == 0) {
@@ -116,10 +115,10 @@ simulate <- function(data,
   }
   if (estimate_r) {
     gt_rev_pmf <- get_delay_rev_pmf(
-      gt_id, delay_type_max[gt_id] + 1, delay_types_p, delay_types_id,
-      delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-      1, 1, 0
+      delay_id_generation_time, delay_type_max[delay_id_generation_time] + 1,
+      delay_types_p, delay_types_id, delay_types_groups, delay_max,
+      delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+      delay_dist, 1, 1, 0
     )
     R0 <- get_param(
       param_id_R0, params_fixed_lookup, params_variable_lookup, params_value, params
@@ -132,7 +131,7 @@ simulate <- function(data,
       params
     )
     pop <- get_param(
-        pop_id, params_fixed_lookup, params_variable_lookup, params_value,
+        param_id_pop, params_fixed_lookup, params_variable_lookup, params_value,
         params
     )
     infections <- generate_infections(
@@ -144,13 +143,13 @@ simulate <- function(data,
       shifted_cases, noise, fixed, backcalc_prior
     )
   }
-  delay_rev_pmf <- get_delay_rev_pmf(
-    delay_id, delay_type_max[delay_id] + 1, delay_types_p, delay_types_id,
-    delay_types_groups, delay_max, delay_np_pmf,
-    delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-    0, 1, 0
+  reporting_rev_pmf <- get_delay_rev_pmf(
+    delay_id_reporting, delay_type_max[delay_id_reporting] + 1, delay_types_p,
+    delay_types_id, delay_types_groups, delay_max, delay_np_pmf,
+    delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist, 0, 1,
+    0
   )
-  reports <- convolve_to_report(infections, delay_rev_pmf, seeding_time)
+  reports <- convolve_to_report(infections, reporting_rev_pmf, seeding_time)
   if (week_effect > 1) {
     reports <- day_of_week_effect(reports, day_of_week, day_of_week_simplex)
   }
@@ -161,12 +160,12 @@ simulate <- function(data,
     )
     reports <- scale_obs(reports, frac_obs)
   }
-  if (trunc_id) {
+  if (delay_id_truncation) {
     trunc_rev_cmf <- get_delay_rev_pmf(
-      trunc_id, delay_type_max[trunc_id] + 1, delay_types_p, delay_types_id,
-      delay_types_groups, delay_max, delay_np_pmf,
-      delay_np_pmf_groups, delay_params, delay_params_groups, delay_dist,
-      0, 1, 1
+      delay_id_truncation, delay_type_max[delay_id_truncation] + 1,
+      delay_types_p, delay_types_id, delay_types_groups, delay_max,
+      delay_np_pmf, delay_np_pmf_groups, delay_params, delay_params_groups,
+      delay_dist, 0, 1, 1
     )
     obs_reports <- truncate_obs(reports[1:ot], trunc_rev_cmf, 0)
   } else {

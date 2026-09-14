@@ -142,9 +142,11 @@ numbers and performing short-term forecasts for a disease spreading in a
 
 <details> <summary> Model definitions </summary>
 
-In different vignettes we provide the mathematical definition of each model.
-For example, the model definition vignette for `estimate_infections()` can be
-found in `vignette("estimate_infections")`.
+For an overview of how the package's models connect see
+`vignette("model_overview")`.
+A quick reference to all modelling options is in `vignette("model_features")`.
+Mathematical definitions of each model are in their own vignettes, e.g.
+`vignette("estimate_infections")`.
 
 </details>
 
@@ -161,6 +163,13 @@ you can file an issue [here](https://github.com/epiforecasts/EpiNow2/issues). We
 [package contributing guide](https://github.com/epiforecasts/EpiNow2/blob/main/.github/CONTRIBUTING.md).
 
 ## Contributors
+
+
+
+
+
+
+
 
 
 
@@ -193,8 +202,11 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=Bisaloo">Bisaloo</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=JAllen42">JAllen42</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=adamkucharski">adamkucharski</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=adrian-lison">adrian-lison</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=avehtari">avehtari</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=andrjohns">andrjohns</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=claude">claude</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=jcken95">jcken95</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=medewitt">medewitt</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=nikosbosse">nikosbosse</a>, 
@@ -239,12 +251,15 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Alorenzwalthert">lorenzwalthert</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Anlinton">nlinton</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amartinamcm">martinamcm</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aadrian-lison">adrian-lison</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Ajonathonmellor">jonathonmellor</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3ATimTaylor">TimTaylor</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aciaramccarthy1">ciaramccarthy1</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3ASamuelBrand1">SamuelBrand1</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Adamonbayer">damonbayer</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Adamonbayer">damonbayer</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Avalentinedwv">valentinedwv</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Acoderabbitai">coderabbitai</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AHenrikBengtsson">HenrikBengtsson</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Abob-carpenter">bob-carpenter</a>
 
 
 
@@ -256,12 +271,20 @@ All contributions to this project are gratefully acknowledged using the [`allcon
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3ALizaHadley">LizaHadley</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Antorresd">ntorresd</a>, 
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Amicahwiesner67">micahwiesner67</a>, 
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Apaigemiller">paigemiller</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Apaigemiller">paigemiller</a>, 
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3AWardBrian">WardBrian</a>
 
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
+
+
+
+
+
+
 
 
 

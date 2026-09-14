@@ -9,7 +9,8 @@ construct_output(
   estimated_reported_cases,
   plots = NULL,
   summary = NULL,
-  samples = TRUE
+  samples = TRUE,
+  CrIs = c(0.2, 0.5, 0.9)
 )
 }
 \arguments{
@@ -23,12 +24,13 @@ construct_output(
 \item{summary}{A list of summary output as produced by \code{report_summary}.}
 
 \item{samples}{Logical, defaults to TRUE. Should samples be saved}
+
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
 }
 \value{
 A list of output as returned by \code{epinow}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Combines the output produced internally by \code{epinow} into a single list.
 }
 \keyword{internal}

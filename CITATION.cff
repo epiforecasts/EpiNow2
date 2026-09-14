@@ -1,23 +1,27 @@
-# --------------------------------------------
-# CITATION file created with {cffr} R package
+# ------------------------------------------------
+# CITATION.cff file created with {cffr} R package
 # See also: https://docs.ropensci.org/cffr/
-# --------------------------------------------
+# ------------------------------------------------
  
 cff-version: 1.2.0
 message: 'To cite package "EpiNow2" in publications use:'
 type: software
 license: MIT
-title: 'EpiNow2: Estimate Real-Time Case Counts and Time-Varying Epidemiological Parameters'
-version: 1.7.1.9000
+title: 'EpiNow2: Estimate and Forecast Real-Time Infection Dynamics'
+version: 1.9.0.9000
 doi: 10.32614/CRAN.package.EpiNow2
 identifiers:
 - type: url
   value: https://epiforecasts.io/EpiNow2/dev/
 abstract: Estimates the time-varying reproduction number, rate of spread, and doubling
-  time using a range of open-source tools (Abbott et al. (2020) <https://doi.org/10.12688/wellcomeopenres.16006.1>),
-  and current best practices (Gostic et al. (2020) <https://doi.org/10.1101/2020.06.18.20134858>).
-  It aims to help users avoid some of the limitations of naive implementations in
-  a framework that is informed by community feedback and is actively supported.
+  time using a renewal equation approach combined with Bayesian inference via Stan.
+  Supports Gaussian process and random walk priors for modelling changes in transmission
+  over time. Accounts for delays between infection and observation (incubation period,
+  reporting delays), right-truncation in recent data, day-of-week effects, and observation
+  overdispersion. Can estimate relationships between primary and secondary outcomes
+  (e.g., cases to hospitalisations or deaths) and forecast both. Runs across multiple
+  regions in parallel. Based on Abbott et al. (2020) <https://doi.org/10.12688/wellcomeopenres.16006.1>
+  and Gostic et al. (2020) <https://doi.org/10.1101/2020.06.18.20134858>.
 authors:
 - family-names: Abbott
   given-names: Sam
@@ -48,7 +52,10 @@ authors:
   given-names: James M.
   email: james.azam@lshtm.ac.uk
   orcid: https://orcid.org/0000-0001-5782-7330
-- name: EpiForecasts
+- family-names: Lison
+  given-names: Adrian
+  email: adrian.lison@bsse.ethz.ch
+  orcid: https://orcid.org/0000-0002-6822-8437
 - family-names: Funk
   given-names: Sebastian
   email: sebastian.funk@lshtm.ac.uk
@@ -76,10 +83,13 @@ references:
   url: https://www.R-project.org/
   authors:
   - name: R Core Team
+    website: https://ror.org/02zz1nj61
   institution:
     name: R Foundation for Statistical Computing
+    website: https://ror.org/05qewa988
     address: Vienna, Austria
-  year: '2025'
+  year: '2026'
+  doi: 10.32614/R.manuals
   version: '>= 3.5.0'
 - type: software
   title: checkmate
@@ -92,7 +102,7 @@ references:
     given-names: Michel
     email: michellang@gmail.com
     orcid: https://orcid.org/0000-0001-9754-0393
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.checkmate
 - type: software
   title: cli
@@ -104,7 +114,7 @@ references:
   - family-names: Csárdi
     given-names: Gábor
     email: gabor@posit.co
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.cli
 - type: software
   title: data.table
@@ -125,11 +135,14 @@ references:
     email: asrini@pm.me
   - family-names: Gorecki
     given-names: Jan
+    email: j.gorecki@wit.edu.pl
   - family-names: Chirico
     given-names: Michael
+    email: michaelchirico4@gmail.com
     orcid: https://orcid.org/0000-0003-0787-087X
   - family-names: Hocking
     given-names: Toby
+    email: toby.hocking@r-project.org
     orcid: https://orcid.org/0000-0002-3146-0865
   - family-names: Schwendinger
     given-names: Benjamin
@@ -138,18 +151,20 @@ references:
     given-names: Ivan
     email: ikrylov@disroot.org
     orcid: https://orcid.org/0000-0002-0172-3812
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.data.table
   version: '>= 1.15.0'
 - type: software
   title: futile.logger
   abstract: 'futile.logger: A Logging Utility for R'
   notes: Imports
+  url: https://github.com/zatonovo/futile.logger
   repository: https://CRAN.R-project.org/package=futile.logger
   authors:
   - family-names: Rowe
     given-names: Brian Lee Yung
-  year: '2025'
+    email: r@zatonovo.com
+  year: '2026'
   doi: 10.32614/CRAN.package.futile.logger
   version: '>= 1.4'
 - type: software
@@ -190,7 +205,7 @@ references:
     given-names: Teun
     name-particle: van den
     orcid: https://orcid.org/0000-0002-9335-7468
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.ggplot2
 - type: software
   title: lifecycle
@@ -206,7 +221,7 @@ references:
     given-names: Hadley
     email: hadley@posit.co
     orcid: https://orcid.org/0000-0003-4757-117X
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.lifecycle
 - type: software
   title: lubridate
@@ -222,7 +237,7 @@ references:
     given-names: Garrett
   - family-names: Wickham
     given-names: Hadley
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.lubridate
 - type: software
   title: methods
@@ -230,10 +245,13 @@ references:
   notes: Imports
   authors:
   - name: R Core Team
+    website: https://ror.org/02zz1nj61
   institution:
     name: R Foundation for Statistical Computing
+    website: https://ror.org/05qewa988
     address: Vienna, Austria
-  year: '2025'
+  year: '2026'
+  doi: 10.32614/R.manuals
 - type: software
   title: patchwork
   abstract: 'patchwork: The Composer of Plots'
@@ -245,7 +263,7 @@ references:
     given-names: Thomas Lin
     email: thomasp85@gmail.com
     orcid: https://orcid.org/0000-0002-5147-4711
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.patchwork
 - type: software
   title: posterior
@@ -259,15 +277,48 @@ references:
     email: paul.buerkner@gmail.com
   - family-names: Gabry
     given-names: Jonah
-    email: jsg2201@columbia.edu
+    email: jgabry@gmail.com
   - family-names: Kay
     given-names: Matthew
     email: mjskay@northwestern.edu
   - family-names: Vehtari
     given-names: Aki
     email: Aki.Vehtari@aalto.fi
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.posterior
+- type: software
+  title: primarycensored
+  abstract: 'primarycensored: Primary Event Censored Distributions'
+  notes: Imports
+  url: https://primarycensored.epinowcast.org
+  repository: https://CRAN.R-project.org/package=primarycensored
+  authors:
+  - family-names: Abbott
+    given-names: Sam
+    email: contact@samabbott.co.uk
+    orcid: https://orcid.org/0000-0001-8057-8037
+  - family-names: Brand
+    given-names: Sam
+    email: usi1@cdc.gov
+    orcid: https://orcid.org/0000-0003-0645-5367
+  - family-names: Azam
+    given-names: James Mba
+    email: james.azam@lshtm.ac.uk
+    orcid: https://orcid.org/0000-0001-5782-7330
+  - family-names: Pearson
+    given-names: Carl
+    email: carl.ab.pearson@gmail.com
+    orcid: https://orcid.org/0000-0003-0701-7860
+  - family-names: Funk
+    given-names: Sebastian
+    email: sebastian.funk@lshtm.ac.uk
+    orcid: https://orcid.org/0000-0002-2842-3406
+  - family-names: Charniga
+    given-names: Kelly
+    email: kelly.charniga@gmail.com
+    orcid: https://orcid.org/0000-0002-7648-7041
+  year: '2026'
+  doi: 10.32614/CRAN.package.primarycensored
 - type: software
   title: purrr
   abstract: 'purrr: Functional Programming Tools'
@@ -282,7 +333,7 @@ references:
   - family-names: Henry
     given-names: Lionel
     email: lionel@posit.co
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.purrr
 - type: software
   title: R.utils
@@ -294,7 +345,7 @@ references:
   - family-names: Bengtsson
     given-names: Henrik
     email: henrikb@braju.com
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.R.utils
   version: '>= 2.0.0'
 - type: software
@@ -330,7 +381,7 @@ references:
     orcid: https://orcid.org/0000-0001-8316-9503
   - family-names: Chambers
     given-names: John
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.Rcpp
   version: '>= 0.12.0'
 - type: software
@@ -346,7 +397,7 @@ references:
   - family-names: Wickham
     given-names: Hadley
     email: hadley@posit.co
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.rlang
   version: '>= 0.4.7'
 - type: software
@@ -375,7 +426,7 @@ references:
     given-names: Hamada S.
     email: badr@jhu.edu
     orcid: https://orcid.org/0000-0002-9808-2344
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.rstan
   version: '>= 2.26.0'
 - type: software
@@ -387,7 +438,7 @@ references:
   authors:
   - family-names: Gabry
     given-names: Jonah
-    email: jsg2201@columbia.edu
+    email: jgabry@gmail.com
   - family-names: Goodrich
     given-names: Ben
     email: benjamin.goodrich@columbia.edu
@@ -396,7 +447,8 @@ references:
     email: mlysy@uwaterloo.ca
   - family-names: Johnson
     given-names: Andrew
-  year: '2025'
+    email: andrew.johnson@arjohnsonau.com
+  year: '2026'
   doi: 10.32614/CRAN.package.rstantools
   version: '>= 2.2.0'
 - type: software
@@ -410,7 +462,7 @@ references:
     given-names: Dawid
     email: dawid.kaledkowski@gmail.com
     orcid: https://orcid.org/0000-0001-9533-457X
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.runner
 - type: software
   title: scales
@@ -428,7 +480,7 @@ references:
     orcid: https://orcid.org/0000-0002-5147-4711
   - family-names: Seidel
     given-names: Dana
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.scales
 - type: software
   title: stats
@@ -436,10 +488,13 @@ references:
   notes: Imports
   authors:
   - name: R Core Team
+    website: https://ror.org/02zz1nj61
   institution:
     name: R Foundation for Statistical Computing
+    website: https://ror.org/05qewa988
     address: Vienna, Austria
-  year: '2025'
+  year: '2026'
+  doi: 10.32614/R.manuals
 - type: software
   title: truncnorm
   abstract: 'truncnorm: Truncated Normal Distribution'
@@ -456,7 +511,7 @@ references:
     given-names: Detlef
   - family-names: Bornkamp
     given-names: Björn
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.truncnorm
 - type: software
   title: utils
@@ -464,15 +519,19 @@ references:
   notes: Imports
   authors:
   - name: R Core Team
+    website: https://ror.org/02zz1nj61
   institution:
     name: R Foundation for Statistical Computing
+    website: https://ror.org/05qewa988
     address: Vienna, Austria
-  year: '2025'
+  year: '2026'
+  doi: 10.32614/R.manuals
 - type: software
   title: cmdstanr
   abstract: 'cmdstanr: R Interface to ''CmdStan'''
   notes: Suggests
   url: https://mc-stan.org/cmdstanr/
+  repository: https://r-multiverse-staging.r-universe.dev
   authors:
   - family-names: Gabry
     given-names: Jonah
@@ -486,7 +545,7 @@ references:
     orcid: https://orcid.org/0000-0001-7000-8065
   - family-names: Bronder
     given-names: Steve
-  year: '2025'
+  year: '2026'
 - type: software
   title: future
   abstract: 'future: Unified Parallel and Distributed Processing in R for Everyone'
@@ -498,7 +557,7 @@ references:
     given-names: Henrik
     email: henrikb@braju.com
     orcid: https://orcid.org/0000-0002-7579-5165
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.future
 - type: software
   title: future.apply
@@ -511,7 +570,7 @@ references:
     given-names: Henrik
     email: henrikb@braju.com
     orcid: https://orcid.org/0000-0002-7579-5165
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.future.apply
 - type: software
   title: knitr
@@ -524,8 +583,34 @@ references:
     given-names: Yihui
     email: xie@yihui.name
     orcid: https://orcid.org/0000-0003-0645-5666
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.knitr
+- type: software
+  title: parallelly
+  abstract: 'parallelly: Enhancing the ''parallel'' Package'
+  notes: Suggests
+  url: https://parallelly.futureverse.org
+  repository: https://CRAN.R-project.org/package=parallelly
+  authors:
+  - family-names: Bengtsson
+    given-names: Henrik
+    email: henrikb@braju.com
+    orcid: https://orcid.org/0000-0002-7579-5165
+  year: '2026'
+  doi: 10.32614/CRAN.package.parallelly
+- type: software
+  title: progressr
+  abstract: 'progressr: An Inclusive, Unifying API for Progress Updates'
+  notes: Suggests
+  url: https://progressr.futureverse.org
+  repository: https://CRAN.R-project.org/package=progressr
+  authors:
+  - family-names: Bengtsson
+    given-names: Henrik
+    email: henrikb@braju.com
+    orcid: https://orcid.org/0000-0002-7579-5165
+  year: '2026'
+  doi: 10.32614/CRAN.package.progressr
 - type: software
   title: rmarkdown
   abstract: 'rmarkdown: Dynamic Documents for R'
@@ -568,8 +653,48 @@ references:
     given-names: Richard
     email: rich@posit.co
     orcid: https://orcid.org/0000-0003-3925-190X
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.rmarkdown
+- type: software
+  title: scoringutils
+  abstract: 'scoringutils: Utilities for Scoring and Assessing Predictions'
+  notes: Suggests
+  url: https://doi.org/10.48550/arXiv.2205.07090
+  repository: https://CRAN.R-project.org/package=scoringutils
+  authors:
+  - family-names: Bosse
+    given-names: Nikos
+    email: nikosbosse@gmail.com
+    orcid: https://orcid.org/0000-0002-7750-5280
+  - family-names: Abbott
+    given-names: Sam
+    email: contact@samabbott.co.uk
+    orcid: https://orcid.org/0000-0001-8057-8037
+  - family-names: Gruson
+    given-names: Hugo
+    email: hugo.gruson+R@normalesup.org
+    orcid: https://orcid.org/0000-0002-4094-1476
+  - family-names: Funk
+    given-names: Sebastian
+    email: sebastian.funk@lshtm.ac.uk
+  year: '2026'
+  doi: 10.32614/CRAN.package.scoringutils
+- type: software
+  title: spelling
+  abstract: 'spelling: Tools for Spell Checking in R'
+  notes: Suggests
+  url: https://ropensci.r-universe.dev/spelling
+  repository: https://CRAN.R-project.org/package=spelling
+  authors:
+  - family-names: Ooms
+    given-names: Jeroen
+    email: jeroenooms@gmail.com
+    orcid: https://orcid.org/0000-0002-4035-0289
+  - family-names: Hester
+    given-names: Jim
+    email: james.hester@rstudio.com
+  year: '2026'
+  doi: 10.32614/CRAN.package.spelling
 - type: software
   title: testthat
   abstract: 'testthat: Unit Testing for R'
@@ -580,7 +705,7 @@ references:
   - family-names: Wickham
     given-names: Hadley
     email: hadley@posit.co
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.testthat
 - type: software
   title: withr
@@ -605,7 +730,7 @@ references:
     email: hadley@posit.co
   - family-names: Chang
     given-names: Winston
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.withr
 - type: software
   title: BH
@@ -623,7 +748,7 @@ references:
   - family-names: Kane
     given-names: Michael J.
     orcid: https://orcid.org/0000-0003-1899-6662
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.BH
   version: '>= 1.66.0'
 - type: software
@@ -647,7 +772,7 @@ references:
   - family-names: Qiu
     given-names: Yixuan
     orcid: https://orcid.org/0000-0003-0109-6692
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.RcppEigen
   version: '>= 0.3.3.3.0'
 - type: software
@@ -657,22 +782,26 @@ references:
   url: https://rcppcore.github.io/RcppParallel/
   repository: https://CRAN.R-project.org/package=RcppParallel
   authors:
+  - family-names: Ushey
+    given-names: Kevin
+    email: kevin@rstudio.com
+    orcid: https://orcid.org/0000-0003-2880-7407
   - family-names: Allaire
     given-names: JJ
     email: jj@rstudio.com
   - family-names: Francois
     given-names: Romain
-  - family-names: Ushey
-    given-names: Kevin
-    email: kevin@rstudio.com
   - family-names: Vandenbrouck
     given-names: Gregory
   - family-names: Geelnard
     given-names: Marcus
-    website: https://tinythreadpp.bitsnbites.eu/
+  - family-names: Eddelbuettel
+    given-names: Dirk
+    email: edd@debian.org
+    orcid: https://orcid.org/0000-0001-6419-907X
   - name: Intel
-    website: https://www.threadingbuildingblocks.org/
-  year: '2025'
+  - name: UXL Foundation
+  year: '2026'
   doi: 10.32614/CRAN.package.RcppParallel
   version: '>= 5.0.1'
 - type: software
@@ -731,7 +860,7 @@ references:
     given-names: Hamada S.
     email: badr@jhu.edu
     orcid: https://orcid.org/0000-0002-9808-2344
-  year: '2025'
+  year: '2026'
   doi: 10.32614/CRAN.package.StanHeaders
   version: '>= 2.26.0'
 

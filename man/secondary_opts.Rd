@@ -35,7 +35,6 @@ cases), \code{primary_current_additive} (should current primary reported cases b
 additive or subtractive).
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Returns a list of options defining the secondary model used in
 \code{\link[=estimate_secondary]{estimate_secondary()}}. This model is a combination of a convolution of
 previously observed primary reports combined with current primary reports

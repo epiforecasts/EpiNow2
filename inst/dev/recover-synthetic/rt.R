@@ -29,10 +29,10 @@ noisy_R <- R * rnorm(length(R), 1, 0.05)
 # update Rt trajectory and simulate new infections using it
 sims <- forecast_infections(init, R = noisy_R, samples = 10)
 
-sim_R <- sims$summarised[variable == "R"]$median
+sim_R <- summary(sims, type = "parameters")[variable == "R"]$median
 
 # pull out simulated cases
-posterior_sample <- sims$samples[sample == 1]
+posterior_sample <- get_samples(sims)[sample == 1]
 sim_cases <- posterior_sample[
   variable == "reported_cases", .(date, confirm = value)
 ]

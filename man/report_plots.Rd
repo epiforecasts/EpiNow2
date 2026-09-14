@@ -26,7 +26,7 @@ A named list of \code{ggplot2} objects, \code{list(infections, reports, R, growt
 item) and for the leading items.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 Returns key summary plots for estimates. May be depreciated in later
 releases as current S3 methods are enhanced.
 }
@@ -38,13 +38,14 @@ out <- readRDS(system.file(
 
 # plot infections
 plots <- report_plots(
-  summarised_estimates = out$summarised,
+  summarised_estimates = summary(out, type = "parameters"),
   reported = out$observations
 )
 plots
 }
 \seealso{
-\code{\link[=plot_estimates]{plot_estimates()}} of
+\code{\link[=plot_estimates]{plot_estimates()}}
+
 \code{summarised_estimates[variable == "infections"]},
 \code{summarised_estimates[variable == "reported_cases"]},
 \code{summarised_estimates[variable == "R"]}, and

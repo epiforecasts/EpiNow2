@@ -1,5 +1,5 @@
 #' Provide Summary Statistics for Estimated Infections and Rt
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("superseded")`
 #' Creates a snapshot summary of estimates. May be removed in later releases as
 #' S3 methods are enhanced.
 #'
@@ -22,16 +22,16 @@ report_summary <- function(summarised_estimates,
                            rt_samples, target_folder = NULL,
                            return_numeric = FALSE) {
   # set input to data.table
-  summarised_estimates <- data.table::setDT(summarised_estimates)
-  rt_samples <- data.table::setDT(rt_samples)
+  summarised_estimates <- setDT(summarised_estimates)
+  rt_samples <- setDT(rt_samples)
 
   CrIs <- extract_CrIs(summarised_estimates)
   max_CrI <- max(CrIs)
 
-  # extract values of interest
+  # extract values of interest (exclude non-numeric columns)
   summarised_estimates <- summarised_estimates[, setdiff(
     colnames(summarised_estimates),
-    c("strat", "type", "date")
+    c("strat", "type", "date", "parameter")
   ),
   with = FALSE
   ]
@@ -40,7 +40,7 @@ report_summary <- function(summarised_estimates,
   R_latest <- summarised_estimates[variable == "R"][
     ,
     variable := NULL
-  ][, purrr::map(.SD, signif, digits = 2)]
+  ][, map(.SD, signif, digits = 2)]
 
   # estimate probability of control
   prob_control <- rt_samples[
@@ -55,14 +55,14 @@ report_summary <- function(summarised_estimates,
     variable := NULL
   ][
     ,
-    purrr::map(.SD, ~ signif(as.integer(.)), 2)
+    map(.SD, ~ signif(as.integer(.)), 2)
   ]
 
   # get individual estimates
   r_latest <- summarised_estimates[variable == "growth_rate"][
     ,
     variable := NULL
-  ][, purrr::map(.SD, signif, digits = 2)]
+  ][, map(.SD, signif, digits = 2)]
 
   doubling_time <- function(r) {
     signif(log(2) * 1 / r, 2)
@@ -72,11 +72,11 @@ report_summary <- function(summarised_estimates,
     variable := NULL
   ][
     ,
-    purrr::map(.SD, doubling_time)
+    map(.SD, doubling_time)
   ]
 
   # regional summary
-  summary_estimates <- data.table::data.table(
+  summary_estimates <- data.table(
     measure = c(
       "New infections per day",
       "Expected change in reports",
@@ -106,14 +106,14 @@ report_summary <- function(summarised_estimates,
   if (!is.null(target_folder)) {
     saveRDS(summary_estimates, file.path(target_folder, "summary.rds"))
   }
-  return(summary_estimates)
+  summary_estimates
 }
 
 
 
 #' Report plots
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("superseded")`
 #' Returns key summary plots for estimates. May be depreciated in later
 #' releases as current S3 methods are enhanced.
 #'
@@ -135,7 +135,8 @@ report_summary <- function(summarised_estimates,
 #' growth_rate, summary)`, which correspond to a summary combination (last
 #' item) and for the leading items.
 #'
-#' @seealso [plot_estimates()] of
+#' @seealso [plot_estimates()]
+#'
 #' `summarised_estimates[variable == "infections"]`,
 #' `summarised_estimates[variable == "reported_cases"]`,
 #' `summarised_estimates[variable == "R"]`, and
@@ -149,15 +150,15 @@ report_summary <- function(summarised_estimates,
 #'
 #' # plot infections
 #' plots <- report_plots(
-#'   summarised_estimates = out$summarised,
+#'   summarised_estimates = summary(out, type = "parameters"),
 #'   reported = out$observations
 #' )
 #' plots
 report_plots <- function(summarised_estimates, reported,
                          target_folder = NULL, ...) {
   # set input to data.table
-  summarised_estimates <- data.table::setDT(summarised_estimates)
-  reported <- data.table::setDT(reported)
+  summarised_estimates <- setDT(summarised_estimates)
+  reported <- setDT(reported)
 
   # infections plot
   infections <- plot_estimates(
@@ -175,7 +176,7 @@ report_plots <- function(summarised_estimates, reported,
   )
 
   # Rt plot ------------------------------------------------------------------
-  R <- plot_estimates(
+  R_plot <- plot_estimates(
     estimate = summarised_estimates[variable == "R"],
     ylab = "Effective \n reproduction no.", hline = 1,
     ...
@@ -191,25 +192,25 @@ report_plots <- function(summarised_estimates, reported,
   plot_summary <- suppressWarnings(
     suppressMessages(
       reports +
-        ggplot2::theme(legend.position = "none") +
-        ggplot2::theme(
-          axis.text.x = ggplot2::element_blank(),
-          axis.title.x = ggplot2::element_blank(),
-          axis.ticks.x = ggplot2::element_blank()
+        theme(legend.position = "none") +
+        theme(
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank()
         ) +
-        ggplot2::labs(tag = "A") +
+        labs(tag = "A") +
         infections +
-        ggplot2::theme(legend.position = "none") +
-        ggplot2::theme(
-          axis.text.x = ggplot2::element_blank(),
-          axis.title.x = ggplot2::element_blank(),
-          axis.ticks.x = ggplot2::element_blank()
+        theme(legend.position = "none") +
+        theme(
+          axis.text.x = element_blank(),
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank()
         ) +
-        ggplot2::labs(tag = "B") +
-        R +
-        ggplot2::labs(tag = "C") +
-        patchwork::plot_layout(ncol = 1) &
-        ggplot2::scale_x_date(
+        labs(tag = "B") +
+        R_plot +
+        labs(tag = "C") +
+        plot_layout(ncol = 1) &
+        scale_x_date(
           date_breaks = "1 week",
           date_labels = "%b %d",
           limits = c(
@@ -224,7 +225,7 @@ report_plots <- function(summarised_estimates, reported,
   plots <- list(
     infections = infections,
     reports = reports,
-    R = R,
+    R = R_plot,
     growth_rate = growth_rate,
     summary = plot_summary
   )
@@ -242,11 +243,11 @@ report_plots <- function(summarised_estimates, reported,
         summary = "summary_plot.png"
       ))
       mapply(
-        ggplot2::ggsave,
+        ggsave,
         filename = pths, plot = plots,
         width = wd, height = ht, dpi = dpi
       )
     }))
   }
-  return(plots)
+  plots
 }

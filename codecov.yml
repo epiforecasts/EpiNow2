@@ -1,5 +1,9 @@
 comment: false
 
+ignore:
+  - "R/deprecated.R"
+  - "R/stanmodels.R"
+
 coverage:
   status:
     project:

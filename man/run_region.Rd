@@ -14,7 +14,6 @@ run_region(
   gp,
   obs,
   stan,
-  horizon,
   CrIs,
   data,
   target_folder,
@@ -65,9 +64,6 @@ observation model. Defaults to \code{\link[=obs_opts]{obs_opts()}}.}
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
-\item{horizon}{Deprecated; use \code{forecast} instead to specify the predictive
-horizon}
-
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{data}{A \verb{<data.frame>} of disease reports (confirm) by date
@@ -86,7 +82,8 @@ this automatically updates to TRUE if no directory for saving is specified.}
 options are the individual regional estimates ("regions"),  samples
 ("samples"), plots ("plots"), copying the individual region dated folder into
 a latest folder (if \code{target_folder} is not null, set using "latest"), the
-stan fit of the underlying model ("fit"), and an overall summary across
+stan fit of the underlying model ("fit"), the full \code{\link[=estimate_infections]{estimate_infections()}}
+return object ("estimate_infections"), and an overall summary across
 regions ("summary"). The default is to return samples and plots alongside
 summarised estimates and summary statistics. If \code{target_folder} is not NULL
 then the default is also to copy all results into a latest folder.}
@@ -107,7 +104,6 @@ the use of a  progress bar. If NULL (default), no progress bar is used.}
 A list of processed output as produced by \code{\link[=process_region]{process_region()}}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Internal function that handles calling \code{\link[=epinow]{epinow()}}. Future work will extend
 this function to better handle stan logs and allow the user to modify
 settings between regions.

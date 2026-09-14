@@ -44,7 +44,7 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
     dir = tempdir(),
     ...
   ))
-  return(model)
+  model
 }
 
 #' Load an EpiNow2 rstan model.
@@ -58,15 +58,15 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
 #' @return An `rstan` model.
 #' @keywords internal
 epinow2_rstan_model <- function(model = "estimate_infections") {
-  return(stanmodels[[model]])
+  stanmodels[[model]]
 }
 
 ##' Return a stan model object for the appropriate backend
 ##'
 ##' @param model A character string indicating the model to use. One of
 ##' "estimate_infections" (default), "simulate_infections",
-##' "estimate_secondary", "simulate_secondary", "estimate_truncation" or
-##' "dist_fit".
+##' "estimate_secondary", "simulate_secondary", "estimate_truncation",
+##' "estimate_dist", or "dist_fit".
 ##' @inheritParams stan_opts
 ##' @return A stan model object (either \code{rstan::stanmodel} or
 ##'   \code{cmdstanr::CmdStanModel}, depending on the backend)
@@ -79,6 +79,7 @@ epinow2_stan_model <- function(backend = c("rstan", "cmdstanr"),
                                  "estimate_secondary",
                                  "simulate_secondary",
                                  "estimate_truncation",
+                                 "estimate_dist",
                                  "dist_fit"
                                )) {
   backend <- arg_match(backend)
@@ -88,7 +89,7 @@ epinow2_stan_model <- function(backend = c("rstan", "cmdstanr"),
   } else {
     object <- epinow2_rstan_model(model = model)
   }
-  return(object)
+  object
 }
 
 #' Fit a model using the chosen backend.
@@ -115,5 +116,5 @@ fit_model <- function(args, id = "stan") {
       )
     )
   }
-  return(fit)
+  fit
 }

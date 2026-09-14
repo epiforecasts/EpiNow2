@@ -1,6 +1,6 @@
 #' Updates Forecast Horizon Based on Input Data and Target
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Makes sure that a forecast is returned for the user specified time period
 #' beyond the target date.
 #' @inheritParams setup_target_folder
@@ -20,7 +20,7 @@ update_horizon <- function(horizon, target_date, data) {
 
 #' Save Observed Data
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Saves observed data to a target location if given.
 #'
 #' @inheritParams setup_target_folder
@@ -39,7 +39,7 @@ save_input <- function(data, target_folder) {
 
 #' Save Estimated Infections
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Saves output from `estimate_infections` to a target directory.
 #' @param estimates List of data frames as output by `estimate_infections`
 #'
@@ -48,21 +48,23 @@ save_input <- function(data, target_folder) {
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan object
 #' be returned.
 #'
-#' @seealso estimate_infections
+#' @seealso [estimate_infections()]
 #' @inheritParams setup_target_folder
-#' @inheritParams  estimate_infections
+#' @inheritParams calc_CrIs
+#' @inheritParams estimate_infections
 #' @return No return value, called for side effects
 #' @keywords internal
 save_estimate_infections <- function(estimates, target_folder = NULL,
-                                     samples = TRUE, return_fit = TRUE) {
+                                     samples = TRUE, return_fit = TRUE,
+                                     CrIs = c(0.2, 0.5, 0.9)) {
   if (!is.null(target_folder)) {
     if (samples) {
       saveRDS(
-        estimates$samples, file.path(target_folder, "estimate_samples.rds")
+        get_samples(estimates), file.path(target_folder, "estimate_samples.rds")
       )
     }
     saveRDS(
-      estimates$summarised,
+      summary(estimates, type = "parameters", CrIs = CrIs),
       file.path(target_folder, "summarised_estimates.rds")
     )
     if (return_fit) {
@@ -70,12 +72,12 @@ save_estimate_infections <- function(estimates, target_folder = NULL,
       saveRDS(estimates$args, file.path(target_folder, "model_args.rds"))
     }
   }
-  return(invisible(NULL))
+  invisible(NULL)
 }
 
 #' Estimate Cases by Report Date
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description
 #' Either extracts or converts reported cases from an input data table. For
 #' output from `estimate_infections` this is a simple filtering step.
 #'
@@ -91,14 +93,16 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
                                      target_folder = NULL, samples = TRUE) {
   estimated_reported_cases <- list()
   if (samples) {
-    estimated_reported_cases$samples <- estimates$samples[
+    estimated_reported_cases$samples <- get_samples(estimates)[
       variable == "reported_cases"
     ][
       ,
       .(date, sample, cases = value, type = "gp_rt")
     ]
   }
-  estimated_reported_cases$summarised <- estimates$summarised[
+  estimated_reported_cases$summarised <- summary(
+    estimates, type = "parameters", CrIs = CrIs
+  )[
     variable == "reported_cases"
   ][
     ,
@@ -117,14 +121,14 @@ estimates_by_report_date <- function(estimates, CrIs = c(0.2, 0.5, 0.9),
       file.path(target_folder, "summarised_estimated_reported_cases.rds")
     )
   }
-  return(estimated_reported_cases)
+  estimated_reported_cases
 }
 
 
 
 #' Copy Results From Dated Folder to Latest
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description
 #' Copies output from the dated folder to a latest folder. May be undergo
 #' changes in later releases.
 #'
@@ -155,13 +159,13 @@ copy_results_to_latest <- function(target_folder = NULL, latest_folder = NULL) {
       )
     )
   }
-  return(invisible(NULL))
+  invisible(NULL)
 }
 
 
 #' Construct Output
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Combines the output produced internally by `epinow` into a single list.
 #'
 #' @param estimated_reported_cases A list of dataframes as produced by
@@ -179,17 +183,19 @@ construct_output <- function(estimates,
                              estimated_reported_cases,
                              plots = NULL,
                              summary = NULL,
-                             samples = TRUE) {
+                             samples = TRUE,
+                             CrIs = c(0.2, 0.5, 0.9)) {
   out <- list()
-  out$estimates <- estimates
-  if (!samples) {
-    out$estimates$samples <- NULL
+  out$estimates <- list()
+  if (samples) {
+    out$estimates$samples <- get_samples(estimates)
   }
+  out$estimates$summarised <- summary(estimates, "parameters", CrIs = CrIs)
   out$estimated_reported_cases <- estimated_reported_cases
   out$summary <- summary
 
   if (!is.null(plots)) {
     out$plots <- plots
   }
-  return(out)
+  out
 }

@@ -18,7 +18,6 @@ Gaussian process.}
 A list of settings defining the Gaussian process
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Takes the output of \code{\link[=gp_opts]{gp_opts()}} and converts it into a list understood by
 stan.
 }
@@ -38,7 +37,7 @@ create_gp_data(data = data)
 create_gp_data(NULL, data)
 
 # custom lengthscale
-create_gp_data(gp_opts(ls_mean = 14), data)
+create_gp_data(gp_opts(ls = LogNormal(mean = 14, sd = 7)), data)
 }
 }
 \seealso{

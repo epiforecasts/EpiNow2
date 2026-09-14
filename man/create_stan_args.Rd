@@ -37,7 +37,6 @@ messages be returned.}
 A list of stan arguments
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Generates a list of arguments as required by the stan sampling functions by
 combining the required options with data, and type of initialisation.
 Initialisation defaults to random but it is expected that

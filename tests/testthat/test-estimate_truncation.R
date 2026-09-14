@@ -1,27 +1,246 @@
 # Setup for testing -------------------------------------------------------
 skip_on_cran()
+
+# Unit tests (fast, no MCMC) -----------------------------------------------
+
+test_that("prepare_truncation_obs correctly processes observation snapshots", {
+  # Create simple test data: 3 snapshots with increasing completeness
+  dates <- seq(as.Date("2020-01-01"), as.Date("2020-01-10"), by = "day")
+
+  # Snapshot 1: only first 7 days
+  snap1 <- data.frame(date = dates[1:7], confirm = 10:16)
+  # Snapshot 2: first 8 days
+  snap2 <- data.frame(date = dates[1:8], confirm = 10:17)
+  # Snapshot 3: all 10 days (most complete)
+  snap3 <- data.frame(date = dates, confirm = 10:19)
+
+  data <- list(snap1, snap2, snap3)
+
+  result <- EpiNow2:::prepare_truncation_obs(data, trunc_max = 5)
+
+  # Check structure
+  expect_type(result, "list")
+  expect_named(result, c("obs", "obs_dist", "t", "obs_sets", "dirty_obs"))
+
+  # Check that obs is a matrix
+  expect_true(is.matrix(result$obs))
+
+  # Check dimensions: should have 3 observation sets
+  expect_equal(result$obs_sets, 3)
+
+  # Check that obs_dist reflects the truncation in each dataset
+  # obs_dist has one value per dataset (columns 2:ncol after merge)
+  expect_type(result$obs_dist, "double")
+  expect_equal(length(result$obs_dist), 3)
+
+  # dirty_obs should be ordered by nrow (shortest first)
+  expect_equal(length(result$dirty_obs), 3)
+})
+
+test_that("prepare_truncation_obs handles datasets with different start dates", {
+  # Snapshot 1: days 1-5
+  snap1 <- data.frame(
+    date = seq(as.Date("2020-01-01"), as.Date("2020-01-05"), by = "day"),
+    confirm = 1:5
+  )
+  # Snapshot 2: days 3-8 (starts later)
+  snap2 <- data.frame(
+    date = seq(as.Date("2020-01-03"), as.Date("2020-01-08"), by = "day"),
+    confirm = 3:8
+  )
+
+  data <- list(snap1, snap2)
+
+  result <- EpiNow2:::prepare_truncation_obs(data, trunc_max = 3)
+
+  # Should only use dates from Jan 3 onwards (the latest start date)
+  expect_true(result$t > 0)
+  expect_equal(result$obs_sets, 2)
+})
+
+test_that("estimate_truncation accepts obs argument", {
+  expect_no_error(
+    match.arg("obs", names(formals(estimate_truncation)))
+  )
+})
+
+test_that("Stan data includes model_type from obs_opts", {
+  obs_prep <- EpiNow2:::prepare_truncation_obs(
+    example_truncated,
+    trunc_max = 10
+  )
+  dates <- obs_prep$dirty_obs[[length(obs_prep$dirty_obs)]]$date
+
+  # NegBin (default)
+  obs_negbin <- EpiNow2:::create_obs_model(
+    obs_opts(),
+    dates = dates
+  )
+  expect_equal(obs_negbin$model_type, 1)
+
+  # Poisson
+  obs_poisson <- EpiNow2:::create_obs_model(
+    obs_opts(family = "poisson"),
+    dates = dates
+  )
+  expect_equal(obs_poisson$model_type, 0)
+})
+
+test_that("merge_trunc_pred_obs correctly merges predictions with observations", {
+  # Create simple test observations: 2 snapshots
+  obs1 <- data.frame(
+    date = as.Date("2020-01-01") + 0:2,
+    confirm = c(10, 20, 30)
+  )
+  obs2 <- data.frame(
+    date = as.Date("2020-01-01") + 0:3,
+    confirm = c(10, 20, 30, 40)
+  )
+  observations <- list(obs1, obs2)
+
+  # Create simple predictions matching the observations
+  predictions <- data.table::data.table(
+    date = rep(as.Date("2020-01-01") + 0:2, 2),
+    report_date = c(
+      rep(as.Date("2020-01-03"), 3),
+      rep(as.Date("2020-01-04"), 3)
+    ),
+    median = 1:6
+  )
+
+  result <- EpiNow2:::merge_trunc_pred_obs(observations, predictions)
+
+  # Check structure
+  expect_s3_class(result, "data.table")
+  expect_true("last_confirm" %in% names(result))
+  expect_true("confirm" %in% names(result))
+  expect_true("median" %in% names(result))
+  expect_true("date" %in% names(result))
+  expect_true("report_date" %in% names(result))
+
+  # last_confirm should come from obs2 (the latest snapshot)
+  # For date 2020-01-01, last_confirm should be 10
+  expect_equal(result[date == as.Date("2020-01-01")]$last_confirm[1], 10)
+})
+
+# Integration tests (MCMC-based) ------------------------------------------
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Core tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
+
 futile.logger::flog.threshold("FATAL")
 
 # set number of cores to use
 old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
+# Run MCMC once and reuse across multiple tests to save time
+default_est <- estimate_truncation(example_truncated,
+  verbose = FALSE, chains = 2, iter = 1000, warmup = 250
+)
+
+# Core test: Core functionality with default settings (always runs)
 test_that("estimate_truncation can return values from simulated data and plot
            them", {
-  # fit model to example data
-  est <- estimate_truncation(example_truncated,
-    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
-  )
+  est <- default_est
   expect_equal(
     names(est),
-    c("dist", "obs", "last_obs", "cmf", "data", "fit")
+    c("observations", "args", "fit")
   )
-  expect_s3_class(est$dist, "dist_spec")
+  expect_s3_class(get_parameters(est)$truncation, "dist_spec")
+  expect_s3_class(summary(est), "data.table")
+  expect_type(est$observations, "list")
+  expect_s3_class(get_predictions(est), "data.table")
   expect_error(plot(est), NA)
 })
 
+test_that("get_predictions correctly maps reconstructions to datasets and dates", {
+  n_sets <- length(example_truncated)
+  # "sample" and "quantile" both carry an explicit `dataset` column to check
+  for (fmt in c("sample", "quantile")) {
+    preds <- get_predictions(default_est, format = fmt)
+    dates <- unique(preds[, c("dataset", "date")])[order(dataset, date)]
+    # every input snapshot is reconstructed
+    expect_setequal(unique(dates$dataset), seq_len(n_sets))
+    counts <- dates[, .N, by = "dataset"]
+    expect_true(all(counts$N > 1))
+    # each dataset reconstructs a contiguous daily run of its own dates; the old
+    # modulo mapping attributed every obs_sets-th cell instead, leaving gaps
+    gaps <- dates[, list(max_gap = max(as.integer(diff(date)))), by = "dataset"]
+    expect_true(all(gaps$max_gap == 1))
+  }
+})
+
+test_that("as_forecast_sample.estimate_truncation produces a valid forecast_sample", {
+  skip_if_not_installed("scoringutils")
+
+  latest <- example_truncated[[length(example_truncated)]]
+  forecast_obj <- scoringutils::as_forecast_sample(
+    default_est,
+    observations = latest
+  )
+  expect_s3_class(forecast_obj, "forecast_sample")
+  expect_no_error(
+    scoringutils::assert_forecast(forecast_obj, verbose = FALSE)
+  )
+})
+
+test_that("get_parameters returns valid truncation distribution", {
+  est <- default_est
+
+  # Extract the estimated truncation distribution
+  trunc_dist <- get_parameters(est)$truncation
+
+  # Check structure: should be a dist_spec with lognormal distribution
+  expect_s3_class(trunc_dist, "dist_spec")
+  expect_equal(trunc_dist$distribution, "lognormal")
+
+  # Check that parameters are Normal distributions (uncertainty from posterior)
+  expect_s3_class(trunc_dist$parameters$meanlog, "dist_spec")
+  expect_s3_class(trunc_dist$parameters$sdlog, "dist_spec")
+  expect_equal(trunc_dist$parameters$meanlog$distribution, "normal")
+  expect_equal(trunc_dist$parameters$sdlog$distribution, "normal")
+})
+
+test_that("deprecated accessors error", {
+  est <- default_est
+
+  expect_error(est$obs, "get_predictions")
+  expect_error(est$data, "args")
+  expect_error(est$dist, "get_parameters")
+  expect_error(est$last_obs, "observations")
+  expect_error(est$cmf, "get_parameters")
+  expect_error(est[["obs"]], "get_predictions")
+})
+
+test_that("get_parameters returns truncation distribution from estimate_truncation", {
+  est <- default_est
+
+  # Test getting all delays as named list
+  delays <- get_parameters(est)
+  expect_type(delays, "list")
+  expect_named(
+    delays, c("truncation", "reporting_overdispersion", "sigma")
+  )
+  expect_s3_class(delays$truncation, "dist_spec")
+})
+
+test_that("get_parameters extracts single delay via list subsetting", {
+  est <- default_est
+
+  # Extract single parameter using standard R idiom
+  trunc_dist <- get_parameters(est)[["truncation"]]
+  expect_s3_class(trunc_dist, "dist_spec")
+  expect_equal(trunc_dist$distribution, "lognormal")
+
+  # Non-existent parameter returns NULL (standard list behaviour)
+  expect_null(get_parameters(est)[["nonexistent"]])
+})
+
+# Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_truncation can return values from simulated data with the
            cmdstanr backend", {
+  skip_integration()
   # fit model to example data
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
@@ -32,13 +251,14 @@ test_that("estimate_truncation can return values from simulated data with the
   )))
   expect_equal(
     names(est),
-    c("dist", "obs", "last_obs", "cmf", "data", "fit")
+    c("observations", "args", "fit")
   )
-  expect_s3_class(est$dist, "dist_spec")
+  expect_s3_class(get_parameters(est)$truncation, "dist_spec")
   expect_error(plot(est), NA)
 })
 
 test_that("estimate_truncation works with filter_leading_zeros set", {
+  skip_integration()
   skip_on_os("windows")
   # Modify the first three rows of the first dataset to have zero cases
   # and fit the model with filter_leading_zeros = TRUE. This should
@@ -58,31 +278,160 @@ test_that("estimate_truncation works with filter_leading_zeros set", {
   )
   expect_named(
     modified_data_fit,
-    c("dist", "obs", "last_obs", "cmf", "data", "fit")
+    c("observations", "args", "fit")
   )
   # Compare the results of the two fits
   expect_equal(
-    original_data_fit$dist$dist,
-    modified_data_fit$dist$dist
+    get_distribution(get_parameters(original_data_fit)$truncation),
+    get_distribution(get_parameters(modified_data_fit)$truncation)
   )
   expect_equal(
-    original_data_fit$data$obs_dist,
-    modified_data_fit$data$obs_dist
+    original_data_fit$args$obs_dist,
+    modified_data_fit$args$obs_dist
   )
 })
 
 test_that("estimate_truncation works with zero_threshold set", {
+  skip_integration()
   skip_on_os("windows")
   # fit model to a modified version of example_data with zero leading cases
   # but with filter_leading_zeros = TRUE
-  modified_data <- example_truncated
+  modified_data <- data.table::copy(example_truncated)
   modified_data <- purrr::map(modified_data, function(x) x[sample(1:10, 6), confirm := 0])
   modified_data <- lapply(modified_data, apply_zero_threshold, threshold = 1)
   out <- estimate_truncation(modified_data,
     verbose = FALSE, chains = 2, iter = 1000, warmup = 250
   )
-  expect_named(out, c("dist", "obs", "last_obs", "cmf", "data", "fit"))
-  expect_s3_class(out$dist, "dist_spec")
+  expect_named(out, c("observations", "args", "fit"))
+  expect_s3_class(get_parameters(out)$truncation, "dist_spec")
+})
+
+test_that("estimate_truncation works with Poisson observation model", {
+  skip_integration()
+  est <- estimate_truncation(example_truncated,
+    obs = obs_opts(family = "poisson"),
+    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
+  )
+  expect_equal(
+    names(est),
+    c("observations", "args", "fit")
+  )
+  expect_equal(est$args$model_type, 0)
+  # reporting_overdispersion is unused under Poisson and should not appear
+  # in get_parameters() output.
+  expect_named(get_parameters(est), c("truncation", "sigma"))
+  expect_s3_class(get_parameters(est)$truncation, "dist_spec")
+  expect_error(plot(est), NA)
+})
+
+test_that("estimate_truncation accepts a non-default noise prior", {
+  skip_integration()
+  est <- estimate_truncation(example_truncated,
+    noise = Fixed(0.1),
+    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
+  )
+  expect_equal(
+    names(est),
+    c("observations", "args", "fit")
+  )
+  # A Fixed noise prior should be wired through as a fixed param,
+  # so sigma is no longer in the variable parameter set.
+  expect_named(get_parameters(est), c("truncation", "reporting_overdispersion"))
+  expect_s3_class(get_parameters(est)$truncation, "dist_spec")
+})
+
+test_that("check_truncation_obs_opts warns on unsupported non-default settings", {
+  expect_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(week_effect = FALSE)),
+    "ignored by"
+  )
+  expect_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(scale = Normal(0.5, 0.1))),
+    "ignored by"
+  )
+  expect_no_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts())
+  )
+  expect_no_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(family = "poisson"))
+  )
+  expect_no_warning(
+    EpiNow2:::check_truncation_obs_opts(
+      obs_opts(dispersion = Normal(0, 0.5))
+    )
+  )
+  expect_no_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(likelihood = FALSE))
+  )
+  expect_no_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(return_likelihood = TRUE))
+  )
+})
+
+test_that("estimate_truncation passes likelihood/return_likelihood to Stan", {
+  skip_integration()
+  est <- estimate_truncation(example_truncated,
+    obs = obs_opts(return_likelihood = TRUE),
+    verbose = FALSE, chains = 2, iter = 500, warmup = 200
+  )
+  expect_equal(est$args$likelihood, 1)
+  expect_equal(est$args$return_likelihood, 1)
+  log_lik <- rstan::extract(est$fit, "log_lik")$log_lik
+  expect_true(is.matrix(log_lik) || is.array(log_lik))
+  expect_true(ncol(log_lik) > 0)
+  expect_true(all(is.finite(log_lik)))
+})
+
+test_that("estimate_truncation runs with likelihood = FALSE (priors only)", {
+  skip_integration()
+  est <- estimate_truncation(example_truncated,
+    obs = obs_opts(likelihood = FALSE),
+    verbose = FALSE, chains = 2, iter = 500, warmup = 200
+  )
+  expect_equal(est$args$likelihood, 0)
+  expect_s3_class(get_parameters(est)$truncation, "dist_spec")
+})
+
+test_that("estimate_truncation works with Gamma truncation distribution", {
+  skip_integration()
+  est <- estimate_truncation(example_truncated,
+    truncation = trunc_opts(
+      Gamma(
+        shape = Normal(1, 0.5),
+        rate = Normal(1, 0.5),
+        max = 10
+      )
+    ),
+    verbose = FALSE, chains = 2, iter = 1000, warmup = 250
+  )
+  expect_equal(
+    names(est),
+    c("observations", "args", "fit")
+  )
+  trunc_dist <- get_parameters(est)$truncation
+  expect_s3_class(trunc_dist, "dist_spec")
+  expect_equal(trunc_dist$distribution, "gamma")
+})
+
+test_that("estimate_truncation recovers true truncation parameters", {
+  skip_integration()
+  # example_truncated was generated with:
+  # meanlog = 0.9, sdlog = 0.6, max = 10
+  # Use longer chains for reliable parameter recovery
+  est <- estimate_truncation(example_truncated,
+    verbose = FALSE, chains = 4, iter = 2000, warmup = 500
+  )
+
+  # Get posterior samples
+  samples <- get_samples(est)
+
+  # Check meanlog recovery (true value = 0.9)
+  meanlog_mean <- mean(samples[variable == "truncation[1]", value])
+  expect_equal(meanlog_mean, 0.9, tolerance = 0.05)
+
+  # Check sdlog recovery (true value = 0.6)
+  sdlog_mean <- mean(samples[variable == "truncation[2]", value])
+  expect_equal(sdlog_mean, 0.6, tolerance = 0.05)
 })
 
 options(old_opts)

@@ -1,6 +1,6 @@
 #' Real-time Rt Estimation, Forecasting and Reporting
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' This function wraps the functionality of [estimate_infections()] in order
 #' to estimate Rt and cases by date of infection and forecast these infections
 #' into the future. In addition to the functionality of
@@ -12,18 +12,27 @@
 #' @param output A character vector of optional output to return. Supported
 #' options are samples ("samples"), plots ("plots"), the run time ("timing"),
 #' copying the dated folder into a latest folder (if `target_folder` is not
-#' null, set using "latest"), and the stan fit ("fit"). The default is to
-#' return all options.
+#' null, set using "latest"), the stan fit ("fit"), and the full
+#' [estimate_infections()] return object ("estimate_infections"). The default
+#' is to return all options.
 #'
 #' @param return_output Logical, defaults to FALSE. Should output be returned,
 #' this automatically updates to TRUE if no directory for saving is specified.
 #'
-#' @param plot_args A list of optional arguments passed to [plot.epinow()].
+#' @param plot_args A list of optional arguments passed to
+#' [plot.estimate_infections()].
 #'
-#' @return A list of output from estimate_infections with additional elements
-#'   summarising results and reporting errors if they have occurred.
+#' @return An `<epinow>` object (inheriting from `<estimate_infections>`)
+#' containing:
+#'
+#' - `fit`: The stan fit object.
+#' - `args`: A list of arguments used for fitting (stan data).
+#' - `observations`: The input data (`<data.frame>`).
+#' - `timing`: The run time (if `output` includes "timing").
 #' @export
-#' @seealso [estimate_infections()] [forecast_infections()] [regional_epinow()]
+#' @seealso [get_samples()] [get_predictions()] [get_parameters()]
+#' [estimate_infections()] [forecast_infections()] [regional_epinow()]
+#' @inheritParams calc_CrIs
 #' @inheritParams setup_target_folder
 #' @inheritParams estimate_infections
 #' @inheritParams setup_default_logging
@@ -62,11 +71,14 @@
 #' reported_cases <- example_confirmed[1:40]
 #'
 #' # estimate Rt and nowcast/forecast cases by date of infection
+#' # samples and calculation time have been reduced for this example
+#' # for real analyses, use at least samples = 2000
 #' out <- epinow(
 #'   data = reported_cases,
 #'   generation_time = gt_opts(generation_time),
 #'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1)),
-#'   delays = delay_opts(incubation_period + reporting_delay)
+#'   delays = delay_opts(incubation_period + reporting_delay),
+#'   stan = stan_opts(samples = 100, warmup = 200)
 #' )
 #' # summary of the latest estimates
 #' summary(out)
@@ -91,35 +103,13 @@ epinow <- function(data,
                    stan = stan_opts(),
                    CrIs = c(0.2, 0.5, 0.9),
                    return_output = is.null(target_folder),
-                   output = c("samples", "plots", "latest", "fit", "timing"),
+                   output = c(
+                     "samples", "plots", "latest", "fit", "timing",
+                     "estimate_infections"
+                   ),
                    plot_args = list(),
                    target_folder = NULL, target_date,
-                   logs = tempdir(), id = "epinow", verbose = interactive(),
-                   filter_leading_zeros = TRUE, zero_threshold = Inf, horizon
-                   ) {
-  if (!missing(filter_leading_zeros)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_infections(filter_leading_zeros)",
-      "filter_leading_zeros()"
-    )
-  }
-  if (!missing(zero_threshold)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_infections(zero_threshold)",
-      "apply_zero_threshold()"
-    )
-  }
-  if (!missing(horizon)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "epinow(horizon)",
-      "epinow(forecast)",
-      details = "The `horizon` argument passed to `epinow()` will
-        override any `horizon` argument passed via `forecast_opts()`."
-    )
-  }
+                   logs = tempdir(), id = "epinow", verbose = interactive()) {
   # Check inputs
   assert_logical(return_output)
   stopifnot(
@@ -131,14 +121,6 @@ epinow <- function(data,
   }
   assert_string(id)
   assert_logical(verbose)
-
-  if (is.null(CrIs) || length(CrIs) == 0 || !is.numeric(CrIs)) {
-    futile.logger::flog.fatal(
-      "At least one credible interval must be specified",
-      name = "EpiNow2.epinow"
-    )
-    stop("At least one credible interval must be specified")
-  }
 
   if (is.null(forecast)) {
     forecast <- forecast_opts(horizon = 0)
@@ -167,7 +149,7 @@ epinow <- function(data,
     supported_args = c(
       "plots", "samples",
       "fit", "timing",
-      "latest"
+      "latest", "estimate_infections"
     ),
     logger = "EpiNow2.epinow",
     level = "debug"
@@ -194,7 +176,9 @@ epinow <- function(data,
     save_input(reported_cases, target_folder)
 
     # make sure the horizon is as specified from the target date --------------
-    horizon <- update_horizon(forecast$horizon, target_date, reported_cases)
+    forecast$horizon <- update_horizon(
+      forecast$horizon, target_date, reported_cases
+    )
 
     estimates <- estimate_infections(
       data = reported_cases,
@@ -207,19 +191,14 @@ epinow <- function(data,
       obs = obs,
       forecast = forecast,
       stan = stan,
-      CrIs = CrIs,
       verbose = verbose,
       id = id
     )
 
-    if (!output["fit"]) {
-      estimates$fit <- NULL
-      estimates$args <- NULL
-    }
-
     save_estimate_infections(estimates, target_folder,
       samples = output["samples"],
-      return_fit = output["fit"]
+      return_fit = output["fit"],
+      CrIs = CrIs
     )
 
     # report forecasts ---------------------------------------------------------
@@ -230,9 +209,10 @@ epinow <- function(data,
     )
 
     # report estimates --------------------------------------------------------
-    summary <- summary.estimate_infections(estimates,
+    summary <- summary(estimates,
       return_numeric = TRUE,
-      target_folder = target_folder
+      target_folder = target_folder,
+      CrIs = CrIs
     )
 
     # plot --------------------------------------------------------------------
@@ -250,13 +230,7 @@ epinow <- function(data,
     }
 
     if (return_output) {
-      out <- construct_output(estimates,
-        estimated_reported_cases,
-        plots = plots,
-        summary,
-        samples = output["samples"]
-      )
-      return(out)
+      return(estimates)
     } else {
       return(invisible(NULL))
     }
@@ -319,3 +293,108 @@ epinow <- function(data,
   }
 }
 # nolint end: cyclocomp_linter
+
+#' Internal function for backward-compatible element access
+#'
+#' @description Helper function that provides backward compatibility for
+#' deprecated element names in epinow objects.
+#'
+#' @param x An `epinow` object
+#' @param name The name of the element to extract
+#' @return The requested element
+#' @keywords internal
+#' @noRd
+epinow_compat_extract <- function(x, name) {
+  switch(name,
+    estimates = {
+      deprecate_stop(
+        "1.9.0",
+        I("epinow()$estimates"),
+        details = paste(
+          "Use `get_samples()` for samples,",
+          "`summary(x, type = 'parameters')` for summarised estimates."
+        )
+      )
+    },
+    estimated_reported_cases = {
+      deprecate_stop(
+        "1.9.0",
+        I("epinow()$estimated_reported_cases"),
+        "estimates_by_report_date()"
+      )
+    },
+    summary = {
+      deprecate_stop(
+        "1.9.0",
+        I("epinow()$summary"),
+        "summary()"
+      )
+    },
+    plots = {
+      deprecate_stop(
+        "1.9.0",
+        I("epinow()$plots"),
+        "plot()"
+      )
+    },
+    estimate_infections = {
+      deprecate_stop(
+        "1.9.0",
+        I("epinow()$estimate_infections"),
+        details = paste(
+          "The epinow object now inherits from estimate_infections.",
+          "Use the object directly."
+        )
+      )
+    },
+    NULL
+  )
+}
+
+#' Extract elements from epinow objects with deprecation errors
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for the old return structure. The previous
+#' structure with \code{estimates}, \code{estimated_reported_cases},
+#' \code{summary}, \code{plots}, and \code{estimate_infections} elements is
+#' deprecated. Use the standard S3 methods
+#' instead:
+#' \itemize{
+#'   \item \code{estimates$samples} - use \code{get_samples(object)}
+#'   \item \code{estimates$summarised} - use \code{summary(object,
+#'     type = "parameters")}
+#'   \item \code{estimated_reported_cases} - use
+#'     \code{estimates_by_report_date(object)}
+#'   \item \code{summary} - use \code{summary(object)}
+#'   \item \code{plots} - use \code{plot(object)}
+#'   \item \code{estimate_infections} - use the object directly (it now
+#'     inherits from \code{estimate_infections})
+#' }
+#'
+#' @param x An \code{epinow} object
+#' @param name The name of the element to extract
+#' @return The requested element. Errors for deprecated element names.
+#' @keywords internal
+#' @export
+#' @method $ epinow
+`$.epinow` <- function(x, name) {
+  epinow_compat_extract(x, name)
+  .subset2(x, name)
+}
+
+#' Extract elements from epinow objects with bracket notation
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for bracket-based access to deprecated
+#' elements. See [$.epinow] for details on the deprecation.
+#'
+#' @param x An `epinow` object
+#' @param i The name or index of the element to extract
+#' @return The requested element. Errors for deprecated element names.
+#' @keywords internal
+#' @export
+#' @method [[ epinow
+`[[.epinow` <- function(x, i) {
+  epinow_compat_extract(x, i)
+  .subset2(x, i)
+}

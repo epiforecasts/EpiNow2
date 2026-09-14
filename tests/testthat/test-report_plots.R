@@ -1,12 +1,15 @@
-fit <- readRDS(system.file(
-  package = "EpiNow2", "extdata", "example_estimate_infections.rds"
-))
-cases <- fit$observations
+skip_on_cran()
 
-test_that("report_plots works with  default settings", {
+# Uses shared fixtures from setup.R (regional_epinow run once)
+
+test_that("report_plots works with default settings", {
+  fixtures <- get_test_fixtures()
+  fit <- fixtures$estimate_infections
+  cases <- fit$observations
+
   expect_error(
     report_plots(
-      summarised_estimates = fit$summarised,
+      summarised_estimates = summary(fit, type = "parameters"),
       reported = cases
     ),
     NA

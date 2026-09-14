@@ -6,7 +6,7 @@
 \usage{
 stan_sampling_opts(
   cores = getOption("mc.cores", 1L),
-  warmup = 250,
+  warmup = 500,
   samples = 2000,
   chains = 4,
   control = list(),
@@ -24,7 +24,7 @@ which defaults to 1 but it is recommended to set the mc.cores option to be
 as many processors as the hardware and RAM allow (up to the number of
 chains).}
 
-\item{warmup}{Numeric, defaults to 250. Number of warmup samples per chain.}
+\item{warmup}{Numeric, defaults to 500. Number of warmup samples per chain.}
 
 \item{samples}{Numeric, default 2000. Overall number of posterior samples.
 When using multiple chains iterations per chain is samples / chains.}
@@ -55,17 +55,16 @@ estimation will fail with an informative error.}
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 
-\item{...}{Additional parameters to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} or
-\code{\link[cmdstanr:model-method-sample]{cmdstanr::sample()}}.}
+\item{...}{Additional parameters to pass to \code{\link[rstan:sampling]{rstan::sampling()}} or
+\code{\link[cmdstanr:sample]{cmdstanr::sample()}}.}
 }
 \value{
-A list of arguments to pass to \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}} or
-\code{\link[cmdstanr:model-method-sample]{cmdstanr::sample()}}.
+A list of arguments to pass to \code{\link[rstan:sampling]{rstan::sampling()}} or
+\code{\link[cmdstanr:sample]{cmdstanr::sample()}}.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Defines a list specifying the arguments passed to either \code{\link[rstan:stanmodel-method-sampling]{rstan::sampling()}}
-or \code{\link[cmdstanr:model-method-sample]{cmdstanr::sample()}}. Custom settings can be supplied which override the
+Defines a list specifying the arguments passed to either \code{\link[rstan:sampling]{rstan::sampling()}}
+or \code{\link[cmdstanr:sample]{cmdstanr::sample()}}. Custom settings can be supplied which override the
 defaults.
 }
 \examples{

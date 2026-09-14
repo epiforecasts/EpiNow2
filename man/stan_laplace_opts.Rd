@@ -13,14 +13,14 @@ stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 \item{trials}{Numeric, defaults to 10. Number of attempts to use
 rstan::vb()] before failing.}
 
-\item{...}{Additional parameters to pass to \code{\link[cmdstanr:model-method-laplace]{cmdstanr::laplace()}}.}
+\item{...}{Additional parameters to pass to \code{\link[cmdstanr:laplace]{cmdstanr::laplace()}}.}
 }
 \value{
-A list of arguments to pass to \code{\link[cmdstanr:model-method-laplace]{cmdstanr::laplace()}}.
+A list of arguments to pass to \code{\link[cmdstanr:laplace]{cmdstanr::laplace()}}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-Defines a list specifying the arguments passed to \code{\link[cmdstanr:model-method-laplace]{cmdstanr::laplace()}}.
+Defines a list specifying the arguments passed to \code{\link[cmdstanr:laplace]{cmdstanr::laplace()}}.
 }
 \examples{
 stan_laplace_opts()

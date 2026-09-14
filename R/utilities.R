@@ -1,6 +1,6 @@
 #' Clean Nowcasts for a Supplied Date
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' This function removes nowcasts in the format produced by `EpiNow2` from a
 #' target directory for the date supplied.
 #'
@@ -15,12 +15,12 @@
 #' @export
 clean_nowcasts <- function(date = Sys.Date(), nowcast_dir = ".") {
   dirs <- list.dirs(nowcast_dir, recursive = FALSE)
-  purrr::walk(
+  walk(
     dirs,
     function(dir) {
       remove_dir <- file.path(dir, date)
       if (dir.exists(remove_dir)) {
-        futile.logger::flog.info("Removing files from: %s", remove_dir)
+        flog.info("Removing files from: %s", remove_dir)
         lapply(
           list.files(file.path(remove_dir)),
           function(file) {
@@ -36,7 +36,7 @@ clean_nowcasts <- function(date = Sys.Date(), nowcast_dir = ".") {
 
 #' Format Credible Intervals
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Combines a list of values into formatted credible intervals.
 #'
 #' @param value List of value to map into a string. Requires,
@@ -62,13 +62,13 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
     ifelse(reverse, CrI$upper, CrI$lower), " -- ",
     ifelse(reverse, CrI$lower, CrI$upper), ")"
   )
-  return(conf)
+  conf
 }
 
 
 #' Categorise the Probability of Change for Rt
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Categorises a numeric variable into "Increasing" (< 0.05),
 #' "Likely increasing" (<0.4), "Stable" (< 0.6),
 #' "Likely decreasing" (< 0.95), "Decreasing" (<= 1)
@@ -83,7 +83,7 @@ make_conf <- function(value, CrI = 90, reverse = FALSE) {
 #'
 #' map_prob_change(var)
 map_prob_change <- function(var) {
-  var <- data.table::fcase(
+  var <- fcase(
     var < 0.05, "Increasing",
     var < 0.4, "Likely increasing",
     var < 0.6, "Stable",
@@ -99,7 +99,7 @@ map_prob_change <- function(var) {
 
 #' Convert Growth Rates to Reproduction numbers.
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("superseded")`
 #' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
 #' for justification. Now handled internally by stan so may be removed in
 #' future updates if no user demand.
@@ -120,7 +120,7 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
 
 #' Convert Reproduction Numbers to Growth Rates
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description `r lifecycle::badge("superseded")`
 #' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
 #' for justification. Now handled internally by stan so may be removed in
 #' future updates if no user demand.
@@ -138,7 +138,7 @@ R_to_growth <- function(R, gamma_mean, gamma_sd) {
 
 #' Allocate Delays into Required Stan Format
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Allocate delays for stan. Used in [delay_opts()].
 #' @param delay_var List of numeric delays
 #' @param no_delays Numeric, number of delays
@@ -155,7 +155,7 @@ allocate_delays <- function(delay_var, no_delays) {
 
 #' Allocate Empty Parameters to a List
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Allocate missing parameters to be empty two dimensional arrays. Used
 #' internally by [forecast_infections()].
 #' @param data A list of parameters
@@ -170,11 +170,11 @@ allocate_empty <- function(data, params, n = 0) {
       data[[param]] <- array(0, dim = c(n, 0))
     }
   }
-  return(data)
+  data
 }
 #' Match User Supplied Arguments with Supported Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Match user supplied arguments with supported options and return a logical
 #' list for internal usage.
 #'
@@ -197,9 +197,9 @@ match_output_arguments <- function(input_args = NULL,
                                    logger = NULL,
                                    level = "info") {
   if (level == "info") {
-    flog_fn <- futile.logger::flog.info
+    flog_fn <- flog.info
   } else if (level == "debug") {
-    flog_fn <- futile.logger::flog.debug
+    flog_fn <- flog.debug
   }
   # make supported args a logical vector
   output_args <- rep(FALSE, length(supported_args))
@@ -225,13 +225,13 @@ match_output_arguments <- function(input_args = NULL,
   }
   # assign true false to supported arguments based on found arguments
   output_args[names(output_args) %in% found_args] <- TRUE
-  return(output_args)
+  output_args
 }
 
 
 #' Expose internal package stan functions in R
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' his function exposes internal stan functions in R from a user
 #' supplied list of target files. Allows for testing of stan functions in R and
 #' potentially user use in R code.
@@ -251,7 +251,7 @@ expose_stan_fns <- function(files, target_dir, ...) {
   functions <- paste0(
     "\n functions{ \n",
     paste(
-      purrr::map_chr(
+      map_chr(
         files,
         ~ paste(readLines(file.path(target_dir, .)), collapse = "\n")
       ),
@@ -259,46 +259,8 @@ expose_stan_fns <- function(files, target_dir, ...) {
     ),
     "\n }"
   )
-  rstan::expose_stan_functions(rstan::stanc(model_code = functions), ...)
+  expose_stan_functions(stanc(model_code = functions), ...)
   invisible(NULL)
-}
-
-#' Convert mean and sd to log mean for a log normal distribution
-#'
-#' @description `r lifecycle::badge("stable")`
-#' Convert from mean and standard deviation to the log mean of the
-#' lognormal distribution. Useful for defining distributions supported by
-#' [estimate_infections()], [epinow()], and [regional_epinow()].
-#' @param mean Numeric, mean of a distribution
-#' @param sd Numeric, standard deviation of a distribution
-#'
-#' @return The log mean of a lognormal distribution
-#' @export
-#'
-#' @examples
-#'
-#' convert_to_logmean(2, 1)
-convert_to_logmean <- function(mean, sd) {
-  log(mean^2 / sqrt(sd^2 + mean^2))
-}
-
-#' Convert mean and sd to log standard deviation for a log normal distribution
-#'
-#' @description `r lifecycle::badge("stable")`
-#' Convert from mean and standard deviation to the log standard deviation of the
-#' lognormal distribution. Useful for defining distributions supported by
-#' [estimate_infections()], [epinow()], and [regional_epinow()].
-#' @param mean Numeric, mean of a distribution
-#' @param sd Numeric, standard deviation of a distribution
-#'
-#' @return The log standard deviation of a lognormal distribution
-#' @export
-#'
-#' @examples
-#'
-#' convert_to_logsd(2, 1)
-convert_to_logsd <- function(mean, sd) {
-  sqrt(log(1 + (sd^2 / mean^2)))
 }
 
 discretised_lognormal_pmf <- function(meanlog, sdlog, max_d, reverse = FALSE) {
@@ -308,7 +270,7 @@ discretised_lognormal_pmf <- function(meanlog, sdlog, max_d, reverse = FALSE) {
   if (reverse) {
     pmf <- rev(pmf)
   }
-  return(pmf)
+  pmf
 }
 
 discretised_lognormal_pmf_conv <- function(x, meanlog, sdlog) {
@@ -333,7 +295,7 @@ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
   if (reverse) {
     pmf <- rev(pmf)
   }
-  return(pmf)
+  pmf
 }
 
 #' Adds a day of the week vector
@@ -355,12 +317,12 @@ discretised_gamma_pmf <- function(mean, sd, max_d, zero_pad = 0,
 #' }
 add_day_of_week <- function(dates, week_effect = 7) {
   if (week_effect == 7) {
-    day_of_week <- lubridate::wday(dates, week_start = 1)
+    day_of_week <- wday(dates, week_start = 1)
   } else {
     day_of_week <- as.numeric(dates - min(dates)) %% week_effect
     day_of_week <- ifelse(day_of_week == 0, week_effect, day_of_week)
   }
-  return(day_of_week)
+  day_of_week
 }
 
 #' Set to Single Threading
@@ -386,13 +348,14 @@ add_day_of_week <- function(dates, week_effect = 7) {
 #' }
 #' @export
 set_dt_single_thread <- function() {
-  a <- list2env(x = list(dt_previous_threads = data.table::getDTthreads()))
+  a <- list2env(x = list(dt_previous_threads = getDTthreads()))
 
   assign(deparse(substitute(dt_settings)), a, envir = parent.frame())
 
-  data.table::setDTthreads(1)
+  setDTthreads(1)
 
   do.call("on.exit",
+    # nolint next: namespace_linter. Runs in the caller's frame, not ours.
     list(quote(data.table::setDTthreads(dt_settings$dt_previous_threads))),
     envir = parent.frame()
   )
@@ -451,6 +414,7 @@ pad_reported_cases <- function(reported_cases, n, with = NA_real_) {
 #' @param a Numeric vector, the first sequence.
 #' @param b Numeric vector, the second sequence.
 #' @return A numeric vector representing the convolution of `a` and `b`.
+#' @keywords internal
 stable_convolve <- function(a, b) {
   n <- length(a)
   m <- length(b)
@@ -463,8 +427,124 @@ stable_convolve <- function(a, b) {
   result
 }
 
+##' Internal function to create a parameter list
+##'
+##' @param name Character, name of the parameter
+##' @param dist `<dist_spec>`, the distribution of the parameter; default: NULL
+##' @param lower_bound Numeric, lower bound for the parameter; default: -Inf
+##' @return A list with the parameter details, classed as "EpiNow2.param"
+##' @keywords internal
+make_param <- function(name, dist = NULL, lower_bound = -Inf) {
+  params <- list(
+    name = name,
+    dist = dist,
+    lower_bound = lower_bound
+  )
+  class(params) <- c("EpiNow2.param", "list")
+  params
+}
+
+##' Pack a dist_spec into stan-side init-prior fields
+##'
+##' Converts a `<dist_spec>` into the integer/vector representation consumed
+##' by the init-prior loop in `inst/stan/estimate_infections.stan` (data
+##' items `init_dists`, `init_dist_params`, `init_lower`, `init_upper`).
+##'
+##' @param dist A `<dist_spec>` (LogNormal, Gamma, or Normal).
+##' @param lower_bound Numeric, lower bound on the parameter's support.
+##' @return A list with elements `dist_type` (integer code: 0 = lognormal,
+##' 1 = gamma, 2 = normal), `params` (numeric, the distribution parameters),
+##' `lower` and `upper` (numeric scalars).
+##' @keywords internal
+pack_init_prior <- function(dist, lower_bound = 0) {
+  dist_name <- get_distribution(dist)
+  dist_type <- switch(dist_name,
+    lognormal = 0L,
+    gamma = 1L,
+    normal = 2L,
+    cli_abort(c(
+      "!" = "Init prior distribution {.val {dist_name}} not supported.",
+      "i" = "Use {.fn LogNormal}, {.fn Gamma}, or {.fn Normal}."
+    ))
+  )
+  params <- as.numeric(unlist(get_parameters(dist)))
+  list(
+    dist_type = dist_type,
+    params = params,
+    lower = lower_bound,
+    upper = max(dist)
+  )
+}
+
+##' Build the stan-side init-prior data block from a list of priors
+##'
+##' Bundles the data items consumed by the init-prior dispatch in
+##' `inst/stan/estimate_infections.stan` (`n_init_priors`, `init_param_ids`,
+##' `init_dists`, `init_lower`, `init_upper`, `init_dist_params_length`,
+##' `init_dist_params`). With no priors, returns empty arrays so callers
+##' (such as forward simulation) satisfy the shared data block.
+##'
+##' @param priors A list of `list(param_id, dist, lower_bound)` entries,
+##' one per init prior; defaults to an empty list.
+##' @return A named list of stan_data fields to be merged in via `c()`.
+##' @keywords internal
+make_init_priors <- function(priors = list()) {
+  if (length(priors) == 0) {
+    return(list(
+      n_init_priors = 0L,
+      init_param_ids = array(integer(0)),
+      init_dists = array(integer(0)),
+      init_lower = array(numeric(0)),
+      init_upper = array(numeric(0)),
+      init_dist_params_length = 0L,
+      init_dist_params = array(numeric(0))
+    ))
+  }
+  packed <- lapply(priors, function(p) {
+    pack_init_prior(p$dist, lower_bound = p$lower_bound %||% 0)
+  })
+  list(
+    n_init_priors = length(priors),
+    init_param_ids = array(vapply(priors, `[[`, integer(1), "param_id")),
+    init_dists = array(vapply(packed, `[[`, integer(1), "dist_type")),
+    init_lower = array(vapply(packed, `[[`, numeric(1), "lower")),
+    init_upper = array(vapply(packed, `[[`, numeric(1), "upper")),
+    init_dist_params_length = sum(
+      vapply(packed, function(p) length(p$params), integer(1))
+    ),
+    init_dist_params = array(unlist(lapply(packed, `[[`, "params")))
+  )
+}
+
+#' Map a primarycensored Stan distribution ID to a distspec distribution
+#'
+#' @description
+#' Maps a `primarycensored` Stan distribution ID back to a `distspec`
+#' distribution name.
+#' Builds a reverse lookup from
+#' `primarycensored::pcd_stan_dist_id()` for supported distributions.
+#' @param dist_id Integer Stan distribution ID from primarycensored.
+#' @return A character string distribution name.
+#' @importFrom primarycensored pcd_stan_dist_id
+#' @keywords internal
+pcd_stan_id_to_distribution <- function(dist_id) {
+  supported <- c(
+    "lognormal", "gamma", "weibull", "exp", "normal"
+  )
+  ids <- vapply(
+    supported, pcd_stan_dist_id, integer(1)
+  )
+  result <- supported[ids == dist_id]
+  if (length(result) == 0) {
+    cli_abort(
+      "Unknown distribution ID {dist_id}."
+    )
+  }
+  result
+}
+
 #' @importFrom stats glm median na.omit pexp pgamma plnorm quasipoisson rexp
-#' @importFrom stats rlnorm rnorm rpois runif sd var rgamma pnorm
+#' @importFrom stats rlnorm rnorm rpois runif var rgamma pnorm
 globalVariables(
   c(
     "bottom", "cases", "confidence", "confirm", "country_code", "crps",
@@ -488,6 +568,7 @@ globalVariables(
     "..lowers", "..upper_CrI", "..uppers", "timing", "dataset", "last_confirm",
     "report_date", "secondary", "id", "conv", "meanlog", "primary", "scaled",
     "scaling", "sdlog", "lookup", "new_draw", ".draw", "p", "distribution",
-    "accumulate", "..present", "reported_cases", "counter", "future_accumulate"
+    "accumulate", "..present", "reported_cases", "counter", "future_accumulate",
+    "idx", "horizon", "obs_idx", "predicted", "quantile_level", "forecast_date"
   )
 )

@@ -1,96 +1,151 @@
 skip_on_cran()
 
-#### Incidence data example ####
+# Integration tests (MCMC-based) ------------------------------------------
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Core tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
 
-# make some example secondary incidence data
-cases <- example_confirmed
-cases <- as.data.table(cases)[, primary := confirm]
+# Helper functions for setting up test data ----------------------------------
 
-inc_cases <- copy(cases)
-# Assume that only 40 percent of cases are reported
-inc_cases[, scaling := 0.4]
-# Parameters of the assumed log normal delay distribution
-inc_cases[, meanlog := 1.8][, sdlog := 0.5]
+setup_incidence_data <- function() {
+  # make some example secondary incidence data
+  cases <- example_confirmed
+  cases <- as.data.table(cases)[, primary := confirm]
 
-# Simulate secondary cases
-inc_cases <- convolve_and_scale(inc_cases, type = "incidence")
-inc_cases[
-  ,
-  c("confirm", "scaling", "meanlog", "sdlog", "index", "scaled", "conv") :=
-    NULL
-]
-#
-# fit model to example data specifying a weak prior for fraction reported
-# with a secondary case
-inc <- estimate_secondary(inc_cases[1:60],
+  inc_cases <- copy(cases)
+  # Assume that only 40 percent of cases are reported
+  inc_cases[, scaling := 0.4]
+  # Parameters of the assumed log normal delay distribution
+  inc_cases[, meanlog := 1.8][, sdlog := 0.5]
+
+  # Simulate secondary cases
+  inc_cases <- convolve_and_scale(inc_cases, type = "incidence")
+  inc_cases[
+    ,
+    c("confirm", "scaling", "meanlog", "sdlog", "index", "scaled", "conv") :=
+      NULL
+  ]
+  return(inc_cases)
+}
+
+setup_prevalence_data <- function() {
+  # make some example prevalence data
+  cases <- example_confirmed
+  cases <- as.data.table(cases)[, primary := confirm]
+
+  prev_cases <- copy(cases)
+  # Assume that only 30 percent of cases are reported
+  prev_cases[, scaling := 0.3]
+  # Parameters of the assumed log normal delay distribution
+  prev_cases[, meanlog := 1.6][, sdlog := 0.8]
+
+  # Simulate secondary cases
+  prev_cases <- convolve_and_scale(prev_cases, type = "prevalence")
+
+  return(prev_cases)
+}
+
+# Core tests: Core functionality (always runs) ------------------------------
+
+# Run MCMC once and reuse across multiple tests to save time
+inc_cases <- setup_incidence_data()
+default_inc <- estimate_secondary(inc_cases[1:60],
   obs = obs_opts(
     scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
   ),
   verbose = FALSE
 )
 
-# extract posterior variables of interest
-params <- c(
-  "meanlog" = "delay_params[1]", "sdlog" = "delay_params[2]",
-  "scaling" = "params[1]"
-)
-
-inc_posterior <- inc$posterior[variable %in% params]
-
-# fit model to example data with a fixed delay
-inc_fixed <- estimate_secondary(inc_cases[1:60],
-  delays = delay_opts(Gamma(mean = 15, sd = 5, max = 30)),
-  verbose = FALSE
-)
-
-#### Prevalence data example ####
-
-# make some example prevalence data
-prev_cases <- copy(cases)
-# Assume that only 30 percent of cases are reported
-prev_cases[, scaling := 0.3]
-# Parameters of the assumed log normal delay distribution
-prev_cases[, meanlog := 1.6][, sdlog := 0.8]
-
-# Simulate secondary cases
-prev_cases <- convolve_and_scale(prev_cases, type = "prevalence")
-
-# fit model to example prevalence data
-prev <- estimate_secondary(prev_cases[1:100],
-  secondary = secondary_opts(type = "prevalence"),
-  obs = obs_opts(
-    week_effect = FALSE,
-    scale = Normal(mean = 0.4, sd = 0.1)
-  ),
-  verbose = FALSE
-)
-
-# extract posterior parameters of interest
-prev_posterior <- prev$posterior[variable %in% params]
-
 # Test output
 test_that("estimate_secondary can return values from simulated data and plot
            them", {
-  expect_equal(names(inc), c("predictions", "posterior", "data", "fit"))
+  # Reuse pre-computed fit
+  inc <- default_inc
+
+  expect_equal(names(inc), c("fit", "args", "observations"))
+  expect_s3_class(inc, "estimate_secondary")
+  expect_s3_class(inc, "epinowfit")
+
+  # Test accessor methods
+  predictions <- get_predictions(inc)
   expect_equal(
-    names(inc$predictions),
+    names(predictions),
     c(
-      "date", "primary", "secondary", "accumulate", "mean", "se_mean", "sd",
-      "lower_90", "lower_50", "lower_20", "median", "upper_20", "upper_50", "upper_90"
+      "date", "median", "mean", "sd",
+      "lower_90", "lower_50", "lower_20", "upper_20", "upper_50", "upper_90"
     )
   )
-  expect_true(is.list(inc$data))
+
+  posterior <- get_samples(inc)
+  expect_true(is.data.frame(posterior))
+
+  expect_true(is.list(inc$args))
   # validation plot of observations vs estimates
   expect_error(plot(inc, primary = TRUE), NA)
 })
 
+test_that("forecast_secondary can return values from simulated data and plot
+           them", {
+  # Reuse pre-computed fit
+  inc <- default_inc
+
+  # then forecast
+  inc_preds <- forecast_secondary(
+    inc, inc_cases[seq(61, .N)][, value := primary]
+  )
+  expect_equal(
+    names(inc_preds), c("samples", "forecast", "predictions", "observations")
+  )
+  # validation plot of observations vs estimates
+  expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
+})
+
+test_that("as_forecast_sample.forecast_secondary produces a valid forecast_sample", {
+  skip_if_not_installed("scoringutils")
+
+  inc_preds <- forecast_secondary(
+    default_inc, inc_cases[seq(61, .N)][, value := primary]
+  )
+  forecast_obj <- scoringutils::as_forecast_sample(
+    inc_preds,
+    observations = inc_cases
+  )
+  expect_s3_class(forecast_obj, "forecast_sample")
+  expect_no_error(
+    scoringutils::assert_forecast(forecast_obj, verbose = FALSE)
+  )
+})
+
+test_that("estimate_secondary recovers scaling parameter from incidence data", {
+  # Basic parameter recovery check using pre-computed fit
+  # inc_cases was set up with scaling = 0.4, meanlog = 1.8, sdlog = 0.5
+  samples <- get_samples(default_inc)
+
+  # Check meanlog (reporting[1]) is reasonably recovered (1.8 true value)
+  meanlog_mean <- samples[variable == "reporting[1]", mean(value)]
+  expect_equal(meanlog_mean, 1.8, tolerance = 0.2)
+
+  # Check sdlog (reporting[2]) is reasonably recovered (0.5 true value)
+  sdlog_mean <- samples[variable == "reporting[2]", mean(value)]
+  expect_equal(sdlog_mean, 0.5, tolerance = 0.15)
+
+  # Check scaling (fraction_observed) is reasonably recovered (0.4 true value)
+  scaling_mean <- samples[variable == "fraction_observed", mean(value)]
+  expect_equal(scaling_mean, 0.4, tolerance = 0.05)
+})
+
+# Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false) -
+
 test_that("estimate_secondary successfully returns estimates when passed NA values", {
-  skip_on_cran()
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+  prev_cases <- setup_prevalence_data()
+
   cases_na <- data.table::copy(inc_cases)
   cases_na[sample(1:60, 5), secondary := NA]
   inc_na <- estimate_secondary(cases_na[1:60],
     delays = delay_opts(
-      LogNormal(meanlog = 1.8, sdlog = 0.5, max = 30)
+      LogNormal(meanlog = 1.8, sdlog = 0.5)
     ),
     obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
@@ -100,17 +155,22 @@ test_that("estimate_secondary successfully returns estimates when passed NA valu
   prev_na <- estimate_secondary(prev_cases_na[1:60],
     secondary = secondary_opts(type = "prevalence"),
     delays = delay_opts(
-      LogNormal(mean = 1.8, sd = 0.5, max = 30)
+      LogNormal(mean = 1.8, sd = 0.5)
     ),
     obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     verbose = FALSE
   )
-  expect_true(is.list(inc_na$data))
-  expect_true(is.list(prev_na$data))
+  expect_true(is.list(inc_na$args))
+  expect_true(is.list(prev_na$args))
 })
 
 test_that("estimate_secondary successfully returns estimates when accumulating to weekly", {
-  skip_on_cran()
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+
+  cases <- example_confirmed
+  cases <- as.data.table(cases)[, primary := confirm]
+
   secondary_weekly <- inc_cases[, list(date, secondary)]
   secondary_weekly[, secondary := frollsum(secondary, 7)]
   secondary_weekly <- secondary_weekly[seq(7, nrow(secondary_weekly), by = 7)]
@@ -125,96 +185,165 @@ test_that("estimate_secondary successfully returns estimates when accumulating t
   inc_weekly <- estimate_secondary(cases_weekly,
     delays = delay_opts(
       LogNormal(
-        mean = 1.8, sd = 0.5, max = 30
+        mean = 1.8, sd = 0.5
       )
     ),
     obs = obs_opts(
       scale = Normal(mean = 0.4, sd = 0.05), week_effect = FALSE
     ), verbose = FALSE
   )
-  expect_true(is.list(inc_weekly$data))
+  expect_true(is.list(inc_weekly$args))
+})
+
+test_that("estimate_secondary omits reporting_overdispersion under Poisson", {
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+  inc <- estimate_secondary(inc_cases[1:60],
+    obs = obs_opts(
+      family = "poisson",
+      scale = Normal(mean = 0.2, sd = 0.2, max = 1),
+      week_effect = FALSE
+    ),
+    verbose = FALSE
+  )
+  expect_false("reporting_overdispersion" %in% names(get_parameters(inc)))
 })
 
 test_that("estimate_secondary works when only estimating scaling", {
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+
   inc <- estimate_secondary(inc_cases[1:60],
     obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
     delay = delay_opts(),
     verbose = FALSE
   )
-  expect_equal(names(inc), c("predictions", "posterior", "data", "fit"))
+  expect_equal(names(inc), c("fit", "args", "observations"))
 })
 
 test_that("estimate_secondary can recover simulated parameters", {
-  expect_equal(
-    inc_posterior[, mean], c(1.8, 0.5, 0.4),
-    tolerance = 0.1
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+  prev_cases <- setup_prevalence_data()
+
+  # fit model to example data specifying a weak prior for fraction reported
+  inc <- estimate_secondary(inc_cases[1:60],
+    obs = obs_opts(
+      scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
+    ),
+    verbose = FALSE
   )
-  expect_equal(
-    inc_posterior[, median], c(1.8, 0.5, 0.4),
-    tolerance = 0.1
+
+  # fit model to example prevalence data
+  prev <- estimate_secondary(prev_cases[1:100],
+    secondary = secondary_opts(type = "prevalence"),
+    obs = obs_opts(
+      week_effect = FALSE,
+      scale = Normal(mean = 0.4, sd = 0.1)
+    ),
+    verbose = FALSE
   )
-  expect_equal(
-    prev_posterior[, mean], c(1.6, 0.8, 0.3),
-    tolerance = 0.2
-  )
-  expect_equal(
-    prev_posterior[, median], c(1.6, 0.8, 0.3),
-    tolerance = 0.2
-  )
+
+  # Extract posterior samples
+  inc_samples <- get_samples(inc)
+  prev_samples <- get_samples(prev)
+
+  # Check incidence model parameter recovery
+  # True values: meanlog = 1.8, sdlog = 0.5, scaling = 0.4
+  inc_meanlog <- mean(inc_samples[variable == "reporting[1]", value])
+  inc_sdlog <- mean(inc_samples[variable == "reporting[2]", value])
+  inc_scaling <- mean(inc_samples[variable == "fraction_observed", value])
+
+  expect_equal(inc_meanlog, 1.8, tolerance = 0.1)
+  expect_equal(inc_sdlog, 0.5, tolerance = 0.1)
+  expect_equal(inc_scaling, 0.4, tolerance = 0.1)
+
+  # Check prevalence model parameter recovery
+  # True values: meanlog = 1.6, sdlog = 0.8, scaling = 0.3
+  prev_meanlog <- mean(prev_samples[variable == "reporting[1]", value])
+  prev_sdlog <- mean(prev_samples[variable == "reporting[2]", value])
+  prev_scaling <- mean(prev_samples[variable == "fraction_observed", value])
+
+  expect_equal(prev_meanlog, 1.6, tolerance = 0.2)
+  expect_equal(prev_sdlog, 0.8, tolerance = 0.2)
+  expect_equal(prev_scaling, 0.3, tolerance = 0.2)
 })
 
 test_that("estimate_secondary can recover simulated parameters with the
            cmdstanr backend", {
+  skip_integration()
   skip_on_os("windows")
+  inc_cases <- setup_incidence_data()
+
   output <- capture.output(suppressMessages(suppressWarnings(
     inc_cmdstanr <- estimate_secondary(inc_cases[1:60],
       obs = obs_opts(scale = Normal(mean = 0.2, sd = 0.2), week_effect = FALSE),
       verbose = FALSE, stan = stan_opts(backend = "cmdstanr")
     )
   )))
-  inc_posterior_cmdstanr <- inc_cmdstanr$posterior[variable %in% params]
-  expect_equal(
-    inc_posterior_cmdstanr[, mean], c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-  expect_equal(
-    inc_posterior_cmdstanr[, median], c(1.8, 0.5, 0.4),
-    tolerance = 0.1
-  )
-})
 
-test_that("forecast_secondary can return values from simulated data and plot
-           them", {
-  inc_preds <- forecast_secondary(
-    inc, inc_cases[seq(61, .N)][, value := primary]
-  )
-  expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
-  # validation plot of observations vs estimates
-  expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
+  # Extract posterior samples and check parameter recovery
+  # True values: meanlog = 1.8, sdlog = 0.5, scaling = 0.4
+  inc_samples <- get_samples(inc_cmdstanr)
+
+  inc_meanlog <- mean(inc_samples[variable == "reporting[1]", value])
+  inc_sdlog <- mean(inc_samples[variable == "reporting[2]", value])
+  inc_scaling <- mean(inc_samples[variable == "fraction_observed", value])
+
+  expect_equal(inc_meanlog, 1.8, tolerance = 0.1)
+  expect_equal(inc_sdlog, 0.5, tolerance = 0.1)
+  expect_equal(inc_scaling, 0.4, tolerance = 0.1)
 })
 
 test_that("forecast_secondary works with fixed delays", {
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+
+  # fit model to example data with a fixed delay
+  inc_fixed <- estimate_secondary(inc_cases[1:60],
+    delays = delay_opts(Gamma(mean = 15, sd = 5, max = 30)),
+    verbose = FALSE
+  )
+
   inc_preds <- forecast_secondary(
     inc_fixed, inc_cases[seq(61, .N)][, value := primary]
   )
-  expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
+  expect_equal(
+    names(inc_preds), c("samples", "forecast", "predictions", "observations")
+  )
   # validation plot of observations vs estimates
   expect_error(plot(inc_preds, new_obs = inc_cases, from = "2020-05-01"), NA)
 })
 
 test_that("forecast_secondary can return values from simulated data when using
            the cmdstanr backend", {
+  skip_integration()
   skip_on_os("windows")
+  inc_cases <- setup_incidence_data()
+
+  # fit model first
+  inc <- estimate_secondary(inc_cases[1:60],
+    obs = obs_opts(
+      scale = Normal(mean = 0.2, sd = 0.2, max = 1), week_effect = FALSE
+    ),
+    verbose = FALSE
+  )
+
   capture.output(suppressMessages(suppressWarnings(
     inc_preds <- forecast_secondary(
       inc, inc_cases[seq(61, .N)][, value := primary],
       backend = "cmdstanr"
     )
   )))
-  expect_equal(names(inc_preds), c("samples", "forecast", "predictions"))
+  expect_equal(
+    names(inc_preds), c("samples", "forecast", "predictions", "observations")
+  )
 })
 
 test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+
   delays <- LogNormal(
     meanlog = Normal(2.5, 0.5),
     sdlog = Normal(0.47, 0.25),
@@ -229,27 +358,30 @@ test_that("estimate_secondary works with weigh_delay_priors = TRUE", {
   expect_s3_class(inc_weigh, "estimate_secondary")
 })
 
-test_that("estimate_secondary works with filter_leading_zeros set", {
-  ## testing deprecated functionality
-  withr::local_options(lifecycle_verbosity = "quiet")
+test_that("estimate_secondary works with pre-filtered data", {
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+
   modified_data <- inc_cases[1:10, secondary := 0]
   modified_data <- filter_leading_zeros(modified_data, obs_column = "secondary")
-  out <- suppressWarnings(estimate_secondary(
+  out <- estimate_secondary(
     modified_data,
     obs = obs_opts(
       scale = Normal(mean = 0.2, sd = 0.2),
       week_effect = FALSE
     ),
     verbose = FALSE
-  ))
+  )
   expect_s3_class(out, "estimate_secondary")
-  expect_named(out, c("predictions", "posterior", "data", "fit"))
-  expect_equal(out$predictions$primary, modified_data$primary)
+  expect_named(out, c("fit", "args", "observations"))
+  # Check that observations match filtered input data
+  expect_equal(out$observations$primary, modified_data$primary)
 })
 
-test_that("estimate_secondary works with zero_threshold set", {
-  ## testing deprecated functionality
-  withr::local_options(lifecycle_verbosity = "quiet")
+test_that("estimate_secondary works with zero threshold applied", {
+  skip_integration()
+  inc_cases <- setup_incidence_data()
+
   modified_data <- inc_cases[sample(1:30, 10), primary := 0]
   modified_data <- apply_zero_threshold(
     modified_data,
@@ -264,5 +396,78 @@ test_that("estimate_secondary works with zero_threshold set", {
     verbose = FALSE
   )
   expect_s3_class(out, "estimate_secondary")
-  expect_named(out, c("predictions", "posterior", "data", "fit"))
+  expect_named(out, c("fit", "args", "observations"))
+})
+
+test_that("get_parameters works as expected for estimate_secondary", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  # Test getting all parameters as named list
+  params <- get_parameters(out)
+  expect_type(params, "list")
+
+  # All elements should be dist_spec (if any exist)
+  for (nm in names(params)) {
+    expect_s3_class(params[[nm]], "dist_spec")
+  }
+})
+
+test_that("[[ accessor handles deprecated elements", {
+  out <- default_inc
+
+  expect_error(out[["predictions"]], "get_predictions")
+  expect_error(out[["posterior"]], "get_samples")
+  expect_error(out[["data"]], "observations")
+
+  # Test non-deprecated elements work without error
+  expect_no_error(out[["fit"]])
+  expect_no_error(out[["args"]])
+  expect_no_error(out[["observations"]])
+})
+
+test_that("$ accessor works for non-deprecated elements", {
+  out <- default_inc
+
+  # Test direct access to non-deprecated elements
+  expect_no_error(out$fit)
+  expect_no_error(out$args)
+  expect_no_error(out$observations)
+
+  # Verify the elements are correct
+  expect_s4_class(out$fit, "stanfit")
+  expect_type(out$args, "list")
+  expect_s3_class(out$observations, "data.frame")
+})
+
+test_that("summary returns individual parameter names in variable column", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  summ <- summary(out, type = "parameters")
+
+  # Should have a variable column with semantic parameter names
+  expect_true("variable" %in% names(summ))
+  # Should not have a separate parameter column
+  expect_false("parameter" %in% names(summ))
+
+  # Should include specific parameter names in variable column
+  expect_true("fraction_observed" %in% summ$variable)
+  expect_true(any(grepl("reporting\\[", summ$variable)))
+})
+
+test_that("summary compact type returns key parameters", {
+  # Reuse pre-computed fit
+  out <- default_inc
+
+  summ <- summary(out, type = "compact")
+
+  # Should have a variable column with semantic parameter names
+  expect_true("variable" %in% names(summ))
+  # Should not have a separate parameter column
+  expect_false("parameter" %in% names(summ))
+
+  # Compact should include fraction_observed and reporting parameters
+  expect_true("fraction_observed" %in% summ$variable)
+  expect_true(any(grepl("reporting\\[", summ$variable)))
 })

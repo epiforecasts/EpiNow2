@@ -1,7 +1,7 @@
 # nolint start: line_length_linter.
 #' Estimate a Secondary Observation from a Primary Observation
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Estimates the relationship between a primary and secondary observation, for
 #' example hospital admissions and deaths or hospital admissions and bed
 #' occupancy. See [secondary_opts()] for model structure options. See parameter
@@ -57,11 +57,13 @@
 #' @param verbose Logical, should model fitting progress be returned. Defaults
 #' to [interactive()].
 #'
-#' @return A list containing: `predictions` (a `<data.frame>` ordered by date
-#' with the primary, and secondary observations, and a summary of the model
-#' estimated secondary observations), `posterior` which contains a summary of
-#' the entire model posterior, `data` (a list of data used to fit the
-#' model), and `fit` (the `stanfit` object).
+#' @return An `<estimate_secondary>` object containing:
+#'
+#' - `fit`: The stan fit object.
+#' - `args`: A list of arguments used for fitting (stan data).
+#' - `observations`: The input data (`<data.frame>`).
+#'
+#' @seealso [get_samples()] [get_predictions()] [get_parameters()]
 #' @export
 #' @inheritParams estimate_infections
 #' @inheritParams update_secondary_args
@@ -158,23 +160,7 @@ estimate_secondary <- function(data,
                                priors = NULL,
                                model = NULL,
                                weigh_delay_priors = FALSE,
-                               verbose = interactive(),
-                               filter_leading_zeros = FALSE,
-                               zero_threshold = Inf) {
-  if (!missing(filter_leading_zeros)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_secondary(filter_leading_zeros)",
-      "filter_leading_zeros()"
-    )
-  }
-  if (!missing(zero_threshold)) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "estimate_secondary(zero_threshold)",
-      "apply_zero_threshold()"
-    )
-  }
+                               verbose = interactive()) {
   # Validate the inputs
   check_reports_valid(data, model = "estimate_secondary")
   assert_class(secondary, "secondary_opts")
@@ -188,12 +174,10 @@ estimate_secondary <- function(data,
   assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
-  reports <- data.table::as.data.table(data)
-
-  reports <- default_fill_missing_obs(reports, obs, "secondary")
+  reports <- as.data.table(data)
 
   secondary_reports <-
-    reports[, list(date, confirm = secondary, accumulate)]
+    reports[, list(date, confirm = secondary)]
 
   ## fill in missing data (required if fitting to prevalence)
   secondary_reports[, lookup := seq_len(.N)]
@@ -219,6 +203,7 @@ estimate_secondary <- function(data,
     )
   }
   # observation and control data
+  accumulate <- get_accumulate(reports)
   stan_data <- list(
     t = nrow(reports),
     primary = reports$primary,
@@ -227,29 +212,27 @@ estimate_secondary <- function(data,
     lt = sum(complete_secondary$lookup > burn_in),
     burn_in = burn_in,
     seeding_time = 0,
-    any_accumulate = as.integer(any(reports$accumulate > 0)),
-    accumulate = as.integer(reports$accumulate)
+    any_accumulate = as.integer(any(accumulate)),
+    accumulate = as.integer(accumulate)
   )
   # secondary model options
   stan_data <- c(stan_data, secondary)
   # delay data
   stan_data <- c(stan_data, create_stan_delays(
-    delay = delays,
-    trunc = truncation,
+    reporting = delays,
+    truncation = truncation,
     time_points = stan_data$t
   ))
 
   # observation model data
   stan_data <- c(stan_data, create_obs_model(obs, dates = reports$date))
 
-  stan_data <- c(stan_data, create_stan_params(
-    frac_obs = obs$scale,
-    dispersion = obs$dispersion,
-    lower_bounds = c(
-      frac_obs = 0,
-      dispersion = 0
-    )
-  ))
+  params <- list(
+    make_param("fraction_observed", obs$scale, lower_bound = 0),
+    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0)
+  )
+
+  stan_data <- c(stan_data, create_stan_params(params))
 
   # update data to use specified priors rather than defaults
   stan_data <- update_secondary_args(stan_data,
@@ -258,35 +241,32 @@ estimate_secondary <- function(data,
 
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
-    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0))
+    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0)), params
   )
   # fit
   stan_ <- create_stan_args(
     stan = stan, data = stan_data, init = inits, model = "estimate_secondary"
   )
+
+  # Warn if truncation distribution is longer than observed time
+  check_truncation_length(stan_, time_points = stan_data$t)
+
   fit <- fit_model(stan_, id = "estimate_secondary")
 
-  out <- list()
-  out$predictions <- extract_stan_param(fit, "sim_secondary", CrIs = CrIs)
-  out$predictions <- out$predictions[, lapply(.SD, round, 1)]
-  out$predictions <- out$predictions[, date := reports[(burn_in + 1):.N]$date]
-  out$predictions <- data.table::merge.data.table(
-    reports, out$predictions,
-    all = TRUE, by = "date"
+  # Create standardized S3 return structure
+  ret <- list(
+    fit = fit,
+    args = stan_data,
+    observations = reports
   )
-  out$posterior <- extract_stan_param(
-    fit,
-    CrIs = CrIs
-  )
-  out$data <- stan_data
-  out$fit <- fit
-  class(out) <- c("estimate_secondary", class(out))
-  return(out)
+
+  class(ret) <- c("estimate_secondary", "epinowfit", class(ret))
+  ret
 }
 
 #' Update estimate_secondary default priors
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' This functions allows the user to more easily specify data driven or model
 #'   based priors for [estimate_secondary()] from example from previous model
 #'   fits using a `<data.frame>` to overwrite other default settings. Note that
@@ -298,7 +278,7 @@ estimate_secondary <- function(data,
 #'   rather than the defaults supplied from other arguments. This is typically
 #'   useful if wanting to inform a estimate from the posterior of another model
 #'   fit. Priors that are currently use to update the defaults are the scaling
-#'   fraction ("frac_obs"), and delay parameters ("delay_params"). The
+#'   fraction ("fraction_observed"), and delay parameters ("delay_params"). The
 #'   `<data.frame>` should have the following variables: `variable`, `mean`, and
 #'   `sd`.
 #'
@@ -308,11 +288,11 @@ estimate_secondary <- function(data,
 #' @importFrom data.table as.data.table
 #' @importFrom cli cli_inform cli_warn
 #' @examples
-#' priors <- data.frame(variable = "frac_obs", mean = 3, sd = 1)
+#' priors <- data.frame(variable = "fraction_observed", mean = 3, sd = 1)
 #' data <- list(obs_scale_mean = 4, obs_scale_sd = 3)
 #' update_secondary_args(data, priors)
 update_secondary_args <- function(data, priors, verbose = TRUE) {
-  priors <- data.table::as.data.table(priors)
+  priors <- as.data.table(priors)
   if (!missing(priors) && !is.null(priors) && nrow(priors) > 0) {
     if (verbose) {
       cli_inform(
@@ -321,10 +301,12 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       )
     }
     # replace scaling if present in the prior
-    frac_obs <- priors[grepl("frac_obs", variable, fixed = TRUE)]
-    if (nrow(frac_obs) > 0) {
-      data$obs_scale_mean <- as.array(signif(frac_obs$mean, 3))
-      data$obs_scale_sd <- as.array(signif(frac_obs$sd, 3))
+    fraction_observed <- priors[
+      grepl("fraction_observed", variable, fixed = TRUE)
+    ]
+    if (nrow(fraction_observed) > 0) {
+      data$obs_scale_mean <- as.array(signif(fraction_observed$mean, 3))
+      data$obs_scale_sd <- as.array(signif(fraction_observed$sd, 3))
     }
     # replace delay parameters if present
     delay_params <- priors[grepl("delay_params", variable, fixed = TRUE)]
@@ -340,18 +322,20 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
       data$delay_params_mean <- as.array(signif(delay_params$mean, 3))
       data$delay_params_sd <- as.array(signif(delay_params$sd, 3))
     }
-    dispersion <- priors[grepl("dispersion", variable, fixed = TRUE)]
-    if (nrow(dispersion) > 0) {
-      data$dispersion_mean <- signif(dispersion$mean, 3)
-      data$dispersion_sd <- signif(dispersion$sd, 3)
+    reporting_overdispersion <- priors[
+      grepl("reporting_overdispersion", variable, fixed = TRUE)
+    ]
+    if (nrow(reporting_overdispersion) > 0) {
+      data$dispersion_mean <- signif(reporting_overdispersion$mean, 3)
+      data$dispersion_sd <- signif(reporting_overdispersion$sd, 3)
     }
   }
-  return(data)
+  data
 }
 
 #' Plot method for estimate_secondary
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description
 #' `plot` method for class "estimate_secondary".
 #'
 #' @param x A list of output as produced by `estimate_secondary`
@@ -371,7 +355,7 @@ update_secondary_args <- function(data, priors, verbose = TRUE) {
 #'
 #' @return A `ggplot` object.
 #'
-#' @seealso plot estimate_secondary
+#' @seealso [estimate_secondary()]
 #' @method plot estimate_secondary
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw
@@ -381,13 +365,14 @@ plot.estimate_secondary <- function(x, primary = FALSE,
                                     from = NULL, to = NULL,
                                     new_obs = NULL,
                                     ...) {
-  predictions <- data.table::copy(x$predictions)
+  predictions <- get_predictions(x)
+  predictions <- merge(predictions, x$observations, by = "date", all = TRUE)
 
   if (!is.null(new_obs)) {
-    new_obs <- data.table::as.data.table(new_obs)
+    new_obs <- as.data.table(new_obs)
     new_obs <- new_obs[, .(date, secondary)]
     predictions <- predictions[, secondary := NULL]
-    predictions <- data.table::merge.data.table(
+    predictions <- merge.data.table(
       predictions, new_obs,
       all = TRUE, by = "date"
     )
@@ -399,33 +384,48 @@ plot.estimate_secondary <- function(x, primary = FALSE,
     predictions <- predictions[date <= to]
   }
 
-  p <- ggplot2::ggplot(predictions, ggplot2::aes(x = date, y = secondary)) +
-    ggplot2::geom_col(
+  p <- ggplot(predictions, aes(x = date, y = secondary)) +
+    geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
     )
 
   if (primary) {
     p <- p +
-      ggplot2::geom_point(
+      geom_point(
         data = predictions,
-        ggplot2::aes(y = primary),
+        aes(y = primary),
         alpha = 0.4, size = 0.8
       ) +
-      ggplot2::geom_line(
+      geom_line(
         data = predictions,
-        ggplot2::aes(y = primary), alpha = 0.4
+        aes(y = primary), alpha = 0.4
       )
   }
   p <- plot_CrIs(p, extract_CrIs(predictions),
     alpha = 0.6, linewidth = 1
   )
   p +
-    ggplot2::theme_bw() +
-    ggplot2::labs(y = "Reports per day", x = "Date") +
-    ggplot2::scale_x_date(date_breaks = "week", date_labels = "%b %d") +
-    ggplot2::scale_y_continuous(labels = scales::comma) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+    theme_bw() +
+    labs(y = "Reports per day", x = "Date") +
+    scale_x_date(date_breaks = "week", date_labels = "%b %d") +
+    scale_y_continuous(labels = comma) +
+    theme(axis.text.x = ggplot2::element_text(angle = 90))
+}
+
+#' Plot method for forecast_secondary objects
+#'
+#' @description
+#' Plot method for forecast secondary observations.
+#'
+#' @inheritParams plot.estimate_secondary
+#' @method plot forecast_secondary
+#' @export
+plot.forecast_secondary <- function(x, primary = FALSE,
+                                    from = NULL, to = NULL,
+                                    new_obs = NULL,
+                                    ...) {
+  plot.estimate_secondary(x, primary, from, to, new_obs, ...)
 }
 
 #' Convolve and scale a time series
@@ -453,7 +453,7 @@ plot.estimate_secondary <- function(x, primary = FALSE,
 #' @return A `<data.frame>` containing simulated data in the format required by
 #' [estimate_secondary()].
 #'
-#' @seealso estimate_secondary
+#' @seealso [estimate_secondary()]
 #' @inheritParams secondary_opts
 #' @importFrom data.table as.data.table copy shift
 #' @importFrom purrr pmap_dbl
@@ -498,15 +498,15 @@ convolve_and_scale <- function(data, type = c("incidence", "prevalence"),
                                delay_max = 30, ...) {
   type <- arg_match(type)
   family <- arg_match(family)
-  data <- data.table::as.data.table(data)
-  data <- data.table::copy(data)
+  data <- as.data.table(data)
+  data <- copy(data)
   data <- data[, index := seq_len(.N)]
   # apply scaling
   data <- data[, scaled := scaling * primary]
   # add convolution
   data <- data[
     ,
-    conv := purrr::pmap_dbl(
+    conv := pmap_dbl(
       list(i = index, m = meanlog, s = sdlog),
       function(i, m, s) {
         discretised_lognormal_pmf_conv(
@@ -533,19 +533,19 @@ convolve_and_scale <- function(data, type = c("incidence", "prevalence"),
   data <- data[!is.na(secondary)]
   # apply observation model
   if (family == "poisson") {
-    data <- data[, secondary := purrr::map_dbl(secondary, ~ rpois(1, .))]
+    data <- data[, secondary := map_dbl(secondary, ~ rpois(1, .))]
   } else if (family == "negbin") {
-    data <- data[, secondary := purrr::map_dbl(
+    data <- data[, secondary := map_dbl(
       secondary, ~ rnbinom(1, mu = .), ...
     )]
   }
   data <- data[, secondary := as.integer(secondary)]
-  return(data[])
+  data[]
 }
 
 #' Forecast Secondary Observations Given a Fit from estimate_secondary
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description
 #' This function forecasts secondary observations using the output of
 #' [estimate_secondary()] and either observed primary data or a forecast of
 #' primary observations. See the examples of [estimate_secondary()]
@@ -607,7 +607,7 @@ forecast_secondary <- function(estimate,
                                CrIs = c(0.2, 0.5, 0.9)) {
   ## deal with input if data frame
   if (inherits(primary, "data.frame")) {
-    primary <- data.table::as.data.table(primary)
+    primary <- as.data.table(primary)
     if (is.null(primary$sample)) {
       if (is.null(samples)) {
         samples <- 1000
@@ -621,10 +621,9 @@ forecast_secondary <- function(estimate,
     primary <- primary[, .(date, sample, value)]
   }
   if (inherits(primary, "estimate_infections")) {
-    primary <- data.table::as.data.table(
-      primary$samples[variable == primary_variable]
-    )
-    primary <- primary[date > max(estimate$predictions$date, na.rm = TRUE)]
+    primary_samples <- get_samples(primary)
+    primary <- primary_samples[variable == primary_variable]
+    primary <- primary[date > max(get_predictions(estimate)$date, na.rm = TRUE)]
     primary <- primary[, .(date, sample, value)]
     if (!is.null(samples)) {
       primary <- primary[sample(.N, samples, replace = TRUE)]
@@ -641,11 +640,22 @@ forecast_secondary <- function(estimate,
     ),
     include = FALSE
   )
+  # day_of_week_simplex is dropped from the fit when the weekly effect is off;
+  # supply the flat simplex the simulation model requires.
+  if (estimate$args$week_effect == 1) {
+    n_samples <- max(vapply(draws, NROW, integer(1)))
+    draws$day_of_week_simplex <- matrix(1, nrow = n_samples, ncol = 1)
+  }
+
   # extract data from stanfit
-  stan_data <- estimate$data
+  stan_data <- estimate$args
 
   # combined primary from data and input primary
-  primary_fit <- estimate$predictions[
+  predictions <- get_predictions(estimate)
+  predictions <- merge(
+    predictions, estimate$observations, by = "date", all = TRUE
+  )
+  primary_fit <- predictions[
     ,
     .(date, value = primary, sample = list(unique(updated_primary$sample)))
   ]
@@ -654,11 +664,11 @@ forecast_secondary <- function(estimate,
     .(sample = as.numeric(unlist(sample))),
     by = c("date", "value")
   ]
-  primary_fit <- data.table::rbindlist(
+  primary_fit <- rbindlist(
     list(primary_fit, updated_primary),
     use.names = TRUE
   )
-  data.table::setorderv(primary_fit, c("sample", "date"))
+  setorderv(primary_fit, c("sample", "date"))
 
   # update data with primary samples and day of week
   stan_data$primary <- t(
@@ -673,7 +683,7 @@ forecast_secondary <- function(estimate,
 
   # extract samples for posterior of estimates
   posterior_samples <- sample(stan_data$n, stan_data$n, replace = TRUE)
-  draws <- purrr::map(draws, function(x) as.matrix(x[posterior_samples, ]))
+  draws <- map(draws, function(x) as.matrix(x[posterior_samples, ]))
   # combine with data
   stan_data <- c(stan_data, draws)
 
@@ -713,29 +723,96 @@ forecast_secondary <- function(estimate,
     summarise_by = "date",
     CrIs = CrIs
   )
-  summarised <- summarised[, purrr::map(.SD, round, digits = 1)]
+  summarised <- summarised[, map(.SD, round, digits = 1)]
 
   # construct output
   out <- list()
   out$samples <- samples
   out$forecast <- summarised
   # link previous prediction observations with forecast observations
-  forecast_obs <- data.table::rbindlist(
+  preds_with_obs <- merge(
+    get_predictions(estimate), estimate$observations, by = "date"
+  )
+  forecast_obs <- rbindlist(
     list(
-      estimate$predictions[, .(date, primary, secondary)],
-      data.table::copy(primary)[, .(primary = median(value)), by = "date"]
+      preds_with_obs[, .(date, primary, secondary)],
+      copy(primary)[, .(primary = median(value)), by = "date"]
     ),
     use.names = TRUE, fill = TRUE
   )
-  data.table::setorderv(forecast_obs, "date")
+  setorderv(forecast_obs, "date")
   # add in predictions in estimate_secondary format
-  out$predictions <- data.table::merge.data.table(summarised,
+  out$predictions <- merge.data.table(summarised,
     forecast_obs,
     by = "date", all = TRUE
   )
-  data.table::setcolorder(
+  setcolorder(
     out$predictions, c("date", "primary", "secondary", "mean", "sd")
   )
-  class(out) <- c("estimate_secondary", class(out))
-  return(out)
+  # Store observations for compatibility with estimate_secondary methods
+  out$observations <- forecast_obs[, .(date, primary, secondary)]
+  class(out) <- c("forecast_secondary", class(out))
+  out
+}
+
+#' Extract elements from estimate_secondary objects with deprecation errors
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for the old return structure. The previous
+#' structure with \code{predictions}, \code{posterior}, and \code{data}
+#' elements is deprecated. Use the accessor methods instead:
+#' \itemize{
+#'   \item \code{predictions} - use \code{get_predictions(object)}
+#'   \item \code{posterior} - use \code{get_samples(object)}
+#'   \item \code{data} - use \code{object$observations}
+#' }
+#'
+#' @param x An \code{estimate_secondary} object
+#' @param name The name of the element to extract
+#' @return The requested element. Errors for deprecated element names.
+#' @keywords internal
+#' @export
+#' @method $ estimate_secondary
+`$.estimate_secondary` <- function(x, name) {
+  switch(name,
+    predictions = {
+      deprecate_stop(
+        "1.9.0",
+        I("estimate_secondary()$predictions"),
+        "get_predictions()"
+      )
+    },
+    posterior = {
+      deprecate_stop(
+        "1.9.0",
+        I("estimate_secondary()$posterior"),
+        "get_samples()"
+      )
+    },
+    data = {
+      deprecate_stop(
+        "1.9.0",
+        I("estimate_secondary()$data"),
+        I("estimate_secondary()$observations")
+      )
+    },
+    # For other elements, use .subset2 for direct list access
+    .subset2(x, name)
+  )
+}
+
+#' Extract elements from estimate_secondary objects with bracket notation
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' Provides backward compatibility for bracket-based access to deprecated
+#' elements. See [$.estimate_secondary] for details on the deprecation.
+#'
+#' @param x An `estimate_secondary` object
+#' @param i The name or index of the element to extract
+#' @return The requested element. Errors for deprecated element names.
+#' @keywords internal
+#' @export
+#' @method [[ estimate_secondary
+`[[.estimate_secondary` <- function(x, i) {
+  `$.estimate_secondary`(x, i)
 }

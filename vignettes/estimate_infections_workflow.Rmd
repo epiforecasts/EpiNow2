@@ -76,12 +76,7 @@ As these will affect any results, it is worth spending some time investigating w
 
 _EpiNow2_ works with different delays that apply to different parts of the infection and observation process.
 They are defined using a common interface that involves functions that are named after the probability distributions, i.e. `LogNormal()`, `Gamma()`, etc.
-For help with this function, see its manual page
-
-
-``` r
-?EpiNow2::Distributions
-```
+For help with this function, see its manual page (`?EpiNow2::Distributions`) or the [delays vignette](delays.html) for background on how EpiNow2 handles delay distributions.
 
 In all cases, the distributions given can be *fixed* (i.e. have no uncertainty) or *variable* (i.e. have associated uncertainty).
 For example, to define a fixed gamma distribution with mean 3, standard deviation (sd) 1 and maximum value 10, you would write
@@ -140,8 +135,8 @@ There are various ways the specific delay distributions mentioned below might be
 Often, they will come directly from the existing literature reviewed by the user and studies conducted elsewhere.
 Sometimes it might be possible to obtain them from existing databases, e.g. using the [epiparameter](https://github.com/epiverse-trace/epiparameter) R package.
 Alternatively they might be obtainable from raw data, e.g. line-listed individual-level records.
-The _EpiNow2_ package contains functionality for estimating delay distributions from observed delays in the `estimate_delays()` function.
-For a more comprehensive treatment of delays and their estimation avoiding common biases one can consider, for example, the [dynamicaltruncation](https://github.com/parksw3/epidist-paper) R package and associated paper.
+The _EpiNow2_ package contains functionality for estimating delay distributions from observed delays in the `estimate_delay()` function.
+For a more comprehensive treatment of delays and their estimation avoiding common biases one can also consider the [epidist](https://epidist.epinowcast.org/index.html) R package.
 
 ### Generation intervals
 
@@ -285,12 +280,18 @@ For example, using some of the options described above one could call
 
 
 ``` r
+reported_cases <- example_confirmed[1:60]
 def <- estimate_infections(
-  example_confirmed, 
+  reported_cases,
   generation_time = gt_opts(generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior)
+  rt = rt_opts(prior = rt_prior),
+  forecast = forecast_opts(horizon = 7)
 )
+#> Warning: There were 1 divergent transitions after warmup. See
+#> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+#> to find out why this is a problem and how to eliminate them.
+#> Warning: Examine the pairs() plot to diagnose sampling problems
 ```
 
 Alternatively, for production environments, we recommend using the `epinow()` function. It uses `estimate_infections()` internally and provides functionality for logging and saving results and plots in dedicated directories in the user's file system.
@@ -315,3 +316,63 @@ plot(def)
 The results returned by the `estimate_infections` model depend on the values assigned to all to parameters discussed in this vignette, i.e. delays, scaling, and reproduction numbers, as well as the model variant used and its parameters.
 Any interpretation of the results will therefore need to bear these in mind, as well as any properties of the data and/or the subpopulations that it represents.
 See the [Model options](estimate_infections_options.html) vignette for an illustration of the impact of model choice.
+
+## Evaluating forecasts with scoringutils
+
+Forecast evaluation is useful for comparing the predictive performance of different models or assessing how accuracy changes at different forecast horizons.
+_EpiNow2_ provides an `as_forecast_sample()` method that converts the output of `estimate_infections()` (and related functions) directly into a `forecast_sample` object from the [scoringutils](https://epiforecasts.io/scoringutils/) package.
+
+Since we fitted on only the first 60 days of `example_confirmed`, we can score the 7-day forecast against the full dataset.
+By default the forecast classes only keep horizons `>= 0` (i.e. the forecast period); pass a numeric `horizon` argument to set a different lower bound, e.g. `horizon = -Inf` to include the in-sample period.
+
+
+``` r
+library(scoringutils)
+
+forecast_obj <- as_forecast_sample(def, observations = example_confirmed)
+forecast_obj
+#> Forecast type: sample
+#> Forecast unit:
+#> forecast_date, date, and horizon
+#> 
+#> Key: <date>
+#>        sample_id predicted observed forecast_date       date horizon
+#>            <int>     <num>    <num>        <Date>     <Date>   <num>
+#>     1:         1      4125     2256    2020-04-21 2020-04-21       0
+#>     2:         2      2998     2256    2020-04-21 2020-04-21       0
+#>     3:         3      3046     2256    2020-04-21 2020-04-21       0
+#>     4:         4      1955     2256    2020-04-21 2020-04-21       0
+#>     5:         5      2405     2256    2020-04-21 2020-04-21       0
+#>    ---                                                              
+#> 15996:      1996      2076     1739    2020-04-21 2020-04-28       7
+#> 15997:      1997      2030     1739    2020-04-21 2020-04-28       7
+#> 15998:      1998      2262     1739    2020-04-21 2020-04-28       7
+#> 15999:      1999      2466     1739    2020-04-21 2020-04-28       7
+#> 16000:      2000      1879     1739    2020-04-21 2020-04-28       7
+score(forecast_obj)
+#> Warning: Predictions appear to be integer-valued.
+#> ! The log score uses kernel density estimation, which may not be appropriate
+#>   for integer-valued forecasts.
+#> ℹ See the scoringRules package for alternatives for discrete probability
+#>   distributions.
+#>    forecast_date       date horizon    bias      dss     crps overprediction
+#>           <Date>     <Date>   <num>   <num>    <num>    <num>          <num>
+#> 1:    2020-04-21 2020-04-21       0  0.4850 13.04661 198.3709         76.512
+#> 2:    2020-04-21 2020-04-22       1 -0.6490 13.18881 280.7676          0.000
+#> 3:    2020-04-21 2020-04-23       2 -0.8765 15.32767 644.1193          0.000
+#> 4:    2020-04-21 2020-04-24       3  0.2455 13.46619 199.1018         25.889
+#> 5:    2020-04-21 2020-04-25       4 -0.5185 13.48990 300.4347          0.000
+#> 6:    2020-04-21 2020-04-26       5  0.4220 13.93565 277.3292         89.420
+#> 7:    2020-04-21 2020-04-27       6  0.2085 13.70210 208.8598         20.366
+#> 8:    2020-04-21 2020-04-28       7  0.4455 13.85165 268.4963         93.588
+#>    underprediction dispersion log_score      mad ae_median  se_mean
+#>              <num>      <num>     <num>    <num>     <num>    <num>
+#> 1:           0.000   121.8589  7.290212 521.8752     312.0 133115.2
+#> 2:         169.877   110.8906  7.644723 484.8102     493.0 191953.1
+#> 3:         515.757   128.3623  8.563567 541.1490     981.5 839623.1
+#> 4:           0.000   173.2128  7.499891 727.2153     227.0 101155.5
+#> 5:         144.663   155.7717  7.833351 684.9612     505.0 187393.8
+#> 6:           0.000   187.9092  7.620466 779.8476     426.5 294898.4
+#> 7:           0.000   188.4938  7.569638 793.1910     195.0 107901.4
+#> 8:           0.000   174.9083  7.567015 747.9717     417.0 285137.3
+```

@@ -1,67 +1,159 @@
-#' Estimate Truncation of Observed Data
+#' Prepare truncation observations for Stan
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description Internal function to process a list of observation snapshots
+#' into the matrix format required by the truncation Stan model.
+#'
+#' @param data A list of `<data.frame>`s each containing date and confirm
+#'   columns. Each data set should be a snapshot of reported data.
+#' @param trunc_max Integer, the maximum truncation delay to consider.
+#'
+#' @return A list containing:
+#' - `obs`: Matrix of observations (time x datasets)
+#' - `obs_dist`: Vector of NA counts per dataset (used to determine truncation)
+#' - `t`: Number of time points
+#' - `obs_sets`: Number of observation datasets
+#' - `dirty_obs`: The processed data.tables (ordered by nrow)
+#'
+#' @keywords internal
+prepare_truncation_obs <- function(data, trunc_max) {
+  # Convert to data.tables and find common date range
+  dirty_obs <- map(data, as.data.table)
+  earliest_date <- max(
+    as.Date(
+      map_chr(dirty_obs, function(x) x[, as.character(min(date))])
+    )
+  )
+  dirty_obs <- map(dirty_obs, function(x) x[date >= earliest_date])
+
+  # Order by number of rows (shortest first)
+  nrow_obs <- order(map_dbl(dirty_obs, nrow))
+  dirty_obs <- dirty_obs[nrow_obs]
+
+  # Merge all observations into a single data.table with columns named 1, 2, ...
+  obs <- map(dirty_obs, copy)
+  obs <- map(seq_along(obs), ~ obs[[.]][, (as.character(.)) := confirm][
+    ,
+    confirm := NULL
+  ])
+  obs <- reduce(obs, merge, all = TRUE)
+
+  # Calculate observation start point and distance metrics
+  obs_start <- max(nrow(obs) - trunc_max - sum(is.na(obs$`1`)) + 1, 1)
+  obs_dist <- map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
+
+  # Create observation matrix (replacing NAs with 0)
+  obs_data <- obs[, -1][, map(.SD, ~ ifelse(is.na(.), 0, .))]
+  obs_data <- as.matrix(obs_data[obs_start:.N])
+
+  list(
+    obs = obs_data,
+    obs_dist = obs_dist,
+    t = nrow(obs_data),
+    obs_sets = ncol(obs_data),
+    dirty_obs = dirty_obs
+  )
+}
+
+#' Merge truncation predictions with observations for display
+#'
+#' @description Internal function to prepare data for plotting or returning
+#' merged predictions and observations. Combines predictions with observed
+#' data from each snapshot, including the latest observations as reference.
+#'
+#' @param observations A list of `<data.frame>`s containing date and confirm
+#'   columns, as stored in an `estimate_truncation` object.
+#' @param predictions A `<data.table>` of predictions from [get_predictions()].
+#'
+#' @return A `<data.table>` with columns: date, report_date, confirm (observed),
+#'   last_confirm (from latest snapshot), and prediction columns (median, CrIs).
+#'
+#' @keywords internal
+merge_trunc_pred_obs <- function(observations, predictions) {
+  # Get latest observations for reference
+  last_obs <- as.data.table(observations[[length(observations)]])
+  last_obs <- last_obs[, .(date, last_confirm = confirm)]
+
+  # Get truncated observations from each snapshot with report_date
+
+  obs_list <- map(observations, function(obs) {
+    obs_dt <- as.data.table(obs)
+    obs_dt[, report_date := max(date)]
+    obs_dt
+  })
+  obs_combined <- rbindlist(obs_list)
+
+  # Merge predictions with observations
+  result <- merge.data.table(
+    predictions, obs_combined[, .(date, confirm, report_date)],
+    by = c("date", "report_date")
+  )
+  merge.data.table(result, last_obs, by = "date")
+}
+
+#' Estimate truncation of observed data
+#'
+#' @description
 #' Estimates a truncation distribution from multiple snapshots of the same
-#' data source over time. This distribution can then be used passed to the
+#' data source over time. This distribution can then be passed to the
 #' `truncation` argument in [regional_epinow()], [epinow()], and
 #' [estimate_infections()] to adjust for truncated data and propagate the
 #' uncertainty associated with data truncation into the estimates.
 #'
-#' See [here](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
-#' for an example of using this approach on Covid-19 data in England. The
-#' functionality offered by this function is now available in a more principled
-#' manner in the [`epinowcast` R package](https://package.epinowcast.org/).
-#'
 #' The model of truncation is as follows:
 #'
-#' 1. The truncation distribution is assumed to be discretised log normal wit
-#' a mean and standard deviation that is informed by the data.
+#' 1. The truncation distribution can be any parametric family supported
+#' by `dist_spec` (e.g. log-normal, gamma), with parameters informed by
+#' the data.
 #'
-#' 2. The data set with the latest observations is adjusted for truncation using
-#' the truncation distribution.
+#' 2. The data set with the latest observations is adjusted for
+#' truncation using the truncation distribution.
 #'
-#' 3. Earlier data sets are recreated by applying the truncation distribution to
-#' the adjusted latest observations in the time period of the earlier data set.
-#' These data sets are then compared to the earlier observations assuming a
-#' negative binomial observation model with an additive noise term to deal with
-#' zero observations.
+#' 3. Earlier data sets are recreated by applying the truncation
+#' distribution to the adjusted latest observations in the time period
+#' of the earlier data set. These data sets are then compared to the
+#' earlier observations using the selected observation model (negative
+#' binomial or Poisson) with an additive noise term to handle zero
+#' observations.
 #'
-#' This model is then fit using `stan` with standard normal, or half normal,
-#' prior for the mean, standard deviation, 1 over the square root of the
-#' overdispersion and additive noise term.
+#' This can be thought of as a Bayesian form of the chain-ladder
+#' nowcasting approach in the
+#' [`baselinenowcast`](https://baselinenowcast.epinowcast.org/)
+#' package. For settings requiring time-varying delays, see
+#' [`epinowcast`](https://package.epinowcast.org/).
 #'
-#' This approach assumes that:
-#'  - Current truncation is related to past truncation.
-#'  - Truncation is a multiplicative scaling of underlying reported cases.
-#'  - Truncation is log normally distributed.
+#' @param data A list of `<data.frame>`s each containing a `date` variable
+#' and a `confirm` (numeric) variable. Each data set should be a snapshot
+#' of the reported data over time. All data sets must contain a complete
+#' vector of dates.
 #'
-#' @param data  A list of `<data.frame>`s each containing a date variable
-#' and a confirm (numeric) variable. Each data set should be a snapshot
-#' of the reported data over time. All data sets must contain a complete vector
-#' of dates.
+#' @param obs A list of observation model options as generated by
+#' [obs_opts()]. The truncation model uses `family`, `dispersion`,
+#' `likelihood` and `return_likelihood`. Other settings (`weight`,
+#' `week_effect`, `scale`) are ignored, since week effects and scaling
+#' are not modelled here. Defaults to [obs_opts()].
 #'
-#' @param obs Deprecated; use `data` instead.
-#'
-#' @param model A compiled stan model to override the default model. May be
-#' useful for package developers or those developing extensions.
-#'
-#' @param weigh_delay_priors Deprecated; use the `weight_prior` option in
-#'   [trunc_opts()] instead.
+#' @param noise A `dist_spec` specifying the prior on the additive noise
+#' term applied to expected observations. This small positive offset
+#' prevents zero expected counts. Defaults to `Normal(mean = 0, sd = 1)`
+#' with a lower bound of zero (i.e. a half-normal prior).
 #'
 #' @param verbose Logical, should model fitting progress be returned.
 #'
 #' @param ... Additional parameters to pass to [rstan::sampling()].
 #'
-#' @return A list containing: the summary parameters of the truncation
-#' distribution (`dist`), which could be passed to the `truncation` argument
-#' of [epinow()], [regional_epinow()], and [estimate_infections()], the
-#' estimated CMF of the truncation distribution (`cmf`, can be used to
-#' adjusted new data), a `<data.frame>` containing the observed truncated
-#' data, latest observed data and the adjusted for
-#' truncation observations (`obs`), a `<data.frame>` containing the last
-#' observed data (`last_obs`, useful for plotting and validation), the data
-#' used for fitting (`data`) and the fit object (`fit`).
+#' @return An `<estimate_truncation>` object containing:
 #'
+#' - `observations`: The input data (list of `<data.frame>`s).
+#' - `args`: A list of arguments used for fitting (stan data).
+#' - `fit`: The stan fit object.
+#'
+#' @param filter_leading_zeros Logical, defaults to FALSE. Should zeros at the
+#'   start of the time series be filtered out.
+#'
+#' @param zero_threshold Numeric, defaults to Inf. Observations with a
+#'   primary count less than this threshold are set to zero.
+#'
+#' @seealso [get_samples()] [get_predictions()] [get_parameters()]
 #' @export
 #' @inheritParams calc_CrIs
 #' @inheritParams estimate_infections
@@ -80,17 +172,17 @@
 #'
 #' # fit model to example data
 #' # See [example_truncated] for more details
+#' # iterations and calculation time have been reduced for this example
+#' # for real analyses, use more
 #' est <- estimate_truncation(example_truncated,
 #'   verbose = interactive(),
-#'   chains = 2, iter = 2000
+#'   chains = 2, iter = 200
 #' )
 #'
-#' # summary of the distribution
-#' est$dist
-#' # summary of the estimated truncation cmf (can be applied to new data)
-#' print(est$cmf)
-#' # observations linked to truncation adjusted estimates
-#' print(est$obs)
+#' # extract the estimated truncation distribution
+#' get_parameters(est)[["truncation"]]
+#' # summarise the truncation distribution parameters
+#' summary(est)
 #' # validation plot of observations vs estimates
 #' plot(est)
 #'
@@ -101,7 +193,7 @@
 #' out <- epinow(
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   example_truncated[[5]],
-#'   truncation = trunc_opts(est$dist)
+#'   truncation = trunc_opts(get_parameters(est)[["truncation"]])
 #' )
 #' plot(out)
 #' options(old_opts)
@@ -114,168 +206,81 @@ estimate_truncation <- function(data,
                                     max = 10
                                   )
                                 ),
-                                model = NULL,
+                                obs = obs_opts(),
+                                noise = Normal(mean = 0, sd = 1),
                                 stan = stan_opts(),
                                 CrIs = c(0.2, 0.5, 0.9),
                                 filter_leading_zeros = FALSE,
                                 zero_threshold = Inf,
-                                weigh_delay_priors = FALSE,
                                 verbose = TRUE,
-                                ...,
-                                obs) {
-  if (!missing(obs)) {
-    lifecycle::deprecate_stop(
-      "1.5.0",
-      "estimate_truncation(obs)",
-      "estimate_truncation(data)"
-    )
-  }
-  if (!is.null(model)) {
-    lifecycle::deprecate_stop(
-      "1.5.0",
-      "estimate_truncation(model)",
-      "estimate_truncation(stan)"
-    )
-  }
-  if (!missing(weigh_delay_priors)) {
-    lifecycle::deprecate_stop(
-      "1.5.0",
-      "estimate_truncation(weigh_delay_priors)",
-      "trunc_opts(weight_prior)"
-    )
-  }
+                                ...) {
   # Validate inputs
   walk(data, check_reports_valid, model = "estimate_infections")
   assert_class(truncation, "dist_spec")
-  assert_class(model, "stanfit", null.ok = TRUE)
+  assert_class(obs, "obs_opts")
+  check_truncation_obs_opts(obs)
+  assert_class(noise, "dist_spec")
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_logical(filter_leading_zeros)
   assert_numeric(zero_threshold, lower = 0)
-  assert_logical(weigh_delay_priors)
   assert_logical(verbose)
 
-  # combine into ordered matrix
-  dirty_obs <- purrr::map(data, data.table::as.data.table)
-  earliest_date <- max(
-    as.Date(
-      purrr::map_chr(dirty_obs, function(x) x[, as.character(min(date))])
-    )
-  )
-  dirty_obs <- purrr::map(dirty_obs, function(x) x[date >= earliest_date])
-  nrow_obs <- order(purrr::map_dbl(dirty_obs, nrow))
-  dirty_obs <- dirty_obs[nrow_obs]
-  obs <- purrr::map(dirty_obs, data.table::copy)
-  obs <- purrr::map(seq_along(obs), ~ obs[[.]][, (as.character(.)) := confirm][
-    ,
-    confirm := NULL
-  ])
-  obs <- purrr::reduce(obs, merge, all = TRUE)
-  obs_start <- max(nrow(obs) - max(truncation) - sum(is.na(obs$`1`)) + 1, 1)
-  obs_dist <- purrr::map_dbl(2:(ncol(obs)), ~ sum(is.na(obs[[.]])))
-  obs_data <- obs[, -1][, purrr::map(.SD, ~ ifelse(is.na(.), 0, .))]
-  obs_data <- as.matrix(obs_data[obs_start:.N])
+  # Prepare observation matrix for Stan
+  obs_prep <- prepare_truncation_obs(data, trunc_max = max(truncation))
 
-  # convert to stan list
+  # Observation model settings
+  dates <- obs_prep$dirty_obs[[length(obs_prep$dirty_obs)]]$date
+  obs_model <- create_obs_model(obs, dates = dates)
+
+  params <- list(
+    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
+    make_param("sigma", noise, lower_bound = 0)
+  )
+
   stan_data <- list(
-    obs = obs_data,
-    obs_dist = obs_dist,
-    t = nrow(obs_data),
-    obs_sets = ncol(obs_data)
+    obs = obs_prep$obs,
+    obs_dist = obs_prep$obs_dist,
+    t = obs_prep$t,
+    obs_sets = obs_prep$obs_sets,
+    model_type = obs_model$model_type,
+    likelihood = obs_model$likelihood,
+    return_likelihood = obs_model$return_likelihood
   )
 
   stan_data <- c(stan_data, create_stan_delays(
-    trunc = truncation,
+    truncation = truncation,
     time_points = stan_data$t
   ))
 
-  # initial conditions
-  init_fn <- function() {
-    c(create_delay_inits(stan_data), list(
-      dispersion = abs(rnorm(1, 0, 1)),
-      sigma = abs(rnorm(1, 0, 1))
-    ))
-  }
+  stan_data <- c(stan_data, create_stan_params(params))
+
+  inits <- create_initial_conditions(
+    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0, week_effect = 0)),
+    params
+  )
+  stan_args <- create_stan_args(
+    stan = stan, data = stan_data, init = inits, model = "estimate_truncation"
+  )
+
+  # Warn if truncation distribution is longer than observed time
+  check_truncation_length(stan_args, time_points = stan_data$t)
 
   # fit
-  stan_args <- create_stan_args(
-    stan = stan, data = stan_data, init = init_fn, model = "estimate_truncation"
-  )
   fit <- fit_model(stan_args, id = "estimate_truncation")
 
-  out <- list()
-  # Summarise fit truncation distribution for downstream usage
-  delay_params <- extract_stan_param(fit, params = "delay_params")
-  params_mean <- round(delay_params$mean, 3)
-  params_sd <- round(delay_params$sd, 3)
-  parameters <- purrr::map(seq_along(params_mean), function(id) {
-    Normal(params_mean[id], params_sd[id])
-  })
-  names(parameters) <- natural_params(get_distribution(truncation))
-  out$dist <- new_dist_spec(
-    params = parameters,
-    max = max(truncation),
-    distribution = get_distribution(truncation)
+  out <- list(
+    observations = data,
+    args = stan_data,
+    fit = fit
   )
 
-  # summarise reconstructed observations
-  recon_obs <- extract_stan_param(fit, "recon_obs",
-    CrIs = CrIs,
-    var_names = TRUE
-  )
-  recon_obs <- recon_obs[, id := variable][, variable := NULL]
-  recon_obs <- recon_obs[, dataset := seq_len(.N)][
-    ,
-    dataset := dataset %% stan_data$obs_sets
-  ][
-    dataset == 0, dataset := stan_data$obs_sets
-  ]
-  # link reconstructed observations to observed
-  last_obs <-
-    data.table::copy(dirty_obs[[length(dirty_obs)]])[, last_confirm := confirm][
-      ,
-      confirm := NULL
-    ]
-  link_obs <- function(index) {
-    target_obs <- dirty_obs[[index]][, index := .N - 0:(.N - 1)]
-    target_obs <- target_obs[index < max(truncation)]
-    estimates <- recon_obs[dataset == index][, c("id", "dataset") := NULL]
-    estimates <- estimates[, lapply(.SD, as.integer)]
-    estimates <- estimates[, index := .N - 0:(.N - 1)]
-    if (!is.null(estimates$n_eff)) {
-      estimates[, "n_eff" := NULL]
-    }
-    if (!is.null(estimates$Rhat)) {
-      estimates[, "Rhat" := NULL]
-    }
-
-    target_obs <-
-      data.table::merge.data.table(
-        target_obs, last_obs,
-        by = "date"
-      )
-    target_obs[, report_date := max(date)]
-    target_obs <- data.table::merge.data.table(target_obs, estimates,
-      by = "index", all.x = TRUE
-    )
-    target_obs[order(date)][, index := NULL]
-  }
-  out$obs <- purrr::map(1:(stan_data$obs_sets), link_obs)
-  out$obs <- data.table::rbindlist(out$obs)
-  out$last_obs <- last_obs
-  # summarise estimated cmf of the truncation distribution
-  out$cmf <- extract_stan_param(fit, "trunc_rev_cmf", CrIs = CrIs)
-  out$cmf <- data.table::as.data.table(out$cmf)[, index := seq_len(.N)]
-  data.table::setcolorder(out$cmf, "index")
-  out$data <- stan_data
-  out$fit <- fit
-
-  class(out) <- c("estimate_truncation", class(out))
-  return(out)
+  class(out) <- c("estimate_truncation", "epinowfit", class(out))
+  out
 }
 
 #' Plot method for estimate_truncation
 #'
-#' @description `r lifecycle::badge("experimental")`
+#' @description
 #' [plot()] method for class `<estimate_truncation>`. Returns
 #' a plot faceted over each dataset used in fitting with the latest
 #' observations as columns, the data observed at the time (and so truncated)
@@ -286,33 +291,75 @@ estimate_truncation <- function(data,
 #' @param ... Pass additional arguments to plot function. Not currently in use.
 #'
 #' @return `ggplot2` object
-#' @seealso plot estimate_truncation
+#' @seealso [estimate_truncation()]
 #' @method plot estimate_truncation
 #' @importFrom ggplot2 ggplot aes geom_col geom_point labs scale_x_date
 #' @importFrom ggplot2 scale_y_continuous theme theme_bw
 #' @export
 plot.estimate_truncation <- function(x, ...) {
-  p <- ggplot2::ggplot(x$obs, ggplot2::aes(x = date, y = last_confirm)) +
-    ggplot2::geom_col(
+  preds <- get_predictions(x)
+  plot_data <- merge_trunc_pred_obs(x$observations, preds)
+
+  p <- ggplot(plot_data, aes(x = date, y = last_confirm)) +
+    geom_col(
       fill = "grey", col = "white",
       show.legend = FALSE, na.rm = TRUE
     ) +
-    ggplot2::geom_point(
-      data = x$obs,
-      ggplot2::aes(x = date, y = confirm)
+    geom_point(
+      data = plot_data,
+      aes(x = date, y = confirm)
     ) +
-    ggplot2::facet_wrap(~report_date, scales = "free")
+    facet_wrap(~report_date, scales = "free")
 
-  p <- plot_CrIs(p, extract_CrIs(x$obs),
+  p <- plot_CrIs(p, extract_CrIs(plot_data),
     alpha = 0.8, linewidth = 1
   )
 
   p +
-    ggplot2::theme_bw() +
-    ggplot2::labs(
+    theme_bw() +
+    labs(
       y = "Reports", x = "Date", col = "Type", fill = "Type"
     ) +
-    ggplot2::scale_x_date(date_breaks = "day", date_labels = "%b %d") +
-    ggplot2::scale_y_continuous(labels = scales::comma) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
+    scale_x_date(date_breaks = "day", date_labels = "%b %d") +
+    scale_y_continuous(labels = comma) +
+    theme(axis.text.x = ggplot2::element_text(angle = 90))
+}
+
+#' @export
+#' @method $ estimate_truncation
+`$.estimate_truncation` <- function(x, name) {
+  switch(name,
+    dist = deprecate_stop(
+      "1.9.0",
+      I("estimate_truncation()$dist"),
+      I("get_parameters(x)[['truncation']]")
+    ),
+    obs = deprecate_stop(
+      "1.9.0",
+      I("estimate_truncation()$obs"),
+      I("get_predictions() and observations")
+    ),
+    data = deprecate_stop(
+      "1.9.0",
+      I("estimate_truncation()$data"),
+      I("estimate_truncation()$args")
+    ),
+    last_obs = deprecate_stop(
+      "1.9.0",
+      I("estimate_truncation()$last_obs"),
+      details = "Use the last element of `observations` instead."
+    ),
+    cmf = deprecate_stop(
+      "1.9.0",
+      I("estimate_truncation()$cmf"),
+      I("get_parameters(x)[['truncation']]")
+    )
+  )
+  .subset2(x, name)
+}
+
+#' @export
+#' @method [[ estimate_truncation
+`[[.estimate_truncation` <- function(x, name) {
+  `$.estimate_truncation`(x, name)
 }

@@ -40,7 +40,7 @@ array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
   int s_minus_ylen = s - ylen;
   int start_x = max(1, s_minus_ylen + 1);
   int end_x = xlen;
-  int start_y = max(1, 1 - s_minus_ylen);;
+  int start_y = max(1, 1 - s_minus_ylen);
   int end_y = ylen + xlen - s;
   return {start_x, end_x, start_y, end_y};
 }
@@ -62,7 +62,6 @@ array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
 vector convolve_with_rev_pmf(vector x, vector y, int len) {
   int xlen = num_elements(x);
   int ylen = num_elements(y);
-  vector[len] z;
 
   if (xlen + ylen - 1 < len) {
     reject("convolve_with_rev_pmf: len is longer than x and y convolved");
@@ -72,16 +71,17 @@ vector convolve_with_rev_pmf(vector x, vector y, int len) {
     reject("convolve_with_rev_pmf: len is shorter than x");
   }
 
+  vector[len] z;
+
   for (s in 1:xlen) {
     array[4] int indices = calc_conv_indices_xlen(s, xlen, ylen);
     z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
   }
 
-  if (len > xlen) {
-    for (s in (xlen + 1):len) {
-      array[4] int indices = calc_conv_indices_len(s, xlen, ylen);
-      z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
-    }
+  // runs zero times unless len > xlen
+  for (s in (xlen + 1):len) {
+    array[4] int indices = calc_conv_indices_len(s, xlen, ylen);
+    z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
   }
 
   return z;

@@ -40,7 +40,6 @@ stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 A stan fit of an interval censored distribution
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Fits an integer adjusted exponential, gamma or lognormal distribution using
 stan.
 }

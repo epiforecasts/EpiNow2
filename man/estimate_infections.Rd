@@ -16,13 +16,8 @@ estimate_infections(
   obs = obs_opts(),
   forecast = forecast_opts(),
   stan = stan_opts(),
-  CrIs = c(0.2, 0.5, 0.9),
-  weigh_delay_priors = TRUE,
   id = "estimate_infections",
-  verbose = interactive(),
-  filter_leading_zeros = TRUE,
-  zero_threshold = Inf,
-  horizon
+  verbose = interactive()
 )
 }
 \arguments{
@@ -76,12 +71,6 @@ forecasting will be done.}
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
-\item{CrIs}{Numeric vector of credible intervals to calculate.}
-
-\item{weigh_delay_priors}{Deprecated; this is now specified at the
-distribution level in \code{generation_time_opts()}, \code{delay_opts()} and
-\code{trunc_opts()} using the \code{weight_prior} argument.}
-
 \item{id}{A character string used to assign logging information on error.
 Used by \code{\link[=regional_epinow]{regional_epinow()}} to assign errors to regions. Alter the default to
 run with error catching.}
@@ -90,24 +79,16 @@ run with error catching.}
 otherwise \code{FALSE}. Should verbose debug progress messages be printed.
 Corresponds to the "DEBUG" level from \code{futile.logger}. See \code{setup_logging}
 for more detailed logging options.}
-
-\item{filter_leading_zeros}{Logical, defaults to TRUE. Should zeros at the
-start of the time series be filtered out.}
-
-\item{zero_threshold}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Numeric defaults
-to Inf. Indicates if detected zero cases are meaningful by using a threshold
-number of cases based on the 7-day average. If the average is above this
-threshold then the zero is replaced using \code{fill}.}
-
-\item{horizon}{Deprecated; use \code{forecast} instead to specify the predictive
-horizon}
 }
 \value{
-A list of output including: posterior samples, summarised posterior
-samples, data used to fit the model, and the fit object itself.
+An \verb{<estimate_infections>} object containing:
+\itemize{
+\item \code{fit}: The stan fit object.
+\item \code{args}: A list of arguments used for fitting (stan data).
+\item \code{observations}: The input data (\verb{<data.frame>}).
+}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Uses a non-parametric approach to reconstruct cases by date of infection
 from reported cases. It uses either a generative Rt model or non-parametric
 back calculation to estimate underlying latent infections and then maps
@@ -130,7 +111,7 @@ old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
 # get example case counts
-reported_cases <- example_confirmed[1:60]
+reported_cases <- example_confirmed[1:40]
 
 # set an example generation time. In practice this should use an estimate
 # from the literature or be estimated from data
@@ -151,10 +132,13 @@ incubation_period <- LogNormal(
 reporting_delay <- LogNormal(mean = 2, sd = 1, max = 10)
 
 # for more examples, see the "estimate_infections examples" vignette
+# samples and calculation time have been reduced for this example
+# for real analyses, use at least samples = 2000
 def <- estimate_infections(reported_cases,
   generation_time = gt_opts(generation_time),
   delays = delay_opts(incubation_period + reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1))
+  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1)),
+  stan = stan_opts(samples = 100, warmup = 200)
 )
 # real time estimates
 summary(def)
@@ -164,6 +148,7 @@ options(old_opts)
 }
 }
 \seealso{
+\code{\link[=get_samples]{get_samples()}} \code{\link[=get_predictions]{get_predictions()}} \code{\link[=get_parameters]{get_parameters()}}
 \code{\link[=epinow]{epinow()}} \code{\link[=regional_epinow]{regional_epinow()}} \code{\link[=forecast_infections]{forecast_infections()}}
 \code{\link[=estimate_truncation]{estimate_truncation()}}
 }

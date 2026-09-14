@@ -29,7 +29,6 @@ this automatically updates to TRUE if no directory for saving is specified.}
 A data.table of region run times
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Used internally by \code{regional_epinow} to summarise region run times.
 }
 \examples{
@@ -39,6 +38,6 @@ regional_out <- readRDS(system.file(
 regional_runtimes(regional_output = regional_out$regional)
 }
 \seealso{
-regional_summary regional_epinow
+\code{\link[=regional_summary]{regional_summary()}} \code{\link[=regional_epinow]{regional_epinow()}}
 }
 \keyword{internal}

@@ -36,7 +36,7 @@ library(EpiNow2)
 
 Distributions can be supplied in two ways. First, one can supply delay data to `estimate_delay()`, where a subsampled bootstrapped lognormal will be fit to account for uncertainty in the observed data without being biased by changes in incidence (see `?EpiNow2::estimate_delay()`).
 
-Second, one can specify predetermined delays with uncertainty using the distribution functions such as `Gamma` or `Lognormal`. An arbitrary number of delay distributions are supported in `dist_spec()` with a common use case being an incubation period followed by a reporting delay. For more information on specifying distributions see (see `?EpiNow2::Distributions`).
+Second, one can specify predetermined delays with uncertainty using the distribution functions such as `Gamma` or `LogNormal`. An arbitrary number of delay distributions are supported in `dist_spec()` with a common use case being an incubation period followed by a reporting delay. For more information on specifying distributions see `?EpiNow2::Distributions` or the [delays vignette](delays.html).
 
 For example if data on the delay between onset and infection was available we could fit a distribution to it, using `estimate_delay()`, with appropriate uncertainty as follows (note this is a synthetic example),
 ```{r, eval = FALSE}
@@ -87,7 +87,7 @@ reported_cases <- example_confirmed[1:60]
 head(reported_cases)
 ```
 
-Estimate cases by date of infection, the time-varying reproduction number, the rate of growth, and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results). Here we use the default model parameterisation that prioritises real-time performance over run-time or other considerations. For other formulations see the documentation for `estimate_infections()`.
+Estimate cases by date of infection, the time-varying reproduction number, the rate of growth, and forecast these estimates into the future by 7 days. Summarise the posterior and return a summary table and plots for reporting purposes. If a `target_folder` is supplied results can be internally saved (with the option to also turn off explicit returning of results).
 
 ```{r, message = FALSE, warning = FALSE}
 estimates <- epinow(
@@ -101,6 +101,14 @@ estimates <- epinow(
 names(estimates)
 ```
 
+The default model uses a Gaussian process to estimate time-varying transmission, which provides flexible estimates but can take several minutes to run. If speed is a priority, there are several alternatives:
+
+- Use a weekly random walk instead of the Gaussian process (`rt = rt_opts(..., rw = 7)` with `gp = NULL`), as shown in the `regional_epinow()` example below.
+- Use variational inference for fast but unreliable approximate results (`stan = stan_opts(method = "vb")`).
+- Reduce the accuracy of the Gaussian process approximation (see `?gp_opts`).
+
+For examples of different model configurations, see the [estimate_infections_options](estimate_infections_options.html) vignette.
+
 Both summary measures and posterior samples are returned for all parameters in an easily explored format which can be accessed using `summary`. The default is to return a summary table of estimates for key parameters at the latest date partially supported by data. 
 
 ```{r}
@@ -113,10 +121,10 @@ Summarised parameter estimates can also easily be returned, either filtered for 
 head(summary(estimates, type = "parameters", params = "R"))
 ```
 
-Reported cases are returned in a separate data frame in order to streamline the reporting of forecasts and for model evaluation.
+Reported cases can be extracted using `get_predictions()` which returns summarised estimates by default.
 
 ```{r}
-head(summary(estimates, output = "estimated_reported_cases"))
+head(get_predictions(estimates))
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
@@ -157,7 +165,8 @@ estimates <- regional_epinow(
   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2), rw = 7),
   obs = obs,
   gp = NULL,
-  stan = stan_opts(cores = 4, warmup = 250, samples = 1000)
+  stan = stan_opts(cores = 4, samples = 1000),
+  logs = NULL
 )
 ```
 

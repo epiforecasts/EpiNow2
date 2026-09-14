@@ -15,8 +15,7 @@
 #'   date format.
 #' @inheritParams simulate_infections
 #' @inheritParams estimate_secondary
-#' @importFrom checkmate assert_data_frame assert_date assert_numeric
-#'   assert_subset
+#' @importFrom checkmate assert_numeric
 #' @importFrom cli cli_abort
 #' @return A data.table of simulated secondary observations (column `secondary`)
 #'   by date.
@@ -40,10 +39,7 @@ simulate_secondary <- function(primary,
                                obs = obs_opts(),
                                CrIs = c(0.2, 0.5, 0.9),
                                backend = "rstan") {
-  assert_data_frame(primary, any.missing = FALSE)
-  assert_subset(c("date", "primary"), colnames(primary))
-  assert_date(primary$date)
-  assert_numeric(primary$primary, lower = 0)
+  check_simulation_input(primary, "primary")
   assert_numeric(day_of_week_effect, lower = 0, null.ok = TRUE)
   assert_class(secondary, "secondary_opts")
   assert_class(delays, "delay_opts")
@@ -70,8 +66,8 @@ simulate_secondary <- function(primary,
   stan_data <- c(stan_data, secondary)
 
   stan_data <- c(stan_data, create_stan_delays(
-    delay = delays,
-    trunc = truncation
+    reporting = delays,
+    truncation = truncation
   ))
 
   if (length(stan_data$delay_params_sd) > 0 &&
@@ -81,6 +77,15 @@ simulate_secondary <- function(primary,
         "!" = "Cannot simulate from uncertain parameters.",
         "i" = "Use {.fn fix_parameters} to set the parameters of uncertain
         distributions either using the mean or a randomly sampled value."
+      )
+    )
+  }
+  if (stan_data$delay_n_np_est > 0) {
+    cli_abort(
+      c(
+        "!" = "Cannot simulate from estimated nonparametric delays.",
+        "i" = "Use {.fn fix_parameters} to resolve the Dirichlet prior to a
+        fixed PMF using either the prior mean or a randomly sampled PMF."
       )
     )
   }
@@ -104,23 +109,22 @@ simulate_secondary <- function(primary,
     )
   }
 
-  if (obs$family == "negbin") {
-    if (get_distribution(obs$dispersion) != "fixed") {
-      cli_abort(
-        c(
-          "!" = "Cannot simulate from uncertain overdispersion.",
-          "i" = "Use fixed overdispersion instead."
-        )
+  if (!is.null(obs$dispersion) &&
+        get_distribution(obs$dispersion) != "fixed") {
+    cli_abort(
+      c(
+        "!" = "Cannot simulate from uncertain overdispersion.",
+        "i" = "Use fixed overdispersion instead."
       )
-    }
-  } else {
-    obs$dispersion <- NULL
+    )
   }
 
-  stan_data <- c(stan_data, create_stan_params(
-    frac_obs = obs$scale,
-    dispersion = obs$dispersion
-  ))
+  params <- list(
+    make_param("fraction_observed", obs$scale, lower_bound = 0),
+    make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0)
+  )
+
+  stan_data <- c(stan_data, create_stan_params(params))
 
   ## set empty params matrix - variable parameters not supported here
   stan_data$params <- array(dim = c(1, 0))
@@ -150,5 +154,5 @@ simulate_secondary <- function(primary,
   secondary <- extract_samples(sim, "sim_secondary")$sim_secondary[1, , ]
   out <- data.table(date = all_dates$date, secondary = secondary)
 
-  return(out[])
+  out[]
 }

@@ -14,34 +14,50 @@ futile.logger::flog.threshold("FATAL")
 df_non_zero <- function(df) {
   expect_true(nrow(df) > 0)
 }
-expected_out <- c("estimates", "estimated_reported_cases", "summary", "plots", "timing")
+expected_out <- c("fit", "args", "observations", "timing")
 
+# Integration tests (MCMC-based) ------------------------------------------
+# These tests run actual MCMC sampling and are slow. Tests are divided into:
+# - Core tests: Essential tests that always run to catch critical failures
+# - Variant tests: Configuration variations that only run weekly (gated by EPINOW2_SKIP_INTEGRATION)
+
+# Variant test: epinow is tested via estimate_infections underneath.
+# This test verifies wrapper-specific functionality (plots, CrIs).
 test_that("epinow produces expected output when run with default settings", {
+  skip_integration()
   outputs <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
       generation_time = gt_opts(example_generation_time),
-      delays = delay_opts(c(example_incubation_period, reporting_delay)),
+      delays = delay_opts(example_incubation_period + reporting_delay),
       stan = stan_opts(
         samples = 25, warmup = 25,
         cores = 1, chains = 2,
         control = list(adapt_delta = 0.8)
       ),
+      CrIs = c(0.95),
       logs = NULL, verbose = FALSE
     )
   )))
 
   expect_equal(names(out), expected_out)
-  df_non_zero(out$estimates$samples)
-  df_non_zero(out$estimates$summarised)
-  df_non_zero(out$estimated_reported_cases$samples)
-  df_non_zero(out$estimated_reported_cases$summarised)
-  df_non_zero(out$summary)
-  expect_equal(names(out$plots), c("summary", "infections", "reports", "R", "growth_rate"))
+  # Test new accessor methods work correctly
+  df_non_zero(get_samples(out))
+  df_non_zero(summary(out, type = "parameters"))
+  df_non_zero(estimates_by_report_date(out)$summarised)
+  expect_true(!is.null(summary(out)))
+  expect_equal(
+    names(plot(out, type = "all")),
+    c("summary", "infections", "reports", "R", "growth_rate")
+  )
+
+  # Verify CrIs are present in output
+  expect_true(length(extract_CrIs(summary(out, type = "parameters"))) > 0)
+  expect_true(length(extract_CrIs(estimates_by_report_date(out)$summarised)) > 0)
 })
 
-test_that("epinow produces expected output when run with the
-           cmdstanr backend", {
+test_that("epinow produces expected output with cmdstanr backend", {
+  skip_integration()
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
@@ -54,18 +70,19 @@ test_that("epinow produces expected output when run with the
   )))
 
   expect_equal(names(out), expected_out)
-  df_non_zero(out$estimates$samples)
-  df_non_zero(out$estimates$summarised)
-  df_non_zero(out$estimated_reported_cases$samples)
-  df_non_zero(out$estimated_reported_cases$summarised)
-  df_non_zero(out$summary)
+  # Test new accessor methods work correctly
+  df_non_zero(get_samples(out))
+  df_non_zero(summary(out, type = "parameters"))
+  df_non_zero(estimates_by_report_date(out)$summarised)
+  expect_true(!is.null(summary(out)))
   expect_equal(
-    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+    names(plot(out, type = "all")),
+    c("summary", "infections", "reports", "R", "growth_rate")
   )
 })
 
-test_that("epinow produces expected output when run with the
-           laplace algorithm", {
+test_that("epinow produces expected output with laplace algorithm", {
+  skip_integration()
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
@@ -77,18 +94,19 @@ test_that("epinow produces expected output when run with the
     )
   )))
   expect_equal(names(out), expected_out)
-  df_non_zero(out$estimates$samples)
-  df_non_zero(out$estimates$summarised)
-  df_non_zero(out$estimated_reported_cases$samples)
-  df_non_zero(out$estimated_reported_cases$summarised)
-  df_non_zero(out$summary)
+  # Test new accessor methods work correctly
+  df_non_zero(get_samples(out))
+  df_non_zero(summary(out, type = "parameters"))
+  df_non_zero(estimates_by_report_date(out)$summarised)
+  expect_true(!is.null(summary(out)))
   expect_equal(
-    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+    names(plot(out, type = "all")),
+    c("summary", "infections", "reports", "R", "growth_rate")
   )
 })
 
-test_that("epinow produces expected output when run with the
-           pathfinder algorithm", {
+test_that("epinow produces expected output with pathfinder algorithm", {
+  skip_integration()
   skip_on_os("windows")
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
@@ -100,17 +118,19 @@ test_that("epinow produces expected output when run with the
     )
   )))
   expect_equal(names(out), expected_out)
-  df_non_zero(out$estimates$samples)
-  df_non_zero(out$estimates$summarised)
-  df_non_zero(out$estimated_reported_cases$samples)
-  df_non_zero(out$estimated_reported_cases$summarised)
-  df_non_zero(out$summary)
+  # Test new accessor methods work correctly
+  df_non_zero(get_samples(out))
+  df_non_zero(summary(out, type = "parameters"))
+  df_non_zero(estimates_by_report_date(out)$summarised)
+  expect_true(!is.null(summary(out)))
   expect_equal(
-    names(out$plots), c("summary", "infections", "reports", "R", "growth_rate")
+    names(plot(out, type = "all")),
+    c("summary", "infections", "reports", "R", "growth_rate")
   )
 })
 
 test_that("epinow runs without error when saving to disk", {
+  skip_integration()
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
@@ -128,6 +148,7 @@ test_that("epinow runs without error when saving to disk", {
 })
 
 test_that("epinow can produce partial output as specified", {
+  skip_integration()
   output <- capture.output(suppressMessages(suppressWarnings(
     out <- epinow(
       data = reported_cases,
@@ -145,18 +166,46 @@ test_that("epinow can produce partial output as specified", {
       logs = NULL, verbose = FALSE
     )
   )))
-  expect_equal(names(out), c("estimates", "estimated_reported_cases", "summary"))
-  expect_null(out$estimates$samples)
-  df_non_zero(out$estimates$summarised)
-  expect_null(out$estimated_reported_cases$samples)
-  df_non_zero(out$estimated_reported_cases$summarised)
-  df_non_zero(out$summary)
+  expect_equal(names(out), c("fit", "args", "observations"))
+  # Test new accessor methods work correctly
+  df_non_zero(get_samples(out))
+  df_non_zero(summary(out, type = "parameters"))
+  df_non_zero(estimates_by_report_date(out)$summarised)
+  expect_true(!is.null(summary(out)))
 })
 
+test_that("epinow propagates target_date into the forecast horizon", {
+  skip_integration()
+  max_date <- max(reported_cases$date)
+  extra_days <- 3
+  target_date <- as.character(max_date + extra_days)
+  base_horizon <- 7
+  expected_horizon <- base_horizon + extra_days
 
+  output <- capture.output(suppressMessages(suppressWarnings(
+    out <- epinow(
+      data = reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      forecast = forecast_opts(horizon = base_horizon),
+      stan = stan_opts(
+        samples = 25, warmup = 25,
+        cores = 1, chains = 1,
+        control = list(adapt_delta = 0.8)
+      ),
+      target_date = target_date,
+      logs = NULL, verbose = FALSE
+    )
+  )))
+
+  expect_equal(out$args$horizon, expected_horizon)
+  reported <- estimates_by_report_date(out)$summarised
+  expect_equal(max(reported$date), as.Date(target_date) + base_horizon)
+})
 
 test_that("epinow fails as expected when given a short timeout", {
-  expect_error(suppressWarnings(x = epinow(
+  skip_integration()
+  expect_error(suppressWarnings(x <- epinow(
     data = reported_cases,
     generation_time = gt_opts(example_generation_time),
     delays = delay_opts(example_incubation_period + reporting_delay),
@@ -169,6 +218,8 @@ test_that("epinow fails as expected when given a short timeout", {
     logs = NULL, verbose = FALSE
   )))
 })
+
+# Argument validation tests (fast - no MCMC) ------------------------------
 
 
 test_that("epinow fails if given NUTs arguments when using variational inference", {

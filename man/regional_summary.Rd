@@ -57,21 +57,22 @@ cases.}
 A list of summary measures and plots
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Used to produce summary output either internally in \code{regional_epinow} or
 externally.
 }
 \examples{
+data.table::setDTthreads(1) # limit threads, for example use only
 # get example output from regional_epinow model
 regional_out <- readRDS(system.file(
   package = "EpiNow2", "extdata", "example_regional_epinow.rds"
 ))
 
-regional_summary(
+summary <- regional_summary(
   regional_output = regional_out$regional,
   data = regional_out$summary$reported_cases
 )
+names(summary)
 }
 \seealso{
-regional_epinow
+\code{\link[=regional_epinow]{regional_epinow()}}
 }

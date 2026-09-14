@@ -32,11 +32,11 @@ returned.}
 A list of estimates, forecasts and estimated cases by date of report.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Summarises results across regions either from input or from disk. See the
 examples for details.
 }
 \examples{
+data.table::setDTthreads(1) # limit threads, for example use only
 # get example multiregion estimates
 regional_out <- readRDS(system.file(
   package = "EpiNow2", "extdata", "example_regional_epinow.rds"

@@ -2,14 +2,9 @@
 % Please edit documentation in R/plot.R
 \name{plot.estimate_infections}
 \alias{plot.estimate_infections}
-\alias{plot}
 \title{Plot method for estimate_infections}
 \usage{
-\method{plot}{estimate_infections}(
-  x,
-  type = c("summary", "infections", "reports", "R", "growth_rate", "all"),
-  ...
-)
+\method{plot}{estimate_infections}(x, type = "summary", CrIs = c(0.2, 0.5, 0.9), ...)
 }
 \arguments{
 \item{x}{A list of output as produced by \code{estimate_infections}}
@@ -19,15 +14,25 @@ Defaults to  "summary" with supported options being "infections", "reports",
 "R", "growth_rate", "summary", "all". If "all" is supplied all plots are
 generated.}
 
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
+
 \item{...}{Pass additional arguments to report_plots}
 }
 \value{
 List of plots as produced by \code{\link[=report_plots]{report_plots()}}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 \code{plot} method for class \verb{<estimate_infections>}.
 }
+\examples{
+# get example output
+out <- readRDS(system.file(
+  package = "EpiNow2", "extdata", "example_estimate_infections.rds"
+))
+
+# plot with error bars instead of ribbons
+plot(out, style = "linerange")
+}
 \seealso{
-plot report_plots estimate_infections
+\code{\link[=report_plots]{report_plots()}}
 }

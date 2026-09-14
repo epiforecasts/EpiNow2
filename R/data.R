@@ -1,6 +1,6 @@
 #' Example generation time
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' An example of a generation time estimate. See here for details:
 #' https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/generation-time.R
 #' @format A `dist_spec` object summarising the distribution
@@ -8,7 +8,7 @@
 
 #' Example incubation period
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' An example of an incubation period estimate. See here for details:
 #'  https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/incubation-period.R # nolint
 #' @format A `dist_spec` object summarising the distribution
@@ -16,7 +16,7 @@
 
 #' Example reporting delay
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' An example of an reporting delay estimate. See here for details:
 #'  https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/reporting-delay # nolint
 #' @format A `dist_spec` object summarising the distribution
@@ -24,14 +24,14 @@
 
 #' Example Confirmed Case Data Set
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' An example data frame of observed cases
 #' @format A data frame containing cases reported on each date.
 "example_confirmed"
 
 #' Example Case Data Set with Truncation
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' An example dataset of observed cases with truncation applied.
 #' This data is generated internally for use in the example of
 #' `estimate_truncation()`. For details on how the data is generated, see

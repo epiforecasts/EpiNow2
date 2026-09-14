@@ -16,7 +16,6 @@ results directory. Defaults to the current directory.}
 No return value, called for side effects
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This function removes nowcasts in the format produced by \code{EpiNow2} from a
 target directory for the date supplied.
 }

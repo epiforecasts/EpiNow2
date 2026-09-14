@@ -53,8 +53,9 @@ array[] int get_delay_type_max(
  * @param delay_np_pmf_groups Array of indices for accessing non-parametric PMFs
  * @param delay_params Vector of parameters for parametric delay distributions
  * @param delay_params_groups Array of indices for accessing delay parameters
- * @param delay_dist Array of distribution types (0: lognormal, 1: gamma)
- * @param left_truncate Whether to left-truncate the PMF (1) or not (0)
+ * @param delay_dist Array of distribution types using primarycensored
+ *   convention (1: lognormal, 2: gamma, 3: weibull, 4: exponential)
+ * @param left_truncate Left truncation point (0 for no truncation)
  * @param reverse_pmf Whether to reverse the PMF (1) or not (0)
  * @param cumulative Whether to return cumulative (1) or daily (0) values
  * @return A vector containing the (reversed) PMF of length len
@@ -81,7 +82,8 @@ vector get_delay_rev_pmf(
         discretised_pmf(
           delay_params[start:end],
           delay_max[delay_types_id[i]] + 1,
-          delay_dist[delay_types_id[i]]
+          delay_dist[delay_types_id[i]],
+          0
       );
       new_len = current_len + delay_max[delay_types_id[i]];
       if (current_len == 1) { // first delay
@@ -127,7 +129,8 @@ vector get_delay_rev_pmf(
  * @param delay_params_mean Vector of prior means for delay parameters
  * @param delay_params_sd Vector of prior standard deviations for delay parameters
  * @param delay_params_groups Array of indices for accessing delay parameters
- * @param delay_dist Array of distribution types (0: lognormal, 1: gamma)
+ * @param delay_dist Array of distribution types using primarycensored
+ *   convention (1: lognormal, 2: gamma, 3: weibull, 4: exponential)
  * @param weight Array of weights for each delay distribution in the log density
  *
  * @ingroup delay_handlers
@@ -156,6 +159,65 @@ void delays_lp(vector delay_params,
       }
     }
   }
+}
+
+/**
+ * Update log prior density for estimated nonparametric delays
+ *
+ * Applies Gamma(alpha, 1) priors to the raw vector that backs the
+ * estimated nonparametric PMFs. Once normalised within each ragged
+ * segment, this induces a Dirichlet(alpha) prior on the segment.
+ * See https://mc-stan.org/docs/stan-users-guide/simplexes.html for
+ * the gamma-normalisation construction.
+ *
+ * @param delay_np_est_raw Raw gamma-distributed values backing each
+ *   estimated nonparametric PMF segment.
+ * @param delay_np_est_alpha Dirichlet concentration parameters,
+ *   matched element-wise to delay_np_est_raw.
+ *
+ * @ingroup delay_handlers
+ */
+void delays_np_lp(
+  vector delay_np_est_raw, vector delay_np_est_alpha
+) {
+  if (num_elements(delay_np_est_raw) == 0) return;
+  delay_np_est_raw ~ gamma(delay_np_est_alpha, 1);
+}
+
+/**
+ * Combine fixed and estimated nonparametric delay PMFs
+ *
+ * Returns a copy of the fixed PMF vector with the estimated entries
+ * overwritten by per-segment normalisation of the raw gamma values.
+ * Fixed entries and structural zeros are left unchanged.
+ *
+ * @param delay_np_pmf Fixed PMF vector (concatenated ragged array).
+ * @param delay_n_np_est Number of estimated nonparametric delays.
+ * @param delay_np_est_groups Ragged-array boundaries into
+ *   delay_np_est_raw (length delay_n_np_est + 1).
+ * @param delay_np_est_pos For each estimated element, its position
+ *   within delay_np_pmf.
+ * @param delay_np_est_raw Raw gamma values backing each segment.
+ * @return A vector of length num_elements(delay_np_pmf) containing
+ *   the combined PMF.
+ *
+ * @ingroup delay_handlers
+ */
+vector combine_np_pmf(
+  vector delay_np_pmf, int delay_n_np_est,
+  array[] int delay_np_est_groups, array[] int delay_np_est_pos,
+  vector delay_np_est_raw
+) {
+  vector[num_elements(delay_np_pmf)] ret = delay_np_pmf;
+  for (i in 1:delay_n_np_est) {
+    int es = delay_np_est_groups[i];
+    int ee = delay_np_est_groups[i + 1] - 1;
+    real seg_sum = sum(delay_np_est_raw[es:ee]);
+    for (j in es:ee) {
+      ret[delay_np_est_pos[j]] = delay_np_est_raw[j] / seg_sum;
+    }
+  }
+  return ret;
 }
 
 /**

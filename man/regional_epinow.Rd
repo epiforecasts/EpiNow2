@@ -15,7 +15,6 @@ regional_epinow(
   obs = obs_opts(),
   forecast = forecast_opts(),
   stan = stan_opts(),
-  horizon,
   CrIs = c(0.2, 0.5, 0.9),
   target_folder = NULL,
   target_date,
@@ -71,9 +70,6 @@ forecasting will be done.}
 to \code{\link[=stan_opts]{stan_opts()}}. Can be used to override \code{data}, \code{init}, and \code{verbose}
 settings if desired.}
 
-\item{horizon}{Deprecated; use \code{forecast} instead to specify the predictive
-horizon}
-
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{target_folder}{Character string specifying where to save results (will
@@ -90,7 +86,8 @@ Defaults to 7.}
 options are the individual regional estimates ("regions"),  samples
 ("samples"), plots ("plots"), copying the individual region dated folder into
 a latest folder (if \code{target_folder} is not null, set using "latest"), the
-stan fit of the underlying model ("fit"), and an overall summary across
+stan fit of the underlying model ("fit"), the full \code{\link[=estimate_infections]{estimate_infections()}}
+return object ("estimate_infections"), and an overall summary across
 regions ("summary"). The default is to return samples and plots alongside
 summarised estimates and summary statistics. If \code{target_folder} is not NULL
 then the default is also to copy all results into a latest folder.}
@@ -118,7 +115,6 @@ A list of output stratified at the top level into regional output
 and across region output summary output
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#maturing}{\figure{lifecycle-maturing.svg}{options: alt='[Maturing]'}}}{\strong{[Maturing]}}
 Efficiently runs \code{\link[=epinow]{epinow()}} across multiple regions in an efficient manner
 and conducts basic data checks and cleaning such as removing regions with
 fewer than \code{non_zero_points} as these are unlikely to produce reasonable
@@ -145,7 +141,7 @@ old_opts <- options()
 options(mc.cores = ifelse(interactive(), 4, 1))
 
 # uses example case vector
-cases <- example_confirmed[1:60]
+cases <- example_confirmed[1:40]
 cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "testland"],
   cases[, region := "realland"]

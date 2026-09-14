@@ -6,9 +6,10 @@
 \usage{
 \method{summary}{estimate_infections}(
   object,
-  type = c("snapshot", "parameters", "samples"),
-  date = NULL,
+  type = c("snapshot", "parameters"),
+  target_date = NULL,
   params = NULL,
+  CrIs = c(0.2, 0.5, 0.9),
   ...
 )
 }
@@ -16,26 +17,29 @@
 \item{object}{A list of output as produced by "estimate_infections".}
 
 \item{type}{A character vector of data types to return. Defaults to
-"snapshot" but also supports "parameters", and "samples". "snapshot" return
-a summary at a given date (by default the latest date informed by data).
-"parameters" returns summarised parameter estimates that can be further
-filtered using \code{params} to show just the parameters of interest and date.
-"samples" similarly returns posterior
-samples.}
+"snapshot" but also supports "parameters". "snapshot" returns a summary at
+a given date (by default the latest date informed by data). "parameters"
+returns summarised parameter estimates that can be further filtered using
+\code{params} to show just the parameters of interest and date.
 
-\item{date}{A date in the form "yyyy-mm-dd" to inspect estimates for.}
+Note: \code{type = "samples"} is deprecated. Use \code{\link[=get_samples]{get_samples()}} instead.}
+
+\item{target_date}{Date, defaults to maximum found in the data if not
+specified.}
 
 \item{params}{A character vector of parameters to filter for.}
 
-\item{...}{Pass additional arguments to \code{report_summary}}
+\item{CrIs}{Numeric vector of credible intervals to calculate.}
+
+\item{...}{Pass additional arguments to \code{report_summary} when
+\code{type = "snapshot"}.}
 }
 \value{
 Returns a \verb{<data.frame>} of summary output
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 \code{summary} method for class "estimate_infections".
 }
 \seealso{
-summary estimate_infections report_summary
+\code{\link[=summary.epinow]{summary.epinow()}} \code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=report_summary]{report_summary()}}
 }

@@ -19,7 +19,6 @@ forecasts unless set explicitly here.}
 A \verb{<forecast_opts>} object of forecast setting.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the arguments passed to underlying stan
 backend functions via \code{\link[=stan_sampling_opts]{stan_sampling_opts()}} and \code{\link[=stan_vb_opts]{stan_vb_opts()}}. Custom
 settings can be supplied which override the defaults.
@@ -28,5 +27,5 @@ settings can be supplied which override the defaults.
 forecast_opts(horizon = 28, accumulate = 7)
 }
 \seealso{
-fill_missing
+\code{\link[=fill_missing]{fill_missing()}}
 }

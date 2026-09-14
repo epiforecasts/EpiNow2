@@ -1,6 +1,6 @@
 #' Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Fits an integer adjusted exponential, gamma or lognormal distribution using
 #' stan.
 #' @param values Numeric vector of values
@@ -105,14 +105,14 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 
   fit <- fit_model(stan_args, id = "dist_fit")
 
-  return(fit)
+  fit
 }
 
 
 #' Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution
 #' Parameters
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Fits an integer adjusted distribution to a subsampled bootstrap of data and
 #' then integrates the posterior samples into a single set of summary
 #' statistics. Can be used to generate a robust reporting delay that accounts
@@ -151,9 +151,11 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #' @examples
 #' \donttest{
 #' # lognormal
+#' # bootstraps and samples have been reduced for this example
+#' # for real analyses, use more
 #' delays <- rlnorm(500, log(5), 1)
 #' out <- bootstrapped_dist_fit(delays,
-#'   samples = 1000, bootstraps = 10,
+#'   samples = 500, bootstraps = 2,
 #'   dist = "lognormal"
 #' )
 #' out
@@ -194,7 +196,7 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
       out$shape <- sample(extract(fit)$alpha, samples)
       out$rate <- sample(extract(fit)$beta, samples)
     }
-    return(out)
+    out
   }
 
   if (bootstraps == 1) {
@@ -223,8 +225,8 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
     )
 
 
-    dist_samples <- purrr::list_transpose(dist_samples, simplify = FALSE)
-    dist_samples <- purrr::map(dist_samples, unlist)
+    dist_samples <- list_transpose(dist_samples, simplify = FALSE)
+    dist_samples <- map(dist_samples, unlist)
   }
 
   params <- lapply(dist_samples, function(x) {
@@ -236,14 +238,16 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
   } else {
     dist_max <- max(values)
   }
-  return(new_dist_spec(params = params, max = dist_max, distribution = dist))
+  new_dist_spec(params = params, max = dist_max, distribution = dist)
 }
 
 #' Estimate a Delay Distribution
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description `r lifecycle::badge("deprecated")`
 #' Estimate a log normal delay distribution from a vector of integer delays.
-#' Currently this function is a simple wrapper for [bootstrapped_dist_fit()].
+#'
+#' **This function is deprecated.** Please use [estimate_dist()] instead,
+#' which provides better handling of censoring and truncation.
 #'
 #' @param delays Integer vector of delays
 #'
@@ -251,13 +255,23 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #'
 #' @return A `<dist_spec>` summarising the bootstrapped distribution
 #' @export
-#' @seealso [bootstrapped_dist_fit()]
+#' @seealso [estimate_dist()] for the recommended replacement
 #' @examples
 #' \donttest{
 #' delays <- rlnorm(500, log(5), 1)
-#' estimate_delay(delays, samples = 1000, bootstraps = 10)
+#' # Old way (deprecated):
+#' # estimate_delay(delays, samples = 1000, bootstraps = 10)
+#'
+#' # New way: see ?estimate_dist and
+#' # vignette("estimate_dist_workflow") for date-based usage
 #' }
 estimate_delay <- function(delays, ...) {
+  deprecate_warn(
+    when = "1.9.0",
+    what = "estimate_delay()",
+    with = "estimate_dist()"
+  )
+
   bootstrapped_dist_fit(
     values = delays,
     dist = "lognormal", ...

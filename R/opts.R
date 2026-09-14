@@ -1,6 +1,6 @@
 #' Generation Time Distribution Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Returns generation time parameters in a format for lower level model use.
 #'
 #' @details Because the discretised renewal equation used in the package does
@@ -20,12 +20,18 @@
 #'   preventing the posteriors from shifting. If FALSE, no weight
 #'   will be applied, i.e. any parameters in `dist` will be treated as a single
 #'   parameters.
-#' @inheritParams apply_default_cdf_cutoff
+#' @inheritParams apply_default_cdf_max
+#' @param default_cdf_cutoff `r lifecycle::badge("deprecated")` Use
+#'   `default_cdf_max` instead.
 #' @importFrom cli cli_warn cli_abort col_blue
 #' @return A `<generation_time_opts>` object summarising the input delay
 #' distributions.
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] [Gamma()] [LogNormal()] [Fixed()]
+#' @seealso [distspec::Distributions] for how to specify the probability
+#' distributions (e.g. `Gamma()`, `LogNormal()`, `Fixed()`), provided by the
+#' \pkg{distspec} package and attached automatically with EpiNow2.
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Gamma()] [distspec::LogNormal()]
+#' [distspec::Fixed()]
 #' @export
 #' @examples
 #' # default settings with a fixed generation time of 1
@@ -45,8 +51,18 @@
 #'
 #' # An example generation time
 #' gt_opts(example_generation_time)
-gt_opts <- function(dist = Fixed(1), default_cdf_cutoff = 0.001,
-                    weight_prior = TRUE) {
+gt_opts <- function(dist = Fixed(1),
+                    default_cdf_max = getOption("EpiNow2.cdf_max", 0.999),
+                    weight_prior = TRUE,
+                    default_cdf_cutoff = lifecycle::deprecated()) {
+  cdf_max_set <- !missing(default_cdf_max)
+  if (lifecycle::is_present(default_cdf_cutoff)) {
+    deprecate_warn(
+      "1.10.0", "gt_opts(default_cdf_cutoff)", "gt_opts(default_cdf_max)"
+    )
+    default_cdf_max <- 1 - default_cdf_cutoff
+    cdf_max_set <- TRUE
+  }
   if (missing(dist)) {
     cli_warn(
       c(
@@ -58,14 +74,12 @@ gt_opts <- function(dist = Fixed(1), default_cdf_cutoff = 0.001,
       )
     )
   }
-  ## apply default CDF cutoff if `dist` is unconstrained
-  dist <- apply_default_cdf_cutoff(
-    dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
-  )
+  ## apply default CDF level if `dist` is unconstrained
+  dist <- apply_default_cdf_max(dist, default_cdf_max, cdf_max_set)
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("generation_time_opts", class(dist))
   check_generation_time(dist)
-  return(dist)
+  dist
 }
 
 #' @rdname generation_time_opts
@@ -74,7 +88,7 @@ generation_time_opts <- gt_opts
 
 #' Secondary Reports Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Returns a list of options defining the secondary model used in
 #' [estimate_secondary()]. This model is a combination of a convolution of
 #' previously observed primary reports combined with current primary reports
@@ -137,12 +151,12 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
   }
   opts <- modifyList(opts, list(...))
   attr(opts, "class") <- c("secondary_opts", class(opts))
-  return(opts)
+  opts
 }
 
 #' Delay Distribution Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
 #' @param dist A delay distribution or series of delay distributions. Default is
@@ -150,8 +164,9 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @inheritParams generation_time_opts
 #' @importFrom cli cli_abort
 #' @return A `<delay_opts>` object summarising the input delay distributions.
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Distributions]
+#' `vignette("delays")` for background on delay distributions
 #' @export
 #' @examples
 #' # no delays
@@ -171,29 +186,37 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #'
 #' # Multiple delays (in this case twice the same)
 #' delay_opts(delay + delay)
-delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
-                       weight_prior = TRUE) {
+delay_opts <- function(dist = Fixed(0),
+                       default_cdf_max = getOption("EpiNow2.cdf_max", 0.999),
+                       weight_prior = TRUE,
+                       default_cdf_cutoff = lifecycle::deprecated()) {
   assert_class(dist, "dist_spec")
-  ## apply default CDF cutoff if `dist` is unconstrained
-  dist <- apply_default_cdf_cutoff(
-    dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
-  )
+  cdf_max_set <- !missing(default_cdf_max)
+  if (lifecycle::is_present(default_cdf_cutoff)) {
+    deprecate_warn(
+      "1.10.0", "delay_opts(default_cdf_cutoff)", "delay_opts(default_cdf_max)"
+    )
+    default_cdf_max <- 1 - default_cdf_cutoff
+    cdf_max_set <- TRUE
+  }
+  ## apply default CDF level if `dist` is unconstrained
+  dist <- apply_default_cdf_max(dist, default_cdf_max, cdf_max_set)
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("delay_opts", class(dist))
   check_stan_delay(dist)
-  return(dist)
+  dist
 }
 
 #' Truncation Distribution Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Returns a truncation distribution formatted for usage by
 #' downstream functions. See [estimate_truncation()] for an approach to
 #' estimate these distributions.
 #'
 #' @param dist A delay distribution or series of delay distributions reflecting
 #' the truncation. It can be specified using the probability distributions
-#' interface in `EpiNow2` (See `?EpiNow2::Distributions`) or estimated using
+#' interface in `distspec` (See `?distspec::Distributions`) or estimated using
 #' [estimate_truncation()], which returns a `dist` object, suited
 #' for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
 #' no truncation.
@@ -208,8 +231,8 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' @return A `<trunc_opts>` object summarising the input truncation
 #' distribution.
 #'
-#' @seealso [convert_to_logmean()] [convert_to_logsd()]
-#' [bootstrapped_dist_fit()] \code{\link{Distributions}}
+#' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
+#' [bootstrapped_dist_fit()] [distspec::Distributions]
 #' @export
 #' @examples
 #' # no truncation
@@ -217,28 +240,36 @@ delay_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #'
 #' # truncation dist
 #' trunc_opts(dist = LogNormal(mean = 3, sd = 2, max = 10))
-trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
-                       weight_prior = FALSE) {
+trunc_opts <- function(dist = Fixed(0),
+                       default_cdf_max = getOption("EpiNow2.cdf_max", 0.999),
+                       weight_prior = FALSE,
+                       default_cdf_cutoff = lifecycle::deprecated()) {
   assert_class(dist, "dist_spec")
-  ## apply default CDF cutoff if `dist` is unconstrained
-  dist <- apply_default_cdf_cutoff(
-    dist, default_cdf_cutoff, !missing(default_cdf_cutoff)
-  )
+  cdf_max_set <- !missing(default_cdf_max)
+  if (lifecycle::is_present(default_cdf_cutoff)) {
+    deprecate_warn(
+      "1.10.0", "trunc_opts(default_cdf_cutoff)", "trunc_opts(default_cdf_max)"
+    )
+    default_cdf_max <- 1 - default_cdf_cutoff
+    cdf_max_set <- TRUE
+  }
+  ## apply default CDF level if `dist` is unconstrained
+  dist <- apply_default_cdf_max(dist, default_cdf_max, cdf_max_set)
   attr(dist, "weight_prior") <- weight_prior
   attr(dist, "class") <- c("trunc_opts", class(dist))
   check_stan_delay(dist)
-  return(dist)
+  dist
 }
 
 #' Time-Varying Reproduction Number Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the optional arguments for the time-varying
 #' reproduction number. Custom settings can be supplied which override the
 #' defaults.
 #'
-#' @param prior A `<dist_spec>` giving the prior of the initial reproduciton
-#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distributin
+#' @param prior A `<dist_spec>` giving the prior of the initial reproduction
+#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distribution
 #' with mean of 1 and standard deviation of 1: `LogNormal(mean = 1, sd = 1)`.
 #' A lower limit of 0 will be enforced automatically.
 #'
@@ -256,12 +287,31 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' conservative estimate of break point changes (alter this by setting
 #' `gp = NULL`).
 #'
-#' @param pop Integer, defaults to 0. Susceptible population initially present.
-#' Used to adjust Rt estimates in the forecast horizon based on the
-#' proportion of the population that is susceptible. When set to 0 no
-#' population adjustment is done.
+#' @param pop A `<dist_spec>` giving the initial susceptible population size.
+#' Used to adjust Rt estimates based on the proportion of the population that
+#' is susceptible. Defaults to `Fixed(0)` which means no population adjustment
+#' is done. See also `pop_floor` for the numerical stability floor used when
+#' population adjustment is enabled. When `pop` is specified, returned Rt
+#' estimates are adjusted for susceptible depletion (accounting for population
+#' immunity), and unadjusted Rt estimates are also provided in a separate
+#' output variable `R_unadjusted`. Adjusted Rt represents the effective
+#' reproduction number given the current susceptible population, whilst
+#' unadjusted Rt represents the reproduction number that would occur in a fully
+#' susceptible population.
 #'
-#' @param gp_on Character string, defaulting to  "R_t-1". Indicates how the
+#' @param pop_period Character string, defaulting to "forecast". Controls when
+#' susceptible population adjustment is applied. "forecast" only applies the
+#' adjustment to forecasts whilst "all" applies it to both data and forecasts.
+#'
+#' @param pop_floor Numeric. Minimum susceptible population used as a
+#' floor when adjusting for population depletion. This prevents numerical
+#' instability (division by zero) when the susceptible population approaches
+#' zero. Defaults to 1.0. Can be interpreted as representing a minimal
+#' ongoing import level. Note that if pop_floor > 0, cumulative infections
+#' can exceed the population size, though this effect is negligible when
+#' pop_floor is very small compared to the population size.
+#'
+#' @param gp_on Character string, defaulting to "R_t-1". Indicates how the
 #' Gaussian process, if in use, should be applied to Rt. Currently supported
 #' options are applying the Gaussian process to the last estimated Rt (i.e
 #' Rt = Rt-1 * GP), and applying the Gaussian process to a global mean (i.e Rt
@@ -269,11 +319,28 @@ trunc_opts <- function(dist = Fixed(0), default_cdf_cutoff = 0.001,
 #' but the method relying on a global mean will revert to this for real time
 #' estimates, which may not be desirable.
 #'
+#' @param growth_method Method used to compute growth rates from Rt. Options
+#' are "infections" (default) and "infectiousness". The option "infections"
+#' uses the classical approach, i.e. computing the log derivative on the number
+#' of new infections. The option "infectiousness" uses an alternative approach
+#' by Parag et al., which computes the log derivative of the infectiousness
+#' (i.e. the convolution of past infections with the generation time) and
+#' shifts it by the mean generation time. This can provide better stability
+#' and temporal matching with Rt. Note that, due to the temporal shift the
+#' "infectiousness" method results in undefined (NaN) growth rates for the most
+#' recent time points (equal to the mean generation time).
+#'
+#' @references Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic
+#' growth rates more informative than reproduction numbers? Journal of the
+#' Royal Statistical Society: Series A (Statistics in Society) 185, S5–S15
+#' (2022).
+#'
 #' @return An `<rt_opts>` object with settings defining the time-varying
 #' reproduction number.
 #' @inheritParams create_future_rt
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_abort
+#' @importFrom checkmate assert_number
 #' @export
 #' @examples
 #' # default settings
@@ -290,29 +357,49 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     use_breakpoints = TRUE,
                     future = "latest",
                     gp_on = c("R_t-1", "R0"),
-                    pop = 0) {
+                    pop = Fixed(0),
+                    pop_period = c("forecast", "all"),
+                    pop_floor = 1.0,
+                    growth_method = c("infections", "infectiousness")) {
   opts <- list(
     use_rt = use_rt,
     rw = rw,
     use_breakpoints = use_breakpoints,
     future = future,
-    pop = pop,
-    gp_on = arg_match(gp_on)
+    gp_on = arg_match(gp_on),
+    pop_period = arg_match(pop_period),
+    pop_floor = pop_floor,
+    growth_method = arg_match(growth_method)
   )
-
   # replace default settings with those specified by user
   if (opts$rw > 0) {
     opts$use_breakpoints <- TRUE
   }
 
-  if (is.list(prior) && !is(prior, "dist_spec")) {
-    cli_abort(
-      c(
-        "!" = "Specifying {.var prior} as a list is deprecated.",
-        "i" = "Use a {.cls dist_spec} instead."
+  assert_class(prior, "dist_spec")
+
+  if (is.numeric(pop)) {
+    deprecate_stop(
+      "1.9.0",
+      "rt_opts(pop = 'must be a `<dist_spec>`')",
+      details = paste(
+        "Population size must now be specified as a distribution.",
+        "For a fixed known population, wrap the value with `Fixed()`.",
+        "For example: `rt_opts(pop = Fixed(1000000))`."
       )
     )
   }
+  assert_class(pop, "dist_spec")
+  opts$pop <- pop
+  if (opts$pop_period == "all" && pop == Fixed(0)) {
+    cli_abort(
+      c(
+        "!" = "pop_period = \"all\" but pop is fixed at 0."
+      )
+    )
+  }
+
+  assert_number(pop_floor, lower = 0, finite = TRUE)
 
   if (opts$use_rt) {
     opts$prior <- prior
@@ -325,12 +412,12 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
   }
 
   attr(opts, "class") <- c("rt_opts", class(opts))
-  return(opts)
+  opts
 }
 
 #' Back Calculation Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`.
 #'
@@ -380,22 +467,14 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
     )
   }
   attr(backcalc, "class") <- c("backcalc_opts", class(backcalc))
-  return(backcalc)
+  backcalc
 }
 
 #' Approximate Gaussian Process Settings
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the structure of the approximate Gaussian
 #' process. Custom settings can be supplied which override the defaults.
-#'
-#' @param ls_mean Deprecated; use `ls` instead.
-#'
-#' @param ls_sd Deprecated; use `ls` instead.
-#'
-#' @param ls_min Deprecated; use `ls` instead.
-#'
-#' @param ls_max Deprecated; use `ls` instead.
 #'
 #' @param ls A `<dist_spec>` giving the prior distribution of the lengthscale
 #' parameter of the Gaussian process kernel on the scale of days. Defaults to
@@ -411,10 +490,6 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' `Normal(mean = 0, sd = 0.01)` (a lower limit of 0 will be enforced
 #' automatically to ensure positivity)
 #'
-#' @param alpha_mean Deprecated; use `alpha` instead.
-#'
-#' @param alpha_sd Deprecated; use `alpha` instead.
-#'
 #' @param kernel Character string, the type of kernel required. Currently
 #' supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
 #' periodic kernel, Ornstein-Uhlenbeck #' kernel ("ou"), and the periodic
@@ -424,9 +499,6 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' Common choices are 1/2, 3/2, and 5/2. If `kernel` is set
 #' to "ou", `matern_order` will be automatically set to 1/2. Only used if
 #' the kernel is set to "matern".
-#'
-#' @param matern_type Deprecated; Numeric, defaults to 3/2. Order of Matérn
-#' Kernel to use. Currently, the orders 1/2, 3/2, 5/2 and Inf are supported.
 #'
 #' @param basis_prop Numeric, the proportion of time points to use as basis
 #' functions. Defaults to 0.2. Decreasing this value results in a decrease in
@@ -457,74 +529,11 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' gp_opts(kernel = "periodic")
 gp_opts <- function(basis_prop = 0.2,
                     boundary_scale = 1.5,
-                    ls_mean = 21,
-                    ls_sd = 7,
-                    ls_min = 0,
-                    ls_max = 60,
                     ls = LogNormal(mean = 21, sd = 7, max = 60),
                     alpha = Normal(mean = 0, sd = 0.01),
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
-                    matern_type,
-                    w0 = 1.0,
-                    alpha_mean, alpha_sd) {
-  if (!missing(matern_type)) {
-    lifecycle::deprecate_stop(
-      "1.6.0", "gp_opts(matern_type)", "gp_opts(matern_order)"
-    )
-  }
-  if (!missing(alpha_mean)) {
-    lifecycle::deprecate_stop(
-      "1.7.0", "gp_opts(alpha_mean)", "gp_opts(alpha)"
-    )
-  }
-  if (!missing(alpha_sd)) {
-    lifecycle::deprecate_stop(
-      "1.7.0", "gp_opts(alpha_sd)", "gp_opts(alpha)"
-    )
-  }
-  if (!missing(ls_mean) || !missing(ls_sd) || !missing(ls_min) ||
-        !missing(ls_max)) {
-    if (!missing(ls)) {
-      cli_abort(
-        c(
-          "!" = "Both {.var ls} and at least one legacy argument
-          ({.var ls_mean}, {.var ls_sd}, {.var ls_min}, {.var ls_max}) have been
-          specified.",
-          "i" = "Only one of the should be used."
-        )
-      )
-    }
-    cli_abort(c(
-      "!" = "Specifying lengthscale priors via the {.var ls_mean}, {.var ls_sd},
-      {.var ls_min}, and {.var ls_max} arguments is deprecated.",
-      "i" = "Use the {.var ls} argument instead."
-    ))
-    if (ls_min > 0) {
-      cli_abort(
-        c(
-          "!" = "Lower lengthscale bounds of greater than 0 are no longer
-          supported. If this is a feature you need please open an Issue on the
-          EpiNow2 GitHub repository."
-        )
-      )
-    }
-    ls <- LogNormal(mean = ls_mean, sd = ls_sd, max = ls_max)
-  }
-
-  if (!missing(matern_type)) {
-    if (!missing(matern_order) && matern_type != matern_order) {
-      cli_abort(
-        c(
-          "!" = "{.var matern_order} and {.var matern_type} must be the same, if
-          both are supplied.",
-          "i" = "Rather only use {.var matern_order} only."
-        )
-      )
-    }
-    matern_order <- matern_type
-  }
-
+                    w0 = 1.0) {
   kernel <- arg_match(kernel)
   if (kernel == "se") {
     matern_order <- Inf
@@ -552,12 +561,13 @@ gp_opts <- function(basis_prop = 0.2,
   )
 
   attr(gp, "class") <- c("gp_opts", class(gp))
-  return(gp)
+  gp
 }
 
+# nolint start
 #' Observation Model Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the structure of the observation
 #' model. Custom settings can be supplied which override the defaults.
 #' @param family Character string defining the observation model. Options are
@@ -566,7 +576,7 @@ gp_opts <- function(basis_prop = 0.2,
 #'   parameter of the reporting process, used only if `familiy` is "negbin".
 #'   Internally parameterised such that this parameter is one over the square
 #'   root of the `phi` parameter for overdispersion of the
-#'   [negative binomial distribution](https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log). # nolint
+#'   [negative binomial distribution](https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log).
 #'   Defaults to a half-normal distribution with mean of 0 and
 #'   standard deviation of 0.25: `Normal(mean = 0, sd = 0.25)`. A lower limit of
 #'   zero will be enforced automatically.
@@ -583,10 +593,8 @@ gp_opts <- function(basis_prop = 0.2,
 #'   will be enforced automatically. If setting to a prior distribution and no
 #'   overreporting is expected, it might be sensible to set a maximum of 1 via
 #'   the `max` option when declaring the distribution.
-#' @param na Deprecated; use the [fill_missing()] function instead
 #' @param likelihood Logical, defaults to `TRUE`. Should the likelihood be
 #'   included in the model.
-#' @param phi deprecated; use `dispersion` instead
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #'   be returned by the model.
 #' @importFrom rlang arg_match
@@ -598,111 +606,52 @@ gp_opts <- function(basis_prop = 0.2,
 #' obs_opts()
 #'
 #' # Turn off day of the week effect
-#' obs_opts(week_effect = TRUE)
+#' obs_opts(week_effect = FALSE)
 #'
 #' # Scale reported data
 #' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
+# nolint end
 obs_opts <- function(family = c("negbin", "poisson"),
                      dispersion = Normal(mean = 0, sd = 0.25),
                      weight = 1,
                      week_effect = TRUE,
                      week_length = 7,
                      scale = Fixed(1),
-                     na = c("missing", "accumulate"),
                      likelihood = TRUE,
-                     return_likelihood = FALSE,
-                     phi) {
-  if (!missing(phi)) {
+                     return_likelihood = FALSE) {
+  family <- arg_match(family)
+  if (family != "negbin") {
     if (!missing(dispersion)) {
-      cli::cli_abort(
-        "Can't specify {.var disperion} and {.var phi}."
+      cli_warn(
+        "{.field dispersion} is ignored when {.field family} is
+          {.val {family}} and will be dropped."
       )
-    } else {
-      lifecycle::deprecate_stop(
-        "1.7.0",
-        "obs_opts(phi)",
-        "obs_opts(dispersion)",
-        details =
-          "The meaning of the `phi` and `dispersion` arguments are the same."
-      )
-      dispersion <- phi
     }
-  }
-  na_default_used <- missing(na)
-  if (!na_default_used) {
-    lifecycle::deprecate_stop(
-      "1.7.0",
-      "obs_opts(na)",
-      "fill_missing()",
-      details = c(
-        paste0(
-          "If NA values are not to be treated as missing use the ",
-          "`fill_missing()` function instead."
-        ),
-        "This argument will be removed in the next release of EpiNow2."
-      )
-    )
-  }
-  na <- arg_match(na)
-  if (na == "accumulate") {
-    # nolint start: duplicate_argument_linter
-    cli_inform(
-      c(
-        "i" = "Accumulating modelled values that correspond to NA values in the
-      data by adding them to the next non-NA data point.",
-        "i" = "This means that the first data point is not included in the
-      likelihood but used only to reset modelled observations to zero.",
-        "i" = "{col_red('If the first data point should be included in the
-        likelihood this can be achieved by using the `fill_missing()` function
-        with a non-zero `initial_missing` argument.')}"
-      ),
-      .frequency = "regularly",
-      .frequency_id = "obs_opts"
-    )
-    # nolint end
+    dispersion <- NULL
   }
   obs <- list(
-    family = arg_match(family),
+    family = family,
     dispersion = dispersion,
     weight = weight,
     week_effect = week_effect,
     week_length = week_length,
     scale = scale,
-    accumulate = as.integer(na == "accumulate"),
     likelihood = likelihood,
-    return_likelihood = return_likelihood,
-    na_as_missing_default_used = na_default_used
+    return_likelihood = return_likelihood
   )
 
-  for (param in c("dispersion", "scale")) {
-    if (is.numeric(obs[[param]])) {
-      cli_abort(
-        c(
-          "!" = "Specifying {.var {param}} as a numeric value is deprecated.",
-          "i" = "Use a {.cls dist_spec} instead using {.fn Fixed()}."
-        )
-      )
-      obs[[param]] <- Fixed(obs[[param]])
-    } else if (is.list(obs[[param]]) && !is(obs[[param]], "dist_spec")) {
-      cli_abort(
-        c(
-          "!" = "Specifying {.var {param}} as a list is deprecated.",
-          "i" = "Use a {.cls dist_spec} instead."
-        )
-      )
-      obs[[param]] <- Normal(mean = obs[[param]]$mean, sd = obs[[param]]$sd)
-    } else {
-      assert_class(obs[[param]], "dist_spec")
-    }
+  if (!is.null(obs$dispersion)) {
+    assert_class(obs$dispersion, "dist_spec")
   }
+  assert_class(obs$scale, "dist_spec")
 
   attr(obs, "class") <- c("obs_opts", class(obs))
-  return(obs)
+  obs
 }
 
 #' Stan Sampling Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #'  Defines a list specifying the arguments passed to either [rstan::sampling()]
 #'  or [cmdstanr::sample()]. Custom settings can be supplied which override the
 #'  defaults.
@@ -712,7 +661,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
 #'  as many processors as the hardware and RAM allow (up to the number of
 #'  chains).
 #'
-#' @param warmup Numeric, defaults to 250. Number of warmup samples per chain.
+#' @param warmup Numeric, defaults to 500. Number of warmup samples per chain.
 #'
 #' @param samples Numeric, default 2000. Overall number of posterior samples.
 #' When using multiple chains iterations per chain is samples / chains.
@@ -752,7 +701,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
 #' @examples
 #' stan_sampling_opts(samples = 2000)
 stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
-                               warmup = 250,
+                               warmup = 500,
                                samples = 2000,
                                chains = 4,
                                control = list(),
@@ -799,13 +748,12 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
       iter_sampling = ceiling(samples / opts$chains)
     ), control_def)
   }
-  opts <- c(opts, dot_args)
-  return(opts)
+  c(opts, dot_args)
 }
 
 #' Stan Variational Bayes Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the arguments passed to [rstan::vb()] or
 #' [cmdstanr::variational()]. Custom settings can be supplied which override the
 #' defaults.
@@ -835,8 +783,7 @@ stan_vb_opts <- function(samples = 2000,
     iter = iter,
     output_samples = samples
   )
-  opts <- c(opts, ...)
-  return(opts)
+  c(opts, ...)
 }
 
 #' Stan Laplace algorithm Options
@@ -864,9 +811,7 @@ stan_laplace_opts <- function(backend = "cmdstanr",
       )
     )
   }
-  opts <- list(trials = trials)
-  opts <- c(opts, ...)
-  return(opts)
+  c(list(trials = trials), ...)
 }
 
 #' Stan pathfinder algorithm Options
@@ -899,13 +844,12 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
     trials = trials,
     draws = samples
   )
-  opts <- c(opts, ...)
-  return(opts)
+  c(opts, ...)
 }
 
 #' Stan Options
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the arguments passed to underlying stan
 #' backend functions via [stan_sampling_opts()] and [stan_vb_opts()]. Custom
 #' settings can be supplied which override the defaults.
@@ -1006,11 +950,11 @@ stan_opts <- function(object = NULL,
 
   opts <- c(opts, list(return_fit = return_fit))
   attr(opts, "class") <- c("stan_opts", class(opts))
-  return(opts)
+  opts
 }
 
 #' Forecast options
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Defines a list specifying the arguments passed to underlying stan
 #' backend functions via [stan_sampling_opts()] and [stan_vb_opts()]. Custom
 #' settings can be supplied which override the defaults.
@@ -1022,7 +966,7 @@ stan_opts <- function(object = NULL,
 #'   the data used for fitting then the same accumulation will be used in
 #'   forecasts unless set explicitly here.
 #' @return A `<forecast_opts>` object of forecast setting.
-#' @seealso fill_missing
+#' @seealso [fill_missing()]
 #' @export
 #' @examples
 #' forecast_opts(horizon = 28, accumulate = 7)
@@ -1034,12 +978,12 @@ forecast_opts <- function(horizon = 7, accumulate) {
     opts$accumulate <- accumulate
   }
   attr(opts, "class") <- c("forecast_opts", class(opts))
-  return(opts)
+  opts
 }
 
 #' Forecast optiong
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description
 #' Define a list of `_opts()` to pass to [regional_epinow()] `_opts()` accepting
 #' arguments. This is useful when different settings are needed between regions
 #' within a single [regional_epinow()] call. Using [opts_list()] the defaults
@@ -1087,7 +1031,7 @@ opts_list <- function(opts, reported_cases, ...) {
 
 #' Filter Options for a Target Region
 #'
-#' @description `r lifecycle::badge("maturing")`
+#' @description
 #' A helper function that allows the selection of region specific settings if
 #' present and otherwise applies the overarching settings.
 #'
@@ -1106,37 +1050,41 @@ filter_opts <- function(opts, region) {
   out
 }
 
-#' Apply default CDF cutoff to a <dist_spec> if it is unconstrained
+#' Apply default CDF level to a <dist_spec> if it is unconstrained
 #'
 #' @param dist A <dist_spec>
-#' @param default_cdf_cutoff Numeric; default CDF cutoff to be used if an
-#'   unconstrained distribution is passed as `dist`. If `dist` is already
-#'   constrained by having a maximum or CDF cutoff this is ignored. Note that
-#'   this can only be done for <dist_spec> objects with fixed parameters.
-#' @param cdf_cutoff_set Logical; whether the default CDF cutoff has been set by
+#' @param default_cdf_max Numeric; default CDF level to keep the distribution up
+#'   to if an unconstrained distribution is passed as `dist`. If `dist` is
+#'   already constrained by having a maximum or CDF level this is ignored. Note
+#'   that this can only be done for <dist_spec> objects with fixed parameters.
+#'   Defaults to `getOption("EpiNow2.cdf_max", 0.999)`, so a session-wide
+#'   default can be set with, e.g., `options(EpiNow2.cdf_max = 0.995)`.
+#' @param cdf_max_set Logical; whether the default CDF level has been set by
 #'   the user; if yes and `dist` is constrained a warning is issued
 #' @importFrom cli cli_inform cli_warn
 #'
-#' @return A <dist_spec> with the default CDF cutoff set if previously not
+#' @return A <dist_spec> with the default CDF level set if previously not
 #'   constrained
 #' @keywords internal
-apply_default_cdf_cutoff <- function(dist, default_cdf_cutoff, cdf_cutoff_set) {
+apply_default_cdf_max <- function(dist, default_cdf_max, cdf_max_set) {
   if (!is_constrained(dist) && !anyNA(sd(dist))) {
     # nolint start: duplicate_argument_linter
     cli_inform(
       c(
         "i" = "Unconstrained distributon passed as a delay. ",
-        "i" = "Constraining with default CDF cutoff {default_cdf_cutoff}.",
+        "i" = "Constraining with default CDF level {default_cdf_max}.",
         "i" = "To silence this message, specify delay distributions
-      with {.var max} or {.var default_cdf_cutoff}."
+      with {.var max} or {.var default_cdf_max}."
       )
     )
     # nolint end
-    attr(dist, "cdf_cutoff") <- default_cdf_cutoff
-  } else if (cdf_cutoff_set) {
+    dist <- distspec::bound_dist( # nolint: namespace_linter.
+      dist, cdf_max = default_cdf_max
+    )
+  } else if (cdf_max_set) {
     cli_warn(
       c(
-        "!" = "Ignoring given default CDF cutoff.",
+        "!" = "Ignoring given default CDF level.",
         "i" = "Distribution is already constrained."
       )
     )

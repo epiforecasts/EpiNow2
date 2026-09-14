@@ -15,12 +15,11 @@
 \code{ggplot2} object
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 \code{\link[=plot]{plot()}} method for class \verb{<estimate_truncation>}. Returns
 a plot faceted over each dataset used in fitting with the latest
 observations as columns, the data observed at the time (and so truncated)
 as dots and the truncation adjusted estimates as a ribbon.
 }
 \seealso{
-plot estimate_truncation
+\code{\link[=estimate_truncation]{estimate_truncation()}}
 }

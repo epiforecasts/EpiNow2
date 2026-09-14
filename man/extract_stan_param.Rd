@@ -2,7 +2,7 @@
 % Please edit documentation in R/extract.R
 \name{extract_stan_param}
 \alias{extract_stan_param}
-\title{Extract a Parameter Summary from a Stan Object}
+\title{Extract a parameter summary from a Stan object}
 \usage{
 extract_stan_param(
   fit,
@@ -29,7 +29,6 @@ following variables: \code{variable}, \code{mean}, \code{mean_se}, \code{sd}, \c
 credible intervals present.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Extracts summarised parameter posteriors from a \code{stanfit} object using
 \code{rstan::summary()} in a format consistent with other summary functions
 in \code{{EpiNow2}}.

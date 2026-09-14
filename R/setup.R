@@ -1,6 +1,6 @@
 #' Setup Logging
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description
 #' Sets up `{futile.logger}` logging, which is integrated into `{EpiNow2}`.
 #' See the documentation for `{futile.logger}` for full details. By default
 #' `{EpiNow2}` prints all logs at the "INFO" level and returns them to the
@@ -36,23 +36,23 @@ setup_logging <- function(threshold = "INFO", file = NULL,
   cli_inform(
     "Logging threshold set at {threshold} for the name logger"
   )
-  futile.logger::flog.threshold(threshold, name = name)
+  flog.threshold(threshold, name = name)
 
   if (!is.null(file)) {
     if (mirror_to_console) {
       cli_inform(
         "Writing {col_blue(name)} logs to the console and: {.file {file}}."
       )
-      futile.logger::flog.appender(
-        futile.logger::appender.tee(file),
+      flog.appender(
+        appender.tee(file),
         name = name
       )
     } else {
       cli_inform(
         "Writing {col_blue(name)} logs to: {.file {file}}."
       )
-      futile.logger::flog.appender(
-        futile.logger::appender.file(file),
+      flog.appender(
+        appender.file(file),
         name = name
       )
     }
@@ -60,14 +60,14 @@ setup_logging <- function(threshold = "INFO", file = NULL,
     cli_inform(
       "Writing {col_blue(name)} logs to the console."
     )
-    futile.logger::flog.appender(futile.logger::appender.console(), name = name)
+    flog.appender(futile.logger::appender.console(), name = name)
   }
-  return(invisible(NULL))
+  invisible(NULL)
 }
 
 #' Setup Default Logging
 #'
-#' @description `r lifecycle::badge("questioning")`
+#' @description
 #' Sets up default logging. Usage of logging is currently being explored as the
 #' current setup cannot log stan errors or progress.
 #'
@@ -98,7 +98,7 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
     log_path$regional_epinow <- file.path(logs, "regional-epinow")
     log_path$epinow <- file.path(logs, "epinow")
 
-    purrr::walk(log_path, function(path) {
+    walk(log_path, function(path) {
       if (!dir.exists(path)) {
         dir.create(path, recursive = TRUE)
       }
@@ -114,12 +114,16 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
       mirror_to_console = mirror_epinow,
       name = "EpiNow2.epinow"
     )
+  } else {
+    # Suppress logging by setting threshold to FATAL
+    flog.threshold(futile.logger::FATAL)
+    flog.threshold(futile.logger::FATAL, name = "EpiNow2.epinow")
   }
-  return(invisible(NULL))
+  invisible(NULL)
 }
 
 #' Set up Future Backend
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' A utility function that aims to streamline the set up
 #' of the required future backend with sensible defaults for most users of
 #' [regional_epinow()]. More advanced users are recommended to setup their own
@@ -147,18 +151,21 @@ setup_default_logging <- function(logs = tempdir(check = TRUE),
 setup_future <- function(data,
                          strategies = c("multisession", "multisession"),
                          min_cores_per_worker = 4) {
-  if (!requireNamespace("future", quietly = TRUE)) {
-    futile.logger::flog.error(
-      "The future package is required for parallelisation"
-    )
+
+  required_pkgs <- c("future", "parallelly")
+  missing_pkgs <- required_pkgs[
+    !vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)
+  ]
+  if (length(missing_pkgs) > 0) {
     cli_abort(
       c(
-        "!" = "The future package is required for parallelisation."
+        "!" = "{.pkg {missing_pkgs}} required for {.fn setup_future}.",
+        "i" = "Install with {.code install.packages({deparse(missing_pkgs)})}."
       )
     )
   }
   if (length(strategies) > 2 || length(strategies) == 0) {
-    futile.logger::flog.error("1 or 2 strategies should be used")
+    flog.error("1 or 2 strategies should be used")
     cli_abort(
       c(
         "!" = "{.var strategies} must either be of length 1 or 2."
@@ -166,7 +173,7 @@ setup_future <- function(data,
     )
   }
   if (is.null(data$region)) {
-    futile.logger::flog.error("Reported cases must contain a region")
+    flog.error("Reported cases must contain a region")
     cli_abort(
       c(
         "!" = "Exactly 2 strategies should be used."
@@ -174,25 +181,25 @@ setup_future <- function(data,
     )
   }
   if (length(strategies) == 1) {
-    workers <- future::availableCores()
-    futile.logger::flog.info(
+    workers <- parallelly::availableCores()
+    flog.info(
       "Using %s workers with 1 core per worker",
       workers
     )
     future::plan(strategies,
       workers = workers,
-      gc = TRUE, earlySignal = TRUE
+      gc = TRUE
     )
     cores_per_worker <- 1
-    return(invisible(NULL))
+    invisible(NULL)
   } else {
     jobs <- length(unique(data$region))
     workers <- min(
-      ceiling(future::availableCores() / min_cores_per_worker), jobs
+      ceiling(parallelly::availableCores() / min_cores_per_worker), jobs
     )
-    cores_per_worker <- max(1, round(future::availableCores() / workers, 0))
+    cores_per_worker <- max(1, round(parallelly::availableCores() / workers, 0))
 
-    futile.logger::flog.info(
+    flog.info(
       "Using %s workers with %s cores per worker",
       workers, cores_per_worker
     )
@@ -200,29 +207,29 @@ setup_future <- function(data,
     future::plan(list(
       future::tweak(strategies[1],
         workers = workers,
-        gc = TRUE, earlySignal = TRUE
+        gc = TRUE
       ),
       future::tweak(strategies[2], workers = cores_per_worker)
     ))
-    return(cores_per_worker)
+    cores_per_worker
   }
 }
 
 #' Convert to Data Table
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Convenience function that sets the number of `{data.table}` cores to 1 and
 #' maps input to be a `{data.table}`
 #' @inheritParams estimate_infections
 #' @return A data table
 #' @keywords internal
 setup_dt <- function(data) {
-  suppressMessages(data.table::setDTthreads(threads = 1))
-  data.table::setDT(data)
+  suppressMessages(setDTthreads(threads = 1))
+  setDT(data)
 }
 
 #' Setup Target Folder for Saving
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' Sets up a folders for saving results
 #' @param target_date Date, defaults to maximum found in the data if not
 #' specified.
@@ -239,8 +246,8 @@ setup_target_folder <- function(target_folder = NULL, target_date) {
     if (!dir.exists(target_folder)) {
       dir.create(target_folder, recursive = TRUE)
     }
-    return(list(date = target_folder, latest = latest_folder))
+    list(date = target_folder, latest = latest_folder)
   } else {
-    return(invisible(NULL))
+    invisible(NULL)
   }
 }

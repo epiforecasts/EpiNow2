@@ -2,13 +2,24 @@ int<lower = 0> delay_n; // number of delay distributions
 int<lower = 0> delay_n_p; // number of parametric delay distributions
 int<lower = 0> delay_n_np; // number of nonparametric delay distributions
 array[delay_n_p] int<lower = 1> delay_max; // maximum delay distribution
-array[delay_n_p] int<lower = 0> delay_dist; // 0 = lognormal; 1 = gamma
+// primarycensored dist_id: 1 = lognormal; 2 = gamma; 3 = weibull
+array[delay_n_p] int<lower = 1> delay_dist;
 
 int<lower = 0> delay_np_pmf_length; // number of nonparametric pmf elements
 // ragged array of fixed PMFs
 vector<lower = 0, upper = 1>[delay_np_pmf_length] delay_np_pmf;
 // links to ragged array
 array[delay_n_np + 1] int<lower = 1> delay_np_pmf_groups;
+
+// Estimated nonparametric delays (Dirichlet via gamma trick)
+int<lower = 0> delay_n_np_est; // number of estimated NP delays
+int<lower = 0> delay_np_est_length; // total estimated elements
+array[delay_n_np_est + 1] int delay_np_est_groups; // ragged indexing
+vector<lower = 0>[delay_np_est_length] delay_np_est_alpha; // Dirichlet alpha
+// position of each estimated element within delay_np_pmf
+array[delay_np_est_length] int delay_np_est_pos;
+// maps estimated NP delay index to its position in delay_np_pmf
+array[delay_n_np_est] int delay_np_est_which;
 
 // number of parameters across all parametric delay distributions
 int<lower = 0> delay_params_length;

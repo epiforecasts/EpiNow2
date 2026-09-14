@@ -11,7 +11,8 @@ plot_estimates(
   hline,
   obs_as_col = TRUE,
   max_plot = 10,
-  estimate_type = c("Estimate", "Estimate based on partial data", "Forecast")
+  estimate_type = c("Estimate", "Estimate based on partial data", "Forecast"),
+  style = c("ribbon", "linerange")
 )
 }
 \arguments{
@@ -38,12 +39,16 @@ cases.}
 \item{estimate_type}{Character vector indicating the type of data to plot.
 Default to all types with supported options being: "Estimate", "Estimate
 based on partial data", and "Forecast".}
+
+\item{style}{Character string indicating the plot style for credible
+intervals. Options are "ribbon" (default) for shaded ribbon plots or
+"linerange" for error bars. Error bars can be clearer for weekly or
+aggregated data.}
 }
 \value{
 A \code{ggplot2} object
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#questioning}{\figure{lifecycle-questioning.svg}{options: alt='[Questioning]'}}}{\strong{[Questioning]}}
 Allows users to plot the output from \code{\link[=estimate_infections]{estimate_infections()}} easily.
 In future releases it may be depreciated in favour of increasing the
 functionality of the S3 plot methods.
@@ -54,31 +59,10 @@ out <- readRDS(system.file(
   package = "EpiNow2", "extdata", "example_estimate_infections.rds"
 ))
 
-# plot infections
-plot_estimates(
-  estimate = out$summarised[variable == "infections"],
-  reported = out$observations,
-  ylab = "Cases", max_plot = 2
-) + ggplot2::facet_wrap(~type, scales = "free_y")
-
-# plot reported cases estimated via Rt
-plot_estimates(
-  estimate = out$summarised[variable == "reported_cases"],
-  reported = out$observations,
-  ylab = "Cases"
-)
-
 # plot Rt estimates
 plot_estimates(
-  estimate = out$summarised[variable == "R"],
+  estimate = summary(out, type = "parameters", param = "R"),
   ylab = "Effective Reproduction No.",
   hline = 1
-)
-
-#' # plot Rt estimates without forecasts
-plot_estimates(
-  estimate = out$summarised[variable == "R"],
-  ylab = "Effective Reproduction No.",
-  hline = 1, estimate_type = "Estimate"
 )
 }

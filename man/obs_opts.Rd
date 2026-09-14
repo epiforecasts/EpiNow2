@@ -11,10 +11,8 @@ obs_opts(
   week_effect = TRUE,
   week_length = 7,
   scale = Fixed(1),
-  na = c("missing", "accumulate"),
   likelihood = TRUE,
-  return_likelihood = FALSE,
-  phi
+  return_likelihood = FALSE
 )
 }
 \arguments{
@@ -25,7 +23,7 @@ Negative binomial ("negbin"), the default, and Poisson.}
 parameter of the reporting process, used only if \code{familiy} is "negbin".
 Internally parameterised such that this parameter is one over the square
 root of the \code{phi} parameter for overdispersion of the
-\href{https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log}{negative binomial distribution}. # nolint
+\href{https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html#neg-binom-2-log}{negative binomial distribution}.
 Defaults to a half-normal distribution with mean of 0 and
 standard deviation of 0.25: \code{Normal(mean = 0, sd = 0.25)}. A lower limit of
 zero will be enforced automatically.}
@@ -47,21 +45,16 @@ will be enforced automatically. If setting to a prior distribution and no
 overreporting is expected, it might be sensible to set a maximum of 1 via
 the \code{max} option when declaring the distribution.}
 
-\item{na}{Deprecated; use the \code{\link[=fill_missing]{fill_missing()}} function instead}
-
 \item{likelihood}{Logical, defaults to \code{TRUE}. Should the likelihood be
 included in the model.}
 
 \item{return_likelihood}{Logical, defaults to \code{FALSE}. Should the likelihood
 be returned by the model.}
-
-\item{phi}{deprecated; use \code{dispersion} instead}
 }
 \value{
 An \verb{<obs_opts>} object of observation model settings.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Defines a list specifying the structure of the observation
 model. Custom settings can be supplied which override the defaults.
 }
@@ -70,7 +63,7 @@ model. Custom settings can be supplied which override the defaults.
 obs_opts()
 
 # Turn off day of the week effect
-obs_opts(week_effect = TRUE)
+obs_opts(week_effect = FALSE)
 
 # Scale reported data
 obs_opts(scale = Normal(mean = 0.2, sd = 0.02))

@@ -1,6 +1,6 @@
 #' Validate data input
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' `check_reports_valid()` checks that the supplied data is a `<data.frame>`,
 #' and that it has the right column names and types. In particular, it checks
 #' that the date column is in date format and does not contain NAs, and that
@@ -48,12 +48,36 @@ check_reports_valid <- function(data,
     assert_numeric(data$confirm, lower = 0)
   }
   assert_logical(data$accumulate, null.ok = TRUE)
-  return(invisible(data))
+  invisible(data)
+}
+
+#' Validate simulation input data frame
+#'
+#' @description
+#' Checks that a data frame intended for simulation has the required `date`
+#' column and a named numeric value column, that the `date` column is in date
+#' format, and that the value column contains non-negative numeric values with
+#' no missing entries.
+#'
+#' @param data A data frame with at least a `date` column and a numeric value
+#'   column named `value_col`.
+#' @param value_col Character; name of the numeric value column to check.
+#' @importFrom checkmate assert_data_frame assert_date assert_numeric
+#'   assert_subset
+#' @return Called for its side effects.
+#' @keywords internal
+check_simulation_input <- function(data, value_col) {
+  data_name <- deparse(substitute(data))
+  assert_data_frame(data, any.missing = FALSE, .var.name = data_name)
+  assert_subset(c("date", value_col), colnames(data))
+  assert_date(data$date)
+  assert_numeric(data[[value_col]], lower = 0)
+  invisible(data)
 }
 
 #' Validate probability distribution for passing to stan
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' `check_stan_delay()` checks that the supplied data is a `<dist_spec>`,
 #' that it is a supported distribution, and that is has a finite maximum.
 #'
@@ -104,18 +128,18 @@ check_stan_delay <- function(dist) {
       )
     )
   }
-  if (is.null(attr(dist, "cdf_cutoff"))) {
-    attr(dist, "cdf_cutoff") <- 0
+  if (is.null(attr(dist, "cdf_max"))) {
+    attr(dist, "cdf_max") <- 1
   }
-  assert_numeric(attr(dist, "cdf_cutoff"), lower = 0, upper = 1)
+  assert_numeric(attr(dist, "cdf_max"), lower = 0, upper = 1)
   # Check that `dist` has a finite maximum
-  if (any(is.infinite(max(dist))) && attr(dist, "cdf_cutoff") == 0) {
+  if (any(is.infinite(max(dist))) && attr(dist, "cdf_max") == 1) {
     cli_abort(
       c(
         "i" = "All distributions passed to the model need to have a
       {col_blue(\"finite maximum\")}, which can be achieved either by
       setting {.var max} or, if using a distribution with fixed parameters,
-      non-zero {.var cdf_cutoff}."
+      a {.var cdf_max} below 1."
       )
     )
   }
@@ -123,34 +147,29 @@ check_stan_delay <- function(dist) {
 
 #' Validate probability distribution for using as generation time
 #'
-#' @description `r lifecycle::badge("stable")`
+#' @description
 #' does all the checks in`check_stan_delay()` and additionally makes sure
 #' that if `dist` is nonparametric,  its first element is zero.
 #'
-#' @importFrom lifecycle deprecate_warn
 #' @inheritParams check_stan_delay
 #' @return Called for its side effects.
 #' @keywords internal
 check_generation_time <- function(dist) {
   # Do the standard delay checks
   check_stan_delay(dist)
-  ## check for nonparametric with nonzero first element
+  ## check for nonparametric with nonzero first element; an estimated
+  ## (Dirichlet-backed) delay has no fixed PMF, so resolve any uncertainty to
+  ## the prior mean before inspecting the first element (its first element is
+  ## zero exactly when the prior puts no mass there)
+  dist <- fix_parameters(dist, strategy = "mean")
   nonzero_first_element <- vapply(seq_len(ndist(dist)), function(i) {
     get_distribution(dist, i) == "nonparametric" && get_pmf(dist, i)[1] > 0
   }, logical(1))
   if (all(nonzero_first_element)) {
-    deprecate_stop(
-      "1.6.0",
-      I(
-        "Specifying nonparametric generation times with nonzero first element"
-      ),
-      details = c(
-        "Since zero generation times are not supported by the model, the
-         generation time will be left-truncated at one. ",
-        "In future versions this will cause an error. Please ensure that the
-         first element of the nonparametric generation interval is zero."
-      )
-    )
+    cli_abort(c(
+      "!" = "Nonparametric generation times must have zero as first element.",
+      "i" = "Zero generation times are not supported by the model."
+    ))
   }
 }
 
@@ -172,11 +191,116 @@ check_sparse_pmf_tail <- function(pmf, span = 5, tol = 1e-6) {
         "!" = "The PMF tail has {col_blue(span)} consecutive value{?s} smaller
         than {col_blue(tol)}.",
         "i" = "This will increase run times with very small increases in
-        accuracy. Consider using the `cdf_cutoff` argument when constructing
+        accuracy. Consider using the `cdf_max` argument when constructing
         the distribution object, or using the `bound_dist()` function."
       ),
       .frequency = "regularly",
       .frequency_id = "sparse_pmf_tail"
     )
   }
+}
+
+#' Check and warn if truncation distribution is longer than observed time
+#'
+#' @description Checks if the truncation distribution PMF is longer than the
+#' observed time period (excluding seeding time and forecast horizon). The
+#' truncation is applied to the observed time period in the Stan model, so
+#' having a truncation distribution longer than this period means the tail of
+#' the distribution will be used.
+#'
+#' @param stan_args List of stan arguments including the data element with
+#'   delay information from [create_stan_delays()]
+#' @param time_points Integer length of the observed time period
+#'   (t - seeding_time - horizon)
+#' @importFrom cli cli_warn col_blue
+#'
+#' @return Called for its side effects
+#' @keywords internal
+check_truncation_length <- function(stan_args, time_points) {
+  # Check if truncation exists
+  if (is.null(stan_args$data$delay_id_truncation) ||
+        stan_args$data$delay_id_truncation == 0) {
+    return(invisible())
+  }
+
+  # Check if there are any non-parametric delays
+  if (is.null(stan_args$data$delay_n_np) || stan_args$data$delay_n_np == 0) {
+    return(invisible())
+  }
+
+  # Map truncation to its position in the flat delays array
+  # delay_types_groups gives start and end indices for each delay type
+  trunc_start <- stan_args$data$delay_types_groups[
+    stan_args$data$delay_id_truncation
+  ]
+  trunc_end <- stan_args$data$delay_types_groups[
+    stan_args$data$delay_id_truncation + 1
+  ] - 1
+
+  # Get which truncation delays are non-parametric
+  trunc_range <- trunc_start:trunc_end
+  is_np <- stan_args$data$delay_types_p[trunc_range] == 0
+
+  # Return early if all truncation delays are parametric
+  if (!any(is_np)) {
+    return(invisible())
+  }
+
+  # Get the IDs of non-parametric truncation delays within the np array
+  np_trunc_ids <- stan_args$data$delay_types_id[trunc_range[is_np]]
+
+  # Calculate individual PMF lengths from the indices
+  np_pmf_lengths <- diff(stan_args$data$delay_np_pmf_groups)
+
+  # Extract truncation PMF length(s)
+  trunc_pmf_lengths <- np_pmf_lengths[np_trunc_ids]
+
+  # Check if any truncation PMF exceeds time_points
+  if (any(trunc_pmf_lengths > time_points)) {
+    cli_warn(
+      c(
+        "!" = "The truncation distribution is longer than the observed time
+        period.",
+        "i" = "The truncation distribution has length
+        {col_blue({max(trunc_pmf_lengths)})} but the observed time period is
+        {col_blue(time_points)} days. The tail of the truncation distribution
+        will be used."
+      ),
+      .frequency = "once",
+      .frequency_id = "truncation_longer_than_data"
+    )
+  }
+}
+
+#' Check that obs_opts settings unused by estimate_truncation are at defaults
+#'
+#' @description Internal check that warns when [obs_opts()] settings that are
+#' not consumed by the truncation model (week effect, scale, weight) have been
+#' set to non-default values. These settings are silently ignored by
+#' [estimate_truncation()] which only uses `family`, `dispersion`,
+#' `likelihood` and `return_likelihood`.
+#'
+#' @param obs An `<obs_opts>` object.
+#' @importFrom cli cli_warn
+#' @return Called for its side effects.
+#' @keywords internal
+check_truncation_obs_opts <- function(obs) {
+  defaults <- obs_opts()
+  unused <- c(
+    "weight", "week_effect", "week_length", "scale"
+  )
+  changed <- vapply(unused, function(field) {
+    !identical(obs[[field]], defaults[[field]])
+  }, logical(1))
+  if (any(changed)) {
+    cli_warn(
+      c(
+        "!" = "Some {.fun obs_opts} settings are ignored by
+          {.fun estimate_truncation}: {.field {unused[changed]}}.",
+        "i" = "Only {.field family} and {.field dispersion} are used by the
+          truncation model."
+      )
+    )
+  }
+  invisible()
 }

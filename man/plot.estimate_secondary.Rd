@@ -26,9 +26,8 @@ output.}
 A \code{ggplot} object.
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 \code{plot} method for class "estimate_secondary".
 }
 \seealso{
-plot estimate_secondary
+\code{\link[=estimate_secondary]{estimate_secondary()}}
 }

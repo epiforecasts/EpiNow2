@@ -11,7 +11,6 @@ A data frame containing cases reported on each date.
 example_confirmed
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 An example data frame of observed cases
 }
 \keyword{datasets}
