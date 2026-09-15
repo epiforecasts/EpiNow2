@@ -1,0 +1,403 @@
+# Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
+
+Fits an integer adjusted exponential, gamma or lognormal distribution
+using stan.
+
+## Usage
+
+``` r
+dist_fit(
+  values = NULL,
+  samples = 1000,
+  cores = 1,
+  chains = 2,
+  dist = "exp",
+  verbose = FALSE,
+  backend = "rstan"
+)
+```
+
+## Arguments
+
+- values:
+
+  Numeric vector of values
+
+- samples:
+
+  Numeric, number of samples to take. Must be \>= 1000. Defaults to
+  1000.
+
+- cores:
+
+  Numeric, defaults to 1. Number of CPU cores to use (no effect if
+  greater than the number of chains).
+
+- chains:
+
+  Numeric, defaults to 2. Number of MCMC chains to use. More is better
+  with the minimum being two.
+
+- dist:
+
+  Character string, which distribution to fit. Defaults to exponential
+  (`"exp"`) but gamma (`"gamma"`) and lognormal (`"lognormal"`) are also
+  supported.
+
+- verbose:
+
+  Logical, defaults to FALSE. Should verbose progress messages be
+  printed.
+
+- backend:
+
+  Character string indicating the backend to use for fitting stan
+  models. Supported arguments are "rstan" (default) or "cmdstanr".
+
+## Value
+
+A stan fit of an interval censored distribution
+
+## Examples
+
+``` r
+# \donttest{
+# integer adjusted exponential model
+dist_fit(rexp(1:100, 2),
+  samples = 1000, dist = "exp",
+  cores = ifelse(interactive(), 4, 1), verbose = TRUE
+)
+#> 
+#> SAMPLING FOR MODEL 'dist_fit' NOW (CHAIN 1).
+#> Chain 1: 
+#> Chain 1: Gradient evaluation took 4.5e-05 seconds
+#> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.45 seconds.
+#> Chain 1: Adjust your expectations accordingly!
+#> Chain 1: 
+#> Chain 1: 
+#> Chain 1: Iteration:    1 / 1500 [  0%]  (Warmup)
+#> Chain 1: Iteration:   50 / 1500 [  3%]  (Warmup)
+#> Chain 1: Iteration:  100 / 1500 [  6%]  (Warmup)
+#> Chain 1: Iteration:  150 / 1500 [ 10%]  (Warmup)
+#> Chain 1: Iteration:  200 / 1500 [ 13%]  (Warmup)
+#> Chain 1: Iteration:  250 / 1500 [ 16%]  (Warmup)
+#> Chain 1: Iteration:  300 / 1500 [ 20%]  (Warmup)
+#> Chain 1: Iteration:  350 / 1500 [ 23%]  (Warmup)
+#> Chain 1: Iteration:  400 / 1500 [ 26%]  (Warmup)
+#> Chain 1: Iteration:  450 / 1500 [ 30%]  (Warmup)
+#> Chain 1: Iteration:  500 / 1500 [ 33%]  (Warmup)
+#> Chain 1: Iteration:  550 / 1500 [ 36%]  (Warmup)
+#> Chain 1: Iteration:  600 / 1500 [ 40%]  (Warmup)
+#> Chain 1: Iteration:  650 / 1500 [ 43%]  (Warmup)
+#> Chain 1: Iteration:  700 / 1500 [ 46%]  (Warmup)
+#> Chain 1: Iteration:  750 / 1500 [ 50%]  (Warmup)
+#> Chain 1: Iteration:  800 / 1500 [ 53%]  (Warmup)
+#> Chain 1: Iteration:  850 / 1500 [ 56%]  (Warmup)
+#> Chain 1: Iteration:  900 / 1500 [ 60%]  (Warmup)
+#> Chain 1: Iteration:  950 / 1500 [ 63%]  (Warmup)
+#> Chain 1: Iteration: 1000 / 1500 [ 66%]  (Warmup)
+#> Chain 1: Iteration: 1001 / 1500 [ 66%]  (Sampling)
+#> Chain 1: Iteration: 1050 / 1500 [ 70%]  (Sampling)
+#> Chain 1: Iteration: 1100 / 1500 [ 73%]  (Sampling)
+#> Chain 1: Iteration: 1150 / 1500 [ 76%]  (Sampling)
+#> Chain 1: Iteration: 1200 / 1500 [ 80%]  (Sampling)
+#> Chain 1: Iteration: 1250 / 1500 [ 83%]  (Sampling)
+#> Chain 1: Iteration: 1300 / 1500 [ 86%]  (Sampling)
+#> Chain 1: Iteration: 1350 / 1500 [ 90%]  (Sampling)
+#> Chain 1: Iteration: 1400 / 1500 [ 93%]  (Sampling)
+#> Chain 1: Iteration: 1450 / 1500 [ 96%]  (Sampling)
+#> Chain 1: Iteration: 1500 / 1500 [100%]  (Sampling)
+#> Chain 1: 
+#> Chain 1:  Elapsed Time: 0.103 seconds (Warm-up)
+#> Chain 1:                0.048 seconds (Sampling)
+#> Chain 1:                0.151 seconds (Total)
+#> Chain 1: 
+#> 
+#> SAMPLING FOR MODEL 'dist_fit' NOW (CHAIN 2).
+#> Chain 2: Rejecting initial value:
+#> Chain 2:   Log probability evaluates to log(0), i.e. negative infinity.
+#> Chain 2:   Stan can't start sampling from this initial value.
+#> Chain 2: 
+#> Chain 2: Gradient evaluation took 2.9e-05 seconds
+#> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.29 seconds.
+#> Chain 2: Adjust your expectations accordingly!
+#> Chain 2: 
+#> Chain 2: 
+#> Chain 2: Iteration:    1 / 1500 [  0%]  (Warmup)
+#> Chain 2: Iteration:   50 / 1500 [  3%]  (Warmup)
+#> Chain 2: Iteration:  100 / 1500 [  6%]  (Warmup)
+#> Chain 2: Iteration:  150 / 1500 [ 10%]  (Warmup)
+#> Chain 2: Iteration:  200 / 1500 [ 13%]  (Warmup)
+#> Chain 2: Iteration:  250 / 1500 [ 16%]  (Warmup)
+#> Chain 2: Iteration:  300 / 1500 [ 20%]  (Warmup)
+#> Chain 2: Iteration:  350 / 1500 [ 23%]  (Warmup)
+#> Chain 2: Iteration:  400 / 1500 [ 26%]  (Warmup)
+#> Chain 2: Iteration:  450 / 1500 [ 30%]  (Warmup)
+#> Chain 2: Iteration:  500 / 1500 [ 33%]  (Warmup)
+#> Chain 2: Iteration:  550 / 1500 [ 36%]  (Warmup)
+#> Chain 2: Iteration:  600 / 1500 [ 40%]  (Warmup)
+#> Chain 2: Iteration:  650 / 1500 [ 43%]  (Warmup)
+#> Chain 2: Iteration:  700 / 1500 [ 46%]  (Warmup)
+#> Chain 2: Iteration:  750 / 1500 [ 50%]  (Warmup)
+#> Chain 2: Iteration:  800 / 1500 [ 53%]  (Warmup)
+#> Chain 2: Iteration:  850 / 1500 [ 56%]  (Warmup)
+#> Chain 2: Iteration:  900 / 1500 [ 60%]  (Warmup)
+#> Chain 2: Iteration:  950 / 1500 [ 63%]  (Warmup)
+#> Chain 2: Iteration: 1000 / 1500 [ 66%]  (Warmup)
+#> Chain 2: Iteration: 1001 / 1500 [ 66%]  (Sampling)
+#> Chain 2: Iteration: 1050 / 1500 [ 70%]  (Sampling)
+#> Chain 2: Iteration: 1100 / 1500 [ 73%]  (Sampling)
+#> Chain 2: Iteration: 1150 / 1500 [ 76%]  (Sampling)
+#> Chain 2: Iteration: 1200 / 1500 [ 80%]  (Sampling)
+#> Chain 2: Iteration: 1250 / 1500 [ 83%]  (Sampling)
+#> Chain 2: Iteration: 1300 / 1500 [ 86%]  (Sampling)
+#> Chain 2: Iteration: 1350 / 1500 [ 90%]  (Sampling)
+#> Chain 2: Iteration: 1400 / 1500 [ 93%]  (Sampling)
+#> Chain 2: Iteration: 1450 / 1500 [ 96%]  (Sampling)
+#> Chain 2: Iteration: 1500 / 1500 [100%]  (Sampling)
+#> Chain 2: 
+#> Chain 2:  Elapsed Time: 0.104 seconds (Warm-up)
+#> Chain 2:                0.049 seconds (Sampling)
+#> Chain 2:                0.153 seconds (Total)
+#> Chain 2: 
+#> Inference for Stan model: dist_fit.
+#> 2 chains, each with iter=1500; warmup=1000; thin=1; 
+#> post-warmup draws per chain=500, total post-warmup draws=1000.
+#> 
+#>             mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff Rhat
+#> lambda[1]   2.74    0.02 0.44   2.01   2.41   2.70   3.01   3.66   543 1.00
+#> lp__      -12.68    0.03 0.57 -14.22 -12.91 -12.46 -12.29 -12.24   290 1.01
+#> 
+#> Samples were drawn using NUTS(diag_e) at Tue Sep 15 11:16:39 2026.
+#> For each parameter, n_eff is a crude measure of effective sample size,
+#> and Rhat is the potential scale reduction factor on split chains (at 
+#> convergence, Rhat=1).
+
+
+# integer adjusted gamma model
+dist_fit(rgamma(1:100, 5, 5),
+  samples = 1000, dist = "gamma",
+  cores = ifelse(interactive(), 4, 1), verbose = TRUE
+)
+#> 
+#> SAMPLING FOR MODEL 'dist_fit' NOW (CHAIN 1).
+#> Chain 1: 
+#> Chain 1: Gradient evaluation took 0.000251 seconds
+#> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.51 seconds.
+#> Chain 1: Adjust your expectations accordingly!
+#> Chain 1: 
+#> Chain 1: 
+#> Chain 1: Iteration:    1 / 1500 [  0%]  (Warmup)
+#> Chain 1: Iteration:   50 / 1500 [  3%]  (Warmup)
+#> Chain 1: Iteration:  100 / 1500 [  6%]  (Warmup)
+#> Chain 1: Iteration:  150 / 1500 [ 10%]  (Warmup)
+#> Chain 1: Iteration:  200 / 1500 [ 13%]  (Warmup)
+#> Chain 1: Iteration:  250 / 1500 [ 16%]  (Warmup)
+#> Chain 1: Iteration:  300 / 1500 [ 20%]  (Warmup)
+#> Chain 1: Iteration:  350 / 1500 [ 23%]  (Warmup)
+#> Chain 1: Iteration:  400 / 1500 [ 26%]  (Warmup)
+#> Chain 1: Iteration:  450 / 1500 [ 30%]  (Warmup)
+#> Chain 1: Iteration:  500 / 1500 [ 33%]  (Warmup)
+#> Chain 1: Iteration:  550 / 1500 [ 36%]  (Warmup)
+#> Chain 1: Iteration:  600 / 1500 [ 40%]  (Warmup)
+#> Chain 1: Iteration:  650 / 1500 [ 43%]  (Warmup)
+#> Chain 1: Iteration:  700 / 1500 [ 46%]  (Warmup)
+#> Chain 1: Iteration:  750 / 1500 [ 50%]  (Warmup)
+#> Chain 1: Iteration:  800 / 1500 [ 53%]  (Warmup)
+#> Chain 1: Iteration:  850 / 1500 [ 56%]  (Warmup)
+#> Chain 1: Iteration:  900 / 1500 [ 60%]  (Warmup)
+#> Chain 1: Iteration:  950 / 1500 [ 63%]  (Warmup)
+#> Chain 1: Iteration: 1000 / 1500 [ 66%]  (Warmup)
+#> Chain 1: Iteration: 1001 / 1500 [ 66%]  (Sampling)
+#> Chain 1: Iteration: 1050 / 1500 [ 70%]  (Sampling)
+#> Chain 1: Iteration: 1100 / 1500 [ 73%]  (Sampling)
+#> Chain 1: Iteration: 1150 / 1500 [ 76%]  (Sampling)
+#> Chain 1: Iteration: 1200 / 1500 [ 80%]  (Sampling)
+#> Chain 1: Iteration: 1250 / 1500 [ 83%]  (Sampling)
+#> Chain 1: Iteration: 1300 / 1500 [ 86%]  (Sampling)
+#> Chain 1: Iteration: 1350 / 1500 [ 90%]  (Sampling)
+#> Chain 1: Iteration: 1400 / 1500 [ 93%]  (Sampling)
+#> Chain 1: Iteration: 1450 / 1500 [ 96%]  (Sampling)
+#> Chain 1: Iteration: 1500 / 1500 [100%]  (Sampling)
+#> Chain 1: 
+#> Chain 1:  Elapsed Time: 1.93 seconds (Warm-up)
+#> Chain 1:                1.237 seconds (Sampling)
+#> Chain 1:                3.167 seconds (Total)
+#> Chain 1: 
+#> 
+#> SAMPLING FOR MODEL 'dist_fit' NOW (CHAIN 2).
+#> Chain 2: 
+#> Chain 2: Gradient evaluation took 0.000255 seconds
+#> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 2.55 seconds.
+#> Chain 2: Adjust your expectations accordingly!
+#> Chain 2: 
+#> Chain 2: 
+#> Chain 2: Iteration:    1 / 1500 [  0%]  (Warmup)
+#> Chain 2: Iteration:   50 / 1500 [  3%]  (Warmup)
+#> Chain 2: Iteration:  100 / 1500 [  6%]  (Warmup)
+#> Chain 2: Iteration:  150 / 1500 [ 10%]  (Warmup)
+#> Chain 2: Iteration:  200 / 1500 [ 13%]  (Warmup)
+#> Chain 2: Iteration:  250 / 1500 [ 16%]  (Warmup)
+#> Chain 2: Iteration:  300 / 1500 [ 20%]  (Warmup)
+#> Chain 2: Iteration:  350 / 1500 [ 23%]  (Warmup)
+#> Chain 2: Iteration:  400 / 1500 [ 26%]  (Warmup)
+#> Chain 2: Iteration:  450 / 1500 [ 30%]  (Warmup)
+#> Chain 2: Iteration:  500 / 1500 [ 33%]  (Warmup)
+#> Chain 2: Iteration:  550 / 1500 [ 36%]  (Warmup)
+#> Chain 2: Iteration:  600 / 1500 [ 40%]  (Warmup)
+#> Chain 2: Iteration:  650 / 1500 [ 43%]  (Warmup)
+#> Chain 2: Iteration:  700 / 1500 [ 46%]  (Warmup)
+#> Chain 2: Iteration:  750 / 1500 [ 50%]  (Warmup)
+#> Chain 2: Iteration:  800 / 1500 [ 53%]  (Warmup)
+#> Chain 2: Iteration:  850 / 1500 [ 56%]  (Warmup)
+#> Chain 2: Iteration:  900 / 1500 [ 60%]  (Warmup)
+#> Chain 2: Iteration:  950 / 1500 [ 63%]  (Warmup)
+#> Chain 2: Iteration: 1000 / 1500 [ 66%]  (Warmup)
+#> Chain 2: Iteration: 1001 / 1500 [ 66%]  (Sampling)
+#> Chain 2: Iteration: 1050 / 1500 [ 70%]  (Sampling)
+#> Chain 2: Iteration: 1100 / 1500 [ 73%]  (Sampling)
+#> Chain 2: Iteration: 1150 / 1500 [ 76%]  (Sampling)
+#> Chain 2: Iteration: 1200 / 1500 [ 80%]  (Sampling)
+#> Chain 2: Iteration: 1250 / 1500 [ 83%]  (Sampling)
+#> Chain 2: Iteration: 1300 / 1500 [ 86%]  (Sampling)
+#> Chain 2: Iteration: 1350 / 1500 [ 90%]  (Sampling)
+#> Chain 2: Iteration: 1400 / 1500 [ 93%]  (Sampling)
+#> Chain 2: Iteration: 1450 / 1500 [ 96%]  (Sampling)
+#> Chain 2: Iteration: 1500 / 1500 [100%]  (Sampling)
+#> Chain 2: 
+#> Chain 2:  Elapsed Time: 2.067 seconds (Warm-up)
+#> Chain 2:                1.161 seconds (Sampling)
+#> Chain 2:                3.228 seconds (Total)
+#> Chain 2: 
+#> WARN [2026-09-15 11:16:46] dist_fit (chain: 1, 2): Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#bulk-ess - 
+#> WARN [2026-09-15 11:16:46] dist_fit (chain: 1, 2): Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#tail-ess - 
+#> Inference for Stan model: dist_fit.
+#> 2 chains, each with iter=1500; warmup=1000; thin=1; 
+#> post-warmup draws per chain=500, total post-warmup draws=1000.
+#> 
+#>                mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff Rhat
+#> alpha_raw[1]   0.84    0.04 0.53   0.09   0.43   0.74   1.16   2.01   221 1.04
+#> beta_raw[1]    0.90    0.04 0.54   0.03   0.49   0.81   1.26   2.09   158 1.03
+#> alpha[1]       6.01    0.04 0.53   5.26   5.60   5.91   6.33   7.18   221 1.04
+#> beta[1]        5.99    0.04 0.54   5.12   5.58   5.90   6.35   7.17   158 1.03
+#> lp__         -15.60    0.12 1.54 -19.98 -16.24 -15.17 -14.50 -13.99   156 1.02
+#> 
+#> Samples were drawn using NUTS(diag_e) at Tue Sep 15 11:16:46 2026.
+#> For each parameter, n_eff is a crude measure of effective sample size,
+#> and Rhat is the potential scale reduction factor on split chains (at 
+#> convergence, Rhat=1).
+
+# integer adjusted lognormal model
+dist_fit(rlnorm(1:100, log(5), 0.2),
+  samples = 1000, dist = "lognormal",
+  cores = ifelse(interactive(), 4, 1), verbose = TRUE
+)
+#> 
+#> SAMPLING FOR MODEL 'dist_fit' NOW (CHAIN 1).
+#> Chain 1: 
+#> Chain 1: Gradient evaluation took 4.6e-05 seconds
+#> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.46 seconds.
+#> Chain 1: Adjust your expectations accordingly!
+#> Chain 1: 
+#> Chain 1: 
+#> Chain 1: Iteration:    1 / 1500 [  0%]  (Warmup)
+#> Chain 1: Iteration:   50 / 1500 [  3%]  (Warmup)
+#> Chain 1: Iteration:  100 / 1500 [  6%]  (Warmup)
+#> Chain 1: Iteration:  150 / 1500 [ 10%]  (Warmup)
+#> Chain 1: Iteration:  200 / 1500 [ 13%]  (Warmup)
+#> Chain 1: Iteration:  250 / 1500 [ 16%]  (Warmup)
+#> Chain 1: Iteration:  300 / 1500 [ 20%]  (Warmup)
+#> Chain 1: Iteration:  350 / 1500 [ 23%]  (Warmup)
+#> Chain 1: Iteration:  400 / 1500 [ 26%]  (Warmup)
+#> Chain 1: Iteration:  450 / 1500 [ 30%]  (Warmup)
+#> Chain 1: Iteration:  500 / 1500 [ 33%]  (Warmup)
+#> Chain 1: Iteration:  550 / 1500 [ 36%]  (Warmup)
+#> Chain 1: Iteration:  600 / 1500 [ 40%]  (Warmup)
+#> Chain 1: Iteration:  650 / 1500 [ 43%]  (Warmup)
+#> Chain 1: Iteration:  700 / 1500 [ 46%]  (Warmup)
+#> Chain 1: Iteration:  750 / 1500 [ 50%]  (Warmup)
+#> Chain 1: Iteration:  800 / 1500 [ 53%]  (Warmup)
+#> Chain 1: Iteration:  850 / 1500 [ 56%]  (Warmup)
+#> Chain 1: Iteration:  900 / 1500 [ 60%]  (Warmup)
+#> Chain 1: Iteration:  950 / 1500 [ 63%]  (Warmup)
+#> Chain 1: Iteration: 1000 / 1500 [ 66%]  (Warmup)
+#> Chain 1: Iteration: 1001 / 1500 [ 66%]  (Sampling)
+#> Chain 1: Iteration: 1050 / 1500 [ 70%]  (Sampling)
+#> Chain 1: Iteration: 1100 / 1500 [ 73%]  (Sampling)
+#> Chain 1: Iteration: 1150 / 1500 [ 76%]  (Sampling)
+#> Chain 1: Iteration: 1200 / 1500 [ 80%]  (Sampling)
+#> Chain 1: Iteration: 1250 / 1500 [ 83%]  (Sampling)
+#> Chain 1: Iteration: 1300 / 1500 [ 86%]  (Sampling)
+#> Chain 1: Iteration: 1350 / 1500 [ 90%]  (Sampling)
+#> Chain 1: Iteration: 1400 / 1500 [ 93%]  (Sampling)
+#> Chain 1: Iteration: 1450 / 1500 [ 96%]  (Sampling)
+#> Chain 1: Iteration: 1500 / 1500 [100%]  (Sampling)
+#> Chain 1: 
+#> Chain 1:  Elapsed Time: 0.241 seconds (Warm-up)
+#> Chain 1:                0.091 seconds (Sampling)
+#> Chain 1:                0.332 seconds (Total)
+#> Chain 1: 
+#> 
+#> SAMPLING FOR MODEL 'dist_fit' NOW (CHAIN 2).
+#> Chain 2: 
+#> Chain 2: Gradient evaluation took 7.3e-05 seconds
+#> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.73 seconds.
+#> Chain 2: Adjust your expectations accordingly!
+#> Chain 2: 
+#> Chain 2: 
+#> Chain 2: Iteration:    1 / 1500 [  0%]  (Warmup)
+#> Chain 2: Iteration:   50 / 1500 [  3%]  (Warmup)
+#> Chain 2: Iteration:  100 / 1500 [  6%]  (Warmup)
+#> Chain 2: Iteration:  150 / 1500 [ 10%]  (Warmup)
+#> Chain 2: Iteration:  200 / 1500 [ 13%]  (Warmup)
+#> Chain 2: Iteration:  250 / 1500 [ 16%]  (Warmup)
+#> Chain 2: Iteration:  300 / 1500 [ 20%]  (Warmup)
+#> Chain 2: Iteration:  350 / 1500 [ 23%]  (Warmup)
+#> Chain 2: Iteration:  400 / 1500 [ 26%]  (Warmup)
+#> Chain 2: Iteration:  450 / 1500 [ 30%]  (Warmup)
+#> Chain 2: Iteration:  500 / 1500 [ 33%]  (Warmup)
+#> Chain 2: Iteration:  550 / 1500 [ 36%]  (Warmup)
+#> Chain 2: Iteration:  600 / 1500 [ 40%]  (Warmup)
+#> Chain 2: Iteration:  650 / 1500 [ 43%]  (Warmup)
+#> Chain 2: Iteration:  700 / 1500 [ 46%]  (Warmup)
+#> Chain 2: Iteration:  750 / 1500 [ 50%]  (Warmup)
+#> Chain 2: Iteration:  800 / 1500 [ 53%]  (Warmup)
+#> Chain 2: Iteration:  850 / 1500 [ 56%]  (Warmup)
+#> Chain 2: Iteration:  900 / 1500 [ 60%]  (Warmup)
+#> Chain 2: Iteration:  950 / 1500 [ 63%]  (Warmup)
+#> Chain 2: Iteration: 1000 / 1500 [ 66%]  (Warmup)
+#> Chain 2: Iteration: 1001 / 1500 [ 66%]  (Sampling)
+#> Chain 2: Iteration: 1050 / 1500 [ 70%]  (Sampling)
+#> Chain 2: Iteration: 1100 / 1500 [ 73%]  (Sampling)
+#> Chain 2: Iteration: 1150 / 1500 [ 76%]  (Sampling)
+#> Chain 2: Iteration: 1200 / 1500 [ 80%]  (Sampling)
+#> Chain 2: Iteration: 1250 / 1500 [ 83%]  (Sampling)
+#> Chain 2: Iteration: 1300 / 1500 [ 86%]  (Sampling)
+#> Chain 2: Iteration: 1350 / 1500 [ 90%]  (Sampling)
+#> Chain 2: Iteration: 1400 / 1500 [ 93%]  (Sampling)
+#> Chain 2: Iteration: 1450 / 1500 [ 96%]  (Sampling)
+#> Chain 2: Iteration: 1500 / 1500 [100%]  (Sampling)
+#> Chain 2: 
+#> Chain 2:  Elapsed Time: 0.242 seconds (Warm-up)
+#> Chain 2:                0.121 seconds (Sampling)
+#> Chain 2:                0.363 seconds (Total)
+#> Chain 2: 
+#> Inference for Stan model: dist_fit.
+#> 2 chains, each with iter=1500; warmup=1000; thin=1; 
+#> post-warmup draws per chain=500, total post-warmup draws=1000.
+#> 
+#>            mean se_mean   sd   2.5%    25%    50%    75%  97.5% n_eff Rhat
+#> mu[1]      1.63    0.00 0.02   1.59   1.61   1.63   1.64   1.66   838    1
+#> sigma[1]   0.15    0.00 0.02   0.12   0.14   0.15   0.16   0.18   707    1
+#> lp__     -68.94    0.04 0.98 -71.72 -69.31 -68.61 -68.23 -68.01   514    1
+#> 
+#> Samples were drawn using NUTS(diag_e) at Tue Sep 15 11:16:47 2026.
+#> For each parameter, n_eff is a crude measure of effective sample size,
+#> and Rhat is the potential scale reduction factor on split chains (at 
+#> convergence, Rhat=1).
+# }
+```

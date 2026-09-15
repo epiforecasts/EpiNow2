@@ -1,0 +1,11 @@
+<map id="update_infectiousness" name="update_infectiousness">
+<area shape="rect" id="Node000001" title=" " alt="" coords="389,55,540,80"/>
+<area shape="rect" id="Node000002" href="$group__rt__estimation.html#ga07d04705ba5398e382a44148fdd9e40a" title=" " alt="" coords="173,5,341,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="392,53,314,34,315,29,393,48"/>
+<area shape="rect" id="Node000004" href="$group__rt__estimation.html#ga2d17e8b4b2a9d69dd576396d14b218e9" title=" " alt="" coords="210,55,304,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="373,70,304,70,304,65,373,65"/>
+<area shape="rect" id="Node000005" href="$group__infections__estimation.html#ga947c109296876a454a1e55182ad319cf" title="Generate infections using a renewal equation approach." alt="" coords="190,104,324,130"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="393,87,315,106,314,101,392,82"/>
+<area shape="rect" id="Node000003" href="$group__rt__estimation.html#ga9bfab4c9541ada333f8674240c185ae8" title=" " alt="" coords="5,5,125,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="157,21,125,21,125,16,157,16"/>
+</map>
