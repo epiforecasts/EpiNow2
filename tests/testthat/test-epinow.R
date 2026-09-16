@@ -260,6 +260,20 @@ test_that("epinow errors if target_date is not a Date or character string", {
 })
 
 
+test_that("epinow errors if target_date is missing (NA)", {
+  expect_error(
+    epinow(
+      data = reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      target_date = as.Date(NA),
+      logs = NULL, verbose = FALSE
+    ),
+    "missing"
+  )
+})
+
+
 test_that("epinow fails if given NUTs arguments when using variational inference", {
   expect_error(capture.output(suppressMessages(suppressWarnings(
     epinow(

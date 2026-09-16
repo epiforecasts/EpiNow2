@@ -129,7 +129,7 @@ epinow <- function(data,
       )
       target_date <- as.Date(target_date)
     }
-    assert_date(target_date, len = 1)
+    assert_date(target_date, len = 1, any.missing = FALSE)
   }
   assert_string(id)
   assert_logical(verbose)
