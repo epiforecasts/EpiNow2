@@ -122,7 +122,7 @@ regional_epinow <- function(data,
   # make timing compulsory
   output["timing"] <- TRUE
   if (missing(target_date)) {
-    target_date <- as.character(max(data$date))
+    target_date <- max(data$date)
   }
 
   # setup logging -----------------------------------------------------------
