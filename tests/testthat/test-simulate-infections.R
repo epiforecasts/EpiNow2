@@ -21,7 +21,16 @@ test_that("simulate_infections works as expected with standard parameters", {
     generation_time = gt_opts(Fixed(1))
   )
   expect_equal(nrow(sim), 2 * nrow(R))
-  expect_snapshot_output(sim)
+  # infections are deterministic; snapshot them. reported_cases are random
+  # observation draws whose exact values are not reproducible across
+  # architectures (the Stan RNG stream differs on x86_64 vs arm64), so only
+  # their structure is checked.
+  infections <- sim[sim$variable == "infections", ]
+  reported <- sim[sim$variable == "reported_cases", ]
+  expect_snapshot_output(infections)
+  expect_equal(nrow(reported), nrow(infections))
+  expect_true(all(reported$value >= 0))
+  expect_true(all(reported$value == round(reported$value)))
   set.seed(Sys.time())
 })
 
@@ -34,7 +43,16 @@ test_that("simulate_infections works as expected with additional parameters", {
     seeding_time = 10
   )
   expect_equal(nrow(sim), 2 * nrow(R))
-  expect_snapshot_output(sim)
+  # infections are deterministic; snapshot them. reported_cases are random
+  # observation draws whose exact values are not reproducible across
+  # architectures (the Stan RNG stream differs on x86_64 vs arm64), so only
+  # their structure is checked.
+  infections <- sim[sim$variable == "infections", ]
+  reported <- sim[sim$variable == "reported_cases", ]
+  expect_snapshot_output(infections)
+  expect_equal(nrow(reported), nrow(infections))
+  expect_true(all(reported$value >= 0))
+  expect_true(all(reported$value == round(reported$value)))
   set.seed(Sys.time())
 })
 
