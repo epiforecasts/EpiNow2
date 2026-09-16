@@ -1,3 +1,4 @@
+# nolint start: line_length_linter.
 #' Estimate a Secondary Observation from a Primary Observation
 #'
 #' @description
@@ -11,7 +12,7 @@
 #' [here](https://gist.github.com/seabbs/4dad3958ca8d83daca8f02b143d152e6) for
 #' a prototype function that may be used to estimate and forecast a secondary
 #' observation from a primary across multiple regions and
-#' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R) # nolint
+#' [here](https://github.com/epiforecasts/covid.german.forecasts/blob/master/rt-forecast/death-from-cases.R)
 #' for an application forecasting Covid-19 deaths in Germany and Poland.
 #'
 #' @param secondary A call to [secondary_opts()] or a list containing the
@@ -140,6 +141,7 @@
 #'
 #' options(old_opts)
 #' }
+# nolint end: line_length_linter.
 estimate_secondary <- function(data,
                                secondary = secondary_opts(),
                                delays = delay_opts(

@@ -14,7 +14,11 @@ test_that("simulate_secondary works as expected with standard parameters", {
   set.seed(123)
   sim <- test_simulate_secondary()
   expect_equal(nrow(sim), nrow(cases))
-  expect_snapshot_output(sim)
+  # secondary observations are random draws whose exact values are not
+  # reproducible across architectures (the Stan RNG stream differs on x86_64
+  # vs arm64), so only their structure is checked rather than snapshotted.
+  expect_true(all(sim$secondary >= 0))
+  expect_true(all(sim$secondary == round(sim$secondary)))
   set.seed(Sys.time())
 })
 
@@ -25,7 +29,11 @@ test_that("simulate_secondary works as expected with additional parameters", {
     obs = obs_opts(family = "negbin", dispersion = Fixed(0.5))
   )
   expect_equal(nrow(sim), nrow(cases))
-  expect_snapshot_output(sim)
+  # secondary observations are random draws whose exact values are not
+  # reproducible across architectures (the Stan RNG stream differs on x86_64
+  # vs arm64), so only their structure is checked rather than snapshotted.
+  expect_true(all(sim$secondary >= 0))
+  expect_true(all(sim$secondary == round(sim$secondary)))
   set.seed(Sys.time())
 })
 
