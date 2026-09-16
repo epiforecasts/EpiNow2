@@ -32,6 +32,7 @@
 ## Internal
 
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
+- Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
 
 # EpiNow2 1.9.0
 

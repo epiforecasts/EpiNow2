@@ -305,6 +305,12 @@ filter_leading_zeros <- function(data, obs_column = "confirm", by = NULL) {
 ##' of the case counts to a threshold. If the 7-day average is above the
 ##' threshold, the zero case count is replaced with `NA`.
 ##'
+##' @details
+##' `average_7_day` is calculated with an 8-day rolling sum divided by 7 so
+##' that, for a row with `confirm == 0` (the only case it is used for), it
+##' equates to the 7-day right-aligned moving average at the previous data
+##' point.
+##'
 ##' @param threshold Numeric, defaults to `Inf`. Indicates if detected zero
 ##'   cases are meaningful by using a threshold number of cases based on the
 ##'   7-day average. If the average is above this threshold at the time of a
@@ -321,9 +327,7 @@ apply_zero_threshold <- function(data, threshold = Inf,
   assert_numeric(threshold)
   reported_cases <- setDT(data)
 
-  # Calculate `average_7_day` which for rows with `confirm == 0`
-  # (the only instance where this is being used) equates to the 7-day
-  # right-aligned moving average at the previous data point.
+  # 7-day average as of the previous data point (see @details)
   reported_cases <-
     reported_cases[
       ,
