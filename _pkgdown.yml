@@ -76,6 +76,8 @@ navbar:
       - text: Production use
       - text: Using epinow() for running in production mode
         href: articles/epinow.html
+      - text: Using the stanr and stanli backends
+        href: articles/stanr.html
     casestudies:
       text: Case studies
       menu:
