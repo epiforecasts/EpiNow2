@@ -14,7 +14,7 @@ stan_sampling_opts(
   seed = as.integer(runif(1, 1, 1e+08)),
   future = FALSE,
   max_execution_time = Inf,
-  backend = c("rstan", "cmdstanr"),
+  backend = c("rstan", "cmdstanr", "stanli"),
   ...
 )
 }
@@ -53,14 +53,16 @@ returned. If less than 2 chains return within the allowed time then
 estimation will fail with an informative error.}
 
 \item{backend}{Character string indicating the backend to use for fitting
-stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
+stan models. Supported arguments are "rstan" (default), "cmdstanr" or
+"stanli". The "stanli" backend interprets the model rather than compiling
+it, so it needs no C++ toolchain, but it only supports \code{method = "sampling"}.}
 
-\item{...}{Additional parameters to pass to \code{\link[rstan:sampling]{rstan::sampling()}} or
-\code{\link[cmdstanr:sample]{cmdstanr::sample()}}.}
+\item{...}{Additional parameters to pass to \code{\link[rstan:sampling]{rstan::sampling()}},
+\code{\link[cmdstanr:sample]{cmdstanr::sample()}} or \code{\link[stanli:sample_cstan]{stanli::sample_cstan()}}.}
 }
 \value{
-A list of arguments to pass to \code{\link[rstan:sampling]{rstan::sampling()}} or
-\code{\link[cmdstanr:sample]{cmdstanr::sample()}}.
+A list of arguments to pass to \code{\link[rstan:sampling]{rstan::sampling()}},
+\code{\link[cmdstanr:sample]{cmdstanr::sample()}} or \code{\link[stanli:sample_cstan]{stanli::sample_cstan()}}.
 }
 \description{
 Defines a list specifying the arguments passed to either \code{\link[rstan:sampling]{rstan::sampling()}}

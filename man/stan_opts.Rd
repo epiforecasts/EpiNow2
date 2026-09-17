@@ -8,15 +8,16 @@ stan_opts(
   object = NULL,
   samples = 2000,
   method = c("sampling", "vb", "laplace", "pathfinder"),
-  backend = c("rstan", "cmdstanr"),
+  backend = c("rstan", "cmdstanr", "stanli"),
   return_fit = TRUE,
   ...
 )
 }
 \arguments{
 \item{object}{Stan model object. By default uses the compiled package
-default if using the "rstan" backend, and the default model obtained using
-\code{\link[=epinow2_cmdstan_model]{epinow2_cmdstan_model()}} if using the "cmdstanr" backend.}
+default if using the "rstan" backend, the default model obtained using
+\code{\link[=epinow2_cmdstan_model]{epinow2_cmdstan_model()}} if using the "cmdstanr" backend, and the model
+obtained using \code{\link[=epinow2_stanli_model]{epinow2_stanli_model()}} if using the "stanli" backend.}
 
 \item{samples}{Numeric, defaults to 2000. Number of posterior samples.}
 
@@ -27,7 +28,9 @@ variational inference ("vb") and, as experimental features if the
 laplace algorithm ("laplace") or pathfinder ("pathfinder").}
 
 \item{backend}{Character string indicating the backend to use for fitting
-stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
+stan models. Supported arguments are "rstan" (default), "cmdstanr" or
+"stanli". The "stanli" backend interprets the model rather than compiling
+it, so it needs no C++ toolchain, but it only supports \code{method = "sampling"}.}
 
 \item{return_fit}{Logical, defaults to TRUE. Should the fit stan model be
 returned.}

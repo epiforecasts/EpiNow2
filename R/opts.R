@@ -691,12 +691,12 @@ obs_opts <- function(family = c("negbin", "poisson"),
 #'
 #' @inheritParams stan_opts
 #'
-#' @param ... Additional parameters to pass to [rstan::sampling()] or
-#' [cmdstanr::sample()].
+#' @param ... Additional parameters to pass to [rstan::sampling()],
+#' [cmdstanr::sample()] or [stanli::sample_cstan()].
 #' @importFrom utils modifyList
-#' @importFrom cli cli_warn
-#' @return A list of arguments to pass to [rstan::sampling()] or
-#' [cmdstanr::sample()].
+#' @importFrom cli cli_warn cli_abort col_blue
+#' @return A list of arguments to pass to [rstan::sampling()],
+#' [cmdstanr::sample()] or [stanli::sample_cstan()].
 #' @export
 #' @examples
 #' stan_sampling_opts(samples = 2000)
@@ -709,10 +709,20 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                seed = as.integer(runif(1, 1, 1e8)),
                                future = FALSE,
                                max_execution_time = Inf,
-                               backend = c("rstan", "cmdstanr"),
+                               backend = c("rstan", "cmdstanr", "stanli"),
                                ...) {
   dot_args <- list(...)
   backend <- arg_match(backend)
+  if (backend == "stanli" && future) {
+    cli_abort(
+      c(
+        "!" = "The {col_blue('stanli')} backend does not support running
+        chains via {.pkg future}.",
+        "i" = "It runs chains in parallel itself; set {.var cores} to the
+        number of chains to run at once."
+      )
+    )
+  }
   opts <- list(
     chains = chains,
     save_warmup = save_warmup,
@@ -741,7 +751,7 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
       control = control_def,
       iter = ceiling(samples / opts$chains) + warmup
     ))
-  } else if (backend == "cmdstanr") {
+  } else if (backend %in% c("cmdstanr", "stanli")) {
     opts <- c(opts, list(
       parallel_chains = cores,
       iter_warmup = warmup,
@@ -855,8 +865,9 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 #' settings can be supplied which override the defaults.
 #'
 #' @param object Stan model object. By default uses the compiled package
-#' default if using the "rstan" backend, and the default model obtained using
-#' [epinow2_cmdstan_model()] if using the "cmdstanr" backend.
+#' default if using the "rstan" backend, the default model obtained using
+#' [epinow2_cmdstan_model()] if using the "cmdstanr" backend, and the model
+#' obtained using [epinow2_stanli_model()] if using the "stanli" backend.
 #'
 #' @param samples Numeric, defaults to 2000. Number of posterior samples.
 #' @param method A character string, defaulting to sampling. Currently supports
@@ -866,7 +877,10 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 #' laplace algorithm ("laplace") or pathfinder ("pathfinder").
 #'
 #' @param backend Character string indicating the backend to use for fitting
-#' stan models. Supported arguments are "rstan" (default) or "cmdstanr".
+#' stan models. Supported arguments are "rstan" (default), "cmdstanr" or
+#' "stanli". The "stanli" backend interprets the model rather than compiling
+#' it, so it needs no C++ toolchain, but it only supports `method =
+#' "sampling"`.
 #'
 #' @param return_fit Logical, defaults to TRUE. Should the fit stan model be
 #' returned.
@@ -889,7 +903,7 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 stan_opts <- function(object = NULL,
                       samples = 2000,
                       method = c("sampling", "vb", "laplace", "pathfinder"),
-                      backend = c("rstan", "cmdstanr"),
+                      backend = c("rstan", "cmdstanr", "stanli"),
                       return_fit = TRUE,
                       ...) {
   method <- arg_match(method)
@@ -903,6 +917,9 @@ stan_opts <- function(object = NULL,
         to use the {col_blue('cmdstanr')} backend."
       )
     )
+  }
+  if (backend == "stanli") {
+    check_stanli_available()
   }
   opts <- list()
   if (!is.null(object)) {
@@ -918,6 +935,8 @@ stan_opts <- function(object = NULL,
       backend <- "rstan"
     } else if (inherits(object, "CmdStanModel")) {
       backend <- "cmdstanr"
+    } else if (inherits(object, "stanli_cstanmodel")) {
+      backend <- "stanli"
     } else {
       cli_abort(
         c(
@@ -926,8 +945,17 @@ stan_opts <- function(object = NULL,
       )
     }
   } else {
-    backend <- arg_match(backend, values = c("rstan", "cmdstanr"))
+    backend <- arg_match(backend, values = c("rstan", "cmdstanr", "stanli"))
     opts <- c(opts, list(backend = backend))
+  }
+  if (backend == "stanli" && method != "sampling") {
+    cli_abort(
+      c(
+        "!" = "The {col_blue('stanli')} backend only supports
+        {.var method} {.val sampling}.",
+        "i" = "You supplied {.val {method}}."
+      )
+    )
   }
   opts <- c(opts, list(
     object = object,
@@ -1079,7 +1107,8 @@ apply_default_cdf_max <- function(dist, default_cdf_max, cdf_max_set) {
     )
     # nolint end
     dist <- distspec::bound_dist( # nolint: namespace_linter.
-      dist, cdf_max = default_cdf_max
+      dist,
+      cdf_max = default_cdf_max
     )
   } else if (cdf_max_set) {
     cli_warn(
