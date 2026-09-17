@@ -391,10 +391,7 @@ real primary_lcdf(real p, int primary_id, array[] real primary_params,
   reject("primary_lcdf: unsupported primary_id ", primary_id);
 }
 int lognormal_lcdf_underflows(real y, real mu, real sigma) {
-  if (y <= 0) {
-    return 1;
-  }
-  return (log(y) - mu) / sigma < -38 ? 1 : 0;
+  return (y <= 0 || (log(y) - mu) / sigma < -38) ? 1 : 0;
 }
 real gengamma_lcdf(real y, real shape, real scale, real k) {
   return gamma_lcdf(pow(y / scale, shape) | k, 1);

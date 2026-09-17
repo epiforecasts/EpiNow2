@@ -26,6 +26,52 @@ invisible(pcd_load_stan_functions(
   output_file = output_file
 ))
 
+# Patches applied to the generated file
+#
+# These keep the vendored functions usable by Stan interfaces that interpret
+# the model rather than compiling it. Each patch must still apply, so a
+# failure here is a signal that upstream has changed and the patch needs
+# revisiting rather than something to skip.
+patches <- list(
+  list(
+    # An early return inside a branch on a parameter-dependent value has no
+    # compiled path in `stanli` when the function is reached from an ODE
+    # right-hand side, as it is here through `dist_lcdf`. The single-exit
+    # form is equivalent because Stan's `||` short-circuits, so `log(y)` is
+    # still never evaluated for non-positive `y`.
+    name = "lognormal_lcdf_underflows single exit",
+    from = paste(
+      "int lognormal_lcdf_underflows(real y, real mu, real sigma) {",
+      "  if (y <= 0) {",
+      "    return 1;",
+      "  }",
+      "  return (log(y) - mu) / sigma < -38 ? 1 : 0;",
+      "}",
+      sep = "\n"
+    ),
+    to = paste(
+      "int lognormal_lcdf_underflows(real y, real mu, real sigma) {",
+      "  return (y <= 0 || (log(y) - mu) / sigma < -38) ? 1 : 0;",
+      "}",
+      sep = "\n"
+    )
+  )
+)
+
+contents <- paste(readLines(output_file), collapse = "\n")
+for (patch in patches) {
+  if (!grepl(patch$from, contents, fixed = TRUE)) {
+    stop(
+      "Patch '", patch$name, "' no longer applies to the vendored file. ",
+      "Check whether upstream has changed and update or drop the patch.",
+      call. = FALSE
+    )
+  }
+  contents <- sub(patch$from, patch$to, contents, fixed = TRUE)
+  cat("Applied patch:", patch$name, "\n")
+}
+writeLines(contents, output_file)
+
 version <- packageVersion("primarycensored")
 all_funcs <- unique(unlist(lapply(
   funcs, pcd_stan_function_deps
