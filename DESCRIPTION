@@ -149,7 +149,7 @@ Suggests:
     rmarkdown,
     scoringutils,
     spelling,
-    stanli,
+    stanr,
     testthat,
     withr
 LinkingTo:
@@ -161,7 +161,7 @@ LinkingTo:
     StanHeaders (>= 2.26.0)
 Additional_repositories:
     https://production.r-multiverse.org/2026-06-15,
-    https://seantalts.r-universe.dev
+    https://andrjohns.r-universe.dev
 Biarch: true
 Config/testthat/edition: 3
 Config/Needs/dev:
