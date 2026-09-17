@@ -125,8 +125,8 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     }
 
     if ((inherits(fit, "stanfit") && fit@mode != 2L) ||
-      inherits(fit, "CmdStanMCMC") ||
-      inherits(fit, "stanli_cstanfit")) {
+          inherits(fit, "CmdStanMCMC") ||
+          inherits(fit, "stanli_cstanfit")) {
       fit
     } else {
       NULL
@@ -308,7 +308,7 @@ create_sampling_log_message <- function(args, method) {
     "sampling" = {
       # Exact mode - calculate parameters based on backend
       if (inherits(args$object, "CmdStanModel") ||
-        inherits(args$object, "stanli_cstanmodel")) {
+            inherits(args$object, "stanli_cstanmodel")) {
         total_samples <- args$iter_sampling * args$chains
         warmup_iterations <- args$iter_warmup
       } else {

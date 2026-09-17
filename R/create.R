@@ -255,7 +255,7 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
 
   # Warn if fixed population is smaller than cumulative cases
   if (rt$pop != Fixed(0) && !is.null(data) &&
-    get_distribution(rt$pop) == "fixed") {
+        get_distribution(rt$pop) == "fixed") {
     pop_value <- mean(rt$pop, ignore_uncertainty = TRUE)
     total_cases <- sum(data[!is.na(confirm)]$confirm, na.rm = TRUE)
 
@@ -679,7 +679,6 @@ set_fixed_param_opts <- function(stan) {
   stan
 }
 
-
 #' Create a List of Stan Arguments
 #'
 #' @description
@@ -735,7 +734,7 @@ create_stan_args <- function(stan = stan_opts(),
   }
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
-    inherits(stan$object, "CmdStanModel")) {
+        inherits(stan$object, "CmdStanModel")) {
     init <- 2
   }
   # stanli asks for a starting value for every declared parameter, including
@@ -765,7 +764,7 @@ create_stan_args <- function(stan = stan_opts(),
   # Drop Stan-internal deterministic quantities from rstan monitoring: their
   # NA R-hat would otherwise trigger a spurious convergence warning.
   if (!fixed_param && inherits(stan_args$object, "stanmodel") &&
-    is.null(stan_args$pars)) {
+        is.null(stan_args$pars)) {
     exclude <- character(0)
     if (model %in% c("estimate_infections", "estimate_secondary")) {
       exclude <- c(exclude, "delay_np_pmf_use")
@@ -983,8 +982,7 @@ create_stan_params <- function(params) {
   null_ids <- rep(0, sum(null_params))
   if (length(null_ids) > 0) {
     names(null_ids) <- paste(
-      "param_id", tparams$name[null_params],
-      sep = "_"
+      "param_id", tparams$name[null_params], sep = "_"
     )
     params <- params[!null_params]
     tparams <- transpose(params)

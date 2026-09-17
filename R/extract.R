@@ -237,8 +237,8 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     return(do.call(extract, extract_args))
   }
   if (!inherits(stan_fit, "CmdStanMCMC") &&
-    !inherits(stan_fit, "CmdStanFit") &&
-    !inherits(stan_fit, "stanli_cstanfit")) {
+        !inherits(stan_fit, "CmdStanFit") &&
+        !inherits(stan_fit, "stanli_cstanfit")) {
     cli_abort(
       "{.var stan_fit} must be a {.cls stanfit}, {.cls CmdStanMCMC},
       {.cls CmdStanFit} or {.cls stanli_cstanfit} object."

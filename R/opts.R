@@ -1107,8 +1107,7 @@ apply_default_cdf_max <- function(dist, default_cdf_max, cdf_max_set) {
     )
     # nolint end
     dist <- distspec::bound_dist( # nolint: namespace_linter.
-      dist,
-      cdf_max = default_cdf_max
+      dist, cdf_max = default_cdf_max
     )
   } else if (cdf_max_set) {
     cli_warn(
