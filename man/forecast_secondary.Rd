@@ -34,9 +34,10 @@ defaulting to "reported_cases". Only used when primary is of class
 \item{model}{A compiled stan model as returned by \code{\link[rstan:stan_model]{rstan::stan_model()}}.}
 
 \item{backend}{Character string indicating the backend to use for fitting
-stan models. Supported arguments are "rstan" (default), "cmdstanr" or
-"stanli". The "stanli" backend interprets the model rather than compiling
-it, so it needs no C++ toolchain, but it only supports \code{method = "sampling"}.}
+stan models. Supported arguments are "rstan" (default), "cmdstanr",
+"stanr" or "stanli". The last two both use the \code{stanr} package; "stanli"
+interprets the model rather than compiling it, so it needs no C++
+toolchain. Both only support \code{method = "sampling"}.}
 
 \item{samples}{Numeric, number of posterior samples to simulate from. The
 default is to use all samples in the \code{primary} input when present. If not

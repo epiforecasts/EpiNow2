@@ -14,8 +14,7 @@ The stan options with fixed parameter settings applied.
 }
 \description{
 Each backend asks for sampling from fixed parameters in a different way.
-\code{rstan} takes an algorithm name, \code{cmdstanr} takes a flag, and \code{stanli}
-selects it itself for models without parameters. The adaptation settings
-are dropped where they do not apply.
+\code{rstan} takes an algorithm name while the others take a flag. The
+adaptation settings are dropped where they do not apply.
 }
 \keyword{internal}

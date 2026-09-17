@@ -34,9 +34,10 @@ also supported.}
 be printed.}
 
 \item{backend}{Character string indicating the backend to use for fitting
-stan models. Supported arguments are "rstan" (default), "cmdstanr" or
-"stanli". The "stanli" backend interprets the model rather than compiling
-it, so it needs no C++ toolchain, but it only supports \code{method = "sampling"}.}
+stan models. Supported arguments are "rstan" (default), "cmdstanr",
+"stanr" or "stanli". The last two both use the \code{stanr} package; "stanli"
+interprets the model rather than compiling it, so it needs no C++
+toolchain. Both only support \code{method = "sampling"}.}
 }
 \value{
 A stan fit of an interval censored distribution
