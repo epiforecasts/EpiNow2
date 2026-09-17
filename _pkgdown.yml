@@ -115,6 +115,7 @@ articles:
   navbar: Production
   contents:
   - epinow
+  - stanr
 - title: Case studies
   navbar: ~
   contents:

@@ -133,18 +133,18 @@ epinow2_rstan_model <- function(model = "estimate_infections") {
 ##'   the backend)
 ##' @importFrom rlang arg_match
 ##' @keywords internal
-epinow2_stan_model <- function(backend = c(
-                                 "rstan", "cmdstanr", "stanr", "stanli"
-                               ),
-                               model = c(
-                                 "estimate_infections",
-                                 "simulate_infections",
-                                 "estimate_secondary",
-                                 "simulate_secondary",
-                                 "estimate_truncation",
-                                 "estimate_dist",
-                                 "dist_fit"
-                               )) {
+epinow2_stan_model <- function(
+  backend = c("rstan", "cmdstanr", "stanr", "stanli"),
+  model = c(
+    "estimate_infections",
+    "simulate_infections",
+    "estimate_secondary",
+    "simulate_secondary",
+    "estimate_truncation",
+    "estimate_dist",
+    "dist_fit"
+  )
+) {
   backend <- arg_match(backend)
   model <- arg_match(model)
   object <- switch(backend,
