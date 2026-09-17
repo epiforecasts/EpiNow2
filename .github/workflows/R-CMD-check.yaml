@@ -67,7 +67,6 @@ jobs:
             rmarkdown
             rcmdcheck
             any::cmdstanr
-            ${{ (matrix.config.os == 'ubuntu-latest' && matrix.config.r == 'release') && 'any::stanr' || '' }}
             testthat
             future
             future.apply

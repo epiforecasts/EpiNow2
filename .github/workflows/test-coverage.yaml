@@ -41,7 +41,6 @@ jobs:
           extra-packages: |
             covr
             any::cmdstanr
-            any::stanr
             testthat
             future
             future.apply
