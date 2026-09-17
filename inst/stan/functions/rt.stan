@@ -133,6 +133,12 @@ real R_to_r_newton_step(real R, real r, vector pmf) {
  * @param abs_tol Absolute tolerance for the Newton solver
  * @return The estimated growth rate r
  *
+ * @par Example
+ * For a generation time with probability `{0.1, 0.3, 0.4, 0.2}` of taking 1,
+ * 2, 3 or 4 days, the reversed PMF is `gt_rev_pmf = {0.2, 0.4, 0.3, 0.1}`.
+ * `R_to_r(1.5, gt_rev_pmf, 1e-6)` then returns a growth rate of
+ * approximately `0.254` per day.
+ *
  * @ingroup rt_estimation
  */
 real R_to_r(real R, vector gt_rev_pmf, real abs_tol) {
