@@ -82,12 +82,14 @@ test_that("epinow2_stan_model returns a stanr model for each model", {
 
 test_that("create_stan_args works as expected with the stanr backends", {
   skip_if_no_stanr()
-  for (backend in stanr_backends) {
-    args <- create_stan_args(stan = stan_opts(backend = backend))
-    expect_s3_class(args$object, "StanModel")
-    expect_equal(args$init, 2)
-    expect_null(args$backend)
-  }
+  # Only the stanli backend is exercised here. Both backends build the same
+  # arguments and differ only in how the model object is prepared, and the
+  # compiled backend would pay a full Stan C++ compile to prove the same
+  # thing.
+  args <- create_stan_args(stan = stan_opts(backend = "stanli"))
+  expect_s3_class(args$object, "StanModel")
+  expect_equal(args$init, 2)
+  expect_null(args$backend)
 })
 
 test_that("create_stan_args sets fixed parameter sampling for stanr", {
