@@ -689,17 +689,27 @@ obs_opts <- function(family = c("negbin", "poisson"),
 #' returned. If less than 2 chains return within the allowed time then
 #' estimation will fail with an informative error.
 #'
+#' @param init_method A character string, defaulting to "random". Determines
+#' how sampling is initialised. The default "random" initialises each chain
+#' from a random point (or the values supplied by `init` when calling
+#' [create_stan_args()]). Setting this to "pathfinder" instead runs the
+#' pathfinder algorithm first, using its estimate of the posterior to
+#' initialise sampling; this requires the "cmdstanr" backend.
+#'
 #' @inheritParams stan_opts
 #'
 #' @param ... Additional parameters to pass to [rstan::sampling()] or
 #' [cmdstanr::sample()].
 #' @importFrom utils modifyList
-#' @importFrom cli cli_warn
+#' @importFrom cli cli_warn cli_abort col_blue
 #' @return A list of arguments to pass to [rstan::sampling()] or
 #' [cmdstanr::sample()].
 #' @export
 #' @examples
 #' stan_sampling_opts(samples = 2000)
+#'
+#' # initialise sampling using the pathfinder algorithm
+#' stan_sampling_opts(backend = "cmdstanr", init_method = "pathfinder")
 stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                warmup = 500,
                                samples = 2000,
@@ -710,15 +720,27 @@ stan_sampling_opts <- function(cores = getOption("mc.cores", 1L),
                                future = FALSE,
                                max_execution_time = Inf,
                                backend = c("rstan", "cmdstanr"),
+                               init_method = c("random", "pathfinder"),
                                ...) {
   dot_args <- list(...)
   backend <- arg_match(backend)
+  init_method <- arg_match(init_method)
+  if (init_method == "pathfinder" && backend != "cmdstanr") {
+    cli_abort(
+      c(
+        "!" = "Backend must be set to {col_blue(\"cmdstanr\")} to
+        initialise sampling using the pathfinder algorithm.",
+        "i" = "Change {.var backend} to {col_blue(\"cmdstanr\")}."
+      )
+    )
+  }
   opts <- list(
     chains = chains,
     save_warmup = save_warmup,
     seed = seed,
     future = future,
-    max_execution_time = max_execution_time
+    max_execution_time = max_execution_time,
+    init_method = init_method
   )
   control_def <- list(adapt_delta = 0.9, max_treedepth = 12)
   control_def <- modifyList(control_def, control)
@@ -872,7 +894,10 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 #' returned.
 #'
 #' @param ... Additional parameters to pass to underlying option functions,
-#'   [stan_sampling_opts()] or [stan_vb_opts()], depending on the method
+#'   [stan_sampling_opts()] or [stan_vb_opts()], depending on the method. When
+#'   `method` is "sampling" this includes `init_method`, which can be set to
+#'   "pathfinder" to initialise sampling using the pathfinder algorithm (see
+#'   [stan_sampling_opts()]).
 #'
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_abort cli_warn col_blue
@@ -886,6 +911,9 @@ stan_pathfinder_opts <- function(backend = "cmdstanr",
 #'
 #' # using vb
 #' stan_opts(method = "vb")
+#'
+#' # initialise sampling using the pathfinder algorithm
+#' stan_opts(backend = "cmdstanr", init_method = "pathfinder")
 stan_opts <- function(object = NULL,
                       samples = 2000,
                       method = c("sampling", "vb", "laplace", "pathfinder"),

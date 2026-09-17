@@ -667,7 +667,9 @@ create_initial_conditions <- function(stan_data, params) {
 #'
 #' @param init Initial conditions passed to `{rstan}`. Defaults to "random"
 #' (initial values randomly drawn between -2 and 2) but can also be a
-#' function (as supplied by [create_initial_conditions()]).
+#' function (as supplied by [create_initial_conditions()]). Overridden when
+#' `stan$init_method` is "pathfinder" (see [stan_sampling_opts()]), unless
+#' `fixed_param` is `TRUE`.
 #'
 #' @param model Character, name of the model for which arguments are
 #' to be created.
@@ -708,6 +710,15 @@ create_stan_args <- function(stan = stan_opts(),
   if (is.null(stan$object)) {
     stan$object <- epinow2_stan_model(stan$backend, model)
     stan$backend <- NULL
+  }
+  init_method <- stan$init_method %||% "random"
+  stan$init_method <- NULL
+  if (identical(init_method, "pathfinder") && !fixed_param) {
+    # use the pathfinder algorithm's estimate of the posterior, rather than
+    # the supplied `init`, to initialise sampling
+    init <- stan$object$pathfinder(
+      data = data, refresh = ifelse(verbose, 50, 0)
+    )
   }
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&

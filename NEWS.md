@@ -2,6 +2,8 @@
 
 ## New features
 
+- `stan_sampling_opts()` (and so `stan_opts()`) gains an `init_method` argument. Setting it to "pathfinder" runs the pathfinder algorithm first, using its estimate of the posterior to initialise the NUTS sampler, instead of the default random initialisation. Requires the "cmdstanr" backend.
+
 ## Breaking changes
 
 ## Model changes
