@@ -36,10 +36,9 @@ simulate. May decrease run times due to reduced IO costs but this is still
 being evaluated. If set to NULL then all simulations are done at once.}
 
 \item{backend}{Character string indicating the backend to use for fitting
-stan models. Supported arguments are "rstan" (default), "cmdstanr",
-"stanr" or "stanli". The last two both use the \code{stanr} package; "stanli"
-interprets the model rather than compiling it, so it needs no C++
-toolchain. Both only support \code{method = "sampling"}.}
+stan models. Supported arguments are "rstan" (default), "cmdstanr" or
+"stanli". The "stanli" backend interprets the model rather than compiling
+it, so it needs no C++ toolchain, but it only supports \code{method = "sampling"}.}
 
 \item{verbose}{Logical defaults to \code{\link[=interactive]{interactive()}}. If the \code{progressr}
 package is available, a progress bar will be shown.}

@@ -2,7 +2,7 @@
 
 ## New features
 
-- Added `stanr` and `stanli` backends, selected with `stan_opts(backend = "stanr")` or `stan_opts(backend = "stanli")`. Both use the `stanr` package. The `stanli` backend interprets the model over precompiled kernels rather than compiling it, so it needs no C++ toolchain and preparing a model takes milliseconds. `stan_opts(engine = )` selects the sampler for either, adding the WALNUTS sampler alongside Stan's NUTS and static HMC. Both support `method = "sampling"` only, and run chains in parallel through `cores` rather than through `{future}`.
+- Added a `stanli` backend, selected with `stan_opts(backend = "stanli")`. It uses the `stanli` package to interpret Stan models over precompiled kernels, so no C++ toolchain is needed and preparing a model takes milliseconds. It supports `method = "sampling"` only, and runs chains in parallel through `cores` rather than through `{future}`.
 
 ## Breaking changes
 

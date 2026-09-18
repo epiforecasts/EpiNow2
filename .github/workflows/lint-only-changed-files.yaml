@@ -21,7 +21,7 @@ jobs:
         with:
           extra-repositories: |
             https://production.r-multiverse.org/2026-06-15
-            https://andrjohns.r-universe.dev
+            https://seantalts.r-universe.dev
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -30,7 +30,7 @@ jobs:
             here
             usethis
             any::cmdstanr
-            any::stanr
+            any::stanli
             any::gh
             any::lintr
             any::purrr

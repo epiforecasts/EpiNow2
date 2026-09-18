@@ -30,24 +30,18 @@ samples <- 500
 warmup <- 250
 seed <- 20240101
 
-## Backends to compare. The engine only applies to the stanr backends.
+## Backends to compare
 runs <- list(
-  list(label = "rstan", backend = "rstan", engine = NULL),
-  list(label = "cmdstanr", backend = "cmdstanr", engine = NULL),
-  list(label = "stanr", backend = "stanr", engine = "nuts"),
-  list(label = "stanli", backend = "stanli", engine = "nuts"),
-  list(label = "stanli-walnuts", backend = "stanli", engine = "walnuts")
+  list(label = "rstan", backend = "rstan"),
+  list(label = "cmdstanr", backend = "cmdstanr"),
+  list(label = "stanli", backend = "stanli")
 )
 
 stan_settings <- function(run) {
-  opts <- list(
+  stan_opts(
     backend = run$backend, chains = chains, cores = cores,
     samples = samples, warmup = warmup, seed = seed
   )
-  if (!is.null(run$engine)) {
-    opts$engine <- run$engine
-  }
-  do.call(stan_opts, opts)
 }
 
 ## Shared fixtures, matching those used by the touchstone benchmarks
@@ -116,7 +110,6 @@ results <- rbindlist(lapply(names(models), function(model) {
       }
       data.table(
         model = model, run = run$label, backend = run$backend,
-        engine = run$engine %||% NA_character_,
         iter = iter, elapsed = elapsed, status = status
       )
     }))

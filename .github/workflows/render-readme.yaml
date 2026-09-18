@@ -24,7 +24,7 @@ jobs:
         with:
           extra-repositories: |
             https://production.r-multiverse.org/2026-06-15
-            https://andrjohns.r-universe.dev
+            https://seantalts.r-universe.dev
 
       - name: Setup pandoc
         uses: r-lib/actions/setup-pandoc@v2

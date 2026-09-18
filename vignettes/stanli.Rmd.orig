@@ -1,0 +1,193 @@
+---
+title: "Using the stanli backend"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Using the stanli backend}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4.5,
+  fig.path = "stanli-"
+)
+set.seed(42)
+```
+
+_EpiNow2_ fits its models through a choice of Stan backend.
+The `rstan` backend uses models compiled when the package is installed and the `cmdstanr` backend compiles a model the first time it is used.
+The `stanli` backend uses [stanli](https://github.com/seantalts/stanli), which interprets a Stan program as a graph of operations over precompiled `stan-math` kernels rather than translating it to C++.
+Fitting therefore needs no C++ toolchain and preparing a model takes milliseconds.
+
+This vignette shows how to use the backend and compares it against the other two.
+
+# Installation
+
+`stanli` is not on CRAN.
+Install the package and then download its runtime library, which is cached after the first call.
+
+```{r, eval = FALSE}
+install.packages("stanli", repos = "https://seantalts.r-universe.dev")
+stanli::stanli_install()
+```
+
+```{r setup}
+library("EpiNow2")
+library("ggplot2")
+library("data.table")
+```
+
+# Using the backend
+
+Select the backend through `stan_opts()`.
+
+```{r, eval = FALSE}
+estimate_infections(
+  data = example_confirmed[1:60],
+  generation_time = gt_opts(example_generation_time),
+  delays = delay_opts(example_incubation_period + example_reporting_delay),
+  stan = stan_opts(backend = "stanli", cores = 4)
+)
+```
+
+`stanli` runs its chains in parallel within a single call, so `cores` sets how many run at once.
+This is the convention the `cmdstanr` backend already uses.
+
+# Comparing the backends
+
+The rest of this vignette fits the same model with each backend and compares the time taken and the estimates produced.
+
+```{r shared-settings}
+reported_cases <- example_confirmed[1:60]
+generation_time <- gt_opts(example_generation_time)
+delays <- delay_opts(example_incubation_period + example_reporting_delay)
+backends <- c("rstan", "cmdstanr", "stanli")
+```
+
+## Preparing the model
+
+The first cost a user meets is getting a model ready to sample.
+The `rstan` model was compiled when the package was installed, so it is already available.
+
+```{r model-prep}
+prep <- data.table(
+  backend = c("cmdstanr", "stanli"),
+  elapsed = c(
+    system.time(epinow2_cmdstan_model("estimate_infections"))[["elapsed"]],
+    system.time(epinow2_stanli_model("estimate_infections"))[["elapsed"]]
+  )
+)
+prep[]
+```
+
+The `cmdstanr` figure is the cost of a cold compile, and later calls reuse the cached binary.
+The `stanli` figure is the cost every time.
+
+## Fitting
+
+```{r fit-backends}
+fit_with <- function(backend) {
+  timing <- system.time(
+    fit <- suppressMessages(estimate_infections(
+      data = reported_cases,
+      generation_time = generation_time,
+      delays = delays,
+      stan = stan_opts(
+        backend = backend, chains = 4, cores = 4,
+        samples = 1000, warmup = 500, seed = 20240101
+      ),
+      verbose = FALSE
+    ))
+  )
+  list(fit = fit, elapsed = timing[["elapsed"]])
+}
+
+results <- lapply(backends, fit_with)
+names(results) <- backends
+```
+
+```{r timings}
+timings <- data.table(
+  backend = backends,
+  elapsed = vapply(results, function(x) x$elapsed, numeric(1))
+)
+timings[, relative := elapsed / min(elapsed)][]
+```
+
+## Comparing estimates
+
+Each backend samples from the same posterior, so the estimates should agree up to Monte Carlo error.
+
+```{r extract-rt}
+rt <- rbindlist(lapply(backends, function(backend) {
+  out <- as.data.table(
+    summary(results[[backend]]$fit, type = "parameters", params = "R")
+  )
+  out[, backend := backend][]
+}))
+```
+
+```{r plot-rt}
+ggplot(rt, aes(x = date, colour = backend, fill = backend)) +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.15,
+              colour = NA) +
+  geom_line(aes(y = median), linewidth = 0.8) +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "grey40") +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_fill_brewer(palette = "Dark2") +
+  labs(x = "Date", y = "Effective reproduction number",
+       subtitle = "Median and 90% credible interval") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+The three sets of estimates lie on top of one another.
+Comparing the medians against the `rstan` fit puts a number on what remains.
+
+```{r rt-differences}
+wide <- dcast(rt, date ~ backend, value.var = "median")
+wide[, .(
+  cmdstanr = max(abs(cmdstanr - rstan)),
+  stanli = max(abs(stanli - rstan))
+)]
+```
+
+The scalar parameters are easier to read from a table than a plot.
+
+```{r compare-params}
+params <- rbindlist(lapply(backends, function(backend) {
+  out <- as.data.table(summary(results[[backend]]$fit, type = "parameters"))
+  out[is.na(date), .(variable, median)][, backend := backend][]
+}))
+
+dcast(params, variable ~ backend, value.var = "median")
+```
+
+# Limitations
+
+The backend supports `method = "sampling"` only.
+Use the `cmdstanr` backend for variational inference, the Laplace approximation or pathfinder.
+
+It does not support running chains through `{future}`, because it runs them in parallel itself.
+
+`stanli` asks for a starting value for every declared parameter, including zero-size ones that cannot be given a value.
+The initial conditions _EpiNow2_ generates therefore cannot be used with it, and random initialisation is used instead.
+
+# Why not stanr
+
+The [stanr](https://github.com/andrjohns/stanr) package offers `stanli` as one of its model backends, alongside a compiled backend and a choice of samplers that includes WALNUTS.
+Routing this backend through `stanr` would be tidier, since `stanr` resolves `#include` itself and would bring the extra samplers with it.
+
+It is not usable here yet.
+`stanr` lowers a model to its intermediate representation by running the Stan compiler's `O1` optimisation pass in JavaScript, and on models the size of the ones in this package that pass is extremely slow.
+Preparing a model took between 26 minutes and 5 hours across the package's models, against milliseconds when `stanli` is driven directly.
+The same optimisation runs in `stanli`'s own compiler in well under a second.
+
+This is worth revisiting once that pass is faster, because the `stanr` route would remove the include handling and the initialisation workaround described above.

@@ -24,7 +24,7 @@ jobs:
         with:
           extra-repositories: |
             https://production.r-multiverse.org/2026-06-15
-            https://andrjohns.r-universe.dev
+            https://seantalts.r-universe.dev
       - name: Install dependencies
         run: Rscript -e 'install.packages(c("remotes", "roxygen2"))' -e 'remotes::install_deps(dependencies = TRUE)'
       - name: Document

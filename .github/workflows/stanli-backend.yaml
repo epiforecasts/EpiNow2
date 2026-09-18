@@ -1,7 +1,5 @@
-# The stanr backends get their own workflow because stanr has no binary for
-# the runners and takes close to an hour to build from source. Keeping it out
-# of the main check matrix means that cost is paid once, on a cache key of its
-# own, rather than on every job.
+# The stanli backend gets its own workflow so the runtime download and the
+# backend tests stay off the main check matrix.
 on:
   push:
     branches:
@@ -13,8 +11,8 @@ on:
       - 'R/fit.R'
       - 'R/extract.R'
       - 'inst/stan/**'
-      - 'tests/testthat/test-stanr-backend.R'
-      - '.github/workflows/stanr-backend.yaml'
+      - 'tests/testthat/test-stanli-backend.R'
+      - '.github/workflows/stanli-backend.yaml'
   pull_request:
     branches:
       - main
@@ -25,20 +23,20 @@ on:
       - 'R/fit.R'
       - 'R/extract.R'
       - 'inst/stan/**'
-      - 'tests/testthat/test-stanr-backend.R'
-      - '.github/workflows/stanr-backend.yaml'
+      - 'tests/testthat/test-stanli-backend.R'
+      - '.github/workflows/stanli-backend.yaml'
   schedule:
     - cron: '0 3 * * 1'
   workflow_dispatch:
 
-name: stanr-backend
+name: stanli-backend
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  stanr-backend:
+  stanli-backend:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -55,17 +53,21 @@ jobs:
           use-public-rspm: true
           extra-repositories: |
             https://production.r-multiverse.org/2026-06-15
-            https://andrjohns.r-universe.dev
+            https://seantalts.r-universe.dev
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: NA
           extra-packages: |
-            any::stanr
+            any::stanli
             testthat
             local::.
 
-      - name: Run the stanr backend tests
+      - name: Install the stanli runtime
+        run: stanli::stanli_install()
+        shell: Rscript {0}
+
+      - name: Run the stanli backend tests
         run: |
-          testthat::test_local(filter = "stanr-backend", stop_on_failure = TRUE)
+          testthat::test_local(filter = "stanli-backend", stop_on_failure = TRUE)
         shell: Rscript {0}

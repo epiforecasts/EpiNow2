@@ -238,10 +238,10 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
   }
   if (!inherits(stan_fit, "CmdStanMCMC") &&
         !inherits(stan_fit, "CmdStanFit") &&
-        !inherits(stan_fit, "StanMCMC")) {
+        !inherits(stan_fit, "stanli_cstanfit")) {
     cli_abort(
       "{.var stan_fit} must be a {.cls stanfit}, {.cls CmdStanMCMC},
-      {.cls CmdStanFit} or {.cls StanMCMC} object."
+      {.cls CmdStanFit} or {.cls stanli_cstanfit} object."
     )
   }
 
@@ -250,8 +250,13 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     all_pars <- stan_fit$metadata()$stan_variables
     pars <- setdiff(all_pars, pars)
   }
+  ## stanli names draws formats after the posterior classes rather than
+  ## using the cmdstanr aliases
+  draws_format <- ifelse(
+    inherits(stan_fit, "stanli_cstanfit"), "draws_df", "df"
+  )
   samples_df <- data.table(stan_fit$draws(
-    variables = pars, format = "df"
+    variables = pars, format = draws_format
   ))
   # convert to rstan format
   samples_df <- suppressWarnings(melt(
@@ -348,7 +353,7 @@ extract_stan_param <- function(fit, params = NULL,
     )
     if (!var_names) param_summary$variable <- NULL
     param_summary <- as.data.table(param_summary)
-  } else if (inherits(fit, "StanMCMC")) { # stanr backends
+  } else if (inherits(fit, "stanli_cstanfit")) { # stanli backend
     param_summary <- fit$summary(
       variables = params,
       mean, mcse_mean, sd, ~ quantile(.x, probs = sym_CrIs)
