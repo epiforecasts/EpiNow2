@@ -11,7 +11,9 @@ lapply_func(..., backend = "rstan", future.opts = list())
 \code{\link[=stan_sampling_opts]{stan_sampling_opts()}} or \code{\link[=stan_vb_opts]{stan_vb_opts()}}, depending on the method}
 
 \item{backend}{Character string indicating the backend to use for fitting
-stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
+stan models. Supported arguments are "rstan" (default), "cmdstanr" or
+"stanli". The "stanli" backend interprets the model rather than compiling
+it, so it needs no C++ toolchain, but it only supports \code{method = "sampling"}.}
 }
 \value{
 A function that can be used to apply a function to a list

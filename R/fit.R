@@ -1,3 +1,33 @@
+#' Wrap a stanli model's sampling method
+#'
+#' EpiNow2's models are large enough that stanli's optimising compiler exceeds
+#' its inlining budget and falls back to an unoptimised representation. That
+#' fallback does not support the user-defined target-incrementing functions the
+#' models rely on, so optimisation is required rather than optional. This sets
+#' the environment variable that asks for it for the duration of the call and
+#' restores whatever was there before.
+#'
+#' @param object A `stanli_cstanmodel` object.
+#'
+#' @return A function calling the model's `$sample()` method.
+#' @keywords internal
+stanli_sampler <- function(object) {
+  force(object)
+  function(...) {
+    previous <- Sys.getenv("STANLI_NO_O1_FALLBACK", unset = NA)
+    Sys.setenv(STANLI_NO_O1_FALLBACK = "1")
+    on.exit(
+      if (is.na(previous)) {
+        Sys.unsetenv("STANLI_NO_O1_FALLBACK")
+      } else {
+        Sys.setenv(STANLI_NO_O1_FALLBACK = previous)
+      },
+      add = TRUE
+    )
+    object$sample(...)
+  }
+}
+
 #' Fit a Stan Model using the NUTs sampler
 #'
 #' @description
@@ -53,6 +83,12 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     } else if (inherits(stan_args$object, "CmdStanModel")) {
       sample_func <- stan_args$object$sample
       stan_args$object <- NULL
+    } else if (inherits(stan_args$object, "stanli_cstanmodel")) {
+      ## stanli errors on sampling arguments it does not recognise and
+      ## identifies chains by their index within a single call
+      stan_args$chain_id <- NULL
+      sample_func <- stanli_sampler(stan_args$object)
+      stan_args$object <- NULL
     }
     if (catch) {
       fit <- tryCatch(
@@ -89,7 +125,8 @@ fit_model_with_nuts <- function(args, future = FALSE, max_execution_time = Inf,
     }
 
     if ((inherits(fit, "stanfit") && fit@mode != 2L) ||
-          inherits(fit, "CmdStanMCMC")) {
+          inherits(fit, "CmdStanMCMC") ||
+          inherits(fit, "stanli_cstanfit")) {
       fit
     } else {
       NULL
@@ -270,7 +307,8 @@ create_sampling_log_message <- function(args, method) {
   log_msg <- switch(method,
     "sampling" = {
       # Exact mode - calculate parameters based on backend
-      if (inherits(args$object, "CmdStanModel")) {
+      if (inherits(args$object, "CmdStanModel") ||
+            inherits(args$object, "stanli_cstanmodel")) {
         total_samples <- args$iter_sampling * args$chains
         warmup_iterations <- args$iter_warmup
       } else {

@@ -52,7 +52,9 @@ jobs:
         with:
           cache-version: 1
           extra-packages: any::cmdstanr, any::primarycensored
-          extra-repositories: https://production.r-multiverse.org/2026-06-15
+          extra-repositories: |
+            https://production.r-multiverse.org/2026-06-15
+            https://seantalts.r-universe.dev
           touchstone_ref: '@main'
           benchmarking_repo: ${{ matrix.config.benchmarking_repo }}
           benchmarking_ref: ${{ matrix.config.benchmarking_ref }}

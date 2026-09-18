@@ -237,10 +237,11 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     return(do.call(extract, extract_args))
   }
   if (!inherits(stan_fit, "CmdStanMCMC") &&
-        !inherits(stan_fit, "CmdStanFit")) {
+        !inherits(stan_fit, "CmdStanFit") &&
+        !inherits(stan_fit, "stanli_cstanfit")) {
     cli_abort(
-      "{.var stan_fit} must be a {.cls stanfit}, {.cls CmdStanMCMC} or
-      {.cls CmdStanFit} object."
+      "{.var stan_fit} must be a {.cls stanfit}, {.cls CmdStanMCMC},
+      {.cls CmdStanFit} or {.cls stanli_cstanfit} object."
     )
   }
 
@@ -249,8 +250,13 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
     all_pars <- stan_fit$metadata()$stan_variables
     pars <- setdiff(all_pars, pars)
   }
+  ## stanli names draws formats after the posterior classes rather than
+  ## using the cmdstanr aliases
+  draws_format <- ifelse(
+    inherits(stan_fit, "stanli_cstanfit"), "draws_df", "df"
+  )
   samples_df <- data.table(stan_fit$draws(
-    variables = pars, format = "df"
+    variables = pars, format = draws_format
   ))
   # convert to rstan format
   samples_df <- suppressWarnings(melt(
@@ -343,6 +349,13 @@ extract_stan_param <- function(fit, params = NULL,
   } else if (inherits(fit, "CmdStanMCMC")) { # cmdstanr backend
     param_summary <- fit$summary(
       variable = params,
+      mean, mcse_mean, sd, ~ quantile(.x, probs = sym_CrIs)
+    )
+    if (!var_names) param_summary$variable <- NULL
+    param_summary <- as.data.table(param_summary)
+  } else if (inherits(fit, "stanli_cstanfit")) { # stanli backend
+    param_summary <- fit$summary(
+      variables = params,
       mean, mcse_mean, sd, ~ quantile(.x, probs = sym_CrIs)
     )
     if (!var_names) param_summary$variable <- NULL

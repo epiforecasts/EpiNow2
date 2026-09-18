@@ -8,7 +8,9 @@ stan_laplace_opts(backend = "cmdstanr", trials = 10, ...)
 }
 \arguments{
 \item{backend}{Character string indicating the backend to use for fitting
-stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
+stan models. Supported arguments are "rstan" (default), "cmdstanr" or
+"stanli". The "stanli" backend interprets the model rather than compiling
+it, so it needs no C++ toolchain, but it only supports \code{method = "sampling"}.}
 
 \item{trials}{Numeric, defaults to 10. Number of attempts to use
 rstan::vb()] before failing.}

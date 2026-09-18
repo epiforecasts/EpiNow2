@@ -5,14 +5,16 @@
 \title{Return a stan model object for the appropriate backend}
 \usage{
 epinow2_stan_model(
-  backend = c("rstan", "cmdstanr"),
+  backend = c("rstan", "cmdstanr", "stanli"),
   model = c("estimate_infections", "simulate_infections", "estimate_secondary",
     "simulate_secondary", "estimate_truncation", "estimate_dist", "dist_fit")
 )
 }
 \arguments{
 \item{backend}{Character string indicating the backend to use for fitting
-stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
+stan models. Supported arguments are "rstan" (default), "cmdstanr" or
+"stanli". The "stanli" backend interprets the model rather than compiling
+it, so it needs no C++ toolchain, but it only supports \code{method = "sampling"}.}
 
 \item{model}{A character string indicating the model to use. One of
 "estimate_infections" (default), "simulate_infections",
@@ -20,8 +22,9 @@ stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 "estimate_dist", or "dist_fit".}
 }
 \value{
-A stan model object (either \code{rstan::stanmodel} or
-\code{cmdstanr::CmdStanModel}, depending on the backend)
+A stan model object (one of \code{rstan::stanmodel},
+\code{cmdstanr::CmdStanModel} or \code{stanli_cstanmodel}, depending on
+the backend)
 }
 \description{
 Return a stan model object for the appropriate backend

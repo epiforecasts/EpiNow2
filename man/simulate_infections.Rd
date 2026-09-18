@@ -59,7 +59,9 @@ observation model. Defaults to \code{\link[=obs_opts]{obs_opts()}}.}
 \item{CrIs}{Numeric vector of credible intervals to calculate.}
 
 \item{backend}{Character string indicating the backend to use for fitting
-stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
+stan models. Supported arguments are "rstan" (default), "cmdstanr" or
+"stanli". The "stanli" backend interprets the model rather than compiling
+it, so it needs no C++ toolchain, but it only supports \code{method = "sampling"}.}
 
 \item{seeding_time}{Integer; the number of days before the first time point
 of \code{R}; default is \code{NULL}, in which case it is set to the maximum of the

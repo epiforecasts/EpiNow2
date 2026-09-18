@@ -3,7 +3,7 @@
 on:
   push:
     paths:
-      - 'vignettes/epinow.Rmd.orig'
+      - 'vignettes/stanli.Rmd.orig'
     branches: [main]
   schedule:
     - cron: '0 0 1 * *'
@@ -13,10 +13,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
   cancel-in-progress: true
 
-name: render-epinow
+name: render-stanli
 
 jobs:
-  epinow:
+  stanli:
     runs-on: ubuntu-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -35,14 +35,27 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: NA
-          extra-packages: local::.
+          extra-packages: |
+            local::.
+            any::cmdstanr
+            any::stanli
+
+      - name: Install the stanli runtime
+        run: stanli::stanli_install()
+        shell: Rscript {0}
+
+      - name: Install cmdstan
+        uses: epinowcast/actions/install-cmdstan@v1
+        with:
+          cmdstan-version: 'latest'
+          num-cores: 2
 
       - name: Render vignette
         run: |
             setwd("vignettes")
             knitr::knit(
-              "epinow.Rmd.orig",
-              "epinow.Rmd"
+              "stanli.Rmd.orig",
+              "stanli.Rmd"
             )
         shell: Rscript {0}
 
@@ -57,9 +70,9 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "Automatic Vignette update"
-          title: "Update epinow vignette"
-          body: "This is an automated pull request to update the epinow vignette."
-          branch: "update-epinow-${{ github.run_number }}"
+          title: "Update stanli vignette"
+          body: "This is an automated pull request to update the stanli vignette."
+          branch: "update-stanli-${{ github.run_number }}"
           labels: "documentation"
           add-paths: |
             vignettes

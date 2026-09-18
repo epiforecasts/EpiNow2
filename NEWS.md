@@ -2,6 +2,8 @@
 
 ## New features
 
+- Added a `stanli` backend, selected with `stan_opts(backend = "stanli")`. It uses the `stanli` package to interpret Stan models over precompiled kernels, so no C++ toolchain is needed and preparing a model takes milliseconds. It supports `method = "sampling"` only, and runs chains in parallel through `cores` rather than through `{future}`.
+
 ## Breaking changes
 
 ## Model changes
