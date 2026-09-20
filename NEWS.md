@@ -32,6 +32,7 @@
 ## Internal
 
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
+- Reimplemented the Stan function that accumulates modelled reports onto later dates (used for missing or batch-reported data) using a running total and vectorised indexing rather than adding to the previous time point in a loop, which is more efficient for data reported at a fixed low frequency such as weekly.
 
 # EpiNow2 1.9.0
 
