@@ -34,9 +34,11 @@ the initial number of infections is not reported again. See also
 
 \item{day_of_week_effect}{either \code{NULL} (no day of the week effect) or a
 numerical vector of length specified in \code{\link[=obs_opts]{obs_opts()}} as \code{week_length}
-(default: 7) if \code{week_effect} is set to TRUE. Each element of the vector
-gives the weight given to reporting on this day (normalised to 1).
-The default is \code{NULL}.}
+(default: 7) if \code{week_effect} is set to TRUE, and of length 1 otherwise.
+Each element of the vector gives the weight given to reporting on this
+day (normalised to 1). The default is \code{NULL}. Supplying a vector of any
+other length is rejected with an error, as the vector would otherwise be
+silently recycled to the wrong length.}
 
 \item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
 \code{\link[=generation_time_opts]{generation_time_opts()}}) defining the generation time distribution used.

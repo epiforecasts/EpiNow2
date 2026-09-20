@@ -15,6 +15,7 @@
 
 ## Bug fixes
 
+- A bug was fixed where `simulate_infections()` and `simulate_secondary()` silently recycled a `day_of_week_effect` whose length did not match the observation model's week length, rather than rejecting it with an error.
 - A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
 - A bug was fixed where `estimate_infections()` could emit a spurious "the largest R-hat is NA" convergence warning caused by deterministic delay PMFs being monitored; these are no longer monitored.
 - A bug was fixed where `estimate_secondary()` emitted the same spurious "the largest R-hat is NA" convergence warning from a deterministic delay PMF being monitored; it is no longer monitored.
