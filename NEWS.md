@@ -29,6 +29,7 @@
 
 - The prior choice guide vignette now draws more samples in its `estimate_secondary()` examples to avoid low tail effective sample size warnings in the rendered output.
 - Clarified the Stan documentation for delay-related vectors and their lookup index arrays, naming them explicitly as ragged data structures and linking to the Stan User's Guide section on the topic.
+- Documented input consistency requirements that were previously only enforced in code but not spelled out in the function documentation, and what happens when they are not met: the distribution family and finite-maximum requirements checked by `gt_opts()`, `delay_opts()` and `trunc_opts()`; the zero-first-element requirement for nonparametric generation times; the rejection of `rt_opts(pop_period = "all")` without a non-zero `pop`, and the separate warning issued when a fixed `pop` is smaller than the cumulative case count; the requirement that `opts_list()` overrides be named by region, and that unmatched names are silently unused; and the requirement that truncation snapshots in `estimate_truncation()` cover a complete, gap-free range of dates, which is not currently checked.
 
 ## Internal
 

@@ -27,13 +27,16 @@
 #' respectively on the log scale).
 #'
 #' @param data A `<data.frame>` containing the `date` of report and both
-#' `primary` and `secondary` reports. Optionally this can also have a logical
-#' `accumulate` column which indicates whether data should be added to the
-#' next data point. This is useful when modelling e.g. weekly incidence data.
-#' See also the [fill_missing()] function which helps add the `accumulate`
-#' column with the desired properties when dealing with non-daily data. If any
-#' accumulation is done this happens after truncation as specified by the
-#' `truncation` argument.
+#' `primary` and `secondary` reports. `primary` and `secondary` must be
+#' non-negative numeric and `date` must be in date format with no missing
+#' (`NA`) entries; data that does not meet these requirements is rejected
+#' with an informative error before model fitting starts. Optionally this
+#' can also have a logical `accumulate` column which indicates whether data
+#' should be added to the next data point. This is useful when modelling
+#' e.g. weekly incidence data. See also the [fill_missing()] function which
+#' helps add the `accumulate` column with the desired properties when dealing
+#' with non-daily data. If any accumulation is done this happens after
+#' truncation as specified by the `truncation` argument.
 #'
 #' @param model A compiled stan model to override the default model. May be
 #' useful for package developers or those developing extensions.
@@ -45,7 +48,8 @@
 #'
 #' @param burn_in Integer, defaults to 14 days. The number of data points to
 #' use for estimation but not to fit to at the beginning of the time series.
-#' This must be less than the number of observations.
+#' This must be less than the number of observations in `data`; a `burn_in`
+#' greater than or equal to `nrow(data)` is rejected with an error.
 #'
 #' @param weigh_delay_priors Logical. If TRUE, all delay distribution priors
 #' will be weighted by the number of observation data points, in doing so
