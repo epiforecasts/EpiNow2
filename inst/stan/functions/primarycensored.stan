@@ -1,4 +1,25 @@
-// Stan functions from primarycensored version 1.5.1
+// Stan functions from primarycensored version 1.5.2
+real expgrowth_cdf(real x, real xmin, real xmax, real r) {
+  if (x < xmin) {
+    return 0;
+  }
+  if (x > xmax) {
+    return 1;
+  }
+  if (abs(r) < 1e-10) {
+    return (x - xmin) / (xmax - xmin);
+  }
+  return (exp(r * x) - exp(r * xmin)) / (exp(r * xmax) - exp(r * xmin));
+}
+real expgrowth_lcdf(real x, real xmin, real xmax, real r) {
+  if (x < xmin) {
+    return negative_infinity();
+  }
+  if (x > xmax) {
+    return 0;
+  }
+  return log(expgrowth_cdf(x | xmin, xmax, r));
+}
 real expgrowth_lpdf(real x, real xmin, real xmax, real r) {
   if (x < xmin || x > xmax) {
     return negative_infinity();
@@ -9,10 +30,117 @@ real expgrowth_lpdf(real x, real xmin, real xmax, real r) {
   return log(abs(r)) + r * x -
     log(abs(exp(r * xmax) - exp(r * xmin)));
 }
+vector primary_lcdf_vec(vector p, int primary_id,
+                        array[] real primary_params, data real pwindow) {
+  int N = num_elements(p);
+  vector[N] out;
+  for (i in 1:N) {
+    out[i] = primary_lcdf(p[i] | primary_id, primary_params, pwindow);
+  }
+  return out;
+}
+real discretestep_lcdf(
+  data real d, vector boundaries, vector pmf,
+  int primary_id, array[] real primary_params, data real pwindow
+) {
+  int K = num_elements(pmf);
+  // Integration support in u = d - p for p in [0, pwindow]. It is not
+  // clipped at 0 so boundaries that start below zero (delays with negative
+  // support) are handled; for non-negative boundaries the per-bin clip to
+  // [boundaries[k], boundaries[k + 1]] below gives the same result.
+  real u_min = d - pwindow;
+  real u_max = d;
+
+  // Structural-zero short-circuit. Below `boundaries[2]` F_step is zero
+  // and the bin-1 contribution carries `cum_before = 0`, so the integral
+  // collapses to 0. Returning `negative_infinity()` directly keeps
+  // `log(0)` off the autodiff tape so downstream `log_diff_exp(a, -inf)`
+  // evaluates cleanly with a zero gradient w.r.t. `pmf`.
+  if (u_max <= boundaries[2]) return negative_infinity();
+
+  // Sub-interval endpoints in u-space, clipped to [u_min, u_max].
+  vector[K] lo = fmax(u_min, head(boundaries, K));
+  vector[K] hi = fmin(u_max, tail(boundaries, K));
+
+  // F_step is right-continuous and on [b_k, b_{k+1}) takes the value
+  // sum_{j < k} pmf[j] (mass before bin k). cumulative_sum(pmf) gives
+  // the mass through and including bin k, so we shift right by one.
+  vector[K] cum_before;
+  cum_before[1] = 0;
+  if (K > 1) cum_before[2:K] = head(cumulative_sum(pmf), K - 1);
+
+  // 0/1 mask drops bins with `hi <= lo` from the reduction without a
+  // branch in the inner expression. Built on `data`-level inputs.
+  vector[K] active;
+  for (k in 1:K) active[k] = hi[k] > lo[k] ? 1 : 0;
+
+  // F_primary at lo/hi via two vectorised calls; one masked subtraction
+  // gives the per-bin difference for the dot product.
+  vector[K] f_lo = primary_lcdf_vec(d - lo, primary_id, primary_params,
+                                    pwindow);
+  vector[K] f_hi = primary_lcdf_vec(d - hi, primary_id, primary_params,
+                                    pwindow);
+  vector[K] f_diff = (exp(f_lo) - exp(f_hi)) .* active;
+
+  real integral = dot_product(cum_before, f_diff);
+
+  // Tail region [boundaries[K+1], u_max]: F_step = 1, contributing
+  // F_primary(d - tail_start) - F_primary(d - u_max).
+  real tail_start = fmax(boundaries[K + 1], u_min);
+  if (tail_start < u_max) {
+    real fp_tail = exp(primary_lcdf(d - tail_start | primary_id,
+                                    primary_params, pwindow));
+    real fp_end = exp(primary_lcdf(d - u_max | primary_id,
+                                   primary_params, pwindow));
+    integral += fp_tail - fp_end;
+  }
+
+  return log(integral);
+}
+vector hazards_to_pmf(vector hazards) {
+  int K = num_elements(hazards);
+  vector[K] log_surv;
+  log_surv[1] = 0;
+  if (K > 1) {
+    log_surv[2:K] = cumulative_sum(log1m(hazards[1:(K - 1)]));
+  }
+  return hazards .* exp(log_surv);
+}
+real discretehazard_lcdf(
+  data real d, vector boundaries, vector hazards,
+  int primary_id, array[] real primary_params, data real pwindow
+) {
+  return discretestep_lcdf(
+    d | boundaries, hazards_to_pmf(hazards), primary_id, primary_params,
+    pwindow
+  );
+}
+real pstep_lcdf(real t, vector boundaries, vector pmf) {
+  int K = num_elements(pmf);
+  if (t < boundaries[2]) return negative_infinity();
+  if (t >= boundaries[K + 1]) return 0;
+  // Right-continuous CDF with jumps at the right edges
+  // boundaries[2], ..., boundaries[K + 1]. F(t) = cum_pmf[k] for
+  // t in [boundaries[k + 1], boundaries[k + 2]); equivalently the
+  // largest k with boundaries[k + 1] <= t. Boundary-on-jump cases
+  // (t == boundaries[k + 1]) advance k, matching R's
+  // `findInterval(left.open = FALSE)`.
+  int k = 1;
+  while (k < K && boundaries[k + 2] <= t) k += 1;
+  return log(cumulative_sum(pmf)[k]);
+}
+real phazard_lcdf(real t, vector boundaries, vector hazards) {
+  return pstep_lcdf(t | boundaries, hazards_to_pmf(hazards));
+}
 int check_for_analytical(int dist_id, int primary_id) {
-  if (dist_id == 2 && primary_id == 1) return 1; // Gamma delay with Uniform primary
-  if (dist_id == 1 && primary_id == 1) return 1; // Lognormal delay with Uniform primary
-  if (dist_id == 3 && primary_id == 1) return 1; // Weibull delay with Uniform primary
+  if (dist_id == 2 && primary_id == 1) return 1; // Gamma, Uniform
+  if (dist_id == 1 && primary_id == 1) return 1; // Lognormal, Uniform
+  if (dist_id == 3 && primary_id == 1) return 1; // Weibull, Uniform
+  if (dist_id == 5 && primary_id == 1) return 1; // Generalised gamma, Uniform
+  // Keep this primary list in sync with `primary_lcdf`; see the note above.
+  if (dist_id == 26 || dist_id == 27 || dist_id == 28) {
+    return primary_id == 1 || primary_id == 2;
+  }
   return 0; // No analytical solution for other combinations
 }
 real primarycensored_gamma_uniform_lcdf(data real d, real q, array[] real params, data real pwindow) {
@@ -63,28 +191,37 @@ real primarycensored_lognormal_uniform_lcdf(data real d, real q, array[] real pa
   // log E where E = exp(mu + sigma^2/2) is the mean of the delay
   real log_E = mu + 0.5 * square(sigma);
 
-  real log_F_T_d = lognormal_lcdf(d | mu, sigma);
-  real log_tF_T_d = lognormal_lcdf(d | mu_sigma2, sigma);
-
-  // q-dependent terms (guard only to avoid log(0); final algebra is unified).
-  real log_q_F_T_q;    // log(q * F_T(q))
-  real log_E_tF_T_q;   // log(E * tilde F_T(q))
-  if (q > 0) {
-    real log_F_T_q = lognormal_lcdf(q | mu, sigma);
-    real log_tF_T_q = lognormal_lcdf(q | mu_sigma2, sigma);
-    log_q_F_T_q = log(q) + log_F_T_q;
-    log_E_tF_T_q = log_E + log_tF_T_q;
-  } else {
-    log_q_F_T_q = negative_infinity();
-    log_E_tF_T_q = negative_infinity();
-  }
+  // Each term is formed whole and dropped whole. Adding a `-inf` log CDF to
+  // the parameter-dependent `log(d)` or `log_E` first would leave an edge
+  // back to the parameters that `log_sum_exp` differentiates to
+  // `exp(-inf - -inf)`. `q <= 0` underflows on the same test, so it needs no
+  // separate branch.
+  real log_d_F_T_d = lognormal_lcdf_underflows(d, mu, sigma)
+                     ? negative_infinity()
+                     : log(d) + lognormal_lcdf(d | mu, sigma);
+  real log_E_tF_T_d = lognormal_lcdf_underflows(d, mu_sigma2, sigma)
+                      ? negative_infinity()
+                      : log_E + lognormal_lcdf(d | mu_sigma2, sigma);
+  real log_q_F_T_q = lognormal_lcdf_underflows(q, mu, sigma)
+                     ? negative_infinity()
+                     : log(q) + lognormal_lcdf(q | mu, sigma);
+  real log_E_tF_T_q = lognormal_lcdf_underflows(q, mu_sigma2, sigma)
+                      ? negative_infinity()
+                      : log_E + lognormal_lcdf(q | mu_sigma2, sigma);
 
   // Unified form: F_{S+}(d) = (A - B) / w_P with
   //   A = d * F_T(d) + E * tilde F_T(q)
   //   B = q * F_T(q) + E * tilde F_T(d)
   // Ordering A >= B is guaranteed by F_{S+}(d) >= 0.
-  real log_A = log_sum_exp(log(d) + log_F_T_d, log_E_tF_T_q);
-  real log_B = log_sum_exp(log_q_F_T_q, log_E + log_tF_T_d);
+  real log_A = log_sum_exp(log_d_F_T_d, log_E_tF_T_q);
+  real log_B = log_sum_exp(log_q_F_T_q, log_E_tF_T_d);
+
+  // Deep enough into the lower tail every term underflows together. Both
+  // are then constant `-inf` and `log_diff_exp` would give NaN, so return
+  // the limit directly.
+  if (is_inf(log_A)) {
+    return negative_infinity();
+  }
 
   return log_diff_exp(log_A, log_B) - log_window;
 }
@@ -124,10 +261,44 @@ real primarycensored_weibull_uniform_lcdf(data real d, real q, array[] real para
 
   return log_diff_exp(log_A, log_B) - log_window;
 }
+real primarycensored_gengamma_uniform_lcdf(data real d, real q, array[] real params, data real pwindow) {
+  real shape = params[1];
+  real scale = params[2];
+  real k = params[3];
+  real k_shift = k + inv(shape);
+  real log_window = log(pwindow);
+  // log E where E = scale * Gamma(k + 1/shape) / Gamma(k) is the mean of the
+  // delay
+  real log_E = log(scale) + lgamma(k_shift) - lgamma(k);
+
+  real log_F_T_d = gengamma_lcdf(d | shape, scale, k);
+  real log_tF_T_d = gengamma_lcdf(d | shape, scale, k_shift);
+
+  // q-dependent terms (guard only to avoid log(0); final algebra is unified).
+  real log_q_F_T_q;    // log(q * F_T(q))
+  real log_E_tF_T_q;   // log(E * tilde F_T(q))
+  if (q > 0) {
+    log_q_F_T_q = log(q) + gengamma_lcdf(q | shape, scale, k);
+    log_E_tF_T_q = log_E + gengamma_lcdf(q | shape, scale, k_shift);
+  } else {
+    log_q_F_T_q = negative_infinity();
+    log_E_tF_T_q = negative_infinity();
+  }
+
+  // Unified form: F_{S+}(d) = (A - B) / w_P with
+  //   A = d * F_T(d) + E * tilde F_T(q)
+  //   B = q * F_T(q) + E * tilde F_T(d)
+  // Ordering A >= B is guaranteed by F_{S+}(d) >= 0.
+  real log_A = log_sum_exp(log(d) + log_F_T_d, log_E_tF_T_q);
+  real log_B = log_sum_exp(log_q_F_T_q, log_E + log_tF_T_d);
+
+  return log_diff_exp(log_A, log_B) - log_window;
+}
 real primarycensored_analytical_lcdf_raw(data real d, int dist_id,
                                          array[] real params,
                                          data real pwindow,
-                                         int primary_id) {
+                                         int primary_id,
+                                         array[] real primary_params) {
   real q = max({d - pwindow, 0});
 
   if (dist_id == 2 && primary_id == 1) {
@@ -136,6 +307,26 @@ real primarycensored_analytical_lcdf_raw(data real d, int dist_id,
     return primarycensored_lognormal_uniform_lcdf(d | q, params, pwindow);
   } else if (dist_id == 3 && primary_id == 1) {
     return primarycensored_weibull_uniform_lcdf(d | q, params, pwindow);
+  } else if (dist_id == 5 && primary_id == 1) {
+    return primarycensored_gengamma_uniform_lcdf(d | q, params, pwindow);
+  } else if (dist_id == 26) {
+    // params = [boundaries (K+1), pmf (K)]; length 2*K + 1.
+    int K = (size(params) - 1) %/% 2;
+    return discretestep_lcdf(
+      d | to_vector(segment(params, 1, K + 1)),
+          to_vector(segment(params, K + 2, K)),
+          primary_id, primary_params, pwindow
+    );
+  } else if (dist_id == 27 || dist_id == 28) {
+    // params = [boundaries (K+1), hazards (K)]; length 2*K + 1. The last
+    // hazard must equal 1. RW (27) and RE (28) only differ in their
+    // prior so they share this likelihood dispatch.
+    int K = (size(params) - 1) %/% 2;
+    return discretehazard_lcdf(
+      d | to_vector(segment(params, 1, K + 1)),
+          to_vector(segment(params, K + 2, K)),
+          primary_id, primary_params, pwindow
+    );
   }
   return negative_infinity();
 }
@@ -148,7 +339,7 @@ real primarycensored_analytical_lcdf(data real d, int dist_id,
   if (d >= D) return 0;
 
   real result = primarycensored_analytical_lcdf_raw(
-    d, dist_id, params, pwindow, primary_id
+    d, dist_id, params, pwindow, primary_id, primary_params
   );
 
   // Apply truncation normalization
@@ -177,6 +368,7 @@ int dist_has_positive_support(data int dist_id) {
   if (dist_id == 2) return 1;   // Gamma
   if (dist_id == 3) return 1;   // Weibull
   if (dist_id == 4) return 1;   // Exponential
+  if (dist_id == 5) return 1;   // Generalised gamma
   if (dist_id == 9) return 1;   // Beta (support on [0, 1])
   if (dist_id == 13) return 1;  // Chi-square
   if (dist_id == 16) return 1;  // Inverse Gamma
@@ -185,16 +377,45 @@ int dist_has_positive_support(data int dist_id) {
   if (dist_id == 22) return 1;  // Scaled inverse Chi-square
   return 0;
 }
+real primary_lcdf(real p, int primary_id, array[] real primary_params,
+                  data real pwindow) {
+  if (primary_id == 1) {
+    // Uniform on [0, pwindow]: built-in uniform_lcdf matches the package
+    // primary semantics over [0, pwindow].
+    if (p <= 0) return negative_infinity();
+    if (p >= pwindow) return 0;
+    return uniform_lcdf(p | 0, pwindow);
+  } else if (primary_id == 2) {
+    return expgrowth_lcdf(p | 0, pwindow, primary_params[1]);
+  }
+  reject("primary_lcdf: unsupported primary_id ", primary_id);
+}
+int lognormal_lcdf_underflows(real y, real mu, real sigma) {
+  if (y <= 0) {
+    return 1;
+  }
+  return (log(y) - mu) / sigma < -38 ? 1 : 0;
+}
+real gengamma_lcdf(real y, real shape, real scale, real k) {
+  return gamma_lcdf(pow(y / scale, shape) | k, 1);
+}
 real dist_lcdf(real delay, array[] real params, int dist_id) {
   if (dist_has_positive_support(dist_id) && delay <= 0) {
     return negative_infinity();
   }
 
   // IDs match pcd_distributions$stan_id in R
-  if (dist_id == 1) return lognormal_lcdf(delay | params[1], params[2]);
+  // Guarded so a lower-tail underflow cannot put a NaN partial on the tape.
+  // The downstream `exp(-inf)` differentiates to 0.
+  if (dist_id == 1) {
+    return lognormal_lcdf_underflows(delay, params[1], params[2])
+           ? negative_infinity()
+           : lognormal_lcdf(delay | params[1], params[2]);
+  }
   else if (dist_id == 2) return gamma_lcdf(delay | params[1], params[2]);
   else if (dist_id == 3) return weibull_lcdf(delay | params[1], params[2]);
   else if (dist_id == 4) return exponential_lcdf(delay | params[1]);
+  else if (dist_id == 5) return gengamma_lcdf(delay | params[1], params[2], params[3]);
   else if (dist_id == 9) return beta_lcdf(delay | params[1], params[2]);
   else if (dist_id == 12) return cauchy_lcdf(delay | params[1], params[2]);
   else if (dist_id == 13) return chi_square_lcdf(delay | params[1]);
@@ -209,6 +430,24 @@ real dist_lcdf(real delay, array[] real params, int dist_id) {
   else if (dist_id == 23) return student_t_lcdf(delay | params[1], params[2], params[3]);
   else if (dist_id == 24) return uniform_lcdf(delay | params[1], params[2]);
   else if (dist_id == 25) return von_mises_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 26) {
+    // Non-parametric step: params = [boundaries (K+1), pmf (K)].
+    int K = (size(params) - 1) %/% 2;
+    return pstep_lcdf(
+      delay | to_vector(segment(params, 1, K + 1)),
+              to_vector(segment(params, K + 2, K))
+    );
+  }
+  else if (dist_id == 27 || dist_id == 28) {
+    // Non-parametric discrete hazard: params = [boundaries (K+1),
+    // hazards (K)] with hazards[K] = 1. RW (27) and RE (28) share the
+    // same likelihood; they only differ in the prior.
+    int K = (size(params) - 1) %/% 2;
+    return phazard_lcdf(
+      delay | to_vector(segment(params, 1, K + 1)),
+              to_vector(segment(params, K + 2, K))
+    );
+  }
   else reject("Invalid distribution identifier: ", dist_id);
 }
 real primary_lpdf(real x, int primary_id, array[] real params, real xmin, real xmax) {

@@ -5,6 +5,13 @@
  * of delay distributions in the model. Delay distributions represent the time
  * between events (e.g., infection to symptom onset, symptom onset to reporting).
  *
+ * Per-delay values (PMFs, parameters) are packed into ragged vectors: one
+ * vector holds the concatenated values for every delay, and a companion
+ * `*_groups` array of lookup indices marks where each delay's segment
+ * starts and ends within that vector. See the Stan User's Guide section on
+ * ragged data structures:
+ * https://mc-stan.org/docs/stan-users-guide/sparse-ragged.html#ragged-data-structs.section
+ *
  */
 
 /**
@@ -13,9 +20,11 @@
  * @param delay_types Number of delay types
  * @param delay_types_p Array indicating whether each delay is parametric (1) or non-parametric (0)
  * @param delay_types_id Array mapping delay types to their respective IDs
- * @param delay_types_groups Array of indices defining groups of delay types
+ * @param delay_types_groups Array of lookup indices for the ragged groups
+ *   of delay types
  * @param delay_max Array of maximum delays for parametric distributions
- * @param delay_np_pmf_groups Array of indices for accessing non-parametric PMFs
+ * @param delay_np_pmf_groups Array of lookup indices for the ragged
+ *   non-parametric PMF vector
  * @return An array of maximum delays for each delay type
  *
  * @ingroup delay_handlers
@@ -47,12 +56,17 @@ array[] int get_delay_type_max(
  * @param len Length of the output PMF
  * @param delay_types_p Array indicating whether each delay is parametric (1) or non-parametric (0)
  * @param delay_types_id Array mapping delay types to their respective IDs
- * @param delay_types_groups Array of indices defining groups of delay types
+ * @param delay_types_groups Array of lookup indices for the ragged groups
+ *   of delay types
  * @param delay_max Array of maximum delays for parametric distributions
- * @param delay_np_pmf Vector of probability mass functions for non-parametric delays
- * @param delay_np_pmf_groups Array of indices for accessing non-parametric PMFs
- * @param delay_params Vector of parameters for parametric delay distributions
- * @param delay_params_groups Array of indices for accessing delay parameters
+ * @param delay_np_pmf Ragged vector of probability mass functions for
+ *   non-parametric delays
+ * @param delay_np_pmf_groups Array of lookup indices for the ragged
+ *   non-parametric PMF vector
+ * @param delay_params Ragged vector of parameters for parametric delay
+ *   distributions
+ * @param delay_params_groups Array of lookup indices for the ragged
+ *   parameter vector
  * @param delay_dist Array of distribution types using primarycensored
  *   convention (1: lognormal, 2: gamma, 3: weibull, 4: exponential)
  * @param left_truncate Left truncation point (0 for no truncation)
@@ -125,10 +139,13 @@ vector get_delay_rev_pmf(
 /**
  * Update log density for delay distribution priors
  *
- * @param delay_params Vector of parameters for parametric delay distributions
- * @param delay_params_mean Vector of prior means for delay parameters
- * @param delay_params_sd Vector of prior standard deviations for delay parameters
- * @param delay_params_groups Array of indices for accessing delay parameters
+ * @param delay_params Ragged vector of parameters for parametric delay
+ *   distributions
+ * @param delay_params_mean Ragged vector of prior means for delay parameters
+ * @param delay_params_sd Ragged vector of prior standard deviations for
+ *   delay parameters
+ * @param delay_params_groups Array of lookup indices for the ragged
+ *   parameter vectors
  * @param delay_dist Array of distribution types using primarycensored
  *   convention (1: lognormal, 2: gamma, 3: weibull, 4: exponential)
  * @param weight Array of weights for each delay distribution in the log density
