@@ -327,6 +327,10 @@ create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
 
 ##' Create initial conditions for delays
 ##'
+##' @details
+##' The nonparametric raw vector is seeded from its Dirichlet prior so chains
+##' start near the configured mean rather than from generic random values.
+##'
 ##' @inheritParams create_initial_conditions
 ##' @return A list of initial conditions for delays
 ##' @importFrom stats rgamma
@@ -341,9 +345,7 @@ create_delay_inits <- function(stan_data) {
   } else {
     out$delay_params <- array(numeric(0))
   }
-  ## seed the gamma-trick raw vector from its prior so chains start
-  ## near the configured Dirichlet mean rather than from generic random
-  ## values
+  # seed the gamma-trick raw vector near the Dirichlet prior mean
   if (isTRUE(stan_data$delay_np_est_length > 0)) {
     out$delay_np_est_raw <- array(rgamma(
       n = stan_data$delay_np_est_length,
@@ -643,9 +645,14 @@ build_np_est_data <- function(np_delays, np_pmf_groups) {
   )
 }
 
-# The fixed PMF of a nonparametric delay. An estimated (Dirichlet-backed) delay
-# has no fixed PMF, so its prior mean is used as a placeholder of the right
-# length; Stan overwrites those entries with the estimated simplex.
+##' Fixed PMF placeholder for a nonparametric delay
+##'
+##' @details An estimated (Dirichlet-backed) delay has no fixed PMF, so its
+##'   prior mean is used as a placeholder of the right length; Stan
+##'   overwrites those entries with the estimated simplex.
+##' @param x A nonparametric `dist_spec`.
+##' @return The delay's PMF as a numeric vector.
+##' @keywords internal
 np_fixed_pmf <- function(x) get_pmf(fix_parameters(x, strategy = "mean"))
 
 ##' Create delay variables for stan

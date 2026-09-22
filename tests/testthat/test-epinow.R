@@ -178,7 +178,7 @@ test_that("epinow propagates target_date into the forecast horizon", {
   skip_integration()
   max_date <- max(reported_cases$date)
   extra_days <- 3
-  target_date <- as.character(max_date + extra_days)
+  target_date <- max_date + extra_days
   base_horizon <- 7
   expected_horizon <- base_horizon + extra_days
 
@@ -200,7 +200,31 @@ test_that("epinow propagates target_date into the forecast horizon", {
 
   expect_equal(out$args$horizon, expected_horizon)
   reported <- estimates_by_report_date(out)$summarised
-  expect_equal(max(reported$date), as.Date(target_date) + base_horizon)
+  expect_equal(max(reported$date), target_date + base_horizon)
+})
+
+test_that("epinow warns and coerces target_date given as a character string", {
+  skip_integration()
+  target_date <- as.character(max(reported_cases$date))
+
+  output <- capture.output(suppressMessages(expect_warning(
+    out <- epinow(
+      data = reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      stan = stan_opts(
+        samples = 25, warmup = 25,
+        cores = 1, chains = 1,
+        control = list(adapt_delta = 0.8)
+      ),
+      target_date = target_date,
+      logs = NULL, verbose = FALSE
+    ),
+    class = "lifecycle_warning_deprecated"
+  )))
+
+  reported <- estimates_by_report_date(out)$summarised
+  expect_equal(max(reported$date), as.Date(target_date) + out$args$horizon)
 })
 
 test_that("epinow fails as expected when given a short timeout", {
@@ -220,6 +244,34 @@ test_that("epinow fails as expected when given a short timeout", {
 })
 
 # Argument validation tests (fast - no MCMC) ------------------------------
+
+
+test_that("epinow errors if target_date is not a Date or character string", {
+  expect_error(
+    epinow(
+      data = reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      target_date = 123,
+      logs = NULL, verbose = FALSE
+    ),
+    "Date"
+  )
+})
+
+
+test_that("epinow errors if target_date is missing (NA)", {
+  expect_error(
+    epinow(
+      data = reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      delays = delay_opts(example_incubation_period + reporting_delay),
+      target_date = as.Date(NA),
+      logs = NULL, verbose = FALSE
+    ),
+    "missing"
+  )
+})
 
 
 test_that("epinow fails if given NUTs arguments when using variational inference", {
