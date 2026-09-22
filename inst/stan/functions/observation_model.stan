@@ -135,7 +135,7 @@ real reporting_phi(real reporting_overdispersion, int model_type) {
  * @param case_times Array of integer time indices for observed cases.
  * @param reports Vector of expected reports.
  * @param reporting_overdispersion Vector of reporting overdispersion, one per
- * report (use `rep_vector()` for a constant overdispersion).
+ * report.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for
  * Negative Binomial).
  * @param weight Real value for weighting the log density contribution.
@@ -196,7 +196,7 @@ vector accumulate_reports(vector reports, array[] int accumulate) {
  * @param cases Array of integer observed cases.
  * @param reports Vector of expected reports.
  * @param reporting_overdispersion Vector of reporting overdispersion, one per
- * report (use `rep_vector()` for a constant overdispersion).
+ * report.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for
  * Negative Binomial).
  * @param weight Real value for weighting the log likelihood contribution.
@@ -265,7 +265,7 @@ int neg_binomial_2_safe_rng(real mu, real phi) {
  *
  * @param reports Vector of expected reports.
  * @param reporting_overdispersion Vector of reporting overdispersion, one per
- * report (use `rep_vector()` for a constant overdispersion).
+ * report.
  * @param model_type Integer indicating the model type (0 for Poisson, >0 for
  * Negative Binomial).
  *
