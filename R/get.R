@@ -742,6 +742,11 @@ posterior_to_normal <- function(posterior, idx) {
 #' Helper function to reconstruct a single parametric delay component from
 #' Stan data and posterior samples.
 #'
+#' @details
+#' A parameter is treated as estimated when its prior sd is positive and not
+#' `NA`; `NA` prior sd (which would make the comparison `NA`) is therefore
+#' correctly treated as a fixed, non-estimated parameter.
+#'
 #' @param stan_data List of Stan data containing delay specification
 #' @param param_id Integer index into the parametric delay arrays
 #' @param posterior Data frame with posterior mean and sd for delay_params,
@@ -760,10 +765,8 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
   prior_mean <- stan_data$delay_params_mean[param_idx]
   prior_sd <- stan_data$delay_params_sd[param_idx]
 
-  # Build parameters: posterior if estimated, fixed or prior otherwise
-  # NA handling: if prior_sd[j] is NA, then prior_sd[j] > 0 evaluates to NA,
-  # and NA && !is.na(NA) -> NA && FALSE -> FALSE, so estimated = FALSE.
-  # This correctly treats NA prior_sd as a fixed (non-estimated) parameter.
+  # build parameters: posterior if estimated, fixed or prior otherwise
+  # (see @details for NA handling)
   param_names <- natural_params(dist_type)
   parameters <- lapply(seq_along(prior_mean), function(j) {
     estimated <- prior_sd[j] > 0 && !is.na(prior_sd[j])
@@ -789,6 +792,14 @@ reconstruct_parametric <- function(stan_data, param_id, posterior) {
 #' Dirichlet whose mean equals the posterior mean of the simplex and
 #' whose concentration matches the average per-bin posterior variance.
 #' For fixed delays, returns the `NonParametric` PMF as supplied.
+#'
+#' @details
+#' For Dirichlet(alpha) with concentration `alpha0 = sum(alpha)` and means
+#' `mu_i = alpha_i / alpha0`, the per-bin variance is
+#' `mu_i * (1 - mu_i) / (alpha0 + 1)`, so `alpha0 = mu * (1 - mu) / v - 1`.
+#' `alpha0` is averaged across bins with non-degenerate variance to dampen
+#' Monte Carlo noise. See Minka (2000), "Estimating a Dirichlet
+#' distribution".
 #'
 #' @param stan_data List of Stan data containing delay
 #'   specification
@@ -820,14 +831,7 @@ reconstruct_nonparametric <- function(stan_data, np_id,
 
     full_alpha <- rep(0, length(prior_pmf))
     if (!is.null(np_posterior)) {
-      ## Moment-match the posterior simplex draws to a Dirichlet so
-      ## the summary round-trips as a prior. For Dirichlet(alpha)
-      ## with concentration alpha0 = sum(alpha) and means
-      ## mu_i = alpha_i / alpha0, the per-bin variance is
-      ## mu_i (1 - mu_i) / (alpha0 + 1), so alpha0 = mu(1-mu)/v - 1.
-      ## We average alpha0 across bins with non-degenerate variance
-      ## to dampen Monte Carlo noise. See Minka (2000),
-      ## "Estimating a Dirichlet distribution".
+      # moment-match the posterior draws to a Dirichlet (see @details)
       raw_draws <- np_posterior[, alpha_idx, drop = FALSE]
       normed <- raw_draws / rowSums(raw_draws)
       mu <- colMeans(normed)

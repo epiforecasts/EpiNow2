@@ -15,4 +15,8 @@ A list of initial conditions for delays
 \description{
 Create initial conditions for delays
 }
+\details{
+The nonparametric raw vector is seeded from its Dirichlet prior so chains
+start near the configured mean rather than from generic random values.
+}
 \keyword{internal}
