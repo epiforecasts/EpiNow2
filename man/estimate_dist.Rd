@@ -134,6 +134,13 @@ untruncated (observation time set to infinity).
 The \code{primarycensored} Stan functions are vendored (included
 in the package), so the model is pre-compiled and runs without
 needing \code{primarycensored} at runtime.
+
+Initial values for the sampler are computed via method-of-moments (MoM)
+from the aggregated data. Near-zero variance (e.g. identical observed
+delays) would otherwise give degenerate scale estimates, so scale
+parameters then fall back to their prior means; any non-finite candidate
+is replaced with a bounded default and clamped within the Stan-declared
+bounds.
 \subsection{Limitations}{
 \itemize{
 \item Delay distributions are limited to lognormal, gamma,

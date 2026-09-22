@@ -29,5 +29,12 @@ using either the prior alpha (no fit available) or a moment-matched
 Dirichlet whose mean equals the posterior mean of the simplex and
 whose concentration matches the average per-bin posterior variance.
 For fixed delays, returns the \code{NonParametric} PMF as supplied.
+
+For Dirichlet(alpha) with concentration \code{alpha0 = sum(alpha)} and means
+\code{mu_i = alpha_i / alpha0}, the per-bin variance is
+\code{mu_i * (1 - mu_i) / (alpha0 + 1)}, so \code{alpha0 = mu * (1 - mu) / v - 1}.
+\code{alpha0} is averaged across bins with non-degenerate variance to dampen
+Monte Carlo noise. See Minka (2000), "Estimating a Dirichlet
+distribution".
 }
 \keyword{internal}
