@@ -965,9 +965,16 @@ create_state_data <- function(params, state_flags,
     return(empty)
   }
 
-  ## a state hyperparameter (step sd, GP magnitude or lengthscale) is registered
-  ## as an ordinary parameter; require its prior to be certain for a clear error
-  assert_certain <- function(d, what, name) {
+  ## a state hyperparameter (step sd, GP magnitude or lengthscale) and the
+  ## init-anchor prior are registered as (or applied via) estimated parameters,
+  ## so they must be certain, non-fixed distributions
+  assert_estimated <- function(d, what, name) {
+    if (get_distribution(d) == "fixed") {
+      cli_abort(c(
+        "!" = "The {what} prior for time-varying parameter {.var {name}} cannot
+        be a fixed distribution."
+      ))
+    }
     if (!all(vapply(get_parameters(d), is.numeric, logical(1)))) {
       cli_abort(c(
         "!" = "The {what} prior for time-varying parameter {.var {name}} cannot
@@ -1050,7 +1057,8 @@ create_state_data <- function(params, state_flags,
     if (spec$anchor == "init") {
       ## centred non-stationary state: the level is free scaffolding and the
       ## level parameter's own prior is applied to the derived initial value
-      ## (with a Jacobian) in the model
+      ## (with a Jacobian) in the model, so it must be an estimated parameter
+      assert_estimated(spec$prior, "init", name)
       anchor[j] <- 1L
     }
     if (spec$type == "rw") {
@@ -1058,7 +1066,7 @@ create_state_data <- function(params, state_flags,
       n_rw <- n_rw + 1L
       pos[j] <- n_rw
       step_sd <- spec$settings$sd
-      assert_certain(step_sd, "step sd", name)
+      assert_estimated(step_sd, "step sd", name)
       rw_sd_id <- c(rw_sd_id, register_hyper("rw_sd", name, step_sd))
       rw_period <- c(rw_period, spec$settings$period %||% 1L)
     } else {
@@ -1077,9 +1085,9 @@ create_state_data <- function(params, state_flags,
         default = 2L # matern or ou
       ))
       gp_nu <- c(gp_nu, gp$matern_order)
-      assert_certain(gp$alpha, "alpha", name)
+      assert_estimated(gp$alpha, "alpha", name)
       gp_alpha_id <- c(gp_alpha_id, register_hyper("gp_alpha", name, gp$alpha))
-      assert_certain(gp$ls, "lengthscale", name)
+      assert_estimated(gp$ls, "lengthscale", name)
       gp_rho_id <- c(gp_rho_id, register_hyper("gp_rho", name, gp$ls))
       gp_basis_prop <- c(gp_basis_prop, gp$basis_prop)
       gp_boundary_scale <- c(gp_boundary_scale, gp$boundary_scale)

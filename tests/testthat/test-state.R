@@ -245,6 +245,28 @@ test_that("GP init anchor emits non-stationary state data", {
   expect_identical(as.integer(out$params_prior_skip), c(1L, 0L, 0L))
 })
 
+test_that("create_stan_params errors for fixed state priors", {
+  # a fixed init-anchor prior has no variable level to attach it to
+  expect_error(
+    create_stan_params(
+      list(make_param("R", GP(init = Fixed(0.4)), lower_bound = 0)),
+      states_supported = "R"
+    ),
+    "init prior.*cannot be a fixed distribution"
+  )
+  # a fixed hyperparameter has no slot in the variable parameter vector
+  expect_error(
+    create_stan_params(
+      list(make_param(
+        "fraction_observed", RW(mean = Normal(0.5, 0.1), sd = Fixed(0.1)),
+        lower_bound = 0
+      )),
+      states_supported = "fraction_observed"
+    ),
+    "step sd prior.*cannot be a fixed distribution"
+  )
+})
+
 test_that("create_stan_params is a no-op without states", {
   params <- list(
     make_param("fraction_observed", Normal(0.5, 0.1), lower_bound = 0)
