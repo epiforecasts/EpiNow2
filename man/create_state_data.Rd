@@ -8,7 +8,8 @@ create_state_data(
   params,
   state_flags,
   states_supported = character(0),
-  seeding_time = 0L
+  seeding_time = 0L,
+  base_id = 0L
 )
 }
 \arguments{
@@ -21,15 +22,21 @@ a state specification.}
 \item{states_supported}{Character vector of parameter names the calling
 model can consume a time-varying state for. A state on any other parameter
 errors.}
+
+\item{base_id}{Integer, the number of existing parameters; hyperparameters
+are assigned ids from \code{base_id + 1} onwards.}
 }
 \value{
-A named list of stan data items describing the states.
+A named list of stan data items describing the states, plus a
+\code{hyper_params} list of the state hyperparameters to append to \code{params}.
 }
 \description{
 Builds the minimal configuration the stan model needs to layer a stochastic
 state on top of a parameter's level (see \code{\link[=create_stan_params]{create_stan_params()}}). The
 trajectory length and centring window are derived in stan from the modelled
-time, so only the state type, link, target parameter and step standard
-deviation prior are emitted here.
+time, so only the state structure is emitted here; each state's
+hyperparameters (step sd, GP magnitude and lengthscale) are returned as
+\code{hyper_params} for the caller to append to the parameter vector, and are
+referenced by parameter id.
 }
 \keyword{internal}
