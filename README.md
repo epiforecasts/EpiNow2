@@ -292,17 +292,17 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pitmonticone">pitmonticone</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=actions-user">actions-user</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=ellisp">ellisp</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=kaitejohnson">kaitejohnson</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=jdmunday">jdmunday</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=kaitejohnson">kaitejohnson</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=adrian-lison">adrian-lison</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=pearsonca">pearsonca</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=Bisaloo">Bisaloo</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=JAllen42">JAllen42</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/commits?author=jcken95">jcken95</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=adamkucharski">adamkucharski</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=adrian-lison">adrian-lison</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=avehtari">avehtari</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=andrjohns">andrjohns</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=claude">claude</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/commits?author=jcken95">jcken95</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=LloydChapman">LloydChapman</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=medewitt">medewitt</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/commits?author=nikosbosse">nikosbosse</a>,
@@ -362,7 +362,8 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Antorresd">ntorresd</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Amicahwiesner67">micahwiesner67</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Apaigemiller">paigemiller</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3AWardBrian">WardBrian</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3AWardBrian">WardBrian</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3AjackUKHSA">jackUKHSA</a>
 
 <!-- markdownlint-enable -->
 
