@@ -103,12 +103,12 @@ parameters {
   // normalised within each ragged segment to give a Dirichlet draw
   vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
   simplex[week_effect] day_of_week_simplex; // day of week reporting effect
-  // time-varying parameter states (ragged: per-state offsets in transformed data)
+  // time-varying parameter states (ragged: per-state offsets in transformed
+  // data). State hyperparameters (step sd, GP magnitude and lengthscale) are
+  // part of the `params` vector above and reconstructed in transformed
+  // parameters.
   vector[n_rw_steps] state_rw_steps;               // random walk steps
-  vector<lower = 0>[n_rw_states] state_rw_sd;      // random walk step sd
   vector[n_gp_coef] state_gp_eta;                  // GP basis coefficients
-  vector<lower = 0>[n_gp_states] state_gp_alpha;   // GP magnitude
-  vector<lower = 0>[n_gp_states] state_gp_rho;     // GP lengthscale
 }
 
 transformed parameters {
@@ -124,6 +124,27 @@ transformed parameters {
   vector[ot] obs_reports; // observed estimated reported cases
   vector[estimate_r * (delay_type_max[delay_id_generation_time] + 1)]
     gt_rev_pmf;
+
+  // state hyperparameters, retrieved from the unified parameter vector
+  vector[n_rw_states] state_rw_sd;    // random walk step sd
+  vector[n_gp_states] state_gp_alpha; // GP magnitude
+  vector[n_gp_states] state_gp_rho;   // GP lengthscale
+  for (r in 1:n_rw_states) {
+    state_rw_sd[r] = get_param(
+      rw_sd_id[r], params_fixed_lookup, params_variable_lookup, params_value,
+      params
+    );
+  }
+  for (g in 1:n_gp_states) {
+    state_gp_alpha[g] = get_param(
+      gp_alpha_id[g], params_fixed_lookup, params_variable_lookup, params_value,
+      params
+    );
+    state_gp_rho[g] = get_param(
+      gp_rho_id[g], params_fixed_lookup, params_variable_lookup, params_value,
+      params
+    );
+  }
 
   // trajectory of the (possibly time-varying) fraction observed; constant when
   // no state is attached to fraction_observed
@@ -308,27 +329,10 @@ model {
     );
   }
 
-  // priors for time-varying parameter states
+  // priors for time-varying parameter states. State hyperparameters (step sd,
+  // GP magnitude and lengthscale) are part of `params`, so their priors are
+  // applied by params_lp() above; only the state structure is handled here.
   profile("state lp") {
-    for (r in 1:n_rw_states) {
-      apply_prior_lp(
-        state_rw_sd[r], rw_sd_dist[r],
-        rw_sd_dist_params[2 * r - 1], rw_sd_dist_params[2 * r],
-        0, rw_sd_upper[r]
-      );
-    }
-    for (g in 1:n_gp_states) {
-      apply_prior_lp(
-        state_gp_alpha[g], gp_alpha_dist[g],
-        gp_alpha_dist_params[2 * g - 1], gp_alpha_dist_params[2 * g],
-        0, gp_alpha_upper[g]
-      );
-      apply_prior_lp(
-        state_gp_rho[g], gp_rho_dist[g],
-        gp_rho_dist_params[2 * g - 1], gp_rho_dist_params[2 * g],
-        0, gp_rho_upper[g]
-      );
-    }
     // ragged random walk step priors, indexed by per-state offsets
     for (s in 1:n_states) {
       if (state_type[s] == 0 && state_rw_n[s] > 0) {
@@ -337,14 +341,16 @@ model {
       }
     }
     state_gp_eta ~ std_normal(); // GP coefficients are iid across all states
-    // init-anchor states: user prior on the derived initial value (with the
-    // log-link Jacobian), the level itself being free scaffolding
+    // init-anchor states: the level parameter's prior is applied to the derived
+    // initial value (with the log-link Jacobian) instead of to the level, which
+    // is free scaffolding; params_lp() skips it via params_prior_skip.
     for (s in 1:n_states) {
       if (state_anchor[s]) {
+        int vpos = params_variable_lookup[state_param_id[s]];
         apply_prior_lp(
-          state_init[s], state_init_dist[s],
-          state_init_dist_params[2 * s - 1], state_init_dist_params[2 * s],
-          state_init_lower[s], state_init_upper[s]
+          state_init[s], prior_dist[vpos],
+          prior_dist_params[2 * vpos - 1], prior_dist_params[2 * vpos],
+          params_lower[vpos], params_upper[vpos]
         );
         if (state_link[s] == 0) {
           real state_level = get_param(

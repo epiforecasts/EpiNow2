@@ -115,10 +115,12 @@ test_that("create_stan_params emits RW state data for fraction_observed", {
   expect_identical(out$state_pos, array(1L))
   expect_identical(out$n_rw_states, 1L)
   expect_identical(out$n_gp_states, 0L)
-  expect_identical(out$rw_sd_dist, array(2L))
-  expect_equal(out$rw_sd_dist_params, array(c(0, 0.1)))
-  # the level prior flows through the normal parameter machinery
-  expect_identical(out$n_params_variable, 1L)
+  # the step sd is appended to the parameter vector as its own parameter
+  expect_identical(out$rw_sd_id, array(2L))
+  expect_identical(out$n_params_variable, 2L) # level + step sd
+  # level prior (normal(0.5, 0.1)) then the step sd prior (normal(0, 0.1))
+  expect_identical(as.integer(out$prior_dist), c(2L, 2L))
+  expect_equal(as.numeric(out$prior_dist_params), c(0.5, 0.1, 0, 0.1))
 })
 
 test_that("create_stan_params emits GP state data for fraction_observed", {
@@ -134,8 +136,10 @@ test_that("create_stan_params emits GP state data for fraction_observed", {
   expect_identical(out$n_rw_states, 0L)
   expect_identical(out$n_gp_states, 1L)
   expect_identical(out$gp_kernel, array(2L)) # matern default
-  expect_length(out$gp_alpha_dist_params, 2L)
-  expect_length(out$gp_rho_dist_params, 2L)
+  # magnitude and lengthscale are appended as their own parameters
+  expect_identical(out$gp_alpha_id, array(2L))
+  expect_identical(out$gp_rho_id, array(3L))
+  expect_identical(out$n_params_variable, 3L) # level + magnitude + lengthscale
 })
 
 test_that("create_stan_params resolves the future setting into model data", {
@@ -207,10 +211,11 @@ test_that("create_stan_params emits init-anchor state data (centred + Jacobian)"
   )
   out <- create_stan_params(params, states_supported = "fraction_observed")
   expect_identical(out$state_anchor, array(1L))
-  expect_identical(out$state_init_dist, array(2L)) # normal
-  expect_equal(out$state_init_dist_params, array(c(0.4, 0.05)))
-  # the level's prior is moved off the normal prior path
-  expect_identical(out$params_prior_skip, array(1L))
+  # the init prior is the level parameter's own prior (normal(0.4, 0.05))
+  expect_identical(as.integer(out$prior_dist[1]), 2L)
+  expect_equal(as.numeric(out$prior_dist_params[1:2]), c(0.4, 0.05))
+  # the level's prior is applied to the derived init instead of the level
+  expect_identical(as.integer(out$params_prior_skip), c(1L, 0L))
 })
 
 test_that("mean-anchor states keep their prior on the level", {
@@ -221,7 +226,8 @@ test_that("mean-anchor states keep their prior on the level", {
   )
   out <- create_stan_params(params, states_supported = "fraction_observed")
   expect_identical(out$state_anchor, array(0L))
-  expect_identical(out$params_prior_skip, array(0L))
+  # mean-anchored: the level keeps its prior, step sd is applied too
+  expect_identical(as.integer(out$params_prior_skip), c(0L, 0L))
 })
 
 test_that("GP init anchor emits non-stationary state data", {
@@ -233,8 +239,10 @@ test_that("GP init anchor emits non-stationary state data", {
   out <- create_stan_params(params, states_supported = "fraction_observed")
   expect_identical(out$state_type, array(1L)) # gp
   expect_identical(out$state_anchor, array(1L)) # init
-  expect_identical(out$state_init_dist, array(2L)) # normal prior on init
-  expect_identical(out$params_prior_skip, array(1L)) # level is scaffolding
+  # the init prior is the level parameter's own prior (normal(0.4, 0.05))
+  expect_identical(as.integer(out$prior_dist[1]), 2L)
+  # level is scaffolding (skipped); magnitude and lengthscale are applied
+  expect_identical(as.integer(out$params_prior_skip), c(1L, 0L, 0L))
 })
 
 test_that("create_stan_params is a no-op without states", {

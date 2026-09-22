@@ -445,39 +445,6 @@ make_param <- function(name, dist = NULL, lower_bound = -Inf) {
   params
 }
 
-##' Pack a dist_spec into stan-side init-anchor prior fields
-##'
-##' Converts a `<dist_spec>` into the integer/vector representation consumed
-##' by the init-anchor prior of a time-varying state in
-##' `inst/stan/functions/state.stan` (data items `state_init_dist`,
-##' `state_init_dist_params`, `state_init_lower`, `state_init_upper`).
-##'
-##' @param dist A `<dist_spec>` (LogNormal, Gamma, or Normal).
-##' @param lower_bound Numeric, lower bound on the parameter's support.
-##' @return A list with elements `dist_type` (integer code: 0 = lognormal,
-##' 1 = gamma, 2 = normal), `params` (numeric, the distribution parameters),
-##' `lower` and `upper` (numeric scalars).
-##' @keywords internal
-pack_init_prior <- function(dist, lower_bound = 0) {
-  dist_name <- get_distribution(dist)
-  dist_type <- switch(dist_name,
-    lognormal = 0L,
-    gamma = 1L,
-    normal = 2L,
-    cli_abort(c(
-      "!" = "Init prior distribution {.val {dist_name}} not supported.",
-      "i" = "Use {.fn LogNormal}, {.fn Gamma}, or {.fn Normal}."
-    ))
-  )
-  params <- as.numeric(unlist(get_parameters(dist)))
-  list(
-    dist_type = dist_type,
-    params = params,
-    lower = lower_bound,
-    upper = max(dist)
-  )
-}
-
 #' Map a primarycensored Stan distribution ID to a distspec distribution
 #'
 #' @description

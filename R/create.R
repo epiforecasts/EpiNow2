@@ -423,12 +423,6 @@ create_initial_conditions <- function(stan_data, params) {
       ignore_uncertainty = FALSE,
       FUN.VALUE = numeric(1)
     )
-    out$params <- array(rtruncnorm0(
-      stan_data$n_params_variable,
-      a = stan_data$params_lower,
-      b = stan_data$params_upper,
-      mean = param_means, sd = param_sds
-    ))
 
     ## time-varying states each have their own free-noise window (set by their
     ## `future`), mirroring the Stan transformed-data computation, so the ragged
@@ -461,29 +455,46 @@ create_initial_conditions <- function(stan_data, params) {
         }
       }
     }
-    ## initial draws stay within each prior's truncation bounds (b = *_upper),
-    ## otherwise a bounded prior gives -Inf density at the initial value
-    out$state_rw_sd <- array(
-      rtruncnorm0(
-        stan_data$n_rw_states %||% 0L, a = 0, b = stan_data$rw_sd_upper,
-        mean = 0, sd = 0.1
-      )
-    )
-    out$state_rw_steps <- array(rnorm(n_rw_steps, 0, 0.1))
-    out$state_gp_eta <- array(rnorm(n_gp_coef, 0, 0.1))
-    out$state_gp_alpha <- array(
-      rtruncnorm0(
-        stan_data$n_gp_states %||% 0L, a = 0, b = stan_data$gp_alpha_upper,
-        mean = 0, sd = 0.1
-      )
+
+    ## the named parameters are initialised from their prior. A state's
+    ## hyperparameters (step sd, GP magnitude and lengthscale), appended to the
+    ## parameter vector, keep bespoke starting values: a small step sd and GP
+    ## magnitude, and a GP lengthscale scaled to the data window. Initial draws
+    ## stay within each prior's truncation bounds, otherwise a bounded prior
+    ## gives -Inf density at the initial value.
+    n_named <- length(param_means)
+    param_inits <- rtruncnorm0(
+      n_named,
+      a = stan_data$params_lower[seq_len(n_named)],
+      b = stan_data$params_upper[seq_len(n_named)],
+      mean = param_means, sd = param_sds
     )
     rho_scale <- if (length(gp_free) > 0) mean(gp_free) else 1
-    out$state_gp_rho <- array(
-      rtruncnorm0(
-        stan_data$n_gp_states %||% 0L, a = 0, b = stan_data$gp_rho_upper,
-        mean = rho_scale / 2, sd = rho_scale / 4
-      )
-    )
+    if (n_states > 0) {
+      k <- n_named
+      for (s in seq_len(n_states)) {
+        if (stan_data$state_type[s] == 0) {
+          k <- k + 1L
+          param_inits <- c(param_inits, rtruncnorm0(
+            1, a = 0, b = stan_data$params_upper[k], mean = 0, sd = 0.1
+          ))
+        } else {
+          k <- k + 1L
+          alpha_init <- rtruncnorm0(
+            1, a = 0, b = stan_data$params_upper[k], mean = 0, sd = 0.1
+          )
+          k <- k + 1L
+          rho_init <- rtruncnorm0(
+            1, a = 0, b = stan_data$params_upper[k],
+            mean = rho_scale / 2, sd = rho_scale / 4
+          )
+          param_inits <- c(param_inits, alpha_init, rho_init)
+        }
+      }
+    }
+    out$params <- array(param_inits)
+    out$state_rw_steps <- array(rnorm(n_rw_steps, 0, 0.1))
+    out$state_gp_eta <- array(rnorm(n_gp_coef, 0, 0.1))
     out
   }
 }
@@ -802,14 +813,20 @@ create_stan_params <- function(params, states_supported = character(0),
   ## on top in the model via the data from create_state_data().
   state_flags <- vapply(tparams$dist, is_state_spec, logical(1))
   state_data <- create_state_data(
-    params, state_flags, states_supported, seeding_time = seeding_time
+    params, state_flags, states_supported, seeding_time = seeding_time,
+    base_id = length(params)
   )
+  ## a state's hyperparameters (step sd, GP magnitude and lengthscale) are
+  ## appended to the parameter vector so they use the standard prior machinery
+  hyper_params <- state_data$hyper_params
+  state_data$hyper_params <- NULL
   if (any(state_flags)) {
     for (i in which(state_flags)) {
       params[[i]]$dist <- params[[i]]$dist$prior
     }
-    tparams <- transpose(params)
   }
+  params <- c(params, hyper_params)
+  tparams <- transpose(params)
 
   ## initialise variables
   params_fixed_lookup <- rep(0L, length(params))
@@ -902,8 +919,10 @@ create_stan_params <- function(params, states_supported = character(0),
 ##' Builds the minimal configuration the stan model needs to layer a stochastic
 ##' state on top of a parameter's level (see [create_stan_params()]). The
 ##' trajectory length and centring window are derived in stan from the modelled
-##' time, so only the state type, link, target parameter and step standard
-##' deviation prior are emitted here.
+##' time, so only the state structure is emitted here; each state's
+##' hyperparameters (step sd, GP magnitude and lengthscale) are returned as
+##' `hyper_params` for the caller to append to the parameter vector, and are
+##' referenced by parameter id.
 ##'
 ##' @param params A list of `<EpiNow2.params>` after `NULL` parameters have been
 ##'   removed, so that positions match the stan parameter ids.
@@ -912,12 +931,15 @@ create_stan_params <- function(params, states_supported = character(0),
 ##' @param states_supported Character vector of parameter names the calling
 ##'   model can consume a time-varying state for. A state on any other parameter
 ##'   errors.
-##' @return A named list of stan data items describing the states.
+##' @param base_id Integer, the number of existing parameters; hyperparameters
+##'   are assigned ids from `base_id + 1` onwards.
+##' @return A named list of stan data items describing the states, plus a
+##'   `hyper_params` list of the state hyperparameters to append to `params`.
 ##' @importFrom data.table fcase
 ##' @keywords internal
 create_state_data <- function(params, state_flags,
                               states_supported = character(0),
-                              seeding_time = 0L) {
+                              seeding_time = 0L, base_id = 0L) {
   empty <- list(
     n_states = 0L,
     state_param_id = array(integer(0)),
@@ -925,51 +947,34 @@ create_state_data <- function(params, state_flags,
     state_link = array(integer(0)),
     state_pos = array(integer(0)),
     state_anchor = array(integer(0)),
-    state_init_dist = array(integer(0)),
-    state_init_dist_params = array(numeric(0)),
-    state_init_lower = array(numeric(0)),
-    state_init_upper = array(numeric(0)),
     state_future_fixed = array(integer(0)),
     state_future_from = array(integer(0)),
     n_rw_states = 0L,
-    rw_sd_dist = array(integer(0)),
-    rw_sd_dist_params = array(numeric(0)),
-    rw_sd_upper = array(numeric(0)),
+    rw_sd_id = array(integer(0)),
     state_rw_period = 1L,
     n_gp_states = 0L,
     gp_basis_prop = array(numeric(0)),
     gp_boundary_scale = array(numeric(0)),
     gp_kernel = array(integer(0)),
     gp_nu = array(numeric(0)),
-    gp_alpha_dist = array(integer(0)),
-    gp_alpha_dist_params = array(numeric(0)),
-    gp_alpha_upper = array(numeric(0)),
-    gp_rho_dist = array(integer(0)),
-    gp_rho_dist_params = array(numeric(0)),
-    gp_rho_upper = array(numeric(0))
+    gp_alpha_id = array(integer(0)),
+    gp_rho_id = array(integer(0)),
+    hyper_params = list()
   )
   if (!any(state_flags)) {
     return(empty)
   }
 
-  ## integer code for a simple (lognormal/gamma/normal) prior distribution
-  dist_code <- function(d) {
-    fcase(
-      get_distribution(d) == "lognormal", 0L,
-      get_distribution(d) == "gamma", 1L,
-      get_distribution(d) == "normal", 2L
-    )
-  }
-  ## the two prior parameters, requiring them to be certain (numeric)
-  numeric_params <- function(d, what, name) {
-    pars <- get_parameters(d)
-    if (!all(vapply(pars, is.numeric, logical(1)))) {
+  ## a state hyperparameter (step sd, GP magnitude or lengthscale) is registered
+  ## as an ordinary parameter; require its prior to be certain for a clear error
+  assert_certain <- function(d, what, name) {
+    if (!all(vapply(get_parameters(d), is.numeric, logical(1)))) {
       cli_abort(c(
         "!" = "The {what} prior for time-varying parameter {.var {name}} cannot
         have uncertain parameters."
       ))
     }
-    as.numeric(unlist(pars))
+    invisible(d)
   }
   ## resolve a state's `future` setting into the (fixed, from) pair the model
   ## uses to size the free-noise window over the forecast horizon. "estimate"
@@ -993,28 +998,28 @@ create_state_data <- function(params, state_flags,
   link <- integer(n)
   pos <- integer(n)
   anchor <- integer(n)
-  init_dist <- integer(n)
-  init_params <- numeric(2 * n)
-  init_lower <- numeric(n)
-  init_upper <- numeric(n)
   future_fixed <- integer(n)
   future_from <- integer(n)
-  rw_sd_dist <- integer(0)
-  rw_sd_params <- numeric(0)
-  rw_sd_upper <- numeric(0)
+  rw_sd_id <- integer(0)
   rw_period <- integer(0)
   gp_kernel <- integer(0)
   gp_nu <- numeric(0)
-  gp_alpha_dist <- integer(0)
-  gp_alpha_params <- numeric(0)
-  gp_alpha_upper <- numeric(0)
-  gp_rho_dist <- integer(0)
-  gp_rho_params <- numeric(0)
-  gp_rho_upper <- numeric(0)
+  gp_alpha_id <- integer(0)
+  gp_rho_id <- integer(0)
   gp_basis_prop <- numeric(0)
   gp_boundary_scale <- numeric(0)
   n_rw <- 0L
   n_gp <- 0L
+
+  ## register a state hyperparameter as a new parameter appended after the
+  ## existing ones and return its parameter id (its position in that vector)
+  hyper_params <- list()
+  register_hyper <- function(suffix, name, dist) {
+    hyper_params[[length(hyper_params) + 1L]] <<- make_param(
+      paste(name, suffix, sep = "_"), dist, lower_bound = 0
+    )
+    base_id + length(hyper_params)
+  }
 
   for (j in seq_len(n)) {
     spec <- params[[idx[j]]]$dist
@@ -1044,24 +1049,17 @@ create_state_data <- function(params, state_flags,
     future_from[j] <- resolved_future$from
     if (spec$anchor == "init") {
       ## centred non-stationary state: the level is free scaffolding and the
-      ## user prior is applied to the derived initial value (with a Jacobian)
+      ## level parameter's own prior is applied to the derived initial value
+      ## (with a Jacobian) in the model
       anchor[j] <- 1L
-      packed <- pack_init_prior(
-        spec$prior, lower_bound = params[[idx[j]]]$lower_bound %||% 0
-      )
-      init_dist[j] <- packed$dist_type
-      init_params[(2 * j - 1):(2 * j)] <- packed$params
-      init_lower[j] <- packed$lower
-      init_upper[j] <- packed$upper
     }
     if (spec$type == "rw") {
       type[j] <- 0L
       n_rw <- n_rw + 1L
       pos[j] <- n_rw
       step_sd <- spec$settings$sd
-      rw_sd_dist <- c(rw_sd_dist, dist_code(step_sd))
-      rw_sd_params <- c(rw_sd_params, numeric_params(step_sd, "step sd", name))
-      rw_sd_upper <- c(rw_sd_upper, max(step_sd))
+      assert_certain(step_sd, "step sd", name)
+      rw_sd_id <- c(rw_sd_id, register_hyper("rw_sd", name, step_sd))
       rw_period <- c(rw_period, spec$settings$period %||% 1L)
     } else {
       gp <- spec$settings
@@ -1079,16 +1077,10 @@ create_state_data <- function(params, state_flags,
         default = 2L # matern or ou
       ))
       gp_nu <- c(gp_nu, gp$matern_order)
-      gp_alpha_dist <- c(gp_alpha_dist, dist_code(gp$alpha))
-      gp_alpha_params <- c(
-        gp_alpha_params, numeric_params(gp$alpha, "alpha", name)
-      )
-      gp_alpha_upper <- c(gp_alpha_upper, max(gp$alpha))
-      gp_rho_dist <- c(gp_rho_dist, dist_code(gp$ls))
-      gp_rho_params <- c(
-        gp_rho_params, numeric_params(gp$ls, "lengthscale", name)
-      )
-      gp_rho_upper <- c(gp_rho_upper, max(gp$ls))
+      assert_certain(gp$alpha, "alpha", name)
+      gp_alpha_id <- c(gp_alpha_id, register_hyper("gp_alpha", name, gp$alpha))
+      assert_certain(gp$ls, "lengthscale", name)
+      gp_rho_id <- c(gp_rho_id, register_hyper("gp_rho", name, gp$ls))
       gp_basis_prop <- c(gp_basis_prop, gp$basis_prop)
       gp_boundary_scale <- c(gp_boundary_scale, gp$boundary_scale)
     }
@@ -1110,28 +1102,19 @@ create_state_data <- function(params, state_flags,
     state_link = array(link),
     state_pos = array(as.integer(pos)),
     state_anchor = array(anchor),
-    state_init_dist = array(init_dist),
-    state_init_dist_params = array(init_params),
-    state_init_lower = array(init_lower),
-    state_init_upper = array(init_upper),
     state_future_fixed = array(as.integer(future_fixed)),
     state_future_from = array(as.integer(future_from)),
     n_rw_states = n_rw,
-    rw_sd_dist = array(rw_sd_dist),
-    rw_sd_dist_params = array(rw_sd_params),
-    rw_sd_upper = array(rw_sd_upper),
+    rw_sd_id = array(as.integer(rw_sd_id)),
     state_rw_period = state_rw_period,
     n_gp_states = n_gp,
     gp_basis_prop = array(gp_basis_prop),
     gp_boundary_scale = array(gp_boundary_scale),
     gp_kernel = array(gp_kernel),
     gp_nu = array(gp_nu),
-    gp_alpha_dist = array(gp_alpha_dist),
-    gp_alpha_dist_params = array(gp_alpha_params),
-    gp_alpha_upper = array(gp_alpha_upper),
-    gp_rho_dist = array(gp_rho_dist),
-    gp_rho_dist_params = array(gp_rho_params),
-    gp_rho_upper = array(gp_rho_upper)
+    gp_alpha_id = array(as.integer(gp_alpha_id)),
+    gp_rho_id = array(as.integer(gp_rho_id)),
+    hyper_params = hyper_params
   )
 }
 
