@@ -1018,14 +1018,15 @@ create_state_data <- function(params, state_flags,
   n_rw <- 0L
   n_gp <- 0L
 
-  ## register a state hyperparameter as a new parameter appended after the
-  ## existing ones and return its parameter id (its position in that vector)
+  ## state hyperparameters are appended to the parameter vector after the
+  ## existing ones; `register_hyper()` adds one and returns the extended list
+  ## together with its parameter id (its position in that vector)
   hyper_params <- list()
-  register_hyper <- function(suffix, name, dist) {
-    hyper_params[[length(hyper_params) + 1L]] <<- make_param(
+  register_hyper <- function(existing, suffix, name, dist) {
+    existing[[length(existing) + 1L]] <- make_param(
       paste(name, suffix, sep = "_"), dist, lower_bound = 0
     )
-    base_id + length(hyper_params)
+    list(params = existing, id = base_id + length(existing))
   }
 
   for (j in seq_len(n)) {
@@ -1067,7 +1068,9 @@ create_state_data <- function(params, state_flags,
       pos[j] <- n_rw
       step_sd <- spec$settings$sd
       assert_estimated(step_sd, "step sd", name)
-      rw_sd_id <- c(rw_sd_id, register_hyper("rw_sd", name, step_sd))
+      reg <- register_hyper(hyper_params, "rw_sd", name, step_sd)
+      hyper_params <- reg$params
+      rw_sd_id <- c(rw_sd_id, reg$id)
       rw_period <- c(rw_period, spec$settings$period %||% 1L)
     } else {
       gp <- spec$settings
@@ -1086,9 +1089,13 @@ create_state_data <- function(params, state_flags,
       ))
       gp_nu <- c(gp_nu, gp$matern_order)
       assert_estimated(gp$alpha, "alpha", name)
-      gp_alpha_id <- c(gp_alpha_id, register_hyper("gp_alpha", name, gp$alpha))
+      reg <- register_hyper(hyper_params, "gp_alpha", name, gp$alpha)
+      hyper_params <- reg$params
+      gp_alpha_id <- c(gp_alpha_id, reg$id)
       assert_estimated(gp$ls, "lengthscale", name)
-      gp_rho_id <- c(gp_rho_id, register_hyper("gp_rho", name, gp$ls))
+      reg <- register_hyper(hyper_params, "gp_rho", name, gp$ls)
+      hyper_params <- reg$params
+      gp_rho_id <- c(gp_rho_id, reg$id)
       gp_basis_prop <- c(gp_basis_prop, gp$basis_prop)
       gp_boundary_scale <- c(gp_boundary_scale, gp$boundary_scale)
     }
