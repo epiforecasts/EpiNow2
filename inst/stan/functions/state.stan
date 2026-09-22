@@ -1,6 +1,13 @@
 /**
  * Time-varying parameter states
  *
+ * Terminology follows state-space modelling: a *parameter* is a scalar that is
+ * constant over time (it may still be estimated), whereas a *state* is a
+ * quantity that varies over time. A parameter becomes a state when the user
+ * requests it with `RW()` or `GP()`; the parameter's value is then the state's
+ * baseline (level), and the state's own hyperparameters (step sd, GP magnitude
+ * and lengthscale) are themselves ordinary parameters (see params.stan).
+ *
  * Build a parameter trajectory by combining a baseline (level) with a
  * stochastic deviation: a random walk (`rw_trajectory`) or an approximate
  * Gaussian process (`gp_trajectory`). Each builder is self-contained;

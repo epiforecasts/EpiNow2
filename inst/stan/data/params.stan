@@ -2,7 +2,10 @@ int<lower = 0> n_params_variable; // number of parameters
 int<lower = 0> n_params_fixed; // number of parameters
 vector[n_params_variable] params_lower; // lower bounds of the priors
 vector[n_params_variable] params_upper; // upper bounds of the priors
-// 1 if a parameter's prior is applied elsewhere (init-anchored state level)
+// 1 if a parameter's prior is applied elsewhere rather than to the parameter
+// itself. This is used for the level of an init-anchored time-varying state,
+// whose prior is applied to the derived initial value with a Jacobian (see the
+// model block of estimate_infections.stan); the level is otherwise free.
 array[n_params_variable] int<lower = 0, upper = 1> params_prior_skip;
 
 // fixed parameter lookup
