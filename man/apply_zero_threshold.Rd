@@ -38,3 +38,9 @@ This function aims to detect spurious zeroes by comparing the 7-day average
 of the case counts to a threshold. If the 7-day average is above the
 threshold, the zero case count is replaced with \code{NA}.
 }
+\details{
+\code{average_7_day} is calculated with an 8-day rolling sum divided by 7 so
+that, for a row with \code{confirm == 0} (the only case it is used for), it
+equates to the 7-day right-aligned moving average at the previous data
+point.
+}

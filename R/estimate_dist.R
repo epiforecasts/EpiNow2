@@ -102,6 +102,13 @@
 #' in the package), so the model is pre-compiled and runs without
 #' needing `primarycensored` at runtime.
 #'
+#' Initial values for the sampler are computed via method-of-moments (MoM)
+#' from the aggregated data. Near-zero variance (e.g. identical observed
+#' delays) would otherwise give degenerate scale estimates, so scale
+#' parameters then fall back to their prior means; any non-finite candidate
+#' is replaced with a bounded default and clamped within the Stan-declared
+#' bounds.
+#'
 #' ## Limitations
 #'
 #' - Delay distributions are limited to lognormal, gamma,
@@ -239,9 +246,7 @@ estimate_dist <- function(data,
     )
   })
 
-  # Prepare Stan data. Wrap per-observation vectors in as.array()
-  # so a single aggregated row is passed as array[1] rather than a
-  # scalar.
+  # wrap vectors in as.array() so a single row is array[1], not a scalar
   stan_data <- list(
     n = nrow(delay_data),
     delay = as.array(as.integer(delay_data$delay_lwr)),
@@ -267,19 +272,14 @@ estimate_dist <- function(data,
     )
   }
 
-  # Compute initial values based on MoM estimates, guarding
-  # against zero/constant delays that would produce non-finite
-  # candidates.
+  # MoM initial values (see @details)
   midpoints <- (delay_data$delay_lwr + delay_data$delay_upr) / 2
   obs_weights <- delay_data$n
   wmean <- weighted.mean(midpoints, obs_weights)
   wvar <- weighted.mean(
     (midpoints - wmean)^2, obs_weights
   )
-  # Clamp variance away from zero so divisions in lognormal/gamma
-  # init don't blow up when all observed delays are identical;
-  # leave wmean alone so distributions that support a negative
-  # mean (e.g. normal) keep their sign.
+  # clamp variance only; wmean keeps its sign for distributions like normal
   eps <- sqrt(.Machine$double.eps)
   wvar <- max(wvar, eps)
   near_zero_var <- wvar <= eps
@@ -299,10 +299,7 @@ estimate_dist <- function(data,
     ))
   }
 
-  # When data variance is near-zero, MoM gives near-zero scale
-  # estimates that create degenerate sampler geometry. Fall back
-  # to prior means for scale parameters so the sampler can explore
-  # the prior-dominated posterior.
+  # fall back to prior means for scale params when variance is near-zero
   prior_means <- vapply(
     params, function(p) mean(p$dist), numeric(1)
   )
@@ -330,8 +327,7 @@ estimate_dist <- function(data,
       wmean
     )
   )
-  # Replace any non-finite candidate with a bounded positive
-  # default, then clamp inside the Stan-declared bounds.
+  # replace non-finite candidates with a bounded default (see @details)
   safe_default <- pmin(
     pmax(stan_data$params_lower + 0.01, 1),
     stan_data$params_upper - 0.01
@@ -569,9 +565,7 @@ estimate_dist <- function(data,
     ))
   }
 
-  # Obs-time-to-Inf heuristic: if relative_obs_time is much
-  # larger than the max delay, treat as untruncated.
-  # Default threshold follows epidist's obs_time_threshold.
+  # untruncated heuristic; see @param obs_time_threshold
   max_delay <- max(delay_upr)
   threshold <- max_delay * obs_time_threshold
   far_from_truncation <- relative_obs_time > threshold
