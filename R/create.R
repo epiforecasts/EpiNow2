@@ -645,12 +645,16 @@ create_initial_conditions <- function(stan_data, params) {
       ignore_uncertainty = FALSE,
       FUN.VALUE = numeric(1)
     )
-    out$params <- array(rtruncnorm(
-      stan_data$n_params_variable,
-      a = stan_data$params_lower,
-      b = stan_data$params_upper,
-      mean = param_means, sd = param_sds
-    ))
+    if (stan_data$n_params_variable > 0) {
+      out$params <- array(rtruncnorm(
+        stan_data$n_params_variable,
+        a = stan_data$params_lower,
+        b = stan_data$params_upper,
+        mean = param_means, sd = param_sds
+      ))
+    } else {
+      out$params <- array(numeric(0))
+    }
     out
   }
 }
