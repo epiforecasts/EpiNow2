@@ -40,6 +40,29 @@ test_estimate_infections <- function(...) {
   invisible(out)
 }
 
+# Fast input-validation tests (no MCMC) ------------------------------------
+
+test_that("estimate_infections errors for prevalence-type data without an Rt model", {
+  expect_error(
+    estimate_infections(
+      reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      obs = obs_opts(type = "prevalence"),
+      rt = NULL
+    ),
+    "prevalence"
+  )
+  expect_error(
+    estimate_infections(
+      reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      obs = obs_opts(type = "prevalence"),
+      rt = rt_opts(use_rt = FALSE)
+    ),
+    "prevalence"
+  )
+})
+
 # Integration tests (MCMC-based) ------------------------------------------
 # These tests run actual MCMC sampling and are slow. Tests are divided into:
 # - Core tests: Essential tests that always run to catch critical failures

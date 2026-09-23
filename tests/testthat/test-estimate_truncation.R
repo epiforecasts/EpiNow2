@@ -349,6 +349,10 @@ test_that("check_truncation_obs_opts warns on unsupported non-default settings",
     EpiNow2:::check_truncation_obs_opts(obs_opts(scale = Normal(0.5, 0.1))),
     "ignored by"
   )
+  expect_warning(
+    EpiNow2:::check_truncation_obs_opts(obs_opts(type = "prevalence")),
+    "ignored by"
+  )
   expect_no_warning(
     EpiNow2:::check_truncation_obs_opts(obs_opts())
   )

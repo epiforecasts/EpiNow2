@@ -290,7 +290,7 @@ check_truncation_length <- function(stan_args, time_points) {
 check_truncation_obs_opts <- function(obs) {
   defaults <- obs_opts()
   unused <- c(
-    "weight", "week_effect", "week_length", "scale"
+    "weight", "week_effect", "week_length", "scale", "type"
   )
   changed <- vapply(unused, function(field) {
     !identical(obs[[field]], defaults[[field]])
