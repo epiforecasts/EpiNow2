@@ -134,8 +134,10 @@ real R_to_r_newton_step(real R, real r, vector pmf) {
  * @return The estimated growth rate r
  *
  * @par Example
- * For a generation time with probability `{0.1, 0.3, 0.4, 0.2}` of taking 1,
- * 2, 3 or 4 days, the reversed PMF is `gt_rev_pmf = {0.2, 0.4, 0.3, 0.1}`.
+ * For a generation time with probability `{0.1, 0.3, 0.4, 0.2}` of taking 0,
+ * 1, 2 or 3 days (in practice the 0-day probability would be at or near
+ * zero, since `check_generation_time()` rejects a non-zero one), the
+ * reversed PMF is `gt_rev_pmf = {0.2, 0.4, 0.3, 0.1}`.
  * `R_to_r(1.5, gt_rev_pmf, 1e-6)` then returns a growth rate of
  * approximately `0.254` per day.
  *
