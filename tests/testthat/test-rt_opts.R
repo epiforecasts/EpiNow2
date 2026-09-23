@@ -29,6 +29,13 @@ test_that("rt_opts converts a plain prior to a mean-reverting GP when gp_on = 'R
   expect_identical(rt$prior$anchor, "mean")
 })
 
+test_that("rt_opts applies gp_on = 'R0' to the default prior", {
+  suppressWarnings(rt <- rt_opts(gp_on = "R0"))
+  expect_identical(rt$prior$anchor, "mean")
+  suppressWarnings(rt <- rt_opts(gp_on = "R_t-1"))
+  expect_identical(rt$prior$anchor, "init")
+})
+
 test_that("rt_opts handles custom inputs correctly", {
   expect_warning(
     result <- rt_opts(

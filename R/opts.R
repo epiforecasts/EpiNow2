@@ -363,6 +363,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
                     pop_period = c("forecast", "all"),
                     pop_floor = 1.0,
                     growth_method = c("infections", "infectiousness")) {
+  prior_missing <- missing(prior)
   gp_anchor <- "init"
   if (lifecycle::is_present(gp_on)) {
     deprecate_warn(
@@ -375,6 +376,11 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
       )
     )
     if (identical(gp_on, "R0")) gp_anchor <- "mean"
+    # a caller relying on the default prior selects the variant through gp_on,
+    # so re-anchor the default state; an explicitly supplied GP() is respected
+    if (prior_missing && is_state_spec(prior)) {
+      prior$anchor <- gp_anchor
+    }
   }
   # A plain distribution used to imply a Gaussian-process Rt (the previous
   # default). Preserve that behaviour by wrapping it in `GP()`, deprecated so
