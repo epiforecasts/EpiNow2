@@ -137,6 +137,43 @@ vector get_delay_rev_pmf(
 }
 
 /**
+ * Get the reversed convolution kernel linking infections to a secondary
+ * observation
+ *
+ * For an "incidence"-type secondary observation (e.g. deaths from
+ * infections) the kernel is the density of the delay from infection to
+ * the secondary event, so that each infection contributes to the
+ * secondary observation exactly once. For a "prevalence"-type
+ * observation (e.g. hospital bed occupancy) the kernel is instead the
+ * survival function of that delay, so that an infection keeps
+ * contributing to the secondary observation for as long as it remains
+ * in the prevalent state (e.g. the length of a hospital stay).
+ *
+ * @param secondary_type Type of secondary observation: 0 = incidence,
+ *   1 = prevalence
+ * @return A vector containing the reversed kernel of length len
+ *
+ * @ingroup delay_handlers
+ */
+vector get_secondary_rev_pmf(
+  int delay_id, int len, array[] int delay_types_p, array[] int delay_types_id,
+  array[] int delay_types_groups, array[] int delay_max,
+  vector delay_np_pmf, array[] int delay_np_pmf_groups,
+  vector delay_params, array[] int delay_params_groups, array[] int delay_dist,
+  int secondary_type
+) {
+  vector[len] rev_pmf = get_delay_rev_pmf(
+    delay_id, len, delay_types_p, delay_types_id, delay_types_groups,
+    delay_max, delay_np_pmf, delay_np_pmf_groups, delay_params,
+    delay_params_groups, delay_dist, 0, 1, secondary_type
+  );
+  if (secondary_type) {
+    rev_pmf = 1 - rev_pmf;
+  }
+  return rev_pmf;
+}
+
+/**
  * Update log density for delay distribution priors
  *
  * @param delay_params Ragged vector of parameters for parametric delay
