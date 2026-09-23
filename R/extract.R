@@ -81,10 +81,17 @@ extract_parameters <- function(samples, args) {
     }
   }
 
-  # The reproduction number (R) and latent infections (I) levels are the
-  # sampled scaffolding for time-varying states; their trajectories are reported
-  # separately, so they are not surfaced here as scalar parameters.
+  # R and I are always reported as trajectories, so their sampled level is never
+  # surfaced as a scalar. Other parameters are surfaced as scalars unless they
+  # are time-varying, in which case their trajectory is reported instead; detect
+  # those from the model's state configuration rather than hard-coding names.
+  state_ids <- args[["state_param_id"]] %||% integer(0)
   state_params <- c("R", "I")
+  for (id_var in id_vars) {
+    if (isTRUE(args[[id_var]] %in% state_ids)) {
+      state_params <- c(state_params, sub("^param_id_", "", id_var))
+    }
+  }
 
   # Extract all columns
   samples_list <- lapply(seq_len(n_cols), function(i) {
