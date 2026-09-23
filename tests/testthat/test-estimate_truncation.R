@@ -154,6 +154,12 @@ test_that("estimate_truncation can return values from simulated data and plot
   expect_error(plot(est), NA)
 })
 
+test_that("get_samples(format = 'list') returns the raw list of arrays", {
+  raw_samples <- get_samples(default_est, format = "list")
+  expect_type(raw_samples, "list")
+  expect_false(is.data.frame(raw_samples))
+})
+
 test_that("get_predictions correctly maps reconstructions to datasets and dates", {
   n_sets <- length(example_truncated)
   # "sample" and "quantile" both carry an explicit `dataset` column to check
