@@ -109,8 +109,11 @@ generation_time_opts <- gt_opts
 #' secondary reports. An example application is hospital bed usage predicted by
 #' hospital admissions.
 #'
-#' @param ... Overwrite options defined by type. See the returned values for all
-#' options that can be passed.
+#' @param ... `r lifecycle::badge("deprecated")` Overwrite the low-level
+#' options (`cumulative`, `historic`, `primary_hist_additive`, `current`,
+#' `primary_current_additive`) defined by `type`. There is no known use case
+#' for combinations of these options other than the ones set by `type`, so
+#' passing any of them is deprecated and will be removed in a future release.
 #' @importFrom rlang arg_match
 #' @seealso [estimate_secondary()]
 #' @return A `<secondary_opts>` object of binary options summarising secondary
@@ -132,6 +135,20 @@ generation_time_opts <- gt_opts
 #' secondary_opts("prevalence")
 secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
   type <- arg_match(type)
+  dots <- list(...)
+  low_level_opts <- c(
+    "cumulative", "historic", "primary_hist_additive",
+    "current", "primary_current_additive"
+  )
+  if (any(names(dots) %in% low_level_opts)) {
+    deprecate_warn(
+      "1.10.0",
+      I("secondary_opts(cumulative/historic/primary_hist_additive/current/primary_current_additive = )"), # nolint: line_length_linter
+      details = "There is no known use case for overriding these low-level
+      options other than the combinations already set by `type`. Use `type`
+      instead."
+    )
+  }
   if (type == "incidence") {
     opts <- list(
       cumulative = 0,
@@ -149,7 +166,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
       primary_current_additive = 1
     )
   }
-  opts <- modifyList(opts, list(...))
+  opts <- modifyList(opts, dots)
   attr(opts, "class") <- c("secondary_opts", class(opts))
   opts
 }
@@ -597,6 +614,22 @@ gp_opts <- function(basis_prop = 0.2,
 #'   included in the model.
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #'   be returned by the model.
+#' @param type A character string indicating how observations relate to
+#'   latent infections, only used by [estimate_infections()]. Options are:
+#'
+#'   - "incidence" (default): observations are a convolution of latent
+#'   infections with a reporting delay, i.e. each infection contributes to the
+#'   observation exactly once. An example is deaths or hospital admissions
+#'   arising from infections.
+#'
+#'   - "prevalence": observations are a convolution of latent infections with
+#'   the survival function of the reporting delay, i.e. each infection keeps
+#'   contributing to the observation for as long as it remains in the
+#'   prevalent state described by that delay. An example is hospital bed
+#'   occupancy, where the delay describes the length of stay. Note that
+#'   [estimate_infections()] requires a generative (`rt`) model to fit
+#'   prevalence-type data, as the deconvolution approach used when `rt = NULL`
+#'   assumes incidence-type observations.
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_inform cli_abort
 #' @return An `<obs_opts>` object of observation model settings.
@@ -610,6 +643,9 @@ gp_opts <- function(basis_prop = 0.2,
 #'
 #' # Scale reported data
 #' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
+#'
+#' # Fit to prevalence data (e.g. hospital bed occupancy)
+#' obs_opts(type = "prevalence")
 # nolint end
 obs_opts <- function(family = c("negbin", "poisson"),
                      dispersion = Normal(mean = 0, sd = 0.25),
@@ -618,8 +654,10 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      week_length = 7,
                      scale = Fixed(1),
                      likelihood = TRUE,
-                     return_likelihood = FALSE) {
+                     return_likelihood = FALSE,
+                     type = c("incidence", "prevalence")) {
   family <- arg_match(family)
+  type <- arg_match(type)
   if (family != "negbin") {
     if (!missing(dispersion)) {
       cli_warn(
@@ -637,7 +675,8 @@ obs_opts <- function(family = c("negbin", "poisson"),
     week_length = week_length,
     scale = scale,
     likelihood = likelihood,
-    return_likelihood = return_likelihood
+    return_likelihood = return_likelihood,
+    type = type
   )
 
   if (!is.null(obs$dispersion)) {
