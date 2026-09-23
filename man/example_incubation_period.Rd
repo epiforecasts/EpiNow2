@@ -12,6 +12,6 @@ example_incubation_period
 }
 \description{
 An example of an incubation period estimate. See here for details:
-https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/incubation-period.R # nolint
+https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/incubation-period.R
 }
 \keyword{datasets}

@@ -20,6 +20,6 @@ example_truncated
 An example dataset of observed cases with truncation applied.
 This data is generated internally for use in the example of
 \code{estimate_truncation()}. For details on how the data is generated, see
-\url{https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/truncated.R} #nolint
+\url{https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/truncated.R}
 }
 \keyword{datasets}

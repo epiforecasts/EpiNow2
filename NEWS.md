@@ -30,6 +30,7 @@
 
 - The prior choice guide vignette now draws more samples in its `estimate_secondary()` examples to avoid low tail effective sample size warnings in the rendered output.
 - Clarified the Stan documentation for delay-related vectors and their lookup index arrays, naming them explicitly as ragged data structures and linking to the Stan User's Guide section on the topic.
+- Removed stray `# nolint` comments that were rendered as visible text in the `growth_to_R()`, `R_to_growth()`, `example_incubation_period`, `example_reporting_delay` and `example_truncated` documentation, moving the line-length exclusion outside the roxygen block instead.
 
 ## Internal
 
