@@ -226,11 +226,11 @@ extract_delays <- function(samples, args) {
 #' (`TRUE`, the default) or excluded (`FALSE`)
 #' @importFrom cli cli_abort
 #' @return List of data.tables with samples
-#' @export
+#' @keywords internal
 #'
 #' @importFrom data.table data.table melt setkey
 #' @importFrom rstan extract
-extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
+extract_stan_samples <- function(stan_fit, pars = NULL, include = TRUE) {
   if (inherits(stan_fit, "stanfit")) {
     extract_args <- list(object = stan_fit, include = include)
     if (!is.null(pars)) extract_args <- c(extract_args, list(pars = pars))
@@ -287,6 +287,30 @@ extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
   })
 
   samples
+}
+
+#' Extract all samples from a stan fit
+#'
+#' @description `r lifecycle::badge("deprecated")`
+#' **This function is deprecated.** Use [get_samples()] on the fitted model
+#' object (e.g. the result of [estimate_infections()]) instead, with
+#' `format = "list"` to obtain the same list of arrays that this function
+#' returns.
+#'
+#' If the `object` argument is a `<stanfit>` object, it simply returns the
+#' result of [rstan::extract()]. If it is a `<CmdStanMCMC>` it returns samples
+#' in the same format as [rstan::extract()] does for `<stanfit>` objects.
+#' @inheritParams extract_stan_samples
+#' @return List of data.tables with samples
+#' @export
+#' @seealso [get_samples()] for the recommended replacement
+extract_samples <- function(stan_fit, pars = NULL, include = TRUE) {
+  deprecate_warn(
+    "1.10.0",
+    "extract_samples()",
+    "get_samples(format = 'list')"
+  )
+  extract_stan_samples(stan_fit, pars = pars, include = include)
 }
 
 #' Extract a parameter summary from a Stan object
@@ -393,7 +417,7 @@ extract_inits <- function(fit, current_inits,
   # extract and generate samples as function
   init_fun <- function(i) {
     res <- lapply(
-      extract_samples(fit),
+      extract_stan_samples(fit),
       function(x) {
         if (length(dim(x)) == 1) {
           as.array(x[i])
