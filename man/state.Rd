@@ -4,7 +4,7 @@
 \alias{state}
 \alias{GP}
 \alias{RW}
-\title{Time-varying parameters}
+\title{Time-varying states}
 \usage{
 GP(
   mean,
@@ -78,28 +78,28 @@ A \verb{<state_spec>} object describing the time-varying state.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
-These constructors mark a model parameter as varying over time, driven by a
-stochastic state. \code{GP()} uses an approximate Gaussian process and \code{RW()} a
-random walk. They wrap a \verb{<dist_spec>} giving the prior on the value the
-parameter reverts to (\code{mean}, a stationary / mean-reverting state) or on its
-initial value (\code{init}, a state on first differences). Exactly one of \code{mean}
-or \code{init} must be supplied.
+A model quantity is either a \emph{parameter} (a value held constant over time) or
+a \emph{state} (a value that evolves over time). These constructors turn a
+parameter into a state: \code{GP()} drives it with an approximate Gaussian process
+and \code{RW()} with a random walk. They wrap a \verb{<dist_spec>} giving the prior on
+the value the state reverts to (\code{mean}, a stationary / mean-reverting state)
+or on its initial value (\code{init}, a state on first differences). Exactly one
+of \code{mean} or \code{init} must be supplied.
 
 The wrapped prior may itself be a known trajectory (e.g. a \code{NonParametric()}
 built from a data column), in which case the state fits deviations around
 that mean. The link function applied to the resulting trajectory (e.g. log
-for positive parameters, logit for probabilities) is a property of the
-parameter
-and is set where the parameter is registered, not here.
+for positive values, logit for probabilities) is set where the state is
+registered, not here.
 }
 \details{
-The state specification deliberately carries only the value/state part of a
-time-varying parameter. The level (whether the overall value is estimated or
-\code{Fixed()}) and the link function are handled where the parameter is used.
+The state specification deliberately carries only the value part. The level
+(whether the overall value is estimated or \code{Fixed()}) and the link function
+are handled where the state is used.
 
-These functions define the user interface for time-varying parameters. Wiring
-them into the models is ongoing; passing a state specification where a model
-parameter is not yet supported raises an informative error.
+These functions define the user interface for time-varying states. Wiring
+them into the models is ongoing; passing a state specification where it is
+not yet supported raises an informative error.
 }
 \examples{
 # mean-reverting Gaussian process
