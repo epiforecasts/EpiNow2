@@ -73,7 +73,8 @@ settings if desired.}
 create if not present).}
 
 \item{target_date}{Date, defaults to maximum found in the data if not
-specified.}
+specified. Passing a character string is deprecated; it is converted to a
+\verb{<Date>} with a warning.}
 
 \item{return_output}{Logical, defaults to FALSE. Should output be returned,
 this automatically updates to TRUE if no directory for saving is specified.}
