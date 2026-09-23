@@ -524,7 +524,7 @@ test_that("get_predictions format='sample' compatible with scoringutils", {
     delays = delay_opts(
       example_incubation_period + example_reporting_delay
     ),
-    rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+    rt = rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 0.2))),
     stan = stan_opts(
       samples = 25, warmup = 25,
       chains = 2, cores = 1,
@@ -564,7 +564,7 @@ test_that("get_predictions format='quantile' compatible with scoringutils", {
     delays = delay_opts(
       example_incubation_period + example_reporting_delay
     ),
-    rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+    rt = rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 0.2))),
     stan = stan_opts(
       samples = 25, warmup = 25,
       chains = 2, cores = 1,

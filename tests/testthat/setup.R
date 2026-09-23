@@ -93,7 +93,7 @@ get_test_fixtures <- local({
           data = cases,
           generation_time = gt_opts(example_generation_time),
           delays = delay_opts(example_incubation_period + example_reporting_delay),
-          rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+          rt = rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 0.2))),
           stan = stan_opts(
             samples = 25, warmup = 25,
             chains = 2, cores = 1,

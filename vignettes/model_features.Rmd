@@ -120,7 +120,6 @@ When using the renewal equation, several options control how the time-varying re
 | GP on first differences of log Rt (default) | `rt_opts(prior = GP(init = ...))` | Gaussian process applied to successive Rt values | [Options examples](estimate_infections_options.html) |
 | Mean-reverting GP on log Rt | `rt_opts(prior = GP(mean = ...))` | Gaussian process applied as deviations from a global mean | [Options examples](estimate_infections_options.html) |
 | Random walk | `rt_opts(prior = RW(...))` | Step-wise Rt following a random walk; set the interval with `RW(period = n)` | [Options examples](estimate_infections_options.html) |
-| Fixed Rt | `rt_opts(prior = LogNormal(...))` | Constant reproduction number sampled from the prior; no GP, no random walk | [Options examples](estimate_infections_options.html) |
 | Population adjustment | `rt_opts(pop = Fixed(N))` | Adjust Rt for susceptible depletion; `pop` accepts any `<dist_spec>` | [Options examples](estimate_infections_options.html) |
 | Growth rate method | `rt_opts(growth_method = "infectiousness")` | Alternative growth rate calculation via infectiousness | [Model definition](estimate_infections.html) |
 
@@ -135,7 +134,6 @@ For kernel mathematics and the Hilbert space spectral approximation see the [GP 
 | Feature | Argument | Description |
 |---|---|---|
 | Kernel choice | `GP(kernel = ...)` | `"matern"` (default), `"se"`, `"ou"`, or `"periodic"` |
-| Fixed Rt | `rt_opts(prior = LogNormal(...))` | Constant Rt instead of a Gaussian process |
 | Accuracy/speed tradeoff | `GP(basis_prop = ...)` | Higher values increase accuracy; lower values are faster (default 0.2) |
 
 See also: [GP implementation details](gaussian_process_implementation_details.html), [options examples](estimate_infections_options.html), [prior choice guide](prior_choice_guide.html)

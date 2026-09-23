@@ -348,11 +348,11 @@ trunc_opts <- function(dist = Fixed(0),
 #' # default settings
 #' rt_opts()
 #'
-#' # add a custom length scale
-#' rt_opts(prior = LogNormal(mean = 2, sd = 1))
+#' # customise the prior on the initial reproduction number
+#' rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 1)))
 #'
-#' # add a weekly random walk
-#' rt_opts(rw = 7)
+#' # use a weekly random walk instead of a Gaussian process
+#' rt_opts(prior = RW(init = LogNormal(mean = 2, sd = 1), period = 7))
 rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
                     use_rt = TRUE,
                     rw = 0,
@@ -363,6 +363,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
                     pop_period = c("forecast", "all"),
                     pop_floor = 1.0,
                     growth_method = c("infections", "infectiousness")) {
+  gp_anchor <- "init"
   if (lifecycle::is_present(gp_on)) {
     deprecate_warn(
       "1.10.0", "rt_opts(gp_on)",
@@ -373,6 +374,22 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
         "first differences."
       )
     )
+    if (identical(gp_on, "R0")) gp_anchor <- "mean"
+  }
+  # A plain distribution used to imply a Gaussian-process Rt (the previous
+  # default). Preserve that behaviour by wrapping it in `GP()`, deprecated so
+  # that a plain distribution can later specify a constant Rt.
+  if (isTRUE(use_rt) && !is_state_spec(prior) && inherits(prior, "dist_spec")) {
+    deprecate_warn(
+      "1.10.0", I("rt_opts(prior = <a plain distribution>)"),
+      details = paste(
+        "A plain distribution is treated as a Gaussian-process Rt for backward",
+        "compatibility. Request one explicitly with",
+        "`rt_opts(prior = GP(init = ...))` (or `GP(mean = ...)` / `RW(...)`).",
+        "A constant Rt will be supported in a future release."
+      )
+    )
+    prior <- if (gp_anchor == "mean") GP(mean = prior) else GP(init = prior)
   }
   # `future` is superseded by the `future` argument of GP() / RW()
   future_val <- "latest"

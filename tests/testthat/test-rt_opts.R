@@ -12,9 +12,21 @@ test_that("rt_opts returns expected default values", {
   expect_equal(result$pop, Fixed(0))
 })
 
-test_that("rt_opts accepts a constant or time-varying Rt prior", {
-  expect_s3_class(rt_opts(prior = LogNormal(mean = 1, sd = 1))$prior, "dist_spec")
+test_that("rt_opts converts a plain distribution prior to a GP (deprecated)", {
+  lifecycle::expect_deprecated(
+    rt <- rt_opts(prior = LogNormal(mean = 1, sd = 1))
+  )
+  expect_s3_class(rt$prior, "state_spec")
+  expect_identical(rt$prior$type, "gp")
+  expect_identical(rt$prior$anchor, "init")
   expect_s3_class(rt_opts(prior = RW(init = LogNormal(1, 1)))$prior, "rw_state")
+})
+
+test_that("rt_opts converts a plain prior to a mean-reverting GP when gp_on = 'R0'", {
+  suppressWarnings(
+    rt <- rt_opts(prior = LogNormal(mean = 1, sd = 1), gp_on = "R0")
+  )
+  expect_identical(rt$prior$anchor, "mean")
 })
 
 test_that("rt_opts handles custom inputs correctly", {

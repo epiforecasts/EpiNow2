@@ -62,8 +62,11 @@ test_that("RW() validates the step sd prior", {
 test_that("rt_opts accepts a time-varying (state) prior", {
   expect_s3_class(rt_opts(prior = GP(init = LogNormal(1, 1)))$prior, "state_spec")
   expect_s3_class(rt_opts(prior = RW(init = LogNormal(1, 1)))$prior, "rw_state")
-  # a constant prior is still accepted
-  expect_s3_class(rt_opts(prior = LogNormal(1, 1))$prior, "dist_spec")
+  # a plain distribution is deprecated and auto-converted to a GP state
+  lifecycle::expect_deprecated(
+    rt <- rt_opts(prior = LogNormal(1, 1))
+  )
+  expect_s3_class(rt$prior, "state_spec")
 })
 
 test_that("is_param_spec() accepts both dist_spec and state_spec", {

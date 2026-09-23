@@ -95,11 +95,11 @@ defaults.
 # default settings
 rt_opts()
 
-# add a custom length scale
-rt_opts(prior = LogNormal(mean = 2, sd = 1))
+# customise the prior on the initial reproduction number
+rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 1)))
 
-# add a weekly random walk
-rt_opts(rw = 7)
+# use a weekly random walk instead of a Gaussian process
+rt_opts(prior = RW(init = LogNormal(mean = 2, sd = 1), period = 7))
 }
 \references{
 Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic
