@@ -99,6 +99,29 @@ test_that("estimate_infections successfully returns estimates using no delays", 
   test_estimate_infections(reported_cases, delay = FALSE)
 })
 
+test_that("estimate_infections successfully returns estimates using prevalence-type data", {
+  skip_integration()
+  prevalence_cases <- as.data.table(reported_cases)[, primary := confirm]
+  prevalence_cases[, scaling := 0.4]
+  prevalence_cases[, meanlog := 1.6][, sdlog := 0.8]
+  prevalence_cases <- convolve_and_scale(prevalence_cases, type = "prevalence")
+  prevalence_cases <- prevalence_cases[, list(date, confirm = as.integer(secondary))]
+
+  out <- suppressWarnings(estimate_infections(
+    prevalence_cases,
+    generation_time = gt_opts(example_generation_time),
+    delays = delay_opts(LogNormal(meanlog = 1.6, sdlog = 0.8, max = 30)),
+    obs = obs_opts(type = "prevalence", week_effect = FALSE),
+    stan = stan_opts(
+      chains = 2, warmup = 25, samples = 25,
+      control = list(adapt_delta = 0.8)
+    ),
+    verbose = FALSE
+  ))
+  expect_equal(names(out), c("fit", "args", "observations"))
+  expect_true(nrow(get_samples(out)) > 0)
+})
+
 test_that("estimate_infections successfully returns estimates using the infectiousness growth rate estimator", {
   skip_integration()
   test_estimate_infections(
