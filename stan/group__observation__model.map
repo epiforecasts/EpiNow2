@@ -1,0 +1,6 @@
+<map id="Observation Model" name="Observation Model">
+<area shape="rect" id="Node000002" href="$group__infections__estimation.html" title="Functions for estimating infection trajectories." alt="" coords="31,5,174,31"/>
+<area shape="rect" id="Node000001" title="Functions for modeling the observation process." alt="" coords="248,55,377,80"/>
+<area shape="rect" id="Node000003" href="$group__rt__estimation.html" title="Functions for estimating reproduction numbers." alt="" coords="53,55,152,80"/>
+<area shape="rect" id="Node000004" href="$group__secondary__reports__estimation.html" title="Functions for estimating secondary epidemiological reports." alt="" coords="5,104,200,130"/>
+</map>
