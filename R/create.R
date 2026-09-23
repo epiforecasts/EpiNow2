@@ -1035,8 +1035,8 @@ create_state_data <- function(params, state_flags,
     if (!name %in% states_supported) {
       if (length(states_supported) == 0) {
         cli_abort(c(
-          "!" = "Time-varying parameter {.var {name}} ({.cls state_spec}) is not
-          supported by this model."
+          "!" = "A time-varying state on {.var {name}} ({.cls state_spec}) is
+          not supported by this model."
         ))
       }
       cli_abort(c(

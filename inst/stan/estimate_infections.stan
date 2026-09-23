@@ -103,7 +103,7 @@ parameters {
   // normalised within each ragged segment to give a Dirichlet draw
   vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
   simplex[week_effect] day_of_week_simplex; // day of week reporting effect
-  // time-varying parameter states (ragged: per-state offsets in transformed
+  // time-varying states (ragged: per-state offsets in transformed
   // data). State hyperparameters (step sd, GP magnitude and lengthscale) are
   // part of the `params` vector above and reconstructed in transformed
   // parameters.
@@ -329,7 +329,7 @@ model {
     );
   }
 
-  // priors for time-varying parameter states. State hyperparameters (step sd,
+  // priors for time-varying states. State hyperparameters (step sd,
   // GP magnitude and lengthscale) are part of `params`, so their priors are
   // applied by params_lp() above; only the state structure is handled here.
   profile("state lp") {

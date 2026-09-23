@@ -1,5 +1,5 @@
 /**
- * Time-varying parameter states
+ * Time-varying states
  *
  * Terminology follows state-space modelling: a *parameter* is a scalar that is
  * constant over time (it may still be estimated), whereas a *state* is a

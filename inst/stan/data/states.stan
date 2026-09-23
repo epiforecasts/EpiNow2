@@ -1,4 +1,4 @@
-// Time-varying parameter states (see functions/state.stan).
+// Time-varying states (see functions/state.stan).
 //
 // A state's hyperparameters (random-walk step standard deviation, GP magnitude
 // and lengthscale) are ordinary entries in the parameter vector (data and

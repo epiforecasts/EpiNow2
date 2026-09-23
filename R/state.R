@@ -1,29 +1,29 @@
-#' Time-varying parameters
+#' Time-varying states
 #'
 #' @description `r lifecycle::badge("experimental")`
 #'
-#' These constructors mark a model parameter as varying over time, driven by a
-#' stochastic state. `GP()` uses an approximate Gaussian process and `RW()` a
-#' random walk. They wrap a `<dist_spec>` giving the prior on the value the
-#' parameter reverts to (`mean`, a stationary / mean-reverting state) or on its
-#' initial value (`init`, a state on first differences). Exactly one of `mean`
-#' or `init` must be supplied.
+#' A model quantity is either a *parameter* (a value held constant over time) or
+#' a *state* (a value that evolves over time). These constructors turn a
+#' parameter into a state: `GP()` drives it with an approximate Gaussian process
+#' and `RW()` with a random walk. They wrap a `<dist_spec>` giving the prior on
+#' the value the state reverts to (`mean`, a stationary / mean-reverting state)
+#' or on its initial value (`init`, a state on first differences). Exactly one
+#' of `mean` or `init` must be supplied.
 #'
 #' The wrapped prior may itself be a known trajectory (e.g. a `NonParametric()`
 #' built from a data column), in which case the state fits deviations around
 #' that mean. The link function applied to the resulting trajectory (e.g. log
-#' for positive parameters, logit for probabilities) is a property of the
-#' parameter
-#' and is set where the parameter is registered, not here.
+#' for positive values, logit for probabilities) is set where the state is
+#' registered, not here.
 #'
 #' @details
-#' The state specification deliberately carries only the value/state part of a
-#' time-varying parameter. The level (whether the overall value is estimated or
-#' `Fixed()`) and the link function are handled where the parameter is used.
+#' The state specification deliberately carries only the value part. The level
+#' (whether the overall value is estimated or `Fixed()`) and the link function
+#' are handled where the state is used.
 #'
-#' These functions define the user interface for time-varying parameters. Wiring
-#' them into the models is ongoing; passing a state specification where a model
-#' parameter is not yet supported raises an informative error.
+#' These functions define the user interface for time-varying states. Wiring
+#' them into the models is ongoing; passing a state specification where it is
+#' not yet supported raises an informative error.
 #'
 #' @param mean A `<dist_spec>` giving the prior on the (stationary) mean the
 #'   state reverts to, or a numeric vector giving a known mean trajectory the
@@ -246,7 +246,7 @@ print.state_spec <- function(x, ...) {
     "on first differences"
   }
   cat(
-    "Time-varying parameter: ", type, " (", variant, ")\n", sep = ""
+    "Time-varying state: ", type, " (", variant, ")\n", sep = ""
   )
   if (is.numeric(x$prior)) {
     label <- if (x$anchor == "mean") {
