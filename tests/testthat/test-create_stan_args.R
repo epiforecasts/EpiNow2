@@ -20,8 +20,17 @@ test_that("create_stan_args can modify arguments", {
 })
 
 test_that("create_stan_args excludes deterministic quantities from monitoring for estimate_truncation", {
-  args <- create_stan_args(model = "estimate_truncation")
+  # fixed additive noise: reconstructed observations are deterministic
+  fixed_noise <- list(param_id_sigma = 2L, params_variable_lookup = c(1L, 0L))
+  args <- create_stan_args(model = "estimate_truncation", data = fixed_noise)
   expect_true("delay_np_pmf_use" %in% args$pars)
   expect_true("trunc_obs" %in% args$pars)
+  expect_false(args$include)
+
+  # estimated additive noise: reconstructed observations vary and are monitored
+  est_noise <- list(param_id_sigma = 2L, params_variable_lookup = c(1L, 2L))
+  args <- create_stan_args(model = "estimate_truncation", data = est_noise)
+  expect_true("delay_np_pmf_use" %in% args$pars)
+  expect_false("trunc_obs" %in% args$pars)
   expect_false(args$include)
 })
