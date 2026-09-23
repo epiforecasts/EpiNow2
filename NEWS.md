@@ -30,6 +30,7 @@
 
 - The prior choice guide vignette now draws more samples in its `estimate_secondary()` examples to avoid low tail effective sample size warnings in the rendered output.
 - Clarified the Stan documentation for delay-related vectors and their lookup index arrays, naming them explicitly as ragged data structures and linking to the Stan User's Guide section on the topic.
+- Added worked examples to the Stan documentation for several observation-model, convolution, PMF, reproduction-number and infection helper functions, including `accumulate_reports()`.
 
 ## Internal
 

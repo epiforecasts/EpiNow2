@@ -27,6 +27,13 @@
  * @param primary_current_additive Whether current primary reports are additive (1) or subtractive (0)
  * @param predict Number of time points to predict
  * @return A vector of secondary reports
+ *
+ * @par Example
+ * With `scaled_reports = {5, 6, 7, 8}`, `conv_reports = {2, 2, 2, 2}`,
+ * `cumulative = 0`, `historic = 1`, `primary_hist_additive = 1`,
+ * `current = 1` and `primary_current_additive = 1`, each time point adds
+ * both the historic and current primary contributions, giving
+ * `{7, 8, 9, 10}` (up to the `1e-6` numerical floor added to every entry).
  */
 vector calculate_secondary(
   vector scaled_reports, vector conv_reports, array[] int obs,
