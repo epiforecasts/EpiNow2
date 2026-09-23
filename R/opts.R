@@ -391,7 +391,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
       details = paste(
         "A plain distribution is treated as a Gaussian-process Rt for backward",
         "compatibility. Request one explicitly with",
-        "`rt_opts(prior = GP(init = ...))` (or `GP(mean = ...)` / `RW(...)`).",
+        "`rt_opts(prior = GP(init = ...))` (or `GP(mean = ...)` or `RW(...)`).",
         "A constant Rt will be supported in a future release."
       )
     )
