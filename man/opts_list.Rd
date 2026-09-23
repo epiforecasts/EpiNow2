@@ -12,8 +12,11 @@ opts_list(opts, reported_cases, ...)
 \item{reported_cases}{A data frame containing a \code{region} variable
 indicating the target regions.}
 
-\item{...}{Optional override for region defaults. See the examples
-for use case.}
+\item{...}{Optional override for region defaults, named by region (e.g.
+\code{realland = rt_opts(rw = 7)}). See the examples for use case. Names that do
+not match a region present in \code{reported_cases$region} are not rejected;
+the corresponding override is silently unused since \code{\link[=regional_epinow]{regional_epinow()}}
+only ever looks up settings for regions actually present in the data.}
 }
 \value{
 A named list of options per region which can be passed to the \verb{_opt}

@@ -13,7 +13,10 @@ delay_opts(
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions. Default is
-a fixed distribution with all mass at 0, i.e. no delay.}
+a fixed distribution with all mass at 0, i.e. no delay. \code{dist} must be a
+\verb{<dist_spec>} with a supported distribution family and a finite maximum
+(see \code{\link[=check_stan_delay]{check_stan_delay()}}); \code{dist} not meeting these requirements is
+rejected with an error.}
 
 \item{default_cdf_max}{Numeric; default CDF level to keep the distribution up
 to if an unconstrained distribution is passed as \code{dist}. If \code{dist} is

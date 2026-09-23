@@ -75,6 +75,42 @@ check_simulation_input <- function(data, value_col) {
   invisible(data)
 }
 
+#' Validate day of week effect against the observation model week length
+#'
+#' @description
+#' `check_day_of_week_effect()` checks that a user-supplied day of week effect
+#' has as many elements as the reporting week length implied by the
+#' observation model (see [obs_opts()]), i.e. `week_length` if `week_effect`
+#' is `TRUE` and 1 otherwise. The two are required to match because the day
+#' of week effect is passed to stan as a simplex of that length; a mismatch
+#' is otherwise silently resolved by recycling, giving a day of week effect
+#' that does not mean what was intended.
+#'
+#' @param day_of_week_effect Either `NULL` (no day of the week effect
+#'   specified by the user) or a numeric vector.
+#' @param week_effect Integer; the reporting week length expected by the
+#'   observation model, as returned in the `week_effect` element of
+#'   [create_obs_model()].
+#' @importFrom cli cli_abort col_blue
+#' @return Called for its side effects.
+#' @keywords internal
+check_day_of_week_effect <- function(day_of_week_effect, week_effect) {
+  if (!is.null(day_of_week_effect) &&
+        length(day_of_week_effect) != week_effect) {
+    cli_abort(
+      c(
+        "!" = "{.var day_of_week_effect} has length
+        {col_blue(length(day_of_week_effect))} but the observation model
+        expects a length of {col_blue(week_effect)}.",
+        "i" = "Set {.var week_length} (and {.var week_effect}) in
+        {.fn obs_opts} to match the length of {.var day_of_week_effect}, or
+        supply a {.var day_of_week_effect} of the expected length."
+      )
+    )
+  }
+  invisible(day_of_week_effect)
+}
+
 #' Validate probability distribution for passing to stan
 #'
 #' @description
