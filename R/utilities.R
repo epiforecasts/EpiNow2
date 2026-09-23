@@ -97,10 +97,11 @@ map_prob_change <- function(var) {
   ))
 }
 
+# nolint start: line_length_linter.
 #' Convert Growth Rates to Reproduction numbers.
 #'
 #' @description `r lifecycle::badge("superseded")`
-#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
+#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf)
 #' for justification. Now handled internally by stan so may be removed in
 #' future updates if no user demand.
 #' @param r Numeric, rate of growth estimates.
@@ -113,15 +114,17 @@ map_prob_change <- function(var) {
 #' @export
 #' @examples
 #' growth_to_R(0.2, 4, 1)
+# nolint end: line_length_linter.
 growth_to_R <- function(r, gamma_mean, gamma_sd) {
   k <- (gamma_sd / gamma_mean)^2
   (1 + k * r * gamma_mean)^(1 / k)
 }
 
+# nolint start: line_length_linter.
 #' Convert Reproduction Numbers to Growth Rates
 #'
 #' @description `r lifecycle::badge("superseded")`
-#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf) # nolint
+#' See [here](https://www.medrxiv.org/content/10.1101/2020.01.30.20019877v3.full.pdf)
 #' for justification. Now handled internally by stan so may be removed in
 #' future updates if no user demand.
 #' @param R Numeric, Reproduction number estimates
@@ -130,6 +133,7 @@ growth_to_R <- function(r, gamma_mean, gamma_sd) {
 #' @export
 #' @examples
 #' R_to_growth(2.18, 4, 1)
+# nolint end: line_length_linter.
 R_to_growth <- function(R, gamma_mean, gamma_sd) {
   k <- (gamma_sd / gamma_mean)^2
   (R^k - 1) / (k * gamma_mean)
