@@ -86,12 +86,10 @@ extract_parameters <- function(samples, args) {
   # are time-varying, in which case their trajectory is reported instead; detect
   # those from the model's state configuration rather than hard-coding names.
   state_ids <- args[["state_param_id"]] %||% integer(0)
-  state_params <- c("R", "I")
-  for (id_var in id_vars) {
-    if (isTRUE(args[[id_var]] %in% state_ids)) {
-      state_params <- c(state_params, sub("^param_id_", "", id_var))
-    }
-  }
+  id_vals <- vapply(id_vars, function(v) as.integer(args[[v]]), integer(1))
+  state_params <- c(
+    "R", "I", sub("^param_id_", "", id_vars)[id_vals %in% state_ids]
+  )
 
   # Extract all columns
   samples_list <- lapply(seq_len(n_cols), function(i) {
