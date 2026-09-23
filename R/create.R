@@ -425,7 +425,8 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     obs_weight = obs$weight,
     obs_scale = as.integer(obs$scale != Fixed(1)),
     likelihood = as.numeric(obs$likelihood),
-    return_likelihood = as.numeric(obs$return_likelihood)
+    return_likelihood = as.numeric(obs$return_likelihood),
+    secondary_type = as.numeric(obs$type == "prevalence")
   )
 
   opts$day_of_week <- add_day_of_week(dates, opts$week_effect)

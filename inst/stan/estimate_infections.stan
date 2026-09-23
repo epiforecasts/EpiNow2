@@ -152,11 +152,11 @@ transformed parameters {
   if (delay_id_reporting) {
     vector[delay_type_max[delay_id_reporting] + 1] reporting_rev_pmf;
     profile("delays") {
-      reporting_rev_pmf = get_delay_rev_pmf(
+      reporting_rev_pmf = get_secondary_rev_pmf(
         delay_id_reporting, delay_type_max[delay_id_reporting] + 1,
         delay_types_p, delay_types_id, delay_types_groups, delay_max,
         delay_np_pmf_use, delay_np_pmf_groups, delay_params, delay_params_groups,
-        delay_dist, 0, 1, 0
+        delay_dist, secondary_type
       );
     }
     profile("reports") {
