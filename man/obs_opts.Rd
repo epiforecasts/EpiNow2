@@ -12,7 +12,8 @@ obs_opts(
   week_length = 7,
   scale = Fixed(1),
   likelihood = TRUE,
-  return_likelihood = FALSE
+  return_likelihood = FALSE,
+  type = c("incidence", "prevalence")
 )
 }
 \arguments{
@@ -50,6 +51,23 @@ included in the model.}
 
 \item{return_likelihood}{Logical, defaults to \code{FALSE}. Should the likelihood
 be returned by the model.}
+
+\item{type}{A character string indicating how observations relate to
+latent infections, only used by \code{\link[=estimate_infections]{estimate_infections()}}. Options are:
+\itemize{
+\item "incidence" (default): observations are a convolution of latent
+infections with a reporting delay, i.e. each infection contributes to the
+observation exactly once. An example is deaths or hospital admissions
+arising from infections.
+\item "prevalence": observations are a convolution of latent infections with
+the survival function of the reporting delay, i.e. each infection keeps
+contributing to the observation for as long as it remains in the
+prevalent state described by that delay. An example is hospital bed
+occupancy, where the delay describes the length of stay. Note that
+\code{\link[=estimate_infections]{estimate_infections()}} requires a generative (\code{rt}) model to fit
+prevalence-type data, as the deconvolution approach used when \code{rt = NULL}
+assumes incidence-type observations.
+}}
 }
 \value{
 An \verb{<obs_opts>} object of observation model settings.
@@ -67,4 +85,7 @@ obs_opts(week_effect = FALSE)
 
 # Scale reported data
 obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
+
+# Fit to prevalence data (e.g. hospital bed occupancy)
+obs_opts(type = "prevalence")
 }
