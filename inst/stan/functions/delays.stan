@@ -112,7 +112,7 @@ vector get_delay_rev_pmf(
       i, delay_types_p, delay_types_id, delay_max, delay_np_pmf_groups
     );
     int new_n = n == 0 ? m : n + m - 1;
-    // non-parametric PMFs are used directly, as a named copy was slower
+    // non-parametric PMFs are sliced directly, without a named copy
     if (delay_types_p[i]) {
       vector[m] delay_pmf = discretised_pmf(
         delay_params[delay_params_groups[id]:(delay_params_groups[id + 1] - 1)],
