@@ -98,6 +98,33 @@ renewal_inputs <- function(case) {
   )
 }
 
+test_that("renewal_infections keeps the seeds and grows geometrically", {
+  seed <- c(2, 3, 5)
+  # A one-day generation interval: gt_rev_pmf[G - 1] is the one-day weight
+  inf <- renewal_infections(seed, rep(1.5, 10), c(1, 0), 1, 0, 1, 0)
+  expect_equal(inf[1:3], seed)
+  expect_equal(inf[4:13], 5 * 1.5^(1:10))
+})
+
+test_that("renewal_infections depletion behaves as expected", {
+  set.seed(123)
+  x <- renewal_inputs(list(uot = 5, ot = 30, G = 10))
+  ren <- function(pop, use_pop, nht = 0, floor = 1) {
+    renewal_infections(x$seed, x$R, x$gt, pop, use_pop, floor, nht)
+  }
+  # A huge population is the same as no depletion
+  expect_equal(ren(1e8, 2), ren(1e8, 0), tolerance = 1e-6)
+  # New infections never exceed the susceptible pool
+  inf <- ren(200, 2, floor = 0.1)
+  new <- inf[-(1:5)]
+  susceptible <- pmax(0.1, 200 - cumsum(inf)[5:34])
+  expect_true(all(new <= susceptible))
+  # use_pop = 1 matches no depletion up to nht and use_pop = 2 from nht = 0
+  expect_equal(ren(200, 1, nht = 12)[1:17], ren(200, 0)[1:17])
+  expect_false(isTRUE(all.equal(ren(200, 1, nht = 12), ren(200, 0))))
+  expect_equal(ren(200, 1, nht = 0), ren(200, 2))
+})
+
 test_that("renewal_infections matches the pure Stan implementation", {
   set.seed(123)
   for (case in renewal_cases) {
