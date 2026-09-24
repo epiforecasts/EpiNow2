@@ -100,17 +100,19 @@ inline void convolve_reverse(const Eigen::VectorXd& x,
 /**
  * Convolve x with the reversed PMF y, returning a vector of length len.
  *
+ * The last argument is the output stream of the Stan calling convention,
+ * which is not used.
+ *
  * @param x Input vector (var or double).
  * @param y Reversed PMF (var or double).
  * @param len Output length, n <= len <= n + D - 1.
- * @param pstream__ Unused output stream (Stan calling convention).
  * @throws std::domain_error if len is outside that range.
  */
 template <typename T0, typename T1,
           stan::require_all_eigen_col_vector_t<T0, T1>* = nullptr>
 inline Eigen::Matrix<stan::return_type_t<T0, T1>, Eigen::Dynamic, 1>
 convolve_with_rev_pmf(const T0& x, const T1& y, const int& len,
-                      std::ostream* pstream__) {
+                      std::ostream* /* pstream__ */) {
   using stan::arena_t;
   using stan::math::var;
   constexpr bool x_var = stan::is_var<stan::value_type_t<T0>>::value;
