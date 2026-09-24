@@ -73,6 +73,97 @@ test_that("generate_infections respects pop_floor with population adjustment", {
   expect_true(all(is.finite(result)))
 })
 
+# Cases for comparing the C++ renewal_infections() with the pure Stan
+# reference: each depletion mode, the edges of nht, a binding pop_floor, a
+# generation time of length one, one longer than the series and one seed.
+renewal_cases <- list(
+  list(uot = 14, ot = 30, G = 15, use_pop = 0, pop = 1e4, floor = 1, nht = 0),
+  list(uot = 14, ot = 30, G = 15, use_pop = 2, pop = 1e4, floor = 1, nht = 0),
+  list(uot = 14, ot = 30, G = 15, use_pop = 1, pop = 1e4, floor = 1, nht = 20),
+  list(uot = 14, ot = 30, G = 15, use_pop = 1, pop = 1e4, floor = 1, nht = 0),
+  list(uot = 14, ot = 30, G = 15, use_pop = 1, pop = 1e4, floor = 1, nht = 29),
+  list(uot = 14, ot = 30, G = 15, use_pop = 1, pop = 1e4, floor = 1, nht = 30),
+  list(uot = 3, ot = 40, G = 10, use_pop = 2, pop = 100, floor = 50, nht = 0),
+  list(uot = 5, ot = 20, G = 1, use_pop = 2, pop = 1e3, floor = 1, nht = 0),
+  list(uot = 3, ot = 10, G = 20, use_pop = 2, pop = 1e3, floor = 1, nht = 0),
+  list(uot = 1, ot = 20, G = 7, use_pop = 1, pop = 1e3, floor = 1, nht = 10)
+)
+
+renewal_inputs <- function(case) {
+  gt <- rexp(case$G)
+  list(
+    seed = as.array(5 * exp(rnorm(case$uot))),
+    R = as.array(exp(0.2 * rnorm(case$ot) + 0.2)),
+    gt = as.array(gt / sum(gt))
+  )
+}
+
+test_that("renewal_infections matches the pure Stan implementation", {
+  set.seed(123)
+  for (case in renewal_cases) {
+    x <- renewal_inputs(case)
+    args <- list(
+      x$seed, x$R, x$gt, case$pop, case$use_pop, case$floor, case$nht
+    )
+    expect_equal(
+      do.call(renewal_infections, args),
+      do.call(renewal_infections_stan, args),
+      tolerance = 1e-12
+    )
+  }
+})
+
+test_that("the pop_floor case reaches the floor", {
+  set.seed(123)
+  case <- renewal_cases[[7]]
+  x <- renewal_inputs(case)
+  inf <- renewal_infections(
+    x$seed, x$R, x$gt, case$pop, case$use_pop, case$floor, case$nht
+  )
+  expect_lt(case$pop - sum(inf[-length(inf)]), case$floor)
+})
+
+test_that("renewal_infections gradients match the pure Stan implementation", {
+  skip_if_not_installed("rstan")
+  model <- stan_test_model("renewal_gradient.stan")
+  # Every combination of seed, R, gt and pop as parameters, except none
+  params <- expand.grid(seed = 0:1, R = 0:1, gt = 0:1, pop = 0:1)[-1, ]
+  set.seed(123)
+  for (case in renewal_cases) {
+    x <- renewal_inputs(case)
+    data <- list(
+      uot = case$uot, ot = case$ot, G = case$G, use_pop = case$use_pop,
+      pop_floor = case$floor, nht = case$nht, seed_data = x$seed,
+      R_data = x$R, gt_data = x$gt, pop_data = case$pop,
+      r = as.array(rnorm(case$uot + case$ot))
+    )
+    for (i in seq_len(nrow(params))) {
+      p <- params[i, ]
+      data[paste0(names(p), "_param")] <- as.list(as.integer(p))
+      fits <- lapply(c(cpp = 1, stan = 0), function(use_cpp) {
+        data$use_cpp <- use_cpp
+        suppressMessages(rstan::sampling(model, data = data, chains = 0))
+      })
+      # Log-scale parameters near the data values keep each case's regime
+      upars <- c(
+        if (p$seed) log(x$seed), if (p$R) log(x$R), if (p$gt) log(x$gt),
+        if (p$pop) log(case$pop)
+      )
+      upars <- upars + rnorm(length(upars), sd = 0.01)
+      expect_equal(
+        rstan::log_prob(fits$cpp, upars),
+        rstan::log_prob(fits$stan, upars),
+        tolerance = 1e-10
+      )
+      expect_equal(
+        rstan::grad_log_prob(fits$cpp, upars),
+        rstan::grad_log_prob(fits$stan, upars),
+        tolerance = 1e-8
+      )
+    }
+  }
+})
+
 # test deconvolve_infections
 test_that("deconvolve_infections with fixed mode returns shifted cases", {
   shifted_cases <- c(10, 20, 30, 40, 50)
