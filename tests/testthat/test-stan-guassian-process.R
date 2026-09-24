@@ -163,14 +163,18 @@ test_that("update_gp returns correct dimensions and values", {
   L <- 1.0
   alpha <- 1.0
   rho <- 2.0
-  eta <- rep(1, M)
+  eta <- c(2, -1, 0.5)
   PHI <- matrix(runif(15), nrow = 5) # 5 observations, 3 basis functions
   type <- 0
   nu <- 1.5 # Not used in SE case
   result <- update_gp(PHI, M, L, alpha, rho, eta, type, nu)
   expect_equal(length(result), nrow(PHI)) # Should match number of observations
-  # Check specific values for known inputs
+  # eta[1] is a centred coefficient (used directly, on the spectral-density
+  # scale) while the remaining eta are non-centred (scaled by the spectral
+  # density); see gaussian_process.stan for the rationale.
   diagSPD <- diagSPD_EQ(alpha, rho, L, M)
-  expected_result <- PHI %*% (diagSPD * eta)
+  weights <- diagSPD * eta
+  weights[1] <- eta[1]
+  expected_result <- PHI %*% weights
   expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
 })

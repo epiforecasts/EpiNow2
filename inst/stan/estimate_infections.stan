@@ -214,7 +214,15 @@ model {
   // priors for noise GP
   if (!fixed) {
     profile("gp lp") {
-      gaussian_process_lp(eta);
+      real alpha = get_param(
+        param_id_alpha, params_fixed_lookup, params_variable_lookup, params_value,
+        params
+      );
+      real rescaled_rho = 2 * get_param(
+        param_id_rho, params_fixed_lookup, params_variable_lookup,
+        params_value, params
+      ) / noise_terms;
+      gaussian_process_lp(eta, alpha, rescaled_rho, L, M, gp_type, nu);
     }
   }
 
