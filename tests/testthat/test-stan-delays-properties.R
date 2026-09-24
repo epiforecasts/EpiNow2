@@ -146,3 +146,17 @@ test_that("truncation, cumulative and reversed PMFs are as expected", {
   expect_equal(discretised_pmf(c(1.2, 0.6), 12, 1, 3)[1:3], rep(0, 3))
   expect_equal(sum(discretised_pmf(c(1.2, 0.6), 12, 2, 3)), 1)
 })
+
+test_that("get_delay_type_max adds up the maximum of each delay", {
+  # Two delay types: lognormal then PMF, and gamma alone
+  d <- delay_data(
+    list(lnorm(1.6, 0.42, 14), np(c(0.2, 0.3, 0.5)), gam(2, 1, 6))
+  )
+  expect_equal(
+    get_delay_type_max(
+      2L, d$types_p, d$types_id, array(c(1L, 3L, 4L)), d$max_delay,
+      d$np_groups
+    ),
+    c(16, 6)
+  )
+})
