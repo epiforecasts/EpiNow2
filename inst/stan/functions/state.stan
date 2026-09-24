@@ -10,10 +10,12 @@
  *
  * Build a parameter trajectory by combining a baseline (level) with a
  * stochastic deviation: a random walk (`rw_trajectory`) or an approximate
- * Gaussian process (`gp_trajectory`). Each builder is self-contained;
- * `get_state_trajectory` is a thin shell that dispatches to the right one for a
- * given parameter, or returns a constant trajectory when the parameter is not
- * time-varying.
+ * Gaussian process (`gp_trajectory`). Both produce a link-scale deviation and
+ * share `assemble_state` to combine it with the baseline, hold the last value
+ * through the forecast horizon, and return on the natural scale.
+ * `get_state_trajectory` is a thin shell that dispatches to the right builder
+ * for a given parameter, or returns a constant trajectory when the parameter is
+ * not time-varying.
  *
  * Three windows describe a trajectory:
  *  - `t`: total length (observation window + forecast horizon);
@@ -31,6 +33,33 @@
  *
  * @ingroup estimates_smoothing
  */
+
+/**
+ * Assemble a trajectory from a baseline and a link-scale deviation
+ *
+ * Shared by `rw_trajectory` and `gp_trajectory`: adds the deviation `dev`
+ * (length `n_free`, on the link scale) to the baseline over the free window,
+ * holds the last value constant through the remaining forecast horizon, and
+ * returns on the natural scale (applying the inverse link).
+ *
+ * @param t Total trajectory length
+ * @param n_free Window over which the state varies (holds its last value after)
+ * @param level Baseline parameter value on the natural scale
+ * @param dev Link-scale deviation over the free window (length n_free)
+ * @param link Link function (0 = log)
+ * @return A vector of length t with the parameter trajectory (natural scale)
+ *
+ * @ingroup estimates_smoothing
+ */
+vector assemble_state(int t, int n_free, real level, vector dev, int link) {
+  real intercept = link == 0 ? log(level) : level;
+  vector[t] x;
+  x[1:n_free] = intercept + dev;
+  if (t > n_free) {
+    x[(n_free + 1):t] = rep_vector(x[n_free], t - n_free); // hold last value
+  }
+  return link == 0 ? exp(x) : x;
+}
 
 /**
  * Build a random-walk trajectory for a time-varying parameter
@@ -53,26 +82,20 @@
  */
 vector rw_trajectory(int t, int n_free, int n_centre, real level, vector steps,
                      int link, int period) {
-  real intercept = link == 0 ? log(level) : level;
-  vector[t] x = rep_vector(intercept, t);
+  vector[n_free] dev = rep_vector(0, n_free);
   int n_steps = num_elements(steps);
   if (n_steps > 0) {
     vector[n_steps + 1] cum;
     cum[1] = 0;
     cum[2:(n_steps + 1)] = cumulative_sum(steps);
     // expand each step to a block of `period` time points over the free window
-    vector[n_free] walk;
     for (i in 1:n_free) {
-      walk[i] = cum[(i - 1) %/% period + 1];
+      dev[i] = cum[(i - 1) %/% period + 1];
     }
     // centre over the observation window for identifiability
-    walk -= mean(walk[1:n_centre]);
-    x[1:n_free] += walk;
-    if (t > n_free) {
-      x[(n_free + 1):t] = rep_vector(x[n_free], t - n_free); // hold last value
-    }
+    dev -= mean(dev[1:n_centre]);
   }
-  return link == 0 ? exp(x) : x;
+  return assemble_state(t, n_free, level, dev, link);
 }
 
 /**
@@ -98,7 +121,6 @@ vector rw_trajectory(int t, int n_free, int n_centre, real level, vector steps,
  */
 vector gp_trajectory(int t, int n_free, int n_centre, real level, vector noise,
                      int link, int anchor) {
-  real intercept = link == 0 ? log(level) : level;
   vector[n_free] dev;
   if (anchor == 0) {
     dev = noise; // stationary (mean-reverting)
@@ -106,12 +128,7 @@ vector gp_trajectory(int t, int n_free, int n_centre, real level, vector noise,
     dev = cumulative_sum(noise); // non-stationary (GP on increments)
     dev -= mean(dev[1:n_centre]); // centre over the observation window
   }
-  vector[t] x;
-  x[1:n_free] = intercept + dev;
-  if (t > n_free) {
-    x[(n_free + 1):t] = rep_vector(x[n_free], t - n_free); // hold last value
-  }
-  return link == 0 ? exp(x) : x;
+  return assemble_state(t, n_free, level, dev, link);
 }
 
 /**
@@ -150,6 +167,8 @@ vector gp_trajectory(int t, int n_free, int n_centre, real level, vector noise,
  * @param gp_nu Matern smoothness of each GP state
  * @param state_gp_alpha GP magnitude of each GP state
  * @param state_gp_rho GP lengthscale of each GP state
+ * @param gp_phi Precomputed GP basis of each GP state (built once in transformed
+ *   data from the state's free-noise window)
  * @return A vector of length t with the parameter trajectory
  *
  * @ingroup estimates_smoothing
@@ -163,7 +182,7 @@ vector get_state_trajectory(
   int state_rw_period,
   vector state_gp_eta, array[] int state_gp_M, array[] int state_gp_offset,
   array[] real gp_boundary_scale, array[] int gp_kernel, array[] real gp_nu,
-  vector state_gp_alpha, vector state_gp_rho
+  vector state_gp_alpha, vector state_gp_rho, array[] matrix gp_phi
 ) {
   for (s in 1:num_elements(state_param_id)) {
     if (state_param_id[s] == id) {
@@ -180,10 +199,9 @@ vector get_state_trajectory(
         int p = state_pos[s];
         int M = state_gp_M[s];
         vector[M] eta = segment(state_gp_eta, state_gp_offset[s] + 1, M);
-        // each GP state builds its own basis from its own window; the basis is
-        // data-only, so it could be hoisted to transformed data if profiling
-        // shows it matters
-        matrix[nf, M] phi = setup_gp(M, gp_boundary_scale[p], nf, 0, 1.0);
+        // the basis is built once in transformed data (it is data-only); here we
+        // just apply the per-iteration hyperparameters through update_gp
+        matrix[nf, M] phi = gp_phi[p][1:nf, 1:M];
         vector[nf] noise = update_gp(
           phi, M, gp_boundary_scale[p], state_gp_alpha[p],
           2 * state_gp_rho[p] / nf, eta, gp_kernel[p], gp_nu[p]

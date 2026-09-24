@@ -23,12 +23,4 @@ int<lower = 0> n_rw_states;
 array[n_rw_states] int<lower = 1> rw_sd_id; // parameter id of each step sd
 int<lower = 1> state_rw_period; // time steps between random walk steps
 
-// gaussian process states (approximate Hilbert space GP; each state has its own
-// basis sized to its own free-noise window)
-int<lower = 0> n_gp_states;
-array[n_gp_states] real<lower = 0> gp_basis_prop; // basis proportion per state
-array[n_gp_states] real<lower = 0> gp_boundary_scale; // boundary scale L per state
-array[n_gp_states] int<lower = 0> gp_kernel; // 0 = SE, 2 = Matern
-array[n_gp_states] real gp_nu; // Matern smoothness
-array[n_gp_states] int<lower = 1> gp_alpha_id; // parameter id of each GP magnitude
-array[n_gp_states] int<lower = 1> gp_rho_id; // parameter id of each GP lengthscale
+// Gaussian process state data is declared in data/gaussian_process.stan.

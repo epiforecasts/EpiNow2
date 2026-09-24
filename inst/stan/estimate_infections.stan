@@ -21,6 +21,7 @@ data {
 #include data/params.stan
 #include data/estimate_infections_params.stan
 #include data/states.stan
+#include data/gaussian_process.stan
 }
 
 transformed data {
@@ -87,6 +88,27 @@ transformed data {
       state_rw_n[s] = 0;
       state_gp_M[s] = to_int(ceil(free_window * gp_basis_prop[state_pos[s]]));
       n_gp_coef += state_gp_M[s];
+    }
+  }
+
+  // Build each GP state's basis once here: it depends only on data (the state's
+  // free-noise window and basis size), so update_gp can apply the per-iteration
+  // hyperparameters without rebuilding the basis every gradient evaluation. The
+  // array is padded to the largest window/basis and read back per state.
+  int max_gp_nf = 1;
+  int max_gp_M = 1;
+  for (s in 1:n_states) {
+    if (state_type[s] == 1) {
+      if (state_n_free[s] > max_gp_nf) max_gp_nf = state_n_free[s];
+      if (state_gp_M[s] > max_gp_M) max_gp_M = state_gp_M[s];
+    }
+  }
+  array[n_gp_states] matrix[max_gp_nf, max_gp_M] gp_phi;
+  for (s in 1:n_states) {
+    if (state_type[s] == 1) {
+      int p = state_pos[s];
+      gp_phi[p, 1:state_n_free[s], 1:state_gp_M[s]] =
+        setup_gp(state_gp_M[s], gp_boundary_scale[p], state_n_free[s], 0, 1.0);
     }
   }
 }
@@ -159,7 +181,7 @@ transformed parameters {
     state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
     state_gp_eta, state_gp_M, state_gp_offset,
     gp_boundary_scale, gp_kernel, gp_nu,
-    state_gp_alpha, state_gp_rho
+    state_gp_alpha, state_gp_rho, gp_phi
   );
   // trajectory of the (possibly time-varying) reporting overdispersion
   vector[ot_h] reporting_overdispersion = get_state_trajectory(
@@ -173,7 +195,7 @@ transformed parameters {
     state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
     state_gp_eta, state_gp_M, state_gp_offset,
     gp_boundary_scale, gp_kernel, gp_nu,
-    state_gp_alpha, state_gp_rho
+    state_gp_alpha, state_gp_rho, gp_phi
   );
 
   // Estimate latent infections
@@ -201,7 +223,7 @@ transformed parameters {
         state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
         state_gp_eta, state_gp_M, state_gp_offset,
         gp_boundary_scale, gp_kernel, gp_nu,
-        state_gp_alpha, state_gp_rho
+        state_gp_alpha, state_gp_rho, gp_phi
       );
     }
     profile("infections") {
@@ -230,7 +252,7 @@ transformed parameters {
         state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
         state_gp_eta, state_gp_M, state_gp_offset,
         gp_boundary_scale, gp_kernel, gp_nu,
-        state_gp_alpha, state_gp_rho
+        state_gp_alpha, state_gp_rho, gp_phi
       );
     }
   }
