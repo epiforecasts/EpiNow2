@@ -138,8 +138,10 @@ test_that("convolve_with_rev_pmf gradients match the pure Stan implementation", 
   set.seed(123)
   params <- list(c(1, 1), c(1, 0), c(0, 1))
   for (case in convolve_cases) {
+    # as.array() keeps length one vectors as vectors for rstan
     data <- c(case, list(
-      x_data = rexp(case$n), y_data = rexp(case$D), r = rnorm(case$len)
+      x_data = as.array(rexp(case$n)), y_data = as.array(rexp(case$D)),
+      r = as.array(rnorm(case$len))
     ))
     for (p in params) {
       data$x_param <- p[1]
