@@ -163,6 +163,19 @@ test_that("convolve_with_rev_pmf gradients match the pure Stan implementation", 
   }
 })
 
+test_that("epinow2_cmdstan_model compiles a model using the C++ header", {
+  skip_if_not_installed("cmdstanr")
+  skip_if(
+    is.null(suppressWarnings(suppressMessages(
+      tryCatch(cmdstanr::cmdstan_path(), error = function(e) NULL)
+    ))),
+    "CmdStan is not installed"
+  )
+  model <- epinow2_cmdstan_model("estimate_truncation")
+  expect_s3_class(model, "CmdStanModel")
+  expect_true(file.exists(model$exe_file()))
+})
+
 # Test convolve_to_report function
 test_that("convolve_to_report convolves infections with delay distribution", {
   infections <- rep(100, 10)
