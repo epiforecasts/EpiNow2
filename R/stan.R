@@ -42,7 +42,7 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
     }
   }
   model_args <- list(model_file, include_paths = dir, dir = tempdir(), ...)
-  if (is.null(model_args$user_header)) {
+  if (!"user_header" %in% names(model_args)) {
     model_args$user_header <- epinow2_stan_header()
   }
   model <- monitor(do.call(cmdstanr::cmdstan_model, model_args))

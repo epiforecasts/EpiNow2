@@ -75,7 +75,12 @@ convolve_cases <- list(
   list(n = 10, D = 1, len = 10),
   list(n = 5, D = 9, len = 5),
   list(n = 5, D = 9, len = 13),
-  list(n = 1, D = 1, len = 1)
+  list(n = 1, D = 1, len = 1),
+  # Full PMF-by-PMF convolutions, as in get_delay_rev_pmf()
+  list(n = 4, D = 7, len = 10),
+  list(n = 7, D = 4, len = 10),
+  list(n = 1, D = 5, len = 5),
+  list(n = 5, D = 1, len = 5)
 )
 
 test_that("convolve_with_rev_pmf matches the pure Stan implementation", {
