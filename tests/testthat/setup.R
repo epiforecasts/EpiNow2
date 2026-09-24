@@ -9,8 +9,7 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
     "rt.stan", "infections.stan", "delays.stan", "generated_quantities.stan"
   )
   if (!(tolower(Sys.info()[["sysname"]]) %in% "windows")) {
-    # Expose the package functions together with the pure Stan reference
-    # implementations used to test the C++ ones.
+    # Also expose the pure Stan reference for the C++ functions
     stan_fn_dir <- file.path(tempdir(), "epinow2-stan-functions")
     dir.create(stan_fn_dir, showWarnings = FALSE)
     file.copy(

@@ -12,34 +12,8 @@
  *
  * This function performs a discrete convolution of two vectors, where the
  * second vector is assumed to be an already reversed probability mass
- * function. It is declared here and implemented in C++ with a hand-written
- * reverse-mode gradient, in `inst/include/epinow2/convolve_with_rev_pmf.hpp`.
- * Models that include this file must be compiled with that header (see
- * `epinow2_cmdstan_model()`).
- *
- * Write n for the length of x, D for the length of y and z for the output.
- * The weight of a delay of d days is w_d = y[D - d], d = 0, ..., D - 1, and
- * x[s] = 0 outside 1, ..., n. The output is
- *
- *   z[t] = sum_{d = 0}^{D - 1} w_d x[t - d],  t = 1, ..., len.
- *
- * It is computed one lag at a time, as one vector update per lag,
- *
- *   z[(d + 1):(d + m)] += w_d x[1:m],  m = min(n, len - d),
- *
- * which is z[(d + 1):n] += w_d x[1:(n - d)] when len = n. When len > n the
- * output runs past the end of x and m stops each update at x[n], so the
- * extra entries are the tail of the full convolution.
- *
- * The gradient is the matching correlation. With zbar the gradient of the
- * target with respect to z, each lag adds
- *
- *   xbar[1:m] += w_d zbar[(d + 1):(d + m)],
- *   wbar_d    += zbar[(d + 1):(d + m)]' x[1:m],
- *
- * and the gradient with respect to y[D - d] is wbar_d. Both passes run on
- * plain numbers, so the whole convolution is one node on the autodiff
- * stack rather than one `dot_product()` node per output time.
+ * function. It is implemented in C++, with a hand-written gradient, in
+ * `inst/include/epinow2/convolve_with_rev_pmf.hpp`, which gives the maths.
  *
  * @param x The input vector to be convolved.
  * @param y The already reversed probability mass function vector.

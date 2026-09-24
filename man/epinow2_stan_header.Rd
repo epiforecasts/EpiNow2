@@ -10,20 +10,8 @@ epinow2_stan_header()
 A character string with the path to the header.
 }
 \description{
-Some Stan functions in \code{inst/stan/functions} are declared without a body
-and implemented in C++ with a hand-written reverse-mode gradient. At
-present this is \code{convolve_with_rev_pmf()}. Any model that includes these
-functions has to be compiled with this header:
-\itemize{
-\item the package's \code{rstan} models include it when the package is installed;
-\item \code{\link[=epinow2_cmdstan_model]{epinow2_cmdstan_model()}} passes it to \code{\link[cmdstanr:cmdstan_model]{cmdstanr::cmdstan_model()}} as
-\code{user_header};
-\item \code{\link[=expose_stan_fns]{expose_stan_fns()}} passes it to \code{\link[rstan:expose_stan_functions]{rstan::expose_stan_functions()}}.
-}
-
-If you compile the models yourself, pass this path as \code{user_header} in
-\code{cmdstanr} or include it before the model code, and allow undefined
-functions in \code{stanc}.
+Models that include \code{inst/stan/functions} need this header, which
+implements Stan functions declared there without a body.
 }
 \examples{
 epinow2_stan_header()

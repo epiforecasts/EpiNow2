@@ -14,11 +14,8 @@
 #'
 #' @param ... Additional arguments passed to [cmdstanr::cmdstan_model()].
 #'
-#' @details The EpiNow2 models declare some Stan functions without a body and
-#' implement them in C++ (see [epinow2_stan_header()]). This header is passed
-#' to [cmdstanr::cmdstan_model()] as `user_header` unless `user_header` is
-#' given in `...`. Models compiled from `inst/stan` by other means need the
-#' same header.
+#' @details Passes [epinow2_stan_header()] as `user_header` unless one is
+#' given in `...`.
 #'
 #' @importFrom cli cli_inform col_blue
 #' @return A `cmdstanr` model.
@@ -55,18 +52,8 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
 #' Path to the C++ header used by the EpiNow2 Stan models
 #'
 #' @description
-#' Some Stan functions in `inst/stan/functions` are declared without a body
-#' and implemented in C++ with a hand-written reverse-mode gradient. At
-#' present this is `convolve_with_rev_pmf()`. Any model that includes these
-#' functions has to be compiled with this header:
-#' - the package's `rstan` models include it when the package is installed;
-#' - [epinow2_cmdstan_model()] passes it to [cmdstanr::cmdstan_model()] as
-#'   `user_header`;
-#' - [expose_stan_fns()] passes it to [rstan::expose_stan_functions()].
-#'
-#' If you compile the models yourself, pass this path as `user_header` in
-#' `cmdstanr` or include it before the model code, and allow undefined
-#' functions in `stanc`.
+#' Models that include `inst/stan/functions` need this header, which
+#' implements Stan functions declared there without a body.
 #'
 #' @return A character string with the path to the header.
 #' @export

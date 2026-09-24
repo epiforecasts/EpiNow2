@@ -22,10 +22,8 @@ Each function page includes:
 
 ## Functions implemented in C++
 
-Some functions are declared in the Stan code without a body and implemented in C++ in `inst/include`, with a hand-written reverse-mode gradient.
-At present this is `convolve_with_rev_pmf()` (see the convolution functions group and `inst/include/epinow2/convolve_with_rev_pmf.hpp` for the maths).
-Any model that includes these functions must be compiled with `inst/include/epinow2.hpp` included before the model code, and with undefined functions allowed in `stanc`.
-The installed package does this for its `rstan` models, `epinow2_cmdstan_model()` passes the header to `cmdstanr` as `user_header`, and `epinow2_stan_header()` returns its path for other uses.
+Some functions, such as `convolve_with_rev_pmf()`, are declared without a body and implemented in C++ in `inst/include`.
+Models that use them need `epinow2_stan_header()` included before the model code.
 
 ## EpiNow2 main website
 

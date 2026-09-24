@@ -4,7 +4,7 @@
 /**
  * Convolution of a vector with a reversed PMF, with a reverse-mode adjoint.
  *
- * Backs the Stan function `convolve_with_rev_pmf(x, y, len)` declared in
+ * Implements `convolve_with_rev_pmf(x, y, len)` from
  * inst/stan/functions/convolve.stan.
  *
  * Notation (1-based, as in the Stan code): x has length n, y has length D
@@ -26,17 +26,10 @@
  *   wbar_d     += zbar_{d+1:d+m}^T x_{1:m},
  * and ybar_{D - d} = wbar_d.
  *
- * Both passes work on plain doubles and the whole convolution is a single
- * autodiff node (one reverse_pass_callback). The pure Stan version builds
- * one dot_product node per output time, each holding its own copy of the
- * operands, so it costs more memory and more reverse-pass work.
- *
- * x and y may each be var or double; only the adjoints of var inputs are
- * computed. The function lives in namespace epinow2 and is made visible in
- * stan::math so that Stan-generated model code, which has
- * `using namespace stan::math;`, finds it by both qualified and unqualified
- * lookup. This header must be included before the model namespace is
- * opened (see tools/stan_include.R and epinow2_cmdstan_model()).
+ * Both passes run on doubles in one reverse_pass_callback, so the
+ * convolution is one autodiff node rather than one dot_product() node per
+ * output. x and y may each be var or double. The function is put in
+ * stan::math so that Stan-generated code finds it.
  */
 
 #include <stan/math.hpp>
