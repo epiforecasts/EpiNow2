@@ -8,4 +8,5 @@ test_that("epinow2_cmdstan_model passes the package header as user_header", {
     epinow2_cmdstan_model(user_header = "custom.hpp")$user_header,
     "custom.hpp"
   )
+  expect_null(epinow2_cmdstan_model(user_header = NULL)[["user_header"]])
 })
