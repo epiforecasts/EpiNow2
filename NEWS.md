@@ -6,6 +6,8 @@
 
 ## Model changes
 
+- The lowest-frequency (smoothest) coefficient of the approximate Gaussian process is now parameterised directly on the spectral-density scale, rather than as the magnitude parameter times a standard-normal deviate. This reduces the strong posterior correlation between the magnitude parameter and this coefficient that the fully non-centred parameterisation produced.
+
 ## Package changes
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
