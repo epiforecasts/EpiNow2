@@ -1,3 +1,4 @@
 #! /bin/sh
+# rstantools configure, plus tools/stan_include.R (keep if regenerating)
 "${R_HOME}/bin/Rscript" -e "rstantools::rstan_config()"
 "${R_HOME}/bin/Rscript" tools/stan_include.R
