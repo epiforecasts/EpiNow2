@@ -64,7 +64,7 @@ namespace internal {
 // 2 S = pop - C (not the floor), 4 fmax(0, 1 - e) passes 1 - e through.
 template <typename Vec>
 struct renewal_state {
-  Vec I, F, S, e, a, flag;
+  Vec I, lambda, S, e, a, flag;
 };
 
 inline bool renewal_depletes(int use_pop, int s, int nht) {
@@ -82,7 +82,7 @@ inline void renewal_forward(const Eigen::VectorXd& seed,
   const int G = g.size();
   st.I = Eigen::VectorXd::Zero(u0 + ot);
   st.I.head(u0) = seed;
-  st.F.resize(ot);
+  st.lambda.resize(ot);
   st.S.resize(ot);
   st.e.resize(ot);
   st.a.resize(ot);
@@ -91,15 +91,15 @@ inline void renewal_forward(const Eigen::VectorXd& seed,
   for (int s = 0; s < ot; ++s) {
     const int u = u0 + s;
     const int K = std::min(G, u + 1) - 1;
-    const double F
+    const double lambda
         = K > 0 ? st.I.segment(u - K, K).dot(g.segment(G - 1 - K, K)) : 0.0;
-    st.F(s) = F;
+    st.lambda(s) = lambda;
     double inf;
     if (renewal_depletes(use_pop, s, nht)) {
       const double sraw = pop - C;
       const bool s_active = sraw >= pop_floor;
       const double S = s_active ? sraw : pop_floor;
-      const double a = R(s) * F / S;
+      const double a = R(s) * lambda / S;
       const double e = std::exp(-a);
       const double h = 1.0 - e;
       const bool h_active = h >= 0.0;
@@ -109,7 +109,7 @@ inline void renewal_forward(const Eigen::VectorXd& seed,
       st.e(s) = e;
       inf = S * (h_active ? h : 0.0);
     } else {
-      inf = R(s) * F;
+      inf = R(s) * lambda;
     }
     st.I(u) = inf;
     if (use_pop && s < ot - 1) {
@@ -135,7 +135,7 @@ inline void renewal_reverse(const State& st, const Eigen::VectorXd& R,
       Ibar(u) += Cbar;
     }
     const double ib = Ibar(u);
-    double Fbar;
+    double lambdabar;
     const int flag = static_cast<int>(st.flag(s));
     if (flag & 1) {
       const double S = st.S(s);
@@ -143,23 +143,23 @@ inline void renewal_reverse(const State& st, const Eigen::VectorXd& R,
       if (flag & 4) {
         const double abar = ib * S * st.e(s);
         Sbar = ib * (1.0 - st.e(s)) - abar * st.a(s) / S;
-        Rbar(s) += abar * st.F(s) / S;
-        Fbar = abar * R(s) / S;
+        Rbar(s) += abar * st.lambda(s) / S;
+        lambdabar = abar * R(s) / S;
       } else {
-        Fbar = 0.0;
+        lambdabar = 0.0;
       }
       if (flag & 2) {
         popbar += Sbar;
         Cbar -= Sbar;
       }
     } else {
-      Rbar(s) += ib * st.F(s);
-      Fbar = ib * R(s);
+      Rbar(s) += ib * st.lambda(s);
+      lambdabar = ib * R(s);
     }
     const int K = std::min(G, u + 1) - 1;
     if (K > 0) {
-      Ibar.segment(u - K, K) += Fbar * g.segment(G - 1 - K, K);
-      gbar.segment(G - 1 - K, K) += Fbar * st.I.segment(u - K, K);
+      Ibar.segment(u - K, K) += lambdabar * g.segment(G - 1 - K, K);
+      gbar.segment(G - 1 - K, K) += lambdabar * st.I.segment(u - K, K);
     }
   }
   seedbar = Ibar.head(u0);
@@ -187,12 +187,12 @@ inline void renewal_reverse(const State& st, const Eigen::VectorXd& R,
  * @return Infections, length t_s + T, starting with the seeds.
  * @throws std::domain_error if seed is empty.
  */
-template <typename T0, typename T1, typename T2, typename T3, typename T5,
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
           stan::require_all_eigen_col_vector_t<T0, T1, T2>* = nullptr,
-          stan::require_all_stan_scalar_t<T3, T5>* = nullptr>
+          stan::require_all_stan_scalar_t<T3, T4>* = nullptr>
 inline Eigen::Matrix<stan::return_type_t<T0, T1, T2, T3>, Eigen::Dynamic, 1>
 renewal_infections(const T0& seed, const T1& R, const T2& g, const T3& pop,
-                   const int& use_pop, const T5& pop_floor, const int& nht,
+                   const int& use_pop, const T4& pop_floor, const int& nht,
                    std::ostream* /* pstream__ */) {
   using stan::arena_t;
   using stan::math::var;
@@ -221,7 +221,7 @@ renewal_infections(const T0& seed, const T1& R, const T2& g, const T3& pop,
     internal::renewal_forward(value_of(seed_a), R_val, g_val, pop_d, use_pop,
                               floor_d, nht, fwd);
     internal::renewal_state<arena_t<Eigen::VectorXd>> st{
-        fwd.I, fwd.F, fwd.S, fwd.e, fwd.a, fwd.flag};
+        fwd.I, fwd.lambda, fwd.S, fwd.e, fwd.a, fwd.flag};
     const int n = fwd.I.size();
     arena_t<Eigen::Matrix<var, -1, 1>> res(n);
     for (int i = 0; i < n; ++i) {
