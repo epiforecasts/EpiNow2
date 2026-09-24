@@ -14,6 +14,9 @@
 #'
 #' @param ... Additional arguments passed to [cmdstanr::cmdstan_model()].
 #'
+#' @details Passes [epinow2_stan_header()] as `user_header` unless one is
+#' given in `...`.
+#'
 #' @importFrom cli cli_inform col_blue
 #' @return A `cmdstanr` model.
 #' @export
@@ -38,13 +41,26 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
       x
     }
   }
-  model <- monitor(cmdstanr::cmdstan_model(
-    model_file,
-    include_paths = dir,
-    dir = tempdir(),
-    ...
-  ))
+  model_args <- list(model_file, include_paths = dir, dir = tempdir(), ...)
+  if (!"user_header" %in% names(model_args)) {
+    model_args$user_header <- epinow2_stan_header()
+  }
+  model <- monitor(do.call(cmdstanr::cmdstan_model, model_args))
   model
+}
+
+#' Path to the C++ header used by the EpiNow2 Stan models
+#'
+#' @description
+#' Models that include `inst/stan/functions` need this header, which
+#' implements Stan functions declared there without a body.
+#'
+#' @return A character string with the path to the header.
+#' @export
+#' @examples
+#' epinow2_stan_header()
+epinow2_stan_header <- function() {
+  system.file("include", "epinow2.hpp", package = "EpiNow2", mustWork = TRUE)
 }
 
 #' Load an EpiNow2 rstan model.

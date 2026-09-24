@@ -20,6 +20,11 @@ Each function page includes:
 - Collaboration graphs
 - Referencing and referenced functions
 
+## Functions implemented in C++
+
+Some functions, such as `convolve_with_rev_pmf()`, are declared without a body and implemented in C++ in `inst/include`.
+Models that use them need `epinow2_stan_header()` included before the model code.
+
 ## EpiNow2 main website
 
 Click [here](https://epiforecasts.github.io/EpiNow2/) to return to the main EpiNow2 website.

@@ -9,9 +9,22 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
     "rt.stan", "infections.stan", "delays.stan", "generated_quantities.stan"
   )
   if (!(tolower(Sys.info()[["sysname"]]) %in% "windows")) {
+    # Also expose the pure Stan reference for the C++ functions
+    stan_fn_dir <- file.path(tempdir(), "epinow2-stan-functions")
+    dir.create(stan_fn_dir, showWarnings = FALSE)
+    file.copy(
+      c(
+        file.path(
+          system.file("stan/functions", package = "EpiNow2"), files
+        ),
+        test_path("stan", "convolve_reference.stan")
+      ),
+      stan_fn_dir,
+      overwrite = TRUE
+    )
     suppressMessages(
-      expose_stan_fns(files,
-        target_dir = system.file("stan/functions", package = "EpiNow2")
+      expose_stan_fns(c(files, "convolve_reference.stan"),
+        target_dir = stan_fn_dir
       )
     )
   }
