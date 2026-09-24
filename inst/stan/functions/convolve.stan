@@ -8,84 +8,49 @@
  */
 
 /**
- * Calculate convolution indices for the case where s <= xlen
- *
- * @param s Current position in the output vector
- * @param xlen Length of the x vector
- * @param ylen Length of the y vector
- * @return An array of integers: {start_x, end_x, start_y, end_y}
- *
- * @ingroup convolution_functions
- */
-array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
-  int s_minus_ylen = s - ylen;
-  int start_x = max(1, s_minus_ylen + 1);
-  int end_x = s;
-  int start_y = max(1, 1 - s_minus_ylen);
-  int end_y = ylen;
-  return {start_x, end_x, start_y, end_y};
-}
-
-/**
- * Calculate convolution indices for the case where s > xlen
- *
- * @param s Current position in the output vector
- * @param xlen Length of the x vector
- * @param ylen Length of the y vector
- * @return An array of integers: {start_x, end_x, start_y, end_y}
- *
- * @ingroup convolution_functions
- */
-array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
-  int s_minus_ylen = s - ylen;
-  int start_x = max(1, s_minus_ylen + 1);
-  int end_x = xlen;
-  int start_y = max(1, 1 - s_minus_ylen);
-  int end_y = ylen + xlen - s;
-  return {start_x, end_x, start_y, end_y};
-}
-
-/**
  * Convolve a vector with a reversed probability mass function.
  *
- * This function performs a discrete convolution of two vectors, where the second vector
- * is assumed to be an already reversed probability mass function.
+ * This function performs a discrete convolution of two vectors, where the
+ * second vector is assumed to be an already reversed probability mass
+ * function. It is declared here and implemented in C++ with a hand-written
+ * reverse-mode gradient, in `inst/include/epinow2/convolve_with_rev_pmf.hpp`.
+ * Models that include this file must be compiled with that header (see
+ * `epinow2_cmdstan_model()`).
+ *
+ * Write n for the length of x, D for the length of y and z for the output.
+ * The weight of a delay of d days is w_d = y[D - d], d = 0, ..., D - 1, and
+ * x[s] = 0 outside 1, ..., n. The output is
+ *
+ *   z[t] = sum_{d = 0}^{D - 1} w_d x[t - d],  t = 1, ..., len.
+ *
+ * It is computed one lag at a time, as one vector update per lag,
+ *
+ *   z[(d + 1):(d + m)] += w_d x[1:m],  m = min(n, len - d),
+ *
+ * which is z[(d + 1):n] += w_d x[1:(n - d)] when len = n. When len > n the
+ * output runs past the end of x and m stops each update at x[n], so the
+ * extra entries are the tail of the full convolution.
+ *
+ * The gradient is the matching correlation. With zbar the gradient of the
+ * target with respect to z, each lag adds
+ *
+ *   xbar[1:m] += w_d zbar[(d + 1):(d + m)],
+ *   wbar_d    += zbar[(d + 1):(d + m)]' x[1:m],
+ *
+ * and the gradient with respect to y[D - d] is wbar_d. Both passes run on
+ * plain numbers, so the whole convolution is one node on the autodiff
+ * stack rather than one `dot_product()` node per output time.
  *
  * @param x The input vector to be convolved.
  * @param y The already reversed probability mass function vector.
  * @param len The desired length of the output vector.
  * @return A vector of length `len` containing the convolution result.
- * @throws If `len` is not of equal length to the sum of the lengths of `x` and `y`.
+ * @throws If `len` is longer than the full convolution (n + D - 1) or
+ * shorter than `x`.
  *
  * @ingroup convolution_functions
  */
-vector convolve_with_rev_pmf(vector x, vector y, int len) {
-  int xlen = num_elements(x);
-  int ylen = num_elements(y);
-
-  if (xlen + ylen - 1 < len) {
-    reject("convolve_with_rev_pmf: len is longer than x and y convolved");
-  }
-
-  if (xlen > len) {
-    reject("convolve_with_rev_pmf: len is shorter than x");
-  }
-
-  vector[len] z;
-
-  for (s in 1:xlen) {
-    array[4] int indices = calc_conv_indices_xlen(s, xlen, ylen);
-    z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
-  }
-
-  // runs zero times unless len > xlen
-  for (s in (xlen + 1):len) {
-    array[4] int indices = calc_conv_indices_len(s, xlen, ylen);
-    z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
-  }
-
-  return z;
-}
+vector convolve_with_rev_pmf(vector x, vector y, int len);
 
 /**
  * Convolve infections to reported cases.
@@ -115,4 +80,3 @@ vector convolve_to_report(vector infections,
   vector[t] unobs_reports = convolve_with_rev_pmf(infections, delay_rev_pmf, t);
   return unobs_reports[(seeding_time + 1):t];
 }
-
