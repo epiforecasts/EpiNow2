@@ -30,3 +30,10 @@ A \code{cmdstanr} model.
 The function has been adapted from a similar function in the epinowcast
 package (Copyright holder: epinowcast authors, under MIT License).
 }
+\details{
+The EpiNow2 models declare some Stan functions without a body and
+implement them in C++ (see \code{\link[=epinow2_stan_header]{epinow2_stan_header()}}). This header is passed
+to \code{\link[cmdstanr:cmdstan_model]{cmdstanr::cmdstan_model()}} as \code{user_header} unless \code{user_header} is
+given in \code{...}. Models compiled from \code{inst/stan} by other means need the
+same header.
+}

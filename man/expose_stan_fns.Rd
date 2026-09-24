@@ -22,3 +22,8 @@ his function exposes internal stan functions in R from a user
 supplied list of target files. Allows for testing of stan functions in R and
 potentially user use in R code.
 }
+\details{
+Some functions (e.g. \code{convolve_with_rev_pmf()}) are declared in
+Stan without a body and implemented in C++ in the header returned by
+\code{\link[=epinow2_stan_header]{epinow2_stan_header()}}. That header is always included.
+}
