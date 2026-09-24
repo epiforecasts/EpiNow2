@@ -6,6 +6,8 @@
 
 ## Model changes
 
+- The delay convolution `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written reverse-mode gradient, which makes its gradient about 3-4 times faster. Models that include `inst/stan/functions/convolve.stan` must now be compiled with the header returned by the new `epinow2_stan_header()`; `epinow2_cmdstan_model()` and `expose_stan_fns()` do this automatically.
+
 ## Package changes
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
