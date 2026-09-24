@@ -14,6 +14,12 @@
 #'
 #' @param ... Additional arguments passed to [cmdstanr::cmdstan_model()].
 #'
+#' @details The EpiNow2 models declare some Stan functions without a body and
+#' implement them in C++ (see [epinow2_stan_header()]). This header is passed
+#' to [cmdstanr::cmdstan_model()] as `user_header` unless `user_header` is
+#' given in `...`. Models compiled from `inst/stan` by other means need the
+#' same header.
+#'
 #' @importFrom cli cli_inform col_blue
 #' @return A `cmdstanr` model.
 #' @export
@@ -38,13 +44,36 @@ epinow2_cmdstan_model <- function(model = "estimate_infections",
       x
     }
   }
-  model <- monitor(cmdstanr::cmdstan_model(
-    model_file,
-    include_paths = dir,
-    dir = tempdir(),
-    ...
-  ))
+  model_args <- list(model_file, include_paths = dir, dir = tempdir(), ...)
+  if (is.null(model_args$user_header)) {
+    model_args$user_header <- epinow2_stan_header()
+  }
+  model <- monitor(do.call(cmdstanr::cmdstan_model, model_args))
   model
+}
+
+#' Path to the C++ header used by the EpiNow2 Stan models
+#'
+#' @description
+#' Some Stan functions in `inst/stan/functions` are declared without a body
+#' and implemented in C++ with a hand-written reverse-mode gradient. At
+#' present this is `convolve_with_rev_pmf()`. Any model that includes these
+#' functions has to be compiled with this header:
+#' - the package's `rstan` models include it when the package is installed;
+#' - [epinow2_cmdstan_model()] passes it to [cmdstanr::cmdstan_model()] as
+#'   `user_header`;
+#' - [expose_stan_fns()] passes it to [rstan::expose_stan_functions()].
+#'
+#' If you compile the models yourself, pass this path as `user_header` in
+#' `cmdstanr` or include it before the model code, and allow undefined
+#' functions in `stanc`.
+#'
+#' @return A character string with the path to the header.
+#' @export
+#' @examples
+#' epinow2_stan_header()
+epinow2_stan_header <- function() {
+  system.file("include", "epinow2.hpp", package = "EpiNow2", mustWork = TRUE)
 }
 
 #' Load an EpiNow2 rstan model.
