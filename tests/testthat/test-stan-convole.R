@@ -78,6 +78,91 @@ test_that("convolve_dot_product can combine two vectors where x > y and len = x"
   )
 })
 
+# Cases for comparing the C++ convolve_with_rev_pmf() with the pure Stan
+# reference: len equal to, longer than and between the lengths of x and the
+# full convolution, a short pmf, a pmf of length one and a pmf longer than x.
+convolve_cases <- list(
+  list(n = 20, D = 6, len = 20),
+  list(n = 20, D = 6, len = 25),
+  list(n = 20, D = 6, len = 22),
+  list(n = 15, D = 2, len = 16),
+  list(n = 10, D = 1, len = 10),
+  list(n = 5, D = 9, len = 5),
+  list(n = 5, D = 9, len = 13),
+  list(n = 1, D = 1, len = 1)
+)
+
+test_that("convolve_with_rev_pmf matches the pure Stan implementation", {
+  set.seed(123)
+  for (case in convolve_cases) {
+    x <- rexp(case$n)
+    y <- rexp(case$D)
+    expect_equal(
+      convolve_with_rev_pmf(x, y, case$len),
+      convolve_with_rev_pmf_stan(x, y, case$len),
+      tolerance = 1e-12
+    )
+  }
+})
+
+test_that("convolve_with_rev_pmf errors for bad 'len' specifications", {
+  expect_error(
+    convolve_with_rev_pmf(c(1, 2, 3), c(0.5, 0.5), 5),
+    "len is longer than x and y convolved"
+  )
+  expect_error(
+    convolve_with_rev_pmf(c(1, 2, 3), c(0.5, 0.5), 2),
+    "len is shorter than x"
+  )
+})
+
+test_that("convolve_with_rev_pmf gradients match the pure Stan implementation", {
+  skip_if_not_installed("rstan")
+  # Compile the test model with the package header included before the
+  # model code, as the package models are compiled.
+  stanc_ret <- rstan::stanc(
+    test_path("stan", "convolve_gradient.stan"),
+    allow_undefined = TRUE,
+    isystem = c(system.file("stan", package = "EpiNow2"), test_path("stan"))
+  )
+  code <- strsplit(stanc_ret$cppcode, "\n", fixed = TRUE)[[1]]
+  at <- match("#include <stan/model/model_header.hpp>", trimws(code))
+  stanc_ret$cppcode <- paste(
+    append(code, paste0("#include \"", epinow2_stan_header(), "\""), at),
+    collapse = "\n"
+  )
+  model <- suppressMessages(suppressWarnings(
+    rstan::stan_model(stanc_ret = stanc_ret)
+  ))
+
+  set.seed(123)
+  params <- list(c(1, 1), c(1, 0), c(0, 1))
+  for (case in convolve_cases) {
+    data <- c(case, list(
+      x_data = rexp(case$n), y_data = rexp(case$D), r = rnorm(case$len)
+    ))
+    for (p in params) {
+      data$x_param <- p[1]
+      data$y_param <- p[2]
+      fits <- lapply(c(cpp = 1, stan = 0), function(use_cpp) {
+        data$use_cpp <- use_cpp
+        suppressMessages(rstan::sampling(model, data = data, chains = 0))
+      })
+      upars <- rnorm(p[1] * case$n + p[2] * case$D)
+      expect_equal(
+        rstan::log_prob(fits$cpp, upars),
+        rstan::log_prob(fits$stan, upars),
+        tolerance = 1e-10
+      )
+      expect_equal(
+        rstan::grad_log_prob(fits$cpp, upars),
+        rstan::grad_log_prob(fits$stan, upars),
+        tolerance = 1e-8
+      )
+    }
+  }
+})
+
 # Test convolve_to_report function
 test_that("convolve_to_report convolves infections with delay distribution", {
   infections <- rep(100, 10)
