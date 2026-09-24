@@ -60,7 +60,7 @@ test_that("simulate_infections works with susceptible depletion", {
   set.seed(123)
   sim <- test_simulate_infections(
     generation_time = gt_opts(fix_parameters(example_generation_time)),
-    pop = Fixed(2000),
+    pop = Fixed(20000),
     pop_period = "all"
   )
   infections <- sim[sim$variable == "infections", ]
