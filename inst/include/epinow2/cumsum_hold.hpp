@@ -21,7 +21,6 @@
 
 #include <stan/math.hpp>
 #include <ostream>
-#include <stdexcept>
 
 namespace epinow2 {
 namespace internal {
@@ -56,15 +55,13 @@ inline Eigen::Matrix<stan::value_type_t<T>, Eigen::Dynamic, 1> cumsum_hold(
   using stan::arena_t;
   using stan::math::var;
   const int n = x.size();
-  if (t < n + 1) {
-    throw std::domain_error("cumsum_hold: t is shorter than x plus one");
-  }
+  stan::math::check_greater_or_equal("cumsum_hold", "t", t, n + 1);
   if constexpr (!stan::is_var<stan::value_type_t<T>>::value) {
     return internal::cumsum_hold_forward(stan::math::value_of(x), t);
   } else {
     arena_t<Eigen::Matrix<var, Eigen::Dynamic, 1>> x_arena = x;
     const Eigen::VectorXd y
-        = internal::cumsum_hold_forward(x_arena.val(), t);
+        = internal::cumsum_hold_forward(stan::math::value_of(x_arena), t);
     arena_t<Eigen::Matrix<var, Eigen::Dynamic, 1>> res(t);
     for (int j = 0; j < t; ++j) {
       res.coeffRef(j) = var(y(j));
