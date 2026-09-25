@@ -92,9 +92,9 @@ neg_MGF <- function(r, pmf) {
   sum(pmf * exp(-r * (0:(n - 1))))
 }
 
-test_that("R_to_r_newton_step calculates correct Newton step", {
+test_that("R_to_r_newton_step_stan in the reference gives a finite step", {
   pmf <- discretised_pmf(c(4, 2), 10, 2, 0)
-  step <- R_to_r_newton_step(1.5, 0.1, pmf)
+  step <- R_to_r_newton_step_stan(1.5, 0.1, pmf)
   expect_type(step, "double")
   expect_length(step, 1)
   expect_true(is.finite(step))

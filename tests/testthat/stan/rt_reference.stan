@@ -15,7 +15,7 @@
  * @param pmf Generation time probability mass function (first index: 0)
  * @return The Newton step for updating r
  */
-real R_to_r_newton_step(real R, real r, vector pmf) {
+real R_to_r_newton_step_stan(real R, real r, vector pmf) {
   int len = num_elements(pmf);
   vector[len] zero_series = linspaced_vector(len, 0, len - 1);
   vector[len] exp_r = exp(-r * zero_series);
@@ -36,7 +36,7 @@ real R_to_r_stan(real R, vector gt_rev_pmf, real abs_tol) {
   real step = abs_tol + 1;
   int n = 0;
   while (n < 100 && abs(step) > abs_tol) {
-    step = R_to_r_newton_step(R, r, gt_pmf);
+    step = R_to_r_newton_step_stan(R, r, gt_pmf);
     r -= step;
     n += 1;
   }
