@@ -179,6 +179,11 @@ reference:
   - report_plots
   - report_summary
 
+- title: Time-varying parameters
+  desc: Functions to declare time-varying model parameters
+  contents:
+  - state
+
 - title: Fit Delay Distributions
   desc: Functions to fit delay distributions
   contents:

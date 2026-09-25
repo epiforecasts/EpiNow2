@@ -4,6 +4,7 @@ functions {
 #include functions/pmfs.stan
 #include functions/delays.stan
 #include functions/gaussian_process.stan
+#include functions/state.stan
 #include functions/rt.stan
 #include functions/infections.stan
 #include functions/observation_model.stan
@@ -14,25 +15,20 @@ functions {
 data {
 #include data/observations.stan
 #include data/delays.stan
-#include data/gaussian_process.stan
 #include data/rt.stan
 #include data/backcalc.stan
 #include data/observation_model.stan
 #include data/params.stan
 #include data/estimate_infections_params.stan
+#include data/states.stan
+#include data/random_walk.stan
+#include data/gaussian_process.stan
 }
 
 transformed data {
   // observations
   int ot = t - seeding_time - horizon;  // observed time
   int ot_h = ot + horizon;  // observed time + forecast horizon
-  // gaussian process
-  int noise_terms = setup_noise(
-    ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from
-  );
-  matrix[noise_terms, gp_type == 1 ? 2 * M : M] PHI = setup_gp(
-    M, L, noise_terms, gp_type == 1, w0
-  );  // basis function
 
   array[delay_types] int delay_type_max;
   profile("assign max") {
@@ -52,16 +48,74 @@ transformed data {
   } else {
     initial_infections_guess = 0;
   }
+
+  // Time-varying states. Each state has its own free-noise window (set by its
+  // `future`) and, for GP states, its own basis sized to that window. The latent
+  // infections state spans the seeding period (total length t); every other
+  // state runs over the observed period plus horizon (ot_h). Random walk steps
+  // and GP coefficients are stored in flat (ragged) vectors indexed by per-state
+  // offsets.
+  array[n_states] int state_n_free;    // free-noise window per state
+  array[n_states] int state_n_centre;  // centring window per state
+  array[n_states] int state_rw_n;      // RW steps per state (0 for GP states)
+  array[n_states] int state_rw_offset; // offset into the flat RW step vector
+  array[n_states] int state_gp_M;      // GP basis functions per state (0 for RW)
+  array[n_states] int state_gp_offset; // offset into the flat GP coefficient vec
+  int n_rw_steps = 0;                  // total RW steps across states
+  int n_gp_coef = 0;                   // total GP coefficients across states
+  for (s in 1:n_states) {
+    int total = state_param_id[s] == param_id_I ? t : ot_h;
+    int data_window = total - horizon;
+    int free_window;
+    if (state_future_fixed[s] == 0) {
+      free_window = total; // "project" over the whole horizon
+    } else {
+      free_window = data_window + state_future_from[s];
+      if (free_window < 1) free_window = 1;
+      if (free_window > total) free_window = total;
+    }
+    state_n_free[s] = free_window;
+    // centre init-anchored states over the observation window (never beyond it)
+    state_n_centre[s] =
+      data_window < free_window ? data_window : free_window;
+    state_rw_offset[s] = n_rw_steps;
+    state_gp_offset[s] = n_gp_coef;
+    if (state_type[s] == 0) {
+      state_rw_n[s] = free_window > 1 ?
+        to_int(ceil(1.0 * free_window / state_rw_period)) - 1 : 0;
+      state_gp_M[s] = 0;
+      n_rw_steps += state_rw_n[s];
+    } else {
+      state_rw_n[s] = 0;
+      state_gp_M[s] = to_int(ceil(free_window * gp_basis_prop[state_pos[s]]));
+      n_gp_coef += state_gp_M[s];
+    }
+  }
+
+  // Build each GP state's basis once here: it depends only on data (the state's
+  // free-noise window and basis size), so update_gp can apply the per-iteration
+  // hyperparameters without rebuilding the basis every gradient evaluation. The
+  // array is padded to the largest window/basis and read back per state.
+  int max_gp_nf = 1;
+  int max_gp_M = 1;
+  for (s in 1:n_states) {
+    if (state_type[s] == 1) {
+      if (state_n_free[s] > max_gp_nf) max_gp_nf = state_n_free[s];
+      if (state_gp_M[s] > max_gp_M) max_gp_M = state_gp_M[s];
+    }
+  }
+  array[n_gp_states] matrix[max_gp_nf, max_gp_M] gp_phi;
+  for (s in 1:n_states) {
+    if (state_type[s] == 1) {
+      int p = state_pos[s];
+      gp_phi[p, 1:state_n_free[s], 1:state_gp_M[s]] =
+        setup_gp(state_gp_M[s], gp_boundary_scale[p], state_n_free[s], 0, 1.0);
+    }
+  }
 }
 
 parameters {
   vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
-  // gaussian process
-  vector[fixed ? 0 : gp_type == 1 ? 2*M : M] eta;  // unconstrained noise
-  // Mean Rt over the observation window for the centred GP parameterisation;
-  // the user prior on initial Rt is applied to the derived R[1] in the model
-  // block via the init-prior dispatch.
-  array[estimate_r] real<lower = 0> R_mean;
   array[estimate_r] real initial_infections;    // seed infections
   // standard deviation of breakpoint effect
   array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd;
@@ -72,6 +126,12 @@ parameters {
   // normalised within each ragged segment to give a Dirichlet draw
   vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
   simplex[week_effect] day_of_week_simplex; // day of week reporting effect
+  // time-varying states (ragged: per-state offsets in transformed
+  // data). State hyperparameters (step sd, GP magnitude and lengthscale) are
+  // part of the `params` vector above and reconstructed in transformed
+  // parameters.
+  vector[n_rw_steps] state_rw_steps;               // random walk steps
+  vector[n_gp_coef] state_gp_eta;                  // GP basis coefficients
 }
 
 transformed parameters {
@@ -81,8 +141,6 @@ transformed parameters {
     delay_np_est_pos, delay_np_est_raw
   );
 
-  // noise generated by the gaussian process
-  vector[fixed ? 0 : noise_terms] noise;
   vector<lower = 0>[estimate_r > 0 ? ot_h : 0] R; // reproduction number
   vector[t] infections; // latent infections
   vector[ot_h] reports; // estimated reported cases
@@ -90,22 +148,56 @@ transformed parameters {
   vector[estimate_r * (delay_type_max[delay_id_generation_time] + 1)]
     gt_rev_pmf;
 
-  // GP in noise - spectral densities
-  profile("update gp") {
-    if (!fixed) {
-      real alpha = get_param(
-        param_id_alpha, params_fixed_lookup, params_variable_lookup, params_value,
-        params
-      );
-      real rescaled_rho = 2 * get_param(
-        param_id_rho, params_fixed_lookup, params_variable_lookup,
-        params_value, params
-      ) / noise_terms;
-      noise = update_gp(
-        PHI, M, L, alpha, rescaled_rho, eta, gp_type, nu
-      );
-    }
+  // state hyperparameters, retrieved from the unified parameter vector
+  vector[n_rw_states] state_rw_sd;    // random walk step sd
+  vector[n_gp_states] state_gp_alpha; // GP magnitude
+  vector[n_gp_states] state_gp_rho;   // GP lengthscale
+  for (r in 1:n_rw_states) {
+    state_rw_sd[r] = get_param(
+      rw_sd_id[r], params_fixed_lookup, params_variable_lookup, params_value,
+      params
+    );
   }
+  for (g in 1:n_gp_states) {
+    state_gp_alpha[g] = get_param(
+      gp_alpha_id[g], params_fixed_lookup, params_variable_lookup, params_value,
+      params
+    );
+    state_gp_rho[g] = get_param(
+      gp_rho_id[g], params_fixed_lookup, params_variable_lookup, params_value,
+      params
+    );
+  }
+
+  // trajectory of the (possibly time-varying) fraction observed; constant when
+  // no state is attached to fraction_observed
+  vector[ot_h] fraction_observed = get_state_trajectory(
+    param_id_fraction_observed, ot_h,
+    get_param(
+      param_id_fraction_observed, params_fixed_lookup, params_variable_lookup,
+      params_value, params
+    ),
+    state_param_id, state_type, state_link, state_pos, state_anchor,
+    state_n_free, state_n_centre,
+    state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
+    state_gp_eta, state_gp_M, state_gp_offset,
+    gp_boundary_scale, gp_kernel, gp_nu,
+    state_gp_alpha, state_gp_rho, gp_phi
+  );
+  // trajectory of the (possibly time-varying) reporting overdispersion
+  vector[ot_h] reporting_overdispersion = get_state_trajectory(
+    param_id_reporting_overdispersion, ot_h,
+    get_param(
+      param_id_reporting_overdispersion, params_fixed_lookup,
+      params_variable_lookup, params_value, params
+    ),
+    state_param_id, state_type, state_link, state_pos, state_anchor,
+    state_n_free, state_n_centre,
+    state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
+    state_gp_eta, state_gp_M, state_gp_offset,
+    gp_boundary_scale, gp_kernel, gp_nu,
+    state_gp_alpha, state_gp_rho, gp_phi
+  );
 
   // Estimate latent infections
   if (estimate_r) {
@@ -117,34 +209,70 @@ transformed parameters {
         delay_dist, 1, 1, 0
       );
     }
-    profile("R0") {
-      // R_mean is sampled directly (centred GP scaffolding). The user prior
-      // lives on R[1] (initial Rt), applied in the model block via the
-      // init_priors plumbing.
-      R = update_Rt(
-        ot_h, R_mean[1], noise, breakpoints, bp_effects, stationary, ot
+    profile("Rt") {
+      // Rt is the trajectory of the R state (constant, or a GP/RW). The sampled
+      // R parameter is its level; for an init-anchored state the user prior is
+      // applied to the derived initial Rt (R[1]) by the state machinery.
+      R = get_state_trajectory(
+        param_id_R, ot_h,
+        get_param(
+          param_id_R, params_fixed_lookup, params_variable_lookup,
+          params_value, params
+        ),
+        state_param_id, state_type, state_link, state_pos, state_anchor,
+        state_n_free, state_n_centre,
+        state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
+        state_gp_eta, state_gp_M, state_gp_offset,
+        gp_boundary_scale, gp_kernel, gp_nu,
+        state_gp_alpha, state_gp_rho, gp_phi
       );
     }
     profile("infections") {
-      real fraction_observed = get_param(
-        param_id_fraction_observed, params_fixed_lookup, params_variable_lookup, params_value,
-        params
-      );
       real pop = get_param(
         param_id_pop, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
       infections = generate_infections(
         R, seeding_time, gt_rev_pmf, initial_infections, pop, use_pop, pop_floor,
-        future_time, obs_scale, fraction_observed, 1
+        future_time, obs_scale, fraction_observed[1], 1
       );
     }
   } else {
-    // via deconvolution
+    // back-calculation: latent infections are a Gaussian process on the log
+    // scale anchored at an initial value (I0), held at their last value through
+    // the forecast horizon
     profile("infections") {
-      infections = deconvolve_infections(
-        shifted_cases, noise, fixed, backcalc_prior
+      infections = get_state_trajectory(
+        param_id_I, t,
+        get_param(
+          param_id_I, params_fixed_lookup, params_variable_lookup,
+          params_value, params
+        ),
+        state_param_id, state_type, state_link, state_pos, state_anchor,
+        state_n_free, state_n_centre,
+        state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
+        state_gp_eta, state_gp_M, state_gp_offset,
+        gp_boundary_scale, gp_kernel, gp_nu,
+        state_gp_alpha, state_gp_rho, gp_phi
       );
+    }
+  }
+
+  // initial value of each state's trajectory (for init-anchor priors), reusing
+  // the trajectories computed above rather than recomputing them
+  vector[n_states] state_init;
+  for (s in 1:n_states) {
+    int id = state_param_id[s];
+    if (id == param_id_R) {
+      state_init[s] = R[1];
+    } else if (id == param_id_I) {
+      state_init[s] = infections[1];
+    } else if (id == param_id_fraction_observed) {
+      state_init[s] = fraction_observed[1];
+    } else if (id == param_id_reporting_overdispersion) {
+      state_init[s] = reporting_overdispersion[1];
+    } else {
+      reject("no trajectory available for state parameter id ", id);
     }
   }
 
@@ -176,11 +304,7 @@ transformed parameters {
   // scaling of reported cases by fraction observed
   if (obs_scale) {
     profile("scale") {
-      real fraction_observed = get_param(
-        param_id_fraction_observed, params_fixed_lookup, params_variable_lookup, params_value,
-        params
-      );
-      reports = scale_obs(reports, fraction_observed);
+      reports = reports .* fraction_observed;
     }
   }
 
@@ -211,13 +335,6 @@ transformed parameters {
 }
 
 model {
-  // priors for noise GP
-  if (!fixed) {
-    profile("gp lp") {
-      gaussian_process_lp(eta);
-    }
-  }
-
   // penalized priors for delay distributions
   profile("delays lp") {
     delays_lp(
@@ -230,8 +347,43 @@ model {
   // parameter priors
   profile("param lp") {
     params_lp(
-      params, prior_dist, prior_dist_params, params_lower, params_upper
+      params, prior_dist, prior_dist_params, params_lower, params_upper,
+      params_prior_skip
     );
+  }
+
+  // priors for time-varying states. State hyperparameters (step sd,
+  // GP magnitude and lengthscale) are part of `params`, so their priors are
+  // applied by params_lp() above; only the state structure is handled here.
+  profile("state lp") {
+    // ragged random walk step priors, indexed by per-state offsets
+    for (s in 1:n_states) {
+      if (state_type[s] == 0 && state_rw_n[s] > 0) {
+        segment(state_rw_steps, state_rw_offset[s] + 1, state_rw_n[s]) ~
+          normal(0, state_rw_sd[state_pos[s]]);
+      }
+    }
+    state_gp_eta ~ std_normal(); // GP coefficients are iid across all states
+    // init-anchor states: the level parameter's prior is applied to the derived
+    // initial value (with the log-link Jacobian) instead of to the level, which
+    // is free scaffolding; params_lp() skips it via params_prior_skip.
+    for (s in 1:n_states) {
+      if (state_anchor[s]) {
+        int vpos = params_variable_lookup[state_param_id[s]];
+        apply_prior_lp(
+          state_init[s], prior_dist[vpos],
+          prior_dist_params[2 * vpos - 1], prior_dist_params[2 * vpos],
+          params_lower[vpos], params_upper[vpos]
+        );
+        if (state_link[s] == 0) {
+          real state_level = get_param(
+            state_param_id[s], params_fixed_lookup, params_variable_lookup,
+            params_value, params
+          );
+          target += log(state_init[s]) - log(state_level);
+        }
+      }
+    }
   }
 
   if (estimate_r) {
@@ -244,20 +396,12 @@ model {
     }
   }
 
-  profile("init lp") {
-    init_priors_lp(init_param_ids, init_dists, init_dist_params,
-                   init_lower, init_upper, param_id_R0, R, R_mean);
-  }
-
   // observed reports from mean of reports (update likelihood)
   if (likelihood) {
     profile("report lp") {
-      real reporting_overdispersion = get_param(
-        param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
-        params
-      );
       report_lp(
-        cases, case_times, obs_reports, reporting_overdispersion, model_type, obs_weight
+        cases, case_times, obs_reports, reporting_overdispersion[1:ot],
+        model_type, obs_weight
       );
     }
   }
@@ -272,18 +416,6 @@ generated quantities {
   vector[(estimate_r > 0 && use_pop > 0) ? ot_h : 0] R_adj;
 
   profile("generated quantities") {
-    real reporting_overdispersion = get_param(
-      param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
-      params
-    );
-    if (!fixed) {
-      real rescaled_rho = 2 * get_param(
-        param_id_rho, params_fixed_lookup, params_variable_lookup,
-        params_value, params
-      ) / noise_terms;
-      vector[noise_terms] x = linspaced_vector(noise_terms, 1, noise_terms);
-    }
-
     {
       vector[delay_type_max[delay_id_generation_time] + 1]
         gt_rev_pmf_for_growth;
@@ -327,18 +459,21 @@ generated quantities {
       vector[ot_h] accumulated_reports =
         accumulate_reports(reports, accumulate);
       imputed_reports = report_rng(
-        accumulated_reports[imputed_times], reporting_overdispersion, model_type
+        accumulated_reports[imputed_times],
+        reporting_overdispersion[imputed_times], model_type
       );
     } else {
       imputed_reports = report_rng(
-        reports[imputed_times], reporting_overdispersion, model_type
+        reports[imputed_times], reporting_overdispersion[imputed_times],
+        model_type
       );
     }
 
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
-        cases, obs_reports[case_times], reporting_overdispersion, model_type, obs_weight
+        cases, obs_reports[case_times], reporting_overdispersion[case_times],
+        model_type, obs_weight
       );
     }
   }

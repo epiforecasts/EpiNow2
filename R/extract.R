@@ -81,6 +81,16 @@ extract_parameters <- function(samples, args) {
     }
   }
 
+  # R and I are always reported as trajectories, so their sampled level is never
+  # surfaced as a scalar. Other parameters are surfaced as scalars unless they
+  # are time-varying, in which case their trajectory is reported instead; detect
+  # those from the model's state configuration rather than hard-coding names.
+  state_ids <- args[["state_param_id"]] %||% integer(0)
+  id_vals <- vapply(id_vars, function(v) as.integer(args[[v]]), integer(1))
+  state_params <- c(
+    "R", "I", sub("^param_id_", "", id_vars)[id_vals %in% state_ids]
+  )
+
   # Extract all columns
   samples_list <- lapply(seq_len(n_cols), function(i) {
     # Use named parameter if available, otherwise use indexed name
@@ -88,6 +98,9 @@ extract_parameters <- function(samples, args) {
       param_names[i]
     } else {
       paste0("params[", i, "]")
+    }
+    if (par_name %in% state_params) {
+      return(NULL)
     }
 
     data.table(
