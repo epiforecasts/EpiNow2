@@ -4,6 +4,8 @@
 
 ## Breaking changes
 
+- The boundary factor and number of basis functions of the approximate Gaussian process are now chosen by default from the lengthscale prior, following Riutort-Mayol et al. (2023), rather than fixed at `boundary_scale = 1.5` and `basis_prop = 0.2`. The previous defaults approximated the default lengthscale prior poorly, particularly at the most recent time points. `estimate_infections()` now warns when the posterior lengthscale is outside the range the approximation represents accurately. Set `basis_prop` and `boundary_scale` in `gp_opts()` to restore the previous behaviour.
+
 ## Model changes
 
 ## Package changes
@@ -15,6 +17,8 @@
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
 
 ## Bug fixes
+
+- A bug was fixed where the number of Gaussian process basis functions was calculated from a time series length that did not match the one used in the Stan model.
 
 - A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
 - A bug was fixed where `estimate_infections()` could emit a spurious "the largest R-hat is NA" convergence warning caused by deterministic delay PMFs being monitored; these are no longer monitored.

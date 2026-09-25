@@ -76,13 +76,7 @@ In order to make our models computationally tractable, we approximate the Gaussi
 \mathrm{GP}(0, k(\Delta t)) \approx \sum_{j=1}^m \left(S_k(\sqrt{\lambda_j}) \right)^\frac{1}{2} \phi_j(t) \beta_j
 \end{equation}
 
-with $m$ the number of basis functions to use in the approximation, which we calculate from the number of time points $t_\mathrm{GP}$ to which the Gaussian Process is being applied (rounded up to give an integer value), as is recommended [@approxGP].
-
-\begin{equation}
-m = b t_\mathrm{GP}
-\end{equation}
-
-and values of $\lambda_j$ given by
+with $m$ the number of basis functions to use in the approximation, and values of $\lambda_j$ given by
 
 \begin{equation}
 \lambda_j = \left( \frac{j \pi}{2 L} \right)^2
@@ -149,14 +143,28 @@ Relevant default priors are
 
 with $\rho$ additionally constrained with an upper bound of $60$ and $\mu_{\rho}$ and $\sigma_\rho$ calculated using a mean of 21 and standard deviation of 7.
 
-Furthermore, by default we set.
+# Choosing the boundary and number of basis functions
+
+The accuracy of the approximation depends on the boundary $L$ and the number of basis functions $m$ relative to the lengthscale.
+We write $L = cS$ with $c$ the boundary factor and $S$ the half-range of the time points, and $\ell = \rho / S$ for the lengthscale relative to the half-range.
+For the Matérn 3/2 kernel, @approxGP (Section 4.3.1) show that the approximation is accurate when
 
 \begin{align}
-b &= 0.2 \\
-L &= 1.5
+c &\geq \max(1.2, 4.5 \ell) \\
+m &\geq 3.42 \frac{c}{\ell}
 \end{align}
 
-These values as well as the prior distributions of relevant parameters can all be changed by the user.
+with constants $(3.2, 1.75)$ for the squared exponential kernel and $(4.1, 2.65)$ for the Matérn 5/2 kernel.
+Longer lengthscales therefore need a wider boundary, and for a given lengthscale no number of basis functions compensates for a boundary that is too narrow.
+Shorter lengthscales need more basis functions.
+
+By default, `EpiNow2` sets $c$ from the 95% quantile of the lengthscale prior and then $m$ from the 5% quantile, so that lengthscales across the bulk of the prior are approximated accurately.
+The Matérn 3/2 constants are used for the Ornstein-Uhlenbeck kernel, which @approxGP do not cover.
+The periodic kernel does not use a boundary, and uses $m = 0.2 t_\mathrm{GP}$ by default, where $t_\mathrm{GP}$ is the number of time points to which the Gaussian Process is applied.
+
+After fitting, `EpiNow2` applies the lengthscale diagnostic of @approxGP (Section 4.5).
+A warning is given if the posterior median lengthscale is shorter than the $3.42 c S / m$ days that $m$ basis functions can represent, or longer than the $c S / 4.5$ days that the boundary supports.
+Either can be addressed by adjusting the lengthscale prior, from which the settings are chosen, or by setting `basis_prop` and `boundary_scale` in `gp_opts()` directly.
 
 # Modelling the reproduction number
 
