@@ -43,7 +43,8 @@ test_that("get_state_trajectory returns a constant trajectory when no state is a
     state_gp_eta = numeric(0), state_gp_M = integer(0),
     state_gp_offset = integer(0),
     gp_boundary_scale = numeric(0), gp_kernel = integer(0), gp_nu = numeric(0),
-    state_gp_alpha = numeric(0), state_gp_rho = numeric(0)
+    state_gp_alpha = numeric(0), state_gp_rho = numeric(0),
+    gp_phi = list()
   )
   expect_length(traj, 12)
   expect_true(all(traj == 2))
