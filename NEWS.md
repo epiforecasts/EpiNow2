@@ -35,6 +35,7 @@
 
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
 - Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
+- The `estimate_*()` functions now share one internal helper to build Stan arguments and fit the model, and `estimate_secondary()` and `estimate_truncation()` no longer pass placeholder values to generate initial conditions.
 
 # EpiNow2 1.9.0
 
