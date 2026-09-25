@@ -49,17 +49,20 @@ namespace epinow2 {
 namespace internal {
 
 // Sums S0 = sum_k p_k exp(-r k) and S1 = sum_k k p_k exp(-r k), with
-// p_k = g[G - 1 - k].
+// p_k = g[G - 1 - k]. If e is given, exp(-r k) is stored in e[G - 1 - k].
 inline void R_to_r_sums(double r, const Eigen::VectorXd& g, double& s0,
-                        double& s1) {
+                        double& s1, Eigen::VectorXd* e = nullptr) {
   const int G = g.size();
   s0 = 0.0;
   s1 = 0.0;
   for (int k = 0; k < G; ++k) {
     const double p = g(G - 1 - k);
-    const double e = std::exp(-r * k);
-    s0 += p * e;
-    s1 += p * k * e;
+    const double ek = std::exp(-r * k);
+    s0 += p * ek;
+    s1 += p * k * ek;
+    if (e) {
+      (*e)(G - 1 - k) = ek;
+    }
   }
 }
 
@@ -118,16 +121,14 @@ inline stan::return_type_t<T0, T1> R_to_r(const T0& R, const T1& gt_rev_pmf,
     T0 R_v = R;
     stan::math::reverse_pass_callback([=]() mutable {
       const double rbar = res.adj();
-      const int G = g_val.size();
       double s0, s1;
-      internal::R_to_r_sums(r, g_val, s0, s1);
+      Eigen::VectorXd e(g_var ? g_val.size() : 0);
+      internal::R_to_r_sums(r, g_val, s0, s1, g_var ? &e : nullptr);
       if constexpr (R_var) {
         R_v.adj() += rbar * s0 / (R_d * s1);
       }
       if constexpr (g_var) {
-        for (int k = 0; k < G; ++k) {
-          g_a.coeffRef(G - 1 - k).adj() += rbar * std::exp(-r * k) / s1;
-        }
+        g_a.adj() += (rbar / s1) * e;
       }
     });
     return res;
