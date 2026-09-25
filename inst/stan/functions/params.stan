@@ -89,7 +89,7 @@ void apply_prior_lp(real value, int dist,
   } else if (dist == 2) {
     value ~ normal(p1, p2) T[lb, ub];
   } else {
-    reject("dist must be <= 2");
+    reject("dist must be 0, 1 or 2; found dist = ", dist);
   }
 }
 
