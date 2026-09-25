@@ -249,6 +249,17 @@ test_that("R_to_r gradients match the pure Stan implementation", {
       )
       grad <- rstan::grad_log_prob(fits$cpp, upars)
       expect_equal(as.vector(grad), expected, tolerance = 1e-10)
+      # At the tolerance the model uses, the returned r is close enough to
+      # the root that the gradient matches finite differences of it
+      if (case$abs_tol == 1e-8) {
+        h <- 1e-5
+        fd <- vapply(seq_along(upars), function(j) {
+          e <- h * (seq_along(upars) == j)
+          (rstan::log_prob(fits$cpp, upars + e) -
+            rstan::log_prob(fits$cpp, upars - e)) / (2 * h)
+        }, numeric(1))
+        expect_equal(as.vector(grad), fd, tolerance = 1e-6)
+      }
       # The Stan version differentiates the Newton steps, which agrees
       # with it to within the solver tolerance
       expect_equal(
