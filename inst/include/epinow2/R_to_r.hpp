@@ -102,11 +102,11 @@ inline double R_to_r_newton(double R, const Eigen::VectorXd& g,
  * @param abs_tol Absolute tolerance of the Newton solver (double).
  * @return The growth rate r.
  */
-template <typename T0, typename T1, typename T2,
-          stan::require_all_stan_scalar_t<T0, T2>* = nullptr,
+template <typename T0, typename T1,
+          stan::require_stan_scalar_t<T0>* = nullptr,
           stan::require_eigen_col_vector_t<T1>* = nullptr>
 inline stan::return_type_t<T0, T1> R_to_r(const T0& R, const T1& gt_rev_pmf,
-                                          const T2& abs_tol,
+                                          const double& abs_tol,
                                           std::ostream* /* pstream__ */) {
   using stan::arena_t;
   using stan::math::value_of;
@@ -115,13 +115,11 @@ inline stan::return_type_t<T0, T1> R_to_r(const T0& R, const T1& gt_rev_pmf,
   constexpr bool g_var = stan::is_var<stan::value_type_t<T1>>::value;
   const double R_d = value_of(R);
   if constexpr (!R_var && !g_var) {
-    return internal::R_to_r_newton(R_d, value_of(gt_rev_pmf),
-                                   value_of(abs_tol));
+    return internal::R_to_r_newton(R_d, value_of(gt_rev_pmf), abs_tol);
   } else {
     arena_t<Eigen::Matrix<stan::value_type_t<T1>, -1, 1>> g_a = gt_rev_pmf;
     arena_t<Eigen::VectorXd> g_val = value_of(g_a);
-    const double r
-        = internal::R_to_r_newton(R_d, g_val, value_of(abs_tol));
+    const double r = internal::R_to_r_newton(R_d, g_val, abs_tol);
     var res(r);
     T0 R_v = R;
     stan::math::reverse_pass_callback([=]() mutable {
