@@ -254,28 +254,20 @@ estimate_truncation <- function(data,
 
   stan_data <- c(stan_data, create_stan_params(params))
 
-  inits <- create_initial_conditions(
-    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0, week_effect = 0)),
-    params
+  fit <- fit_estimate_model(
+    stan = stan,
+    data = stan_data,
+    init = create_initial_conditions(stan_data, params),
+    model = "estimate_truncation",
+    time_points = stan_data$t
   )
-  stan_args <- create_stan_args(
-    stan = stan, data = stan_data, init = inits, model = "estimate_truncation"
-  )
 
-  # Warn if truncation distribution is longer than observed time
-  check_truncation_length(stan_args, time_points = stan_data$t)
-
-  # fit
-  fit <- fit_model(stan_args, id = "estimate_truncation")
-
-  out <- list(
+  new_epinowfit(
     observations = data,
     args = stan_data,
-    fit = fit
+    fit = fit,
+    class = "estimate_truncation"
   )
-
-  class(out) <- c("estimate_truncation", "epinowfit", class(out))
-  out
 }
 
 #' Plot method for estimate_truncation

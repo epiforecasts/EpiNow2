@@ -222,32 +222,22 @@ estimate_infections <- function(data,
     time_points = stan_data$t - stan_data$seeding_time - stan_data$horizon
   ))
 
-  # Set up default settings
-  stan_args <- create_stan_args(
+  fit <- fit_estimate_model(
     stan = stan,
     data = stan_data,
     init = create_initial_conditions(stan_data, params),
-    verbose = verbose
-  )
-
-  # Warn if truncation distribution is longer than observed time
-  check_truncation_length(
-    stan_args,
+    model = "estimate_infections",
+    id = id,
+    verbose = verbose,
     time_points = stan_data$t - stan_data$seeding_time - stan_data$horizon
   )
 
-  # Fit model
-  fit <- fit_model(stan_args, id = id)
-
-  ret <- list(
+  new_epinowfit(
     fit = fit,
     args = stan_data,
-    observations = data
+    observations = data,
+    class = "estimate_infections"
   )
-
-  ## Join stan fit if required
-  class(ret) <- c("estimate_infections", "epinowfit", class(ret))
-  ret
 }
 
 #' Extract elements from estimate_infections objects with deprecation errors
