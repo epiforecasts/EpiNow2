@@ -42,12 +42,33 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
 }
 
 /**
+ * Run the renewal equation from the seeding infections.
+ *
+ * Implemented in C++, with a hand-written gradient, in
+ * `inst/include/epinow2/renewal_infections.hpp`, which gives the maths.
+ *
+ * @param seed Vector of seeding infections
+ * @param R Vector of reproduction numbers
+ * @param gt_rev_pmf Vector of reversed generation time PMF
+ * @param pop Initial susceptible population
+ * @param use_pop Population adjustment mode (0=none, 1=after nht, 2=all)
+ * @param pop_floor Minimum susceptible population
+ * @param nht Number of time steps before the adjustment when use_pop = 1
+ * @return A vector of infections, starting with the seeding infections
+ *
+ * @ingroup infections_estimation
+ */
+vector renewal_infections(vector seed, vector R, vector gt_rev_pmf, real pop,
+                          int use_pop, data real pop_floor, int nht);
+
+/**
  * @ingroup infections_estimation
  * @brief Generate infections using a renewal equation approach
  *
  * This function implements the renewal equation to generate a time series of
  * infections based on reproduction numbers and the generation time distribution.
  * It can also account for population depletion if a population size is specified.
+ * It sets the seeding infections and then calls renewal_infections().
  *
  * @param R Vector of reproduction numbers
  * @param uot Unobserved time (seeding time)
@@ -64,51 +85,29 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
  */
 vector generate_infections(vector R, int uot, vector gt_rev_pmf,
                            array[] real initial_infections, real pop,
-                           int use_pop, real pop_floor, int ht, int obs_scale, real fraction_observed,
+                           int use_pop, data real pop_floor, int ht, int obs_scale, real fraction_observed,
                            int initial_as_scale) {
-  // time indices and storage
   int ot = num_elements(R);
-  int nht = ot - ht;
-  int t = ot + uot;
-  real exp_adj_Rt;
-  vector[t] infections = rep_vector(0, t);
-  vector[ot] cum_infections;
-  vector[ot] infectiousness;
+  vector[uot] seed;
   real growth = R_to_r(R[1], gt_rev_pmf, 1e-3);
   // Initialise infections using daily growth
   if (initial_as_scale) {
-    infections[1] = exp(initial_infections[1] - growth * uot);
+    seed[1] = exp(initial_infections[1] - growth * uot);
     if (obs_scale) {
-      infections[1] = infections[1] / fraction_observed;
+      seed[1] = seed[1] / fraction_observed;
     }
   } else {
-    infections[1] = exp(initial_infections[1]);
+    seed[1] = exp(initial_infections[1]);
   }
   if (uot > 1) {
     real exp_growth = exp(growth);
     for (s in 2:uot) {
-      infections[s] = infections[s - 1] * exp_growth;
+      seed[s] = seed[s - 1] * exp_growth;
     }
   }
-  // calculate cumulative infections
-  if (use_pop) {
-    cum_infections[1] = sum(infections[1:uot]);
-  }
-  // iteratively update infections
-  for (s in 1:ot) {
-    infectiousness[s] = update_infectiousness(infections, gt_rev_pmf, uot, s);
-    if ((use_pop == 1 && s > nht) || use_pop == 2) {
-      real susceptible = fmax(pop_floor, pop - cum_infections[s]);
-      exp_adj_Rt = exp(-R[s] * infectiousness[s] / susceptible);
-      infections[s + uot] = susceptible * fmax(0, 1 - exp_adj_Rt);
-    } else{
-      infections[s + uot] = R[s] * infectiousness[s];
-    }
-    if (use_pop && s < ot) {
-      cum_infections[s + 1] = cum_infections[s] + infections[s + uot];
-    }
-  }
-  return(infections);
+  return renewal_infections(
+    seed, R, gt_rev_pmf, pop, use_pop, pop_floor, ot - ht
+  );
 }
 
 /**

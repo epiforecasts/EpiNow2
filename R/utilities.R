@@ -243,6 +243,8 @@ match_output_arguments <- function(input_args = NULL,
 #'
 #' @param ... Additional arguments passed to [rstan::expose_stan_functions()].
 #'
+#' @details Includes [epinow2_stan_header()].
+#'
 #' @return No return value, called for side effects
 #' @export
 #' @importFrom rstan expose_stan_functions stanc
@@ -259,7 +261,11 @@ expose_stan_fns <- function(files, target_dir, ...) {
     ),
     "\n }"
   )
-  expose_stan_functions(stanc(model_code = functions), ...)
+  expose_stan_functions(
+    stanc(model_code = functions, allow_undefined = TRUE),
+    includes = paste0("#include \"", epinow2_stan_header(), "\""),
+    ...
+  )
   invisible(NULL)
 }
 
