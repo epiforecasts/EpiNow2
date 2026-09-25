@@ -6,6 +6,7 @@
 
 ## Model changes
 
+- Rewrote the Stan `update_Rt()` function from small helpers that centre log Rt through its intercept, making it 1.3 to 1.9 times faster without changing results.
 - `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient, about 3-4 times faster. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
 - The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient, which makes its gradient about 2 times faster.
 
