@@ -153,3 +153,31 @@ test_that("check_gp_lengthscale is silent when the GP is not used", {
   stan_data <- create_gp_data(gp_opts(kernel = "periodic"), default_data)
   expect_silent(check_gp_lengthscale(rep(1e-3, 10), stan_data))
 })
+
+test_that("check_gp_fit checks the lengthscale column of the params samples", {
+  stan_data <- create_gp_data(gp_opts(), default_data)
+  stan_data$param_id_rho <- 2
+  stan_data$params_variable_lookup <- c(1, 3, 2)
+  ls_range <- gp_ls_range(stan_data)
+  params <- cbind(
+    rep(ls_range[1] / 4, 10), rep(ls_range[2] * 4, 10), rep(mean(ls_range), 10)
+  )
+  local_mocked_bindings(
+    extract_samples = function(...) list(params = params)
+  )
+  expect_silent(check_gp_fit(list(), stan_data))
+  params[, 3] <- ls_range[1] / 4
+  expect_warning(check_gp_fit(list(), stan_data), "shorter")
+})
+
+test_that("check_gp_fit is silent when the lengthscale is fixed", {
+  stan_data <- create_gp_data(gp_opts(), default_data)
+  stan_data$param_id_rho <- 1
+  stan_data$params_variable_lookup <- 0
+  expect_silent(check_gp_fit(list(), stan_data))
+})
+
+test_that("gp_half_range returns the half-range of the GP time points", {
+  expect_equal(gp_half_range(22), 10.5)
+  expect_equal(gp_half_range(1), 0.5)
+})
