@@ -189,6 +189,13 @@ test_that("renewal_infections is zero after the seeds when G = 1", {
   expect_identical(inf, c(3, 4, rep(0, 5)))
 })
 
+test_that("renewal_infections errors without seeding infections", {
+  expect_error(
+    renewal_infections(numeric(0), 1, c(1, 0), 1, 0, 1, 0),
+    "seeding time must be >= 1"
+  )
+})
+
 test_that("renewal_infections depletion behaves as expected", {
   set.seed(123)
   x <- renewal_inputs(list(uot = 5, ot = 30, G = 10))
