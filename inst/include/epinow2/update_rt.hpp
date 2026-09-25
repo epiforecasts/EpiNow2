@@ -84,7 +84,7 @@ inline void check_update_rt(int t, int gp_n, int bp_n,
   }
 }
 
-// log R on doubles, in the order of operations of the Stan code.
+// R on doubles, in the order of operations of the Stan code.
 inline Eigen::VectorXd update_rt_forward(int t, double R0,
                                          const Eigen::VectorXd& noise,
                                          const std::vector<int>& bps,
@@ -105,7 +105,18 @@ inline Eigen::VectorXd update_rt_forward(int t, double R0,
     for (int i = 0; i < t; ++i) {
       bp(i) = bp0(bps[i] - 1);
     }
-    bp.array() -= bp.head(n_centre).mean();
+    const double bp_mean = bp.head(n_centre).mean();
+    if (gp_n == 0) {
+      // R takes one value per breakpoint level, so exponentiate the levels
+      // and expand rather than exponentiating every position.
+      const Eigen::VectorXd level_R
+          = (logR(0) + (bp0.array() - bp_mean)).exp().matrix();
+      for (int i = 0; i < t; ++i) {
+        logR(i) = level_R(bps[i] - 1);
+      }
+      return logR;
+    }
+    bp.array() -= bp_mean;
     logR += bp;
   }
   if (gp_n > 0) {
@@ -126,7 +137,7 @@ inline Eigen::VectorXd update_rt_forward(int t, double R0,
     }
     logR += gp;
   }
-  return logR;
+  return logR.array().exp().matrix();
 }
 
 // Adds the gradients to each non-null output, given g = Rbar .* R.
@@ -210,19 +221,13 @@ update_Rt(const int& t, const T0& R0, const T1& noise,
   if constexpr (!R0_var && !noise_var && !bp_var) {
     return internal::update_rt_forward(t, R0_d, value_of(noise), bps,
                                        value_of(bp_effects), stationary,
-                                       n_centre)
-        .array()
-        .exp()
-        .matrix();
+                                       n_centre);
   } else {
     arena_t<Eigen::Matrix<stan::value_type_t<T1>, -1, 1>> noise_a = noise;
     arena_t<Eigen::Matrix<stan::value_type_t<T2>, -1, 1>> bp_a = bp_effects;
     const Eigen::VectorXd R
         = internal::update_rt_forward(t, R0_d, value_of(noise_a), bps,
-                                      value_of(bp_a), stationary, n_centre)
-              .array()
-              .exp()
-              .matrix();
+                                      value_of(bp_a), stationary, n_centre);
     arena_t<Eigen::Matrix<var, -1, 1>> res(t);
     for (int i = 0; i < t; ++i) {
       res.coeffRef(i) = var(R(i));
