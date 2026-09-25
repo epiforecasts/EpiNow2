@@ -83,7 +83,13 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
     vector[t] R;
     if (bp_n == 0) {
       R[1:gp_n] = exp(c + noise);
+      // Hold the last estimate into the forecast horizon
+      if (t > gp_n) {
+        R[(gp_n + 1):t] = rep_vector(R[gp_n], t - gp_n);
+      }
     } else {
+      // Breakpoint levels still change beyond the GP, so the last GP value
+      // is held and multiplied by the breakpoint level on each day
       real c_bp = c - dot_product(
         bp_effects, bp_centring_weights(bps, bp_n, n_centre, 0)
       );
@@ -95,11 +101,6 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
       if (t > gp_n) {
         R[(gp_n + 1):t] = R_bp[bps[(gp_n + 1):t]] * R_gp[gp_n];
       }
-      return R;
-    }
-    // Hold the last estimate into the forecast horizon
-    if (t > gp_n) {
-      R[(gp_n + 1):t] = rep_vector(R[gp_n], t - gp_n);
     }
     return R;
   }
