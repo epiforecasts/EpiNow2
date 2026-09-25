@@ -6,7 +6,7 @@
 
 ## Model changes
 
-- Parameter priors are no longer renormalised for their truncation at the parameter bounds. The prior parameters and bounds are data, so the normalising term is a constant and the posterior is unchanged. Dropping it avoids evaluating log CDFs, which are slower and less numerically stable. The same applies to the priors on the breakpoint standard deviation and on `sigma` in the `dist_fit()` model. Suggested by @bob-carpenter.
+- Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior. Suggested by @bob-carpenter.
 
 ## Package changes
 

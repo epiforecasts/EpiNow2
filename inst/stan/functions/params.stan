@@ -64,43 +64,10 @@ vector get_param(int id,
 }
 
 /**
- * Log density of a parameter prior restricted to `[lb, ub]`
- *
- * Returns the log density of the chosen distribution for values within
- * `[lb, ub]` and negative infinity outside. The truncation is not
- * renormalised: the distribution parameters and bounds are data, so the
- * normalising term is a constant and can be dropped.
- *
- * @param value Value to evaluate the prior at.
- * @param dist Prior distribution type (0: lognormal, 1: gamma, 2: normal).
- * @param p1 First distribution parameter.
- * @param p2 Second distribution parameter.
- * @param lb Lower bound of the parameter's support.
- * @param ub Upper bound of the parameter's support.
- * @return The log density, up to a constant.
- *
- * @ingroup parameter_handlers
- */
-real param_prior_lpdf(real value, int dist, real p1, real p2,
-                      real lb, real ub) {
-  if (value < lb || value > ub) {
-    return negative_infinity();
-  }
-  if (dist == 0) {
-    return lognormal_lupdf(value | p1, p2);
-  } else if (dist == 1) {
-    return gamma_lupdf(value | p1, p2);
-  } else if (dist == 2) {
-    return normal_lupdf(value | p1, p2);
-  }
-  reject("dist must be <= 2");
-}
-
-/**
  * Apply a truncated prior to a value
  *
- * Adds the log density of the chosen distribution, restricted to
- * `[lb, ub]`, to the target using `param_prior_lpdf`.
+ * Adds the log density of the chosen distribution, truncated to `[lb, ub]`,
+ * to the target.
  *
  * @param value Value to apply the prior to (sampled parameter or derived
  *   quantity).
@@ -115,7 +82,15 @@ real param_prior_lpdf(real value, int dist, real p1, real p2,
 void apply_prior_lp(real value, int dist,
                     real p1, real p2,
                     real lb, real ub) {
-  value ~ param_prior(dist, p1, p2, lb, ub);
+  if (dist == 0) {
+    value ~ lognormal(p1, p2) T[lb, ub];
+  } else if (dist == 1) {
+    value ~ gamma(p1, p2) T[lb, ub];
+  } else if (dist == 2) {
+    value ~ normal(p1, p2) T[lb, ub];
+  } else {
+    reject("dist must be <= 2");
+  }
 }
 
 /**
@@ -126,22 +101,25 @@ void apply_prior_lp(real value, int dist,
  * @param params Vector of parameter values
  * @param prior_dist Array of prior distribution types (0: lognormal, 1: gamma, 2: normal)
  * @param prior_dist_params Vector of prior distribution parameters
- * @param params_lower Vector of lower bounds for parameters
- * @param params_upper Vector of upper bounds for parameters
  *
  * @ingroup parameter_handlers
  */
 void params_lp(vector params, array[] int prior_dist,
-              vector prior_dist_params, vector params_lower,
-              vector params_upper) {
+              vector prior_dist_params) {
   int params_id = 1;
   int num_params = num_elements(params);
   for (id in 1:num_params) {
-    apply_prior_lp(
-      params[id], prior_dist[id],
-      prior_dist_params[params_id], prior_dist_params[params_id + 1],
-      params_lower[id], params_upper[id]
-    );
+    real p1 = prior_dist_params[params_id];
+    real p2 = prior_dist_params[params_id + 1];
+    if (prior_dist[id] == 0) {
+      params[id] ~ lognormal(p1, p2);
+    } else if (prior_dist[id] == 1) {
+      params[id] ~ gamma(p1, p2);
+    } else if (prior_dist[id] == 2) {
+      params[id] ~ normal(p1, p2);
+    } else {
+      reject("dist must be <= 2");
+    }
     params_id += 2;
   }
 }
