@@ -20,6 +20,22 @@ touchstone::benchmark_run(
   n = 5
 )
 
+# benchmark readme example with uncertain delays and generation time
+touchstone::benchmark_run(
+  expr_before_benchmark = { source("touchstone/setup.R") },
+  estimate_infections_uncertain_delays = { epinow(
+    data = reported_cases,
+    generation_time = generation_time_opts(example_generation_time),
+    delays = delays,
+    rt = rt_opts(prior = Normal(mean = 2, sd = 0.2)),
+    stan = stan_opts(
+      cores = 2, samples = 500, chains = 2,
+      control = list(adapt_delta = 0.95)),
+    verbose = interactive()
+  ) },
+  n = 5
+)
+
 # benchmark readme example with a weekly random walk
 touchstone::benchmark_run(
   expr_before_benchmark = { source("touchstone/setup.R") },
