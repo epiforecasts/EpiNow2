@@ -107,6 +107,89 @@ test_that("update_Rt is invariant in the centring window when t is extended", {
   expect_equal(fit_long[1:n_centre], fit_short)
 })
 
+# Test the C++ primitives used by update_Rt
+test_that("exp_add produces expected output", {
+  expect_equal(exp_add(0.5, c(0, 1, -2)), exp(c(0.5, 1.5, -1.5)))
+  expect_equal(exp_add(0.5, numeric(0)), numeric(0))
+})
+
+test_that("exp_add_indexed produces expected output", {
+  # Indices not starting at 1, repeated and moving backwards
+  expect_equal(
+    exp_add_indexed(0.1, c(0, 0.2, -0.3), c(2, 2, 3, 1, 2), rep(0.05, 5)),
+    exp(0.1 + c(0.2, 0.2, -0.3, 0, 0.2) + 0.05)
+  )
+})
+
+test_that("exp_add_indexed errors for bad indices", {
+  expect_error(exp_add_indexed(0, c(0, 1), c(1, 3), c(0, 0)))
+  expect_error(exp_add_indexed(0, c(0, 1), c(1, 2), 0))
+})
+
+test_that("cumsum_hold produces expected output", {
+  expect_equal(cumsum_hold(c(0.1, 0.2), 5), c(0, 0.1, 0.3, 0.3, 0.3))
+  expect_equal(cumsum_hold(c(0.1, 0.2), 3), c(0, 0.1, 0.3))
+  expect_equal(cumsum_hold(numeric(0), 3), rep(0, 3))
+})
+
+test_that("cumsum_hold errors when t is shorter than x plus one", {
+  expect_error(cumsum_hold(c(0.1, 0.2), 2))
+})
+
+test_that("C++ primitives match pure Stan in value and gradient", {
+  skip_if_not_installed("rstan")
+  model <- stan_test_model("rt_primitives_gradient.stan")
+  # Arguments each primitive uses: fn 1 exp_add, 2 exp_add_indexed,
+  # 3 cumsum_hold
+  used <- list(c("c", "x"), c("c", "levels", "x"), "x")
+  cases <- list(
+    list(fn = 1, t = 10, n = 10, idx = rep(1, 10), len = 10),
+    list(fn = 2, t = 12, n = 12, len = 12,
+         idx = c(2, 2, 4, 4, 5, 3, 3, 1, 5, 5, 5, 5)),
+    list(fn = 3, t = 10, n = 9, idx = rep(1, 9), len = 10),
+    list(fn = 3, t = 12, n = 6, idx = rep(1, 6), len = 12)
+  )
+  set.seed(123)
+  for (case in cases) {
+    L <- max(case$idx)
+    data <- c(case, list(
+      L = L, idx = as.array(case$idx), c_data = rnorm(1, 0, 0.2),
+      levels_data = as.array(rnorm(L, 0, 0.1)),
+      x_data = as.array(rnorm(case$n, 0, 0.1)),
+      r = as.array(rnorm(case$len))
+    ))
+    args <- used[[case$fn]]
+    params <- expand.grid(rep(list(0:1), length(args)))[-1, , drop = FALSE]
+    names(params) <- args
+    for (i in seq_len(nrow(params))) {
+      for (a in c("c", "levels", "x")) {
+        data[[paste0(a, "_param")]] <- if (a %in% args) params[i, a] else 0L
+      }
+      fits <- lapply(c(cpp = 1, stan = 0), function(use_cpp) {
+        data$use_cpp <- use_cpp
+        suppressMessages(rstan::sampling(model, data = data, chains = 0))
+      })
+      for (k in 1:3) {
+        upars <- c(
+          if (data$c_param) rnorm(1, 0, 0.2),
+          if (data$levels_param) rnorm(L, 0, 0.1),
+          if (data$x_param) rnorm(case$n, 0, 0.1)
+        )
+        expect_equal(
+          rstan::log_prob(fits$cpp, upars),
+          rstan::log_prob(fits$stan, upars),
+          tolerance = 1e-12
+        )
+        expect_equal(
+          rstan::grad_log_prob(fits$cpp, upars),
+          rstan::grad_log_prob(fits$stan, upars),
+          tolerance = 1e-12
+        )
+      }
+    }
+  }
+})
+
 # Helper function for R_to_r tests
 # Calculates negative moment generating function for verification.
 neg_MGF <- function(r, pmf) {

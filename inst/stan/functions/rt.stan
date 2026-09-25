@@ -10,6 +10,49 @@
 
 /**
  * @ingroup rt_estimation
+ * @brief Exponential of a scalar added to each element of a vector.
+ *
+ * Computes `exp(c + x)` as one autodiff node. Implemented in C++, with a
+ * hand-written gradient, in `inst/include/epinow2/exp_add.hpp`.
+ *
+ * @param c Scalar added to every element
+ * @param x Vector
+ * @return The vector `exp(c + x)`
+ */
+vector exp_add(real c, vector x);
+
+/**
+ * @ingroup rt_estimation
+ * @brief Exponential of a scalar plus indexed levels plus a vector.
+ *
+ * Computes `exp(c + levels[idx] + x)` as one autodiff node. Implemented in
+ * C++, with a hand-written gradient, in
+ * `inst/include/epinow2/exp_add_indexed.hpp`.
+ *
+ * @param c Scalar added to every element
+ * @param levels Vector of levels
+ * @param idx Indices into levels, one per element of x
+ * @param x Vector
+ * @return The vector `exp(c + levels[idx] + x)`
+ */
+vector exp_add_indexed(real c, vector levels, array[] int idx, vector x);
+
+/**
+ * @ingroup rt_estimation
+ * @brief Cumulative sum starting from 0, held at its last value.
+ *
+ * Computes `append_row(0, cumulative_sum(x))` extended to length t by
+ * repeating its last value, as one autodiff node. Implemented in C++, with
+ * a hand-written gradient, in `inst/include/epinow2/cumsum_hold.hpp`.
+ *
+ * @param x Increments
+ * @param t Output length, at least `num_elements(x) + 1`
+ * @return A vector of length t
+ */
+vector cumsum_hold(vector x, int t);
+
+/**
+ * @ingroup rt_estimation
  * @brief Extend a vector to length t by repeating its last value.
  *
  * @param x Vector to extend
@@ -46,7 +89,7 @@ vector gp_log_path(vector noise, int t, int stationary) {
   if (stationary) {
     return hold_forward(noise, t);
   }
-  return hold_forward(append_row(0, cumulative_sum(noise)), t);
+  return cumsum_hold(noise, t);
 }
 
 /**
@@ -117,15 +160,14 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
   vector[bp_n + 1] bp = bp_log_levels(bp_effects);
   real c = centred_log_intercept(R0, gp, bp, bps, stationary, n_centre);
   if (bp_n == 0) {
-    return exp(c + gp);
+    return exp_add(c, gp);
   }
-  vector[bp_n + 1] log_R_bp = c + bp;
   if (num_elements(noise) == 0) {
     // One exp per breakpoint level rather than per day
-    vector[bp_n + 1] R_bp = exp(log_R_bp);
+    vector[bp_n + 1] R_bp = exp(c + bp);
     return R_bp[bps];
   }
-  return exp(log_R_bp[bps] + gp);
+  return exp_add_indexed(c, bp, bps, gp);
 }
 
 /**
