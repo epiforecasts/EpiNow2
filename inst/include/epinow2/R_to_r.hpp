@@ -15,7 +15,10 @@
  * Forward. Newton's method on doubles, as in the Stan version it replaces:
  * start at r = fmax((R - 1) / (R m), -1), with m = sum_k k p_k the mean
  * generation time, and take steps f / f_r until a step is no larger than
- * abs_tol in absolute value. The value returned is r after the last step.
+ * abs_tol in absolute value or 100 steps have been taken. The value
+ * returned is r after the last step. f is convex and decreasing in r, so
+ * from the first step on Newton approaches the root from one side and
+ * converges quadratically; the cap only guards against pathological inputs.
  * This code is based on Julia code from
  * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
  * under Apache license 2.0.
@@ -66,6 +69,8 @@ inline void R_to_r_sums(double r, const Eigen::VectorXd& g, double& s0,
   }
 }
 
+constexpr int R_to_r_max_steps = 100;
+
 inline double R_to_r_newton(double R, const Eigen::VectorXd& g,
                             double abs_tol) {
   const int G = g.size();
@@ -75,7 +80,7 @@ inline double R_to_r_newton(double R, const Eigen::VectorXd& g,
   }
   double r = std::fmax((R - 1) / (R * mean_gt), -1.0);
   double step = abs_tol + 1;
-  while (std::abs(step) > abs_tol) {
+  for (int i = 0; i < R_to_r_max_steps && std::abs(step) > abs_tol; ++i) {
     double s0, s1;
     R_to_r_sums(r, g, s0, s1);
     step = (R * s0 - 1) / (-R * s1);
