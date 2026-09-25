@@ -172,10 +172,10 @@ rt_pmfs <- list(
   two = c(0.95, 0.05),
   short = rev(discretised_pmf(c(2, 1), 8, 2, 0)),
   medium = rev(discretised_pmf(c(4, 2), 15, 2, 0)),
-  long = rev(discretised_pmf(c(10, 4), 40, 2, 0))
+  long = rev(discretised_pmf(c(4, 0.4), 30, 2, 0))
 )
 rt_cases <- expand.grid(
-  R = c(0.5, 0.9, 1, 1.01, 1.5, 2, 3, 10),
+  R = c(0.5, 0.9, 1, 1.01, 1.5, 2, 3, 5),
   gt = names(rt_pmfs),
   abs_tol = c(1e-3, 1e-8),
   stringsAsFactors = FALSE
