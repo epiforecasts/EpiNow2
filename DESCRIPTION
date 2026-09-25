@@ -180,3 +180,5 @@ SystemRequirements: GNU make
        C++17
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.1.0
+Remotes:
+    epinowcast/primarycensored@release-1.6.0
