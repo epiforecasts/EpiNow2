@@ -6,6 +6,8 @@
 
 ## Model changes
 
+- Parameter priors are no longer renormalised for their truncation at the parameter bounds. The prior parameters and bounds are data, so the normalising term is a constant and the posterior is unchanged. Dropping it avoids evaluating log CDFs, which are slower and less numerically stable. The same applies to the priors on the breakpoint standard deviation and on `sigma` in the `dist_fit()` model. Suggested by @bob-carpenter.
+
 ## Package changes
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.

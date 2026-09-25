@@ -64,10 +64,43 @@ vector get_param(int id,
 }
 
 /**
+ * Log density of a parameter prior restricted to `[lb, ub]`
+ *
+ * Returns the log density of the chosen distribution for values within
+ * `[lb, ub]` and negative infinity outside. The truncation is not
+ * renormalised: the distribution parameters and bounds are data, so the
+ * normalising term is a constant and can be dropped.
+ *
+ * @param value Value to evaluate the prior at.
+ * @param dist Prior distribution type (0: lognormal, 1: gamma, 2: normal).
+ * @param p1 First distribution parameter.
+ * @param p2 Second distribution parameter.
+ * @param lb Lower bound of the parameter's support.
+ * @param ub Upper bound of the parameter's support.
+ * @return The log density, up to a constant.
+ *
+ * @ingroup parameter_handlers
+ */
+real param_prior_lpdf(real value, int dist, real p1, real p2,
+                      real lb, real ub) {
+  if (value < lb || value > ub) {
+    return negative_infinity();
+  }
+  if (dist == 0) {
+    return lognormal_lupdf(value | p1, p2);
+  } else if (dist == 1) {
+    return gamma_lupdf(value | p1, p2);
+  } else if (dist == 2) {
+    return normal_lupdf(value | p1, p2);
+  }
+  reject("dist must be <= 2");
+}
+
+/**
  * Apply a truncated prior to a value
  *
- * Adds the log density of the chosen distribution, truncated to `[lb, ub]`,
- * to the target.
+ * Adds the log density of the chosen distribution, restricted to
+ * `[lb, ub]`, to the target using `param_prior_lpdf`.
  *
  * @param value Value to apply the prior to (sampled parameter or derived
  *   quantity).
@@ -82,15 +115,7 @@ vector get_param(int id,
 void apply_prior_lp(real value, int dist,
                     real p1, real p2,
                     real lb, real ub) {
-  if (dist == 0) {
-    value ~ lognormal(p1, p2) T[lb, ub];
-  } else if (dist == 1) {
-    value ~ gamma(p1, p2) T[lb, ub];
-  } else if (dist == 2) {
-    value ~ normal(p1, p2) T[lb, ub];
-  } else {
-    reject("dist must be <= 2");
-  }
+  value ~ param_prior(dist, p1, p2, lb, ub);
 }
 
 /**
