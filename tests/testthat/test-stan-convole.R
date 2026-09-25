@@ -109,22 +109,7 @@ test_that("convolve_with_rev_pmf errors for bad 'len' specifications", {
 
 test_that("convolve_with_rev_pmf gradients match the pure Stan implementation", {
   skip_if_not_installed("rstan")
-  # Compile the test model with the package header included before the
-  # model code, as the package models are compiled.
-  stanc_ret <- rstan::stanc(
-    test_path("stan", "convolve_gradient.stan"),
-    allow_undefined = TRUE,
-    isystem = c(system.file("stan", package = "EpiNow2"), test_path("stan"))
-  )
-  code <- strsplit(stanc_ret$cppcode, "\n", fixed = TRUE)[[1]]
-  at <- match("#include <stan/model/model_header.hpp>", trimws(code))
-  stanc_ret$cppcode <- paste(
-    append(code, paste0("#include \"", epinow2_stan_header(), "\""), at),
-    collapse = "\n"
-  )
-  model <- suppressMessages(suppressWarnings(
-    rstan::stan_model(stanc_ret = stanc_ret)
-  ))
+  model <- stan_test_model("convolve_gradient.stan")
 
   set.seed(123)
   params <- list(c(1, 1), c(1, 0), c(0, 1))
