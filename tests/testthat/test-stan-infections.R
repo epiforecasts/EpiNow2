@@ -73,9 +73,9 @@ test_that("generate_infections respects pop_floor with population adjustment", {
   expect_true(all(is.finite(result)))
 })
 
-# Cases for renewal_infections(): each depletion mode, the edges of nht, a
-# binding pop_floor, a generation time of length one, one longer than the
-# series and one seed.
+# Cases for renewal_infections(), also compared with the pure Stan
+# reference: each depletion mode, the edges of nht, a binding pop_floor, a
+# generation time of length one, one longer than the series and one seed.
 renewal_cases <- list(
   list(uot = 14, ot = 30, G = 15, use_pop = 0, pop = 1e4, floor = 1, nht = 0),
   list(uot = 14, ot = 30, G = 15, use_pop = 2, pop = 1e4, floor = 1, nht = 0),
@@ -168,6 +168,21 @@ test_that("renewal_infections satisfies the renewal identity", {
   }
 })
 
+test_that("renewal_infections matches the pure Stan implementation", {
+  set.seed(123)
+  for (case in renewal_cases) {
+    x <- renewal_inputs(case)
+    args <- list(
+      x$seed, x$R, x$gt, case$pop, case$use_pop, case$floor, case$nht
+    )
+    expect_equal(
+      do.call(renewal_infections, args),
+      do.call(renewal_infections_stan, args),
+      tolerance = 1e-12
+    )
+  }
+})
+
 test_that("renewal_infections is zero after the seeds when G = 1", {
   # gt_rev_pmf of length one only weights the current day, which is unset
   inf <- renewal_infections(c(3, 4), rep(2, 5), 1, 1e3, 2, 1, 0)
@@ -230,7 +245,7 @@ test_that("renewal_infections uses pop_floor once the pool falls below it", {
   expect_true(all(inf[u][floored] < case$floor))
 })
 
-test_that("renewal_infections gradients match finite differences", {
+test_that("renewal_infections gradients match the reference and finite differences", {
   skip_if_not_installed("rstan")
   model <- stan_test_model("renewal_gradient.stan")
   # Central finite differences of log_prob on the unconstrained scale. The
@@ -256,17 +271,27 @@ test_that("renewal_infections gradients match finite differences", {
     for (i in seq_len(nrow(params))) {
       p <- params[i, ]
       data[paste0(names(p), "_param")] <- as.list(as.integer(p))
-      fit <- suppressMessages(rstan::sampling(model, data = data, chains = 0))
+      fits <- lapply(c(cpp = 1, stan = 0), function(use_cpp) {
+        data$use_cpp <- use_cpp
+        suppressMessages(rstan::sampling(model, data = data, chains = 0))
+      })
       # Log-scale parameters near the data values keep each case's regime
       upars <- c(
         if (p$seed) log(x$seed), if (p$R) log(x$R), if (p$gt) log(x$gt),
         if (p$pop) log(case$pop)
       )
       upars <- upars + rnorm(length(upars), sd = 0.01)
+      grad <- as.vector(rstan::grad_log_prob(fits$cpp, upars))
       expect_equal(
-        as.vector(rstan::grad_log_prob(fit, upars)), fd_grad(fit, upars),
-        tolerance = 1e-4
+        rstan::log_prob(fits$cpp, upars),
+        rstan::log_prob(fits$stan, upars),
+        tolerance = 1e-10
       )
+      expect_equal(
+        grad, as.vector(rstan::grad_log_prob(fits$stan, upars)),
+        tolerance = 1e-8
+      )
+      expect_equal(grad, fd_grad(fits$cpp, upars), tolerance = 1e-4)
     }
   }
 })

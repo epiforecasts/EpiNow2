@@ -10,7 +10,9 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
   )
   if (!(tolower(Sys.info()[["sysname"]]) %in% "windows")) {
     # Also expose the pure Stan reference for the C++ functions
-    references <- c("convolve_reference.stan", "rt_reference.stan")
+    references <- c(
+      "convolve_reference.stan", "renewal_reference.stan", "rt_reference.stan"
+    )
     stan_fn_dir <- file.path(tempdir(), "epinow2-stan-functions")
     dir.create(stan_fn_dir, showWarnings = FALSE)
     file.copy(
