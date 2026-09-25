@@ -333,7 +333,7 @@ check_gp_lengthscale <- function(rho, stan_data) {
     return(invisible(NULL))
   }
   ls_median <- median(rho)
-  S <- max(gp_noise_terms(stan_data) - 1, 1) / 2
+  S <- gp_half_range(gp_noise_terms(stan_data))
   if (ls_median + 0.01 * S < ls_range[1]) {
     cli_warn(
       c(

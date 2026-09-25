@@ -405,6 +405,16 @@ gp_noise_terms <- function(data) {
   noise_time
 }
 
+#' Half-range of the Gaussian process time points
+#'
+#' @param n Length of the Gaussian process.
+#' @return The half-range (in days) of `n` equally spaced daily time points,
+#'   with a minimum of 0.5.
+#' @keywords internal
+gp_half_range <- function(n) {
+  max(n - 1, 1) / 2
+}
+
 #' Constants linking the lengthscale to the approximate GP settings
 #'
 #' @description
@@ -498,9 +508,10 @@ gp_ls_quantiles <- function(ls, probs = c(0.05, 0.95)) {
 #' @inheritParams gp_approx_constants
 #' @return A list with the boundary factor `L` and number of basis functions
 #'   `M`.
+#' @importFrom rlang %||%
 #' @keywords internal
 gp_basis_settings <- function(gp, n, gp_type) {
-  S <- max(n - 1, 1) / 2
+  S <- gp_half_range(n)
   L <- gp$boundary_scale
   basis_prop <- gp$basis_prop
   constants <- gp_approx_constants(gp_type, gp$matern_order)
@@ -534,7 +545,7 @@ gp_ls_range <- function(stan_data) {
   if (is.null(constants)) {
     return(NULL)
   }
-  S <- max(gp_noise_terms(stan_data) - 1, 1) / 2
+  S <- gp_half_range(gp_noise_terms(stan_data))
   c(
     constants$m_factor * stan_data$L * S / stan_data$M,
     stan_data$L * S / constants$c_factor
