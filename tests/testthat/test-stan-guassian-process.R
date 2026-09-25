@@ -174,3 +174,20 @@ test_that("update_gp returns correct dimensions and values", {
   expected_result <- PHI %*% (diagSPD * eta)
   expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
 })
+
+test_that("default GP settings approximate the exact Matern 3/2 kernel", {
+  data <- list(
+    t = 67, seeding_time = 0, horizon = 7, future_fixed = 0, fixed_from = 0,
+    stationary = 0, estimate_r = 1
+  )
+  gp_data <- create_gp_data(gp_opts(), data)
+  n <- gp_noise_terms(data)
+  PHI <- setup_gp(gp_data$M, gp_data$L, n, 0, gp_data$w0)
+  for (rho in gp_ls_quantiles(gp_opts()$ls)) {
+    spd <- diagSPD_Matern32(1, 2 * rho / n, gp_data$L, gp_data$M)
+    approx <- PHI %*% diag(spd^2) %*% t(PHI)
+    d <- abs(outer(seq_len(n), seq_len(n), "-")) * sqrt(3) / rho
+    exact <- (1 + d) * exp(-d)
+    expect_lt(max(abs(approx - exact)), 0.05)
+  }
+})
