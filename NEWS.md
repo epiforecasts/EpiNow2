@@ -13,6 +13,7 @@
 - Adapted the internal nonparametric-delay handling to `distspec`'s revised representation of estimated (Dirichlet-backed) distributions, which now hold their Dirichlet prior in `$pmf` rather than a separate `$estimated`/`$alpha` and a cached mean PMF. Behaviour for estimated nonparametric delays is unchanged.
 - `gt_opts()`, `delay_opts()` and `trunc_opts()` gain a `default_cdf_max` argument: the CDF level to keep an unconstrained fixed distribution up to (default `0.999`, where `1` leaves it unbounded), following `distspec`'s `cdf_max` (EpiNow2 now requires `distspec` >= 0.2.0). The default can be set globally with `options(EpiNow2.cdf_max = ...)`. The previous `default_cdf_cutoff` argument (the tail probability to drop) is deprecated; a value `x` is equivalent to `default_cdf_max = 1 - x`.
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
+- Added tests for summarising, formatting and reading back fitted and regional results.
 
 ## Bug fixes
 
