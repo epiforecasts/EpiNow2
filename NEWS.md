@@ -6,7 +6,7 @@
 
 ## Model changes
 
-- Rewrote the Stan `update_Rt()` function so the centring offsets are computed as weighted sums of the increments and breakpoint levels, roughly halving its cost without changing results.
+- Rewrote the Stan `update_Rt()` function to compute centring offsets as weighted sums, roughly halving its cost without changing results.
 
 ## Package changes
 
