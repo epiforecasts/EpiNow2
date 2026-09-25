@@ -178,3 +178,24 @@ test_that("update_gp returns correct dimensions and values", {
   expected_result <- PHI %*% weights
   expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
 })
+
+test_that("update_gp centres both fundamental-frequency coefficients for the periodic kernel", {
+  M <- 3
+  L <- 1.0
+  alpha <- 1.0
+  rho <- 2.0
+  eta <- c(2, -1, 0.5, 1.5, -0.5, 0.25)
+  PHI <- matrix(runif(30), nrow = 5) # 5 observations, 2 * M basis functions
+  type <- 1
+  nu <- 1.5 # Not used in periodic case
+  result <- update_gp(PHI, M, L, alpha, rho, eta, type, nu)
+  expect_equal(length(result), nrow(PHI))
+  # eta[1] and eta[M + 1] share the fundamental frequency (see
+  # gaussian_process.stan) so both are centred; the rest stay non-centred.
+  diagSPD <- diagSPD_Periodic(alpha, rho, M)
+  weights <- diagSPD * eta
+  weights[1] <- eta[1]
+  weights[M + 1] <- eta[M + 1]
+  expected_result <- PHI %*% weights
+  expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
+})

@@ -6,7 +6,7 @@
 
 ## Model changes
 
-- The lowest-frequency (smoothest) coefficient of the approximate Gaussian process is now parameterised directly on the spectral-density scale, rather than as the magnitude parameter times a standard-normal deviate. This reduces the strong posterior correlation that the fully non-centred parameterisation produced between the magnitude parameter and this coefficient.
+- The lowest-frequency (smoothest) coefficient of the approximate Gaussian process is now parameterised directly on the spectral-density scale, rather than as the magnitude parameter times a standard-normal deviate. This reduces the strong posterior correlation that the fully non-centred parameterisation produced between the magnitude parameter and this coefficient. For the periodic kernel, the sine coefficient at the same fundamental frequency is centred in the same way.
 
 ## Package changes
 

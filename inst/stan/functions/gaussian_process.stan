@@ -247,8 +247,13 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   // (a centred parameterisation) instead of as alpha times a standard-normal
   // deviate; this removes the strong correlation between alpha and eta[1]
   // that the fully non-centred form otherwise produces. See
-  // gaussian_process_lp() for the matching prior.
+  // gaussian_process_lp() for the matching prior. For the periodic kernel
+  // eta[M + 1] (the sine coefficient at the same fundamental frequency) is
+  // equally strongly identified, so it is centred too.
   weights[1] = eta[1];
+  if (type == 1) {
+    weights[M + 1] = eta[M + 1];
+  }
   return PHI * weights;
 }
 
@@ -269,8 +274,15 @@ void gaussian_process_lp(vector eta, real alpha, real rho, real L, int M,
                          int type, real nu) {
   vector[type == 1 ? 2 * M : M] diagSPD = gp_diag_spd(alpha, rho, L, M, type, nu);
   // eta[1] is centred (see update_gp()); the remaining coefficients keep
-  // the non-centred std_normal() prior.
+  // the non-centred std_normal() prior. For the periodic kernel eta[M + 1]
+  // is centred as well, as it shares the fundamental frequency with eta[1].
   eta[1] ~ normal(0, diagSPD[1]);
-  eta[2:num_elements(eta)] ~ std_normal();
+  if (type == 1) {
+    eta[M + 1] ~ normal(0, diagSPD[M + 1]);
+    eta[2:M] ~ std_normal();
+    eta[(M + 2):num_elements(eta)] ~ std_normal();
+  } else {
+    eta[2:num_elements(eta)] ~ std_normal();
+  }
 }
 

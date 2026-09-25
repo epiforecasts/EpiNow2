@@ -591,8 +591,13 @@ create_initial_conditions <- function(stan_data, params) {
       out$eta <- array(rnorm(n_eta, mean = 0, sd = 0.1))
       # eta[1] is on the spectral-density scale (see gaussian_process.stan),
       # not the standard-normal scale of the other elements, so it is
-      # initialised at its prior mean rather than with the same spread.
+      # initialised at its prior mean rather than with the same spread. For
+      # the periodic kernel eta[M + 1] shares the fundamental frequency with
+      # eta[1] and is centred in the same way.
       out$eta[1] <- 0
+      if (stan_data$gp_type == 1) {
+        out$eta[stan_data$M + 1] <- 0
+      }
     } else {
       out$eta <- array(numeric(0))
     }
