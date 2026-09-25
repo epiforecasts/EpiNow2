@@ -17,10 +17,3 @@ array[n_states] int<lower = 0> state_anchor; // 0 = mean, 1 = init
 // otherwise it varies over the whole horizon ("project")
 array[n_states] int<lower = 0, upper = 1> state_future_fixed;
 array[n_states] int state_future_from;
-
-// random walk states
-int<lower = 0> n_rw_states;
-array[n_rw_states] int<lower = 1> rw_sd_id; // parameter id of each step sd
-int<lower = 1> state_rw_period; // time steps between random walk steps
-
-// Gaussian process state data is declared in data/gaussian_process.stan.

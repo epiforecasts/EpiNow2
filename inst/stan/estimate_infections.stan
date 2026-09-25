@@ -21,6 +21,7 @@ data {
 #include data/params.stan
 #include data/estimate_infections_params.stan
 #include data/states.stan
+#include data/random_walk.stan
 #include data/gaussian_process.stan
 }
 
