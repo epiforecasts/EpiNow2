@@ -254,10 +254,7 @@ estimate_truncation <- function(data,
 
   stan_data <- c(stan_data, create_stan_params(params))
 
-  inits <- create_initial_conditions(
-    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0, week_effect = 0)),
-    params
-  )
+  inits <- create_initial_conditions(stan_data, params)
   stan_args <- create_stan_args(
     stan = stan, data = stan_data, init = inits, model = "estimate_truncation"
   )
