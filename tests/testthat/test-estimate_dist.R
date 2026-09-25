@@ -547,6 +547,120 @@ test_that("negative delays error via prepare_linelist_data", {
   )
 })
 
+test_that("errors for a distribution unknown to primarycensored", {
+  expect_error(
+    EpiNow2:::.get_dist_id("foo"),
+    "Unsupported distribution: foo"
+  )
+})
+
+test_that("prepare_linelist_data assumes daily censoring by default", {
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + c(0, 0, 1),
+    sdate_lwr = origin + c(2, 2, 4)
+  )
+  # obs_date defaults to max(sdate_upr), i.e. day 5 after origin
+  expected <- data.frame(
+    delay_lwr = c(3L, 2L),
+    delay_upr = c(4L, 3L),
+    pwindow = c(1L, 1L),
+    relative_obs_time = c(4, 5),
+    n = c(1L, 2L)
+  )
+  expect_equal(EpiNow2:::.prepare_linelist_data(linelist), expected)
+})
+
+test_that("prepare_linelist_data reports its defaults when verbose", {
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + c(0, 0, 1),
+    sdate_lwr = origin + c(2, 2, 4)
+  )
+  messages <- testthat::capture_messages(
+    EpiNow2:::.prepare_linelist_data(linelist, verbose = TRUE)
+  )
+  expect_match(messages, "daily primary censoring", all = FALSE)
+  expect_match(messages, "daily secondary censoring", all = FALSE)
+  expect_match(messages, "No obs_date supplied", all = FALSE)
+  expect_match(
+    messages, "Aggregated 3 observations into 2 unique", all = FALSE
+  )
+})
+
+test_that("prepare_linelist_data uses supplied censoring windows", {
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + c(0, 0),
+    pdate_upr = origin + c(7, 7),
+    sdate_lwr = origin + c(3, 3),
+    sdate_upr = origin + c(5, 5),
+    obs_date = origin + 6,
+    n = c(2, 3)
+  )
+  expected <- data.frame(
+    delay_lwr = 3L, delay_upr = 5L, pwindow = 7L,
+    relative_obs_time = 6, n = 5L
+  )
+  expect_equal(EpiNow2:::.prepare_linelist_data(linelist), expected)
+})
+
+test_that("prepare_linelist_data marks distant observations as untruncated", {
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + c(0, 10),
+    sdate_lwr = origin + c(2, 12),
+    obs_date = origin + 14
+  )
+  # max delay_upr is 3, so observations more than 3 * 2 = 6 days from
+  # obs_date are treated as untruncated
+  messages <- testthat::capture_messages(
+    out <- EpiNow2:::.prepare_linelist_data(linelist, verbose = TRUE)
+  )
+  expect_match(messages, "Setting 1 observation", all = FALSE)
+  expect_equal(sort(out$relative_obs_time), c(4, Inf))
+  out <- EpiNow2:::.prepare_linelist_data(linelist, obs_time_threshold = 5)
+  expect_equal(sort(out$relative_obs_time), c(4, 14))
+})
+
+test_that("prepare_linelist_data errors for bad censoring windows", {
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + 0:1,
+    sdate_lwr = origin + 3:4,
+    obs_date = origin + 10
+  )
+  expect_error(
+    EpiNow2:::.prepare_linelist_data(
+      cbind(linelist, pdate_upr = linelist$pdate_lwr)
+    ),
+    "pdate_upr must be > pdate_lwr"
+  )
+  expect_error(
+    EpiNow2:::.prepare_linelist_data(
+      cbind(linelist, sdate_upr = linelist$sdate_lwr - 1)
+    ),
+    "sdate_upr must be > sdate_lwr"
+  )
+  expect_error(
+    EpiNow2:::.prepare_linelist_data(
+      transform(linelist, obs_date = pdate_lwr)
+    ),
+    "obs_date must be > pdate_lwr"
+  )
+})
+
+test_that("prepare_linelist_data errors for bad column types", {
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(pdate_lwr = origin + 0:1, sdate_lwr = 3:4)
+  expect_error(EpiNow2:::.prepare_linelist_data(linelist), "sdate_lwr")
+  linelist$sdate_lwr <- origin + 3:4
+  expect_error(
+    EpiNow2:::.prepare_linelist_data(cbind(linelist, n = c(1, 0))),
+    "n"
+  )
+})
+
 # Deprecation tests --------------------------------------------------------
 
 test_that("estimate_delay correctly shows deprecation warning", {
