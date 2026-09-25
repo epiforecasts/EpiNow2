@@ -123,6 +123,9 @@ test_that("update_Rt matches the reference across edge cases", {
     # stationary GP covering all time points
     list(noise = rnorm(20, 0, 0.1), bps = integer(0), stationary = 1,
          n_centre = 20),
+    # stationary GP shorter than t, so it holds forward
+    list(noise = rnorm(14, 0, 0.1), bps = integer(0), stationary = 1,
+         n_centre = 14),
     # stationary GP with breakpoints and hold forward
     list(noise = rnorm(14, 0, 0.1), bps = weekly, stationary = 1,
          n_centre = 14),
