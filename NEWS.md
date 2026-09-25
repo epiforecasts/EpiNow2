@@ -8,6 +8,8 @@
 
 - `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient, about 3-4 times faster. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
 - The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient, which makes its gradient about 2 times faster.
+- `R_to_r()` is now implemented in C++ with a gradient from the implicit function theorem, which makes its gradient about 6 times faster.
+- The growth rate used to initialise infections is now solved to a tolerance of 1e-8 rather than 1e-3, so that it is consistent with its gradient. This changes results very slightly.
 
 ## Package changes
 
