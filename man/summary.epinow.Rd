@@ -7,7 +7,6 @@
 \usage{
 \method{summary}{epinow}(
   object,
-  output = NULL,
   type = c("snapshot", "parameters"),
   target_date = NULL,
   params = NULL,
@@ -18,17 +17,11 @@
 \arguments{
 \item{object}{An \verb{<epinow>} object as produced by \code{\link[=epinow]{epinow()}}.}
 
-\item{output}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use the \code{type} argument
-instead. Previously supported "estimates", "forecast", and
-"estimated_reported_cases".}
-
 \item{type}{A character vector of data types to return. Defaults to
 "snapshot" but also supports "parameters". "snapshot" returns a summary at
 a given date (by default the latest date informed by data). "parameters"
 returns summarised parameter estimates that can be further filtered using
-\code{params} to show just the parameters of interest and date.
-
-Note: \code{type = "samples"} is deprecated. Use \code{\link[=get_samples]{get_samples()}} instead.}
+\code{params} to show just the parameters of interest and date.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not
 specified.}
