@@ -85,6 +85,104 @@ test_that("update_Rt correctly handles centred non-stationary GP and breakpoint 
   )
 })
 
+# Cases for comparing the C++ update_Rt() with the pure Stan reference:
+# each Gaussian process branch with and without breakpoints, a stationary
+# GP with and without a held forecast, a non-stationary GP shorter than
+# t - 1, the edges of n_centre and uneven breakpoints.
+weekly_bps <- function(t) (seq_len(t) - 1) %/% 7 + 1
+rt_cases <- list(
+  list(t = 30, stationary = 0, n_centre = 23, gp_n = 29, bps = NULL),
+  list(t = 30, stationary = 1, n_centre = 23, gp_n = 23, bps = NULL),
+  list(t = 30, stationary = 1, n_centre = 30, gp_n = 30, bps = NULL),
+  list(t = 30, stationary = 1, n_centre = 23, gp_n = 1, bps = NULL),
+  list(t = 30, stationary = 0, n_centre = 23, gp_n = 0, bps = weekly_bps(30)),
+  list(t = 30, stationary = 0, n_centre = 23, gp_n = 29, bps = weekly_bps(30)),
+  list(t = 30, stationary = 1, n_centre = 23, gp_n = 23, bps = weekly_bps(30)),
+  list(t = 30, stationary = 0, n_centre = 30, gp_n = 20, bps = NULL),
+  list(t = 30, stationary = 0, n_centre = 1, gp_n = 29, bps = weekly_bps(30)),
+  list(
+    t = 12, stationary = 0, n_centre = 10, gp_n = 11,
+    bps = c(1, 1, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4)
+  )
+)
+
+rt_inputs <- function(case) {
+  bp_n <- if (is.null(case$bps)) 0 else max(case$bps) - 1
+  list(
+    R0 = exp(rnorm(1, 0, 0.2)),
+    noise = as.array(rnorm(case$gp_n, 0, 0.1)),
+    bps = if (bp_n) as.array(case$bps) else as.array(rep(1L, case$t)),
+    bp_effects = as.array(rnorm(bp_n, 0, 0.1))
+  )
+}
+
+test_that("update_Rt matches the pure Stan implementation", {
+  set.seed(123)
+  for (case in rt_cases) {
+    for (i in 1:3) {
+      x <- rt_inputs(case)
+      args <- list(
+        case$t, x$R0, x$noise, x$bps, x$bp_effects, case$stationary,
+        case$n_centre
+      )
+      expect_equal(
+        do.call(update_Rt, args), do.call(update_Rt_stan, args),
+        tolerance = 1e-14
+      )
+    }
+  }
+})
+
+test_that("update_Rt errors for inputs that cannot be indexed", {
+  expect_error(update_Rt(5, 1, rep(0, 5), 1:5, numeric(0), 0, 5))
+  expect_error(update_Rt(5, 1, rep(0, 6), 1:5, numeric(0), 1, 5))
+  expect_error(update_Rt(5, 1, rep(0, 4), 1:5, numeric(0), 0, 6))
+  expect_error(update_Rt(5, 1, numeric(0), c(1, 1, 2, 2, 3), 0.1, 0, 5))
+  expect_error(update_Rt(5, 1, numeric(0), c(1, 2), 0.1, 0, 5))
+})
+
+test_that("update_Rt gradients match the pure Stan implementation", {
+  skip_if_not_installed("rstan")
+  model <- stan_test_model("rt_gradient.stan")
+  # Every combination of R0, noise and bp_effects as parameters, except none
+  params <- expand.grid(R0 = 0:1, noise = 0:1, bp = 0:1)[-1, ]
+  set.seed(123)
+  for (case in rt_cases) {
+    x <- rt_inputs(case)
+    data <- list(
+      t = case$t, stationary = case$stationary, n_centre = case$n_centre,
+      gp_n = length(x$noise), bp_n = length(x$bp_effects), bps = x$bps,
+      R0_data = x$R0, noise_data = x$noise, bp_data = x$bp_effects,
+      r = as.array(rnorm(case$t))
+    )
+    for (i in seq_len(nrow(params))) {
+      p <- params[i, ]
+      data[paste0(names(p), "_param")] <- as.list(as.integer(p))
+      fits <- lapply(c(cpp = 1, stan = 0), function(use_cpp) {
+        data$use_cpp <- use_cpp
+        suppressMessages(rstan::sampling(model, data = data, chains = 0))
+      })
+      for (k in 1:3) {
+        upars <- c(
+          if (p$R0) rnorm(1, 0, 0.2),
+          if (p$noise) rnorm(data$gp_n, 0, 0.1),
+          if (p$bp) rnorm(data$bp_n, 0, 0.1)
+        )
+        expect_equal(
+          rstan::log_prob(fits$cpp, upars),
+          rstan::log_prob(fits$stan, upars),
+          tolerance = 1e-12
+        )
+        expect_equal(
+          rstan::grad_log_prob(fits$cpp, upars),
+          rstan::grad_log_prob(fits$stan, upars),
+          tolerance = 1e-12
+        )
+      }
+    }
+  }
+})
+
 # Helper function for R_to_r tests
 # Calculates negative moment generating function for verification.
 neg_MGF <- function(r, pmf) {
