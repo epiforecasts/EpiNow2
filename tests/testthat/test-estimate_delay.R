@@ -38,6 +38,11 @@ test_that("bootstrapped_dist_fit produces expected output", {
 # bootstrapped_dist_fit logic around the Stan fits, with dist_fit and
 # rstan::extract mocked so no sampling is needed.
 local_mock_dist_fit <- function(env = parent.frame()) {
+  # mocks only apply in this process, so run bootstraps sequentially
+  if (requireNamespace("future", quietly = TRUE)) {
+    old_plan <- future::plan("sequential")
+    withr::defer(future::plan(old_plan), envir = env)
+  }
   calls <- new.env()
   calls$values <- list()
   calls$samples <- integer(0)
