@@ -1,6 +1,30 @@
 // Pure Stan reference for R_to_r(), used only by the tests.
 
 /**
+ * Helper function for calculating r from R using Newton's method
+ *
+ * This function performs a single Newton step in the iterative calculation
+ * of the growth rate r from the reproduction number R.
+ *
+ * Code is based on Julia code from
+ * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
+ * under Apache license 2.0.
+ *
+ * @param R Reproduction number
+ * @param r Current estimate of the growth rate
+ * @param pmf Generation time probability mass function (first index: 0)
+ * @return The Newton step for updating r
+ */
+real R_to_r_newton_step(real R, real r, vector pmf) {
+  int len = num_elements(pmf);
+  vector[len] zero_series = linspaced_vector(len, 0, len - 1);
+  vector[len] exp_r = exp(-r * zero_series);
+  real ret = (R * dot_product(pmf, exp_r) - 1) /
+    (- R * dot_product(pmf .* zero_series, exp_r));
+  return(ret);
+}
+
+/**
  * The Newton solver that R_to_r() ran before the C++ version.
  *
  * Takes the same arguments and returns the same value as R_to_r().

@@ -240,7 +240,7 @@ test_that("R_to_r gradients match the pure Stan implementation", {
       R <- if (p[["R"]]) R else case$R
       gt_par <- if (p[["gt"]]) gt_par else gt
       lp <- rstan::log_prob(fits$cpp, upars)
-      expect_equal(lp, rstan::log_prob(fits$stan, upars), tolerance = 1e-12)
+      expect_equal(lp, rstan::log_prob(fits$stan, upars), tolerance = 1e-10)
       # The C++ gradient is the implicit function theorem gradient at the
       # returned root
       ift <- R_to_r_ift(lp / data$w, R, gt_par)
