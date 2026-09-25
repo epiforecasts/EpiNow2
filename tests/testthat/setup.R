@@ -10,7 +10,6 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
   )
   if (!(tolower(Sys.info()[["sysname"]]) %in% "windows")) {
     # Also expose the pure Stan reference for the C++ functions
-    references <- c("convolve_reference.stan", "renewal_reference.stan")
     stan_fn_dir <- file.path(tempdir(), "epinow2-stan-functions")
     dir.create(stan_fn_dir, showWarnings = FALSE)
     file.copy(
@@ -18,13 +17,15 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
         file.path(
           system.file("stan/functions", package = "EpiNow2"), files
         ),
-        test_path("stan", references)
+        test_path("stan", "convolve_reference.stan")
       ),
       stan_fn_dir,
       overwrite = TRUE
     )
     suppressMessages(
-      expose_stan_fns(c(files, references), target_dir = stan_fn_dir)
+      expose_stan_fns(c(files, "convolve_reference.stan"),
+        target_dir = stan_fn_dir
+      )
     )
   }
 }
