@@ -25,10 +25,8 @@ real R_to_r_newton_step(real R, real r, vector pmf) {
 }
 
 /**
- * The Newton solver that R_to_r() ran before the C++ version.
- *
- * Takes the same arguments and returns the same value as R_to_r(),
- * including its cap of 100 steps.
+ * The Newton solver in pure Stan, with the same arguments, return value and
+ * cap of 100 steps as R_to_r().
  */
 real R_to_r_stan(real R, vector gt_rev_pmf, real abs_tol) {
   int gt_len = num_elements(gt_rev_pmf);
