@@ -96,13 +96,9 @@ void rt_lp(array[] real initial_infections_scale, vector bp_effects,
  *
  * This function uses the Newton method to solve for the growth rate r
  * that corresponds to a given reproduction number R, using the generation
- * time distribution. It is implemented in C++ in
- * inst/include/epinow2/R_to_r.hpp, with a gradient from the implicit
- * function theorem.
- *
- * Code is based on Julia code from
- * https://github.com/CDCgov/Rt-without-renewal/blob/d6344cc6e451e3e6c4188e4984247f890ae60795/EpiAware/test/predictive_checking/fast_approx_for_r.jl
- * under Apache license 2.0.
+ * time distribution. It stops after 100 steps if the tolerance has not been
+ * reached. It is implemented in C++, with a hand-written gradient, in
+ * `inst/include/epinow2/R_to_r.hpp`, which gives the maths.
  *
  * @param R Reproduction number
  * @param gt_rev_pmf Reversed probability mass function of the generation time
