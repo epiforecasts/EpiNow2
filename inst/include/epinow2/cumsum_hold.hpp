@@ -23,6 +23,21 @@
 #include <stdexcept>
 
 namespace epinow2 {
+namespace internal {
+
+// y_1 = 0, y_{k+1} = y_k + x_k, then y held at y_{n+1} up to length t.
+template <typename V>
+inline Eigen::VectorXd cumsum_hold_forward(const V& x_val, int t) {
+  const int n = x_val.size();
+  Eigen::VectorXd y = Eigen::VectorXd::Zero(t);
+  for (int k = 0; k < n; ++k) {
+    y(k + 1) = y(k) + x_val.coeff(k);
+  }
+  y.tail(t - n - 1).setConstant(y(n));
+  return y;
+}
+
+}  // namespace internal
 
 /**
  * Cumulative sum of x starting from 0, held to length t.
@@ -43,16 +58,12 @@ inline Eigen::Matrix<stan::value_type_t<T>, Eigen::Dynamic, 1> cumsum_hold(
   if (t < n + 1) {
     throw std::domain_error("cumsum_hold: t is shorter than x plus one");
   }
-  arena_t<Eigen::Matrix<stan::value_type_t<T>, Eigen::Dynamic, 1>> x_arena
-      = x;
-  Eigen::VectorXd y = Eigen::VectorXd::Zero(t);
-  for (int k = 0; k < n; ++k) {
-    y(k + 1) = y(k) + stan::math::value_of(x_arena.coeff(k));
-  }
-  y.tail(t - n - 1).setConstant(y(n));
   if constexpr (!stan::is_var<stan::value_type_t<T>>::value) {
-    return y;
+    return internal::cumsum_hold_forward(stan::math::value_of(x), t);
   } else {
+    arena_t<Eigen::Matrix<var, Eigen::Dynamic, 1>> x_arena = x;
+    const Eigen::VectorXd y
+        = internal::cumsum_hold_forward(x_arena.val(), t);
     arena_t<Eigen::Matrix<var, Eigen::Dynamic, 1>> res(t);
     for (int j = 0; j < t; ++j) {
       res.coeffRef(j) = var(y(j));

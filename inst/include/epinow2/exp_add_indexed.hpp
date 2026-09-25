@@ -23,6 +23,20 @@
 #include <vector>
 
 namespace epinow2 {
+namespace internal {
+
+// y_i = exp(c + levels_{idx_i} + x_i), checking each index.
+template <typename L, typename X, typename Y>
+inline void exp_add_indexed_forward(double c, const L& levels,
+                                    const std::vector<int>& idx, const X& x,
+                                    Y& y) {
+  for (size_t i = 0; i < idx.size(); ++i) {
+    stan::math::check_range("exp_add_indexed", "idx", levels.size(), idx[i]);
+    y.coeffRef(i) = std::exp(c + levels.coeff(idx[i] - 1) + x.coeff(i));
+  }
+}
+
+}  // namespace internal
 
 /**
  * Exponential of c plus the indexed levels plus x.
@@ -50,26 +64,26 @@ exp_add_indexed(const T0& c, const T1& levels, const std::vector<int>& idx,
   constexpr bool x_var = stan::is_var<stan::value_type_t<T2>>::value;
   stan::math::check_size_match("exp_add_indexed", "idx", idx.size(), "x",
                                x.size());
-  arena_t<Eigen::Matrix<stan::value_type_t<T1>, Eigen::Dynamic, 1>> l_arena
-      = levels;
-  arena_t<Eigen::Matrix<stan::value_type_t<T2>, Eigen::Dynamic, 1>> x_arena
-      = x;
-  arena_t<std::vector<int>> idx_arena(idx.begin(), idx.end());
   const int n = idx.size();
-  arena_t<Eigen::VectorXd> y(n);
   const double c_val = stan::math::value_of(c);
-  for (int i = 0; i < n; ++i) {
-    stan::math::check_range("exp_add_indexed", "idx", l_arena.size(),
-                            idx[i]);
-    y(i) = std::exp(c_val + stan::math::value_of(l_arena.coeff(idx[i] - 1))
-                    + stan::math::value_of(x_arena.coeff(i)));
-  }
   if constexpr (!c_var && !l_var && !x_var) {
-    return Eigen::VectorXd(y);
+    Eigen::VectorXd y(n);
+    internal::exp_add_indexed_forward(c_val, stan::math::value_of(levels),
+                                      idx, stan::math::value_of(x), y);
+    return y;
   } else {
+    arena_t<Eigen::Matrix<stan::value_type_t<T1>, Eigen::Dynamic, 1>>
+        l_arena = levels;
+    arena_t<Eigen::Matrix<stan::value_type_t<T2>, Eigen::Dynamic, 1>>
+        x_arena = x;
+    arena_t<std::vector<int>> idx_arena(idx.begin(), idx.end());
+    arena_t<Eigen::VectorXd> y_arena(n);
+    internal::exp_add_indexed_forward(c_val, stan::math::value_of(l_arena),
+                                      idx, stan::math::value_of(x_arena),
+                                      y_arena);
     arena_t<Eigen::Matrix<var, Eigen::Dynamic, 1>> res(n);
     for (int i = 0; i < n; ++i) {
-      res.coeffRef(i) = var(y(i));
+      res.coeffRef(i) = var(y_arena(i));
     }
     var c_v;
     if constexpr (c_var) {
@@ -78,7 +92,7 @@ exp_add_indexed(const T0& c, const T1& levels, const std::vector<int>& idx,
     stan::math::reverse_pass_callback([=]() mutable {
       double c_adj = 0;
       for (int i = 0; i < n; ++i) {
-        const double g = res.adj().coeff(i) * y(i);
+        const double g = res.adj().coeff(i) * y_arena(i);
         c_adj += g;
         if constexpr (l_var) {
           l_arena.coeffRef(idx_arena[i] - 1).adj() += g;
