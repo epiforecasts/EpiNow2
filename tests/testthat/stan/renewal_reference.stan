@@ -1,10 +1,8 @@
 // Pure Stan reference for renewal_infections(), used only by the tests.
 
 /**
- * The renewal loop that generate_infections() ran before the C++ version.
- *
- * Takes the same arguments and returns the same vector as
- * renewal_infections().
+ * The renewal loop in pure Stan, with the same arguments and return value
+ * as renewal_infections().
  */
 vector renewal_infections_stan(vector seed, vector R, vector gt_rev_pmf,
                                real pop, int use_pop, real pop_floor,
