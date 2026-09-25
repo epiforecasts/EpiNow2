@@ -212,6 +212,58 @@ test_that("R_to_r returns NaN when all generation time mass is at zero", {
   expect_true(is.nan(R_to_r(0.5, c(0, 1), 1e-3)))
 })
 
+# The Euler-Lotka equation R sum_k p_k exp(-r k) = 1 is solved by the growth
+# rate r, with p the reverse of gt_rev_pmf. Its left-hand side minus one is
+# decreasing in r.
+euler_lotka <- function(r, R, gt_rev_pmf) {
+  R * neg_MGF(r, rev(gt_rev_pmf)) - 1
+}
+# Generation times with mass away from zero, where r is defined
+rt_cases_finite <- rt_cases[rt_cases$gt != "one", ]
+
+test_that("R_to_r solves the Euler-Lotka equation to the tolerance", {
+  for (i in seq_len(nrow(rt_cases_finite))) {
+    case <- rt_cases_finite[i, ]
+    gt <- rt_pmfs[[case$gt]]
+    tol <- case$abs_tol
+    r <- R_to_r(case$R, gt, tol)
+    # The root lies within the tolerance of r
+    expect_gte(euler_lotka(r - tol, case$R, gt), 0)
+    expect_lte(euler_lotka(r + tol, case$R, gt), 0)
+    if (tol == 1e-8) {
+      expect_lt(abs(euler_lotka(r, case$R, gt)), 1e-8)
+    }
+  }
+})
+
+test_that("R_to_r gives r = 0 for R = 1 and the sign of R - 1 otherwise", {
+  for (i in seq_len(nrow(rt_cases_finite))) {
+    case <- rt_cases_finite[i, ]
+    r <- R_to_r(case$R, rt_pmfs[[case$gt]], case$abs_tol)
+    if (case$R == 1) {
+      expect_equal(r, 0)
+    } else {
+      expect_identical(sign(r), sign(case$R - 1))
+    }
+  }
+})
+
+test_that("R_to_r gives r = log(R) for a one-day generation time", {
+  Rs <- c(0.2, 0.5, 0.9, 1.01, 1.5, 2, 5)
+  for (R in Rs) {
+    expect_equal(R_to_r(R, c(1, 0), 1e-8), log(R), tolerance = 1e-12)
+    expect_equal(R_to_r(R, c(0, 0, 1, 0), 1e-8), log(R), tolerance = 1e-12)
+  }
+})
+
+test_that("R_to_r is increasing in R", {
+  Rs <- seq(0.3, 5, by = 0.1)
+  for (gt in rt_pmfs[names(rt_pmfs) != "one"]) {
+    r <- vapply(Rs, R_to_r, numeric(1), gt_rev_pmf = gt, abs_tol = 1e-8)
+    expect_true(all(diff(r) > 0))
+  }
+})
+
 test_that("R_to_r gradients match the pure Stan implementation", {
   skip_if_not_installed("rstan")
   model <- stan_test_model("rt_gradient.stan")
