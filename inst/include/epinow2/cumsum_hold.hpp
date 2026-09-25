@@ -8,7 +8,8 @@
  * Implements `cumsum_hold(x, t)` declared in inst/stan/functions/rt.stan.
  *
  * Forward (1-based, x of length n, n + 1 <= t):
- *   y_1 = 0,  y_{k+1} = y_k + x_k  (k = 1, ..., n),  y_j = y_{n+1}  (j > n + 1).
+ *   y_1 = 0,  y_{k+1} = y_k + x_k  (k = 1, ..., n),
+ *   y_j = y_{n+1}  (j > n + 1).
  * Reverse: x_k enters y_{k+1}, ..., y_t, so
  *   xbar_k += sum_{j = k + 1}^{t} ybar_j.
  *
