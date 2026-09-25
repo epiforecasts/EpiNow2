@@ -238,6 +238,7 @@ estimate_infections <- function(data,
 
   # Fit model
   fit <- fit_model(stan_args, id = id)
+  check_gp_fit(fit, stan_data)
 
   ret <- list(
     fit = fit,

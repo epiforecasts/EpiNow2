@@ -307,3 +307,75 @@ check_truncation_obs_opts <- function(obs) {
   }
   invisible()
 }
+
+#' Check the posterior lengthscale against the approximate GP settings
+#'
+#' @description
+#' Implements the lengthscale diagnostic of Riutort-Mayol et al. (2023,
+#' Section 4.5) \doi{10.1007/s11222-022-10167-2}. The approximation is assumed
+#' accurate when the posterior median lengthscale lies within the range
+#' returned by [gp_ls_range()], allowing a tolerance of 0.01 on the rescaled
+#' scale at the lower end.
+#'
+#' @param rho Numeric vector of posterior lengthscale samples (in days).
+#' @inheritParams gp_ls_range
+#' @importFrom cli cli_warn
+#' @importFrom stats median
+#' @return Invisibly, the range from [gp_ls_range()]. Called for its side
+#'   effect of warning when the lengthscale is outside this range.
+#' @keywords internal
+check_gp_lengthscale <- function(rho, stan_data) {
+  if (isTRUE(stan_data$fixed == 1)) {
+    return(invisible(NULL))
+  }
+  ls_range <- gp_ls_range(stan_data)
+  if (is.null(ls_range)) {
+    return(invisible(NULL))
+  }
+  ls_median <- median(rho)
+  S <- max(gp_noise_terms(stan_data) - 1, 1) / 2
+  if (ls_median + 0.01 * S < ls_range[1]) {
+    cli_warn(
+      c(
+        "!" = "The posterior median GP lengthscale
+        ({signif(ls_median, 3)} days) is shorter than the
+        {signif(ls_range[1], 3)} days the approximate GP can represent
+        accurately.",
+        "i" = "Increase {.arg basis_prop} in {.fn gp_opts}, or use a
+        lengthscale prior with more weight on shorter lengthscales."
+      )
+    )
+  }
+  if (ls_median > ls_range[2]) {
+    cli_warn(
+      c(
+        "!" = "The posterior median GP lengthscale
+        ({signif(ls_median, 3)} days) is longer than the
+        {signif(ls_range[2], 3)} days the approximate GP boundary supports.",
+        "i" = "Increase {.arg boundary_scale} in {.fn gp_opts}, or use a
+        lengthscale prior with more weight on longer lengthscales."
+      )
+    )
+  }
+  invisible(ls_range)
+}
+
+#' Check the approximate GP of a fitted model
+#'
+#' @description
+#' Extracts the posterior lengthscale from a fitted model and passes it to
+#' [check_gp_lengthscale()].
+#'
+#' @param fit A fitted Stan model.
+#' @inheritParams gp_ls_range
+#' @return Invisibly, the result of [check_gp_lengthscale()].
+#' @keywords internal
+check_gp_fit <- function(fit, stan_data) {
+  rho_idx <- stan_data$params_variable_lookup[stan_data$param_id_rho]
+  if (is.null(fit) || isTRUE(stan_data$fixed == 1) ||
+        length(rho_idx) == 0 || is.na(rho_idx) || rho_idx == 0) {
+    return(invisible(NULL))
+  }
+  params <- extract_samples(fit, pars = "params")$params
+  check_gp_lengthscale(params[, rho_idx], stan_data)
+}

@@ -12,7 +12,8 @@ Gaussian process. Defaults to \code{\link[=gp_opts]{gp_opts()}}. Set to \code{NU
 Gaussian process.}
 
 \item{data}{A list containing the following numeric values:
-\code{t}, \code{seeding_time}, \code{horizon}.}
+\code{t}, \code{seeding_time}, \code{horizon}, \code{future_fixed}, \code{fixed_from},
+\code{stationary} and \code{estimate_r}.}
 }
 \value{
 A list of settings defining the Gaussian process
@@ -27,7 +28,11 @@ stan.
 data <- list(
   t = 30,
   seeding_time = 7,
-  horizon = 7
+  horizon = 7,
+  future_fixed = 0,
+  fixed_from = 0,
+  stationary = 0,
+  estimate_r = 1
 )
 
 # default gaussian process data
