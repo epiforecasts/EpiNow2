@@ -21,6 +21,12 @@ test_that("match_output_arguments works as expected", {
 test_that("match_output_arguments logs the outputs it found", {
   logger <- "EpiNow2.test.match_output_arguments"
   logged <- character(0)
+  old_threshold <- futile.logger::flog.threshold(name = logger)
+  old_appender <- futile.logger::flog.appender(name = logger)
+  withr::defer({
+    futile.logger::flog.threshold(old_threshold, name = logger)
+    futile.logger::flog.appender(old_appender, name = logger)
+  })
   futile.logger::flog.threshold("INFO", name = logger)
   futile.logger::flog.appender(
     function(line) logged <<- c(logged, line), name = logger
