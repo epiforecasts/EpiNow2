@@ -132,7 +132,6 @@ The other combinations use numerical integration over the primary window.
 
 Priors are passed via the `priors` argument as a named list of `dist_spec` objects, with names matching the parameter names of the chosen family.
 Each prior is converted into a `Normal()` density on the parameter and applied independently.
-Lower bounds are imposed for parameters that must be positive (e.g. `sdlog`, `rate`, `shape`, `scale`); the truncation is handled by `params_lp()` in `inst/stan/functions/params.stan`.
 
 The default priors are family-specific:
 
