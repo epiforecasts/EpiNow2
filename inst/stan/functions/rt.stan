@@ -63,8 +63,7 @@ vector update_Rt(int t, real R0, vector noise, array[] int bps,
   int bp_n = num_elements(bp_effects);
   int gp_n = num_elements(noise);
   // Intercept on the log scale. The centring means are linear in the
-  // increments, so they are subtracted here as weighted sums rather than from
-  // full length paths.
+  // increments, so they are subtracted here as weighted sums.
   real c = log(R0);
 
   if (gp_n == 0) {
