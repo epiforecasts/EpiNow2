@@ -4,6 +4,9 @@
 
 ## Breaking changes
 
+- Removed the deprecation errors added in 1.9.0: the `$` and `[[` accessors for old elements of `estimate_infections()`, `estimate_secondary()`, `estimate_truncation()` and `epinow()` objects, the `output` argument of `summary.epinow()`, `type = "samples"` in `summary.estimate_infections()`, and the numeric `pop` checks in `rt_opts()` and `simulate_infections()`.
+- `estimate_delay()` now errors in favour of `estimate_dist()`, and `dist_fit()` and `bootstrapped_dist_fit()` are deprecated.
+
 ## Model changes
 
 ## Package changes

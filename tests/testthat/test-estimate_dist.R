@@ -549,14 +549,9 @@ test_that("negative delays error via prepare_linelist_data", {
 
 # Deprecation tests --------------------------------------------------------
 
-test_that("estimate_delay correctly shows deprecation warning", {
-  set.seed(111)
-  delays <- rlnorm(30, log(5), 0.5)
-
-  expect_warning(
-    suppressMessages(
-      estimate_delay(delays, samples = 100, bootstraps = 1)
-    ),
-    "deprecated"
+test_that("estimate_delay errors as deprecated", {
+  expect_error(
+    estimate_delay(rlnorm(30, log(5), 0.5)),
+    class = "lifecycle_error_deprecated"
   )
 })

@@ -413,19 +413,6 @@ test_that("get_parameters works as expected for estimate_secondary", {
   }
 })
 
-test_that("[[ accessor handles deprecated elements", {
-  out <- default_inc
-
-  expect_error(out[["predictions"]], "get_predictions")
-  expect_error(out[["posterior"]], "get_samples")
-  expect_error(out[["data"]], "observations")
-
-  # Test non-deprecated elements work without error
-  expect_no_error(out[["fit"]])
-  expect_no_error(out[["args"]])
-  expect_no_error(out[["observations"]])
-})
-
 test_that("$ accessor works for non-deprecated elements", {
   out <- default_inc
 

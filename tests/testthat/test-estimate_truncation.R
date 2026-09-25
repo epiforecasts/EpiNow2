@@ -202,17 +202,6 @@ test_that("get_parameters returns valid truncation distribution", {
   expect_equal(trunc_dist$parameters$sdlog$distribution, "normal")
 })
 
-test_that("deprecated accessors error", {
-  est <- default_est
-
-  expect_error(est$obs, "get_predictions")
-  expect_error(est$data, "args")
-  expect_error(est$dist, "get_parameters")
-  expect_error(est$last_obs, "observations")
-  expect_error(est$cmf, "get_parameters")
-  expect_error(est[["obs"]], "get_predictions")
-})
-
 test_that("get_parameters returns truncation distribution from estimate_truncation", {
   est <- default_est
 

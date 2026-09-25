@@ -1,8 +1,11 @@
 #' Fit an Integer Adjusted Exponential, Gamma or Lognormal distributions
 #'
-#' @description
+#' @description `r lifecycle::badge("deprecated")`
 #' Fits an integer adjusted exponential, gamma or lognormal distribution using
 #' stan.
+#'
+#' **This function is deprecated.** Please use [estimate_dist()] instead,
+#' which provides better handling of censoring and truncation.
 #' @param values Numeric vector of values
 #'
 #' @param samples Numeric, number of samples to take. Must be >= 1000.
@@ -49,6 +52,11 @@
 dist_fit <- function(values = NULL, samples = 1000, cores = 1,
                      chains = 2, dist = "exp", verbose = FALSE,
                      backend = "rstan") {
+  deprecate_warn(
+    when = "1.10.0",
+    what = "dist_fit()",
+    with = "estimate_dist()"
+  )
   # model parameters
   lows <- values - 1
   lows <- ifelse(lows <= 0, 1e-6, lows)
@@ -112,13 +120,16 @@ dist_fit <- function(values = NULL, samples = 1000, cores = 1,
 #' Fit a Subsampled Bootstrap to Integer Values and Summarise Distribution
 #' Parameters
 #'
-#' @description
+#' @description `r lifecycle::badge("deprecated")`
 #' Fits an integer adjusted distribution to a subsampled bootstrap of data and
 #' then integrates the posterior samples into a single set of summary
 #' statistics. Can be used to generate a robust reporting delay that accounts
 #' for the fact the underlying delay likely varies over time or that the size
 #' of the available reporting delay sample may not be representative of the
 #' current case load.
+#'
+#' **This function is deprecated.** Please use [estimate_dist()] instead,
+#' which provides better handling of censoring and truncation.
 #'
 #' @param values Integer vector of values.
 #'
@@ -164,6 +175,11 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
                                   samples = 2000, bootstraps = 10,
                                   bootstrap_samples = 250, max_value,
                                   verbose = FALSE) {
+  deprecate_warn(
+    when = "1.10.0",
+    what = "bootstrapped_dist_fit()",
+    with = "estimate_dist()"
+  )
   if (!dist %in% c("gamma", "lognormal")) {
     cli_abort(
       c(
@@ -186,7 +202,12 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
   get_single_dist <- function(values, samples = 1) {
     set_dt_single_thread()
 
-    fit <- EpiNow2::dist_fit(values, samples = samples, dist = dist)
+    fit <- withCallingHandlers(
+      EpiNow2::dist_fit(values, samples = samples, dist = dist),
+      lifecycle_warning_deprecated = function(w) {
+        invokeRestart("muffleWarning")
+      }
+    )
 
     out <- list()
     if (dist == "lognormal") {
@@ -246,34 +267,24 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #' @description `r lifecycle::badge("deprecated")`
 #' Estimate a log normal delay distribution from a vector of integer delays.
 #'
-#' **This function is deprecated.** Please use [estimate_dist()] instead,
-#' which provides better handling of censoring and truncation.
+#' **This function is deprecated and now errors.** Please use
+#' [estimate_dist()] instead, which provides better handling of censoring and
+#' truncation.
 #'
 #' @param delays Integer vector of delays
 #'
 #' @param ... Arguments to pass to internal methods.
 #'
-#' @return A `<dist_spec>` summarising the bootstrapped distribution
+#' @return Does not return. Errors with a deprecation message.
 #' @export
 #' @seealso [estimate_dist()] for the recommended replacement
 #' @examples
-#' \donttest{
-#' delays <- rlnorm(500, log(5), 1)
-#' # Old way (deprecated):
-#' # estimate_delay(delays, samples = 1000, bootstraps = 10)
-#'
-#' # New way: see ?estimate_dist and
-#' # vignette("estimate_dist_workflow") for date-based usage
-#' }
+#' # See ?estimate_dist and vignette("estimate_dist_workflow") for
+#' # date-based usage
 estimate_delay <- function(delays, ...) {
-  deprecate_warn(
-    when = "1.9.0",
+  deprecate_stop(
+    when = "1.10.0",
     what = "estimate_delay()",
     with = "estimate_dist()"
-  )
-
-  bootstrapped_dist_fit(
-    values = delays,
-    dist = "lognormal", ...
   )
 }

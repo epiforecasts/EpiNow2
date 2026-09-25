@@ -12,24 +12,19 @@ estimate_delay(delays, ...)
 \item{...}{Arguments to pass to internal methods.}
 }
 \value{
-A \verb{<dist_spec>} summarising the bootstrapped distribution
+Does not return. Errors with a deprecation message.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Estimate a log normal delay distribution from a vector of integer delays.
 
-\strong{This function is deprecated.} Please use \code{\link[=estimate_dist]{estimate_dist()}} instead,
-which provides better handling of censoring and truncation.
+\strong{This function is deprecated and now errors.} Please use
+\code{\link[=estimate_dist]{estimate_dist()}} instead, which provides better handling of censoring and
+truncation.
 }
 \examples{
-\donttest{
-delays <- rlnorm(500, log(5), 1)
-# Old way (deprecated):
-# estimate_delay(delays, samples = 1000, bootstraps = 10)
-
-# New way: see ?estimate_dist and
-# vignette("estimate_dist_workflow") for date-based usage
-}
+# See ?estimate_dist and vignette("estimate_dist_workflow") for
+# date-based usage
 }
 \seealso{
 \code{\link[=estimate_dist]{estimate_dist()}} for the recommended replacement

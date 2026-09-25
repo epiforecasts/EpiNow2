@@ -378,17 +378,6 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
 
   assert_class(prior, "dist_spec")
 
-  if (is.numeric(pop)) {
-    deprecate_stop(
-      "1.9.0",
-      "rt_opts(pop = 'must be a `<dist_spec>`')",
-      details = paste(
-        "Population size must now be specified as a distribution.",
-        "For a fixed known population, wrap the value with `Fixed()`.",
-        "For example: `rt_opts(pop = Fixed(1000000))`."
-      )
-    )
-  }
   assert_class(pop, "dist_spec")
   opts$pop <- pop
   if (opts$pop_period == "all" && pop == Fixed(0)) {
