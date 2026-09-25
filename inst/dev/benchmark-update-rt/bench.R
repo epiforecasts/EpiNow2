@@ -1,7 +1,8 @@
-# Benchmark update_Rt() against the pre-rewrite reference.
-# Run from the package root: Rscript inst/dev/benchmark-update-rt/bench.R
+# Time the pre-rewrite reference, the plain Stan rewrite and the C++
+# update_Rt() side by side in one model.
 # Protocol: single chain and thread, 200 warmup and 300 sampling iterations,
 # seed 1, 20 calls per profile block, 3 runs per configuration (median).
+# Run from the package root: Rscript inst/dev/benchmark-update-rt/bench.R
 library(cmdstanr)
 set_cmdstan_path(path.expand("~/.cmdstan/cmdstan-2.39.0"))
 bench_dir <- "inst/dev/benchmark-update-rt"
@@ -10,7 +11,9 @@ reps <- 20
 n_runs <- 3
 mod <- cmdstan_model(
   file.path(bench_dir, "bench.stan"),
-  include_paths = c(bench_dir, "inst/stan/functions"),
+  include_paths = c(
+    bench_dir, "inst/stan/functions", "tests/testthat/stan"
+  ),
   user_header = normalizePath("inst/include/epinow2.hpp"),
   dir = tempdir(), force_recompile = TRUE
 )
@@ -28,21 +31,24 @@ for (t in c(67, 207)) {
       res[[length(res) + 1]] <- data.frame(
         t = t, scenario = scenario, run = run, block = p$name,
         us = 1e6 * p$total_time / p$autodiff_calls / reps,
-        maxdiff = max(fit$draws("maxdiff"))
+        maxdiff_cpp = max(fit$draws("maxdiff")),
+        maxdiff_rewrite = max(fit$draws("maxdiff_rewrite"))
       )
     }
   }
 }
 res <- do.call(rbind, res)
-summ <- aggregate(cbind(us, maxdiff) ~ t + scenario + block, res, median)
-wide <- reshape(summ[, c("t", "scenario", "block", "us")],
-  idvar = c("t", "scenario"), timevar = "block", direction = "wide"
-)
-wide$speedup <- wide$us.current / wide$us.rewrite
-wide$maxdiff <- aggregate(maxdiff ~ t + scenario, res, max)$maxdiff[
-  match(paste(wide$t, wide$scenario),
-    with(aggregate(maxdiff ~ t + scenario, res, max), paste(t, scenario)))
-]
-wide$label <- scenario_labels[wide$scenario]
 print(res)
-print(wide[order(wide$scenario, wide$t), ], digits = 3, row.names = FALSE)
+summ <- aggregate(us ~ t + scenario + block, res, median)
+wide <- reshape(summ, idvar = c("t", "scenario"), timevar = "block",
+  direction = "wide"
+)
+maxdiff <- aggregate(cbind(maxdiff_rewrite, maxdiff_cpp) ~ t + scenario,
+  res, max
+)
+wide <- merge(wide, maxdiff)
+wide$label <- scenario_labels[wide$scenario]
+print(wide[order(wide$scenario, wide$t),
+  c("scenario", "t", "us.current", "us.rewrite", "us.cpp",
+    "maxdiff_rewrite", "maxdiff_cpp", "label")
+], digits = 3, row.names = FALSE)

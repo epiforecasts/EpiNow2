@@ -1,7 +1,9 @@
-// Profiles update_Rt_ref() (the reference) against update_Rt() from
-// inst/stan/functions/rt.stan in the same model.
+// Profiles update_Rt_ref() (update_Rt() before the plain Stan rewrite), the
+// rewrite (update_Rt_stan() in tests/testthat/stan/rt_reference.stan) and the
+// C++ update_Rt() declared in inst/stan/functions/rt.stan in one model.
 functions {
 #include update_rt_ref.stan
+#include rt_reference.stan
 #include rt.stan
 }
 data {
@@ -29,6 +31,13 @@ transformed parameters {
   }
   profile("rewrite") {
     for (k in 1:reps) {
+      acc += sum(update_Rt_stan(
+        t, R0, noise, bps, bp_effects, stationary, n_centre
+      )) * 1e-9;
+    }
+  }
+  profile("cpp") {
+    for (k in 1:reps) {
       acc += sum(update_Rt(
         t, R0, noise, bps, bp_effects, stationary, n_centre
       )) * 1e-9;
@@ -42,6 +51,10 @@ model {
   target += acc;
 }
 generated quantities {
+  real maxdiff_rewrite = max(abs(
+    update_Rt_ref(t, R0, noise, bps, bp_effects, stationary, n_centre) -
+      update_Rt_stan(t, R0, noise, bps, bp_effects, stationary, n_centre)
+  ));
   real maxdiff = max(abs(
     update_Rt_ref(t, R0, noise, bps, bp_effects, stationary, n_centre) -
       update_Rt(t, R0, noise, bps, bp_effects, stationary, n_centre)

@@ -1,44 +1,116 @@
 // Pure Stan reference for update_Rt(), used only by the tests.
 
 /**
+ * Weights mapping breakpoint effects to the mean of the breakpoint random
+ * walk over the centring window, used by update_Rt_stan().
+ */
+vector bp_centring_weights(array[] int bps, int bp_n, int n_centre,
+                           int first_level) {
+  vector[bp_n] w = rep_vector(0, bp_n);
+  for (j in 1:n_centre) {
+    if (bps[j] > 1) {
+      w[bps[j] - 1] += 1;
+    }
+  }
+  w = reverse(cumulative_sum(reverse(w))) / n_centre;
+  for (i in 1:(first_level ? bps[1] - 1 : 0)) {
+    w[i] -= 1;
+  }
+  return w;
+}
+
+/**
  * The update_Rt() that the models used before the C++ version.
  *
  * Takes the same arguments and returns the same vector as update_Rt().
  */
 vector update_Rt_stan(int t, real R0, vector noise, array[] int bps,
                       vector bp_effects, int stationary, int n_centre) {
-  // define control parameters
   int bp_n = num_elements(bp_effects);
   int gp_n = num_elements(noise);
-  // initialise intercept
-  vector[t] logR = rep_vector(log(R0), t);
-  //initialise breakpoints + rw
-  if (bp_n) {
-    vector[bp_n + 1] bp0;
-    bp0[1] = 0;
-    bp0[2:(bp_n + 1)] = cumulative_sum(bp_effects);
-    vector[t] bp = bp0[bps];
-    // Centre over the observation window (same identifiability fix as the GP below).
-    bp -= mean(bp[1:n_centre]);
-    logR = logR + bp;
-  }
-  //initialise gaussian process
-  if (gp_n) {
-    vector[t] gp = rep_vector(0, t);
-    if (stationary) {
-      gp[1:gp_n] = noise;
-      // fix future gp based on last estimated
-      if (t > gp_n) {
-        gp[(gp_n + 1):t] = rep_vector(noise[gp_n], t - gp_n);
-      }
-    } else {
-      gp[2:(gp_n + 1)] = noise;
-      gp = cumulative_sum(gp);
-      // Centre over the observation window (same identifiability fix as the BP above).
-      gp -= mean(gp[1:n_centre]);
+  // Intercept on the log scale. The centring means are linear in the
+  // increments, so they are subtracted here as weighted sums rather than from
+  // full length paths.
+  real c = log(R0);
+
+  if (gp_n == 0) {
+    if (bp_n == 0) {
+      return rep_vector(R0, t);
     }
-    logR = logR + gp;
+    // One value per breakpoint level, then expand by index
+    real c_bp = c - dot_product(
+      bp_effects, bp_centring_weights(bps, bp_n, n_centre, 0)
+    );
+    vector[bp_n + 1] R_bp = exp(cumulative_sum(append_row(c_bp, bp_effects)));
+    return R_bp[bps];
   }
 
-  return exp(logR);
+  if (stationary) {
+    vector[t] R;
+    if (bp_n == 0) {
+      R[1:gp_n] = exp(c + noise);
+    } else {
+      real c_bp = c - dot_product(
+        bp_effects, bp_centring_weights(bps, bp_n, n_centre, 0)
+      );
+      vector[bp_n + 1] R_bp = exp(
+        cumulative_sum(append_row(c_bp, bp_effects))
+      );
+      vector[gp_n] R_gp = exp(noise);
+      R[1:gp_n] = R_bp[bps[1:gp_n]] .* R_gp;
+      if (t > gp_n) {
+        R[(gp_n + 1):t] = R_bp[bps[(gp_n + 1):t]] * R_gp[gp_n];
+      }
+      return R;
+    }
+    // Hold the last estimate into the forecast horizon
+    if (t > gp_n) {
+      R[(gp_n + 1):t] = rep_vector(R[gp_n], t - gp_n);
+    }
+    return R;
+  }
+
+  // Non-stationary GP: log Rt is one cumulative sum of daily increments with
+  // the (centred) intercept as the first element. noise[i] enters days
+  // i + 1 to n_centre of the centring window.
+  int m = min(gp_n, n_centre - 1);
+  if (m > 0) {
+    c -= dot_product(
+      noise[1:m],
+      reverse(linspaced_vector(m, n_centre - m, n_centre - 1)) / n_centre
+    );
+  }
+  if (bp_n == 0) {
+    vector[gp_n + 1] R_gp = exp(cumulative_sum(append_row(c, noise)));
+    if (t > gp_n + 1) {
+      return append_row(R_gp, rep_vector(R_gp[gp_n + 1], t - gp_n - 1));
+    }
+    return R_gp;
+  }
+  // Breakpoints add their jumps to the increments on the days they occur.
+  vector[t] inc = rep_vector(0, t);
+  inc[1] = c - dot_product(
+    bp_effects, bp_centring_weights(bps, bp_n, n_centre, 1)
+  );
+  inc[2:(gp_n + 1)] = noise;
+  for (j in 2:t) {
+    int from = bps[j - 1];
+    int to = bps[j];
+    if (to != from) {
+      real jump;
+      if (to == from + 1) {
+        jump = bp_effects[from];
+      } else if (to > from) {
+        jump = sum(bp_effects[from:(to - 1)]);
+      } else {
+        jump = -sum(bp_effects[to:(from - 1)]);
+      }
+      if (j <= gp_n + 1) {
+        inc[j] += jump;
+      } else {
+        inc[j] = jump;
+      }
+    }
+  }
+  return exp(cumulative_sum(inc));
 }
