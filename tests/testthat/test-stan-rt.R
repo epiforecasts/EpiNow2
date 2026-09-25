@@ -162,3 +162,100 @@ test_that("R_to_r respects tolerance parameter", {
   error_loose <- abs(R_recovered_loose - R_true)
   expect_lt(error_tight, error_loose)
 })
+
+# Cases for comparing the C++ R_to_r() with the pure Stan reference: R below,
+# near and above one, a large R, generation times of length one and two, and
+# short and long generation times.
+rt_pmfs <- list(
+  one = 1,
+  one_day = c(1, 0),
+  two = c(0.95, 0.05),
+  short = rev(discretised_pmf(c(2, 1), 8, 2, 0)),
+  medium = rev(discretised_pmf(c(4, 2), 15, 2, 0)),
+  long = rev(discretised_pmf(c(10, 4), 40, 2, 0))
+)
+rt_cases <- expand.grid(
+  R = c(0.5, 0.9, 1, 1.01, 1.5, 2, 3, 10),
+  gt = names(rt_pmfs),
+  abs_tol = c(1e-3, 1e-8),
+  stringsAsFactors = FALSE
+)
+
+# Gradient of the root r of R sum_k p_k exp(-r k) = 1 from the implicit
+# function theorem, with p the reverse of gt_rev_pmf.
+R_to_r_ift <- function(r, R, gt_rev_pmf) {
+  k <- rev(seq_along(gt_rev_pmf) - 1)
+  e <- exp(-r * k)
+  s0 <- sum(gt_rev_pmf * e)
+  s1 <- sum(k * gt_rev_pmf * e)
+  list(R = s0 / (R * s1), gt = e / s1)
+}
+
+test_that("R_to_r matches the pure Stan implementation", {
+  for (i in seq_len(nrow(rt_cases))) {
+    case <- rt_cases[i, ]
+    gt <- rt_pmfs[[case$gt]]
+    expect_equal(
+      R_to_r(case$R, gt, case$abs_tol),
+      R_to_r_stan(case$R, gt, case$abs_tol),
+      tolerance = 1e-12
+    )
+  }
+})
+
+test_that("R_to_r is exact for a one-day generation time", {
+  expect_equal(R_to_r(2, c(1, 0), 1e-8), log(2), tolerance = 1e-12)
+})
+
+test_that("R_to_r returns NaN when all generation time mass is at zero", {
+  expect_true(is.nan(R_to_r(1.5, 1, 1e-3)))
+  expect_true(is.nan(R_to_r(0.5, c(0, 1), 1e-3)))
+})
+
+test_that("R_to_r gradients match the pure Stan implementation", {
+  skip_if_not_installed("rstan")
+  model <- stan_test_model("rt_gradient.stan")
+  params <- list(c(R = 1, gt = 1), c(R = 1, gt = 0), c(R = 0, gt = 1))
+  # Generation times with mass away from zero, where the gradient is finite
+  cases <- rt_cases[rt_cases$gt != "one", ]
+  set.seed(123)
+  for (i in seq_len(nrow(cases))) {
+    case <- cases[i, ]
+    gt <- rt_pmfs[[case$gt]]
+    data <- list(
+      G = length(gt), R_data = case$R, gt_data = as.array(gt),
+      abs_tol = case$abs_tol, w = rnorm(1)
+    )
+    for (p in params) {
+      data$R_param <- p[["R"]]
+      data$gt_param <- p[["gt"]]
+      fits <- lapply(c(cpp = 1, stan = 0), function(use_cpp) {
+        data$use_cpp <- use_cpp
+        suppressMessages(rstan::sampling(model, data = data, chains = 0))
+      })
+      # Log-scale parameters near the data values keep each case's regime
+      R <- case$R * exp(rnorm(1, sd = 0.01))
+      gt_par <- pmax(gt, 1e-10) * exp(rnorm(length(gt), sd = 0.01))
+      upars <- c(if (p[["R"]]) log(R), if (p[["gt"]]) log(gt_par))
+      R <- if (p[["R"]]) R else case$R
+      gt_par <- if (p[["gt"]]) gt_par else gt
+      lp <- rstan::log_prob(fits$cpp, upars)
+      expect_equal(lp, rstan::log_prob(fits$stan, upars), tolerance = 1e-12)
+      # The C++ gradient is the implicit function theorem gradient at the
+      # returned root
+      ift <- R_to_r_ift(lp / data$w, R, gt_par)
+      expected <- data$w * c(
+        if (p[["R"]]) ift$R * R, if (p[["gt"]]) ift$gt * gt_par
+      )
+      grad <- rstan::grad_log_prob(fits$cpp, upars)
+      expect_equal(as.vector(grad), expected, tolerance = 1e-10)
+      # The Stan version differentiates the Newton steps, which agrees
+      # with it to within the solver tolerance
+      expect_equal(
+        as.vector(grad),
+        as.vector(rstan::grad_log_prob(fits$stan, upars)),
+        tolerance = 10 * case$abs_tol
+      )
+    }
+  }
+})
