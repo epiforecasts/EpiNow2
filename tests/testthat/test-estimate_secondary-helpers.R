@@ -107,8 +107,12 @@ test_that("convolve_and_scale builds prevalence from inflows and outflows", {
     expected[i] <- max(expected[i - 1] - out$conv[i], 0) + out$scaled[i]
   }
   expect_equal(out$secondary, as.integer(expected))
+  # while inflows are constant, outflows balance them so prevalence stays at
+  # the scaled inflow of 50
+  expect_equal(out$secondary[1:10], rep(50L, 10))
+  # once inflows stop, prevalence can only fall
+  expect_true(all(diff(out$secondary[10:20]) <= 0))
   expect_true(all(out$secondary >= 0))
-  expect_equal(out$secondary[1], 50L)
 })
 
 test_that("convolve_and_scale adds Poisson observation noise", {
