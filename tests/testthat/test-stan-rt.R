@@ -85,6 +85,78 @@ test_that("update_Rt correctly handles centred non-stationary GP and breakpoint 
   )
 })
 
+# Reference implementation of update_Rt that builds the centred paths
+# explicitly
+update_Rt_ref <- function(t, R0, noise, bps, bp_effects, stationary,
+                          n_centre) {
+  logR <- rep(log(R0), t)
+  if (length(bp_effects) > 0) {
+    bp <- c(0, cumsum(bp_effects))[bps]
+    logR <- logR + bp - mean(bp[1:n_centre])
+  }
+  gp_n <- length(noise)
+  if (gp_n > 0) {
+    gp <- rep(0, t)
+    if (stationary) {
+      gp[1:gp_n] <- noise
+      if (t > gp_n) gp[(gp_n + 1):t] <- noise[gp_n]
+    } else {
+      gp[2:(gp_n + 1)] <- noise
+      gp <- cumsum(gp)
+      gp <- gp - mean(gp[1:n_centre])
+    }
+    logR <- logR + gp
+  }
+  exp(logR)
+}
+
+test_that("update_Rt matches the reference across edge cases", {
+  set.seed(123)
+  weekly <- floor((1:20) / 7) + 1
+  cases <- list(
+    # non-stationary GP shorter than t - 1, so it holds forward
+    list(noise = rnorm(12, 0, 0.1), bps = integer(0), stationary = 0,
+         n_centre = 15),
+    # centring window shorter than the GP
+    list(noise = rnorm(19, 0, 0.1), bps = integer(0), stationary = 0,
+         n_centre = 5),
+    # stationary GP covering all time points
+    list(noise = rnorm(20, 0, 0.1), bps = integer(0), stationary = 1,
+         n_centre = 20),
+    # stationary GP with breakpoints and hold forward
+    list(noise = rnorm(14, 0, 0.1), bps = weekly, stationary = 1,
+         n_centre = 14),
+    # breakpoints not starting at 1, with non-unit and backward jumps
+    list(noise = numeric(0), bps = c(2, 2, 4, 4, 1, 1, 3, 3, 3, 3,
+                                     4, 4, 2, 2, 2, 4, 4, 4, 4, 4),
+         stationary = 0, n_centre = 15),
+    list(noise = rnorm(19, 0, 0.1), bps = c(2, 2, 4, 4, 1, 1, 3, 3, 3, 3,
+                                            4, 4, 2, 2, 2, 4, 4, 4, 4, 4),
+         stationary = 0, n_centre = 15),
+    # non-stationary GP plus breakpoints with hold forward
+    list(noise = rnorm(12, 0, 0.1), bps = weekly, stationary = 0,
+         n_centre = 13)
+  )
+  for (case in cases) {
+    bp_effects <- if (length(case$bps)) {
+      rnorm(max(case$bps) - 1, 0, 0.1)
+    } else {
+      numeric(0)
+    }
+    expect_equal(
+      update_Rt(
+        20, 1.3, case$noise, case$bps, bp_effects, case$stationary,
+        case$n_centre
+      ),
+      update_Rt_ref(
+        20, 1.3, case$noise, case$bps, bp_effects, case$stationary,
+        case$n_centre
+      ),
+      tolerance = 1e-12
+    )
+  }
+})
+
 # Helper function for R_to_r tests
 # Calculates negative moment generating function for verification.
 neg_MGF <- function(r, pmf) {
