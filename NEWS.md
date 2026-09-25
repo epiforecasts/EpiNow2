@@ -6,6 +6,8 @@
 
 ## Model changes
 
+- Rewrote the Stan `update_Rt()` function so the centring offsets are computed as weighted sums of the increments and breakpoint levels, roughly halving its cost without changing results.
+
 ## Package changes
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
