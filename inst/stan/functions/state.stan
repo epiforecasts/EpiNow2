@@ -62,12 +62,45 @@ vector assemble_state(int t, int n_free, real level, vector dev, int link) {
 }
 
 /**
- * Build a random-walk trajectory for a time-varying parameter
+ * Build a random-walk deviation for a time-varying parameter
  *
  * The walk is the cumulative sum of `steps`, expanded so each step applies to a
- * block of `period` time points, centred over the observation window
- * (`n_centre`) so the level is identifiable, then held constant beyond the free
- * window (`n_free`) through the forecast horizon.
+ * block of `period` time points, then centred over the observation window
+ * (`n_centre`) so the baseline is identifiable. Returns the mean-zero link-scale
+ * deviation over the free window, ready to combine additively with other
+ * components before `assemble_state`.
+ *
+ * @param n_free Window over which the walk varies
+ * @param n_centre Leading window used to centre the walk for identifiability
+ * @param steps Random walk steps (one per period block, less one)
+ * @param period Number of time points between random walk steps
+ * @return A link-scale deviation of length n_free
+ *
+ * @ingroup estimates_smoothing
+ */
+vector rw_dev(int n_free, int n_centre, vector steps, int period) {
+  vector[n_free] dev = rep_vector(0, n_free);
+  int n_steps = num_elements(steps);
+  if (n_steps > 0) {
+    vector[n_steps + 1] cum;
+    cum[1] = 0;
+    cum[2:(n_steps + 1)] = cumulative_sum(steps);
+    // expand each step to a block of `period` time points over the free window
+    for (i in 1:n_free) {
+      dev[i] = cum[(i - 1) %/% period + 1];
+    }
+    // centre over the observation window for identifiability
+    dev -= mean(dev[1:n_centre]);
+  }
+  return dev;
+}
+
+/**
+ * Build a single-component random-walk trajectory
+ *
+ * Combines the random-walk deviation with the baseline via `assemble_state`.
+ * Retained for the single-component path; composed trajectories sum the
+ * component deviations before a single `assemble_state` call.
  *
  * @param t Total trajectory length
  * @param n_free Window over which the walk varies (holds its last value after)
@@ -82,31 +115,47 @@ vector assemble_state(int t, int n_free, real level, vector dev, int link) {
  */
 vector rw_trajectory(int t, int n_free, int n_centre, real level, vector steps,
                      int link, int period) {
-  vector[n_free] dev = rep_vector(0, n_free);
-  int n_steps = num_elements(steps);
-  if (n_steps > 0) {
-    vector[n_steps + 1] cum;
-    cum[1] = 0;
-    cum[2:(n_steps + 1)] = cumulative_sum(steps);
-    // expand each step to a block of `period` time points over the free window
-    for (i in 1:n_free) {
-      dev[i] = cum[(i - 1) %/% period + 1];
-    }
-    // centre over the observation window for identifiability
-    dev -= mean(dev[1:n_centre]);
-  }
-  return assemble_state(t, n_free, level, dev, link);
+  return assemble_state(
+    t, n_free, level, rw_dev(n_free, n_centre, steps, period), link
+  );
 }
 
 /**
- * Build a Gaussian process trajectory for a time-varying parameter
+ * Build a Gaussian process deviation for a time-varying parameter
  *
  * For the `mean` anchor (`anchor = 0`) the GP is stationary (mean-reverting
- * around the level). For the `init` anchor (`anchor = 1`) the GP models the
- * increments, so the deviation is the cumulative sum of the GP noise, centred
- * over the observation window (`n_centre`) for identifiability. The GP varies
- * over the free window (`n_free`) and holds its last value through the remainder
- * of the trajectory. GP noise is supplied directly (computed via update_gp).
+ * around the baseline) and the deviation is the noise directly. For the `init`
+ * anchor (`anchor = 1`) the GP models the increments, so the deviation is the
+ * cumulative sum of the noise, centred over the observation window (`n_centre`)
+ * for identifiability. Returns the link-scale deviation over the free window,
+ * ready to combine additively with other components before `assemble_state`.
+ * GP noise is supplied directly (computed via update_gp).
+ *
+ * @param n_free Window over which the GP varies
+ * @param n_centre Leading window used to centre an init-anchored GP
+ * @param noise Gaussian process noise (length n_free)
+ * @param anchor 0 = mean (stationary), 1 = init (non-stationary)
+ * @return A link-scale deviation of length n_free
+ *
+ * @ingroup estimates_smoothing
+ */
+vector gp_dev(int n_free, int n_centre, vector noise, int anchor) {
+  vector[n_free] dev;
+  if (anchor == 0) {
+    dev = noise; // stationary (mean-reverting)
+  } else {
+    dev = cumulative_sum(noise); // non-stationary (GP on increments)
+    dev -= mean(dev[1:n_centre]); // centre over the observation window
+  }
+  return dev;
+}
+
+/**
+ * Build a single-component Gaussian process trajectory
+ *
+ * Combines the GP deviation with the baseline via `assemble_state`. Retained for
+ * the single-component path; composed trajectories sum the component deviations
+ * before a single `assemble_state` call.
  *
  * @param t Total trajectory length
  * @param n_free Window over which the GP varies (holds its last value after)
@@ -121,14 +170,9 @@ vector rw_trajectory(int t, int n_free, int n_centre, real level, vector steps,
  */
 vector gp_trajectory(int t, int n_free, int n_centre, real level, vector noise,
                      int link, int anchor) {
-  vector[n_free] dev;
-  if (anchor == 0) {
-    dev = noise; // stationary (mean-reverting)
-  } else {
-    dev = cumulative_sum(noise); // non-stationary (GP on increments)
-    dev -= mean(dev[1:n_centre]); // centre over the observation window
-  }
-  return assemble_state(t, n_free, level, dev, link);
+  return assemble_state(
+    t, n_free, level, gp_dev(n_free, n_centre, noise, anchor), link
+  );
 }
 
 /**
