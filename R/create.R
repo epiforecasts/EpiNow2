@@ -1010,12 +1010,14 @@ create_state_data <- function(params, state_flags,
   idx <- which(state_flags)
   n <- length(idx)
   param_id <- integer(n)
-  type <- integer(n)
   link <- integer(n)
-  pos <- integer(n)
   anchor <- integer(n)
   future_fixed <- integer(n)
   future_from <- integer(n)
+  comp_offset <- integer(n)
+  comp_n <- integer(n)
+  comp_type <- integer(0)
+  comp_pos <- integer(0)
   rw_sd_id <- integer(0)
   rw_period <- integer(0)
   gp_kernel <- integer(0)
@@ -1053,10 +1055,23 @@ create_state_data <- function(params, state_flags,
         "i" = "Currently supported: {.var {states_supported}}."
       ))
     }
+    if (is.null(spec$anchor)) {
+      cli_abort(c(
+        "!" = "The time-varying state on {.var {name}} has no baseline.",
+        "i" = "Give it one with {.fn constant}/{.fn initial}, or
+        {.arg mean}/{.arg init} on one of its components."
+      ))
+    }
     if (!is(spec$prior, "dist_spec")) {
       cli_abort(c(
         "!" = "Known (numeric) trajectories are not yet supported for
         time-varying parameter {.var {name}}."
+      ))
+    }
+    if (length(spec$components) == 0) {
+      cli_abort(c(
+        "!" = "The time-varying state on {.var {name}} has a baseline but no
+        time-varying components (from {.fn GP} or {.fn RW})."
       ))
     }
     param_id[j] <- idx[j]
@@ -1071,27 +1086,30 @@ create_state_data <- function(params, state_flags,
       assert_estimated(spec$prior, "init", name)
       anchor[j] <- 1L
     }
-    if (spec$type == "rw") {
-      type[j] <- 0L
+    comp_offset[j] <- length(comp_type)
+    comp_n[j] <- length(spec$components)
+    for (comp in spec$components) {
+    if (comp$type == "rw") {
+      comp_type <- c(comp_type, 0L)
       n_rw <- n_rw + 1L
-      pos[j] <- n_rw
-      step_sd <- spec$settings$sd
+      comp_pos <- c(comp_pos, n_rw)
+      step_sd <- comp$settings$sd
       assert_estimated(step_sd, "step sd", name)
       reg <- register_hyper(hyper_params, "rw_sd", name, step_sd)
       hyper_params <- reg$params
       rw_sd_id <- c(rw_sd_id, reg$id)
-      rw_period <- c(rw_period, spec$settings$period %||% 1L)
+      rw_period <- c(rw_period, comp$settings$period %||% 1L)
     } else {
-      gp <- spec$settings
+      gp <- comp$settings
       if (gp$kernel == "periodic") {
         cli_abort(c(
           "!" = "Periodic kernels are not supported for time-varying parameter
           {.var {name}}."
         ))
       }
-      type[j] <- 1L
+      comp_type <- c(comp_type, 1L)
       n_gp <- n_gp + 1L
-      pos[j] <- n_gp
+      comp_pos <- c(comp_pos, n_gp)
       gp_kernel <- c(gp_kernel, fcase(
         gp$kernel == "se", 0L,
         default = 2L # matern or ou
@@ -1108,9 +1126,10 @@ create_state_data <- function(params, state_flags,
       gp_basis_prop <- c(gp_basis_prop, gp$basis_prop)
       gp_boundary_scale <- c(gp_boundary_scale, gp$boundary_scale)
     }
+    }
   }
 
-  # a single random walk period is shared across random walk states
+  # a single random walk period is shared across random walk components
   rw_period <- unique(rw_period)
   if (length(rw_period) > 1) {
     cli_abort(c(
@@ -1119,9 +1138,6 @@ create_state_data <- function(params, state_flags,
   }
   state_rw_period <- if (length(rw_period) == 1) rw_period else 1L
 
-  ## each state currently carries exactly one component, laid out in state order,
-  ## so the CSR map is trivial (offsets 0..n-1, one component each). The `+`
-  ## interface produces multi-component states, which this same layout handles.
   list(
     n_states = n,
     state_param_id = array(as.integer(param_id)),
@@ -1129,11 +1145,11 @@ create_state_data <- function(params, state_flags,
     state_anchor = array(anchor),
     state_future_fixed = array(as.integer(future_fixed)),
     state_future_from = array(as.integer(future_from)),
-    state_comp_offset = array(seq_len(n) - 1L),
-    state_comp_n = array(rep(1L, n)),
-    n_components = n,
-    comp_type = array(type),
-    comp_pos = array(as.integer(pos)),
+    state_comp_offset = array(as.integer(comp_offset)),
+    state_comp_n = array(as.integer(comp_n)),
+    n_components = length(comp_type),
+    comp_type = array(comp_type),
+    comp_pos = array(as.integer(comp_pos)),
     n_rw_components = n_rw,
     rw_sd_id = array(as.integer(rw_sd_id)),
     state_rw_period = state_rw_period,

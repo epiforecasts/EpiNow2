@@ -42,12 +42,25 @@ test_that("state constructors accept a known trajectory vector", {
   expect_true(is.numeric(rw$prior))
 })
 
-test_that("state constructors require exactly one of mean/init", {
-  expect_error(GP(), "Exactly one")
+test_that("state constructors accept at most one of mean/init", {
   expect_error(
-    GP(mean = Normal(5, 1), init = Normal(5, 1)), "Exactly one"
+    GP(mean = Normal(5, 1), init = Normal(5, 1)), "At most one"
   )
-  expect_error(RW(), "Exactly one")
+  expect_error(
+    RW(mean = Normal(5, 1), init = Normal(5, 1)), "At most one"
+  )
+})
+
+test_that("GP()/RW() with neither mean nor init give a bare component", {
+  gp <- GP()
+  expect_s3_class(gp, "state_spec")
+  expect_null(gp$anchor)
+  expect_null(gp$prior)
+  expect_length(gp$components, 1)
+
+  rw <- RW()
+  expect_null(rw$anchor)
+  expect_length(rw$components, 1)
 })
 
 test_that("state constructors reject invalid anchors", {
@@ -127,6 +140,86 @@ test_that("create_stan_params emits RW state data for fraction_observed", {
   # level prior (normal(0.5, 0.1)) then the step sd prior (normal(0, 0.1))
   expect_identical(as.integer(out$prior_dist), c(2L, 2L))
   expect_equal(as.numeric(out$prior_dist_params), c(0.5, 0.1, 0, 0.1))
+})
+
+test_that("+ composes a baseline with one or more bare components", {
+  spec <- constant(LogNormal(2, 0.2)) + GP()
+  expect_s3_class(spec, "trajectory_spec")
+  expect_identical(spec$anchor, "mean")
+  expect_length(spec$components, 1)
+  expect_identical(spec$components[[1]]$type, "gp")
+
+  spec2 <- initial(LogNormal(1, 1)) + GP() + RW(period = 7)
+  expect_identical(spec2$anchor, "init")
+  expect_length(spec2$components, 2)
+  expect_identical(
+    vapply(spec2$components, `[[`, character(1), "type"), c("gp", "rw")
+  )
+
+  # the baseline may also come from a single anchored component
+  spec3 <- GP(mean = LogNormal(2, 0.2)) + RW(period = 7)
+  expect_identical(spec3$anchor, "mean")
+  expect_length(spec3$components, 2)
+})
+
+test_that("+ is commutative in which side carries the baseline", {
+  a <- constant(LogNormal(2, 0.2)) + GP()
+  b <- GP() + constant(LogNormal(2, 0.2))
+  expect_identical(a$anchor, b$anchor)
+  expect_identical(a$prior, b$prior)
+  expect_identical(
+    vapply(a$components, `[[`, character(1), "type"),
+    vapply(b$components, `[[`, character(1), "type")
+  )
+})
+
+test_that("+ errors when both sides already carry a baseline", {
+  expect_error(
+    constant(LogNormal(2, 0.2)) + GP(mean = Normal(1, 1)), "only one baseline"
+  )
+  expect_error(
+    GP(mean = Normal(1, 1)) + RW(init = Normal(1, 1)), "only one baseline"
+  )
+})
+
+test_that("+ errors when the right-hand side is not a state spec", {
+  expect_error(constant(LogNormal(2, 0.2)) + 1, "time-varying state")
+})
+
+test_that("composed trajectory_spec prints without error", {
+  expect_output(
+    print(constant(LogNormal(2, 0.2)) + GP() + RW(period = 7)),
+    "Gaussian process"
+  )
+  expect_output(
+    print(initial(LogNormal(1, 1)) + GP() + RW(period = 7)), "random walk"
+  )
+  expect_output(print(GP()), "bare component")
+})
+
+test_that("create_stan_params emits a composed RW+GP state (restores main's
+  composition)", {
+  params <- list(
+    make_param(
+      "R", initial(LogNormal(1, 1)) + GP() + RW(period = 7), lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "R")
+  expect_identical(out$n_states, 1L)
+  expect_identical(out$n_components, 2L)
+  expect_identical(out$state_comp_offset, array(0L))
+  expect_identical(out$state_comp_n, array(2L))
+  expect_identical(out$comp_type, array(c(1L, 0L))) # gp then rw
+  expect_identical(out$n_rw_components, 1L)
+  expect_identical(out$n_gp_components, 1L)
+  expect_identical(out$state_anchor, array(1L)) # init
+})
+
+test_that("create_stan_params errors on a trajectory with no baseline", {
+  params <- list(make_param("R", GP() + RW(period = 7), lower_bound = 0))
+  expect_error(
+    create_stan_params(params, states_supported = "R"), "no baseline"
+  )
 })
 
 test_that("create_stan_params emits GP state data for fraction_observed", {

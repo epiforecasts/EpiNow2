@@ -56,30 +56,39 @@ each parameter supplying its own link and its own sensible defaults.
 
 ## Interface
 
-A bare distribution is the baseline. Components compose onto it with `+`.
+`constant()`/`initial()` wrap a baseline distribution; components compose onto
+it with `+` (a bare distribution cannot be the left operand of `+` — see
+below).
 
 ```r
 # constant Rt (baseline, no components)
-rt_opts(prior = LogNormal(2, 0.2))
+rt_opts(prior = constant(LogNormal(2, 0.2)))
 
-# single GP, default (mean/stationary) anchor
-rt_opts(prior = LogNormal(2, 0.2) + GP())
+# single GP, default (mean/stationary) anchor — unchanged single-component sugar
+rt_opts(prior = GP(mean = LogNormal(2, 0.2)))
+
+# composing needs a baseline wrapper or an anchored component to combine with
+rt_opts(prior = constant(LogNormal(2, 0.2)) + GP())
 
 # weekly random walk
-rt_opts(prior = LogNormal(1, 1) + RW(period = 7))
+rt_opts(prior = constant(LogNormal(1, 1)) + RW(period = 7))
 
 # date-anchored breakpoints
-rt_opts(prior = LogNormal(1, 1) +
+rt_opts(prior = constant(LogNormal(1, 1)) +
   RW(knots = as.Date(c("2020-03-23", "2020-06-08"))))
 
 # composed: baseline + GP + breakpoints (the regression this restores)
-rt_opts(prior = LogNormal(1, 1) + GP() + RW(knots = bp_dates))
+rt_opts(prior = initial(LogNormal(1, 1)) + GP() + RW(knots = bp_dates))
+
+# equivalently, the baseline can come from one anchored component instead of
+# an explicit wrapper
+rt_opts(prior = GP(mean = LogNormal(2, 0.2)) + RW(period = 7))
 
 # init-anchored: the prior describes the initial value, not the average
 rt_opts(prior = initial(LogNormal(1, 1)) + GP())
 
 # the same grammar on another parameter
-obs_opts(scale = LogNormal(0, 0.2) + GP())
+obs_opts(scale = constant(LogNormal(0, 0.2)) + GP())
 ```
 
 This reads as "Rt is a baseline plus a GP plus breakpoints", which is the
@@ -87,22 +96,45 @@ sentence a modeller says out loud describing the model.
 
 ### The `+` operator
 
-`+` is already convolution on `dist_spec` (`+.dist_spec <- function(e1, e2)
-c(e1, e2)`), used for delays. It is reused here without a clash by making it
-polymorphic on operand type:
+**A bare `dist_spec` cannot be the left operand.** The initial plan was for a
+bare distribution to serve as the baseline directly (`LogNormal(2, 0.2) +
+GP()`), reusing `+` polymorphically since `+.dist_spec` already means
+convolution (`+.dist_spec <- function(e1, e2) c(e1, e2)`, used for delays).
+This does not work: `dist_spec` and `state_spec` are unrelated S3 classes, so
+`e1 + e2` with `e1` a `dist_spec` dispatches on `+.dist_spec` regardless of
+`e2`'s class (R's `Ops` group generic picks the method from whichever operand's
+class is checked first; adding a competing `+.state_spec` does not override
+this — it instead makes the *right*-operand case ambiguous and R falls back to
+the internal `+`, erroring with "non-numeric argument to binary operator").
+Verified empirically before implementing.
 
-- `dist + dist` → convolution, yielding a distribution (unchanged; delay path
-  untouched).
-- `dist + component` → a trajectory (baseline + component).
-- `component + component` / `trajectory + component` → add the component.
+**Fix: `constant()`/`initial()` wrap the baseline distribution before `+` ever
+sees it.** Both return a `<state_spec>` (specifically a `trajectory_spec`), so
+neither operand of `+` is ever a bare `dist_spec` and only `+.state_spec` is
+ever in play — no cross-class `Ops` ambiguity, verified empirically. This is
+the reviewer's Candidate B (a dedicated baseline object) with better names than
+`baseline(x, anchor = )`: `constant()` for the mean/stationary anchor, `initial()`
+for the init anchor, each self-explanatory without shadowing a base function
+(unlike `mean`).
 
-The two meanings never overlap: convolving a distribution with a GP has no
-interpretation, so the right-hand type disambiguates completely. The composition
-logic lives in `+.dist_spec` (baseline on the left) and `+.<component>` (component
-on the left) so either order works. This is a deliberate semantic overload of `+`;
-the alternative (a dedicated `baseline()` object on its own class) keeps
-convolution and composition strictly separate but adds a wrapper the bare-dist
-form does not need.
+A trajectory's baseline may come from **either** `constant()`/`initial()`
+**or** a single component's own `mean =`/`init =` (as in `GP(mean = ...) +
+RW()`) — whichever operand of `+` carries an anchor becomes the baseline; the
+other operand(s) must be "bare" (`GP()`/`RW()` with neither `mean` nor `init`).
+Combining two baselines is an error ("a trajectory can have only one
+baseline"). `GP()`/`RW()` used bare, alone (not composed), is a valid object
+but errors with a clear message if it reaches model-building without ever
+picking up a baseline.
+
+`+.state_spec` is a single S3 method (one class hierarchy: `GP()`/`RW()`
+produce `state_spec`; `constant()`/`initial()` and any composed result produce
+`trajectory_spec`, which also inherits `state_spec`), so `component + component`,
+`baseline + component`, `component + baseline` and `trajectory + component` all
+dispatch to the same method — no need for a separate method per combination.
+The earlier draft of this note proposed a single `baseline(x, anchor = )`
+object instead of the `constant()`/`initial()` pair; both are the same idea
+under different names, and `constant()`/`initial()` reads better at the call
+site (no `anchor = "mean"/"init"` string to get right).
 
 ### The anchor (mean vs init)
 
@@ -118,10 +150,11 @@ The anchor is a property of the baseline (there is one average and one initial
 value per trajectory, whatever the component count), so it travels with the
 baseline distribution:
 
-- **bare distribution = the default anchor** (stationary/mean), so the common
-  case needs no wrapper.
-- **`initial(dist)` = init-anchored.** `initial` is chosen because it describes
-  the meaning and shadows no base function (unlike `mean`).
+- **`constant(dist)` = mean/stationary anchor** (the same anchor `GP(mean =
+  ...)`/`RW(mean = ...)` already give a single component).
+- **`initial(dist)` = init-anchored**, matching `GP(init = ...)`/`RW(init =
+  ...)`. `constant`/`initial` are chosen because they describe the meaning
+  directly and shadow no base function (unlike `mean`).
 
 Attaching the anchor to the baseline (rather than to `rt_opts(anchor = )`) means a
 reusable fragment such as `trend <- initial(LogNormal(1, 1)) + GP()` keeps its
@@ -174,10 +207,10 @@ data-derived (as `bp_n` already is).
 Deprecate, do not remove. The old inputs keep working for a release, translated
 onto the new grammar with `lifecycle::deprecate_warn`:
 
-- `rt_opts(rw = 7)` → `LogNormal(<default>) + RW(period = 7)`
+- `rt_opts(rw = 7)` → `initial(<default>) + RW(period = 7)`
 - user `breakpoint` column → `... + RW(knots = <dates where column == 1>)`
-- `rt_opts(rw = 7)` with the default GP → `... + GP() + RW(period = 7)` (the
-  composed case)
+- `rt_opts(rw = 7)` with the default GP → `initial(<default>) + GP() +
+  RW(period = 7)` (the composed case)
 
 Honouring the `breakpoint` column losslessly requires irregular date-anchored
 knots on `RW()`, so knots are parity work, not a later addition.
@@ -235,9 +268,11 @@ scope for #1451:
 
 ## Alternatives considered
 
-- **`baseline(prior, anchor = )` object.** Keeps `+` strictly one-meaning-per-class
-  and is self-documenting, but adds a wrapper the bare distribution makes
-  unnecessary once a `dist_spec` is treated as a zero-component baseline.
+- **A bare `dist_spec` as the baseline, no wrapper.** The original plan; ruled
+  out empirically — `dist_spec` and `state_spec` are unrelated S3 classes, so
+  `LogNormal(...) + GP()` dispatches on `+.dist_spec` regardless of the
+  right-hand side and errors. `constant()`/`initial()` fix this by ensuring
+  neither operand of `+` is ever a bare `dist_spec`.
 - **Formula, `initial(...) ~ gp() + rw()`.** Elegant but leans on `~`/`~ 1` idioms
   this audience mostly has not internalised, needs the most new machinery (a
   call-tree parser for good errors), and prevents factoring a component out to a

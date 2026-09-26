@@ -4,6 +4,7 @@
 \alias{state}
 \alias{GP}
 \alias{RW}
+\alias{plot.trajectory_spec}
 \title{Time-varying states}
 \usage{
 GP(
@@ -20,6 +21,8 @@ GP(
 )
 
 RW(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1, future = "latest")
+
+\method{plot}{trajectory_spec}(x, n = 50L, samples = 50L, ...)
 }
 \arguments{
 \item{mean}{A \verb{<dist_spec>} giving the prior on the (stationary) mean the
@@ -71,6 +74,9 @@ lower limit of 0 is enforced where the parameter is used).}
 i.e. the value is held constant for \code{period} steps before changing.
 Defaults to 1 (a step every time point). Set \code{period = 7} for a weekly
 random walk.}
+
+\item{x}{A \verb{<state_spec>} as created by \code{\link[=GP]{GP()}}, \code{\link[=RW]{RW()}}, \code{\link[=constant]{constant()}} or
+\code{\link[=initial]{initial()}}.}
 }
 \value{
 A \verb{<state_spec>} object describing the time-varying state.

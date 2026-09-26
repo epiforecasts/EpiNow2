@@ -56,20 +56,23 @@ new_state_spec <- function(type, mean, init, settings = list(),
   future <- validate_future(future)
   has_mean <- !missing(mean) && !is.null(mean)
   has_init <- !missing(init) && !is.null(init)
-  if (has_mean + has_init != 1) {
+  if (has_mean && has_init) {
     cli_abort(
       c(
-        "!" = "Exactly one of {.arg mean} or {.arg init} must be supplied.",
+        "!" = "At most one of {.arg mean} or {.arg init} may be supplied.",
         "i" = "Use {.arg mean} for a mean-reverting (stationary) state or
         {.arg init} for a state on first differences."
       )
     )
   }
-  anchor <- if (has_mean) "mean" else "init"
-  prior <- if (has_mean) mean else init
+  ## neither supplied: a "bare" component with a shape but no baseline of its
+  ## own, valid only combined with a baseline (a `constant()`/`initial()`
+  ## trajectory, or another component's own mean/init) via `+`
+  anchor <- if (has_mean) "mean" else if (has_init) "init" else NULL
+  prior <- if (has_mean) mean else if (has_init) init else NULL
   ## the anchor may be a prior (a <dist_spec>) or a known trajectory supplied as
   ## a numeric vector (the state then fits deviations around it)
-  if (!is(prior, "dist_spec") && !is.numeric(prior)) {
+  if (!is.null(prior) && !is(prior, "dist_spec") && !is.numeric(prior)) {
     cli_abort(
       c(
         "!" = "{.arg {anchor}} must be a {.cls dist_spec} or a numeric vector.",
@@ -84,7 +87,8 @@ new_state_spec <- function(type, mean, init, settings = list(),
     anchor = anchor,
     prior = prior,
     future = future,
-    settings = settings
+    settings = settings,
+    components = list(list(type = type, settings = settings))
   )
   class(state) <- c(
     paste0(type, "_state"), "state_spec", "param_spec", "list"
@@ -190,6 +194,149 @@ RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1,
   )
 }
 
+#' Construct a trajectory baseline
+#'
+#' @description `r lifecycle::badge("experimental")`
+#'
+#' `constant()` and `initial()` give a time-varying trajectory its baseline:
+#' the prior on the (stationary) mean the trajectory reverts to, or on its
+#' initial value, exactly as the `mean`/`init` argument of [GP()] and [RW()]
+#' does for a single component. Compose one baseline with one or more
+#' components using `+`:
+#'
+#' ```r
+#' constant(LogNormal(mean = 2, sd = 0.2)) + GP()
+#' initial(LogNormal(mean = 1, sd = 1)) + GP() + RW(period = 7)
+#' ```
+#'
+#' A trajectory has exactly one baseline. It may come from `constant()`/
+#' `initial()`, or from a single component's own `mean =`/`init =` (as in
+#' `GP(mean = ...) + RW()`); combining two baselines is an error. [GP()] and
+#' [RW()] used without `mean`/`init` are "bare" components: a shape (and its
+#' own hyperparameter priors) with no baseline of their own, valid only when
+#' combined with a baseline elsewhere in the sum.
+#'
+#' @param prior A `<dist_spec>` giving the prior on the baseline, or a numeric
+#'   vector giving a known trajectory the components fit deviations around.
+#' @param future What the trajectory does over the forecast horizon; see
+#'   [GP()]. Shared by all components in the composition.
+#' @return A `<state_spec>` object with no components, ready to compose with
+#'   `+`.
+#' @seealso [GP()], [RW()]
+#' @name trajectory_baseline
+#' @rdname trajectory_baseline
+#' @export
+#' @examples
+#' constant(LogNormal(mean = 2, sd = 0.2)) + GP()
+#' initial(LogNormal(mean = 1, sd = 1)) + GP() + RW(period = 7)
+constant <- function(prior, future = "latest") {
+  new_trajectory_spec(prior, anchor = "mean", future = future)
+}
+
+#' @rdname trajectory_baseline
+#' @export
+initial <- function(prior, future = "latest") {
+  new_trajectory_spec(prior, anchor = "init", future = future)
+}
+
+#' Construct a bare trajectory spec carrying only a baseline
+#'
+#' @param prior A `<dist_spec>` or numeric vector; see [constant()].
+#' @param anchor `"mean"` or `"init"`.
+#' @param future See [GP()].
+#' @return A `<state_spec>` object with no components.
+#' @keywords internal
+new_trajectory_spec <- function(prior, anchor, future = "latest") {
+  if (!is(prior, "dist_spec") && !is.numeric(prior)) {
+    cli_abort(
+      c(
+        "!" = "{.arg prior} must be a {.cls dist_spec} or a numeric vector.",
+        "i" = "Supply a prior (e.g. {.fn Normal}) or a known trajectory as a
+        numeric vector."
+      )
+    )
+  }
+  state <- list(
+    type = NULL,
+    anchor = anchor,
+    prior = prior,
+    future = validate_future(future),
+    settings = NULL,
+    components = list()
+  )
+  class(state) <- c("trajectory_spec", "state_spec", "param_spec", "list")
+  state
+}
+
+#' Compose time-varying trajectory components
+#'
+#' @description `r lifecycle::badge("experimental")`
+#'
+#' Combines two `<state_spec>` objects (from [GP()], [RW()], [constant()] or
+#' [initial()]) into one trajectory whose deviation is the sum of its
+#' components' deviations. Exactly one operand may carry a baseline (a prior
+#' and an anchor, from `constant()`/`initial()` or a component's own
+#' `mean =`/`init =`); the other(s) must be bare (`GP()`/`RW()` with neither
+#' `mean` nor `init`).
+#'
+#' @param e1,e2 `<state_spec>` objects.
+#' @return A `<state_spec>` object combining both.
+#' @export
+#' @examples
+#' constant(LogNormal(mean = 2, sd = 0.2)) + GP() + RW(period = 7)
+"+.state_spec" <- function(e1, e2) {
+  if (!is_state_spec(e2)) {
+    cli_abort(
+      c(
+        "!" = "Can only combine a time-varying state with another
+        time-varying state (from {.fn GP}, {.fn RW}, {.fn constant} or
+        {.fn initial}).",
+        "i" = "Got a {.cls {class(e2)[1]}} on the right-hand side."
+      )
+    )
+  }
+  has_baseline <- function(s) !is.null(s$anchor)
+  if (has_baseline(e1) && has_baseline(e2)) {
+    cli_abort(
+      c(
+        "!" = "A trajectory can have only one baseline.",
+        "i" = "Both sides of {.code +} already carry a baseline prior (a
+        {.fn constant}/{.fn initial} wrapper, or {.arg mean}/{.arg init} on a
+        component). Drop {.arg mean}/{.arg init} from one side when
+        combining."
+      )
+    )
+  }
+  base <- if (has_baseline(e1)) e1 else e2
+  other <- if (has_baseline(e1)) e2 else e1
+  ## a state's components share one free-noise/forecast window (see GP()'s
+  ## `future`), so a component's own non-default `future` must agree with the
+  ## baseline's rather than being silently dropped
+  if (!identical(other$future, "latest") &&
+      !identical(other$future, base$future)) {
+    cli_abort(
+      c(
+        "!" = "Components of one trajectory share a single forecast-horizon
+        setting.",
+        "i" = "Set {.arg future} once, on the baseline ({.fn constant}/
+        {.fn initial}, or the component that carries {.arg mean}/
+        {.arg init}); a bare component's own {.arg future} must then be left
+        at the default or match it."
+      )
+    )
+  }
+  state <- list(
+    type = NULL,
+    anchor = base$anchor,
+    prior = base$prior,
+    future = base$future,
+    settings = NULL,
+    components = c(e1$components, e2$components)
+  )
+  class(state) <- c("trajectory_spec", "state_spec", "param_spec", "list")
+  state
+}
+
 #' Test whether an object is a time-varying state specification
 #'
 #' @param x An object to test.
@@ -237,9 +384,32 @@ assert_param_spec <- function(x, name = deparse(substitute(x))) {
   invisible(x)
 }
 
+#' Describe one trajectory component for `print()`
+#'
+#' @param comp A component list (`type`, `settings`), as stored in a
+#'   `<state_spec>`'s `components` field.
+#' @keywords internal
+describe_component <- function(comp) {
+  label <- if (comp$type == "gp") "Gaussian process" else "random walk"
+  cat("+ ", label, "\n", sep = "")
+  if (comp$type == "rw") {
+    cat("  step sd prior:\n", sep = "")
+    print(comp$settings$sd)
+  }
+}
+
 #' @export
 print.state_spec <- function(x, ...) {
   type <- if (x$type == "gp") "Gaussian process" else "random walk"
+  if (is.null(x$anchor)) {
+    cat(
+      "Time-varying state: ", type, " (bare component, no baseline)\n",
+      sep = ""
+    )
+    cat("Combine with a baseline (constant()/initial(), or mean=/init= on
+        another component) using +.\n")
+    return(invisible(x))
+  }
   variant <- if (x$anchor == "mean") {
     "mean-reverting"
   } else {
@@ -263,6 +433,48 @@ print.state_spec <- function(x, ...) {
   if (x$type == "rw") {
     cat("- step sd prior:\n", sep = "")
     print(x$settings$sd)
+  }
+  if (!identical(x$future, "latest")) {
+    future_label <- if (is.numeric(x$future)) {
+      paste0("fixed from ", x$future)
+    } else {
+      x$future
+    }
+    cat("- forecast horizon: ", future_label, "\n", sep = "")
+  }
+  invisible(x)
+}
+
+#' @export
+print.trajectory_spec <- function(x, ...) {
+  if (is.null(x$anchor)) {
+    cat("Time-varying state: deferred (no baseline yet)\n")
+    cat("Combine with a baseline (constant()/initial(), or mean=/init= on one
+        of the components) using +.\n")
+  } else {
+    variant <- if (x$anchor == "mean") {
+      "mean-reverting"
+    } else {
+      "on first differences"
+    }
+    cat("Time-varying state (", variant, "):\n", sep = "")
+    if (is.numeric(x$prior)) {
+      label <- if (x$anchor == "mean") {
+        "known mean trajectory"
+      } else {
+        "known initial value(s)"
+      }
+      cat("- ", label, ": ", paste(x$prior, collapse = " "), "\n", sep = "")
+    } else {
+      label <- if (x$anchor == "mean") "mean prior" else "initial-value prior"
+      cat("- ", label, ":\n", sep = "")
+      print(x$prior)
+    }
+  }
+  if (length(x$components) == 0) {
+    cat("- constant (no time-varying components)\n")
+  } else {
+    for (comp in x$components) describe_component(comp)
   }
   if (!identical(x$future, "latest")) {
     future_label <- if (is.numeric(x$future)) {
@@ -350,28 +562,46 @@ state_kernel_cov <- function(n, alpha, rho, kernel, matern_order) {
 #' plot(GP(init = LogNormal(mean = 1, sd = 0.5)))
 #' plot(RW(mean = Normal(mean = 1, sd = 0.2)))
 plot.state_spec <- function(x, n = 50L, samples = 50L, ...) {
+  if (is.null(x$anchor)) {
+    cli_abort(
+      "Cannot plot a bare component with no baseline; combine with
+      {.fn constant}/{.fn initial} (or {.arg mean}/{.arg init} on another
+      component) first."
+    )
+  }
   if (is.numeric(x$prior)) {
     cli_abort(
       "Cannot plot a state with a known (numeric) trajectory; supply a prior."
     )
   }
+  if (length(x$components) == 0) {
+    cli_abort("Nothing to plot: this trajectory has no components.")
+  }
   init <- x$anchor == "init"
   level <- sample_dist_values(x$prior, samples, lower = 0)
 
-  traj <- lapply(seq_len(samples), function(s) {
-    if (x$type == "rw") {
-      step_sd <- sample_dist_values(x$settings$sd, 1, lower = 0)
+  ## sample each component's link-scale deviation and sum them, exactly as
+  ## the Stan trajectory does; centring/anchoring is then applied once to the
+  ## combined deviation (this reduces to the prior single-component draw when
+  ## there is exactly one component)
+  sample_component_dev <- function(comp) {
+    if (comp$type == "rw") {
+      step_sd <- sample_dist_values(comp$settings$sd, 1, lower = 0)
       steps <- rnorm(n - 1, 0, step_sd)
-      dev <- c(0, cumsum(steps))
+      c(0, cumsum(steps))
     } else {
-      alpha <- sample_dist_values(x$settings$alpha, 1, lower = 0)
-      rho <- sample_dist_values(x$settings$ls, 1, lower = 1e-3)
+      alpha <- sample_dist_values(comp$settings$alpha, 1, lower = 0)
+      rho <- sample_dist_values(comp$settings$ls, 1, lower = 1e-3)
       kernel_cov <- state_kernel_cov(
-        n, alpha, rho, x$settings$kernel, x$settings$matern_order
+        n, alpha, rho, comp$settings$kernel, comp$settings$matern_order
       )
       noise <- as.numeric(crossprod(chol(kernel_cov), rnorm(n)))
-      dev <- if (init) cumsum(noise) else noise
+      if (init) cumsum(noise) else noise
     }
+  }
+
+  traj <- lapply(seq_len(samples), function(s) {
+    dev <- Reduce(`+`, lapply(x$components, sample_component_dev))
     if (init) {
       log_traj <- log(level[s]) + (dev - dev[1])
     } else {
@@ -381,7 +611,10 @@ plot.state_spec <- function(x, n = 50L, samples = 50L, ...) {
   })
   traj <- rbindlist(traj)
 
-  type <- if (x$type == "gp") "Gaussian process" else "random walk"
+  label <- vapply(x$components, function(comp) {
+    if (comp$type == "gp") "Gaussian process" else "random walk"
+  }, character(1))
+  label <- paste(label, collapse = " + ")
   variant <- if (init) "first differences" else "mean-reverting"
   ggplot(
     traj, aes(x = time, y = value, group = sample)
@@ -389,7 +622,15 @@ plot.state_spec <- function(x, n = 50L, samples = 50L, ...) {
     geom_line(alpha = 0.3) +
     labs(
       x = "Time", y = "Value",
-      title = paste0("Prior draws: ", type, " (", variant, ")")
+      title = paste0("Prior draws: ", label, " (", variant, ")")
     ) +
     theme_bw()
+}
+
+#' @rdname state
+#' @param x A `<state_spec>` as created by [GP()], [RW()], [constant()] or
+#'   [initial()].
+#' @export
+plot.trajectory_spec <- function(x, n = 50L, samples = 50L, ...) {
+  plot.state_spec(x, n = n, samples = samples, ...)
 }
