@@ -446,12 +446,15 @@ create_initial_conditions <- function(stan_data, params) {
         } else {
           min(total, max(1, data_window + stan_data$state_future_from[s]))
         }
-        if (stan_data$state_type[s] == 0) {
-          n_rw_steps <- n_rw_steps + max(0, ceiling(free / rw_period) - 1)
-        } else {
-          n_gp_coef <- n_gp_coef +
-            ceiling(free * stan_data$gp_basis_prop[stan_data$state_pos[s]])
-          gp_free <- c(gp_free, free)
+        for (ci in seq_len(stan_data$state_comp_n[s])) {
+          cc <- stan_data$state_comp_offset[s] + ci
+          if (stan_data$comp_type[cc] == 0) {
+            n_rw_steps <- n_rw_steps + max(0, ceiling(free / rw_period) - 1)
+          } else {
+            n_gp_coef <- n_gp_coef +
+              ceiling(free * stan_data$gp_basis_prop[stan_data$comp_pos[cc]])
+            gp_free <- c(gp_free, free)
+          }
         }
       }
     }
@@ -473,22 +476,25 @@ create_initial_conditions <- function(stan_data, params) {
     if (n_states > 0) {
       k <- n_named
       for (s in seq_len(n_states)) {
-        if (stan_data$state_type[s] == 0) {
-          k <- k + 1L
-          param_inits <- c(param_inits, rtruncnorm0(
-            1, a = 0, b = stan_data$params_upper[k], mean = 0, sd = 0.1
-          ))
-        } else {
-          k <- k + 1L
-          alpha_init <- rtruncnorm0(
-            1, a = 0, b = stan_data$params_upper[k], mean = 0, sd = 0.1
-          )
-          k <- k + 1L
-          rho_init <- rtruncnorm0(
-            1, a = 0, b = stan_data$params_upper[k],
-            mean = rho_scale / 2, sd = rho_scale / 4
-          )
-          param_inits <- c(param_inits, alpha_init, rho_init)
+        for (ci in seq_len(stan_data$state_comp_n[s])) {
+          cc <- stan_data$state_comp_offset[s] + ci
+          if (stan_data$comp_type[cc] == 0) {
+            k <- k + 1L
+            param_inits <- c(param_inits, rtruncnorm0(
+              1, a = 0, b = stan_data$params_upper[k], mean = 0, sd = 0.1
+            ))
+          } else {
+            k <- k + 1L
+            alpha_init <- rtruncnorm0(
+              1, a = 0, b = stan_data$params_upper[k], mean = 0, sd = 0.1
+            )
+            k <- k + 1L
+            rho_init <- rtruncnorm0(
+              1, a = 0, b = stan_data$params_upper[k],
+              mean = rho_scale / 2, sd = rho_scale / 4
+            )
+            param_inits <- c(param_inits, alpha_init, rho_init)
+          }
         }
       }
     }
@@ -943,16 +949,19 @@ create_state_data <- function(params, state_flags,
   empty <- list(
     n_states = 0L,
     state_param_id = array(integer(0)),
-    state_type = array(integer(0)),
     state_link = array(integer(0)),
-    state_pos = array(integer(0)),
     state_anchor = array(integer(0)),
     state_future_fixed = array(integer(0)),
     state_future_from = array(integer(0)),
-    n_rw_states = 0L,
+    state_comp_offset = array(integer(0)),
+    state_comp_n = array(integer(0)),
+    n_components = 0L,
+    comp_type = array(integer(0)),
+    comp_pos = array(integer(0)),
+    n_rw_components = 0L,
     rw_sd_id = array(integer(0)),
     state_rw_period = 1L,
-    n_gp_states = 0L,
+    n_gp_components = 0L,
     gp_basis_prop = array(numeric(0)),
     gp_boundary_scale = array(numeric(0)),
     gp_kernel = array(integer(0)),
@@ -1110,19 +1119,25 @@ create_state_data <- function(params, state_flags,
   }
   state_rw_period <- if (length(rw_period) == 1) rw_period else 1L
 
+  ## each state currently carries exactly one component, laid out in state order,
+  ## so the CSR map is trivial (offsets 0..n-1, one component each). The `+`
+  ## interface produces multi-component states, which this same layout handles.
   list(
     n_states = n,
     state_param_id = array(as.integer(param_id)),
-    state_type = array(type),
     state_link = array(link),
-    state_pos = array(as.integer(pos)),
     state_anchor = array(anchor),
     state_future_fixed = array(as.integer(future_fixed)),
     state_future_from = array(as.integer(future_from)),
-    n_rw_states = n_rw,
+    state_comp_offset = array(seq_len(n) - 1L),
+    state_comp_n = array(rep(1L, n)),
+    n_components = n,
+    comp_type = array(type),
+    comp_pos = array(as.integer(pos)),
+    n_rw_components = n_rw,
     rw_sd_id = array(as.integer(rw_sd_id)),
     state_rw_period = state_rw_period,
-    n_gp_states = n_gp,
+    n_gp_components = n_gp,
     gp_basis_prop = array(gp_basis_prop),
     gp_boundary_scale = array(gp_boundary_scale),
     gp_kernel = array(gp_kernel),

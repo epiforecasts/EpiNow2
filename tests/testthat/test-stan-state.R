@@ -35,13 +35,15 @@ test_that("gp_trajectory returns the requested length and holds beyond the free 
 test_that("get_state_trajectory returns a constant trajectory when no state is attached", {
   traj <- get_state_trajectory(
     id = 1, t = 12, level = 2,
-    state_param_id = integer(0), state_type = integer(0),
-    state_link = integer(0), state_pos = integer(0), state_anchor = integer(0),
+    state_param_id = integer(0), state_link = integer(0),
+    state_anchor = integer(0),
+    state_comp_offset = integer(0), state_comp_n = integer(0),
     state_n_free = integer(0), state_n_centre = integer(0),
-    state_rw_steps = numeric(0), state_rw_n = integer(0),
-    state_rw_offset = integer(0), state_rw_period = 1,
-    state_gp_eta = numeric(0), state_gp_M = integer(0),
-    state_gp_offset = integer(0),
+    comp_type = integer(0), comp_pos = integer(0),
+    comp_rw_n = integer(0), comp_rw_offset = integer(0), state_rw_period = 1,
+    state_rw_steps = numeric(0),
+    comp_gp_M = integer(0), comp_gp_offset = integer(0),
+    state_gp_eta = numeric(0),
     gp_boundary_scale = numeric(0), gp_kernel = integer(0), gp_nu = numeric(0),
     state_gp_alpha = numeric(0), state_gp_rho = numeric(0),
     gp_phi = list()

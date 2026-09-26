@@ -113,11 +113,14 @@ test_that("create_stan_params emits RW state data for fraction_observed", {
   out <- create_stan_params(params, states_supported = "fraction_observed")
   expect_identical(out$n_states, 1L)
   expect_identical(out$state_param_id, array(1L))
-  expect_identical(out$state_type, array(0L))
+  expect_identical(out$comp_type, array(0L))
   expect_identical(out$state_link, array(0L))
-  expect_identical(out$state_pos, array(1L))
-  expect_identical(out$n_rw_states, 1L)
-  expect_identical(out$n_gp_states, 0L)
+  expect_identical(out$comp_pos, array(1L))
+  expect_identical(out$n_components, 1L)
+  expect_identical(out$state_comp_offset, array(0L))
+  expect_identical(out$state_comp_n, array(1L))
+  expect_identical(out$n_rw_components, 1L)
+  expect_identical(out$n_gp_components, 0L)
   # the step sd is appended to the parameter vector as its own parameter
   expect_identical(out$rw_sd_id, array(2L))
   expect_identical(out$n_params_variable, 2L) # level + step sd
@@ -134,10 +137,10 @@ test_that("create_stan_params emits GP state data for fraction_observed", {
   )
   out <- create_stan_params(params, states_supported = "fraction_observed")
   expect_identical(out$n_states, 1L)
-  expect_identical(out$state_type, array(1L))
-  expect_identical(out$state_pos, array(1L))
-  expect_identical(out$n_rw_states, 0L)
-  expect_identical(out$n_gp_states, 1L)
+  expect_identical(out$comp_type, array(1L))
+  expect_identical(out$comp_pos, array(1L))
+  expect_identical(out$n_rw_components, 0L)
+  expect_identical(out$n_gp_components, 1L)
   expect_identical(out$gp_kernel, array(2L)) # matern default
   # magnitude and lengthscale are appended as their own parameters
   expect_identical(out$gp_alpha_id, array(2L))
@@ -203,7 +206,7 @@ test_that("create_stan_params emits state data for reporting_overdispersion", {
   )
   expect_identical(out$n_states, 1L)
   expect_identical(out$state_param_id, array(2L)) # second param
-  expect_identical(out$n_rw_states, 1L)
+  expect_identical(out$n_rw_components, 1L)
 })
 
 test_that("create_stan_params emits init-anchor state data (centred + Jacobian)", {
@@ -240,7 +243,7 @@ test_that("GP init anchor emits non-stationary state data", {
     )
   )
   out <- create_stan_params(params, states_supported = "fraction_observed")
-  expect_identical(out$state_type, array(1L)) # gp
+  expect_identical(out$comp_type, array(1L)) # gp
   expect_identical(out$state_anchor, array(1L)) # init
   # the init prior is the level parameter's own prior (normal(0.4, 0.05))
   expect_identical(as.integer(out$prior_dist[1]), 2L)
@@ -276,8 +279,8 @@ test_that("create_stan_params is a no-op without states", {
   )
   out <- create_stan_params(params, states_supported = "fraction_observed")
   expect_identical(out$n_states, 0L)
-  expect_identical(out$n_rw_states, 0L)
-  expect_identical(out$n_gp_states, 0L)
+  expect_identical(out$n_rw_components, 0L)
+  expect_identical(out$n_gp_components, 0L)
 })
 
 test_that("plot.state_spec returns a ggplot of prior draws", {

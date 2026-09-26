@@ -57,12 +57,12 @@ transformed data {
   // offsets.
   array[n_states] int state_n_free;    // free-noise window per state
   array[n_states] int state_n_centre;  // centring window per state
-  array[n_states] int state_rw_n;      // RW steps per state (0 for GP states)
-  array[n_states] int state_rw_offset; // offset into the flat RW step vector
-  array[n_states] int state_gp_M;      // GP basis functions per state (0 for RW)
-  array[n_states] int state_gp_offset; // offset into the flat GP coefficient vec
-  int n_rw_steps = 0;                  // total RW steps across states
-  int n_gp_coef = 0;                   // total GP coefficients across states
+  array[n_components] int comp_rw_n;     // RW steps per component (0 for GP)
+  array[n_components] int comp_rw_offset;// offset into the flat RW step vector
+  array[n_components] int comp_gp_M;     // GP basis functions per component (0 for RW)
+  array[n_components] int comp_gp_offset;// offset into the flat GP coefficient vec
+  int n_rw_steps = 0;                  // total RW steps across components
+  int n_gp_coef = 0;                   // total GP coefficients across components
   for (s in 1:n_states) {
     int total = state_param_id[s] == param_id_I ? t : ot_h;
     int data_window = total - horizon;
@@ -78,38 +78,49 @@ transformed data {
     // centre init-anchored states over the observation window (never beyond it)
     state_n_centre[s] =
       data_window < free_window ? data_window : free_window;
-    state_rw_offset[s] = n_rw_steps;
-    state_gp_offset[s] = n_gp_coef;
-    if (state_type[s] == 0) {
-      state_rw_n[s] = free_window > 1 ?
-        to_int(ceil(1.0 * free_window / state_rw_period)) - 1 : 0;
-      state_gp_M[s] = 0;
-      n_rw_steps += state_rw_n[s];
-    } else {
-      state_rw_n[s] = 0;
-      state_gp_M[s] = to_int(ceil(free_window * gp_basis_prop[state_pos[s]]));
-      n_gp_coef += state_gp_M[s];
+    // size each of the state's components against its (shared) free window
+    for (k in 1:state_comp_n[s]) {
+      int c = state_comp_offset[s] + k;
+      comp_rw_offset[c] = n_rw_steps;
+      comp_gp_offset[c] = n_gp_coef;
+      if (comp_type[c] == 0) {
+        comp_rw_n[c] = free_window > 1 ?
+          to_int(ceil(1.0 * free_window / state_rw_period)) - 1 : 0;
+        comp_gp_M[c] = 0;
+        n_rw_steps += comp_rw_n[c];
+      } else {
+        comp_rw_n[c] = 0;
+        comp_gp_M[c] = to_int(ceil(free_window * gp_basis_prop[comp_pos[c]]));
+        n_gp_coef += comp_gp_M[c];
+      }
     }
   }
 
-  // Build each GP state's basis once here: it depends only on data (the state's
-  // free-noise window and basis size), so update_gp can apply the per-iteration
-  // hyperparameters without rebuilding the basis every gradient evaluation. The
-  // array is padded to the largest window/basis and read back per state.
+  // Build each GP component's basis once here: it depends only on data (its
+  // state's free-noise window and its basis size), so update_gp can apply the
+  // per-iteration hyperparameters without rebuilding the basis every gradient
+  // evaluation. The array is padded to the largest window/basis and read back
+  // per component.
   int max_gp_nf = 1;
   int max_gp_M = 1;
   for (s in 1:n_states) {
-    if (state_type[s] == 1) {
-      if (state_n_free[s] > max_gp_nf) max_gp_nf = state_n_free[s];
-      if (state_gp_M[s] > max_gp_M) max_gp_M = state_gp_M[s];
+    for (k in 1:state_comp_n[s]) {
+      int c = state_comp_offset[s] + k;
+      if (comp_type[c] == 1) {
+        if (state_n_free[s] > max_gp_nf) max_gp_nf = state_n_free[s];
+        if (comp_gp_M[c] > max_gp_M) max_gp_M = comp_gp_M[c];
+      }
     }
   }
-  array[n_gp_states] matrix[max_gp_nf, max_gp_M] gp_phi;
+  array[n_gp_components] matrix[max_gp_nf, max_gp_M] gp_phi;
   for (s in 1:n_states) {
-    if (state_type[s] == 1) {
-      int p = state_pos[s];
-      gp_phi[p, 1:state_n_free[s], 1:state_gp_M[s]] =
-        setup_gp(state_gp_M[s], gp_boundary_scale[p], state_n_free[s], 0, 1.0);
+    for (k in 1:state_comp_n[s]) {
+      int c = state_comp_offset[s] + k;
+      if (comp_type[c] == 1) {
+        int p = comp_pos[c];
+        gp_phi[p, 1:state_n_free[s], 1:comp_gp_M[c]] =
+          setup_gp(comp_gp_M[c], gp_boundary_scale[p], state_n_free[s], 0, 1.0);
+      }
     }
   }
 }
@@ -148,17 +159,17 @@ transformed parameters {
   vector[estimate_r * (delay_type_max[delay_id_generation_time] + 1)]
     gt_rev_pmf;
 
-  // state hyperparameters, retrieved from the unified parameter vector
-  vector[n_rw_states] state_rw_sd;    // random walk step sd
-  vector[n_gp_states] state_gp_alpha; // GP magnitude
-  vector[n_gp_states] state_gp_rho;   // GP lengthscale
-  for (r in 1:n_rw_states) {
+  // component hyperparameters, retrieved from the unified parameter vector
+  vector[n_rw_components] state_rw_sd;    // random walk step sd
+  vector[n_gp_components] state_gp_alpha; // GP magnitude
+  vector[n_gp_components] state_gp_rho;   // GP lengthscale
+  for (r in 1:n_rw_components) {
     state_rw_sd[r] = get_param(
       rw_sd_id[r], params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
   }
-  for (g in 1:n_gp_states) {
+  for (g in 1:n_gp_components) {
     state_gp_alpha[g] = get_param(
       gp_alpha_id[g], params_fixed_lookup, params_variable_lookup, params_value,
       params
@@ -177,10 +188,13 @@ transformed parameters {
       param_id_fraction_observed, params_fixed_lookup, params_variable_lookup,
       params_value, params
     ),
-    state_param_id, state_type, state_link, state_pos, state_anchor,
+    state_param_id, state_link, state_anchor,
+    state_comp_offset, state_comp_n,
     state_n_free, state_n_centre,
-    state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
-    state_gp_eta, state_gp_M, state_gp_offset,
+    comp_type, comp_pos,
+    comp_rw_n, comp_rw_offset, state_rw_period,
+    state_rw_steps,
+    comp_gp_M, comp_gp_offset, state_gp_eta,
     gp_boundary_scale, gp_kernel, gp_nu,
     state_gp_alpha, state_gp_rho, gp_phi
   );
@@ -191,10 +205,13 @@ transformed parameters {
       param_id_reporting_overdispersion, params_fixed_lookup,
       params_variable_lookup, params_value, params
     ),
-    state_param_id, state_type, state_link, state_pos, state_anchor,
+    state_param_id, state_link, state_anchor,
+    state_comp_offset, state_comp_n,
     state_n_free, state_n_centre,
-    state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
-    state_gp_eta, state_gp_M, state_gp_offset,
+    comp_type, comp_pos,
+    comp_rw_n, comp_rw_offset, state_rw_period,
+    state_rw_steps,
+    comp_gp_M, comp_gp_offset, state_gp_eta,
     gp_boundary_scale, gp_kernel, gp_nu,
     state_gp_alpha, state_gp_rho, gp_phi
   );
@@ -219,10 +236,13 @@ transformed parameters {
           param_id_R, params_fixed_lookup, params_variable_lookup,
           params_value, params
         ),
-        state_param_id, state_type, state_link, state_pos, state_anchor,
+        state_param_id, state_link, state_anchor,
+        state_comp_offset, state_comp_n,
         state_n_free, state_n_centre,
-        state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
-        state_gp_eta, state_gp_M, state_gp_offset,
+        comp_type, comp_pos,
+        comp_rw_n, comp_rw_offset, state_rw_period,
+        state_rw_steps,
+        comp_gp_M, comp_gp_offset, state_gp_eta,
         gp_boundary_scale, gp_kernel, gp_nu,
         state_gp_alpha, state_gp_rho, gp_phi
       );
@@ -248,10 +268,13 @@ transformed parameters {
           param_id_I, params_fixed_lookup, params_variable_lookup,
           params_value, params
         ),
-        state_param_id, state_type, state_link, state_pos, state_anchor,
+        state_param_id, state_link, state_anchor,
+        state_comp_offset, state_comp_n,
         state_n_free, state_n_centre,
-        state_rw_steps, state_rw_n, state_rw_offset, state_rw_period,
-        state_gp_eta, state_gp_M, state_gp_offset,
+        comp_type, comp_pos,
+        comp_rw_n, comp_rw_offset, state_rw_period,
+        state_rw_steps,
+        comp_gp_M, comp_gp_offset, state_gp_eta,
         gp_boundary_scale, gp_kernel, gp_nu,
         state_gp_alpha, state_gp_rho, gp_phi
       );
@@ -356,14 +379,17 @@ model {
   // GP magnitude and lengthscale) are part of `params`, so their priors are
   // applied by params_lp() above; only the state structure is handled here.
   profile("state lp") {
-    // ragged random walk step priors, indexed by per-state offsets
+    // ragged random walk step priors, indexed by per-component offsets
     for (s in 1:n_states) {
-      if (state_type[s] == 0 && state_rw_n[s] > 0) {
-        segment(state_rw_steps, state_rw_offset[s] + 1, state_rw_n[s]) ~
-          normal(0, state_rw_sd[state_pos[s]]);
+      for (k in 1:state_comp_n[s]) {
+        int c = state_comp_offset[s] + k;
+        if (comp_type[c] == 0 && comp_rw_n[c] > 0) {
+          segment(state_rw_steps, comp_rw_offset[c] + 1, comp_rw_n[c]) ~
+            normal(0, state_rw_sd[comp_pos[c]]);
+        }
       }
     }
-    state_gp_eta ~ std_normal(); // GP coefficients are iid across all states
+    state_gp_eta ~ std_normal(); // GP coefficients are iid across all components
     // init-anchor states: the level parameter's prior is applied to the derived
     // initial value (with the log-link Jacobian) instead of to the level, which
     // is free scaffolding; params_lp() skips it via params_prior_skip.
