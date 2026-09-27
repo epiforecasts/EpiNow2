@@ -20,7 +20,14 @@ GP(
   future = "latest"
 )
 
-RW(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1, future = "latest")
+RW(
+  mean,
+  init,
+  sd = Normal(mean = 0, sd = 0.1),
+  period = 1,
+  knots = NULL,
+  future = "latest"
+)
 
 \method{plot}{trajectory_spec}(x, n = 50L, samples = 50L, ...)
 }
@@ -73,7 +80,14 @@ lower limit of 0 is enforced where the parameter is used).}
 \item{period}{Integer; the number of time steps between random walk steps,
 i.e. the value is held constant for \code{period} steps before changing.
 Defaults to 1 (a step every time point). Set \code{period = 7} for a weekly
-random walk.}
+random walk. Supply at most one of \code{period} or \code{knots}.}
+
+\item{knots}{A \verb{<Date>} vector or an integer vector of 1-indexed time-step
+positions giving the points at which the random walk takes a new step
+(irregular breakpoints), instead of a regular \code{period}. Dates are
+resolved against the data's own date column when the model is fit, so a
+single spec is safe to reuse across \code{regional_epinow()}'s regions.
+Supply at most one of \code{period} or \code{knots}.}
 
 \item{x}{A \verb{<state_spec>} as created by \code{\link[=GP]{GP()}}, \code{\link[=RW]{RW()}}, \code{\link[=constant]{constant()}} or
 \code{\link[=initial]{initial()}}.}
@@ -122,6 +136,10 @@ RW(init = Normal(mean = 5, sd = 1))
 RW(mean = Normal(mean = 5, sd = 1), sd = Normal(mean = 0, sd = 0.05))
 # weekly random walk
 RW(init = Normal(mean = 5, sd = 1), period = 7)
+# irregular breakpoints at known dates
+RW(init = Normal(mean = 5, sd = 1),
+  knots = as.Date(c("2020-03-23", "2020-06-15"))
+)
 # project the random walk into the forecast horizon
 RW(init = Normal(mean = 5, sd = 1), future = "project")
 }
