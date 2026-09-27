@@ -190,30 +190,48 @@ placement. So there is no separate `BP()`; `RW()` carries the knots:
 late-binding used for distributions, so the number of segment effects is
 data-derived (as `bp_n` already is).
 
-## Decisions still open
+## Decisions resolved (implementation status)
 
-1. **Default component set for a bare prior.** On `main`, `rt_opts(prior = X)`
-   with the default GP gave a GP. Under the clean reading, a bare prior with no
-   components is constant. These are different models, so the default has to be
-   chosen explicitly. Leaning: keep GP as the implicit default component (bare
-   prior stays time-varying, matching `main`), with `Fixed()`/no components the
-   explicit way to say constant. This interacts with the shipped
-   plain-distribution → `GP()` deprecation.
-2. **Default anchor value.** Match the current sensible default rather than change
-   behaviour silently.
+Both points below turned out not to need a new decision: `GP(mean =/init =)`
+and `RW(mean =/init =)` stay exactly as shipped (single-component sugar, one
+baseline and one shape in the same call), and the existing plain-distribution
+→ `GP()` deprecation in `rt_opts()` is untouched. A "bare prior" in the sense
+below never reaches the model, because that deprecation always wraps it in a
+`GP()` first, matching `main`'s default. So:
 
-## Deprecation
+1. **Default component for a bare prior**: unchanged — resolved by the
+   existing deprecation, not by this work.
+2. **Default anchor value**: unchanged — `rt_opts()`'s existing `gp_anchor`
+   logic is untouched.
 
-Deprecate, do not remove. The old inputs keep working for a release, translated
-onto the new grammar with `lifecycle::deprecate_warn`:
+## Deprecation (implemented)
 
-- `rt_opts(rw = 7)` → `initial(<default>) + RW(period = 7)`
-- user `breakpoint` column → `... + RW(knots = <dates where column == 1>)`
-- `rt_opts(rw = 7)` with the default GP → `initial(<default>) + GP() +
-  RW(period = 7)` (the composed case)
+`rt_opts(rw = )` and the `breakpoint` column now translate onto the composed
+grammar (via `lifecycle::deprecate_warn`/`deprecate_warn`) instead of being
+dropped:
 
-Honouring the `breakpoint` column losslessly requires irregular date-anchored
-knots on `RW()`, so knots are parity work, not a later addition.
+- `rt_opts(rw = 7)` composes `+ RW(period = 7)` onto whatever `prior` already
+  resolved to (the default `GP()`, an explicit prior, or the user's own
+  `GP()`/`RW()`) — in `rt_opts()` itself, since it needs no data.
+- the `breakpoint` column composes `+ RW(knots = <positions>)` onto `rt$prior`
+  — in `estimate_infections()`, where the data (and hence the knot positions)
+  is known. See `resolve_legacy_breakpoints()`.
+- if the user's own prior already contains an RW component, both shims skip
+  composing (rather than risk a conflicting/second random walk) and warn
+  instead that the deprecated input was ignored.
+
+Honouring the `breakpoint` column losslessly required irregular date-anchored
+knots on `RW()` (`RW(knots = <Date>|<integer>)`), implemented alongside the
+shims rather than deferred: a new Stan `rw_dev_knots` (isolated from the
+unchanged, period-based `rw_dev`) and a `rw_knots`/`rw_knots_n`/
+`rw_knots_offset` data block. `Date` knots resolve to plain time-indices only
+once the data is known (`resolve_state_dates()`), so a spec built before the
+data is seen (and reused across `regional_epinow()`'s regions) still works.
+
+The vestigial `bp_n`/`bp_effects`/`bp_sd`/`breakpoints` Stan machinery (already
+dead: forced to `bp_n = 0` by the pre-existing `use_breakpoints` deprecation,
+so it no longer affected `R`) was removed rather than kept alongside the real
+replacement.
 
 ## Implementation sketch
 
