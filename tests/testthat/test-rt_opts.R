@@ -64,9 +64,28 @@ test_that("rt_opts errors when pop is passed as numeric", {
   )
 })
 
-test_that("the rw argument is deprecated and ignored", {
+test_that("the rw argument is deprecated but composed onto the prior", {
   expect_warning(result <- rt_opts(rw = 7), "deprecated")
   expect_equal(result$rw, 0)
+  # the default prior (a GP) keeps its GP component and gains a weekly RW
+  expect_s3_class(result$prior, "trajectory_spec")
+  types <- vapply(result$prior$components, `[[`, character(1), "type")
+  expect_setequal(types, c("gp", "rw"))
+  rw_comp <- result$prior$components[[which(types == "rw")]]
+  expect_identical(rw_comp$settings$period, 7L)
+})
+
+test_that("the rw argument is skipped (with a warning) if prior already has a random walk", {
+  expect_warning(
+    expect_warning(
+      result <- rt_opts(prior = RW(init = LogNormal(1, 1)), rw = 7),
+      "deprecated"
+    ),
+    "already specifies"
+  )
+  # the explicit RW's own (default) period is untouched, not overridden
+  expect_length(result$prior$components, 1)
+  expect_identical(result$prior$components[[1]]$settings$period, 1L)
 })
 
 test_that("the GP variant is set through the prior anchor", {

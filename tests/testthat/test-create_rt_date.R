@@ -1,10 +1,41 @@
+test_that("resolve_legacy_breakpoints composes RW(knots=) from the column", {
+  rt <- rt_opts(prior = GP(mean = LogNormal(1, 1)))
+  expect_warning(
+    result <- resolve_legacy_breakpoints(rt, c(0, 0, 1, 0, 0, 1, 0)),
+    "deprecated"
+  )
+  types <- vapply(result$prior$components, `[[`, character(1), "type")
+  expect_setequal(types, c("gp", "rw"))
+  rw_comp <- result$prior$components[[which(types == "rw")]]
+  expect_identical(rw_comp$settings$knots, c(3L, 6L))
+})
+
+test_that("resolve_legacy_breakpoints is a no-op when there are no breakpoints", {
+  rt <- rt_opts(prior = GP(mean = LogNormal(1, 1)))
+  expect_identical(resolve_legacy_breakpoints(rt, c(0, 0, 0)), rt)
+  expect_identical(resolve_legacy_breakpoints(rt, NULL), rt)
+  expect_identical(resolve_legacy_breakpoints(NULL, c(1, 0)), NULL)
+})
+
+test_that("resolve_legacy_breakpoints respects use_breakpoints = FALSE", {
+  rt <- rt_opts(prior = GP(mean = LogNormal(1, 1)), use_breakpoints = FALSE)
+  expect_identical(resolve_legacy_breakpoints(rt, c(0, 1, 0)), rt)
+})
+
+test_that("resolve_legacy_breakpoints warns and skips if prior already has an RW", {
+  rt <- rt_opts(prior = RW(init = LogNormal(1, 1)))
+  expect_warning(
+    result <- resolve_legacy_breakpoints(rt, c(0, 1, 0)),
+    "already specifies"
+  )
+  expect_identical(result, rt)
+})
+
 test_that("create_rt_data returns expected default values", {
   result <- create_rt_data()
 
   expect_type(result, "list")
   expect_equal(result$estimate_r, 1)
-  expect_equal(result$bp_n, 0)
-  expect_equal(result$breakpoints, numeric(0))
   expect_equal(result$use_pop, 0)
   expect_equal(result$future_time, 0)
 })
@@ -29,28 +60,10 @@ test_that("create_rt_data handles custom rt_opts correctly", {
   expect_equal(result$future_time, 7)
 })
 
-test_that("create_rt_data deprecates and ignores breakpoints", {
-  expect_warning(
-    result <- create_rt_data(rt_opts(use_breakpoints = TRUE),
-      breakpoints = c(1, 0, 1, 0, 1)
-    ),
-    "deprecated"
-  )
-  expect_equal(result$bp_n, 0)
-})
-
 test_that("rt_opts(future) is deprecated but still sets the future time", {
   lifecycle::expect_deprecated(rt <- rt_opts(future = "project"))
   result <- create_rt_data(rt, horizon = 7)
   expect_equal(result$future_time, 7)
-})
-
-test_that("create_rt_data handles zero sum breakpoints", {
-  result <- create_rt_data(rt_opts(use_breakpoints = TRUE),
-    breakpoints = rep(0, 5)
-  )
-
-  expect_equal(result$bp_n, 0)
 })
 
 test_that("create_rt_data warns when fixed population is smaller than cumulative cases", {

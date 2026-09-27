@@ -110,6 +110,47 @@ validate_future <- function(future) {
   match.arg(future, c("latest", "project", "estimate"))
 }
 
+#' Resolve `Date` knots on a state spec to time-step positions
+#'
+#' A random-walk component's `knots` may be given as dates ([RW()]), which
+#' are data-independent at construction time. This resolves them to 1-indexed
+#' positions into `dates` (the target parameter's own time frame) once the
+#' data is known, so a spec built before the data is seen (and reused across
+#' `regional_epinow()`'s regions) still works.
+#'
+#' @param spec A `<state_spec>`, or `NULL`.
+#' @param dates The `Date` vector giving the target parameter's trajectory
+#'   frame (its index 1 is `dates[1]`).
+#' @return `spec`, with any `Date` `knots` replaced by integer positions.
+#' @keywords internal
+resolve_state_dates <- function(spec, dates) {
+  if (is.null(spec) || !is_state_spec(spec) || length(spec$components) == 0) {
+    return(spec)
+  }
+  spec$components <- lapply(spec$components, function(comp) {
+    if (identical(comp$type, "rw") && inherits(comp$settings$knots, "Date")) {
+      idx <- match(comp$settings$knots, dates)
+      if (anyNA(idx)) {
+        cli_abort(
+          c(
+            "!" = "Some {.arg knots} dates were not found in the data's date
+            column."
+          )
+        )
+      }
+      comp$settings$knots <- sort(as.integer(idx))
+    }
+    comp
+  })
+  if (!is.null(spec$type)) {
+    # a single-component spec (GP()/RW(), not a composed trajectory_spec)
+    # mirrors its one component's settings at the top level for
+    # print()/plot(); keep that mirror in sync with the resolved copy
+    spec$settings <- spec$components[[1]]$settings
+  }
+  spec
+}
+
 #' @rdname state
 #' @param basis_prop Numeric, the proportion of time points to use as basis
 #'   functions for the Gaussian process. Defaults to 0.2.
@@ -172,7 +213,13 @@ GP <- function(mean, init,
 #' @param period Integer; the number of time steps between random walk steps,
 #'   i.e. the value is held constant for `period` steps before changing.
 #'   Defaults to 1 (a step every time point). Set `period = 7` for a weekly
-#'   random walk.
+#'   random walk. Supply at most one of `period` or `knots`.
+#' @param knots A `<Date>` vector or an integer vector of 1-indexed time-step
+#'   positions giving the points at which the random walk takes a new step
+#'   (irregular breakpoints), instead of a regular `period`. Dates are
+#'   resolved against the data's own date column when the model is fit, so a
+#'   single spec is safe to reuse across `regional_epinow()`'s regions.
+#'   Supply at most one of `period` or `knots`.
 #' @importFrom checkmate assert_class assert_integerish
 #' @export
 #' @examples
@@ -182,14 +229,42 @@ GP <- function(mean, init,
 #' RW(mean = Normal(mean = 5, sd = 1), sd = Normal(mean = 0, sd = 0.05))
 #' # weekly random walk
 #' RW(init = Normal(mean = 5, sd = 1), period = 7)
+#' # irregular breakpoints at known dates
+#' RW(init = Normal(mean = 5, sd = 1),
+#'   knots = as.Date(c("2020-03-23", "2020-06-15"))
+#' )
 #' # project the random walk into the forecast horizon
 #' RW(init = Normal(mean = 5, sd = 1), future = "project")
 RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1,
-               future = "latest") {
+               knots = NULL, future = "latest") {
   assert_class(sd, "dist_spec")
-  assert_integerish(period, lower = 1, len = 1)
+  if (!is.null(knots)) {
+    if (!missing(period)) {
+      cli_abort(
+        c("!" = "Supply at most one of {.arg period} or {.arg knots}.")
+      )
+    }
+    if (!inherits(knots, "Date") && !is.numeric(knots)) {
+      cli_abort(
+        c(
+          "!" = "{.arg knots} must be a {.cls Date} vector or an integer
+          vector of time-step positions."
+        )
+      )
+    }
+    if (is.numeric(knots)) {
+      assert_integerish(knots, lower = 1)
+      knots <- sort(as.integer(knots))
+    } else {
+      knots <- sort(knots)
+    }
+    period <- NULL
+  } else {
+    assert_integerish(period, lower = 1, len = 1)
+    period <- as.integer(period)
+  }
   new_state_spec(
-    "rw", mean, init, settings = list(sd = sd, period = as.integer(period)),
+    "rw", mean, init, settings = list(sd = sd, period = period, knots = knots),
     future = future
   )
 }

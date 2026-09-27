@@ -84,8 +84,19 @@ transformed data {
       comp_rw_offset[c] = n_rw_steps;
       comp_gp_offset[c] = n_gp_coef;
       if (comp_type[c] == 0) {
-        comp_rw_n[c] = free_window > 1 ?
-          to_int(ceil(1.0 * free_window / state_rw_period)) - 1 : 0;
+        int p = comp_pos[c];
+        if (rw_knots_n[p] > 0) {
+          // count this component's knots that fall within its own free
+          // window; get_state_trajectory reads exactly this many back out
+          int cnt = 0;
+          for (kk in 1:rw_knots_n[p]) {
+            if (rw_knots[rw_knots_offset[p] + kk] <= free_window) cnt += 1;
+          }
+          comp_rw_n[c] = cnt;
+        } else {
+          comp_rw_n[c] = free_window > 1 ?
+            to_int(ceil(1.0 * free_window / state_rw_period)) - 1 : 0;
+        }
         comp_gp_M[c] = 0;
         n_rw_steps += comp_rw_n[c];
       } else {
@@ -128,9 +139,6 @@ transformed data {
 parameters {
   vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
   array[estimate_r] real initial_infections;    // seed infections
-  // standard deviation of breakpoint effect
-  array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd;
-  vector[bp_n] bp_effects;                   // Rt breakpoint effects
   // delay parameters
   vector<lower = delay_params_lower>[delay_params_length] delay_params;
   // raw gamma values for estimated nonparametric delay PMFs;
@@ -193,6 +201,7 @@ transformed parameters {
     state_n_free, state_n_centre,
     comp_type, comp_pos,
     comp_rw_n, comp_rw_offset, state_rw_period,
+    rw_knots_n, rw_knots_offset, rw_knots,
     state_rw_steps,
     comp_gp_M, comp_gp_offset, state_gp_eta,
     gp_boundary_scale, gp_kernel, gp_nu,
@@ -210,6 +219,7 @@ transformed parameters {
     state_n_free, state_n_centre,
     comp_type, comp_pos,
     comp_rw_n, comp_rw_offset, state_rw_period,
+    rw_knots_n, rw_knots_offset, rw_knots,
     state_rw_steps,
     comp_gp_M, comp_gp_offset, state_gp_eta,
     gp_boundary_scale, gp_kernel, gp_nu,
@@ -241,6 +251,7 @@ transformed parameters {
         state_n_free, state_n_centre,
         comp_type, comp_pos,
         comp_rw_n, comp_rw_offset, state_rw_period,
+        rw_knots_n, rw_knots_offset, rw_knots,
         state_rw_steps,
         comp_gp_M, comp_gp_offset, state_gp_eta,
         gp_boundary_scale, gp_kernel, gp_nu,
@@ -273,6 +284,7 @@ transformed parameters {
         state_n_free, state_n_centre,
         comp_type, comp_pos,
         comp_rw_n, comp_rw_offset, state_rw_period,
+        rw_knots_n, rw_knots_offset, rw_knots,
         state_rw_steps,
         comp_gp_M, comp_gp_offset, state_gp_eta,
         gp_boundary_scale, gp_kernel, gp_nu,
@@ -415,10 +427,7 @@ model {
   if (estimate_r) {
     // priors on Rt
     profile("rt lp") {
-      rt_lp(
-        initial_infections, bp_effects, bp_sd, bp_n,
-        cases, initial_infections_guess
-      );
+      rt_lp(initial_infections, cases, initial_infections_guess);
     }
   }
 

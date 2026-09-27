@@ -1,6 +1,4 @@
 int estimate_r; // should the reproduction no be estimated (1 = yes)
-int bp_n; // no of breakpoints (0 = no breakpoints)
-array[t - seeding_time] int breakpoints; // when do breakpoints occur
 int use_pop; // use population size (0 = no; 1 = forecasts; 2 = all)
 real<lower = 0> pop_floor; // Minimum susceptible population (numerical stability floor)
 int<lower = 0> delay_id_generation_time; // id of generation time

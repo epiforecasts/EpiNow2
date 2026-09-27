@@ -210,6 +210,23 @@ estimate_infections <- function(data,
     }
     i_prior <- GP(init = LogNormal(mean = i0_guess, sd = i0_guess))
   }
+
+  # states run over one of two time frames: the latent-infections state (I)
+  # spans the full seeding + observed + horizon window ("t"); every other
+  # state spans the observed + horizon window after seeding ("ot_h"). A
+  # `<state_spec>`'s `Date` knots (RW()) and the legacy `breakpoint` column are
+  # resolved against the right frame here, once the data is known.
+  ot_h_dates <- model_data$date[(seeding_time + 1):nrow(model_data)]
+  if (renewal) {
+    rt <- resolve_legacy_breakpoints(
+      rt, model_data$breakpoint[(seeding_time + 1):nrow(model_data)]
+    )
+    rt$prior <- resolve_state_dates(rt$prior, ot_h_dates)
+  }
+  i_prior <- resolve_state_dates(i_prior, model_data$date)
+  obs$scale <- resolve_state_dates(obs$scale, ot_h_dates)
+  obs$dispersion <- resolve_state_dates(obs$dispersion, ot_h_dates)
+
   params <- list(
     make_param("R", if (renewal) rt$prior else NULL, lower_bound = 0),
     make_param("I", i_prior, lower_bound = 0),

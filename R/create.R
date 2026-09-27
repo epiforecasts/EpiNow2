@@ -59,9 +59,6 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #' `rt = NULL`. The non-mechanistic model internally uses the setting
 #' `rt = rt_opts(use_rt = FALSE)`.
 #'
-#' @param breakpoints An integer vector (binary) indicating the location of
-#' breakpoints.
-#'
 #' @param horizon Numeric, forecast horizon.
 #'
 #' @param data A `data.table` of case data (optional). Used for validation
@@ -80,15 +77,9 @@ create_future_rt <- function(future = c("latest", "project", "estimate"),
 #'
 #' # settings when no Rt is desired
 #' create_rt_data(rt = NULL)
-#'
-#' # using breakpoints
-#' create_rt_data(rt_opts(use_breakpoints = TRUE), breakpoints = rep(1, 10))
-#'
-#' # using random walk
-#' create_rt_data(rt_opts(rw = 7), breakpoints = rep(1, 10))
 #' }
-create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
-                           delay = 0, horizon = 0, data = NULL) {
+create_rt_data <- function(rt = rt_opts(), delay = 0, horizon = 0,
+                           data = NULL) {
   # Define if GP is on or off
   if (is.null(rt)) {
     rt <- rt_opts(use_rt = FALSE)
@@ -98,33 +89,6 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     future = rt$future,
     delay = delay
   )
-  # apply random walk
-  if (rt$rw != 0) {
-    if (is.null(breakpoints)) {
-      cli_abort(
-        c(
-          "!" = "breakpoints must be supplied when using random walk."
-        )
-      )
-    }
-
-    breakpoints <- seq_along(breakpoints)
-    breakpoints <- floor(breakpoints / rt$rw)
-    if (rt$future != "project") {
-      max_bps <- length(breakpoints) - horizon + future_rt$from
-      if (max_bps < length(breakpoints)) {
-        breakpoints[(max_bps + 1):length(breakpoints)] <- breakpoints[max_bps]
-      }
-    }
-  } else {
-    breakpoints <- cumsum(breakpoints)
-  }
-
-  if (sum(breakpoints) == 0) {
-    rt$use_breakpoints <- FALSE
-  }
-  # add a shift for 0 effect in breakpoints
-  breakpoints <- breakpoints + 1
 
   # Get pop_floor value
   pop_floor_value <- rt$pop_floor
@@ -149,26 +113,9 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     }
   }
 
-  # breakpoints (an out-of-step random walk on Rt) are superseded by the random
-  # walk prior; with Rt expressed as a state they are no longer applied
-  bp_n <- ifelse(rt$use_breakpoints, max(breakpoints) - 1, 0)
-  if (bp_n > 0) {
-    deprecate_warn(
-      "1.10.0", "rt_opts(use_breakpoints)",
-      details = paste(
-        "Breakpoints are superseded by a random-walk Rt prior",
-        "(`rt_opts(prior = RW(...))`) and are now ignored."
-      )
-    )
-    bp_n <- 0
-    breakpoints <- rep(1L, length(breakpoints))
-  }
-
   # map settings to underlying gp stan requirements
   rt_data <- list(
     estimate_r = as.numeric(rt$use_rt),
-    bp_n = bp_n,
-    breakpoints = breakpoints,
     use_pop =
       as.integer(rt$pop != Fixed(0)) + as.integer(rt$pop_period == "all"),
     pop_floor = pop_floor_value,
@@ -179,6 +126,52 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
   )
   rt_data
 }
+
+#' Translate a legacy `breakpoint` column onto the composed RW() interface
+#'
+#' A `breakpoint` column (see [add_breakpoints()]) used to drive an
+#' out-of-step random walk on Rt directly in Stan. Rt is now a state, so an
+#' irregular random walk is expressed as `RW(knots = ...)`; this composes one
+#' onto the Rt prior from the column, preserving the previous behaviour.
+#'
+#' @param rt An `<rt_opts>` object (or `NULL`, in which case Rt is not
+#'   estimated and this is a no-op).
+#' @param breakpoints The `breakpoint` column, in the same (observed +
+#'   horizon) time frame as the Rt trajectory.
+#' @return `rt`, with `rt$prior` composed with `RW(knots = ...)` when
+#'   `breakpoints` carries real breakpoints and `rt$use_breakpoints` allows
+#'   it; unchanged otherwise.
+#' @keywords internal
+resolve_legacy_breakpoints <- function(rt, breakpoints) {
+  if (is.null(rt) || !isTRUE(rt$use_breakpoints) || is.null(breakpoints) ||
+        sum(breakpoints, na.rm = TRUE) == 0) {
+    return(rt)
+  }
+  has_rw <- is_state_spec(rt$prior) &&
+    any(vapply(rt$prior$components, function(c) identical(c$type, "rw"),
+      logical(1)
+    ))
+  if (has_rw) {
+    cli_warn(
+      c(
+        "!" = "The {.field breakpoint} column is ignored because {.arg prior}
+        already specifies a random walk."
+      )
+    )
+    return(rt)
+  }
+  deprecate_warn(
+    "1.10.0", "add_breakpoints()",
+    details = paste(
+      "A `breakpoint` column is now composed onto the Rt prior as",
+      "`rt_opts(prior = ... + RW(knots = ...))`, matching the previous",
+      "behaviour. Specify the random walk directly for a stable interface."
+    )
+  )
+  rt$prior <- rt$prior + RW(knots = which(breakpoints == 1))
+  rt
+}
+
 #' Create Back Calculation Data
 #'
 #' @description
@@ -298,7 +291,6 @@ create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
   stan_data <- c(
     stan_data,
     create_rt_data(rt,
-      breakpoints = cases$breakpoint,
       delay = stan_data$seeding_time, horizon = stan_data$horizon,
       data = data
     )
@@ -394,13 +386,6 @@ create_initial_conditions <- function(stan_data, params) {
       out$initial_infections <- array(numeric(0))
     }
 
-    if (stan_data$bp_n > 0) {
-      out$bp_sd <- array(rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
-      out$bp_effects <- array(rnorm(stan_data$bp_n, 0, 0.1))
-    } else {
-      out$bp_sd <- array(numeric(0))
-      out$bp_effects <- array(numeric(0))
-    }
     if (stan_data$week_effect > 0) {
       out$day_of_week_simplex <- array(
         rep(1 / stan_data$week_effect, stan_data$week_effect)
@@ -449,7 +434,18 @@ create_initial_conditions <- function(stan_data, params) {
         for (ci in seq_len(stan_data$state_comp_n[s])) {
           cc <- stan_data$state_comp_offset[s] + ci
           if (stan_data$comp_type[cc] == 0) {
-            n_rw_steps <- n_rw_steps + max(0, ceiling(free / rw_period) - 1)
+            cp <- stan_data$comp_pos[cc]
+            n_rw_steps <- n_rw_steps + if (stan_data$rw_knots_n[cp] > 0) {
+              # knots-based: one step per knot within this component's own
+              # free window, mirroring the Stan transformed-data count
+              knots <- stan_data$rw_knots[
+                stan_data$rw_knots_offset[cp] +
+                  seq_len(stan_data$rw_knots_n[cp])
+              ]
+              sum(knots <= free)
+            } else {
+              max(0, ceiling(free / rw_period) - 1)
+            }
           } else {
             n_gp_coef <- n_gp_coef +
               ceiling(free * stan_data$gp_basis_prop[stan_data$comp_pos[cc]])
@@ -961,6 +957,10 @@ create_state_data <- function(params, state_flags,
     n_rw_components = 0L,
     rw_sd_id = array(integer(0)),
     state_rw_period = 1L,
+    n_rw_knots = 0L,
+    rw_knots_n = array(integer(0)),
+    rw_knots_offset = array(integer(0)),
+    rw_knots = array(integer(0)),
     n_gp_components = 0L,
     gp_basis_prop = array(numeric(0)),
     gp_boundary_scale = array(numeric(0)),
@@ -1020,6 +1020,9 @@ create_state_data <- function(params, state_flags,
   comp_pos <- integer(0)
   rw_sd_id <- integer(0)
   rw_period <- integer(0)
+  rw_knots_n <- integer(0)
+  rw_knots_offset <- integer(0)
+  rw_knots <- integer(0)
   gp_kernel <- integer(0)
   gp_nu <- numeric(0)
   gp_alpha_id <- integer(0)
@@ -1098,7 +1101,23 @@ create_state_data <- function(params, state_flags,
       reg <- register_hyper(hyper_params, "rw_sd", name, step_sd)
       hyper_params <- reg$params
       rw_sd_id <- c(rw_sd_id, reg$id)
-      rw_period <- c(rw_period, comp$settings$period %||% 1L)
+      knots <- comp$settings$knots
+      if (!is.null(knots)) {
+        if (!is.numeric(knots) || inherits(knots, "Date")) {
+          cli_abort(c(
+            "!" = "{.var {name}}'s random-walk {.arg knots} must be resolved
+            to time-step positions before reaching the model."
+          ))
+        }
+        rw_knots_n <- c(rw_knots_n, length(knots))
+        rw_knots_offset <- c(rw_knots_offset, length(rw_knots))
+        rw_knots <- c(rw_knots, as.integer(knots))
+        # not period-based: excluded from the shared-period check below
+      } else {
+        rw_knots_n <- c(rw_knots_n, 0L)
+        rw_knots_offset <- c(rw_knots_offset, length(rw_knots))
+        rw_period <- c(rw_period, comp$settings$period %||% 1L)
+      }
     } else {
       gp <- comp$settings
       if (gp$kernel == "periodic") {
@@ -1153,6 +1172,10 @@ create_state_data <- function(params, state_flags,
     n_rw_components = n_rw,
     rw_sd_id = array(as.integer(rw_sd_id)),
     state_rw_period = state_rw_period,
+    n_rw_knots = length(rw_knots),
+    rw_knots_n = array(as.integer(rw_knots_n)),
+    rw_knots_offset = array(as.integer(rw_knots_offset)),
+    rw_knots = array(as.integer(rw_knots)),
     n_gp_components = n_gp,
     gp_basis_prop = array(gp_basis_prop),
     gp_boundary_scale = array(gp_boundary_scale),

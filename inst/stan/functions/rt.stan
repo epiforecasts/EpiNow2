@@ -11,26 +11,20 @@
 /**
  * Calculate the log-probability of the reproduction number (Rt) priors
  *
- * This function adds the log density contributions from priors on initial infections
- * and breakpoint effects to the target.
+ * This function adds the log density contribution from the prior on initial
+ * infections to the target. Rt itself (including any random walk or Gaussian
+ * process on it) is a state, whose deviation and hyperparameter priors are
+ * handled where states are assembled (see state.stan); this function is left
+ * for the one Rt-specific prior that is not part of that machinery.
  *
  * @param initial_infections_scale Array of initial infection values
- * @param bp_effects Vector of breakpoint effects
- * @param bp_sd Array of breakpoint standard deviations
- * @param bp_n Number of breakpoints
  * @param cases Array of observed case counts
  * @param initial_infections_guess Initial guess for infections based on cases
  *
  * @ingroup rt_estimation
  */
-void rt_lp(array[] real initial_infections_scale, vector bp_effects,
-           array[] real bp_sd, int bp_n, array[] int cases,
+void rt_lp(array[] real initial_infections_scale, array[] int cases,
            real initial_infections_guess) {
-  //breakpoint effects on Rt
-  if (bp_n > 0) {
-    bp_sd[1] ~ normal(0, 0.1) T[0,];
-    bp_effects ~ normal(0, bp_sd[1]);
-  }
   initial_infections_scale ~ normal(initial_infections_guess, 2);
 }
 

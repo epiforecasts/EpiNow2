@@ -423,20 +423,32 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
     pop_floor = pop_floor,
     growth_method = arg_match(growth_method)
   )
-  # rw is superseded by a random-walk prior (rt_opts(prior = RW(...)))
+  # rw is superseded by a random-walk prior (rt_opts(prior = RW(...))); compose
+  # it onto the existing prior so behaviour is preserved rather than dropped
   if (rw != 0) {
     deprecate_warn(
       "1.10.0", "rt_opts(rw)",
       details = paste(
-        "Specify a random-walk Rt with `rt_opts(prior = RW(...))`.",
-        "The `rw` argument is now ignored."
+        "Specify a random-walk Rt with `rt_opts(prior = ... + RW(period = ...))`.",
+        "The `rw` argument is now composed automatically, matching the",
+        "previous behaviour."
       )
     )
+    has_rw <- isTRUE(use_rt) && is_state_spec(prior) &&
+      any(vapply(prior$components, function(c) identical(c$type, "rw"),
+        logical(1)
+      ))
+    if (has_rw) {
+      cli_warn(
+        c(
+          "!" = "{.arg rw} is ignored because {.arg prior} already specifies
+          a random walk."
+        )
+      )
+    } else if (isTRUE(use_rt) && is_state_spec(prior)) {
+      prior <- prior + RW(period = rw)
+    }
     opts$rw <- 0
-  }
-  # replace default settings with those specified by user
-  if (opts$rw > 0) {
-    opts$use_breakpoints <- TRUE
   }
 
   # the Rt prior may be a constant/uncertain value (<dist_spec>) or a

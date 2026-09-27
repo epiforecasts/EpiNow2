@@ -33,6 +33,86 @@ test_that("RW() accepts a custom step sd prior", {
   expect_equal(mean(rw$settings$sd), 0)
 })
 
+test_that("RW() accepts integer knots instead of a period", {
+  rw <- RW(init = Normal(mean = 1, sd = 1), knots = c(20, 5, 45))
+  expect_null(rw$settings$period)
+  expect_identical(rw$settings$knots, c(5L, 20L, 45L)) # sorted
+})
+
+test_that("RW() accepts Date knots, unresolved", {
+  dates <- as.Date(c("2020-03-23", "2020-02-01"))
+  rw <- RW(init = Normal(mean = 1, sd = 1), knots = dates)
+  expect_s3_class(rw$settings$knots, "Date")
+  expect_identical(rw$settings$knots, sort(dates))
+})
+
+test_that("RW() rejects supplying both period and knots", {
+  expect_error(
+    RW(init = Normal(1, 1), period = 7, knots = c(10, 20)),
+    "at most one"
+  )
+})
+
+test_that("RW() validates knots type", {
+  expect_error(RW(init = Normal(1, 1), knots = "a"), "Date.*integer")
+})
+
+test_that("resolve_state_dates() resolves Date knots against a date frame", {
+  dates <- as.Date("2020-01-01") + 0:29
+  rw <- RW(init = Normal(1, 1), knots = as.Date(c("2020-01-11", "2020-01-21")))
+  resolved <- resolve_state_dates(rw, dates)
+  expect_identical(resolved$settings$knots, c(11L, 21L))
+})
+
+test_that("resolve_state_dates() leaves integer knots and NULL specs alone", {
+  dates <- as.Date("2020-01-01") + 0:29
+  rw <- RW(init = Normal(1, 1), knots = c(5L, 10L))
+  expect_identical(resolve_state_dates(rw, dates)$settings$knots, c(5L, 10L))
+  expect_null(resolve_state_dates(NULL, dates))
+})
+
+test_that("resolve_state_dates() errors on a date not in the frame", {
+  dates <- as.Date("2020-01-01") + 0:9
+  rw <- RW(init = Normal(1, 1), knots = as.Date("2021-01-01"))
+  expect_error(resolve_state_dates(rw, dates), "not found")
+})
+
+test_that("resolve_state_dates() resolves knots inside a composed spec", {
+  dates <- as.Date("2020-01-01") + 0:29
+  spec <- initial(LogNormal(1, 1)) + GP() +
+    RW(knots = as.Date("2020-01-16"))
+  resolved <- resolve_state_dates(spec, dates)
+  rw_comp <- resolved$components[[
+    which(vapply(resolved$components, `[[`, character(1), "type") == "rw")
+  ]]
+  expect_identical(rw_comp$settings$knots, 16L)
+})
+
+test_that("create_stan_params emits knots-based random walk data", {
+  params <- list(
+    make_param("R", initial(LogNormal(1, 1)) + RW(knots = c(5L, 15L)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "R")
+  expect_identical(out$n_rw_knots, 2L)
+  expect_identical(out$rw_knots_n, array(2L))
+  expect_identical(out$rw_knots_offset, array(0L))
+  expect_identical(out$rw_knots, array(c(5L, 15L)))
+})
+
+test_that("create_stan_params keeps period-based components out of rw_knots", {
+  params <- list(
+    make_param("R", initial(LogNormal(1, 1)) + RW(period = 7),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(params, states_supported = "R")
+  expect_identical(out$n_rw_knots, 0L)
+  expect_identical(out$rw_knots_n, array(0L))
+  expect_identical(out$state_rw_period, 7L)
+})
+
 test_that("state constructors accept a known trajectory vector", {
   gp <- GP(mean = c(1, 2, 3, 2, 1))
   expect_true(is.numeric(gp$prior))

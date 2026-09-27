@@ -96,6 +96,46 @@ vector rw_dev(int n_free, int n_centre, vector steps, int period) {
 }
 
 /**
+ * Build a random-walk deviation on explicit knots
+ *
+ * As `rw_dev`, but a step starts at each of `knots` (absolute, 1-indexed time
+ * points within the free window, ascending) rather than on a regular grid.
+ * `knots` has already been clipped to the free window by the caller, so
+ * `num_elements(knots)` equals `num_elements(steps)`.
+ *
+ * @param n_free Window over which the walk varies
+ * @param n_centre Leading window used to centre the walk for identifiability
+ * @param steps Random walk steps, one per knot
+ * @param knots Ascending 1-indexed time points at which a new step starts
+ * @return A link-scale deviation of length n_free
+ *
+ * @ingroup estimates_smoothing
+ */
+vector rw_dev_knots(int n_free, int n_centre, vector steps,
+                    array[] int knots) {
+  vector[n_free] dev = rep_vector(0, n_free);
+  int n_steps = num_elements(steps);
+  if (n_steps > 0) {
+    vector[n_steps + 1] cum;
+    cum[1] = 0;
+    cum[2:(n_steps + 1)] = cumulative_sum(steps);
+    int kn = num_elements(knots);
+    int seg = 1; // current segment (1-indexed into cum)
+    int ki = 1; // next knot to cross
+    for (i in 1:n_free) {
+      while (ki <= kn && knots[ki] <= i) {
+        seg += 1;
+        ki += 1;
+      }
+      dev[i] = cum[seg];
+    }
+    // centre over the observation window for identifiability
+    dev -= mean(dev[1:n_centre]);
+  }
+  return dev;
+}
+
+/**
  * Build a single-component random-walk trajectory
  *
  * Combines the random-walk deviation with the baseline via `assemble_state`.
@@ -204,7 +244,12 @@ vector gp_trajectory(int t, int n_free, int n_centre, real level, vector noise,
  * @param comp_pos Index of each component within its type group
  * @param comp_rw_n Number of random walk steps of each component
  * @param comp_rw_offset Offset of each component into state_rw_steps
- * @param state_rw_period Number of time steps between random walk steps
+ * @param state_rw_period Number of time steps between random walk steps (the
+ *   regular grid; ignored by a component with its own knots)
+ * @param rw_knots_n Number of knots of each RW component (0 = regular grid)
+ * @param rw_knots_offset Offset of each RW component into rw_knots
+ * @param rw_knots Ascending 1-indexed knots, clipped to each component's own
+ *   free window in transformed data
  * @param state_rw_steps Flat random walk steps across RW components
  * @param comp_gp_M Number of GP basis functions of each component
  * @param comp_gp_offset Offset of each component into state_gp_eta
@@ -227,6 +272,7 @@ vector get_state_trajectory(
   array[] int state_n_free, array[] int state_n_centre,
   array[] int comp_type, array[] int comp_pos,
   array[] int comp_rw_n, array[] int comp_rw_offset, int state_rw_period,
+  array[] int rw_knots_n, array[] int rw_knots_offset, array[] int rw_knots,
   vector state_rw_steps,
   array[] int comp_gp_M, array[] int comp_gp_offset, vector state_gp_eta,
   array[] real gp_boundary_scale, array[] int gp_kernel, array[] real gp_nu,
@@ -243,7 +289,16 @@ vector get_state_trajectory(
           vector[comp_rw_n[c]] steps = segment(
             state_rw_steps, comp_rw_offset[c] + 1, comp_rw_n[c]
           );
-          dev += rw_dev(nf, nc, steps, state_rw_period);
+          int p = comp_pos[c];
+          if (rw_knots_n[p] > 0) {
+            // knots are clipped to comp_rw_n[c] entries by transformed data
+            dev += rw_dev_knots(
+              nf, nc, steps,
+              segment(rw_knots, rw_knots_offset[p] + 1, comp_rw_n[c])
+            );
+          } else {
+            dev += rw_dev(nf, nc, steps, state_rw_period);
+          }
         } else {
           int p = comp_pos[c];
           int M = comp_gp_M[c];

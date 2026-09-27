@@ -41,6 +41,8 @@ test_that("get_state_trajectory returns a constant trajectory when no state is a
     state_n_free = integer(0), state_n_centre = integer(0),
     comp_type = integer(0), comp_pos = integer(0),
     comp_rw_n = integer(0), comp_rw_offset = integer(0), state_rw_period = 1,
+    rw_knots_n = integer(0), rw_knots_offset = integer(0),
+    rw_knots = integer(0),
     state_rw_steps = numeric(0),
     comp_gp_M = integer(0), comp_gp_offset = integer(0),
     state_gp_eta = numeric(0),
