@@ -12,7 +12,8 @@ gp_ls_range(stan_data)
 \value{
 A numeric vector giving the shortest and longest lengthscale (in
 days) that the boundary factor and number of basis functions can
-approximate accurately, or \code{NULL} for the periodic kernel.
+approximate accurately. The longest is \code{Inf} for the periodic kernel,
+which has no boundary.
 }
 \description{
 Range of lengthscales the approximate GP represents accurately

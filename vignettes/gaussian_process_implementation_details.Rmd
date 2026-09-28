@@ -160,10 +160,12 @@ Shorter lengthscales need more basis functions.
 
 By default, `EpiNow2` sets $c$ from the 95% quantile of the lengthscale prior and then $m$ from the 5% quantile, so that lengthscales across the bulk of the prior are approximated accurately.
 The Matérn 3/2 constants are used for the Ornstein-Uhlenbeck kernel, which @approxGP do not cover.
-The periodic kernel does not use a boundary, and uses $m = 0.2 t_\mathrm{GP}$ by default, where $t_\mathrm{GP}$ is the number of time points to which the Gaussian Process is applied.
+The periodic kernel does not use a boundary, and @approxGP (Appendix B) show that it is approximated accurately when $m \geq 3.72 / \ell$.
+By default, `EpiNow2` sets $m$ for the periodic kernel from the 5% quantile of the lengthscale prior.
 
 After fitting, `EpiNow2` applies the lengthscale diagnostic of @approxGP (Section 4.5).
 A warning is given if the posterior median lengthscale is shorter than the $3.42 c S / m$ days that $m$ basis functions can represent, or longer than the $c S / 4.5$ days that the boundary supports.
+For the periodic kernel only the first check applies, with $3.72 S / m$ days.
 Either can be addressed by adjusting the lengthscale prior, from which the settings are chosen, or by setting `basis_prop` and `boundary_scale` in `gp_opts()` directly.
 
 # Modelling the reproduction number

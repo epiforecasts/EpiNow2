@@ -423,17 +423,18 @@ gp_half_range <- function(n) {
 #' `c` and `m` basis functions, lengthscales `l` are approximated accurately
 #' when `m >= m_factor * c * S / l` and `c >= c_factor * l / S` (with
 #' `c >= 1.2`). The Matern 3/2 constants are used for Matern kernels other
-#' than 5/2, as they are the most conservative published values. Returns
-#' `NULL` for the periodic kernel, which has no boundary.
+#' than 5/2, as they are the most conservative published values. The periodic
+#' kernel has no boundary, and needs `m >= m_factor * S / l` basis functions
+#' (Appendix B), so `c_factor` is `NA`.
 #'
 #' @param gp_type Integer kernel type as used in the Stan model (0: squared
 #'   exponential, 1: periodic, 2: Matern).
 #' @param nu Numeric Matern order.
-#' @return A list with elements `m_factor` and `c_factor`, or `NULL`.
+#' @return A list with elements `m_factor` and `c_factor`.
 #' @keywords internal
 gp_approx_constants <- function(gp_type, nu) {
   if (gp_type == 1) {
-    return(NULL)
+    return(list(m_factor = 3.72, c_factor = NA_real_))
   }
   if (gp_type == 0 || is.infinite(nu)) {
     list(m_factor = 1.75, c_factor = 3.2)
@@ -500,8 +501,8 @@ gp_ls_quantiles <- function(ls, probs = c(0.05, 0.95)) {
 #' using [gp_approx_constants()]. The boundary factor is set by the upper
 #' (95%) prior quantile, as longer lengthscales need a wider boundary. The
 #' number of basis functions is then set by the lower (5%) prior quantile, as
-#' shorter lengthscales need more basis functions. The periodic kernel uses
-#' `basis_prop = 0.2` by default.
+#' shorter lengthscales need more basis functions. The periodic kernel has no
+#' boundary, so only the number of basis functions is chosen.
 #'
 #' @param gp A `<gp_opts>` object.
 #' @param n Length of the Gaussian process.
@@ -515,9 +516,10 @@ gp_basis_settings <- function(gp, n, gp_type) {
   L <- gp$boundary_scale
   basis_prop <- gp$basis_prop
   constants <- gp_approx_constants(gp_type, gp$matern_order)
-  if (is.null(constants)) {
+  periodic <- gp_type == 1
+  if (periodic) {
+    # not used by the periodic kernel
     L <- L %||% 1.5
-    basis_prop <- basis_prop %||% 0.2
   }
   if (is.null(L) || is.null(basis_prop)) {
     ls_quantiles <- gp_ls_quantiles(gp$ls)
@@ -526,7 +528,10 @@ gp_basis_settings <- function(gp, n, gp_type) {
     L <- max(1.2, constants$c_factor * ls_quantiles[2] / S)
   }
   if (is.null(basis_prop)) {
-    M <- ceiling(constants$m_factor * L * S / ls_quantiles[1])
+    M <- ceiling(
+      constants$m_factor * gp_boundary_factor(L, periodic) * S /
+        ls_quantiles[1]
+    )
   } else {
     M <- ceiling(n * basis_prop)
   }
@@ -538,18 +543,29 @@ gp_basis_settings <- function(gp, n, gp_type) {
 #' @param stan_data A list of Stan data as returned by [create_gp_data()].
 #' @return A numeric vector giving the shortest and longest lengthscale (in
 #'   days) that the boundary factor and number of basis functions can
-#'   approximate accurately, or `NULL` for the periodic kernel.
+#'   approximate accurately. The longest is `Inf` for the periodic kernel,
+#'   which has no boundary.
 #' @keywords internal
 gp_ls_range <- function(stan_data) {
   constants <- gp_approx_constants(stan_data$gp_type, stan_data$nu)
-  if (is.null(constants)) {
-    return(NULL)
-  }
+  periodic <- stan_data$gp_type == 1
   S <- gp_half_range(gp_noise_terms(stan_data))
   c(
-    constants$m_factor * stan_data$L * S / stan_data$M,
-    stan_data$L * S / constants$c_factor
+    constants$m_factor * gp_boundary_factor(stan_data$L, periodic) * S /
+      stan_data$M,
+    if (periodic) Inf else stan_data$L * S / constants$c_factor
   )
+}
+
+#' Boundary factor used when relating the lengthscale to the basis functions
+#'
+#' @param L Numeric boundary factor.
+#' @param periodic Logical, whether the kernel is periodic. The periodic
+#'   kernel has no boundary, so a factor of 1 is used.
+#' @return A numeric boundary factor.
+#' @keywords internal
+gp_boundary_factor <- function(L, periodic) {
+  if (periodic) 1 else L
 }
 
 #' Create Observation Model Settings

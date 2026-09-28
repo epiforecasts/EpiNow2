@@ -503,8 +503,7 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' functions. Defaults to `NULL`, in which case the number of basis functions
 #' is chosen from the lengthscale prior (see Details). Decreasing this value
 #' results in a decrease in accuracy but a faster compute time (with
-#' increasing it having the opposite effect). For the periodic kernel `NULL`
-#' corresponds to 0.2.
+#' increasing it having the opposite effect).
 #'
 #' @param boundary_scale Numeric, the boundary factor of the approximate
 #' Gaussian process relative to the half-range of the time points. Defaults to
@@ -523,7 +522,9 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' 5% and 95% quantiles of the lengthscale prior using the relationships in
 #' Section 4.3.1 of that paper, so that lengthscales in this range are
 #' approximated accurately. The Matern 3/2 relationships are used for the
-#' Ornstein-Uhlenbeck kernel, which the paper does not cover. After fitting,
+#' Ornstein-Uhlenbeck kernel, which the paper does not cover. The periodic
+#' kernel has no boundary, and its number of basis functions is chosen from
+#' the 5% quantile using the relationship in Appendix B. After fitting,
 #' a warning is given if the posterior median lengthscale lies outside the
 #' range that the approximation represents accurately.
 #'

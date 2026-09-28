@@ -329,9 +329,6 @@ check_gp_lengthscale <- function(rho, stan_data) {
     return(invisible(NULL))
   }
   ls_range <- gp_ls_range(stan_data)
-  if (is.null(ls_range)) {
-    return(invisible(NULL))
-  }
   ls_median <- median(rho)
   S <- gp_half_range(gp_noise_terms(stan_data))
   if (ls_median + 0.01 * S < ls_range[1]) {

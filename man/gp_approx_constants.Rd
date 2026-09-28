@@ -13,7 +13,7 @@ exponential, 1: periodic, 2: Matern).}
 \item{nu}{Numeric Matern order.}
 }
 \value{
-A list with elements \code{m_factor} and \code{c_factor}, or \code{NULL}.
+A list with elements \code{m_factor} and \code{c_factor}.
 }
 \description{
 Constants from Riutort-Mayol et al. (2023, Section 4.3.1)
@@ -21,7 +21,8 @@ Constants from Riutort-Mayol et al. (2023, Section 4.3.1)
 \code{c} and \code{m} basis functions, lengthscales \code{l} are approximated accurately
 when \code{m >= m_factor * c * S / l} and \code{c >= c_factor * l / S} (with
 \code{c >= 1.2}). The Matern 3/2 constants are used for Matern kernels other
-than 5/2, as they are the most conservative published values. Returns
-\code{NULL} for the periodic kernel, which has no boundary.
+than 5/2, as they are the most conservative published values. The periodic
+kernel has no boundary, and needs \code{m >= m_factor * S / l} basis functions
+(Appendix B), so \code{c_factor} is \code{NA}.
 }
 \keyword{internal}
