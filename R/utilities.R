@@ -427,6 +427,29 @@ stable_convolve <- function(a, b) {
   result
 }
 
+##' Widen the default Gaussian process magnitude prior for the
+##' nonmechanistic model
+##'
+##' The default `alpha` prior in [gp_opts()] is tuned for the renewal
+##' equation model, where the Gaussian process operates on `log(Rt)`. In the
+##' nonmechanistic model (`rt = NULL`), the Gaussian process operates on
+##' `log(infections)` directly, which typically needs a less constrained
+##' prior to represent realistic changes in infections. If the user has left
+##' `alpha` at its default, use a wider prior in that case.
+##'
+##' @param gp A `<gp_opts>` object, or `NULL` if the Gaussian process is
+##' disabled.
+##' @param rt A `<rt_opts>` object, or `NULL` if the nonmechanistic model is
+##' being used.
+##' @return `gp`, with `alpha` widened if applicable.
+##' @keywords internal
+apply_default_gp_alpha <- function(gp, rt) {
+  if (!is.null(gp) && is.null(rt) && isTRUE(attr(gp, "alpha_default"))) {
+    gp$alpha <- Normal(mean = 0, sd = 0.05)
+  }
+  gp
+}
+
 ##' Internal function to create a parameter list
 ##'
 ##' @param name Character, name of the parameter

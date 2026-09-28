@@ -151,6 +151,7 @@ estimate_infections <- function(data,
   if (!is.null(rt) && !rt$use_rt) {
     rt <- NULL
   }
+  gp <- apply_default_gp_alpha(gp, rt)
 
   # Check verbose settings and set logger to match
   if (verbose) {

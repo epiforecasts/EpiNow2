@@ -488,7 +488,10 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' the renewal model, logged infections in case of the nonmechanistic model).
 #' Defaults to a half-normal distribution with mean 0 and sd 0.01:
 #' `Normal(mean = 0, sd = 0.01)` (a lower limit of 0 will be enforced
-#' automatically to ensure positivity)
+#' automatically to ensure positivity). If left at its default and
+#' [estimate_infections()] is used with `rt = NULL` (the nonmechanistic
+#' model), a wider prior (sd 0.05) is used instead, since infections tend to
+#' need larger variations than `log(Rt)` to be modelled well.
 #'
 #' @param kernel Character string, the type of kernel required. Currently
 #' supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
@@ -534,6 +537,7 @@ gp_opts <- function(basis_prop = 0.2,
                     kernel = c("matern", "se", "ou", "periodic"),
                     matern_order = 3 / 2,
                     w0 = 1.0) {
+  alpha_default <- missing(alpha)
   kernel <- arg_match(kernel)
   if (kernel == "se") {
     matern_order <- Inf
@@ -561,6 +565,7 @@ gp_opts <- function(basis_prop = 0.2,
   )
 
   attr(gp, "class") <- c("gp_opts", class(gp))
+  attr(gp, "alpha_default") <- alpha_default
   gp
 }
 

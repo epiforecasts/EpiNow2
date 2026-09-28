@@ -38,7 +38,10 @@ expected standard deviation of the Gaussian process (logged Rt in case of
 the renewal model, logged infections in case of the nonmechanistic model).
 Defaults to a half-normal distribution with mean 0 and sd 0.01:
 \code{Normal(mean = 0, sd = 0.01)} (a lower limit of 0 will be enforced
-automatically to ensure positivity)}
+automatically to ensure positivity). If left at its default and
+\code{\link[=estimate_infections]{estimate_infections()}} is used with \code{rt = NULL} (the nonmechanistic
+model), a wider prior (sd 0.05) is used instead, since infections tend to
+need larger variations than \code{log(Rt)} to be modelled well.}
 
 \item{kernel}{Character string, the type of kernel required. Currently
 supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
