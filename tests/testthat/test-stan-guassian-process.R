@@ -184,10 +184,38 @@ test_that("default GP settings approximate the exact Matern 3/2 kernel", {
   n <- gp_noise_terms(data)
   PHI <- setup_gp(gp_data$M, gp_data$L, n, 0, gp_data$w0)
   for (rho in gp_ls_quantiles(gp_opts()$ls)) {
-    spd <- diagSPD_Matern32(1, 2 * rho / n, gp_data$L, gp_data$M)
+    spd <- diagSPD_Matern32(
+      1, rescale_gp_lengthscale(rho, n), gp_data$L, gp_data$M
+    )
     approx <- PHI %*% diag(spd^2) %*% t(PHI)
     d <- abs(outer(seq_len(n), seq_len(n), "-")) * sqrt(3) / rho
     exact <- (1 + d) * exp(-d)
+    expect_lt(max(abs(approx - exact)), 0.05)
+  }
+})
+
+test_that("rescale_gp_lengthscale matches the half-range of the GP", {
+  expect_equal(rescale_gp_lengthscale(21, 22), 21 / 10.5)
+  expect_equal(rescale_gp_lengthscale(21, 1), 42)
+})
+
+test_that("default GP settings approximate the exact periodic kernel", {
+  data <- list(
+    t = 67, seeding_time = 0, horizon = 7, future_fixed = 0, fixed_from = 0,
+    stationary = 0, estimate_r = 1
+  )
+  gp_data <- create_gp_data(gp_opts(kernel = "periodic"), data)
+  n <- gp_noise_terms(data)
+  PHI <- setup_gp(gp_data$M, gp_data$L, n, 1, gp_data$w0)
+  x <- seq_len(n)
+  x <- 2 * (x - mean(x)) / (n - 1)
+  for (rho in gp_ls_quantiles(gp_opts()$ls)) {
+    ls <- rescale_gp_lengthscale(rho, n)
+    spd <- diagSPD_Periodic(1, ls, gp_data$M)
+    approx <- PHI %*% diag(spd^2) %*% t(PHI)
+    # the constant (j = 0) term of the series is not modelled
+    exact <- exp(-2 * sin(gp_data$w0 * outer(x, x, "-") / 2)^2 / ls^2) -
+      besselI(ls^-2, 0, expon.scaled = TRUE)
     expect_lt(max(abs(approx - exact)), 0.05)
   }
 })

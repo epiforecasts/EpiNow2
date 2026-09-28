@@ -97,9 +97,18 @@ test_that("create_gp_data respects user-specified basis_prop and boundary_scale"
   )
 })
 
-test_that("create_gp_data falls back to basis_prop for the periodic kernel", {
+test_that("create_gp_data chooses M for the periodic kernel from the prior", {
   gp_data <- create_gp_data(gp_opts(kernel = "periodic"), default_data)
+  expect_equal(gp_data$M, ceiling(3.72 * 10.5 / default_ls_quantiles()[1]))
+  gp_data <- create_gp_data(
+    gp_opts(kernel = "periodic", basis_prop = 0.2), default_data
+  )
   expect_equal(gp_data$M, ceiling(22 * 0.2))
+})
+
+test_that("gp_ls_range has no upper limit for the periodic kernel", {
+  stan_data <- create_gp_data(gp_opts(kernel = "periodic"), default_data)
+  expect_equal(gp_ls_range(stan_data), c(3.72 * 10.5 / stan_data$M, Inf))
 })
 
 test_that("create_gp_data correctly handles future_fixed", {
@@ -150,8 +159,16 @@ test_that("check_gp_lengthscale warns when the lengthscale is outside the approx
 test_that("check_gp_lengthscale is silent when the GP is not used", {
   stan_data <- create_gp_data(NULL, default_data)
   expect_silent(check_gp_lengthscale(rep(1e-3, 10), stan_data))
+})
+
+test_that("check_gp_lengthscale warns for short periodic lengthscales", {
   stan_data <- create_gp_data(gp_opts(kernel = "periodic"), default_data)
-  expect_silent(check_gp_lengthscale(rep(1e-3, 10), stan_data))
+  range <- gp_ls_range(stan_data)
+  expect_silent(check_gp_lengthscale(rep(range[1] * 10, 10), stan_data))
+  expect_warning(
+    check_gp_lengthscale(rep(range[1] / 2, 10), stan_data),
+    "shorter"
+  )
 })
 
 test_that("check_gp_fit checks the lengthscale column of the params samples", {
