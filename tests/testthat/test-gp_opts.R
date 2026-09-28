@@ -26,3 +26,19 @@ test_that("gp_opts warns for uncommon Matern kernel orders", {
 test_that("gp_opts warns about uncommon Matern kernel orders", {
   expect_warning(gp_opts(matern_order = 2), "Uncommon Matern kernel order")
 })
+
+test_that("gp_opts errors for lengthscale priors it cannot choose settings from", {
+  expect_error(gp_opts(ls = Weibull(shape = 2, scale = 10)), "boundary_scale")
+  expect_silent(
+    gp_opts(
+      ls = Weibull(shape = 2, scale = 10), basis_prop = 0.2,
+      boundary_scale = 1.5
+    )
+  )
+  expect_silent(
+    gp_opts(
+      ls = Weibull(shape = 2, scale = 10), basis_prop = 0.2,
+      kernel = "periodic"
+    )
+  )
+})
