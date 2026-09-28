@@ -670,7 +670,7 @@ initialise_with_pathfinder <- function(stan, data, init, init_method,
     # use the pathfinder algorithm's estimate of the posterior, rather than
     # the supplied `init`, to initialise sampling
     init <- stan$object$pathfinder(
-      data = data, refresh = ifelse(verbose, 50, 0)
+      data = data, seed = stan$seed, refresh = ifelse(verbose, 50, 0)
     )
   }
   init

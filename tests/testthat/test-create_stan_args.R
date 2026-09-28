@@ -41,6 +41,24 @@ test_that("create_stan_args uses pathfinder output as init when init_method is p
   expect_identical(args$init, fake_model$pathfinder())
 })
 
+test_that("create_stan_args passes stan$seed to the pathfinder call", {
+  captured_args <- NULL
+  fake_model <- structure(
+    list(pathfinder = function(...) {
+      captured_args <<- list(...)
+      structure(list(), class = "fake_pathfinder_fit")
+    }),
+    class = "CmdStanModel"
+  )
+  create_stan_args(
+    stan = stan_opts(
+      object = fake_model, init_method = "pathfinder", seed = 123
+    ),
+    data = list(a = 1)
+  )
+  expect_identical(captured_args$seed, 123)
+})
+
 test_that("create_stan_args ignores init_method for non-sampling methods", {
   fake_model <- fake_pathfinder_model()
   stan <- list(
