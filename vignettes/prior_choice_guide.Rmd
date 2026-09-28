@@ -402,7 +402,7 @@ gp_opts(ls = LogNormal(mean = 28, sd = 10, max = 90))
 - **For renewal equation model**: This controls variations in $\log(R_t)$ and is the prior standard deviation around the GP trend (stationary GP) or around zero (differenced GP).
 - **For non-mechanistic model**: This controls variations in log infections directly, and typically requires a less constrained prior since it scales with the infection level rather than $R_t$.
 
-**Default:** `Normal(mean = 0, sd = 0.01)` for the renewal equation model. If `alpha` is left unset and `rt = NULL` (the non-mechanistic model) is used, `estimate_infections()` widens this to `Normal(mean = 0, sd = 0.05)` automatically, since infections tend to need larger variations than $\log(R_t)$ to be modelled well.
+**Default:** `Normal(mean = 0, sd = 0.01)` for the renewal equation model. If `alpha` is left unset and `rt = NULL` (the non-mechanistic model) is used, `estimate_infections()` widens this to `Normal(mean = 0, sd = 0.05)` automatically, since infections tend to need a wider prior than $\log(R_t)$.
 
 For the renewal equation model, the default corresponds to a half-normal (since negative values are truncated) with 95% of prior mass below 0.02, reflecting small changes in $\log(R_t)$.
 
@@ -413,7 +413,7 @@ For the renewal equation model, the default corresponds to a half-normal (since 
 
 **When to modify:**
 
-- **Larger**: Modelling outbreaks with major interventions (lockdowns, vaccination campaigns), or high real variation
+- **Larger**: Modelling outbreaks with major interventions (lockdowns, vaccination campaigns) or high real variation
 - **Smaller**: Modelling stable endemic transmission or when data is very noisy relative to sample size
 - **Note**: The default works well for the renewal equation model in most scenarios. For the non-mechanistic model, the automatically widened default is a reasonable starting point but may still need further adjustment
 

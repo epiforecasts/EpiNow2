@@ -6,7 +6,7 @@
 
 ## Model changes
 
-- `estimate_infections()` now widens the default Gaussian process magnitude prior (`gp_opts(alpha)`) from `Normal(mean = 0, sd = 0.01)` to `Normal(mean = 0, sd = 0.05)` when the non-mechanistic model (`rt = NULL`) is used and `alpha` has not been set explicitly, since infections tend to need larger variations than `log(Rt)` to be modelled well. The renewal equation model default is unchanged.
+- `estimate_infections()` now widens the default Gaussian process magnitude prior (`gp_opts(alpha)`) from `Normal(mean = 0, sd = 0.01)` to `Normal(mean = 0, sd = 0.05)` when the non-mechanistic model (`rt = NULL`) is used and `alpha` has not been set explicitly, since infections tend to need a wider prior than `log(Rt)`. The renewal equation model default is unchanged.
 
 ## Package changes
 
