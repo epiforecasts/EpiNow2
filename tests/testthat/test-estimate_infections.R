@@ -57,6 +57,16 @@ test_that("estimate_infections successfully returns estimates using default sett
   expect_true(nrow(default_fit$observations) > 0)
 })
 
+test_that("check_gp_fit extracts the lengthscale from a fitted model", {
+  rho <- NULL
+  local_mocked_bindings(
+    check_gp_lengthscale = function(x, stan_data) rho <<- x
+  )
+  check_gp_fit(default_fit$fit, default_fit$args)
+  expect_gt(length(rho), 0)
+  expect_true(all(rho > 0))
+})
+
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_infections successfully returns estimates using a Matern 5/2 kernel", {
   skip_integration()
