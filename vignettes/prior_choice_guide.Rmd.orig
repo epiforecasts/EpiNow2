@@ -116,7 +116,7 @@ The following tables list all priors available in `{EpiNow2}`, organised by mode
 | Step size SD | Renewal only | `rt_opts()` | `rw` | `HalfNormal(0, 0.1)` | Set step size via `rw` argument |
 | **Gaussian Process** |
 | Length scale | Both | `gp_opts()` | `ls` | `LogNormal(mean = 21, sd = 7, max = 60)` | Controls smoothness over time |
-| Magnitude | Both | `gp_opts()` | `alpha` | `Normal(mean = 0, sd = 0.01)` | Controls amplitude of variations |
+| Magnitude | Both | `gp_opts()` | `alpha` | `Normal(mean = 0, sd = 0.01)` (`sd = 0.05` for non-mechanistic) | Controls amplitude of variations |
 | **Back-calculation** |
 | Prior source | Non-mechanistic only | `backcalc_opts()` | `prior` | `"reports"` | Options: "reports", "infections", "none" |
 | **Observation model** |
@@ -230,9 +230,9 @@ gp_opts(ls = LogNormal(mean = 28, sd = 10, max = 90))
 - **For renewal equation model**: This controls variations in $\log(R_t)$ and is the prior standard deviation around the GP trend (stationary GP) or around zero (differenced GP).
 - **For non-mechanistic model**: This controls variations in log infections directly, and typically requires a less constrained prior since it scales with the infection level rather than $R_t$.
 
-**Default:** `Normal(mean = 0, sd = 0.01)`
+**Default:** `Normal(mean = 0, sd = 0.01)` for the renewal equation model. If `alpha` is left unset and `rt = NULL` (the non-mechanistic model) is used, `estimate_infections()` widens this to `Normal(mean = 0, sd = 0.05)` automatically, since infections tend to need larger variations than $\log(R_t)$ to be modelled well.
 
-For the renewal equation model, this corresponds to a half-normal (since negative values are truncated) with 95% of prior mass below 0.02, reflecting small changes in $\log(R_t)$.
+For the renewal equation model, the default corresponds to a half-normal (since negative values are truncated) with 95% of prior mass below 0.02, reflecting small changes in $\log(R_t)$.
 
 **Expected impact of changes:**
 
@@ -241,9 +241,9 @@ For the renewal equation model, this corresponds to a half-normal (since negativ
 
 **When to modify:**
 
-- **Larger**: Modelling outbreaks with major interventions (lockdowns, vaccination campaigns), high real variation, or using the non-mechanistic model
+- **Larger**: Modelling outbreaks with major interventions (lockdowns, vaccination campaigns), or high real variation
 - **Smaller**: Modelling stable endemic transmission or when data is very noisy relative to sample size
-- **Note**: The default works well for the renewal equation model in most scenarios, but may need adjustment for the non-mechanistic model
+- **Note**: The default works well for the renewal equation model in most scenarios. For the non-mechanistic model, the automatically widened default is a reasonable starting point but may still need further adjustment
 
 **Example:**
 ```{r gp-magnitude-examples}
