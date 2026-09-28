@@ -1,5 +1,5 @@
 test_that("GP() builds correct default Gaussian process settings", {
-  gp <- GP(init = LogNormal(mean = 1, sd = 1))$settings
+  gp <- GP(init = LogNormal(mean = 1, sd = 1))$components[[1]]$settings
   expect_equal(gp$basis_prop, 0.2)
   expect_equal(gp$boundary_scale, 1.5)
   expect_equal(gp$alpha, Normal(0, 0.01))
@@ -10,12 +10,14 @@ test_that("GP() builds correct default Gaussian process settings", {
 })
 
 test_that("GP() sets matern_order to Inf for squared exponential kernel", {
-  gp <- GP(init = LogNormal(mean = 1, sd = 1), kernel = "se")$settings
+  gp <- GP(init = LogNormal(mean = 1, sd = 1), kernel = "se")
+  gp <- gp$components[[1]]$settings
   expect_equal(gp$matern_order, Inf)
 })
 
 test_that("GP() sets matern_order to 1/2 for Ornstein-Uhlenbeck kernel", {
-  gp <- GP(init = LogNormal(mean = 1, sd = 1), kernel = "ou")$settings
+  gp <- GP(init = LogNormal(mean = 1, sd = 1), kernel = "ou")
+  gp <- gp$components[[1]]$settings
   expect_equal(gp$matern_order, 1 / 2)
 })
 

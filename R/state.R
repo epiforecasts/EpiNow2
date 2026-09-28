@@ -36,24 +36,48 @@
 #' @rdname state
 NULL
 
-#' Construct a state specification
+#' Construct a bare trajectory component (a shape, no baseline)
 #'
-#' @param type Character, the state type (`"gp"` or `"rw"`).
-#' @param mean,init A `<dist_spec>`; exactly one must be supplied.
-#' @param settings A list of additional state settings (e.g. a `<gp_opts>`
+#' A component on its own has a shape (and its own hyperparameter priors) but
+#' no baseline; it becomes a full trajectory when combined with one, either
+#' via `with_optional_anchor()` (the `mean =`/`init =` sugar on [GP()]/[RW()])
+#' or by composing it with `+` onto a `constant()`/`initial()` baseline (or
+#' another component that already carries one).
+#'
+#' @param type Character, the component type (`"gp"` or `"rw"`).
+#' @param settings A list of the component's own settings (e.g. a `<gp_opts>`
 #'   object for `"gp"`, or the step standard deviation prior for `"rw"`).
-#' @param future What the state does over the forecast horizon. One of
-#'   `"latest"` (hold the last estimated value flat, the default), `"project"`
-#'   (let the state keep varying), `"estimate"` (hold from a seeding time before
-#'   the end of the data), or an integer giving the point, relative to the
-#'   forecast horizon, from which it is held constant. See [GP()].
-#' @return A `<state_spec>` object.
-#' @importFrom cli cli_abort
-#' @importFrom checkmate assert_class
+#' @return A `<state_spec>` object with one component and no baseline.
 #' @keywords internal
-new_state_spec <- function(type, mean, init, settings = list(),
-                           future = "latest") {
-  future <- validate_future(future)
+new_component_spec <- function(type, settings = list()) {
+  state <- list(
+    anchor = NULL,
+    prior = NULL,
+    future = "latest",
+    components = list(list(type = type, settings = settings))
+  )
+  class(state) <- c("trajectory_spec", "state_spec", "param_spec", "list")
+  state
+}
+
+#' Attach an optional `mean =`/`init =` baseline to a bare component
+#'
+#' [GP()] and [RW()] each accept an optional `mean`/`init` prior as sugar for
+#' composing a baseline onto an otherwise-bare component
+#' (`constant(mean) + <bare>` / `initial(init) + <bare>`, via `+`). This is
+#' the one place that sugar is implemented, so every component constructor
+#' (including a future one) shares it rather than re-implementing the
+#' exactly-one-of validation itself.
+#'
+#' @param bare A `<state_spec>` built by [new_component_spec()].
+#' @param mean,init A `<dist_spec>`; at most one may be supplied.
+#' @param future What the resulting trajectory does over the forecast
+#'   horizon; passed to `constant()`/`initial()` when a baseline is attached.
+#'   See [GP()].
+#' @return `bare` (unaltered, if neither `mean` nor `init` was supplied), or
+#'   `bare` composed with a `constant()`/`initial()` baseline.
+#' @keywords internal
+with_optional_anchor <- function(bare, mean, init, future = "latest") {
   has_mean <- !missing(mean) && !is.null(mean)
   has_init <- !missing(init) && !is.null(init)
   if (has_mean && has_init) {
@@ -65,35 +89,9 @@ new_state_spec <- function(type, mean, init, settings = list(),
       )
     )
   }
-  ## neither supplied: a "bare" component with a shape but no baseline of its
-  ## own, valid only combined with a baseline (a `constant()`/`initial()`
-  ## trajectory, or another component's own mean/init) via `+`
-  anchor <- if (has_mean) "mean" else if (has_init) "init" else NULL
-  prior <- if (has_mean) mean else if (has_init) init else NULL
-  ## the anchor may be a prior (a <dist_spec>) or a known trajectory supplied as
-  ## a numeric vector (the state then fits deviations around it)
-  if (!is.null(prior) && !is(prior, "dist_spec") && !is.numeric(prior)) {
-    cli_abort(
-      c(
-        "!" = "{.arg {anchor}} must be a {.cls dist_spec} or a numeric vector.",
-        "i" = "Supply a prior (e.g. {.fn Normal}) or a known trajectory as a
-        numeric vector."
-      )
-    )
-  }
-
-  state <- list(
-    type = type,
-    anchor = anchor,
-    prior = prior,
-    future = future,
-    settings = settings,
-    components = list(list(type = type, settings = settings))
-  )
-  class(state) <- c(
-    paste0(type, "_state"), "state_spec", "param_spec", "list"
-  )
-  state
+  if (has_mean) return(constant(mean, future = future) + bare)
+  if (has_init) return(initial(init, future = future) + bare)
+  bare
 }
 
 #' Validate a forecast-horizon `future` setting for a state
@@ -142,12 +140,6 @@ resolve_state_dates <- function(spec, dates) {
     }
     comp
   })
-  if (!is.null(spec$type)) {
-    # a single-component spec (GP()/RW(), not a composed trajectory_spec)
-    # mirrors its one component's settings at the top level for
-    # print()/plot(); keep that mirror in sync with the resolved copy
-    spec$settings <- spec$components[[1]]$settings
-  }
   spec
 }
 
@@ -196,14 +188,14 @@ GP <- function(mean, init,
                matern_order = 3 / 2,
                w0 = 1.0,
                future = "latest") {
-  new_state_spec(
-    "gp", mean, init,
+  bare <- new_component_spec(
+    "gp",
     settings = new_gp_settings(
       basis_prop = basis_prop, boundary_scale = boundary_scale, ls = ls,
       alpha = alpha, kernel = kernel, matern_order = matern_order, w0 = w0
-    ),
-    future = future
+    )
   )
+  with_optional_anchor(bare, mean, init, future)
 }
 
 #' @rdname state
@@ -263,10 +255,10 @@ RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1,
     assert_integerish(period, lower = 1, len = 1)
     period <- as.integer(period)
   }
-  new_state_spec(
-    "rw", mean, init, settings = list(sd = sd, period = period, knots = knots),
-    future = future
+  bare <- new_component_spec(
+    "rw", settings = list(sd = sd, period = period, knots = knots)
   )
+  with_optional_anchor(bare, mean, init, future)
 }
 
 #' Construct a trajectory baseline
@@ -332,11 +324,9 @@ new_trajectory_spec <- function(prior, anchor, future = "latest") {
     )
   }
   state <- list(
-    type = NULL,
     anchor = anchor,
     prior = prior,
     future = validate_future(future),
-    settings = NULL,
     components = list()
   )
   class(state) <- c("trajectory_spec", "state_spec", "param_spec", "list")
@@ -401,11 +391,9 @@ new_trajectory_spec <- function(prior, anchor, future = "latest") {
     )
   }
   state <- list(
-    type = NULL,
     anchor = base$anchor,
     prior = base$prior,
     future = base$future,
-    settings = NULL,
     components = c(e1$components, e2$components)
   )
   class(state) <- c("trajectory_spec", "state_spec", "param_spec", "list")
@@ -471,53 +459,6 @@ describe_component <- function(comp) {
     cat("  step sd prior:\n", sep = "")
     print(comp$settings$sd)
   }
-}
-
-#' @export
-print.state_spec <- function(x, ...) {
-  type <- if (x$type == "gp") "Gaussian process" else "random walk"
-  if (is.null(x$anchor)) {
-    cat(
-      "Time-varying state: ", type, " (bare component, no baseline)\n",
-      sep = ""
-    )
-    cat("Combine with a baseline (constant()/initial(), or mean=/init= on
-        another component) using +.\n")
-    return(invisible(x))
-  }
-  variant <- if (x$anchor == "mean") {
-    "mean-reverting"
-  } else {
-    "on first differences"
-  }
-  cat(
-    "Time-varying state: ", type, " (", variant, ")\n", sep = ""
-  )
-  if (is.numeric(x$prior)) {
-    label <- if (x$anchor == "mean") {
-      "known mean trajectory"
-    } else {
-      "known initial value(s)"
-    }
-    cat("- ", label, ": ", paste(x$prior, collapse = " "), "\n", sep = "")
-  } else {
-    label <- if (x$anchor == "mean") "mean prior" else "initial-value prior"
-    cat("- ", label, ":\n", sep = "")
-    print(x$prior)
-  }
-  if (x$type == "rw") {
-    cat("- step sd prior:\n", sep = "")
-    print(x$settings$sd)
-  }
-  if (!identical(x$future, "latest")) {
-    future_label <- if (is.numeric(x$future)) {
-      paste0("fixed from ", x$future)
-    } else {
-      x$future
-    }
-    cat("- forecast horizon: ", future_label, "\n", sep = "")
-  }
-  invisible(x)
 }
 
 #' @export
@@ -623,7 +564,8 @@ state_kernel_cov <- function(n, alpha, rho, kernel, matern_order) {
 #' before fitting. Gaussian process draws use the chosen kernel directly (the
 #' model uses an approximation to the same process).
 #'
-#' @param x A `<state_spec>` as created by [GP()] or [RW()].
+#' @param x A `<state_spec>` as created by [GP()], [RW()], [constant()] or
+#'   [initial()].
 #' @param n Integer; number of time points to simulate. Defaults to 50.
 #' @param samples Integer; number of prior trajectories to draw. Defaults to 50.
 #' @param ... Unused.
@@ -631,12 +573,11 @@ state_kernel_cov <- function(n, alpha, rho, kernel, matern_order) {
 #' @importFrom ggplot2 ggplot aes geom_line labs theme_bw
 #' @importFrom data.table data.table rbindlist
 #' @importFrom stats rnorm
-#' @method plot state_spec
 #' @export
 #' @examples
 #' plot(GP(init = LogNormal(mean = 1, sd = 0.5)))
 #' plot(RW(mean = Normal(mean = 1, sd = 0.2)))
-plot.state_spec <- function(x, n = 50L, samples = 50L, ...) {
+plot.trajectory_spec <- function(x, n = 50L, samples = 50L, ...) {
   if (is.null(x$anchor)) {
     cli_abort(
       "Cannot plot a bare component with no baseline; combine with
@@ -700,12 +641,4 @@ plot.state_spec <- function(x, n = 50L, samples = 50L, ...) {
       title = paste0("Prior draws: ", label, " (", variant, ")")
     ) +
     theme_bw()
-}
-
-#' @rdname state
-#' @param x A `<state_spec>` as created by [GP()], [RW()], [constant()] or
-#'   [initial()].
-#' @export
-plot.trajectory_spec <- function(x, n = 50L, samples = 50L, ...) {
-  plot.state_spec(x, n = n, samples = samples, ...)
 }

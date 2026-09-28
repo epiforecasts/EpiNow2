@@ -4,7 +4,7 @@ test_that("rt_opts returns expected default values", {
   expect_s3_class(result, "rt_opts")
   # the default Rt prior is a first-difference Gaussian process
   expect_s3_class(result$prior, "state_spec")
-  expect_identical(result$prior$type, "gp")
+  expect_identical(result$prior$components[[1]]$type, "gp")
   expect_identical(result$prior$anchor, "init")
   expect_true(result$use_rt)
   expect_equal(result$rw, 0)
@@ -17,9 +17,11 @@ test_that("rt_opts converts a plain distribution prior to a GP (deprecated)", {
     rt <- rt_opts(prior = LogNormal(mean = 1, sd = 1))
   )
   expect_s3_class(rt$prior, "state_spec")
-  expect_identical(rt$prior$type, "gp")
+  expect_identical(rt$prior$components[[1]]$type, "gp")
   expect_identical(rt$prior$anchor, "init")
-  expect_s3_class(rt_opts(prior = RW(init = LogNormal(1, 1)))$prior, "rw_state")
+  expect_s3_class(
+    rt_opts(prior = RW(init = LogNormal(1, 1)))$prior, "trajectory_spec"
+  )
 })
 
 test_that("rt_opts converts a plain prior to a mean-reverting GP when gp_on = 'R0'", {

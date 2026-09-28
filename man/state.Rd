@@ -4,7 +4,6 @@
 \alias{state}
 \alias{GP}
 \alias{RW}
-\alias{plot.trajectory_spec}
 \title{Time-varying states}
 \usage{
 GP(
@@ -28,8 +27,6 @@ RW(
   knots = NULL,
   future = "latest"
 )
-
-\method{plot}{trajectory_spec}(x, n = 50L, samples = 50L, ...)
 }
 \arguments{
 \item{mean}{A \verb{<dist_spec>} giving the prior on the (stationary) mean the
@@ -88,9 +85,6 @@ positions giving the points at which the random walk takes a new step
 resolved against the data's own date column when the model is fit, so a
 single spec is safe to reuse across \code{regional_epinow()}'s regions.
 Supply at most one of \code{period} or \code{knots}.}
-
-\item{x}{A \verb{<state_spec>} as created by \code{\link[=GP]{GP()}}, \code{\link[=RW]{RW()}}, \code{\link[=constant]{constant()}} or
-\code{\link[=initial]{initial()}}.}
 }
 \value{
 A \verb{<state_spec>} object describing the time-varying state.

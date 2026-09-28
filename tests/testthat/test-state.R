@@ -1,11 +1,11 @@
 test_that("GP() constructs a mean-reverting state spec", {
   gp <- GP(mean = Normal(mean = 5, sd = 1))
   expect_s3_class(gp, "state_spec")
-  expect_s3_class(gp, "gp_state")
-  expect_identical(gp$type, "gp")
+  expect_s3_class(gp, "trajectory_spec")
+  expect_identical(gp$components[[1]]$type, "gp")
   expect_identical(gp$anchor, "mean")
   expect_s3_class(gp$prior, "dist_spec")
-  expect_s3_class(gp$settings, "gp_opts")
+  expect_s3_class(gp$components[[1]]$settings, "gp_opts")
 })
 
 test_that("GP() constructs a first-difference state spec", {
@@ -15,35 +15,35 @@ test_that("GP() constructs a first-difference state spec", {
 
 test_that("GP() stores Gaussian process settings", {
   gp <- GP(mean = Normal(mean = 5, sd = 1), kernel = "se")
-  expect_identical(gp$settings$kernel, "se")
+  expect_identical(gp$components[[1]]$settings$kernel, "se")
 })
 
 test_that("RW() constructs a state spec with a step sd prior", {
   rw <- RW(init = Normal(mean = 5, sd = 1))
   expect_s3_class(rw, "state_spec")
-  expect_s3_class(rw, "rw_state")
-  expect_identical(rw$type, "rw")
+  expect_s3_class(rw, "trajectory_spec")
+  expect_identical(rw$components[[1]]$type, "rw")
   expect_identical(rw$anchor, "init")
-  expect_s3_class(rw$settings$sd, "dist_spec")
+  expect_s3_class(rw$components[[1]]$settings$sd, "dist_spec")
 })
 
 test_that("RW() accepts a custom step sd prior", {
   rw <- RW(mean = Normal(mean = 5, sd = 1), sd = Normal(mean = 0, sd = 0.05))
   expect_identical(rw$anchor, "mean")
-  expect_equal(mean(rw$settings$sd), 0)
+  expect_equal(mean(rw$components[[1]]$settings$sd), 0)
 })
 
 test_that("RW() accepts integer knots instead of a period", {
   rw <- RW(init = Normal(mean = 1, sd = 1), knots = c(20, 5, 45))
-  expect_null(rw$settings$period)
-  expect_identical(rw$settings$knots, c(5L, 20L, 45L)) # sorted
+  expect_null(rw$components[[1]]$settings$period)
+  expect_identical(rw$components[[1]]$settings$knots, c(5L, 20L, 45L)) # sorted
 })
 
 test_that("RW() accepts Date knots, unresolved", {
   dates <- as.Date(c("2020-03-23", "2020-02-01"))
   rw <- RW(init = Normal(mean = 1, sd = 1), knots = dates)
-  expect_s3_class(rw$settings$knots, "Date")
-  expect_identical(rw$settings$knots, sort(dates))
+  expect_s3_class(rw$components[[1]]$settings$knots, "Date")
+  expect_identical(rw$components[[1]]$settings$knots, sort(dates))
 })
 
 test_that("RW() rejects supplying both period and knots", {
@@ -61,13 +61,15 @@ test_that("resolve_state_dates() resolves Date knots against a date frame", {
   dates <- as.Date("2020-01-01") + 0:29
   rw <- RW(init = Normal(1, 1), knots = as.Date(c("2020-01-11", "2020-01-21")))
   resolved <- resolve_state_dates(rw, dates)
-  expect_identical(resolved$settings$knots, c(11L, 21L))
+  expect_identical(resolved$components[[1]]$settings$knots, c(11L, 21L))
 })
 
 test_that("resolve_state_dates() leaves integer knots and NULL specs alone", {
   dates <- as.Date("2020-01-01") + 0:29
   rw <- RW(init = Normal(1, 1), knots = c(5L, 10L))
-  expect_identical(resolve_state_dates(rw, dates)$settings$knots, c(5L, 10L))
+  expect_identical(
+    resolve_state_dates(rw, dates)$components[[1]]$settings$knots, c(5L, 10L)
+  )
   expect_null(resolve_state_dates(NULL, dates))
 })
 
@@ -153,8 +155,12 @@ test_that("RW() validates the step sd prior", {
 })
 
 test_that("rt_opts accepts a time-varying (state) prior", {
-  expect_s3_class(rt_opts(prior = GP(init = LogNormal(1, 1)))$prior, "state_spec")
-  expect_s3_class(rt_opts(prior = RW(init = LogNormal(1, 1)))$prior, "rw_state")
+  expect_s3_class(
+    rt_opts(prior = GP(init = LogNormal(1, 1)))$prior, "state_spec"
+  )
+  expect_s3_class(
+    rt_opts(prior = RW(init = LogNormal(1, 1)))$prior, "trajectory_spec"
+  )
   # a plain distribution is deprecated and auto-converted to a GP state
   lifecycle::expect_deprecated(
     rt <- rt_opts(prior = LogNormal(1, 1))
@@ -274,7 +280,7 @@ test_that("composed trajectory_spec prints without error", {
   expect_output(
     print(initial(LogNormal(1, 1)) + GP() + RW(period = 7)), "random walk"
   )
-  expect_output(print(GP()), "bare component")
+  expect_output(print(GP()), "deferred")
 })
 
 test_that("create_stan_params emits a composed RW+GP state (restores main's
