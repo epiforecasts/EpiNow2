@@ -6,6 +6,8 @@
 
 ## Model changes
 
+- `estimate_infections()` now widens the default Gaussian process magnitude prior (`gp_opts(alpha)`) from `Normal(mean = 0, sd = 0.01)` to `Normal(mean = 0, sd = 0.05)` when the non-mechanistic model (`rt = NULL`) is used and `alpha` has not been set explicitly, since infections tend to need larger variations than `log(Rt)` to be modelled well. The renewal equation model default is unchanged.
+
 ## Package changes
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
