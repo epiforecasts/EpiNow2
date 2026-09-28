@@ -128,11 +128,14 @@ The functions $\phi_{j}(x)$ are the eigenfunctions of the Laplace operator,
 \phi_j(t) = \frac{1}{\sqrt{L}} \sin\left(\sqrt{\lambda_j} (t^* + L)\right)
 \end{equation}
 
-with time rescaled linearly to be between -1 and 1,
+with the time points $t = 1, \ldots, t_\mathrm{GP}$ rescaled linearly to be between -1 and 1,
 
 \begin{equation}
-t^* = \frac{t - \frac{1}{2}t_\mathrm{GP}}{\frac{1}{2}t_\mathrm{GP}}
+t^* = \frac{t - \frac{1}{2}(t_\mathrm{GP} + 1)}{\frac{1}{2}(t_\mathrm{GP} - 1)}
 \end{equation}
+
+where $t_\mathrm{GP}$ is the number of time points to which the Gaussian process is applied.
+The lengthscale is rescaled in the same way, dividing by the half-range $S = (t_\mathrm{GP} - 1) / 2$.
 
 Relevant default priors are
 
@@ -167,6 +170,21 @@ After fitting, `EpiNow2` applies the lengthscale diagnostic of @approxGP (Sectio
 A warning is given if the posterior median lengthscale is shorter than the $3.42 c S / m$ days that $m$ basis functions can represent, or longer than the $c S / 4.5$ days that the boundary supports.
 For the periodic kernel only the first check applies, with $3.72 S / m$ days.
 Either can be addressed by adjusting the lengthscale prior, from which the settings are chosen, or by setting `basis_prop` and `boundary_scale` in `gp_opts()` directly.
+
+## Checking the approximation
+
+@approxGP (Section 4.5.1) give a step-by-step procedure for checking the approximation.
+Adapted to `EpiNow2` with the Matérn 3/2 kernel, it is as follows.
+
+- Fit the model with the default settings, which are chosen from the lengthscale prior. This replaces the single initial guess of the lengthscale in the paper.
+- Check that the model has converged before reading the lengthscale diagnostic.
+- If the posterior median lengthscale $\hat{\rho}$ is too short, refit with $m \geq 3.42 c S / \hat{\rho}$, by setting `basis_prop` to $m / t_\mathrm{GP}$.
+- If $\hat{\rho}$ is too long, refit with `boundary_scale` set to at least $4.5 \hat{\rho} / S$, and $m$ chosen as above.
+- Repeat until the diagnostic gives no warning.
+- Passing the diagnostic does not guarantee an accurate approximation. Refit with more basis functions (the paper adds 5) and check that $\hat{\rho}$ and predictive performance, for example the ELPD, are stable.
+- The approximation error is largest for the posterior standard deviation and near the boundaries. In `EpiNow2` this affects the most recent estimates, so check these in particular.
+
+For other kernels, use their constants from above.
 
 # Modelling the reproduction number
 
