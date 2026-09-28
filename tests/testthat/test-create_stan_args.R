@@ -41,6 +41,18 @@ test_that("create_stan_args uses pathfinder output as init when init_method is p
   expect_identical(args$init, fake_model$pathfinder())
 })
 
+test_that("create_stan_args ignores init_method for non-sampling methods", {
+  fake_model <- fake_pathfinder_model()
+  stan <- list(
+    object = fake_model, method = "vb", backend = "cmdstanr",
+    init_method = "pathfinder"
+  )
+  args <- create_stan_args(
+    stan = stan, data = list(a = 1), init = 5
+  )
+  expect_identical(args$init, 5)
+})
+
 test_that("create_stan_args ignores init_method for fixed-parameter sampling", {
   fake_model <- fake_pathfinder_model()
   stan <- list(

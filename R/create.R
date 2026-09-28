@@ -651,6 +651,31 @@ create_initial_conditions <- function(stan_data, params) {
   }
 }
 
+#' Initialise Sampling Using the Pathfinder Algorithm
+#'
+#' @description
+#' Returns `init` unchanged unless `init_method` is "pathfinder" and sampling
+#' (rather than fixed-parameter sampling or an approximate method) is being
+#' used, in which case the pathfinder algorithm's estimate of the posterior
+#' is returned instead, for use as `init` when initialising the NUTS sampler.
+#'
+#' @inheritParams create_stan_args
+#' @param init_method A character string, either "random" or "pathfinder".
+#' @return `init`, or the pathfinder algorithm's fitted object
+#' @keywords internal
+initialise_with_pathfinder <- function(stan, data, init, init_method,
+                                       fixed_param, verbose) {
+  if (identical(init_method, "pathfinder") && !fixed_param &&
+        identical(stan$method, "sampling")) {
+    # use the pathfinder algorithm's estimate of the posterior, rather than
+    # the supplied `init`, to initialise sampling
+    init <- stan$object$pathfinder(
+      data = data, refresh = ifelse(verbose, 50, 0)
+    )
+  }
+  init
+}
+
 #' Create a List of Stan Arguments
 #'
 #' @description
@@ -713,13 +738,9 @@ create_stan_args <- function(stan = stan_opts(),
   }
   init_method <- stan$init_method %||% "random"
   stan$init_method <- NULL
-  if (identical(init_method, "pathfinder") && !fixed_param) {
-    # use the pathfinder algorithm's estimate of the posterior, rather than
-    # the supplied `init`, to initialise sampling
-    init <- stan$object$pathfinder(
-      data = data, refresh = ifelse(verbose, 50, 0)
-    )
-  }
+  init <- initialise_with_pathfinder(
+    stan, data, init, init_method, fixed_param, verbose
+  )
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
         inherits(stan$object, "CmdStanModel")) {
