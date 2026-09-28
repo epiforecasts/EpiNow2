@@ -140,6 +140,10 @@ test_that("gp_ls_quantiles errors for unsupported priors", {
     gp_ls_quantiles(LogNormal(meanlog = Normal(3, 0.1), sdlog = 0.3)),
     "boundary_scale"
   )
+  expect_error(
+    gp_ls_quantiles(Weibull(shape = 2, scale = 10)),
+    "boundary_scale"
+  )
 })
 
 test_that("check_gp_lengthscale warns when the lengthscale is outside the approximation range", {
@@ -197,4 +201,14 @@ test_that("check_gp_fit is silent when the lengthscale is fixed", {
 test_that("gp_half_range returns the half-range of the GP time points", {
   expect_equal(gp_half_range(22), 10.5)
   expect_equal(gp_half_range(1), 0.5)
+})
+
+test_that("check_gp_fit is silent when the lengthscale index is out of range", {
+  stan_data <- create_gp_data(gp_opts(), default_data)
+  stan_data$param_id_rho <- 1
+  stan_data$params_variable_lookup <- 3
+  local_mocked_bindings(
+    extract_samples = function(...) list(params = matrix(1, 10, 2))
+  )
+  expect_silent(check_gp_fit(list(), stan_data))
 })

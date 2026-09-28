@@ -374,5 +374,8 @@ check_gp_fit <- function(fit, stan_data) {
     return(invisible(NULL))
   }
   params <- extract_samples(fit, pars = "params")$params
+  if (rho_idx > ncol(params)) {
+    return(invisible(NULL))
+  }
   check_gp_lengthscale(params[, rho_idx], stan_data)
 }
