@@ -455,22 +455,9 @@ gp_approx_constants <- function(gp_type, nu) {
 #' @param probs Numeric vector of probabilities.
 #' @return A numeric vector of quantiles.
 #' @importFrom stats plnorm qlnorm pgamma qgamma pnorm qnorm
-#' @importFrom cli cli_abort
 #' @keywords internal
 gp_ls_quantiles <- function(ls, probs = c(0.05, 0.95)) {
-  dist_name <- get_distribution(ls)
-  unsupported <- has_uncertainty(ls) ||
-    !dist_name %in% c("fixed", "lognormal", "gamma", "normal")
-  if (unsupported) {
-    cli_abort(
-      c(
-        "!" = "Cannot choose the approximate GP settings from a
-        {.val {dist_name}} lengthscale prior with these parameters.",
-        "i" = "Set {.arg boundary_scale} and {.arg basis_prop} in
-        {.fn gp_opts}."
-      )
-    )
-  }
+  dist_name <- check_gp_ls_prior(ls)
   pars <- get_parameters(ls)
   if (dist_name == "fixed") {
     return(rep(pars$value, length(probs)))

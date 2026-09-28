@@ -568,7 +568,7 @@ gp_opts <- function(basis_prop = NULL,
   }
   if (is.null(basis_prop) ||
         (is.null(boundary_scale) && kernel != "periodic")) {
-    gp_ls_quantiles(ls)
+    check_gp_ls_prior(ls)
   }
 
   gp <- list(

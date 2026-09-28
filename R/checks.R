@@ -308,6 +308,34 @@ check_truncation_obs_opts <- function(obs) {
   invisible()
 }
 
+#' Check the approximate GP settings can be chosen from a lengthscale prior
+#'
+#' @description
+#' The settings can be chosen from fixed, lognormal, gamma and normal priors
+#' without uncertain parameters.
+#'
+#' @inheritParams gp_ls_quantiles
+#' @importFrom cli cli_abort
+#' @return Invisibly, the name of the prior distribution. Called for its side
+#'   effect of erroring for unsupported priors.
+#' @keywords internal
+check_gp_ls_prior <- function(ls) {
+  dist_name <- get_distribution(ls)
+  unsupported <- has_uncertainty(ls) ||
+    !dist_name %in% c("fixed", "lognormal", "gamma", "normal")
+  if (unsupported) {
+    cli_abort(
+      c(
+        "!" = "Cannot choose the approximate GP settings from a
+        {.val {dist_name}} lengthscale prior with these parameters.",
+        "i" = "Set {.arg boundary_scale} and {.arg basis_prop} in
+        {.fn gp_opts}."
+      )
+    )
+  }
+  invisible(dist_name)
+}
+
 #' Check the posterior lengthscale against the approximate GP settings
 #'
 #' @description

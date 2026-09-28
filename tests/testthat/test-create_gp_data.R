@@ -212,3 +212,11 @@ test_that("check_gp_fit is silent when the lengthscale index is out of range", {
   )
   expect_silent(check_gp_fit(list(), stan_data))
 })
+
+test_that("check_gp_ls_prior errors for unsupported priors", {
+  expect_invisible(check_gp_ls_prior(Gamma(mean = 21, sd = 7)))
+  expect_equal(check_gp_ls_prior(Gamma(mean = 21, sd = 7)), "gamma")
+  expect_error(
+    check_gp_ls_prior(Weibull(shape = 2, scale = 10)), "boundary_scale"
+  )
+})
