@@ -112,6 +112,31 @@ test_that("estimate_infections successfully returns estimates when accumulating 
   test_estimate_infections(reported_cases_weekly)
 })
 
+test_that("estimate_infections samples well for the nonmechanistic model with accumulated weekly data", {
+  skip_integration()
+  reported_cases_weekly <- data.table::copy(reported_cases)
+  reported_cases_weekly[, confirm := frollsum(confirm, 7)]
+  reported_cases_weekly <-
+    reported_cases_weekly[seq(7, nrow(reported_cases_weekly), 7)]
+  reported_cases_weekly <- fill_missing(
+    reported_cases_weekly,
+    missing_dates = "accumulate", initial_accumulate = 7
+  )
+  fit <- default_estimate_infections(
+    reported_cases_weekly,
+    rt = NULL,
+    add_stan = list(
+      backend = "cmdstanr", chains = 2, warmup = 200, samples = 200,
+      control = list(adapt_delta = 0.9)
+    )
+  )
+  diagnostics <- fit$fit$diagnostic_summary()
+  expect_equal(sum(diagnostics$num_divergent), 0)
+  summ <- suppressWarnings(fit$fit$summary())
+  expect_lt(max(summ$rhat, na.rm = TRUE), 1.1)
+  expect_gt(min(summ$ess_bulk, na.rm = TRUE), 50)
+})
+
 test_that("estimate_infections successfully returns estimates using the poisson observation model", {
   skip_integration()
   out <- test_estimate_infections(
