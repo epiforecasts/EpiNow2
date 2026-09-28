@@ -64,30 +64,63 @@ vector get_param(int id,
 }
 
 /**
- * Apply a truncated prior to a value
+ * Apply a prior to a value, truncating only where a bound is finite
  *
- * Adds the log density of the chosen distribution, truncated to `[lb, ub]`,
- * to the target.
+ * Adds the log density of the chosen distribution to the target, truncated
+ * to `[lb, ub]` where those bounds are finite. Truncation is only necessary
+ * when a bound constrains the value beyond what the distribution's own
+ * support already implies (e.g. a physical constraint such as a probability
+ * lying in `[0, 1]`); otherwise it is dropped, since evaluating a
+ * distribution's (c)cdf at an infinite argument is needless work and, for
+ * some distributions, can be numerically unstable.
  *
  * @param value Value to apply the prior to (sampled parameter or derived
  *   quantity).
  * @param dist Prior distribution type (0: lognormal, 1: gamma, 2: normal).
  * @param p1 First distribution parameter.
  * @param p2 Second distribution parameter.
- * @param lb Lower bound of the parameter's support.
- * @param ub Upper bound of the parameter's support.
+ * @param lb Lower bound of the parameter's support; `negative_infinity()`
+ *   if none.
+ * @param ub Upper bound of the parameter's support; `positive_infinity()`
+ *   if none.
  *
  * @ingroup parameter_handlers
  */
 void apply_prior_lp(real value, int dist,
                     real p1, real p2,
                     real lb, real ub) {
+  int truncate_lb = lb > negative_infinity();
+  int truncate_ub = ub < positive_infinity();
   if (dist == 0) {
-    value ~ lognormal(p1, p2) T[lb, ub];
+    if (truncate_lb && truncate_ub) {
+      value ~ lognormal(p1, p2) T[lb, ub];
+    } else if (truncate_lb) {
+      value ~ lognormal(p1, p2) T[lb, ];
+    } else if (truncate_ub) {
+      value ~ lognormal(p1, p2) T[, ub];
+    } else {
+      value ~ lognormal(p1, p2);
+    }
   } else if (dist == 1) {
-    value ~ gamma(p1, p2) T[lb, ub];
+    if (truncate_lb && truncate_ub) {
+      value ~ gamma(p1, p2) T[lb, ub];
+    } else if (truncate_lb) {
+      value ~ gamma(p1, p2) T[lb, ];
+    } else if (truncate_ub) {
+      value ~ gamma(p1, p2) T[, ub];
+    } else {
+      value ~ gamma(p1, p2);
+    }
   } else if (dist == 2) {
-    value ~ normal(p1, p2) T[lb, ub];
+    if (truncate_lb && truncate_ub) {
+      value ~ normal(p1, p2) T[lb, ub];
+    } else if (truncate_lb) {
+      value ~ normal(p1, p2) T[lb, ];
+    } else if (truncate_ub) {
+      value ~ normal(p1, p2) T[, ub];
+    } else {
+      value ~ normal(p1, p2);
+    }
   } else {
     reject("dist must be <= 2");
   }

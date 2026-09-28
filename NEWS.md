@@ -25,6 +25,7 @@
 - A bug was fixed where warnings raised while fitting `estimate_secondary()` and `estimate_truncation()` were logged once per chain, duplicating each message when all chains were fitted in a single call.
 - A bug was fixed where `estimate_infections()` errored while generating initial conditions when the model had no variable parameters, such as with `obs_opts(family = "poisson")` and `gp = NULL`.
 - A bug was fixed where the Stan growth rate functions no longer rejected a `seeding_time` too close to the length of the infections vector, instead silently returning a truncated or empty result, because the guard relied on Stan's implicit bounds checking of an out-of-range empty vector slice rather than an explicit check.
+- A bug was fixed where parameter priors were always applied as truncated distributions, even when neither bound restricted the distribution's own support. This wasted computation on every evaluation and, for distributions such as the gamma and lognormal whose support excludes the default unbounded lower bound, could error outright (e.g. a `Gamma()` prior on an unconstrained parameter such as `meanlog` in `estimate_dist()`). Truncation is now only applied on the side(s) where a finite bound is actually set.
 
 ## Documentation
 

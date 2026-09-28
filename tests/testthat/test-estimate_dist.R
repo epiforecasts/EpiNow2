@@ -490,6 +490,35 @@ test_that("correctly handles constant delays without non-finite init", {
   )
 })
 
+test_that("does not error with a prior of restricted support on an unconstrained parameter", {
+  skip_if_not_installed("primarycensored")
+
+  origin <- as.Date("2023-01-01")
+  linelist <- data.frame(
+    pdate_lwr = origin + 0:9,
+    sdate_lwr = origin + 0:9 + 3L,
+    obs_date = origin + 30
+  )
+
+  # meanlog has no lower or upper bound of its own (support (-Inf, Inf)),
+  # so a Gamma prior on it (support (0, Inf)) is applied without truncation
+  expect_no_error(
+    suppressWarnings(suppressMessages(get_parameters(estimate_dist(
+      linelist,
+      dist = "lognormal",
+      priors = list(
+        meanlog = Gamma(shape = 2, rate = 1),
+        sdlog = Normal(mean = 0.5, sd = 0.5)
+      ),
+      stan = stan_opts(
+        samples = 20, chains = 1, warmup = 20, seed = 1,
+        backend = "cmdstanr"
+      ),
+      verbose = FALSE
+    ))))
+  )
+})
+
 test_that("errors for unsupported distribution", {
   origin <- as.Date("2023-01-01")
   linelist <- data.frame(
