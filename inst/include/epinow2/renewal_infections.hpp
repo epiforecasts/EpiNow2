@@ -187,12 +187,12 @@ inline void renewal_reverse(const State& st, const Eigen::VectorXd& R,
  * @return Infections, length t_s + T, starting with the seeds.
  * @throws std::domain_error if seed is empty.
  */
-template <typename T0, typename T1, typename T2, typename T3, typename T4,
+template <typename T0, typename T1, typename T2, typename T3,
           stan::require_all_eigen_col_vector_t<T0, T1, T2>* = nullptr,
-          stan::require_all_stan_scalar_t<T3, T4>* = nullptr>
+          stan::require_stan_scalar_t<T3>* = nullptr>
 inline Eigen::Matrix<stan::return_type_t<T0, T1, T2, T3>, Eigen::Dynamic, 1>
 renewal_infections(const T0& seed, const T1& R, const T2& g, const T3& pop,
-                   const int& use_pop, const T4& pop_floor, const int& nht,
+                   const int& use_pop, const double& pop_floor, const int& nht,
                    std::ostream* /* pstream__ */) {
   using stan::arena_t;
   using stan::math::var;
@@ -205,11 +205,10 @@ renewal_infections(const T0& seed, const T1& R, const T2& g, const T3& pop,
     throw std::domain_error("renewal_infections: seeding time must be >= 1");
   }
   const double pop_d = value_of(pop);
-  const double floor_d = value_of(pop_floor);
   if constexpr (!seed_var && !R_var && !g_var && !pop_var) {
     internal::renewal_state<Eigen::VectorXd> st;
     internal::renewal_forward(value_of(seed), value_of(R), value_of(g), pop_d,
-                              use_pop, floor_d, nht, st);
+                              use_pop, pop_floor, nht, st);
     return st.I;
   } else {
     arena_t<Eigen::Matrix<stan::value_type_t<T0>, -1, 1>> seed_a = seed;
@@ -219,7 +218,7 @@ renewal_infections(const T0& seed, const T1& R, const T2& g, const T3& pop,
     arena_t<Eigen::VectorXd> g_val = value_of(g_a);
     internal::renewal_state<Eigen::VectorXd> fwd;
     internal::renewal_forward(value_of(seed_a), R_val, g_val, pop_d, use_pop,
-                              floor_d, nht, fwd);
+                              pop_floor, nht, fwd);
     internal::renewal_state<arena_t<Eigen::VectorXd>> st{
         fwd.I, fwd.lambda, fwd.S, fwd.e, fwd.a, fwd.flag};
     const int n = fwd.I.size();
