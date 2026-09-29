@@ -261,6 +261,43 @@ trunc_opts <- function(dist = Fixed(0),
   dist
 }
 
+#' Compose the deprecated `rw` argument of [rt_opts()] onto its prior
+#'
+#' @param prior The (already-resolved) Rt prior.
+#' @param rw The deprecated `rw` argument to [rt_opts()] (non-zero).
+#' @param use_rt Whether Rt is being estimated.
+#' @return `prior`, composed with `RW(period = rw)` (matching the previous
+#'   `rw =` behaviour), unless it already specifies a random walk, in which
+#'   case `rw` is ignored with a warning rather than composing a conflicting
+#'   second one.
+#' @keywords internal
+compose_deprecated_rw <- function(prior, rw, use_rt) {
+  deprecate_warn(
+    "1.10.0", "rt_opts(rw)",
+    details = paste(
+      "Specify a random-walk Rt with",
+      "`rt_opts(prior = ... + RW(period = ...))`. The `rw` argument is now",
+      "composed automatically, matching the previous behaviour."
+    )
+  )
+  if (!isTRUE(use_rt) || !is_state_spec(prior)) {
+    return(prior)
+  }
+  has_rw <- any(vapply(
+    prior$components, function(c) identical(c$type, "rw"), logical(1)
+  ))
+  if (has_rw) {
+    cli_warn(
+      c(
+        "!" = "{.arg rw} is ignored because {.arg prior} already specifies
+        a random walk."
+      )
+    )
+    return(prior)
+  }
+  prior + RW(period = rw)
+}
+
 #' Time-Varying Reproduction Number Options
 #'
 #' @description
@@ -426,28 +463,7 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
   # rw is superseded by a random-walk prior (rt_opts(prior = RW(...))); compose
   # it onto the existing prior so behaviour is preserved rather than dropped
   if (rw != 0) {
-    deprecate_warn(
-      "1.10.0", "rt_opts(rw)",
-      details = paste(
-        "Specify a random-walk Rt with `rt_opts(prior = ... + RW(period = ...))`.",
-        "The `rw` argument is now composed automatically, matching the",
-        "previous behaviour."
-      )
-    )
-    has_rw <- isTRUE(use_rt) && is_state_spec(prior) &&
-      any(vapply(prior$components, function(c) identical(c$type, "rw"),
-        logical(1)
-      ))
-    if (has_rw) {
-      cli_warn(
-        c(
-          "!" = "{.arg rw} is ignored because {.arg prior} already specifies
-          a random walk."
-        )
-      )
-    } else if (isTRUE(use_rt) && is_state_spec(prior)) {
-      prior <- prior + RW(period = rw)
-    }
+    prior <- compose_deprecated_rw(prior, rw, use_rt)
     opts$rw <- 0
   }
 

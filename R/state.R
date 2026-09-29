@@ -378,7 +378,7 @@ new_trajectory_spec <- function(prior, anchor, future = "latest") {
   ## `future`), so a component's own non-default `future` must agree with the
   ## baseline's rather than being silently dropped
   if (!identical(other$future, "latest") &&
-      !identical(other$future, base$future)) {
+        !identical(other$future, base$future)) {
     cli_abort(
       c(
         "!" = "Components of one trajectory share a single forecast-horizon

@@ -78,13 +78,14 @@ test_that("the rw argument is deprecated but composed onto the prior", {
 })
 
 test_that("the rw argument is skipped (with a warning) if prior already has a random walk", {
-  expect_warning(
-    expect_warning(
-      result <- rt_opts(prior = RW(init = LogNormal(1, 1)), rw = 7),
-      "deprecated"
-    ),
-    "already specifies"
+  # the rw = deprecation itself is covered by the sibling test above; lifecycle
+  # only warns once per session for it, so a prior test in this file may have
+  # already exhausted that warning. This test is about the skip-and-warn
+  # behaviour when the prior already has its own random walk.
+  warnings <- testthat::capture_warnings(
+    result <- rt_opts(prior = RW(init = LogNormal(1, 1)), rw = 7)
   )
+  expect_true(any(grepl("already specifies", warnings)))
   # the explicit RW's own (default) period is untouched, not overridden
   expect_length(result$prior$components, 1)
   expect_identical(result$prior$components[[1]]$settings$period, 1L)

@@ -183,6 +183,8 @@ reference:
   desc: Functions to declare time-varying model parameters
   contents:
   - state
+  - trajectory_baseline
+  - "+.state_spec"
 
 - title: Fit Delay Distributions
   desc: Functions to fit delay distributions

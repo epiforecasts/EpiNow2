@@ -350,6 +350,144 @@ create_delay_inits <- function(stan_data) {
   out
 }
 
+#' Guard `rtruncnorm()` against a zero-length draw count
+#'
+#' `rtruncnorm()` errors on `n = 0`, which a zero-length prior vector (e.g. no
+#' named parameters, or no random-walk steps) would otherwise trigger.
+#'
+#' @param n Number of draws.
+#' @param ... Passed to [truncnorm::rtruncnorm()].
+#' @return `n` truncated-normal draws, or `numeric(0)` if `n` is 0.
+#' @importFrom truncnorm rtruncnorm
+#' @keywords internal
+rtruncnorm0 <- function(n, ...) {
+  if (n > 0) rtruncnorm(n, ...) else numeric(0)
+}
+
+#' Count one random-walk component's steps within its own free window
+#'
+#' Mirrors the Stan transformed-data computation (see
+#' `estimate_infections.stan`), so the initial `state_rw_steps` vector this
+#' generates has the length Stan expects.
+#'
+#' @param stan_data The assembled Stan data list.
+#' @param cp This component's position within the random-walk type group.
+#' @param free This component's own free-noise window.
+#' @param rw_period The shared regular-grid period (ignored if this component
+#'   has its own knots, i.e. `stan_data$rw_knots_n[cp] > 0`).
+#' @return The number of steps.
+#' @keywords internal
+count_rw_component_steps <- function(stan_data, cp, free, rw_period) {
+  if (stan_data$rw_knots_n[cp] == 0) {
+    return(max(0, ceiling(free / rw_period) - 1))
+  }
+  # knots-based: one step per knot within this component's own free window
+  comp_knots <- stan_data$rw_knots[
+    stan_data$rw_knots_offset[cp] + seq_len(stan_data$rw_knots_n[cp])
+  ]
+  sum(comp_knots <= free)
+}
+
+#' Count the total random-walk steps and GP coefficients across all states
+#'
+#' Time-varying states each have their own free-noise window (set by their
+#' `future`), mirroring the Stan transformed-data computation, so the ragged
+#' random walk step and GP coefficient vectors are sized per state.
+#'
+#' @param stan_data The assembled Stan data list.
+#' @return A list with `n_rw_steps`, `n_gp_coef` (total counts, used to size
+#'   the initial `state_rw_steps`/`state_gp_eta` vectors) and `gp_free` (each
+#'   GP component's own free window, used to scale the lengthscale init).
+#' @keywords internal
+count_state_init_sizes <- function(stan_data) {
+  n_states <- stan_data$n_states %||% 0L
+  empty <- list(n_rw_steps = 0L, n_gp_coef = 0L, gp_free = numeric(0))
+  if (n_states == 0) {
+    return(empty)
+  }
+  rw_period <- stan_data$state_rw_period %||% 1L
+  ot_h <- stan_data$t - stan_data$seeding_time
+  n_rw_steps <- 0L
+  n_gp_coef <- 0L
+  gp_free <- numeric(0)
+  for (s in seq_len(n_states)) {
+    total <- if (stan_data$state_param_id[s] == stan_data$param_id_I) {
+      stan_data$t
+    } else {
+      ot_h
+    }
+    data_window <- total - stan_data$horizon
+    free <- if (stan_data$state_future_fixed[s] == 0) {
+      total
+    } else {
+      min(total, max(1, data_window + stan_data$state_future_from[s]))
+    }
+    for (ci in seq_len(stan_data$state_comp_n[s])) {
+      cc <- stan_data$state_comp_offset[s] + ci
+      if (stan_data$comp_type[cc] == 0) {
+        n_rw_steps <- n_rw_steps + count_rw_component_steps(
+          stan_data, stan_data$comp_pos[cc], free, rw_period
+        )
+      } else {
+        n_gp_coef <- n_gp_coef +
+          ceiling(free * stan_data$gp_basis_prop[stan_data$comp_pos[cc]])
+        gp_free <- c(gp_free, free)
+      }
+    }
+  }
+  list(n_rw_steps = n_rw_steps, n_gp_coef = n_gp_coef, gp_free = gp_free)
+}
+
+#' Draw initial values for each state component's own hyperparameters
+#'
+#' A state's hyperparameters (step sd, GP magnitude and lengthscale), appended
+#' to the parameter vector, keep bespoke starting values: a small step sd and
+#' GP magnitude, and a GP lengthscale scaled to the data window. Initial draws
+#' stay within each prior's truncation bounds, otherwise a bounded prior gives
+#' -Inf density at the initial value.
+#'
+#' @param stan_data The assembled Stan data list.
+#' @param n_named The number of named (non-hyperparameter) parameters already
+#'   drawn; this component's hyperparameters follow them in the parameter
+#'   vector.
+#' @param rho_scale The GP lengthscale init's mean/sd scale (the mean free
+#'   window across all GP components).
+#' @return A numeric vector of hyperparameter initial values, one per
+#'   random-walk component (its step sd) or two per GP component (its
+#'   magnitude and lengthscale).
+#' @keywords internal
+init_state_hyperparams <- function(stan_data, n_named, rho_scale) {
+  n_states <- stan_data$n_states %||% 0L
+  if (n_states == 0) {
+    return(numeric(0))
+  }
+  inits <- numeric(0)
+  k <- n_named
+  for (s in seq_len(n_states)) {
+    for (ci in seq_len(stan_data$state_comp_n[s])) {
+      cc <- stan_data$state_comp_offset[s] + ci
+      if (stan_data$comp_type[cc] == 0) {
+        k <- k + 1L
+        inits <- c(inits, rtruncnorm0(
+          1, a = 0, b = stan_data$params_upper[k], mean = 0, sd = 0.1
+        ))
+      } else {
+        k <- k + 1L
+        alpha_init <- rtruncnorm0(
+          1, a = 0, b = stan_data$params_upper[k], mean = 0, sd = 0.1
+        )
+        k <- k + 1L
+        rho_init <- rtruncnorm0(
+          1, a = 0, b = stan_data$params_upper[k],
+          mean = rho_scale / 2, sd = rho_scale / 4
+        )
+        inits <- c(inits, alpha_init, rho_init)
+      }
+    }
+  }
+  inits
+}
+
 #' Create Initial Conditions Generating Function
 #' @description
 #' Uses the output of [create_stan_data()] to create a function which can be
@@ -366,11 +504,6 @@ create_delay_inits <- function(stan_data) {
 create_initial_conditions <- function(stan_data, params) {
   function() {
     out <- create_delay_inits(stan_data)
-
-    ## rtruncnorm() errors on zero-length input, so guard n = 0 counts
-    rtruncnorm0 <- function(n, ...) {
-      if (n > 0) rtruncnorm(n, ...) else numeric(0)
-    }
 
     ## unwrap time-varying states to their level prior for initialisation
     state_flags <- vapply(transpose(params)$dist, is_state_spec, logical(1))
@@ -409,58 +542,11 @@ create_initial_conditions <- function(stan_data, params) {
       FUN.VALUE = numeric(1)
     )
 
-    ## time-varying states each have their own free-noise window (set by their
-    ## `future`), mirroring the Stan transformed-data computation, so the ragged
-    ## random walk step and GP coefficient vectors are sized per state.
-    n_states <- stan_data$n_states %||% 0L
-    n_rw_steps <- 0L
-    n_gp_coef <- 0L
-    gp_free <- numeric(0) # free-noise window of each GP state (for rho init)
-    if (n_states > 0) {
-      rw_period <- stan_data$state_rw_period %||% 1L
-      ot_h <- stan_data$t - stan_data$seeding_time
-      for (s in seq_len(n_states)) {
-        total <- if (stan_data$state_param_id[s] == stan_data$param_id_I) {
-          stan_data$t
-        } else {
-          ot_h
-        }
-        data_window <- total - stan_data$horizon
-        free <- if (stan_data$state_future_fixed[s] == 0) {
-          total
-        } else {
-          min(total, max(1, data_window + stan_data$state_future_from[s]))
-        }
-        for (ci in seq_len(stan_data$state_comp_n[s])) {
-          cc <- stan_data$state_comp_offset[s] + ci
-          if (stan_data$comp_type[cc] == 0) {
-            cp <- stan_data$comp_pos[cc]
-            n_rw_steps <- n_rw_steps + if (stan_data$rw_knots_n[cp] > 0) {
-              # knots-based: one step per knot within this component's own
-              # free window, mirroring the Stan transformed-data count
-              knots <- stan_data$rw_knots[
-                stan_data$rw_knots_offset[cp] +
-                  seq_len(stan_data$rw_knots_n[cp])
-              ]
-              sum(knots <= free)
-            } else {
-              max(0, ceiling(free / rw_period) - 1)
-            }
-          } else {
-            n_gp_coef <- n_gp_coef +
-              ceiling(free * stan_data$gp_basis_prop[stan_data$comp_pos[cc]])
-            gp_free <- c(gp_free, free)
-          }
-        }
-      }
-    }
+    sizes <- count_state_init_sizes(stan_data)
 
-    ## the named parameters are initialised from their prior. A state's
-    ## hyperparameters (step sd, GP magnitude and lengthscale), appended to the
-    ## parameter vector, keep bespoke starting values: a small step sd and GP
-    ## magnitude, and a GP lengthscale scaled to the data window. Initial draws
-    ## stay within each prior's truncation bounds, otherwise a bounded prior
-    ## gives -Inf density at the initial value.
+    ## the named parameters are initialised from their prior; each state
+    ## component's own hyperparameters are drawn separately (bespoke starting
+    ## values, see init_state_hyperparams())
     n_named <- length(param_means)
     param_inits <- rtruncnorm0(
       n_named,
@@ -468,35 +554,13 @@ create_initial_conditions <- function(stan_data, params) {
       b = stan_data$params_upper[seq_len(n_named)],
       mean = param_means, sd = param_sds
     )
-    rho_scale <- if (length(gp_free) > 0) mean(gp_free) else 1
-    if (n_states > 0) {
-      k <- n_named
-      for (s in seq_len(n_states)) {
-        for (ci in seq_len(stan_data$state_comp_n[s])) {
-          cc <- stan_data$state_comp_offset[s] + ci
-          if (stan_data$comp_type[cc] == 0) {
-            k <- k + 1L
-            param_inits <- c(param_inits, rtruncnorm0(
-              1, a = 0, b = stan_data$params_upper[k], mean = 0, sd = 0.1
-            ))
-          } else {
-            k <- k + 1L
-            alpha_init <- rtruncnorm0(
-              1, a = 0, b = stan_data$params_upper[k], mean = 0, sd = 0.1
-            )
-            k <- k + 1L
-            rho_init <- rtruncnorm0(
-              1, a = 0, b = stan_data$params_upper[k],
-              mean = rho_scale / 2, sd = rho_scale / 4
-            )
-            param_inits <- c(param_inits, alpha_init, rho_init)
-          }
-        }
-      }
-    }
+    rho_scale <- if (length(sizes$gp_free) > 0) mean(sizes$gp_free) else 1
+    param_inits <- c(
+      param_inits, init_state_hyperparams(stan_data, n_named, rho_scale)
+    )
     out$params <- array(param_inits)
-    out$state_rw_steps <- array(rnorm(n_rw_steps, 0, 0.1))
-    out$state_gp_eta <- array(rnorm(n_gp_coef, 0, 0.1))
+    out$state_rw_steps <- array(rnorm(sizes$n_rw_steps, 0, 0.1))
+    out$state_gp_eta <- array(rnorm(sizes$n_gp_coef, 0, 0.1))
     out
   }
 }
@@ -939,6 +1003,138 @@ create_stan_params <- function(params, states_supported = character(0),
 ##'   `hyper_params` list of the state hyperparameters to append to `params`.
 ##' @importFrom data.table fcase
 ##' @keywords internal
+#' Assert a state hyperparameter prior is estimated (non-fixed, certain)
+#'
+#' A state hyperparameter (step sd, GP magnitude or lengthscale) and the
+#' init-anchor prior are registered as (or applied via) estimated parameters,
+#' so they must be certain, non-fixed distributions.
+#'
+#' @param d The prior to check.
+#' @param what What the prior is for, used in the error message.
+#' @param name The time-varying parameter's name, used in the error message.
+#' @return Invisibly returns `d`; aborts if it is not estimable.
+#' @keywords internal
+assert_estimated <- function(d, what, name) {
+  if (get_distribution(d) == "fixed") {
+    cli_abort(c(
+      "!" = "The {what} prior for time-varying parameter {.var {name}} cannot
+      be a fixed distribution."
+    ))
+  }
+  if (!all(vapply(get_parameters(d), is.numeric, logical(1)))) {
+    cli_abort(c(
+      "!" = "The {what} prior for time-varying parameter {.var {name}} cannot
+      have uncertain parameters."
+    ))
+  }
+  invisible(d)
+}
+
+#' Append a state hyperparameter to the parameter vector
+#'
+#' State hyperparameters are appended to the parameter vector after the
+#' existing ones.
+#'
+#' @param existing The parameter list to append to.
+#' @param suffix Distinguishes this hyperparameter from a state's other ones
+#'   (e.g. `"rw_sd"`, `"gp_alpha"`) in its generated name.
+#' @param name The time-varying parameter's name.
+#' @param dist The hyperparameter's prior.
+#' @param base_id The parameter id of the last existing parameter.
+#' @return A list with the extended parameter list (`params`) and the new
+#'   hyperparameter's id (`id`, its position in the parameter vector).
+#' @keywords internal
+register_hyper <- function(existing, suffix, name, dist, base_id) {
+  existing[[length(existing) + 1L]] <- make_param(
+    paste(name, suffix, sep = "_"), dist, lower_bound = 0
+  )
+  list(params = existing, id = base_id + length(existing))
+}
+
+#' Resolve one random-walk component's state data
+#'
+#' @param comp The component (`list(type = "rw", settings = list(...))`).
+#' @param name The time-varying parameter's name, used in error messages.
+#' @param hyper_params The parameter list to append the step sd to.
+#' @param base_id The parameter id of the last existing parameter.
+#' @param pos This component's index within the random-walk type group.
+#' @param rw_knots_offset This component's offset into the flat `rw_knots`
+#'   vector (the current length of that vector before this component).
+#' @return A list of this component's contribution to `create_state_data()`'s
+#'   component table: `comp_type`, `comp_pos`, `rw_sd_id`, `hyper_params`,
+#'   `rw_knots_n`, `rw_knots_offset`, `rw_knots` (integer(0) unless
+#'   knots-based), and `rw_period` (`NULL` when knots-based, since it is then
+#'   excluded from the shared-period check).
+#' @keywords internal
+resolve_rw_component <- function(comp, name, hyper_params, base_id, pos,
+                                 rw_knots_offset) {
+  step_sd <- comp$settings$sd
+  assert_estimated(step_sd, "step sd", name)
+  reg <- register_hyper(hyper_params, "rw_sd", name, step_sd, base_id)
+  comp_knots <- comp$settings$knots
+  out <- list(
+    comp_type = 0L, comp_pos = pos, rw_sd_id = reg$id,
+    hyper_params = reg$params, rw_knots_offset = rw_knots_offset
+  )
+  if (is.null(comp_knots)) {
+    return(c(
+      out,
+      list(
+        rw_knots_n = 0L, rw_knots = integer(0),
+        rw_period = comp$settings$period %||% 1L
+      )
+    ))
+  }
+  if (!is.numeric(comp_knots) || inherits(comp_knots, "Date")) {
+    cli_abort(c(
+      "!" = "{.var {name}}'s random-walk {.arg knots} must be resolved
+      to time-step positions before reaching the model."
+    ))
+  }
+  c(
+    out,
+    list(
+      rw_knots_n = length(comp_knots), rw_knots = as.integer(comp_knots),
+      rw_period = NULL
+    )
+  )
+}
+
+#' Resolve one Gaussian process component's state data
+#'
+#' @param comp The component (`list(type = "gp", settings = <gp_opts>)`).
+#' @param name The time-varying parameter's name, used in error messages.
+#' @param hyper_params The parameter list to append the magnitude and
+#'   lengthscale to.
+#' @param base_id The parameter id of the last existing parameter.
+#' @param pos This component's index within the GP type group.
+#' @return A list of this component's contribution to `create_state_data()`'s
+#'   component table: `comp_type`, `comp_pos`, `hyper_params`, `gp_alpha_id`,
+#'   `gp_rho_id`, `gp_kernel`, `gp_nu`, `gp_basis_prop`, `gp_boundary_scale`.
+#' @keywords internal
+resolve_gp_component <- function(comp, name, hyper_params, base_id, pos) {
+  gp <- comp$settings
+  if (gp$kernel == "periodic") {
+    cli_abort(c(
+      "!" = "Periodic kernels are not supported for time-varying parameter
+      {.var {name}}."
+    ))
+  }
+  assert_estimated(gp$alpha, "alpha", name)
+  reg <- register_hyper(hyper_params, "gp_alpha", name, gp$alpha, base_id)
+  hyper_params <- reg$params
+  gp_alpha_id <- reg$id
+  assert_estimated(gp$ls, "lengthscale", name)
+  reg <- register_hyper(hyper_params, "gp_rho", name, gp$ls, base_id)
+  list(
+    comp_type = 1L, comp_pos = pos, hyper_params = reg$params,
+    gp_alpha_id = gp_alpha_id, gp_rho_id = reg$id,
+    gp_kernel = fcase(gp$kernel == "se", 0L, default = 2L), # matern or ou
+    gp_nu = gp$matern_order, gp_basis_prop = gp$basis_prop,
+    gp_boundary_scale = gp$boundary_scale
+  )
+}
+
 create_state_data <- function(params, state_flags,
                               states_supported = character(0),
                               seeding_time = 0L, base_id = 0L) {
@@ -974,24 +1170,6 @@ create_state_data <- function(params, state_flags,
     return(empty)
   }
 
-  ## a state hyperparameter (step sd, GP magnitude or lengthscale) and the
-  ## init-anchor prior are registered as (or applied via) estimated parameters,
-  ## so they must be certain, non-fixed distributions
-  assert_estimated <- function(d, what, name) {
-    if (get_distribution(d) == "fixed") {
-      cli_abort(c(
-        "!" = "The {what} prior for time-varying parameter {.var {name}} cannot
-        be a fixed distribution."
-      ))
-    }
-    if (!all(vapply(get_parameters(d), is.numeric, logical(1)))) {
-      cli_abort(c(
-        "!" = "The {what} prior for time-varying parameter {.var {name}} cannot
-        have uncertain parameters."
-      ))
-    }
-    invisible(d)
-  }
   ## resolve a state's `future` setting into the (fixed, from) pair the model
   ## uses to size the free-noise window over the forecast horizon. "estimate"
   ## fixes the state a seeding time before the end of the data, where the most
@@ -1036,12 +1214,6 @@ create_state_data <- function(params, state_flags,
   ## existing ones; `register_hyper()` adds one and returns the extended list
   ## together with its parameter id (its position in that vector)
   hyper_params <- list()
-  register_hyper <- function(existing, suffix, name, dist) {
-    existing[[length(existing) + 1L]] <- make_param(
-      paste(name, suffix, sep = "_"), dist, lower_bound = 0
-    )
-    list(params = existing, id = base_id + length(existing))
-  }
 
   for (j in seq_len(n)) {
     spec <- params[[idx[j]]]$dist
@@ -1092,59 +1264,29 @@ create_state_data <- function(params, state_flags,
     comp_offset[j] <- length(comp_type)
     comp_n[j] <- length(spec$components)
     for (comp in spec$components) {
-    if (comp$type == "rw") {
-      comp_type <- c(comp_type, 0L)
-      n_rw <- n_rw + 1L
-      comp_pos <- c(comp_pos, n_rw)
-      step_sd <- comp$settings$sd
-      assert_estimated(step_sd, "step sd", name)
-      reg <- register_hyper(hyper_params, "rw_sd", name, step_sd)
-      hyper_params <- reg$params
-      rw_sd_id <- c(rw_sd_id, reg$id)
-      knots <- comp$settings$knots
-      if (!is.null(knots)) {
-        if (!is.numeric(knots) || inherits(knots, "Date")) {
-          cli_abort(c(
-            "!" = "{.var {name}}'s random-walk {.arg knots} must be resolved
-            to time-step positions before reaching the model."
-          ))
-        }
-        rw_knots_n <- c(rw_knots_n, length(knots))
-        rw_knots_offset <- c(rw_knots_offset, length(rw_knots))
-        rw_knots <- c(rw_knots, as.integer(knots))
-        # not period-based: excluded from the shared-period check below
+      if (comp$type == "rw") {
+        n_rw <- n_rw + 1L
+        res <- resolve_rw_component(
+          comp, name, hyper_params, base_id, n_rw, length(rw_knots)
+        )
+        rw_sd_id <- c(rw_sd_id, res$rw_sd_id)
+        rw_knots_n <- c(rw_knots_n, res$rw_knots_n)
+        rw_knots_offset <- c(rw_knots_offset, res$rw_knots_offset)
+        rw_knots <- c(rw_knots, res$rw_knots)
+        rw_period <- c(rw_period, res$rw_period)
       } else {
-        rw_knots_n <- c(rw_knots_n, 0L)
-        rw_knots_offset <- c(rw_knots_offset, length(rw_knots))
-        rw_period <- c(rw_period, comp$settings$period %||% 1L)
+        n_gp <- n_gp + 1L
+        res <- resolve_gp_component(comp, name, hyper_params, base_id, n_gp)
+        gp_alpha_id <- c(gp_alpha_id, res$gp_alpha_id)
+        gp_rho_id <- c(gp_rho_id, res$gp_rho_id)
+        gp_kernel <- c(gp_kernel, res$gp_kernel)
+        gp_nu <- c(gp_nu, res$gp_nu)
+        gp_basis_prop <- c(gp_basis_prop, res$gp_basis_prop)
+        gp_boundary_scale <- c(gp_boundary_scale, res$gp_boundary_scale)
       }
-    } else {
-      gp <- comp$settings
-      if (gp$kernel == "periodic") {
-        cli_abort(c(
-          "!" = "Periodic kernels are not supported for time-varying parameter
-          {.var {name}}."
-        ))
-      }
-      comp_type <- c(comp_type, 1L)
-      n_gp <- n_gp + 1L
-      comp_pos <- c(comp_pos, n_gp)
-      gp_kernel <- c(gp_kernel, fcase(
-        gp$kernel == "se", 0L,
-        default = 2L # matern or ou
-      ))
-      gp_nu <- c(gp_nu, gp$matern_order)
-      assert_estimated(gp$alpha, "alpha", name)
-      reg <- register_hyper(hyper_params, "gp_alpha", name, gp$alpha)
-      hyper_params <- reg$params
-      gp_alpha_id <- c(gp_alpha_id, reg$id)
-      assert_estimated(gp$ls, "lengthscale", name)
-      reg <- register_hyper(hyper_params, "gp_rho", name, gp$ls)
-      hyper_params <- reg$params
-      gp_rho_id <- c(gp_rho_id, reg$id)
-      gp_basis_prop <- c(gp_basis_prop, gp$basis_prop)
-      gp_boundary_scale <- c(gp_boundary_scale, gp$boundary_scale)
-    }
+      comp_type <- c(comp_type, res$comp_type)
+      comp_pos <- c(comp_pos, res$comp_pos)
+      hyper_params <- res$hyper_params
     }
   }
 
