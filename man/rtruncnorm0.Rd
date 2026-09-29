@@ -9,7 +9,7 @@ rtruncnorm0(n, ...)
 \arguments{
 \item{n}{Number of draws.}
 
-\item{...}{Passed to \code{\link[truncnorm:dtruncnorm]{truncnorm::rtruncnorm()}}.}
+\item{...}{Passed to \code{\link[truncnorm:rtruncnorm]{truncnorm::rtruncnorm()}}.}
 }
 \value{
 \code{n} truncated-normal draws, or \code{numeric(0)} if \code{n} is 0.
