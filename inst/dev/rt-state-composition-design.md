@@ -41,7 +41,7 @@ different fillings:
 | --- | --- | --- |
 | `Fixed(1)` | known number | none |
 | `LogNormal(2, 0.2)` | sampled (prior) | none |
-| `LogNormal(2, 0.2) + GP()` | sampled (prior) | one or more |
+| `constant(LogNormal(2, 0.2)) + GP()` | sampled (prior) | one or more |
 
 Fixed and constant collapse to the same thing (zero components); they differ only
 in whether the level is known or sampled. This removes the fixed/constant/varying
@@ -96,26 +96,20 @@ sentence a modeller says out loud describing the model.
 
 ### The `+` operator
 
-**A bare `dist_spec` cannot be the left operand.** The initial plan was for a
-bare distribution to serve as the baseline directly (`LogNormal(2, 0.2) +
-GP()`), reusing `+` polymorphically since `+.dist_spec` already means
-convolution (`+.dist_spec <- function(e1, e2) c(e1, e2)`, used for delays).
-This does not work: `dist_spec` and `state_spec` are unrelated S3 classes, so
-`e1 + e2` with `e1` a `dist_spec` dispatches on `+.dist_spec` regardless of
-`e2`'s class (R's `Ops` group generic picks the method from whichever operand's
-class is checked first; adding a competing `+.state_spec` does not override
-this — it instead makes the *right*-operand case ambiguous and R falls back to
-the internal `+`, erroring with "non-numeric argument to binary operator").
-Verified empirically before implementing.
+`dist_spec` (a single value, constant or uncertain) and `state_spec` (a
+trajectory built from one or more time-varying components) are deliberately
+two different types, not one with a "sometimes composable" mode. Blurring
+them — letting a bare distribution silently double as a baseline — would make
+it unclear whether an expression names one value or a list of things that
+vary. `constant()`/`initial()` are the explicit bridge: they turn a
+`dist_spec` into a `state_spec`'s baseline, so `+` only ever combines
+`state_spec`s, never a `dist_spec` directly.
 
-**Fix: `constant()`/`initial()` wrap the baseline distribution before `+` ever
-sees it.** Both return a `<state_spec>` (specifically a `trajectory_spec`), so
-neither operand of `+` is ever a bare `dist_spec` and only `+.state_spec` is
-ever in play — no cross-class `Ops` ambiguity, verified empirically. This is
-the reviewer's Candidate B (a dedicated baseline object) with better names than
-`baseline(x, anchor = )`: `constant()` for the mean/stationary anchor, `initial()`
-for the init anchor, each self-explanatory without shadowing a base function
-(unlike `mean`).
+This also happens to sidestep a mechanical clash for free: `+.dist_spec`
+already means convolution (used for delays), and R's dispatch has no way to
+let a bare distribution also resolve to a second `+` method (see Alternatives
+considered). Because `constant()`/`initial()` return a `state_spec`, neither
+operand of `+` is ever a bare `dist_spec`, so that clash never arises.
 
 A trajectory's baseline may come from **either** `constant()`/`initial()`
 **or** a single component's own `mean =`/`init =` (as in `GP(mean = ...) +
@@ -286,11 +280,11 @@ scope for #1451:
 
 ## Alternatives considered
 
-- **A bare `dist_spec` as the baseline, no wrapper.** The original plan; ruled
-  out empirically — `dist_spec` and `state_spec` are unrelated S3 classes, so
-  `LogNormal(...) + GP()` dispatches on `+.dist_spec` regardless of the
-  right-hand side and errors. `constant()`/`initial()` fix this by ensuring
-  neither operand of `+` is ever a bare `dist_spec`.
+- **A bare `dist_spec` as the baseline, no wrapper.** The original plan;
+  dropped for blurring "a single value" with "a composable trajectory" into
+  one type, and it doesn't work mechanically either — `LogNormal(...) + GP()`
+  dispatches on `+.dist_spec` (convolution) regardless of the right-hand side
+  and errors.
 - **Formula, `initial(...) ~ gp() + rw()`.** Elegant but leans on `~`/`~ 1` idioms
   this audience mostly has not internalised, needs the most new machinery (a
   call-tree parser for good errors), and prevents factoring a component out to a
