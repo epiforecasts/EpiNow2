@@ -1,19 +1,40 @@
 # Time-varying parameter composition: interface design
 
 Working design note for the `GP()`/`RW()` state work (#1451). Captures the
-interface we converged on, why, the decisions still open, and a rough
-implementation sketch. Not user-facing documentation.
+interface converged on, why, and what was implemented. Not user-facing
+documentation.
+
+## Background
+
+Before this note, #1451 introduced a way to make any model parameter (e.g.
+the reproduction number, Rt) either a constant value or a state that varies
+over time:
+
+- A **`dist_spec`** (e.g. `Fixed(1)`, `LogNormal(2, 0.2)`) is a single value:
+  known, or with a prior, but not time-varying.
+- **`GP()`/`RW()`** turn a parameter into a **state**: a Gaussian process or a
+  random walk around a baseline. `GP(mean = LogNormal(2, 0.2))` says the
+  parameter follows a Gaussian process whose long-run average has that prior.
+  A parameter given a `GP()`/`RW()` becomes a **`state_spec`** object rather
+  than a plain `dist_spec`; `is_state_spec()` tells the two apart.
+- In Stan, `get_state_trajectory()` is the function that builds the actual
+  value-over-time vector for a parameter, whichever of the above it is.
+
+Before this note, `get_state_trajectory()` dispatches on a single scalar
+`state_type`: a state is exactly one GP *or* one RW. This note generalises
+that to a **sum of any number of GP/RW pieces** ("composition") and adds
+`RW(knots = ...)` for irregular breakpoints.
 
 ## Problem
 
-The released model composes a random walk (breakpoints) *and* a Gaussian process
-on the same Rt trajectory: `update_Rt` builds `logR = log(R0) + bp + gp`, adding
-both terms when both are present, and this is the default when `rw` is set with
-the GP left on. The state rework replaces `update_Rt` with
-`get_state_trajectory`, which dispatches on a single scalar `state_type`, so a
-trajectory can now be a random walk *or* a GP but not both. That is a regression
-from `main`, not a missing future feature. The redesign below restores
-composition and generalises it.
+`main` (the released model, before #1451) already composes a random walk
+(breakpoints) *and* a Gaussian process on the same Rt trajectory: its
+`update_Rt` builds `logR = log(R0) + bp + gp`, adding both terms when both are
+present, and this is the default when `rw` is set with the GP left on.
+#1451's single-`state_type` design (see Background) means a trajectory is now
+a random walk *or* a GP but not both. That is a regression from `main`, not a
+missing future feature. The redesign below restores composition and
+generalises it to any parameter, not just Rt.
 
 ## Core abstraction
 
@@ -45,8 +66,11 @@ different fillings:
 
 Fixed and constant collapse to the same thing (zero components); they differ only
 in whether the level is known or sampled. This removes the fixed/constant/varying
-trichotomy: there is one specification type, and the R code no longer needs to
-branch on `is_state_spec(x) || x != Fixed(1)`.
+trichotomy that existed before this note: there was one `state_spec` type for
+varying parameters and a separate `dist_spec` check for the rest, so R code had
+to branch on `is_state_spec(x) || x != Fixed(1)` to tell them apart. After this
+note, both are `state_spec`s (just with zero components), so that branch goes
+away.
 
 The same abstraction is parameter-agnostic. `obs_opts(scale = ...)` and
 `obs_opts(dispersion = ...)` already accept state specs and route through
@@ -125,7 +149,7 @@ produce `state_spec`; `constant()`/`initial()` and any composed result produce
 `trajectory_spec`, which also inherits `state_spec`), so `component + component`,
 `baseline + component`, `component + baseline` and `trajectory + component` all
 dispatch to the same method — no need for a separate method per combination.
-The earlier draft of this note proposed a single `baseline(x, anchor = )`
+An earlier draft of this note proposed a single `baseline(x, anchor = )`
 object instead of the `constant()`/`initial()` pair; both are the same idea
 under different names, and `constant()`/`initial()` reads better at the call
 site (no `anchor = "mean"/"init"` string to get right).
@@ -170,8 +194,8 @@ trajectory sum contains at most one distribution (the baseline); two is an error
 
 ### Random walk and breakpoints are one component
 
-In the released model, breakpoints are a Gaussian random walk on the segment
-levels (`bp0 = cumulative_sum(bp_effects)`, `bp_effects ~ normal(0, bp_sd)`), and
+In `main`, breakpoints are a Gaussian random walk on the segment levels
+(`bp0 = cumulative_sum(bp_effects)`, `bp_effects ~ normal(0, bp_sd)`), and
 `rw = 7` and a user `breakpoint` column feed the same path, differing only in knot
 placement. So there is no separate `BP()`; `RW()` carries the knots:
 
@@ -182,82 +206,91 @@ placement. So there is no separate `BP()`; `RW()` carries the knots:
 
 `knots` given as dates is resolved to indices at data-binding time, the same
 late-binding used for distributions, so the number of segment effects is
-data-derived (as `bp_n` already is).
+data-derived (as `bp_n` already is in `main`).
 
-## Decisions resolved (implementation status)
+## Decisions resolved
 
-Both points below turned out not to need a new decision: `GP(mean =/init =)`
-and `RW(mean =/init =)` stay exactly as shipped (single-component sugar, one
-baseline and one shape in the same call), and the existing plain-distribution
-→ `GP()` deprecation in `rt_opts()` is untouched. A "bare prior" in the sense
-below never reaches the model, because that deprecation always wraps it in a
-`GP()` first, matching `main`'s default. So:
+Two open questions from an earlier draft of this note turned out not to need a
+new decision:
 
-1. **Default component for a bare prior**: unchanged — resolved by the
-   existing deprecation, not by this work.
-2. **Default anchor value**: unchanged — `rt_opts()`'s existing `gp_anchor`
-   logic is untouched.
+1. **Default component for a bare prior.** `GP(mean =/init =)` and
+   `RW(mean =/init =)` stay exactly as shipped in #1451 before this note
+   (single-component sugar, one baseline and one shape in the same call), and
+   the plain-distribution → `GP()` deprecation already in `rt_opts()` is
+   untouched: a bare prior always reaches the model already wrapped in a
+   `GP()`, matching `main`'s default.
+2. **Default anchor value.** `rt_opts()`'s existing `gp_anchor` logic (which
+   picks the anchor for that default `GP()`) is untouched.
 
-## Deprecation (implemented)
+## Deprecation
 
 `rt_opts(rw = )` and the `breakpoint` column now translate onto the composed
-grammar (via `lifecycle::deprecate_warn`/`deprecate_warn`) instead of being
-dropped:
+grammar (via `lifecycle::deprecate_warn`) instead of being dropped:
 
 - `rt_opts(rw = 7)` composes `+ RW(period = 7)` onto whatever `prior` already
   resolved to (the default `GP()`, an explicit prior, or the user's own
-  `GP()`/`RW()`) — in `rt_opts()` itself, since it needs no data.
+  `GP()`/`RW()`) — inside `rt_opts()` itself, since it needs no data. See
+  `compose_deprecated_rw()`.
 - the `breakpoint` column composes `+ RW(knots = <positions>)` onto `rt$prior`
-  — in `estimate_infections()`, where the data (and hence the knot positions)
-  is known. See `resolve_legacy_breakpoints()`.
+  — inside `estimate_infections()`, where the data (and hence the knot
+  positions) is known. See `resolve_legacy_breakpoints()`.
 - if the user's own prior already contains an RW component, both shims skip
   composing (rather than risk a conflicting/second random walk) and warn
   instead that the deprecated input was ignored.
 
 Honouring the `breakpoint` column losslessly required irregular date-anchored
 knots on `RW()` (`RW(knots = <Date>|<integer>)`), implemented alongside the
-shims rather than deferred: a new Stan `rw_dev_knots` (isolated from the
-unchanged, period-based `rw_dev`) and a `rw_knots`/`rw_knots_n`/
-`rw_knots_offset` data block. `Date` knots resolve to plain time-indices only
-once the data is known (`resolve_state_dates()`), so a spec built before the
-data is seen (and reused across `regional_epinow()`'s regions) still works.
+shims rather than deferred (see Implementation).
 
-The vestigial `bp_n`/`bp_effects`/`bp_sd`/`breakpoints` Stan machinery (already
-dead: forced to `bp_n = 0` by the pre-existing `use_breakpoints` deprecation,
-so it no longer affected `R`) was removed rather than kept alongside the real
-replacement.
+The vestigial `bp_n`/`bp_effects`/`bp_sd`/`breakpoints` Stan machinery from
+`main` (already dead on #1451 before this note: forced to `bp_n = 0` by the
+pre-existing `use_breakpoints` deprecation, so it no longer affected `R`) was
+removed rather than kept alongside the real replacement.
 
-## Implementation sketch
+## Implementation
 
-Stan:
+Stan (`inst/stan/functions/state.stan`, `inst/stan/data/states.stan`,
+`inst/stan/data/random_walk.stan`):
 
-- `assemble_state(t, n_free, level, dev, link)` is the seam and stays as is.
-- Split each generator into a `*_dev` returning the deviation vector (`rw_dev`,
-  `gp_dev`); `rw_trajectory`/`gp_trajectory` become thin wrappers so the
-  single-component paths, and their byte-identity, are untouched.
-- Promote type and hyperparameter references from the state level to a component
-  table (`comp_state`, `comp_type`, per-component refs, CSR-indexed by
-  `state_comp_offset`/`state_comp_n`). The dispatcher loops the state's
-  components, sums their `dev`s, and calls `assemble_state` once.
+- `assemble_state(t, n_free, level, dev, link)` — unchanged from before this
+  note: combines a baseline with a link-scale deviation `dev` (length
+  `n_free`, the window over which the state varies) and holds the last value
+  through the forecast horizon.
+- Each generator is split into a `*_dev` function returning just the
+  deviation vector (`rw_dev`, `gp_dev`, and the new `rw_dev_knots` for
+  irregular knots), so the single-component paths (`rw_trajectory`,
+  `gp_trajectory`, now thin wrappers around `assemble_state`) — and their
+  byte-identity with `main` — are untouched.
+- A state's `state_type`/`state_pos` scalars became a **component table**:
+  each state indexes a contiguous block of components (`state_comp_offset`,
+  `state_comp_n`), and each component has its own `comp_type`/`comp_pos` and
+  hyperparameter references. `get_state_trajectory()` loops a state's
+  components, sums their `*_dev` deviations, and calls `assemble_state` once.
 - The level, link, anchor, free window and future behaviour stay at the state
   level (shared across a state's components).
 
-R:
+R (`R/state.R`, `R/create.R`, `R/opts.R`):
 
-- One trajectory spec type; a bare `dist_spec` and `Fixed()` lift to zero-component
-  specs. `+.dist_spec` and `+.<component>` build and extend the spec.
-- `initial()` tags the baseline as init-anchored.
-- A plain-English `print()` method: "Baseline: R ~ LogNormal(2, 0.2), average;
-  + Gaussian process; + random-walk breakpoints at 2020-03-23, 2020-06-08".
-- `create_rt_data`/`create_*` flatten the components into the Stan component table
-  and mint one set of hyperparameter ids per component.
-- Deprecation shims in `rt_opts`/`create_rt_data` and `obs_opts`.
+- `GP()`/`RW()` build a "bare" one-component `state_spec` (`new_component_spec()`).
+  `constant()`/`initial()` build a zero-component `state_spec` carrying just
+  the baseline. Supplying `mean =`/`init =` to `GP()`/`RW()` is sugar that
+  composes one of these onto the bare component (`with_optional_anchor()`),
+  so there is exactly one internal representation regardless of how a spec
+  was written.
+- `+.state_spec` combines two specs, enforcing exactly one baseline (see
+  The `+` operator).
+- `create_state_data()` flattens a parameter's components into the Stan
+  component table and mints one set of hyperparameter ids per component
+  (`resolve_rw_component()`/`resolve_gp_component()`).
+- Deprecation shims: `compose_deprecated_rw()` in `rt_opts()`;
+  `resolve_legacy_breakpoints()` and `resolve_state_dates()` (which resolves
+  `Date` knots to indices once the data is known) in `estimate_infections()`.
 
 Tests:
 
-- The `log_prob` byte-identity harness must stay Δlp = 0 for single-component GP
-  and RW through the refactor (catches parameter-packing bugs).
-- Add a composite test (RW + GP on one trajectory) and an irregular-knots test.
+- The `log_prob` byte-identity harness stays at Δlp = 0 for single-component
+  GP and RW through the refactor (catches parameter-packing bugs).
+- Composite tests (RW + GP on one trajectory) and an irregular-knots test.
 
 ## Future directions
 
@@ -269,11 +302,13 @@ scope for #1451:
 - Back-calculation infections (a GP on the log scale from an initial value) become
   `initial(...) + GP()`, the same construction rather than a separate path.
 - New time-varying parameters accept a trajectory spec with no fresh interface.
-- Further component types slot in as new `comp_type`s: `Independent()` (white
-  noise; weakly identified against observation overdispersion here, so it wants
-  gating), `Input()` (a deterministic user-supplied series, where sign and scale
-  are meaningful, unlike the symmetric stochastic components), and a formula
-  front-end where `+` is term addition.
+- Further component types slot in as new `comp_type`s, each needing only its
+  own shape constructor (no new anchor-handling code, since `with_optional_anchor()`
+  is shared): `Independent()` (white noise; weakly identified against
+  observation overdispersion here, so it wants gating), `Input()` (a
+  deterministic user-supplied series, where sign and scale are meaningful,
+  unlike the symmetric stochastic components), and a formula front-end where
+  `+` is term addition.
 - Unify the mechanism and grammar, not the defaults: the sensible lengthscale
   prior, link and identifiability differ by parameter, so parameter-aware defaults
   stay underneath the shared spec.
