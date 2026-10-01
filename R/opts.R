@@ -306,9 +306,10 @@ compose_deprecated_rw <- function(prior, rw, use_rt) {
 #' defaults.
 #'
 #' @param prior A `<dist_spec>` giving the prior of the initial reproduction
-#' number. Ignored if `use_rt` is `FALSE`. Defaults to a LogNormal distribution
-#' with mean of 1 and standard deviation of 1: `LogNormal(mean = 1, sd = 1)`.
-#' A lower limit of 0 will be enforced automatically.
+#' number, or a `<state_spec>` (from [GP()]/[RW()]) for a time-varying
+#' reproduction number. Ignored if `use_rt` is `FALSE`. Defaults to
+#' `GP(init = LogNormal(mean = 1, sd = 1))`. A lower limit of 0 will be
+#' enforced automatically.
 #'
 #' @param use_rt Logical, defaults to `TRUE`. Should Rt be used to generate
 #' infections and hence reported cases.

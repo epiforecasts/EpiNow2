@@ -19,9 +19,10 @@ rt_opts(
 }
 \arguments{
 \item{prior}{A \verb{<dist_spec>} giving the prior of the initial reproduction
-number. Ignored if \code{use_rt} is \code{FALSE}. Defaults to a LogNormal distribution
-with mean of 1 and standard deviation of 1: \code{LogNormal(mean = 1, sd = 1)}.
-A lower limit of 0 will be enforced automatically.}
+number, or a \verb{<state_spec>} (from \code{\link[=GP]{GP()}}/\code{\link[=RW]{RW()}}) for a time-varying
+reproduction number. Ignored if \code{use_rt} is \code{FALSE}. Defaults to
+\code{GP(init = LogNormal(mean = 1, sd = 1))}. A lower limit of 0 will be
+enforced automatically.}
 
 \item{use_rt}{Logical, defaults to \code{TRUE}. Should Rt be used to generate
 infections and hence reported cases.}
