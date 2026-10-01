@@ -66,7 +66,8 @@
 #' @inheritParams create_stan_data
 #' @inheritParams create_rt_data
 #' @inheritParams create_backcalc_data
-#' @param gp `r lifecycle::badge("deprecated")` Configure the Gaussian process
+#' @param gp `r lifecycle::badge("deprecated")` No longer applied; a non-`NULL`
+#' value only triggers a deprecation warning. Configure the Gaussian process
 #' through the relevant model's prior instead: `rt_opts(prior = GP(...))` for
 #' the renewal model or `backcalc_opts(prior = GP(...))` for the
 #' back-calculation model.
@@ -142,9 +143,11 @@ estimate_infections <- function(data,
   if (!is.null(gp)) {
     deprecate_warn(
       "1.10.0", "estimate_infections(gp)",
-      details = "Configure the Gaussian process through the relevant model's
-      prior instead: `rt_opts(prior = GP(...))` for the renewal model or
-      `backcalc_opts(prior = GP(...))` for the back-calculation model."
+      details = "This argument is no longer applied; the default Gaussian
+      process settings are used instead. Configure the Gaussian process
+      through the relevant model's prior: `rt_opts(prior = GP(...))` for the
+      renewal model or `backcalc_opts(prior = GP(...))` for the
+      back-calculation model."
     )
   }
   assert_class(obs, "obs_opts")
