@@ -10,6 +10,89 @@
 
 /**
  * @ingroup rt_estimation
+ * @brief Extend a vector to length t by repeating its last value.
+ *
+ * @param x Vector to extend
+ * @param t Target length
+ * @return x followed by `t - num_elements(x)` copies of its last value, or x
+ *   unchanged if it already has at least t elements
+ */
+vector hold_forward(vector x, int t) {
+  int n = num_elements(x);
+  if (n >= t) {
+    return x;
+  }
+  return append_row(x, rep_vector(x[n], t - n));
+}
+
+/**
+ * @ingroup rt_estimation
+ * @brief Uncentred Gaussian process contribution to log Rt.
+ *
+ * A stationary GP enters log Rt directly. A non-stationary GP enters as the
+ * cumulative sum of daily increments starting from 0. Either path is held at
+ * its last value up to length t.
+ *
+ * @param noise Vector of Gaussian process noise values
+ * @param t Length of the time series
+ * @param stationary Whether the Gaussian process is stationary (1) or
+ *   non-stationary (0)
+ * @return A vector of length t, all zeros if noise is empty
+ */
+vector gp_log_path(vector noise, int t, int stationary) {
+  if (num_elements(noise) == 0) {
+    return rep_vector(0, t);
+  }
+  if (stationary) {
+    return hold_forward(noise, t);
+  }
+  return hold_forward(append_row(0, cumulative_sum(noise)), t);
+}
+
+/**
+ * @ingroup rt_estimation
+ * @brief Uncentred log Rt level of each breakpoint segment.
+ *
+ * @param bp_effects Vector of breakpoint effects
+ * @return A vector with one more element than bp_effects: 0 for the first
+ *   level, then the cumulative sum of the effects
+ */
+vector bp_log_levels(vector bp_effects) {
+  return append_row(0, cumulative_sum(bp_effects));
+}
+
+/**
+ * @ingroup rt_estimation
+ * @brief Log Rt intercept that centres the paths over the centring window.
+ *
+ * Subtracting the means of the uncentred paths over the first `n_centre`
+ * days from `log(R0)` makes the mean of log Rt over those days equal
+ * `log(R0)`. The stationary GP is not centred.
+ *
+ * @param R0 Initial reproduction number
+ * @param gp Uncentred GP path from `gp_log_path()`
+ * @param bp Uncentred breakpoint levels from `bp_log_levels()`
+ * @param bps Array of breakpoint indices
+ * @param stationary Whether the Gaussian process is stationary (1) or
+ *   non-stationary (0)
+ * @param n_centre Number of leading days in the centring window
+ * @return The centred intercept on the log scale
+ */
+real centred_log_intercept(real R0, vector gp, vector bp, array[] int bps,
+                           int stationary, int n_centre) {
+  // sum() / n rather than mean() as sum() is a single autodiff node
+  real c = log(R0);
+  if (!stationary) {
+    c -= sum(gp[1:n_centre]) / n_centre;
+  }
+  if (num_elements(bp) > 1) {
+    c -= sum(bp[bps[1:n_centre]]) / n_centre;
+  }
+  return c;
+}
+
+/**
+ * @ingroup rt_estimation
  * @brief Update a vector of effective reproduction numbers (Rt) based on
  * an intercept, breakpoints (i.e. a random walk), and a Gaussian
  * process.
@@ -29,40 +112,20 @@
  */
 vector update_Rt(int t, real R0, vector noise, array[] int bps,
                  vector bp_effects, int stationary, int n_centre) {
-  // define control parameters
   int bp_n = num_elements(bp_effects);
-  int gp_n = num_elements(noise);
-  // initialise intercept
-  vector[t] logR = rep_vector(log(R0), t);
-  //initialise breakpoints + rw
-  if (bp_n) {
-    vector[bp_n + 1] bp0;
-    bp0[1] = 0;
-    bp0[2:(bp_n + 1)] = cumulative_sum(bp_effects);
-    vector[t] bp = bp0[bps];
-    // Centre over the observation window (same identifiability fix as the GP below).
-    bp -= mean(bp[1:n_centre]);
-    logR = logR + bp;
+  vector[t] gp = gp_log_path(noise, t, stationary);
+  vector[bp_n + 1] bp = bp_log_levels(bp_effects);
+  real c = centred_log_intercept(R0, gp, bp, bps, stationary, n_centre);
+  if (bp_n == 0) {
+    return exp(c + gp);
   }
-  //initialise gaussian process
-  if (gp_n) {
-    vector[t] gp = rep_vector(0, t);
-    if (stationary) {
-      gp[1:gp_n] = noise;
-      // fix future gp based on last estimated
-      if (t > gp_n) {
-        gp[(gp_n + 1):t] = rep_vector(noise[gp_n], t - gp_n);
-      }
-    } else {
-      gp[2:(gp_n + 1)] = noise;
-      gp = cumulative_sum(gp);
-      // Centre over the observation window (same identifiability fix as the BP above).
-      gp -= mean(gp[1:n_centre]);
-    }
-    logR = logR + gp;
+  vector[bp_n + 1] log_R_bp = c + bp;
+  if (num_elements(noise) == 0) {
+    // One exp per breakpoint level rather than per day
+    vector[bp_n + 1] R_bp = exp(log_R_bp);
+    return R_bp[bps];
   }
-
-  return exp(logR);
+  return exp(log_R_bp[bps] + gp);
 }
 
 /**
