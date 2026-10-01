@@ -7,6 +7,7 @@
 ## Model changes
 
 - `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient, about 3-4 times faster. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
+- Simplified the Stan code that combines delays in `get_delay_rev_pmf()`, with new property tests for the delay functions. Results and speed are unchanged.
 
 ## Package changes
 
