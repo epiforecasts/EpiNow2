@@ -8,10 +8,12 @@
 
 ## Package changes
 
+- `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
 - Moved the probability distribution interface (`Gamma()`, `LogNormal()`, `NonParametric()`, `discretise()`, `get_pmf()`, `convert_to_logmean()`, `convert_to_logsd()`, and related functions) to the standalone `distspec` package, which EpiNow2 now depends on. These functions are attached when EpiNow2 is loaded, so existing code continues to work unchanged. They are also re-exported from EpiNow2 (deprecated) so that the `EpiNow2::` form keeps resolving; the re-exports will be removed in a future release.
 - Adapted the internal nonparametric-delay handling to `distspec`'s revised representation of estimated (Dirichlet-backed) distributions, which now hold their Dirichlet prior in `$pmf` rather than a separate `$estimated`/`$alpha` and a cached mean PMF. Behaviour for estimated nonparametric delays is unchanged.
 - `gt_opts()`, `delay_opts()` and `trunc_opts()` gain a `default_cdf_max` argument: the CDF level to keep an unconstrained fixed distribution up to (default `0.999`, where `1` leaves it unbounded), following `distspec`'s `cdf_max` (EpiNow2 now requires `distspec` >= 0.2.0). The default can be set globally with `options(EpiNow2.cdf_max = ...)`. The previous `default_cdf_cutoff` argument (the tail probability to drop) is deprecated; a value `x` is equivalent to `default_cdf_max = 1 - x`.
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
+- The README commits-since badge now tracks the latest release automatically.
 
 ## Bug fixes
 
@@ -22,6 +24,7 @@
 - A bug was fixed where the prior on the initial reproduction number was applied with an incorrect Jacobian, shifting it upwards by a factor of `exp(sdlog^2)`. A `LogNormal(mean = 2, sd = 1)` prior was applied as though it had a mean of 2.5.
 - A bug was fixed where the mean reproduction number over the observation window was left uninitialised, so chains started from a value drawn across the whole of `exp(-2)` to `exp(2)` rather than from the user's Rt prior.
 - A bug was fixed where warnings raised while fitting `estimate_secondary()` and `estimate_truncation()` were logged once per chain, duplicating each message when all chains were fitted in a single call.
+- A bug was fixed where `estimate_infections()` errored while generating initial conditions when the model had no variable parameters, such as with `obs_opts(family = "poisson")` and `gp = NULL`.
 - A bug was fixed where the Stan growth rate functions no longer rejected a `seeding_time` too close to the length of the infections vector, instead silently returning a truncated or empty result, because the guard relied on Stan's implicit bounds checking of an out-of-range empty vector slice rather than an explicit check.
 
 ## Documentation
@@ -33,6 +36,7 @@
 
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
 - Reimplemented the Stan function that accumulates modelled reports onto later dates (used for missing or batch-reported data) to take a running total via `cumulative_sum` rather than loop over time points, adding each report to the next. This uses only a handful of operations on the whole time series instead of one per accumulated time point, which matters for data reported at a fixed low frequency such as weekly.
+- Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
 
 # EpiNow2 1.9.0
 

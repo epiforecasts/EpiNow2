@@ -181,9 +181,8 @@ estimate_infections <- function(data,
   # Add initial zeroes
   model_data <- pad_reported_cases(model_data, seeding_time)
 
-  # R0 is handled separately from the generic params system: it is wrapped
-  # by the centred non-stationary GP, so its user-facing prior is on the
-  # initial Rt (R[1]) rather than on the sampled internal log-mean.
+  # R0's user-facing prior is on the initial Rt (R[1]), set below via
+  # init_priors, not on the GP's sampled internal log-mean
   params <- list(
     make_param("alpha", gp$alpha, lower_bound = 0),
     make_param("rho", gp$ls, lower_bound = 0),

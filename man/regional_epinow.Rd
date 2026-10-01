@@ -76,7 +76,8 @@ settings if desired.}
 create if not present).}
 
 \item{target_date}{Date, defaults to maximum found in the data if not
-specified.}
+specified. Passing a character string is deprecated; it is converted to a
+\verb{<Date>} with a warning.}
 
 \item{non_zero_points}{Numeric, the minimum number of time points with
 non-zero cases in a region required for that region to be evaluated.

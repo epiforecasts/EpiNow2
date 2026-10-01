@@ -297,8 +297,10 @@ test_that("Dirichlet concentration anchors the GT posterior to its prior", { # n
   expect_null(out_loose$error)
   expect_null(out_tight$error)
 
+  # the posterior generation time is uncertain (a Dirichlet nonparametric),
+  # so resolve it to its mean PMF before extracting the probabilities
   pmf_of <- function(out) {
-    as.numeric(get_pmf(get_parameters(out)$generation_time))
+    as.numeric(get_pmf(fix_parameters(get_parameters(out)$generation_time)))
   }
   loose_pmf <- pmf_of(out_loose)
   tight_pmf <- pmf_of(out_tight)
