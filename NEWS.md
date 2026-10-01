@@ -2,6 +2,8 @@
 
 ## New features
 
+- `estimate_infections()` now also returns the case (cohort) reproduction number, `R_case`, alongside the instantaneous reproduction number. It is calculated by forward-weighting the jointly-estimated Rt trajectory by the generation time distribution and is available via `get_samples()` and `summary(type = "parameters")`.
+
 ## Breaking changes
 
 ## Model changes

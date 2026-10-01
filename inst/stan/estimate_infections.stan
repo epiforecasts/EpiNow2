@@ -41,6 +41,11 @@ transformed data {
       delay_types_groups, delay_max, delay_np_pmf_groups
     );
   }
+  // maximum generation time, i.e. the length of its (reversed) PMF
+  int gt_max = delay_type_max[delay_id_generation_time] + 1;
+  // length of the case reproduction number, which is undefined over the
+  // last (gt_max - 1) time points as this would need Rt beyond ot_h
+  int ot_case = max(ot_h - gt_max + 1, 0);
 
   // initial infections scaling (on the log scale)
   real initial_infections_guess;
@@ -270,6 +275,11 @@ generated quantities {
   vector[return_likelihood ? ot : 0] log_lik;
   // Adjusted Rt accounting for susceptible depletion (only when use_pop > 0)
   vector[(estimate_r > 0 && use_pop > 0) ? ot_h : 0] R_adj;
+  // Case (cohort) reproduction number, forward-weighted from Rt (or, when
+  // Rt is not estimated directly, from the Rt derived from infections);
+  // shorter than Rt itself as it is undefined towards the end of the
+  // trajectory (see calculate_case_Rt)
+  vector[ot_case] R_case;
 
   profile("generated quantities") {
     real reporting_overdispersion = get_param(
@@ -306,10 +316,12 @@ generated quantities {
         gen_R = calculate_Rt(
           infections, seeding_time, sampled_gt_rev_pmf, rt_half_window
         );
+        R_case = calculate_case_Rt(gen_R, sampled_gt_rev_pmf);
       } else {
         gt_rev_pmf_for_growth = gt_rev_pmf;
+        R_case = calculate_case_Rt(R, gt_rev_pmf);
       }
-  
+
       // estimate growth from infections
       r = calculate_growth(
         infections, seeding_time, gt_rev_pmf_for_growth, growth_method
