@@ -89,7 +89,7 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
                            int initial_as_scale) {
   int ot = num_elements(R);
   vector[uot] seed;
-  real growth = R_to_r(R[1], gt_rev_pmf, 1e-3);
+  real growth = R_to_r(R[1], gt_rev_pmf, 1e-8);
   // Initialise infections using daily growth
   if (initial_as_scale) {
     seed[1] = exp(initial_infections[1] - growth * uot);
