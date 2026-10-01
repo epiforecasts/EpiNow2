@@ -310,7 +310,8 @@ create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
     # Rt (R, renewal model) and latent infections (I, back-calculation model)
     # are expressed as states; time-varying observation parameters follow later
     create_stan_params(
-      params, states_supported = c("R", "I"), seeding_time = seeding_time
+      params, states_supported = always_trajectory_params(),
+      seeding_time = seeding_time
     )
   )
 

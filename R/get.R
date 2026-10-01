@@ -918,13 +918,13 @@ extract_scalar_params <- function(x, stan_data) {
     posterior_to_normal(posterior, lookup_idxs[i])
   })
   names(result) <- param_names[valid]
-  # R and I are always reported as trajectories, so their sampled level is never
-  # surfaced as a scalar. Other parameters are surfaced as scalars unless they
-  # are time-varying, in which case their trajectory is reported instead; detect
-  # those from the model's state configuration rather than hard-coding names.
+  # see always_trajectory_params(): R and I are always reported as
+  # trajectories, so their sampled level is never surfaced as a scalar. Other
+  # parameters are surfaced as scalars unless their own state configuration
+  # makes them time-varying.
   state_ids <- stan_data$state_param_id %||% integer(0)
   state_params <- param_names[ids %in% state_ids]
-  result[!names(result) %in% union(c("R", "I"), state_params)]
+  result[!names(result) %in% union(always_trajectory_params(), state_params)]
 }
 
 #' Extract parameters from EpiNow2 model fits

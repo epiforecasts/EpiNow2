@@ -81,14 +81,15 @@ extract_parameters <- function(samples, args) {
     }
   }
 
-  # R and I are always reported as trajectories, so their sampled level is never
-  # surfaced as a scalar. Other parameters are surfaced as scalars unless they
-  # are time-varying, in which case their trajectory is reported instead; detect
-  # those from the model's state configuration rather than hard-coding names.
+  # see always_trajectory_params(): R and I are always reported as
+  # trajectories, so their sampled level is never surfaced as a scalar. Other
+  # parameters are surfaced as scalars unless their own state configuration
+  # makes them time-varying.
   state_ids <- args[["state_param_id"]] %||% integer(0)
   id_vals <- vapply(id_vars, function(v) as.integer(args[[v]]), integer(1))
   state_params <- c(
-    "R", "I", sub("^param_id_", "", id_vars)[id_vals %in% state_ids]
+    always_trajectory_params(),
+    sub("^param_id_", "", id_vars)[id_vals %in% state_ids]
   )
 
   # Extract all columns

@@ -409,6 +409,25 @@ is_state_spec <- function(x) {
   inherits(x, "state_spec")
 }
 
+#' Parameters always wired as states
+#'
+#' The reproduction number (`R`, renewal model) and latent infections (`I`,
+#' back-calculation model) are always built through `get_state_trajectory()`
+#' in Stan, whether or not they are configured as a genuinely time-varying
+#' state (a non-time-varying one still gets a trivial constant trajectory).
+#' Their sampled level is therefore never surfaced as a scalar; only
+#' parameters made time-varying by their own state configuration are. The
+#' single list here is what makes this derived rather than duplicated:
+#' [create_stan_data()] passes it as `states_supported`, and the extraction
+#' helpers (`extract_scalar_params()`, `extract_parameters()`) exclude it
+#' from the scalar parameters they return.
+#'
+#' @return A character vector of parameter names.
+#' @keywords internal
+always_trajectory_params <- function() {
+  c("R", "I")
+}
+
 #' Test whether an object is a parameter specification
 #'
 #' A parameter specification is either a `<dist_spec>` (a constant or uncertain
