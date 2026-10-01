@@ -331,3 +331,20 @@ test_that("check_truncation_length correctly indexes when parametric delays prec
     check_truncation_length(stan_args, time_points = 25)
   )
 })
+
+test_that("check_day_of_week_effect passes for NULL or matching length", {
+  expect_invisible(check_day_of_week_effect(NULL, 7))
+  expect_invisible(check_day_of_week_effect(rep(1, 7), 7))
+  expect_invisible(check_day_of_week_effect(1, 1))
+})
+
+test_that("check_day_of_week_effect errors for a mismatched length", {
+  expect_error(
+    check_day_of_week_effect(c(2, 1, 1), 7),
+    "length"
+  )
+  expect_error(
+    check_day_of_week_effect(rep(1, 7), 1),
+    "length"
+  )
+})

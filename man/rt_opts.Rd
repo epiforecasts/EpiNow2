@@ -67,7 +67,13 @@ susceptible population.}
 
 \item{pop_period}{Character string, defaulting to "forecast". Controls when
 susceptible population adjustment is applied. "forecast" only applies the
-adjustment to forecasts whilst "all" applies it to both data and forecasts.}
+adjustment to forecasts whilst "all" applies it to both data and forecasts.
+Since "all" only makes sense together with a non-zero \code{pop}, combining
+\code{pop_period = "all"} with the default \code{pop = Fixed(0)} is rejected with an
+error. Separately, when \code{\link[=estimate_infections]{estimate_infections()}} (or \code{\link[=epinow]{epinow()}}) is run, if
+\code{pop} is fixed at a value below the cumulative \code{confirm} in \code{data} this is
+not rejected but produces a warning, since it suggests \code{pop} is set too
+low.}
 
 \item{pop_floor}{Numeric. Minimum susceptible population used as a
 floor when adjusting for population depletion. This prevents numerical
