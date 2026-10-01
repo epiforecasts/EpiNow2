@@ -14,6 +14,7 @@
 - `gt_opts()`, `delay_opts()` and `trunc_opts()` gain a `default_cdf_max` argument: the CDF level to keep an unconstrained fixed distribution up to (default `0.999`, where `1` leaves it unbounded), following `distspec`'s `cdf_max` (EpiNow2 now requires `distspec` >= 0.2.0). The default can be set globally with `options(EpiNow2.cdf_max = ...)`. The previous `default_cdf_cutoff` argument (the tail probability to drop) is deprecated; a value `x` is equivalent to `default_cdf_max = 1 - x`.
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
+- The README commits-since badge now tracks the latest release automatically.
 
 ## Bug fixes
 
@@ -31,6 +32,7 @@
 
 - The prior choice guide vignette now draws more samples in its `estimate_secondary()` examples to avoid low tail effective sample size warnings in the rendered output.
 - Clarified the Stan documentation for delay-related vectors and their lookup index arrays, naming them explicitly as ragged data structures and linking to the Stan User's Guide section on the topic.
+- Removed stray `# nolint` comments that were rendered as visible text in the `growth_to_R()`, `R_to_growth()`, `example_incubation_period`, `example_reporting_delay` and `example_truncated` documentation, moving the line-length exclusion outside the roxygen block instead.
 
 ## Internal
 
