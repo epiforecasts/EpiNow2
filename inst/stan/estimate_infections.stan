@@ -383,7 +383,7 @@ model {
   profile("param lp") {
     params_lp(
       params, prior_dist, prior_dist_params, params_lower, params_upper,
-      params_prior_skip
+      params_skip_state_init_prior
     );
   }
 
@@ -402,9 +402,9 @@ model {
       }
     }
     state_gp_eta ~ std_normal(); // GP coefficients are iid across all components
-    // init-anchor states: the level parameter's prior is applied to the derived
-    // initial value (with the log-link Jacobian) instead of to the level, which
-    // is free scaffolding; params_lp() skips it via params_prior_skip.
+    // init-anchor states: the level's prior applies to the derived initial
+    // value (with the log-link Jacobian) instead; params_lp() skips it via
+    // params_skip_state_init_prior.
     for (s in 1:n_states) {
       if (state_anchor[s]) {
         int vpos = params_variable_lookup[state_param_id[s]];

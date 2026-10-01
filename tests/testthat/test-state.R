@@ -400,7 +400,7 @@ test_that("create_stan_params emits init-anchor state data (centred + Jacobian)"
   expect_identical(as.integer(out$prior_dist[1]), 2L)
   expect_equal(as.numeric(out$prior_dist_params[1:2]), c(0.4, 0.05))
   # the level's prior is applied to the derived init instead of the level
-  expect_identical(as.integer(out$params_prior_skip), c(1L, 0L))
+  expect_identical(as.integer(out$params_skip_state_init_prior), c(1L, 0L))
 })
 
 test_that("mean-anchor states keep their prior on the level", {
@@ -412,7 +412,7 @@ test_that("mean-anchor states keep their prior on the level", {
   out <- create_stan_params(params, states_supported = "fraction_observed")
   expect_identical(out$state_anchor, array(0L))
   # mean-anchored: the level keeps its prior, step sd is applied too
-  expect_identical(as.integer(out$params_prior_skip), c(0L, 0L))
+  expect_identical(as.integer(out$params_skip_state_init_prior), c(0L, 0L))
 })
 
 test_that("GP init anchor emits non-stationary state data", {
@@ -427,7 +427,7 @@ test_that("GP init anchor emits non-stationary state data", {
   # the init prior is the level parameter's own prior (normal(0.4, 0.05))
   expect_identical(as.integer(out$prior_dist[1]), 2L)
   # level is scaffolding (skipped); magnitude and lengthscale are applied
-  expect_identical(as.integer(out$params_prior_skip), c(1L, 0L, 0L))
+  expect_identical(as.integer(out$params_skip_state_init_prior), c(1L, 0L, 0L))
 })
 
 test_that("create_stan_params errors for fixed state priors", {

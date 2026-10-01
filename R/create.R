@@ -948,12 +948,12 @@ create_stan_params <- function(params, states_supported = character(0),
 
   ## for init-anchored states the level is free scaffolding: its prior is
   ## applied to the derived initial value instead, so skip it in the prior path
-  params_prior_skip <- rep(0L, length(params) - sum(fixed))
+  params_skip_state_init_prior <- rep(0L, length(params) - sum(fixed))
   init_state_ids <- state_data$state_param_id[state_data$state_anchor == 1]
   for (pid in init_state_ids) {
     vpos <- params_variable_lookup[pid]
     if (vpos > 0) {
-      params_prior_skip[vpos] <- 1L
+      params_skip_state_init_prior[vpos] <- 1L
     }
   }
 
@@ -963,7 +963,7 @@ create_stan_params <- function(params, states_supported = character(0),
     n_params_fixed = sum(fixed),
     params_lower = array(params_lower),
     params_upper = array(params_upper),
-    params_prior_skip = array(params_prior_skip),
+    params_skip_state_init_prior = array(params_skip_state_init_prior),
     params_fixed_lookup = array(params_fixed_lookup),
     params_variable_lookup = array(params_variable_lookup),
     params_value = array(vapply(
