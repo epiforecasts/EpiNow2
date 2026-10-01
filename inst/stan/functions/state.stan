@@ -216,18 +216,88 @@ vector gp_trajectory(int t, int n_free, int n_centre, real level, vector noise,
 }
 
 /**
+ * Link-scale deviation of one trajectory component
+ *
+ * Builds the random-walk or Gaussian-process deviation of a single component
+ * (the body of `get_state_trajectory`'s per-component loop, split out so each
+ * piece is independently readable). Each component reads the flat
+ * coefficient/hyperparameter vectors by its own offset into `comp_pos`.
+ *
+ * @param c Index of the component in the flat component table
+ * @param nf Free-noise window of the component's state
+ * @param nc Centring window of the component's state
+ * @param anchor Anchor of the component's state (0 = mean, 1 = init)
+ * @param comp_type Type of each component (0 = RW, 1 = GP)
+ * @param comp_pos Index of each component within its type group
+ * @param comp_rw_n Number of random walk steps of each component
+ * @param comp_rw_offset Offset of each component into state_rw_steps
+ * @param state_rw_period Number of time steps between random walk steps (the
+ *   regular grid; ignored by a component with its own knots)
+ * @param rw_knots_n Number of knots of each RW component (0 = regular grid)
+ * @param rw_knots_offset Offset of each RW component into rw_knots
+ * @param rw_knots Ascending 1-indexed knots, clipped to each component's own
+ *   free window in transformed data
+ * @param state_rw_steps Flat random walk steps across RW components
+ * @param comp_gp_M Number of GP basis functions of each component
+ * @param comp_gp_offset Offset of each component into state_gp_eta
+ * @param state_gp_eta Flat GP basis coefficients across GP components
+ * @param gp_boundary_scale GP boundary scale of each GP component
+ * @param gp_kernel Kernel of each GP component
+ * @param gp_nu Matern smoothness of each GP component
+ * @param state_gp_alpha GP magnitude of each GP component
+ * @param state_gp_rho GP lengthscale of each GP component
+ * @param gp_phi Precomputed GP basis of each GP component (built once in
+ *   transformed data from its state's free-noise window)
+ * @return A vector of length `nf`, the component's link-scale deviation
+ *
+ * @ingroup estimates_smoothing
+ */
+vector component_dev(
+  int c, int nf, int nc, int anchor,
+  array[] int comp_type, array[] int comp_pos,
+  array[] int comp_rw_n, array[] int comp_rw_offset, int state_rw_period,
+  array[] int rw_knots_n, array[] int rw_knots_offset, array[] int rw_knots,
+  vector state_rw_steps,
+  array[] int comp_gp_M, array[] int comp_gp_offset, vector state_gp_eta,
+  array[] real gp_boundary_scale, array[] int gp_kernel, array[] real gp_nu,
+  vector state_gp_alpha, vector state_gp_rho, array[] matrix gp_phi
+) {
+  if (comp_type[c] == 0) {
+    vector[comp_rw_n[c]] steps = segment(
+      state_rw_steps, comp_rw_offset[c] + 1, comp_rw_n[c]
+    );
+    int p = comp_pos[c];
+    if (rw_knots_n[p] > 0) {
+      // knots are clipped to comp_rw_n[c] entries by transformed data
+      return rw_dev_knots(
+        nf, nc, steps, segment(rw_knots, rw_knots_offset[p] + 1, comp_rw_n[c])
+      );
+    }
+    return rw_dev(nf, nc, steps, state_rw_period);
+  }
+  int p = comp_pos[c];
+  int M = comp_gp_M[c];
+  vector[M] eta = segment(state_gp_eta, comp_gp_offset[c] + 1, M);
+  // the basis is built once in transformed data (it is data-only); here we
+  // just apply the per-iteration hyperparameters through update_gp
+  matrix[nf, M] phi = gp_phi[p][1:nf, 1:M];
+  return gp_dev(nf, nc, update_gp(
+    phi, M, gp_boundary_scale[p], state_gp_alpha[p],
+    2 * state_gp_rho[p] / nf, eta, gp_kernel[p], gp_nu[p]
+  ), anchor);
+}
+
+/**
  * Get the trajectory of a (possibly time-varying) parameter
  *
  * Thin dispatch over the registered states: if a state is attached to the
  * parameter with the given id, builds its trajectory by summing the link-scale
- * deviations of its components (random walks and Gaussian processes) onto the
- * baseline; otherwise returns a constant trajectory at `level`. This lets any
- * parameter consumed pointwise over time become time-varying with no
- * per-parameter code beyond the call site.
+ * deviations of its components (via `component_dev`) onto the baseline;
+ * otherwise returns a constant trajectory at `level`. This lets any parameter
+ * consumed pointwise over time become time-varying with no per-parameter code
+ * beyond the call site.
  *
  * A state's free-noise and centring windows are shared by all its components.
- * Each component reads the flat coefficient vectors by its own offset, and each
- * GP component uses its own basis (built once in transformed data).
  *
  * @param id Target parameter id
  * @param t Total trajectory length (observation window + forecast horizon)
@@ -285,32 +355,15 @@ vector get_state_trajectory(
       vector[nf] dev = rep_vector(0, nf);
       for (k in 1:state_comp_n[s]) {
         int c = state_comp_offset[s] + k;
-        if (comp_type[c] == 0) {
-          vector[comp_rw_n[c]] steps = segment(
-            state_rw_steps, comp_rw_offset[c] + 1, comp_rw_n[c]
-          );
-          int p = comp_pos[c];
-          if (rw_knots_n[p] > 0) {
-            // knots are clipped to comp_rw_n[c] entries by transformed data
-            dev += rw_dev_knots(
-              nf, nc, steps,
-              segment(rw_knots, rw_knots_offset[p] + 1, comp_rw_n[c])
-            );
-          } else {
-            dev += rw_dev(nf, nc, steps, state_rw_period);
-          }
-        } else {
-          int p = comp_pos[c];
-          int M = comp_gp_M[c];
-          vector[M] eta = segment(state_gp_eta, comp_gp_offset[c] + 1, M);
-          // the basis is built once in transformed data (it is data-only); here
-          // we just apply the per-iteration hyperparameters through update_gp
-          matrix[nf, M] phi = gp_phi[p][1:nf, 1:M];
-          dev += gp_dev(nf, nc, update_gp(
-            phi, M, gp_boundary_scale[p], state_gp_alpha[p],
-            2 * state_gp_rho[p] / nf, eta, gp_kernel[p], gp_nu[p]
-          ), state_anchor[s]);
-        }
+        dev += component_dev(
+          c, nf, nc, state_anchor[s],
+          comp_type, comp_pos,
+          comp_rw_n, comp_rw_offset, state_rw_period,
+          rw_knots_n, rw_knots_offset, rw_knots, state_rw_steps,
+          comp_gp_M, comp_gp_offset, state_gp_eta,
+          gp_boundary_scale, gp_kernel, gp_nu,
+          state_gp_alpha, state_gp_rho, gp_phi
+        );
       }
       return assemble_state(t, nf, level, dev, state_link[s]);
     }
