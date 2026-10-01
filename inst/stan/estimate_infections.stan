@@ -97,10 +97,13 @@ transformed parameters {
         param_id_alpha, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
-      real rescaled_rho = 2 * get_param(
-        param_id_rho, params_fixed_lookup, params_variable_lookup,
-        params_value, params
-      ) / noise_terms;
+      real rescaled_rho = rescale_gp_lengthscale(
+        get_param(
+          param_id_rho, params_fixed_lookup, params_variable_lookup,
+          params_value, params
+        ),
+        noise_terms
+      );
       noise = update_gp(
         PHI, M, L, alpha, rescaled_rho, eta, gp_type, nu
       );
@@ -276,14 +279,6 @@ generated quantities {
       param_id_reporting_overdispersion, params_fixed_lookup, params_variable_lookup, params_value,
       params
     );
-    if (!fixed) {
-      real rescaled_rho = 2 * get_param(
-        param_id_rho, params_fixed_lookup, params_variable_lookup,
-        params_value, params
-      ) / noise_terms;
-      vector[noise_terms] x = linspaced_vector(noise_terms, 1, noise_terms);
-    }
-
     {
       vector[delay_type_max[delay_id_generation_time] + 1]
         gt_rev_pmf_for_growth;

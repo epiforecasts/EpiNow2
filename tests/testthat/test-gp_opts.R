@@ -1,7 +1,7 @@
 test_that("gp_opts returns correct default values", {
   gp <- gp_opts()
-  expect_equal(gp$basis_prop, 0.2)
-  expect_equal(gp$boundary_scale, 1.5)
+  expect_null(gp$basis_prop)
+  expect_null(gp$boundary_scale)
   expect_equal(gp$alpha, Normal(0, 0.01))
   expect_equal(gp$ls, LogNormal(mean = 21, sd = 7, max = 60))
   expect_equal(gp$kernel, "matern")
@@ -25,4 +25,20 @@ test_that("gp_opts warns for uncommon Matern kernel orders", {
 
 test_that("gp_opts warns about uncommon Matern kernel orders", {
   expect_warning(gp_opts(matern_order = 2), "Uncommon Matern kernel order")
+})
+
+test_that("gp_opts errors for lengthscale priors it cannot choose settings from", {
+  expect_error(gp_opts(ls = Weibull(shape = 2, scale = 10)), "boundary_scale")
+  expect_silent(
+    gp_opts(
+      ls = Weibull(shape = 2, scale = 10), basis_prop = 0.2,
+      boundary_scale = 1.5
+    )
+  )
+  expect_silent(
+    gp_opts(
+      ls = Weibull(shape = 2, scale = 10), basis_prop = 0.2,
+      kernel = "periodic"
+    )
+  )
 })

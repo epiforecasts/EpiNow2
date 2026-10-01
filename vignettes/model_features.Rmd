@@ -137,7 +137,7 @@ For kernel mathematics and the Hilbert space spectral approximation see the [GP 
 |---|---|---|
 | Kernel choice | `gp_opts(kernel = ...)` | `"matern"` (default), `"se"`, `"ou"`, or `"periodic"` |
 | Disable GP | `gp = NULL` in `estimate_infections()` | Remove the Gaussian process entirely |
-| Accuracy/speed tradeoff | `gp_opts(basis_prop = ...)` | Higher values increase accuracy; lower values are faster (default 0.2) |
+| Accuracy/speed tradeoff | `gp_opts(basis_prop = ..., boundary_scale = ...)` | Chosen from the lengthscale prior by default; set manually to trade accuracy for speed |
 
 See also: [GP implementation details](gaussian_process_implementation_details.html), [options examples](estimate_infections_options.html), [prior choice guide](prior_choice_guide.html)
 
