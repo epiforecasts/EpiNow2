@@ -6,7 +6,11 @@
 
 ## Model changes
 
+- The delay parameter priors are now always weighted in a single statement rather than branching on whether the weight is above one. Delay weights must now be at least one, which they always were in practice. The posterior is unchanged. Suggested by @bob-carpenter.
+
 ## Package changes
+
+- Tidied the Stan code following review by @bob-carpenter. The convolution index helpers are renamed to `xlen_conv_indices()` and `len_conv_indices()`, the prior distribution error now names the allowed values, and `get_delay_rev_pmf()` documents that the cumulative sum is taken before reversal.
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
 - Moved the probability distribution interface (`Gamma()`, `LogNormal()`, `NonParametric()`, `discretise()`, `get_pmf()`, `convert_to_logmean()`, `convert_to_logsd()`, and related functions) to the standalone `distspec` package, which EpiNow2 now depends on. These functions are attached when EpiNow2 is loaded, so existing code continues to work unchanged. They are also re-exported from EpiNow2 (deprecated) so that the `EpiNow2::` form keeps resolving; the re-exports will be removed in a future release.

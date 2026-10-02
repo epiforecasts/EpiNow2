@@ -17,7 +17,7 @@
  *
  * @ingroup convolution_functions
  */
-array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
+array[] int xlen_conv_indices(int s, int xlen, int ylen) {
   int s_minus_ylen = s - ylen;
   int start_x = max(1, s_minus_ylen + 1);
   int end_x = s;
@@ -36,7 +36,7 @@ array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
  *
  * @ingroup convolution_functions
  */
-array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
+array[] int len_conv_indices(int s, int xlen, int ylen) {
   int s_minus_ylen = s - ylen;
   int start_x = max(1, s_minus_ylen + 1);
   int end_x = xlen;
@@ -74,13 +74,13 @@ vector convolve_with_rev_pmf(vector x, vector y, int len) {
   vector[len] z;
 
   for (s in 1:xlen) {
-    array[4] int indices = calc_conv_indices_xlen(s, xlen, ylen);
+    array[4] int indices = xlen_conv_indices(s, xlen, ylen);
     z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
   }
 
   // runs zero times unless len > xlen
   for (s in (xlen + 1):len) {
-    array[4] int indices = calc_conv_indices_len(s, xlen, ylen);
+    array[4] int indices = len_conv_indices(s, xlen, ylen);
     z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
   }
 
