@@ -574,6 +574,10 @@ create_delay_inits <- function(stan_data) {
 #' number; this is a stopgap until derived-prior parameters are initialised
 #' through the shared path (#1481). The distribution code follows
 #' [pack_init_prior()] (0: lognormal, 1: gamma, 2: normal).
+#'
+#' Infection model fields (`fixed`, `estimate_r`, `bp_n` and `week_effect`)
+#' may be absent, as in the secondary and truncation models. Their
+#' components are then initialised as empty.
 #' @param stan_data A list of data as produced by [create_stan_data()].
 #' @inheritParams create_stan_params
 #' @return An initial condition generating function
@@ -586,7 +590,7 @@ create_initial_conditions <- function(stan_data, params) {
   function() {
     out <- create_delay_inits(stan_data)
 
-    if (stan_data$fixed == 0) {
+    if (isTRUE(stan_data$fixed == 0)) {
       out$eta <- array(rnorm(
         ifelse(stan_data$gp_type == 1, stan_data$M * 2, stan_data$M),
         mean = 0, sd = 0.1
@@ -594,7 +598,7 @@ create_initial_conditions <- function(stan_data, params) {
     } else {
       out$eta <- array(numeric(0))
     }
-    if (stan_data$estimate_r == 1) {
+    if (isTRUE(stan_data$estimate_r == 1)) {
       out$initial_infections <- array(rnorm(1))
       # seed R_mean from the initial-Rt prior (see @details above)
       if (stan_data$n_init_priors > 0) {
@@ -616,14 +620,14 @@ create_initial_conditions <- function(stan_data, params) {
       out$R_mean <- array(numeric(0))
     }
 
-    if (stan_data$bp_n > 0) {
+    if (isTRUE(stan_data$bp_n > 0)) {
       out$bp_sd <- array(rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
       out$bp_effects <- array(rnorm(stan_data$bp_n, 0, 0.1))
     } else {
       out$bp_sd <- array(numeric(0))
       out$bp_effects <- array(numeric(0))
     }
-    if (stan_data$week_effect > 0) {
+    if (isTRUE(stan_data$week_effect > 0)) {
       out$day_of_week_simplex <- array(
         rep(1 / stan_data$week_effect, stan_data$week_effect)
       )

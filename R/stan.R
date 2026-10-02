@@ -118,3 +118,46 @@ fit_model <- function(args, id = "stan") {
   }
   fit
 }
+
+#' Build Stan arguments and fit an estimation model
+#'
+#' @description
+#' Shared fitting step for the `estimate_*()` functions. Builds the Stan
+#' arguments with [create_stan_args()], warns if the truncation distribution
+#' is longer than the observed time period, and fits the model with
+#' [fit_model()].
+#'
+#' @param time_points Integer length of the observed time period passed to
+#'   [check_truncation_length()]. If `NULL` (the default) the check is
+#'   skipped.
+#' @param id Character, identifier used in logging. Defaults to `model`.
+#' @inheritParams create_stan_args
+#' @return A fitted model object as returned by [fit_model()].
+#' @keywords internal
+fit_estimate_model <- function(stan, data, init, model, id = model,
+                               verbose = FALSE, time_points = NULL) {
+  stan_args <- create_stan_args(
+    stan = stan, data = data, init = init, model = model, verbose = verbose
+  )
+  if (!is.null(time_points)) {
+    check_truncation_length(stan_args, time_points = time_points)
+  }
+  fit_model(stan_args, id = id)
+}
+
+#' Construct a fitted model object
+#'
+#' @description
+#' Combines the components of a fitted model into a list with class
+#' `c(class, "epinowfit", "list")`.
+#'
+#' @param ... Named components of the object, in the order they should
+#'   appear.
+#' @param class Character, the model-specific class.
+#' @return A list of class `c(class, "epinowfit", "list")`.
+#' @keywords internal
+new_epinowfit <- function(..., class) {
+  out <- list(...)
+  class(out) <- c(class, "epinowfit", class(out))
+  out
+}
