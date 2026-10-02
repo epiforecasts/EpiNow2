@@ -10,6 +10,7 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
   )
   if (!(tolower(Sys.info()[["sysname"]]) %in% "windows")) {
     # Also expose the pure Stan reference for the C++ functions
+    references <- c("convolve_reference.stan", "renewal_reference.stan")
     stan_fn_dir <- file.path(tempdir(), "epinow2-stan-functions")
     dir.create(stan_fn_dir, showWarnings = FALSE)
     file.copy(
@@ -17,15 +18,13 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
         file.path(
           system.file("stan/functions", package = "EpiNow2"), files
         ),
-        test_path("stan", "convolve_reference.stan")
+        test_path("stan", references)
       ),
       stan_fn_dir,
       overwrite = TRUE
     )
     suppressMessages(
-      expose_stan_fns(c(files, "convolve_reference.stan"),
-        target_dir = stan_fn_dir
-      )
+      expose_stan_fns(c(files, references), target_dir = stan_fn_dir)
     )
   }
 }
@@ -71,6 +70,25 @@ skip_integration <- function() {
 #' @return Logical indicating whether to run full test suite
 full_tests <- function() {
   isTRUE(as.logical(Sys.getenv("EPINOW2_FULL_TESTS", "false")))
+}
+
+#' Compile a test Stan model with the package C++ header
+#'
+#' @param file Name of a model in `tests/testthat/stan`.
+#' @return An rstan `stanmodel`.
+stan_test_model <- function(file) {
+  stanc_ret <- rstan::stanc(
+    test_path("stan", file),
+    allow_undefined = TRUE,
+    isystem = c(system.file("stan", package = "EpiNow2"), test_path("stan"))
+  )
+  code <- strsplit(stanc_ret$cppcode, "\n", fixed = TRUE)[[1]]
+  at <- match("#include <stan/model/model_header.hpp>", trimws(code))
+  stanc_ret$cppcode <- paste(
+    append(code, paste0("#include \"", epinow2_stan_header(), "\""), at),
+    collapse = "\n"
+  )
+  suppressMessages(suppressWarnings(rstan::stan_model(stanc_ret = stanc_ret)))
 }
 
 # Shared test fixtures -----------------------------------------------------

@@ -22,7 +22,7 @@ Each function page includes:
 
 ## Functions implemented in C++
 
-Some functions, such as `convolve_with_rev_pmf()`, are declared without a body and implemented in C++ in `inst/include`.
+Some functions, such as `convolve_with_rev_pmf()` and `renewal_infections()`, are declared without a body and implemented in C++ in `inst/include`.
 Models that use them need `epinow2_stan_header()` included before the model code.
 
 ## EpiNow2 main website
