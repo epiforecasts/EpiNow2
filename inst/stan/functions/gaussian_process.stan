@@ -192,23 +192,21 @@ matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
 }
 
 /**
-  * Update Gaussian process using spectral densities
+  * Spectral density of the Gaussian process, dispatched by kernel type
   *
-  * @param PHI Basis functions matrix
-  * @param M Number of basis functions
-  * @param L Length of the interval
   * @param alpha Scaling parameter
   * @param rho Length scale parameter
-  * @param eta Vector of noise terms
+  * @param L Length of the interval
+  * @param M Number of basis functions
   * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern)
   * @param nu Smoothness parameter for Matern kernel
-  * @return A vector of updated noise terms
+  * @return A vector of spectral densities
+  *
+  * @ingroup estimates_smoothing
   */
-vector update_gp(matrix PHI, int M, real L, real alpha,
-                 real rho, vector eta, int type, real nu) {
-  vector[type == 1 ? 2 * M : M] diagSPD;    // spectral density
+vector gp_diag_spd(real alpha, real rho, real L, int M, int type, real nu) {
+  vector[type == 1 ? 2 * M : M] diagSPD;
 
-  // GP in noise - spectral densities
   if (type == 0) {
     diagSPD = diagSPD_EQ(alpha, rho, L, M);
   } else if (type == 1) {
@@ -224,17 +222,67 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
       reject("nu must be one of 0.5, 1.5, or 2.5; found nu=", nu);
     }
   }
-  return PHI * (diagSPD .* eta);
+  return diagSPD;
+}
+
+/**
+  * Update Gaussian process using spectral densities
+  *
+  * @param PHI Basis functions matrix
+  * @param M Number of basis functions
+  * @param L Length of the interval
+  * @param alpha Scaling parameter
+  * @param rho Length scale parameter
+  * @param eta Vector of noise terms
+  * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern)
+  * @param nu Smoothness parameter for Matern kernel
+  * @return A vector of updated noise terms
+  */
+vector update_gp(matrix PHI, int M, real L, real alpha,
+                 real rho, vector eta, int type, real nu) {
+  vector[type == 1 ? 2 * M : M] diagSPD = gp_diag_spd(alpha, rho, L, M, type, nu);
+  vector[num_elements(eta)] weights = diagSPD .* eta;
+  // The lowest-frequency basis coefficient is the most strongly identified
+  // by the data, so it is written directly on the spectral-density scale
+  // (a centred parameterisation) instead of as alpha times a standard-normal
+  // deviate; this removes the strong correlation between alpha and eta[1]
+  // that the fully non-centred form otherwise produces. See
+  // gaussian_process_lp() for the matching prior. For the periodic kernel
+  // eta[M + 1] (the sine coefficient at the same fundamental frequency) is
+  // equally strongly identified, so it is centred too.
+  weights[1] = eta[1];
+  if (type == 1) {
+    weights[M + 1] = eta[M + 1];
+  }
+  return PHI * weights;
 }
 
 /**
   * Priors for Gaussian process (excluding length scale)
   *
   * @param eta Vector of noise terms
+  * @param alpha Scaling parameter
+  * @param rho Length scale parameter
+  * @param L Length of the interval
+  * @param M Number of basis functions
+  * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern)
+  * @param nu Smoothness parameter for Matern kernel
   *
   * @ingroup estimates_smoothing
   */
-void gaussian_process_lp(vector eta) {
-  eta ~ std_normal();
+void gaussian_process_lp(vector eta, real alpha, real rho, real L, int M,
+                         int type, real nu) {
+  vector[type == 1 ? 2 * M : M] diagSPD = gp_diag_spd(alpha, rho, L, M, type, nu);
+  // eta[1] is centred (see update_gp()); the remaining coefficients keep
+  // the non-centred std_normal() prior. For the periodic kernel eta[M + 1]
+  // is centred as well, as it shares the fundamental frequency with eta[1].
+  eta[1] ~ normal(0, diagSPD[1]);
+  if (type == 1) {
+    eta[M + 1] ~ normal(0, diagSPD[M + 1]);
+    eta[2:M] ~ std_normal();
+    eta[(M + 2):num_elements(eta)] ~ std_normal();
+  } else {
+    eta[2:num_elements(eta)] ~ std_normal();
+  }
 }
 
