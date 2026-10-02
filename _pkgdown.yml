@@ -222,6 +222,7 @@ reference:
   contents:
   - run_region
   - expose_stan_fns
+  - epinow2_stan_header
   - growth_to_R
   - R_to_growth
   - update_secondary_args
@@ -229,4 +230,3 @@ reference:
 - title: Internal
   contents:
   - has_keyword("internal")
-
