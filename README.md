@@ -352,7 +352,8 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Avalentinedwv">valentinedwv</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Acoderabbitai">coderabbitai</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AHenrikBengtsson">HenrikBengtsson</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Abob-carpenter">bob-carpenter</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Abob-carpenter">bob-carpenter</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aepiforecasts-workflows">epiforecasts-workflows</a>
 
 ### Issue Contributors
 
