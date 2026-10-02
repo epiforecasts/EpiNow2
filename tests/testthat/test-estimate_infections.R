@@ -40,6 +40,37 @@ test_estimate_infections <- function(...) {
   invisible(out)
 }
 
+# Unit tests for the deprecated gp argument --------------------------------
+
+test_that("compose_deprecated_gp applies legacy gp settings to the default prior", {
+  gp <- suppressWarnings(gp_opts(boundary_scale = 3))
+  prior <- GP(init = LogNormal(mean = 1, sd = 1))
+  expect_warning(
+    res <- compose_deprecated_gp(prior, gp, "rt_opts"),
+    "deprecated"
+  )
+  expect_identical(res$components[[1]]$settings, gp)
+})
+
+test_that("compose_deprecated_gp errors when the prior's GP is already customised", {
+  prior <- GP(init = LogNormal(mean = 1, sd = 1), boundary_scale = 3)
+  gp <- suppressWarnings(gp_opts(basis_prop = 0.1))
+  expect_error(
+    suppressWarnings(compose_deprecated_gp(prior, gp, "rt_opts")),
+    "given both through"
+  )
+})
+
+test_that("compose_deprecated_gp warns and no-ops when the prior has no GP", {
+  prior <- RW(init = LogNormal(mean = 1, sd = 1))
+  gp <- suppressWarnings(gp_opts(basis_prop = 0.1))
+  warnings <- testthat::capture_warnings(
+    res <- compose_deprecated_gp(prior, gp, "rt_opts")
+  )
+  expect_true(any(grepl("no Gaussian process component", warnings)))
+  expect_identical(res, prior)
+})
+
 # Integration tests (MCMC-based) ------------------------------------------
 # These tests run actual MCMC sampling and are slow. Tests are divided into:
 # - Core tests: Essential tests that always run to catch critical failures

@@ -66,11 +66,12 @@
 #' @inheritParams create_stan_data
 #' @inheritParams create_rt_data
 #' @inheritParams create_backcalc_data
-#' @param gp `r lifecycle::badge("deprecated")` No longer applied; a non-`NULL`
-#' value only triggers a deprecation warning. Configure the Gaussian process
-#' through the relevant model's prior instead: `rt_opts(prior = GP(...))` for
-#' the renewal model or `backcalc_opts(prior = GP(...))` for the
-#' back-calculation model.
+#' @param gp `r lifecycle::badge("deprecated")` Applied to the renewal or
+#' back-calculation prior's Gaussian process component, matching the previous
+#' behaviour; errors if that component has already been customised through
+#' the new interface. Configure the Gaussian process through the relevant
+#' model's prior instead: `rt_opts(prior = GP(...))` for the renewal model or
+#' `backcalc_opts(prior = GP(...))` for the back-calculation model.
 #' @inheritParams create_obs_model
 #' @inheritParams fit_model_with_nuts
 #' @importFrom data.table data.table copy merge.data.table as.data.table
@@ -140,16 +141,7 @@ estimate_infections <- function(data,
   assert_class(truncation, "trunc_opts")
   assert_class(rt, "rt_opts", null.ok = TRUE)
   assert_class(backcalc, "backcalc_opts")
-  if (!is.null(gp)) {
-    deprecate_warn(
-      "1.10.0", "estimate_infections(gp)",
-      details = "This argument is no longer applied; the default Gaussian
-      process settings are used instead. Configure the Gaussian process
-      through the relevant model's prior: `rt_opts(prior = GP(...))` for the
-      renewal model or `backcalc_opts(prior = GP(...))` for the
-      back-calculation model."
-    )
-  }
+  assert_class(gp, "gp_opts", null.ok = TRUE)
   assert_class(obs, "obs_opts")
   if (is.null(forecast)) {
     forecast <- forecast_opts(horizon = 0)
@@ -212,6 +204,13 @@ estimate_infections <- function(data,
       i0_guess <- 1
     }
     i_prior <- GP(init = LogNormal(mean = i0_guess, sd = i0_guess))
+  }
+  if (!is.null(gp)) {
+    if (renewal) {
+      rt$prior <- compose_deprecated_gp(rt$prior, gp, "rt_opts")
+    } else {
+      i_prior <- compose_deprecated_gp(i_prior, gp, "backcalc_opts")
+    }
   }
 
   # states run over one of two time frames: the latent-infections state (I)
@@ -282,6 +281,53 @@ estimate_infections <- function(data,
   ## Join stan fit if required
   class(ret) <- c("estimate_infections", "epinowfit", class(ret))
   ret
+}
+
+#' Compose the deprecated `gp` argument of [estimate_infections()] onto a prior
+#'
+#' @param prior The (already-resolved) Rt or infections prior.
+#' @param gp The deprecated `gp` argument to [estimate_infections()] (a
+#'   `<gp_opts>` object).
+#' @param name Name of the option function the prior came from (for the error
+#'   message), e.g. `"rt_opts"`.
+#' @return `prior`, with `gp`'s settings applied to its Gaussian process
+#'   component (matching the previous `gp =` behaviour). Errors if the prior's
+#'   own GP component has already been customised through the new interface,
+#'   since the two would otherwise silently conflict.
+#' @keywords internal
+compose_deprecated_gp <- function(prior, gp, name) {
+  deprecate_warn(
+    "1.10.0", "estimate_infections(gp)",
+    details = paste(
+      "Configure the Gaussian process through the relevant model's prior",
+      "instead: `rt_opts(prior = GP(...))` for the renewal model or",
+      "`backcalc_opts(prior = GP(...))` for the back-calculation model."
+    )
+  )
+  gp_idx <- which(vapply(
+    prior$components, function(c) identical(c$type, "gp"), logical(1)
+  ))
+  if (length(gp_idx) == 0) {
+    cli_warn(
+      c(
+        "!" = "{.arg gp} is ignored because the {.arg {name}} prior has no
+        Gaussian process component."
+      )
+    )
+    return(prior)
+  }
+  if (!identical(prior$components[[gp_idx]]$settings, new_gp_settings())) {
+    cli_abort(
+      c(
+        "!" = "Gaussian process settings were given both through {.arg gp}
+        and through {.fn GP} in {.arg {name}}.",
+        "i" = "Supply them in one place only; `gp` is deprecated, so prefer
+        {.code {name}(prior = GP(...))}."
+      )
+    )
+  }
+  prior$components[[gp_idx]]$settings <- gp
+  prior
 }
 
 #' Extract elements from estimate_infections objects with deprecation errors
