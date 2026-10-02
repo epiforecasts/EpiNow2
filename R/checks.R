@@ -312,7 +312,14 @@ check_truncation_obs_opts <- function(obs) {
 #'
 #' @description
 #' The settings can be chosen from fixed, lognormal, gamma and normal priors
-#' without uncertain parameters.
+#' without uncertain parameters. This list matches [gp_ls_quantiles()]'s own
+#' `switch()`, which is restricted to these families because `distspec`
+#' (as of the version EpiNow2 currently depends on) does not export a generic
+#' quantile function; each family's quantile function is instead looked up by
+#' name here. A generic `dist_quantile()` has since been added to `distspec`
+#' (unreleased), covering more families (also `exp` and `weibull`); once
+#' released, [gp_ls_quantiles()] can call it directly and this restriction can
+#' be lifted to match.
 #'
 #' @inheritParams gp_ls_quantiles
 #' @importFrom cli cli_abort

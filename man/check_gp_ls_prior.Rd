@@ -15,6 +15,13 @@ effect of erroring for unsupported priors.
 }
 \description{
 The settings can be chosen from fixed, lognormal, gamma and normal priors
-without uncertain parameters.
+without uncertain parameters. This list matches \code{\link[=gp_ls_quantiles]{gp_ls_quantiles()}}'s own
+\code{switch()}, which is restricted to these families because \code{distspec}
+(as of the version EpiNow2 currently depends on) does not export a generic
+quantile function; each family's quantile function is instead looked up by
+name here. A generic \code{dist_quantile()} has since been added to \code{distspec}
+(unreleased), covering more families (also \code{exp} and \code{weibull}); once
+released, \code{\link[=gp_ls_quantiles]{gp_ls_quantiles()}} can call it directly and this restriction can
+be lifted to match.
 }
 \keyword{internal}
