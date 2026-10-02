@@ -15,6 +15,30 @@
  */
 
 /**
+ * Get the PMF length of one delay, i.e. its maximum delay plus one
+ *
+ * @param i Index of the delay among all delays
+ * @param delay_types_p Array indicating whether each delay is parametric (1) or non-parametric (0)
+ * @param delay_types_id Array mapping delay types to their respective IDs
+ * @param delay_max Array of maximum delays for parametric distributions
+ * @param delay_np_pmf_groups Array of lookup indices for the ragged
+ *   non-parametric PMF vector
+ * @return The length of the PMF of delay i
+ *
+ * @ingroup delay_handlers
+ */
+int get_delay_length(
+  int i, array[] int delay_types_p, array[] int delay_types_id,
+  array[] int delay_max, array[] int delay_np_pmf_groups
+) {
+  int id = delay_types_id[i];
+  if (delay_types_p[i]) {
+    return delay_max[id] + 1;
+  }
+  return delay_np_pmf_groups[id + 1] - delay_np_pmf_groups[id];
+}
+
+/**
  * Get the maximum delay for each delay type
  *
  * @param delay_types Number of delay types
@@ -34,16 +58,12 @@ array[] int get_delay_type_max(
   array[] int delay_types_groups, array[] int delay_max,
   array[] int delay_np_pmf_groups
 ) {
-  array[delay_types] int ret;
+  array[delay_types] int ret = rep_array(0, delay_types);
   for (i in 1:delay_types) {
-    ret[i] = 0;
     for (j in delay_types_groups[i]:(delay_types_groups[i + 1] - 1)) {
-      if (delay_types_p[j]) { // parametric
-        ret[i] += delay_max[delay_types_id[j]];
-      } else { // nonparametric
-        ret[i] += delay_np_pmf_groups[delay_types_id[j] + 1] -
-          delay_np_pmf_groups[delay_types_id[j]] - 1;
-      }
+      ret[i] += get_delay_length(
+        j, delay_types_p, delay_types_id, delay_max, delay_np_pmf_groups
+      ) - 1;
     }
   }
   return ret;
@@ -83,43 +103,39 @@ vector get_delay_rev_pmf(
   vector delay_params, array[] int delay_params_groups, array[] int delay_dist,
   int left_truncate, int reverse_pmf, int cumulative
 ) {
-  // loop over delays
   vector[len] pmf = rep_vector(0, len);
-  int current_len = 1;
-  int new_len;
+  int n = 0; // length of the PMF combined so far
   for (i in
          delay_types_groups[delay_id]:(delay_types_groups[delay_id + 1] - 1)) {
-    if (delay_types_p[i]) { // parametric
-      int start = delay_params_groups[delay_types_id[i]];
-      int end = delay_params_groups[delay_types_id[i] + 1] - 1;
-      vector[delay_max[delay_types_id[i]] + 1] new_variable_pmf =
-        discretised_pmf(
-          delay_params[start:end],
-          delay_max[delay_types_id[i]] + 1,
-          delay_dist[delay_types_id[i]],
-          0
+    int id = delay_types_id[i];
+    int m = get_delay_length(
+      i, delay_types_p, delay_types_id, delay_max, delay_np_pmf_groups
+    );
+    int new_n = n == 0 ? m : n + m - 1;
+    // non-parametric PMFs are sliced directly, without a named copy
+    if (delay_types_p[i]) {
+      vector[m] delay_pmf = discretised_pmf(
+        delay_params[delay_params_groups[id]:(delay_params_groups[id + 1] - 1)],
+        m, delay_dist[id], 0
       );
-      new_len = current_len + delay_max[delay_types_id[i]];
-      if (current_len == 1) { // first delay
-        pmf[1:new_len] = new_variable_pmf;
-      } else { // subsequent delay to be convolved
-        pmf[1:new_len] = convolve_with_rev_pmf(
-          pmf[1:current_len], reverse(new_variable_pmf), new_len
+      if (n == 0) {
+        pmf[1:m] = delay_pmf;
+      } else {
+        pmf[1:new_n] = convolve_with_rev_pmf(
+          pmf[1:n], reverse(delay_pmf), new_n
         );
       }
-    } else { // nonparametric
-      int start = delay_np_pmf_groups[delay_types_id[i]];
-      int end = delay_np_pmf_groups[delay_types_id[i] + 1] - 1;
-      new_len = current_len + end - start;
-      if (current_len == 1) { // first delay
-        pmf[1:new_len] = delay_np_pmf[start:end];
-      } else { // subsequent delay to be convolved
-        pmf[1:new_len] = convolve_with_rev_pmf(
-          pmf[1:current_len], reverse(delay_np_pmf[start:end]), new_len
+    } else {
+      int start = delay_np_pmf_groups[id];
+      if (n == 0) {
+        pmf[1:m] = delay_np_pmf[start:(start + m - 1)];
+      } else {
+        pmf[1:new_n] = convolve_with_rev_pmf(
+          pmf[1:n], reverse(delay_np_pmf[start:(start + m - 1)]), new_n
         );
       }
     }
-    current_len = new_len;
+    n = new_n;
   }
   if (left_truncate) {
     pmf = append_row(
