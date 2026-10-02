@@ -521,12 +521,21 @@ backcalc_opts <- function(prior = c("reports", "none", "infections"),
 #' lengthscales need more basis functions. By default both are chosen from the
 #' 5% and 95% quantiles of the lengthscale prior using the relationships in
 #' Section 4.3.1 of that paper, so that lengthscales in this range are
-#' approximated accurately. The Matern 3/2 relationships are used for the
-#' Ornstein-Uhlenbeck kernel, which the paper does not cover. The periodic
-#' kernel has no boundary, and its number of basis functions is chosen from
-#' the 5% quantile using the relationship in Appendix B. After fitting,
-#' a warning is given if the posterior median lengthscale lies outside the
-#' range that the approximation represents accurately.
+#' approximated accurately. The 5%/95% split is a convention, not something
+#' derived from the paper (which starts from a single initial guess at the
+#' lengthscale rather than a prior range); it gives a reasonably central
+#' interval without relying on the prior's extreme tails. The paper does not
+#' cover the Ornstein-Uhlenbeck kernel (equivalently, Matern with
+#' `matern_order = 1/2`); its number-of-basis-functions relationship is
+#' instead derived by reproducing the paper's own simulation procedure (see
+#' `gp_approx_constants()`), since it needs substantially more basis
+#' functions than Matern 3/2 for the same accuracy, not fewer. Its boundary
+#' relationship still uses the Matern 3/2 value, which was not independently
+#' re-derived and so is not confirmed conservative for this kernel. The
+#' periodic kernel has no boundary, and its number of basis functions is
+#' chosen from the 5% quantile using the relationship in Appendix B. After
+#' fitting, a warning is given if the posterior median lengthscale lies
+#' outside the range that the approximation represents accurately.
 #'
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_abort cli_warn

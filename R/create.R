@@ -422,10 +422,23 @@ gp_half_range <- function(n) {
 #' \doi{10.1007/s11222-022-10167-2}. With half-range `S`, boundary factor
 #' `c` and `m` basis functions, lengthscales `l` are approximated accurately
 #' when `m >= m_factor * c * S / l` and `c >= c_factor * l / S` (with
-#' `c >= 1.2`). The Matern 3/2 constants are used for Matern kernels other
-#' than 5/2, as they are the most conservative published values. The periodic
-#' kernel has no boundary, and needs `m >= m_factor * S / l` basis functions
-#' (Appendix B), so `c_factor` is `NA`.
+#' `c >= 1.2`). The paper does not cover Matern 1/2 (equivalently, the
+#' Ornstein-Uhlenbeck kernel); `m_factor` for it is derived by reproducing the
+#' paper's own simulation procedure (see the `hsgp_m_c_relationship` folder,
+#' branch `matern-half-m-c-relationship`, of
+#' \url{https://github.com/sbfnk-bot/basis_functions_approach_to_GP}),
+#' which validated against the squared exponential and Matern 3/2 and 5/2
+#' constants to within 8-13% before being applied to 1/2. Matern 1/2 is the
+#' roughest of the four kernels (non-differentiable at `tau = 0`), and its
+#' spectral density decays the slowest, so it needs the largest `m_factor` of
+#' the four, not the Matern 3/2 value previously used as a fallback (which
+#' undershoots by roughly a factor of 2). `c_factor` for 1/2 was not
+#' independently validated by that reproduction (indicative only, 30-50%
+#' below each kernel's published value regardless of validation), so it keeps
+#' the Matern 3/2 fallback, which is at least a known quantity even if not
+#' confirmed conservative for 1/2. The periodic kernel has no boundary, and
+#' needs `m >= m_factor * S / l` basis functions (Appendix B), so `c_factor`
+#' is `NA`.
 #'
 #' @param gp_type Integer kernel type as used in the Stan model (0: squared
 #'   exponential, 1: periodic, 2: Matern).
@@ -440,6 +453,8 @@ gp_approx_constants <- function(gp_type, nu) {
     list(m_factor = 1.75, c_factor = 3.2)
   } else if (nu == 5 / 2) {
     list(m_factor = 2.65, c_factor = 4.1)
+  } else if (nu == 1 / 2) {
+    list(m_factor = 8.6, c_factor = 4.5)
   } else {
     list(m_factor = 3.42, c_factor = 4.5)
   }

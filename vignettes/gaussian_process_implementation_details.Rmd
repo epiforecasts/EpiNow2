@@ -162,7 +162,10 @@ Longer lengthscales therefore need a wider boundary, and for a given lengthscale
 Shorter lengthscales need more basis functions.
 
 By default, `EpiNow2` sets $c$ from the 95% quantile of the lengthscale prior and then $m$ from the 5% quantile, so that lengthscales across the bulk of the prior are approximated accurately.
-The Matérn 3/2 constants are used for the Ornstein-Uhlenbeck kernel, which @approxGP do not cover.
+This 5%/95% split is a convention, not something @approxGP derive; it is not revisited by a diagnostic the way $m$ and $c$ themselves are (see below), so it is worth keeping in mind as a source of inaccuracy distinct from the $m$/$c$ relationships.
+@approxGP do not cover the Ornstein-Uhlenbeck kernel (Matérn 1/2).
+Reproducing their simulation procedure for it gives $m \geq 8.6 \frac{c}{\ell}$: Matérn 1/2 is the roughest of the four kernels covered here, so it needs more basis functions than Matérn 3/2 for the same accuracy, not fewer.
+Its boundary constant was not independently re-derived and keeps the Matérn 3/2 value ($c \geq 4.5 \ell$), which is not confirmed conservative for this kernel.
 The periodic kernel does not use a boundary, and @approxGP (Appendix B) show that it is approximated accurately when $m \geq 3.72 / \ell$.
 By default, `EpiNow2` sets $m$ for the periodic kernel from the 5% quantile of the lengthscale prior.
 
@@ -177,7 +180,7 @@ Either can be addressed by adjusting the lengthscale prior, from which the setti
 Adapted to `EpiNow2` with the Matérn 3/2 kernel, it is as follows.
 
 - Fit the model with the default settings, which are chosen from the lengthscale prior. This replaces the single initial guess of the lengthscale in the paper.
-- Check that the model has converged before reading the lengthscale diagnostic.
+- Check that the model has converged before reading the lengthscale diagnostic: the diagnostic reads the posterior median lengthscale, which is not meaningful from a chain that has not converged. If it has not, address that first, for example by reconsidering the prior or model specification, and refit; only once the model converges does it make sense to look at the lengthscale diagnostic at all.
 - If the posterior median lengthscale $\hat{\rho}$ is too short, refit with $m \geq 3.42 c S / \hat{\rho}$, by setting `basis_prop` to $m / t_\mathrm{GP}$.
 - If $\hat{\rho}$ is too long, refit with `boundary_scale` set to at least $4.5 \hat{\rho} / S$, and $m$ chosen as above.
 - Repeat until the diagnostic gives no warning.
