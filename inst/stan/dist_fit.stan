@@ -42,7 +42,7 @@ model {
     lambda[1] ~ uniform(1 / (5. * lam_mean[1]), 1 / (0.2 * lam_mean[1]));
   } else if (dist == 1) {
     mu[1] ~ normal(prior_mean[1], 10);
-    sigma[1] ~ normal(prior_sd[1], 10) T[0,];
+    sigma[1] ~ normal(prior_sd[1], 10);
   } else if (dist == 2) {
     alpha_raw[1] ~ normal(0, 1);
     beta_raw[1] ~ normal(0, 1);

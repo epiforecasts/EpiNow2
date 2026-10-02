@@ -101,22 +101,25 @@ void apply_prior_lp(real value, int dist,
  * @param params Vector of parameter values
  * @param prior_dist Array of prior distribution types (0: lognormal, 1: gamma, 2: normal)
  * @param prior_dist_params Vector of prior distribution parameters
- * @param params_lower Vector of lower bounds for parameters
- * @param params_upper Vector of upper bounds for parameters
  *
  * @ingroup parameter_handlers
  */
 void params_lp(vector params, array[] int prior_dist,
-              vector prior_dist_params, vector params_lower,
-              vector params_upper) {
+              vector prior_dist_params) {
   int params_id = 1;
   int num_params = num_elements(params);
   for (id in 1:num_params) {
-    apply_prior_lp(
-      params[id], prior_dist[id],
-      prior_dist_params[params_id], prior_dist_params[params_id + 1],
-      params_lower[id], params_upper[id]
-    );
+    real p1 = prior_dist_params[params_id];
+    real p2 = prior_dist_params[params_id + 1];
+    if (prior_dist[id] == 0) {
+      params[id] ~ lognormal(p1, p2);
+    } else if (prior_dist[id] == 1) {
+      params[id] ~ gamma(p1, p2);
+    } else if (prior_dist[id] == 2) {
+      params[id] ~ normal(p1, p2);
+    } else {
+      reject("dist must be <= 2");
+    }
     params_id += 2;
   }
 }
