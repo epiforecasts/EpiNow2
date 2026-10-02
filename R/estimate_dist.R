@@ -615,7 +615,7 @@ estimate_dist <- function(data,
 #' @return A `<dist_spec>` with posterior mean/sd parameters.
 #' @keywords internal
 .extract_to_dist_spec <- function(fit, dist, max_value) {
-  samples <- extract_samples(fit, pars = "delay_params")
+  samples <- extract_stan_samples(fit, pars = "delay_params")
 
   param_names <- .get_param_names(dist)
 

@@ -84,6 +84,14 @@ test_that("estimate_secondary can return values from simulated data and plot
   expect_error(plot(inc, primary = TRUE), NA)
 })
 
+test_that("get_samples(format = 'list') returns the raw list of arrays", {
+  inc <- default_inc
+  raw_samples <- get_samples(inc, format = "list")
+  expect_type(raw_samples, "list")
+  expect_false(is.data.frame(raw_samples))
+  expect_true("sim_secondary" %in% names(raw_samples))
+})
+
 test_that("forecast_secondary can return values from simulated data and plot
            them", {
   # Reuse pre-computed fit

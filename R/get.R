@@ -231,14 +231,23 @@ get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
 #' Get posterior samples from a fitted model
 #'
 #' @description
-#' Extracts posterior samples from a fitted model, combining all parameters
-#' into a single data.table with dates and metadata.
+#' Extracts posterior samples from a fitted model. By default, combines all
+#' parameters into a single `<data.table>` with dates and metadata added.
 #'
 #' @param object A fitted model object (e.g., from `estimate_infections()`)
+#' @param format Character string specifying the output format. For model
+#'   classes backed by a Stan fit (`estimate_infections`, `epinow`,
+#'   `estimate_secondary`, `estimate_truncation`):
+#'   - `"data.table"` (default): a long-format `<data.table>` with dates and
+#'     other metadata added.
+#'   - `"list"`: the raw named list of arrays as returned by
+#'     [rstan::extract()], with no dates or metadata added.
 #' @param ... Additional arguments (currently unused)
 #'
-#' @return A `data.table` with columns: date, variable, strat, sample, time,
-#'   value, type. Contains all posterior samples for all parameters.
+#' @return If `format = "data.table"`, a `data.table` with columns: date,
+#'   variable, strat, sample, time, value, type. Contains all posterior
+#'   samples for all parameters. If `format = "list"`, a named list of arrays,
+#'   one per parameter.
 #'
 #' @export
 #' @examples
@@ -247,6 +256,9 @@ get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
 #' samples <- get_samples(fit)
 #' # Filter to specific parameters
 #' R_samples <- samples[variable == "R"]
+#'
+#' # Get the raw list of arrays instead
+#' raw_samples <- get_samples(fit, format = "list")
 #' }
 get_samples <- function(object, ...) {
   UseMethod("get_samples")
@@ -254,8 +266,15 @@ get_samples <- function(object, ...) {
 
 #' @rdname get_samples
 #' @export
-get_samples.estimate_infections <- function(object, ...) {
-  raw_samples <- extract_samples(object$fit)
+get_samples.estimate_infections <- function(
+  object, format = c("data.table", "list"), ...
+) {
+  format <- arg_match(format)
+  raw_samples <- extract_stan_samples(object$fit)
+
+  if (format == "list") {
+    return(raw_samples)
+  }
 
   format_samples_with_dates(
     raw_samples = raw_samples,
@@ -266,7 +285,7 @@ get_samples.estimate_infections <- function(object, ...) {
 
 #' @rdname get_samples
 #' @export
-get_samples.epinow <- function(object, ...) {
+get_samples.epinow <- function(object, format = c("data.table", "list"), ...) {
   # If the epinow run failed (e.g., timeout), throw an informative error
   if (!is.null(object$error)) {
     cli_abort(c(
@@ -275,7 +294,7 @@ get_samples.epinow <- function(object, ...) {
     ))
   }
   # Otherwise delegate to the underlying estimate_infections method
-  get_samples.estimate_infections(object, ...)
+  get_samples.estimate_infections(object, format = format, ...)
 }
 
 #' @rdname get_samples
@@ -286,9 +305,16 @@ get_samples.forecast_infections <- function(object, ...) {
 
 #' @rdname get_samples
 #' @export
-get_samples.estimate_secondary <- function(object, ...) {
+get_samples.estimate_secondary <- function(
+  object, format = c("data.table", "list"), ...
+) {
+  format <- arg_match(format)
   # Extract raw posterior samples from the fit
-  raw_samples <- extract_samples(object$fit)
+  raw_samples <- extract_stan_samples(object$fit)
+
+  if (format == "list") {
+    return(raw_samples)
+  }
 
   # Extract time-varying parameters
   burn_in <- object$args$burn_in
@@ -325,10 +351,17 @@ get_samples.forecast_secondary <- function(object, ...) {
 
 #' @rdname get_samples
 #' @export
-get_samples.estimate_truncation <- function(object, ...) {
-  raw_samples <- extract_samples(object$fit)
-  # extract_delays returns data.table with variable column
+get_samples.estimate_truncation <- function(
+  object, format = c("data.table", "list"), ...
+) {
+  format <- arg_match(format)
+  raw_samples <- extract_stan_samples(object$fit)
 
+  if (format == "list") {
+    return(raw_samples)
+  }
+
+  # extract_delays returns data.table with variable column
   samples <- extract_delays(raw_samples, args = object$args)
   samples[]
 }
@@ -599,7 +632,7 @@ get_predictions.estimate_truncation <- function(
     rbindlist(predictions)
   } else {
     # Both "sample" and "quantile" need raw samples first
-    raw_samples <- extract_samples(object$fit, pars = "recon_obs")
+    raw_samples <- extract_stan_samples(object$fit, pars = "recon_obs")
     recon_samples <- as.data.table(raw_samples$recon_obs)
     recon_samples <- melt(recon_samples,
       measure.vars = seq_len(ncol(recon_samples)),
@@ -694,7 +727,7 @@ reconstruct_delay <- function(object, delay_name) {
   # Extract NP posterior draws if estimated
   np_posterior <- NULL
   if (stan_data$delay_np_est_length > 0 && !is.null(object$fit)) {
-    np_draws <- extract_samples(
+    np_draws <- extract_stan_samples(
       object$fit, pars = "delay_np_est_raw"
     )$delay_np_est_raw
     np_posterior <- as.matrix(np_draws)

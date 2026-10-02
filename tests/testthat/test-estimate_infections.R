@@ -57,6 +57,27 @@ test_that("estimate_infections successfully returns estimates using default sett
   expect_true(nrow(default_fit$observations) > 0)
 })
 
+test_that("get_samples(format = 'list') returns the raw list of arrays", {
+  raw_samples <- get_samples(default_fit, format = "list")
+  expect_type(raw_samples, "list")
+  expect_true("R" %in% names(raw_samples))
+  expect_true(is.array(raw_samples$R))
+
+  # No dates or metadata are added in list format
+  expect_false(is.data.frame(raw_samples))
+
+  # Equivalent to the deprecated extract_samples() on the same fit
+  expect_warning(
+    expected_samples <- extract_samples(default_fit$fit),
+    class = "lifecycle_warning_deprecated"
+  )
+  expect_equal(raw_samples, expected_samples)
+})
+
+test_that("get_samples() errors for an unsupported format", {
+  expect_error(get_samples(default_fit, format = "invalid"))
+})
+
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_infections successfully returns estimates using a Matern 5/2 kernel", {
   skip_integration()

@@ -7,7 +7,7 @@
 format_samples_with_dates(raw_samples, args, observations)
 }
 \arguments{
-\item{raw_samples}{Raw samples from extract_samples()}
+\item{raw_samples}{Raw samples from extract_stan_samples()}
 
 \item{args}{Model arguments (from object$args)}
 
