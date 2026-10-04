@@ -531,6 +531,10 @@ create_stan_data <- function(data, seeding_time, rt, gp, obs, backcalc,
 
 ##' Create initial conditions for delays
 ##'
+##' @details
+##' The nonparametric raw vector is seeded from its Dirichlet prior so chains
+##' start near the configured mean rather than from generic random values.
+##'
 ##' @inheritParams create_initial_conditions
 ##' @return A list of initial conditions for delays
 ##' @importFrom stats rgamma
@@ -545,9 +549,7 @@ create_delay_inits <- function(stan_data) {
   } else {
     out$delay_params <- array(numeric(0))
   }
-  ## seed the gamma-trick raw vector from its prior so chains start
-  ## near the configured Dirichlet mean rather than from generic random
-  ## values
+  # seed the gamma-trick raw vector near the Dirichlet prior mean
   if (isTRUE(stan_data$delay_np_est_length > 0)) {
     out$delay_np_est_raw <- array(rgamma(
       n = stan_data$delay_np_est_length,
@@ -566,6 +568,12 @@ create_delay_inits <- function(stan_data) {
 #' used to sample from the prior distributions (or as close as possible) for
 #' parameters. Used in order to initialise each stan chain within a range of
 #' plausible values.
+#' @details
+#' `R_mean` is seeded from the initial-Rt prior carried in `stan_data` by
+#' [make_init_priors()], so chains start near the configured reproduction
+#' number; this is a stopgap until derived-prior parameters are initialised
+#' through the shared path (#1481). The distribution code follows
+#' [pack_init_prior()] (0: lognormal, 1: gamma, 2: normal).
 #' @param stan_data A list of data as produced by [create_stan_data()].
 #' @inheritParams create_stan_params
 #' @return An initial condition generating function
@@ -588,11 +596,7 @@ create_initial_conditions <- function(stan_data, params) {
     }
     if (stan_data$estimate_r == 1) {
       out$initial_infections <- array(rnorm(1))
-      ## seed R_mean from the initial-Rt prior (carried in stan_data by
-      ## make_init_priors()) so chains start near the configured reproduction
-      ## number. A stopgap until derived-prior parameters are initialised
-      ## through the shared path (#1481). The distribution code is one of those
-      ## packed by pack_init_prior() (0: lognormal, 1: gamma, 2: normal).
+      # seed R_mean from the initial-Rt prior (see @details above)
       if (stan_data$n_init_priors > 0) {
         p1 <- stan_data$init_dist_params[1]
         p2 <- stan_data$init_dist_params[2]
@@ -641,12 +645,16 @@ create_initial_conditions <- function(stan_data, params) {
       ignore_uncertainty = FALSE,
       FUN.VALUE = numeric(1)
     )
-    out$params <- array(rtruncnorm(
-      stan_data$n_params_variable,
-      a = stan_data$params_lower,
-      b = stan_data$params_upper,
-      mean = param_means, sd = param_sds
-    ))
+    if (stan_data$n_params_variable > 0) {
+      out$params <- array(rtruncnorm(
+        stan_data$n_params_variable,
+        a = stan_data$params_lower,
+        b = stan_data$params_upper,
+        mean = param_means, sd = param_sds
+      ))
+    } else {
+      out$params <- array(numeric(0))
+    }
     out
   }
 }
@@ -759,11 +767,18 @@ create_stan_args <- function(stan = stan_opts(),
   if (!fixed_param && inherits(stan_args$object, "stanmodel") &&
         is.null(stan_args$pars)) {
     exclude <- character(0)
-    if (model %in% c("estimate_infections", "estimate_secondary")) {
+    if (model %in% c(
+      "estimate_infections", "estimate_secondary", "estimate_truncation"
+    )) {
       exclude <- c(exclude, "delay_np_pmf_use")
     }
     if (identical(model, "estimate_infections")) {
       exclude <- c(exclude, "gt_rev_pmf")
+    }
+    # trunc_obs is deterministic, and worth excluding, only when noise is fixed
+    if (identical(model, "estimate_truncation") &&
+          isTRUE(data$params_variable_lookup[data$param_id_sigma] == 0)) {
+      exclude <- c(exclude, "trunc_obs")
     }
     if (isTRUE(data$week_effect == 1)) {
       exclude <- c(exclude, "day_of_week_simplex")
@@ -840,9 +855,14 @@ build_np_est_data <- function(np_delays, np_pmf_groups) {
   )
 }
 
-# The fixed PMF of a nonparametric delay. An estimated (Dirichlet-backed) delay
-# has no fixed PMF, so its prior mean is used as a placeholder of the right
-# length; Stan overwrites those entries with the estimated simplex.
+##' Fixed PMF placeholder for a nonparametric delay
+##'
+##' @details An estimated (Dirichlet-backed) delay has no fixed PMF, so its
+##'   prior mean is used as a placeholder of the right length; Stan
+##'   overwrites those entries with the estimated simplex.
+##' @param x A nonparametric `dist_spec`.
+##' @return The delay's PMF as a numeric vector.
+##' @keywords internal
 np_fixed_pmf <- function(x) get_pmf(fix_parameters(x, strategy = "mean"))
 
 ##' Create delay variables for stan
