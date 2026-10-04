@@ -57,6 +57,27 @@ test_that("estimate_infections successfully returns estimates using default sett
   expect_true(nrow(default_fit$observations) > 0)
 })
 
+test_that("get_samples(format = 'list') returns the raw list of arrays", {
+  raw_samples <- get_samples(default_fit, format = "list")
+  expect_type(raw_samples, "list")
+  expect_true("R" %in% names(raw_samples))
+  expect_true(is.array(raw_samples$R))
+
+  # No dates or metadata are added in list format
+  expect_false(is.data.frame(raw_samples))
+
+  # Equivalent to the deprecated extract_samples() on the same fit
+  expect_warning(
+    expected_samples <- extract_samples(default_fit$fit),
+    class = "lifecycle_warning_deprecated"
+  )
+  expect_equal(raw_samples, expected_samples)
+})
+
+test_that("get_samples() errors for an unsupported format", {
+  expect_error(get_samples(default_fit, format = "invalid"))
+})
+
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_infections successfully returns estimates using a Matern 5/2 kernel", {
   skip_integration()
@@ -297,8 +318,10 @@ test_that("Dirichlet concentration anchors the GT posterior to its prior", { # n
   expect_null(out_loose$error)
   expect_null(out_tight$error)
 
+  # the posterior generation time is uncertain (a Dirichlet nonparametric),
+  # so resolve it to its mean PMF before extracting the probabilities
   pmf_of <- function(out) {
-    as.numeric(get_pmf(get_parameters(out)$generation_time))
+    as.numeric(get_pmf(fix_parameters(get_parameters(out)$generation_time)))
   }
   loose_pmf <- pmf_of(out_loose)
   tight_pmf <- pmf_of(out_tight)

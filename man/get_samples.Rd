@@ -12,30 +12,42 @@
 \usage{
 get_samples(object, ...)
 
-\method{get_samples}{estimate_infections}(object, ...)
+\method{get_samples}{estimate_infections}(object, format = c("data.table", "list"), ...)
 
-\method{get_samples}{epinow}(object, ...)
+\method{get_samples}{epinow}(object, format = c("data.table", "list"), ...)
 
 \method{get_samples}{forecast_infections}(object, ...)
 
-\method{get_samples}{estimate_secondary}(object, ...)
+\method{get_samples}{estimate_secondary}(object, format = c("data.table", "list"), ...)
 
 \method{get_samples}{forecast_secondary}(object, ...)
 
-\method{get_samples}{estimate_truncation}(object, ...)
+\method{get_samples}{estimate_truncation}(object, format = c("data.table", "list"), ...)
 }
 \arguments{
 \item{object}{A fitted model object (e.g., from \code{estimate_infections()})}
 
 \item{...}{Additional arguments (currently unused)}
+
+\item{format}{Character string specifying the output format. For model
+classes backed by a Stan fit (\code{estimate_infections}, \code{epinow},
+\code{estimate_secondary}, \code{estimate_truncation}):
+\itemize{
+\item \code{"data.table"} (default): a long-format \verb{<data.table>} with dates and
+other metadata added.
+\item \code{"list"}: the raw named list of arrays as returned by
+\code{\link[rstan:extract]{rstan::extract()}}, with no dates or metadata added.
+}}
 }
 \value{
-A \code{data.table} with columns: date, variable, strat, sample, time,
-value, type. Contains all posterior samples for all parameters.
+If \code{format = "data.table"}, a \code{data.table} with columns: date,
+variable, strat, sample, time, value, type. Contains all posterior
+samples for all parameters. If \code{format = "list"}, a named list of arrays,
+one per parameter.
 }
 \description{
-Extracts posterior samples from a fitted model, combining all parameters
-into a single data.table with dates and metadata.
+Extracts posterior samples from a fitted model. By default, combines all
+parameters into a single \verb{<data.table>} with dates and metadata added.
 }
 \examples{
 \dontrun{
@@ -43,5 +55,8 @@ into a single data.table with dates and metadata.
 samples <- get_samples(fit)
 # Filter to specific parameters
 R_samples <- samples[variable == "R"]
+
+# Get the raw list of arrays instead
+raw_samples <- get_samples(fit, format = "list")
 }
 }
