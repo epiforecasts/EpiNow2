@@ -83,8 +83,8 @@ check_simulation_input <- function(data, value_col) {
 #' observation model (see [obs_opts()]), i.e. `week_length` if `week_effect`
 #' is `TRUE` and 1 otherwise. The two are required to match because the day
 #' of week effect is passed to stan as a simplex of that length; a mismatch
-#' is otherwise silently resolved by recycling, giving a day of week effect
-#' that does not mean what was intended.
+#' is otherwise silently resolved by recycling, which reassigns the weights
+#' to different days than the user intended.
 #'
 #' @param day_of_week_effect Either `NULL` (no day of the week effect
 #'   specified by the user) or a numeric vector.
