@@ -23,7 +23,7 @@ has as many elements as the reporting week length implied by the
 observation model (see \code{\link[=obs_opts]{obs_opts()}}), i.e. \code{week_length} if \code{week_effect}
 is \code{TRUE} and 1 otherwise. The two are required to match because the day
 of week effect is passed to stan as a simplex of that length; a mismatch
-is otherwise silently resolved by recycling, giving a day of week effect
-that does not mean what was intended.
+is otherwise silently resolved by recycling, which reassigns the weights
+to different days than the user intended.
 }
 \keyword{internal}
