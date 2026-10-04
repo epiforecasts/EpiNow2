@@ -151,16 +151,19 @@ check_stan_delay <- function(dist) {
 #' does all the checks in`check_stan_delay()` and additionally makes sure
 #' that if `dist` is nonparametric,  its first element is zero.
 #'
+#' @details
+#' An estimated (Dirichlet-backed) nonparametric delay has no fixed PMF, so
+#' any uncertainty is resolved to the prior mean before checking the first
+#' element; that element is zero exactly when the prior puts no mass there.
+#'
 #' @inheritParams check_stan_delay
 #' @return Called for its side effects.
 #' @keywords internal
 check_generation_time <- function(dist) {
   # Do the standard delay checks
   check_stan_delay(dist)
-  ## check for nonparametric with nonzero first element; an estimated
-  ## (Dirichlet-backed) delay has no fixed PMF, so resolve any uncertainty to
-  ## the prior mean before inspecting the first element (its first element is
-  ## zero exactly when the prior puts no mass there)
+  # resolve nonparametric delays to their prior mean before inspecting
+  # the first element
   dist <- fix_parameters(dist, strategy = "mean")
   nonzero_first_element <- vapply(seq_len(ndist(dist)), function(i) {
     get_distribution(dist, i) == "nonparametric" && get_pmf(dist, i)[1] > 0

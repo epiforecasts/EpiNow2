@@ -147,6 +147,11 @@ make the changes for you interactively.
 *  We use [testthat](https://cran.r-project.org/package=testthat) for unit tests.
    Contributions with test cases included are easier to accept.
 
+*  Keep inline code comments short. If a comment needs more than a line or
+   two to explain the rationale behind a piece of code, move that
+   explanation to the roxygen `@details` of the function it belongs to, and
+   leave a brief pointer in the code instead.
+
 ### Testing strategy
 
 The EpiNow2 test suite is organised into different categories to balance thoroughness with speed:

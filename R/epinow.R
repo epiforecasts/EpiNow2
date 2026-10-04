@@ -22,6 +22,10 @@
 #' @param plot_args A list of optional arguments passed to
 #' [plot.estimate_infections()].
 #'
+#' @param target_date Date, defaults to maximum found in the data if not
+#' specified. Passing a character string is deprecated; it is converted to a
+#' `<Date>` with a warning.
+#'
 #' @return An `<epinow>` object (inheriting from `<estimate_infections>`)
 #' containing:
 #'
@@ -117,7 +121,15 @@ epinow <- function(data,
       !is.null(target_folder) || isDirectory(target_folder)
   )
   if (!missing(target_date)) {
-    assert_string(target_date)
+    if (is.character(target_date)) {
+      deprecate_warn(
+        "1.10.0",
+        "epinow(target_date = 'must be a <Date>')",
+        details = "Convert it with as.Date() before calling epinow()."
+      )
+      target_date <- as.Date(target_date)
+    }
+    assert_date(target_date, len = 1, any.missing = FALSE)
   }
   assert_string(id)
   assert_logical(verbose)

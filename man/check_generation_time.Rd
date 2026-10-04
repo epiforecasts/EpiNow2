@@ -16,4 +16,9 @@ Called for its side effects.
 does all the checks in\code{check_stan_delay()} and additionally makes sure
 that if \code{dist} is nonparametric,  its first element is zero.
 }
+\details{
+An estimated (Dirichlet-backed) nonparametric delay has no fixed PMF, so
+any uncertainty is resolved to the prior mean before checking the first
+element; that element is zero exactly when the prior puts no mass there.
+}
 \keyword{internal}
