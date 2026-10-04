@@ -154,6 +154,12 @@ test_that("estimate_truncation can return values from simulated data and plot
   expect_error(plot(est), NA)
 })
 
+test_that("get_samples(format = 'list') returns the raw list of arrays", {
+  raw_samples <- get_samples(default_est, format = "list")
+  expect_type(raw_samples, "list")
+  expect_false(is.data.frame(raw_samples))
+})
+
 test_that("get_predictions correctly maps reconstructions to datasets and dates", {
   n_sets <- length(example_truncated)
   # "sample" and "quantile" both carry an explicit `dataset` column to check
@@ -338,6 +344,9 @@ test_that("estimate_truncation accepts a non-default noise prior", {
   # so sigma is no longer in the variable parameter set.
   expect_named(get_parameters(est), c("truncation", "reporting_overdispersion"))
   expect_s3_class(get_parameters(est)$truncation, "dist_spec")
+  fit_summary <- rstan::summary(est$fit)$summary
+  expect_false(anyNA(fit_summary[, "Rhat"]))
+  expect_true(all(fit_summary[, "n_eff"] >= 100))
 })
 
 test_that("check_truncation_obs_opts warns on unsupported non-default settings", {
