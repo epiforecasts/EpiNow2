@@ -978,7 +978,7 @@ summary.estimate_secondary <- function(object,
 #' @export
 summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
   # Extract delay parameters directly from fit (avoids rbindlist warning)
-  raw_samples <- extract_samples(object$fit)
+  raw_samples <- extract_stan_samples(object$fit)
   param_samples <- extract_delays(raw_samples, args = object$args)
 
   # Calculate summary statistics
@@ -1026,7 +1026,7 @@ summary.estimate_truncation <- function(object, CrIs = c(0.2, 0.5, 0.9), ...) {
 summary.estimate_dist <- function(object,
                                   CrIs = c(0.2, 0.5, 0.9),
                                   ...) {
-  raw_samples <- extract_samples(
+  raw_samples <- extract_stan_samples(
     object$fit,
     pars = "delay_params"
   )
