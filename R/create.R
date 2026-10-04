@@ -744,7 +744,7 @@ create_stan_args <- function(stan = stan_opts(),
     if (identical(model, "estimate_infections")) {
       exclude <- c(exclude, "gt_rev_pmf")
     }
-    # trunc_obs is deterministic, and worth excluding, only when noise is fixed
+    # trunc_obs is only deterministic (and worth excluding) when noise is fixed
     if (identical(model, "estimate_truncation") &&
           isTRUE(data$params_variable_lookup[data$param_id_sigma] == 0)) {
       exclude <- c(exclude, "trunc_obs")
