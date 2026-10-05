@@ -130,6 +130,7 @@ simulate_secondary <- function(primary,
   stan_data$params <- array(dim = c(1, 0))
 
   ## day of week effect
+  check_day_of_week_effect(day_of_week_effect, stan_data$week_effect)
   if (is.null(day_of_week_effect)) {
     day_of_week_effect <- rep(1, stan_data$week_effect)
   }

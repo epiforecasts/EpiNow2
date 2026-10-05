@@ -10,9 +10,14 @@
 #'   zero and the resulting distribution renormalised.
 #' @rdname generation_time_opts
 #' @param dist A delay distribution or series of delay distributions . If no
-#'   distribution is given a fixed generation time of 1 will be assumed.  If
-#'   passing a nonparametric distribution the first element should be zero (see
-#'   *Details* section)
+#'   distribution is given a fixed generation time of 1 will be assumed. `dist`
+#'   must be a `<dist_spec>` with a supported distribution family (see
+#'   [check_stan_delay()]) and a finite maximum; requirements not met by
+#'   `dist` are rejected with an error. If passing a nonparametric
+#'   distribution the first element must be zero once any parameter
+#'   uncertainty is resolved to the prior mean (see *Details* section); a
+#'   nonparametric distribution with a non-zero first element is rejected with
+#'   an error, as such generation times are not supported by the model.
 #'
 #' @param weight_prior Logical; if TRUE (default), any priors given in `dist`
 #'   will be weighted by the number of observation data points, in doing so
@@ -160,7 +165,10 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' Returns delay distributions formatted for usage by downstream
 #' functions.
 #' @param dist A delay distribution or series of delay distributions. Default is
-#'   a fixed distribution with all mass at 0, i.e. no delay.
+#'   a fixed distribution with all mass at 0, i.e. no delay. `dist` must be a
+#'   `<dist_spec>` with a supported distribution family and a finite maximum
+#'   (see [check_stan_delay()]); `dist` not meeting these requirements is
+#'   rejected with an error.
 #' @inheritParams generation_time_opts
 #' @importFrom cli cli_abort
 #' @return A `<delay_opts>` object summarising the input delay distributions.
@@ -219,7 +227,10 @@ delay_opts <- function(dist = Fixed(0),
 #' interface in `distspec` (See `?distspec::Distributions`) or estimated using
 #' [estimate_truncation()], which returns a `dist` object, suited
 #' for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
-#' no truncation.
+#' no truncation. As for [delay_opts()], `dist` must be a `<dist_spec>` with a
+#' supported distribution family and a finite maximum (see
+#' [check_stan_delay()]); `dist` not meeting these requirements is rejected
+#' with an error.
 #' @param weight_prior Logical; if TRUE, the truncation prior will be weighted
 #'   by the number of observation data points, in doing so approximately placing
 #'   an independent prior at each time step and usually preventing the
@@ -302,6 +313,12 @@ trunc_opts <- function(dist = Fixed(0),
 #' @param pop_period Character string, defaulting to "forecast". Controls when
 #' susceptible population adjustment is applied. "forecast" only applies the
 #' adjustment to forecasts whilst "all" applies it to both data and forecasts.
+#' Since "all" only makes sense together with a non-zero `pop`, combining
+#' `pop_period = "all"` with the default `pop = Fixed(0)` is rejected with an
+#' error. Separately, when [estimate_infections()] (or [epinow()]) is run, if
+#' `pop` is fixed at a value below the cumulative `confirm` in `data` this is
+#' not rejected but produces a warning, since it suggests `pop` is set too
+#' low.
 #'
 #' @param pop_floor Numeric. Minimum susceptible population used as a
 #' floor when adjusting for population depletion. This prevents numerical
@@ -995,8 +1012,11 @@ forecast_opts <- function(horizon = 7, accumulate) {
 #' @param reported_cases A data frame containing a `region` variable
 #' indicating the target regions.
 #'
-#' @param ... Optional override for region defaults. See the examples
-#' for use case.
+#' @param ... Optional override for region defaults, named by region (e.g.
+#' `realland = rt_opts(rw = 7)`). See the examples for use case. Names that do
+#' not match a region present in `reported_cases$region` are not rejected;
+#' the corresponding override is silently unused since [regional_epinow()]
+#' only ever looks up settings for regions actually present in the data.
 #'
 #' @importFrom purrr list_assign
 #'

@@ -21,9 +21,14 @@ generation_time_opts(
 }
 \arguments{
 \item{dist}{A delay distribution or series of delay distributions . If no
-distribution is given a fixed generation time of 1 will be assumed.  If
-passing a nonparametric distribution the first element should be zero (see
-\emph{Details} section)}
+distribution is given a fixed generation time of 1 will be assumed. \code{dist}
+must be a \verb{<dist_spec>} with a supported distribution family (see
+\code{\link[=check_stan_delay]{check_stan_delay()}}) and a finite maximum; requirements not met by
+\code{dist} are rejected with an error. If passing a nonparametric
+distribution the first element must be zero once any parameter
+uncertainty is resolved to the prior mean (see \emph{Details} section); a
+nonparametric distribution with a non-zero first element is rejected with
+an error, as such generation times are not supported by the model.}
 
 \item{default_cdf_max}{Numeric; default CDF level to keep the distribution up
 to if an unconstrained distribution is passed as \code{dist}. If \code{dist} is
