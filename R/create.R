@@ -425,7 +425,8 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     obs_weight = obs$weight,
     obs_scale = as.integer(obs$scale != Fixed(1)),
     likelihood = as.numeric(obs$likelihood),
-    return_likelihood = as.numeric(obs$return_likelihood)
+    return_likelihood = as.numeric(obs$return_likelihood),
+    secondary_type = as.numeric(obs$type == "prevalence")
   )
 
   opts$day_of_week <- add_day_of_week(dates, opts$week_effect)
@@ -743,7 +744,7 @@ create_stan_args <- function(stan = stan_opts(),
     if (identical(model, "estimate_infections")) {
       exclude <- c(exclude, "gt_rev_pmf")
     }
-    # trunc_obs is deterministic, and worth excluding, only when noise is fixed
+    # trunc_obs is only deterministic (and worth excluding) when noise is fixed
     if (identical(model, "estimate_truncation") &&
           isTRUE(data$params_variable_lookup[data$param_id_sigma] == 0)) {
       exclude <- c(exclude, "trunc_obs")

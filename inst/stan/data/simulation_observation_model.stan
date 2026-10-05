@@ -3,4 +3,6 @@ int week_effect; // should a day of the week effect be estimated
 array[n, week_effect] real<lower = 0> day_of_week_simplex;
 int obs_scale;
 int model_type;
+// type of secondary observation: 0 = incidence, 1 = prevalence
+int<lower = 0, upper = 1> secondary_type;
 int<lower = 0> delay_id_truncation; // id of truncation delay

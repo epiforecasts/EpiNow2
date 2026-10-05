@@ -9,4 +9,14 @@ test_that("obs_opts returns expected default values", {
   expect_equal(result$scale, Normal(mean = 1, sd = 0))
   expect_true(result$likelihood)
   expect_false(result$return_likelihood)
+  expect_equal(result$type, "incidence")
+})
+
+test_that("obs_opts can be used with prevalence-type observations", {
+  result <- suppressWarnings(obs_opts(type = "prevalence"))
+  expect_equal(result$type, "prevalence")
+})
+
+test_that("obs_opts errors with an invalid type", {
+  expect_error(obs_opts(type = "cumulative"))
 })
