@@ -30,8 +30,20 @@ Lastly, we set a seed for reproducibility.
 
 ``` r
 library(EpiNow2)
+#> Loading required package: distspec
+#> 
+#> Attaching package: 'distspec'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     Gamma, sd
 #> 
 #> Attaching package: 'EpiNow2'
+#> The following objects are masked from 'package:distspec':
+#> 
+#>     bound_dist, collapse, convert_to_logmean, convert_to_logsd,
+#>     Dirichlet, discretise, discretize, Exp, fix_parameters, Fixed,
+#>     Gamma, get_distribution, get_parameters, get_pmf, is_constrained,
+#>     LogNormal, new_dist_spec, NonParametric, Normal, Weibull
 #> The following object is masked from 'package:stats':
 #> 
 #>     Gamma
@@ -86,9 +98,9 @@ hosp <- simulate_secondary(
   obs = obs_opts(family = "poisson", scale = admission_scale)
 )
 #> ℹ Unconstrained distributon passed as a delay.
-#> ℹ Constraining with default CDF cutoff 0.001.
+#> ℹ Constraining with default CDF level 0.999.
 #> ℹ To silence this message, specify delay distributions with `max` or
-#>   `default_cdf_cutoff`.
+#>   `default_cdf_max`.
 ```
 
 Using this we then create a combined data set:
@@ -116,7 +128,7 @@ head(df)
 #> 2: 2020-02-23    62                0
 #> 3: 2020-02-24    53                0
 #> 4: 2020-02-25    97                0
-#> 5: 2020-02-26    93                1
+#> 5: 2020-02-26    93                0
 #> 6: 2020-02-27    78                2
 
 df_long <- melt(df, id.vars = "date")
