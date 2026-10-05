@@ -110,6 +110,16 @@ By default this is a log-normal distribution with mean 1 and standard deviation 
 
 The simplest possible process model option is to use no time-varying prior and rely on just the intial fixed reproduction number $R_0$.
 
+### Case reproduction number
+
+Alongside the instantaneous reproduction number, the model also returns the case (or cohort) reproduction number, `R_case`. Where $R_t$ describes transmission from all infections circulating on day $t$, the case reproduction number describes the expected number of secondary infections caused by a case that was itself infected on day $t$, obtained by weighting future values of $R_t$ by the generation time distribution [@wallinga2004different]:
+
+\begin{equation}
+  R^{\text{case}}_t = \sum_{\tau = 1}^{g_\mathrm{max}} g(\tau | \theta_g) R_{t + \tau}.
+\end{equation}
+
+Because it is calculated from the jointly-estimated $R_t$ trajectory, `R_case` shares its uncertainty and is not estimated separately. It is undefined over the last $g_\mathrm{max} - 1$ days of that trajectory, as this would require $R_t$ beyond the days for which it has been estimated; the returned `R_case` series is correspondingly shorter than `R`.
+
 ### Beyond the end of the observation period
 
 Beyond the end of the observation period ($T$), by default, the Gaussian process is assumed to continue. However, here again there are a range of options. These include fixing transmission dynamics (optionally this can also be done before the end of the observation period), and adjusting for depletion of the susceptible population.

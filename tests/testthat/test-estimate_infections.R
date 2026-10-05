@@ -57,6 +57,21 @@ test_that("estimate_infections successfully returns estimates using default sett
   expect_true(nrow(default_fit$observations) > 0)
 })
 
+# Core test: the case reproduction number is returned alongside Rt and takes
+# sensible values (always runs)
+test_that("estimate_infections returns a case reproduction number", {
+  samples <- get_samples(default_fit)
+  R <- samples[variable == "R"]
+  R_case <- samples[variable == "R_case"]
+  expect_true(nrow(R_case) > 0)
+  expect_true(all(R_case$value > 0))
+  # shorter than Rt, since it is undefined towards the end of the
+  # trajectory, where it would require Rt estimates beyond the estimation
+  # window (see calculate_case_Rt)
+  expect_true(max(R_case$date) < max(R$date))
+  expect_true(min(R_case$date) == min(R$date))
+})
+
 test_that("get_samples(format = 'list') returns the raw list of arrays", {
   raw_samples <- get_samples(default_fit, format = "list")
   expect_type(raw_samples, "list")
