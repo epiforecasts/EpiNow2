@@ -110,39 +110,3 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
   }
   return(infections);
 }
-
-/**
- * Backcalculate infections from cases
- *
- * This function estimates infections by working backwards from observed cases,
- * applying noise to account for uncertainty in the process.
- *
- * @param shifted_cases Vector of shifted case counts
- * @param noise Vector of noise values
- * @param fixed Whether to use fixed (1) or variable (0) noise
- * @param prior Prior type to use (0: noise only, 1: cases * noise, 2: random walk)
- * @return A vector of infection counts
- *
- * @ingroup infections_estimation
- */
-vector deconvolve_infections(vector shifted_cases, vector noise, int fixed,
-                             int prior) {
-  int t = num_elements(shifted_cases);
-  vector[t] infections = rep_vector(1e-5, t);
-  if (!fixed) {
-    vector[t] exp_noise = exp(noise);
-    if (prior == 1) {
-      infections = infections + shifted_cases .* exp_noise;
-    } else if (prior == 0) {
-     infections = infections + exp_noise;
-    } else if (prior == 2) {
-      infections[1] = infections[1] + shifted_cases[1] * exp_noise[1];
-      for (i in 2:t) {
-        infections[i] = infections[i - 1] * exp_noise[i];
-      }
-    }
-  } else {
-    infections = infections + shifted_cases;
-  }
-  return(infections);
-}

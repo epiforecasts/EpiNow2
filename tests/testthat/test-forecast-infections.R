@@ -77,7 +77,7 @@ test_that("forecast_infections works with cmdstanr backend", {
       EpiNow2::example_confirmed[1:30],
       generation_time = gt_opts(example_generation_time),
       delays = delay_opts(example_incubation_period + example_reporting_delay),
-      rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+      rt = rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 0.2))),
       stan = stan_opts(
         backend = "cmdstanr",
         samples = 25, warmup = 25, chains = 2, cores = 1

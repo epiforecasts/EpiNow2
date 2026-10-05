@@ -109,25 +109,6 @@ test_that("PHI_periodic returns correct dimensions and values", {
   expect_equal(result, expected_result, tolerance = 1e-8)
 })
 
-test_that("setup_noise returns correct count of noise terms", {
-  ot_h <- 10
-  t <- 10
-  horizon <- 0
-  estimate_r <- 1
-  stationary <- 1
-  future_fixed <- 0
-  fixed_from <- 0
-  result <- setup_noise(ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from)
-  expect_equal(result, ot_h)
-  # Test with different parameters
-  result <- setup_noise(ot_h, t, horizon, estimate_r, 0, future_fixed, fixed_from)
-  expect_equal(result, ot_h - 1)
-  result <- setup_noise(ot_h, t, horizon, 0, stationary, future_fixed, fixed_from)
-  expect_equal(result, t)
-  result <- setup_noise(ot_h, t, 2, estimate_r, stationary, 1, 3)
-  expect_equal(result, ot_h - 2 + 3)
-})
-
 test_that("setup_gp returns correct dimensions and values", {
   M <- 3
   L <- 1.0
