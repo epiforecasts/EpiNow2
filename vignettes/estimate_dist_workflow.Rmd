@@ -201,14 +201,14 @@ result
 #> Max delay: 14 | Max obs time: 15
 #> 
 #> Parameter estimates:
-#>    variable    median      mean         sd  lower_90  lower_50  lower_20
-#>      <char>     <num>     <num>      <num>     <num>     <num>     <num>
-#> 1:  meanlog 1.3985053 1.4067101 0.09182358 1.2681272 1.3422634 1.3756677
-#> 2:    sdlog 0.7839885 0.7906597 0.07495864 0.6778847 0.7388934 0.7648425
+#>    variable    median      mean         sd  lower_90  lower_50 lower_20
+#>      <char>     <num>     <num>      <num>     <num>     <num>    <num>
+#> 1:  meanlog 1.3993100 1.4069353 0.09353952 1.2657793 1.3438112 1.378231
+#> 2:    sdlog 0.7854111 0.7922088 0.07549775 0.6812443 0.7400942 0.767943
 #>     upper_20  upper_50  upper_90
 #>        <num>     <num>     <num>
-#> 1: 1.4220041 1.4633863 1.5610396
-#> 2: 0.8036776 0.8384181 0.9223645
+#> 1: 1.4224747 1.4611964 1.5721380
+#> 2: 0.8024518 0.8366481 0.9293088
 ```
 
 For convergence diagnostics, the underlying Stan fit is accessible via `result$fit`.
@@ -217,17 +217,17 @@ For convergence diagnostics, the underlying Stan fit is accessible via `result$f
 ``` r
 rstan::summary(result$fit)$summary
 #>                         mean     se_mean         sd         2.5%          25%
-#> params[1]          1.4067101 0.003403500 0.09182358    1.2481339    1.3422634
-#> params[2]          0.7906597 0.002940947 0.07495864    0.6619981    0.7388934
-#> delay_params[1]    1.4067101 0.003403500 0.09182358    1.2481339    1.3422634
-#> delay_params[2]    0.7906597 0.002940947 0.07495864    0.6619981    0.7388934
-#> lp__            -375.0017130 0.035851099 0.97640511 -377.5379903 -375.3937926
-#>                          50%          75%        97.5%    n_eff      Rhat
-#> params[1]          1.3985053    1.4633863    1.5997263 727.8753 1.0026491
-#> params[2]          0.7839885    0.8384181    0.9604929 649.6342 0.9995919
-#> delay_params[1]    1.3985053    1.4633863    1.5997263 727.8753 1.0026491
-#> delay_params[2]    0.7839885    0.8384181    0.9604929 649.6342 0.9995919
-#> lp__            -374.7265078 -374.2888659 -374.0056388 741.7459 0.9996135
+#> params[1]          1.4069353 0.003578173 0.09353952    1.2440080    1.3438112
+#> params[2]          0.7922088 0.002959028 0.07549775    0.6623856    0.7400942
+#> delay_params[1]    1.4069353 0.003578173 0.09353952    1.2440080    1.3438112
+#> delay_params[2]    0.7922088 0.002959028 0.07549775    0.6623856    0.7400942
+#> lp__            -374.9981389 0.039184818 1.04839663 -377.8700032 -375.3845512
+#>                          50%          75%        97.5%    n_eff     Rhat
+#> params[1]          1.3993100    1.4611964    1.6161279 683.3882 1.002387
+#> params[2]          0.7854111    0.8366481    0.9626803 650.9832 1.001770
+#> delay_params[1]    1.3993100    1.4611964    1.6161279 683.3882 1.002387
+#> delay_params[2]    0.7854111    0.8366481    0.9626803 650.9832 1.001770
+#> lp__            -374.6607304 -374.2606909 -374.0046095 715.8393 1.002402
 ```
 
 We can extract the fitted distribution as a `dist_spec` object using `get_parameters()`.
@@ -237,13 +237,17 @@ This is useful for passing the result directly to other `EpiNow2` functions such
 ``` r
 params <- get_parameters(result)
 params$delay
-#> - lognormal distribution (max: 14):
+#> - lognormal distribution
+#> Returning NA: this distribution has uncertain parameters.
+#> ℹ Resolve the uncertainty first with `fix_parameters()`.
+#> This message is displayed once every 8 hours.
+#>  (max: 14):
 #>   meanlog:
 #>     - normal distribution:
 #>       mean:
 #>         1.4
 #>       sd:
-#>         0.092
+#>         0.094
 #>   sdlog:
 #>     - normal distribution:
 #>       mean:
