@@ -302,3 +302,17 @@ test_that("epinow fails if given variational inference arguments when using NUTs
     )
   ))))
 })
+
+test_that("epinow errors when target_folder is an existing file", {
+  target_folder <- file.path(withr::local_tempdir(), "not-a-directory")
+  writeLines("x", target_folder)
+
+  expect_error(
+    epinow(
+      data = example_confirmed[1:30],
+      target_folder = target_folder,
+      logs = NULL, verbose = FALSE
+    ),
+    "target_folder is not a directory"
+  )
+})

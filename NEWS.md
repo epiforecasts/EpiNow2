@@ -18,6 +18,7 @@
 
 ## Bug fixes
 
+- Fixed a bug where `epinow()` accepted an existing file as `target_folder` and failed later while saving results.
 - A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
 - A bug was fixed where `estimate_infections()` could emit a spurious "the largest R-hat is NA" convergence warning caused by deterministic delay PMFs being monitored; these are no longer monitored.
 - A bug was fixed where `estimate_secondary()` emitted the same spurious "the largest R-hat is NA" convergence warning from a deterministic delay PMF being monitored; it is no longer monitored.
