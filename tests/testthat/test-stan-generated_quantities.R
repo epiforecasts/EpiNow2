@@ -78,3 +78,43 @@ test_that("calculate_growth selects the right method", {
     c(round(growth, 2), rep(NaN, mean_gt))
   )
 })
+
+# no generation time mass at lag 0
+gt_pmf <- c(0, 0.5, 0.3, 0.2)
+gt_rev <- rev(gt_pmf)
+
+test_that("calculate_Rt is one for constant infections", {
+  infections <- rep(1000, 10)
+  rt <- calculate_Rt(infections, 3, gt_rev, 0)
+  expect_length(rt, 7)
+  expect_equal(rt, rep(1, 7), tolerance = 1e-6)
+})
+
+test_that("calculate_Rt recovers Rt under exponential growth", {
+  r <- 0.1
+  infections <- 1000 * exp(r * 1:12)
+  # Euler-Lotka relation between growth rate and reproduction number
+  expected <- 1 / sum(gt_pmf * exp(-r * (seq_along(gt_pmf) - 1)))
+  rt <- calculate_Rt(infections, 3, gt_rev, 0)
+  expect_equal(rt, rep(expected, 9), tolerance = 1e-6)
+  expect_gt(expected, 1)
+  expect_lt(calculate_Rt(rev(infections), 3, gt_rev, 0)[9], 1)
+})
+
+test_that("calculate_Rt smooths over a centred window", {
+  infections <- c(10, 12, 15, 20, 18, 14, 11, 9, 8, 7) * 100
+  raw <- calculate_Rt(infections, 3, gt_rev, 0)
+  n <- length(raw)
+  for (smooth in 1:2) {
+    expected <- vapply(seq_len(n), function(s) {
+      mean(raw[max(1, s - smooth):min(n, s + smooth)])
+    }, numeric(1))
+    expect_equal(calculate_Rt(infections, 3, gt_rev, smooth), expected)
+  }
+})
+
+test_that("calculate_growth errors for an unknown growth method", {
+  expect_error(
+    calculate_growth(1:7, 1, gt_rev, 2), "growth_method must be 0"
+  )
+})
