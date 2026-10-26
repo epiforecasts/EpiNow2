@@ -185,16 +185,8 @@ test_that("create_sampling_log_message works for Pathfinder with time steps and 
 
 quiet_fit_logs <- function(env = parent.frame()) {
   loggers <- c("EpiNow2.epinow.estimate_infections.fit", "EpiNow2.fit")
-  old <- lapply(
-    loggers, function(n) futile.logger::flog.threshold(name = n)
-  )
+  local_loggers(loggers, env = env)
   for (n in loggers) futile.logger::flog.threshold("FATAL", name = n)
-  withr::defer(
-    for (i in seq_along(loggers)) {
-      futile.logger::flog.threshold(old[[i]], name = loggers[[i]])
-    },
-    envir = env
-  )
 }
 
 # A stand-in for a cmdstanr model whose methods record their arguments
@@ -241,13 +233,8 @@ test_that("fit_model_with_nuts passes cleaned arguments to the sampler", {
 test_that("fit_model_with_nuts errors when sampling fails", {
   quiet_fit_logs()
   failing <- fake_cmdstan_model(sample = function(...) stop("sampler broke"))
-
-  expect_error(
-    fit_model_with_nuts(nuts_args(fake_cmdstan_model(sample = function(...) {
-      NULL
-    }))),
-    "timed out or failed"
-  )
+  empty <- fake_cmdstan_model(sample = function(...) NULL)
+  expect_error(fit_model_with_nuts(nuts_args(empty)), "timed out or failed")
   # Errors propagate for direct calls but are caught and logged otherwise
   expect_error(
     fit_model_with_nuts(nuts_args(failing), id = "estimate_infections"),
