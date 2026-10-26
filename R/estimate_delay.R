@@ -273,7 +273,8 @@ bootstrapped_dist_fit <- function(values, dist = "lognormal",
 #'
 #' @param delays Integer vector of delays
 #'
-#' @param ... Arguments to pass to internal methods.
+#' @param ... Not used. Accepted so that calls using arguments of the
+#'   former interface reach the deprecation error.
 #'
 #' @return Does not return. Errors with a deprecation message.
 #' @export

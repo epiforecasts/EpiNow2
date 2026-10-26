@@ -9,7 +9,8 @@ estimate_delay(delays, ...)
 \arguments{
 \item{delays}{Integer vector of delays}
 
-\item{...}{Arguments to pass to internal methods.}
+\item{...}{Not used. Accepted so that calls using arguments of the
+former interface reach the deprecation error.}
 }
 \value{
 Does not return. Errors with a deprecation message.

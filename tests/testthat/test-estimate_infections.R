@@ -367,6 +367,10 @@ test_that("summary with type='parameters' returns all dates by default", {
   expect_equal(unique(summ_filtered$date), target)
 })
 
+test_that("summary rejects the removed type = 'samples'", {
+  expect_error(summary(default_fit, type = "samples"), "type")
+})
+
 test_that("get_parameters works as expected for estimate_infections", {
   # Reuse pre-computed fit
   out <- default_fit
