@@ -6,11 +6,9 @@
 
 ## Model changes
 
-- The delay parameter priors are now always weighted in a single statement rather than branching on whether the weight is above one. Delay weights must now be at least one, which they always were in practice. The posterior is unchanged. Suggested by @bob-carpenter.
+- Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
 
 ## Package changes
-
-- Tidied the Stan code following review by @bob-carpenter. The convolution index helpers are renamed to `xlen_conv_indices()` and `len_conv_indices()`, the prior distribution error now names the allowed values, and `get_delay_rev_pmf()` documents that the cumulative sum is taken before reversal.
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
 - Moved the probability distribution interface (`Gamma()`, `LogNormal()`, `NonParametric()`, `discretise()`, `get_pmf()`, `convert_to_logmean()`, `convert_to_logsd()`, and related functions) to the standalone `distspec` package, which EpiNow2 now depends on. These functions are attached when EpiNow2 is loaded, so existing code continues to work unchanged. They are also re-exported from EpiNow2 (deprecated) so that the `EpiNow2::` form keeps resolving; the re-exports will be removed in a future release.
@@ -19,6 +17,7 @@
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
 - The README commits-since badge now tracks the latest release automatically.
+- Renamed the Stan convolution index helpers to `xlen_conv_indices()` and `len_conv_indices()`, and the prior distribution error now names the allowed values.
 
 ## Bug fixes
 
