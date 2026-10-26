@@ -71,7 +71,9 @@ array[] int get_delay_type_max(
  *   convention (1: lognormal, 2: gamma, 3: weibull, 4: exponential)
  * @param left_truncate Left truncation point (0 for no truncation)
  * @param reverse_pmf Whether to reverse the PMF (1) or not (0)
- * @param cumulative Whether to return cumulative (1) or daily (0) values
+ * @param cumulative Whether to return cumulative (1) or daily (0) values.
+ *   The cumulative sum is taken before any reversal, so setting both gives
+ *   the reversed CDF, as used for right truncation.
  * @return A vector containing the (reversed) PMF of length len
  *
  * @ingroup delay_handlers
@@ -165,14 +167,10 @@ void delays_lp(vector delay_params,
     int end = delay_params_groups[d + 1] - 1;
     for (s in start:end) {
       if (delay_params_sd[s] > 0) {
-        if (weight[d] > 1) {
-          target += weight[d] *
-            normal_lpdf(
-              delay_params[s] | delay_params_mean[s], delay_params_sd[s]
-            );
-        } else {
-          delay_params[s] ~ normal(delay_params_mean[s], delay_params_sd[s]);
-        }
+        target += weight[d] *
+          normal_lpdf(
+            delay_params[s] | delay_params_mean[s], delay_params_sd[s]
+          );
       }
     }
   }

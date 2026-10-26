@@ -32,7 +32,7 @@ vector<lower = 0>[delay_params_length] delay_params_sd;
 // links to ragged array
 array[delay_n_p + 1] int<lower = 0> delay_params_groups;
 
-array[delay_n_p] int<lower = 0> delay_weight; // delay weights
+array[delay_n_p] int<lower = 1> delay_weight; // delay weights
 int<lower = 0> delay_types; // number of delay types
 // whether delay types are parametric
 array[delay_n] int<lower = 0> delay_types_p;

@@ -1,18 +1,18 @@
 skip_on_cran()
 skip_on_os("windows")
 
-# Test calc_conv_indices_xlen function
-test_that("calc_conv_indices_xlen calculates correct indices", {
-  expect_equal(calc_conv_indices_xlen(1, 5, 3), c(1, 1, 3, 3))
-  expect_equal(calc_conv_indices_xlen(3, 5, 3), c(1, 3, 1, 3))
-  expect_equal(calc_conv_indices_xlen(5, 5, 3), c(3, 5, 1, 3))
+# Test xlen_conv_indices function
+test_that("xlen_conv_indices calculates correct indices", {
+  expect_equal(xlen_conv_indices(1, 5, 3), c(1, 1, 3, 3))
+  expect_equal(xlen_conv_indices(3, 5, 3), c(1, 3, 1, 3))
+  expect_equal(xlen_conv_indices(5, 5, 3), c(3, 5, 1, 3))
 })
 
-# Test calc_conv_indices_len function
-test_that("calc_conv_indices_len calculates correct indices", {
-  expect_equal(calc_conv_indices_len(6, 5, 3), c(4, 5, 1, 2))
-  expect_equal(calc_conv_indices_len(7, 5, 3), c(5, 5, 1, 1))
-  expect_equal(calc_conv_indices_len(8, 5, 3), c(6, 5, 1, 0))
+# Test len_conv_indices function
+test_that("len_conv_indices calculates correct indices", {
+  expect_equal(len_conv_indices(6, 5, 3), c(4, 5, 1, 2))
+  expect_equal(len_conv_indices(7, 5, 3), c(5, 5, 1, 1))
+  expect_equal(len_conv_indices(8, 5, 3), c(6, 5, 1, 0))
 })
 
 test_that("convolve_with_rev_pmf can combine two pmfs as expected", {
