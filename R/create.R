@@ -423,22 +423,16 @@ gp_half_range <- function(n) {
 #' `c` and `m` basis functions, lengthscales `l` are approximated accurately
 #' when `m >= m_factor * c * S / l` and `c >= c_factor * l / S` (with
 #' `c >= 1.2`). The paper does not cover Matern 1/2 (equivalently, the
-#' Ornstein-Uhlenbeck kernel); `m_factor` for it is derived by reproducing the
-#' paper's own simulation procedure (see the `hsgp_m_c_relationship` folder,
+#' Ornstein-Uhlenbeck kernel). Its `m_factor` is derived by repeating the
+#' paper's simulation procedure (see the `hsgp_m_c_relationship` folder,
 #' branch `matern-half-m-c-relationship`, of
-#' \url{https://github.com/sbfnk-bot/basis_functions_approach_to_GP}),
-#' which validated against the squared exponential and Matern 3/2 and 5/2
-#' constants to within 8-13% before being applied to 1/2. Matern 1/2 is the
-#' roughest of the four kernels (non-differentiable at `tau = 0`), and its
-#' spectral density decays the slowest, so it needs the largest `m_factor` of
-#' the four, not the Matern 3/2 value previously used as a fallback (which
-#' undershoots by roughly a factor of 2). `c_factor` for 1/2 was not
-#' independently validated by that reproduction (indicative only, 30-50%
-#' below each kernel's published value regardless of validation), so it keeps
-#' the Matern 3/2 fallback, which is at least a known quantity even if not
-#' confirmed conservative for 1/2. The periodic kernel has no boundary, and
-#' needs `m >= m_factor * S / l` basis functions (Appendix B), so `c_factor`
-#' is `NA`.
+#' \url{https://github.com/sbfnk-bot/basis_functions_approach_to_GP}).
+#' The same procedure reproduced the squared exponential and Matern 3/2 and
+#' 5/2 constants to within 8-13%. Matern 1/2 is the roughest kernel, so it
+#' needs the most basis functions. Its `c_factor` was not independently
+#' validated and uses the Matern 3/2 value. The periodic kernel has no
+#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B), so
+#' its `c_factor` is `NA`.
 #'
 #' @param gp_type Integer kernel type as used in the Stan model (0: squared
 #'   exponential, 1: periodic, 2: Matern).
