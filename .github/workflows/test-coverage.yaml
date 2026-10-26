@@ -42,6 +42,7 @@ jobs:
             testthat
             future
             future.apply
+            scoringutils
 
       - name: Install cmdstan
         if: runner.os != 'Windows'
