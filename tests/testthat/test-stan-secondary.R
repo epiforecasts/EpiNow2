@@ -93,7 +93,7 @@ test_that("calculate_secondary matches the prevalence preset by hand", {
   expect_equal(hand_secondary(1, 1, 0, 1, 1), expected + 1e-6)
 })
 
-test_that("calculate_secondary combines additive historic and current reports", {
+test_that("calculate_secondary combines historic and current terms", {
   expect_equal(
     hand_secondary(0, 1, 1, 1, 1), hand_conv + hand_scaled + 1e-6
   )
@@ -107,7 +107,7 @@ test_that("calculate_secondary combines additive historic and current reports", 
   )
 })
 
-test_that("calculate_secondary returns only the offset with no primary terms", {
+test_that("calculate_secondary returns the offset with no primary", {
   expect_equal(hand_secondary(0, 0, 0, 0, 0), rep(1e-6, 4))
   expect_equal(hand_secondary(1, 0, 0, 0, 0), c(0, hand_obs[1:3]) + 1e-6)
 })

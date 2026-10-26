@@ -28,7 +28,7 @@ test_that("report_log_lik scales each contribution by the weight", {
   }
 })
 
-test_that("day_of_week_effect keeps weekly totals when effects sum to one", {
+test_that("day_of_week_effect preserves weekly totals", {
   reports <- rep(70, 14)
   day_of_week <- rep(1:7, 2)
   effect <- c(0.2, 0.2, 0.15, 0.15, 0.1, 0.1, 0.1)
@@ -56,7 +56,8 @@ test_that("neg_binomial_2_safe_rng has negative binomial moments", {
   phi <- 2
   n <- 20000
   draws <- replicate(n, neg_binomial_2_safe_rng(mu, phi))
-  expect_true(all(draws >= 0 & draws == round(draws)))
+  expect_true(all(draws >= 0))
+  expect_type(draws, "integer")
   nb_var <- mu + mu^2 / phi
   # generous limits so the check is not sensitive to the random draws
   expect_lt(abs(mean(draws) - mu), 6 * sqrt(nb_var / n))
@@ -66,7 +67,7 @@ test_that("neg_binomial_2_safe_rng has negative binomial moments", {
   expect_equal(var(pois_draws), mu, tolerance = 0.1)
 })
 
-test_that("report_rng returns one count per report with the model's spread", {
+test_that("report_rng draws counts with the model variance", {
   reports <- c(0, 5, 50)
   expect_length(report_rng(reports, 0.5, 1), 3)
   expect_equal(report_rng(reports, 0.5, 1)[1], 0)

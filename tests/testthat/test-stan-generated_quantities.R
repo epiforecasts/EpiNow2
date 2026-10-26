@@ -79,18 +79,18 @@ test_that("calculate_growth selects the right method", {
   )
 })
 
-# generation time with no mass at lag 0 and mass on lags 1 to 3
+# no generation time mass at lag 0
 gt_pmf <- c(0, 0.5, 0.3, 0.2)
 gt_rev <- rev(gt_pmf)
 
-test_that("calculate_Rt returns one per observed time with constant infections", {
+test_that("calculate_Rt is one for constant infections", {
   infections <- rep(1000, 10)
   rt <- calculate_Rt(infections, 3, gt_rev, 0)
   expect_length(rt, 7)
   expect_equal(rt, rep(1, 7), tolerance = 1e-6)
 })
 
-test_that("calculate_Rt recovers Rt implied by exponential growth", {
+test_that("calculate_Rt recovers Rt under exponential growth", {
   r <- 0.1
   infections <- 1000 * exp(r * 1:12)
   # Euler-Lotka relation between growth rate and reproduction number
@@ -101,7 +101,7 @@ test_that("calculate_Rt recovers Rt implied by exponential growth", {
   expect_lt(calculate_Rt(rev(infections), 3, gt_rev, 0)[9], 1)
 })
 
-test_that("calculate_Rt smooths with a centred window truncated at the edges", {
+test_that("calculate_Rt smooths over a centred window", {
   infections <- c(10, 12, 15, 20, 18, 14, 11, 9, 8, 7) * 100
   raw <- calculate_Rt(infections, 3, gt_rev, 0)
   n <- length(raw)
