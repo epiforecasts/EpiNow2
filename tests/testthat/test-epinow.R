@@ -303,9 +303,7 @@ test_that("epinow fails if given variational inference arguments when using NUTs
   ))))
 })
 
-# Wrapper behaviour with a mocked fit (fast - no MCMC) ----------------------
-# estimate_infections() is replaced by a function returning a fitted fixture so
-# that these tests only exercise the code around it.
+# Wrapper behaviour with a mocked estimate_infections() (no MCMC) -----------
 
 test_that("epinow returns an epinow object built from the fit", {
   fit <- canned_estimate_infections()
@@ -340,28 +338,24 @@ test_that("epinow extends the forecast horizon to cover the target date", {
 
 test_that("epinow warns and coerces a character target_date", {
   withr::local_options(lifecycle_verbosity = "warning")
-  target_dates <- list()
+  horizon <- NULL
   local_mocked_bindings(estimate_infections = function(forecast, ...) {
+    horizon <<- forecast$horizon
     canned_estimate_infections()
-  })
-  local_mocked_bindings(update_horizon = function(horizon, target_date, data) {
-    target_dates <<- c(target_dates, list(target_date))
-    horizon
   })
   expect_warning(
     epinow(
-      data = reported_cases, target_date = "2020-03-22", output = NULL,
+      data = reported_cases, target_date = "2020-03-25",
+      forecast = forecast_opts(horizon = 7), output = NULL,
       logs = NULL, verbose = FALSE
     ),
     class = "lifecycle_warning_deprecated"
   )
-  expect_equal(target_dates, list(as.Date("2020-03-22")))
+  expect_equal(horizon, 10)
 })
 
 test_that("epinow only returns output when requested", {
-  local_mocked_bindings(
-    estimate_infections = function(...) canned_estimate_infections()
-  )
+  local_mocked_bindings(estimate_infections = mock_fit())
   tmp <- withr::local_tempdir()
   expect_null(
     epinow(
@@ -387,7 +381,7 @@ test_that("epinow saves requested output to a dated target folder", {
   local_mocked_bindings(estimate_infections = function(...) fit)
   tmp <- withr::local_tempdir()
   cases <- data.table::copy(reported_cases)
-  # trailing zero so the latest date with cases differs from the last date
+  # the latest date with cases differs from the last date
   cases[.N, confirm := 0]
   epinow(
     data = cases, target_folder = tmp,
@@ -421,9 +415,7 @@ test_that("epinow saves requested output to a dated target folder", {
 })
 
 test_that("epinow skips optional files that are not requested", {
-  local_mocked_bindings(
-    estimate_infections = function(...) canned_estimate_infections()
-  )
+  local_mocked_bindings(estimate_infections = mock_fit())
   tmp <- withr::local_tempdir()
   epinow(
     data = reported_cases, target_folder = tmp, output = NULL,
@@ -523,9 +515,7 @@ test_that("epinow writes log files when given a logs directory", {
 })
 
 test_that("epinow errors informatively for deprecated elements", {
-  local_mocked_bindings(
-    estimate_infections = function(...) canned_estimate_infections()
-  )
+  local_mocked_bindings(estimate_infections = mock_fit())
   out <- epinow(
     data = reported_cases, output = NULL, logs = NULL, verbose = FALSE
   )

@@ -1,12 +1,5 @@
-#' Get a fitted `<estimate_infections>` object for use in mocks
-#'
-#' Strips the `<epinow>` class and timing from the shared fixture so that the
-#' result looks like the return value of [estimate_infections()]. It is used
-#' with [testthat::local_mocked_bindings()] to test the wrappers around
-#' [estimate_infections()] without running a new fit.
-#'
-#' @return An `<estimate_infections>` object fitted to
-#'   `example_confirmed[1:30]` with a seven day forecast horizon.
+# A fitted <estimate_infections> object built from the shared fixture, for
+# use as the return value of a mocked estimate_infections().
 canned_estimate_infections <- function() {
   fit <- unclass(get_test_fixtures()$estimate_infections)
   fit$timing <- NULL
@@ -14,14 +7,16 @@ canned_estimate_infections <- function() {
   fit
 }
 
-#' Capture log messages written to a futile.logger logger
-#'
-#' Sends messages from logger `name` to a character vector for the rest of the
-#' calling test and restores the console appender afterwards.
-#'
-#' @param name Name of the logger to capture.
-#' @param env Environment that controls when capturing stops.
-#' @return A function that returns the captured log lines.
+# Mock for estimate_infections() that returns a fixed fit. The fit is built
+# outside the mock because regions run inside futures, where the fixture
+# cache cannot be updated.
+mock_fit <- function() {
+  fit <- canned_estimate_infections()
+  function(...) fit
+}
+
+# Sends messages from logger `name` to a character vector until the calling
+# test ends. Returns a function that gives the captured lines.
 capture_log <- function(name, env = parent.frame()) {
   lines <- character(0)
   futile.logger::flog.appender(

@@ -1,8 +1,5 @@
 skip_on_cran()
 
-# estimate_infections() is replaced by a function returning a fitted fixture so
-# that these tests only exercise regional_epinow() and its helpers.
-
 futile.logger::flog.threshold("FATAL")
 futile.logger::flog.threshold("FATAL", name = "EpiNow2")
 
@@ -12,9 +9,7 @@ cases <- data.table::rbindlist(list(
   data.table::copy(cases)[, region := "realland"]
 ))
 
-# Returns a mock where testland fits and realland fails. The fit is created
-# outside the mock because regions run inside futures, where the fixture cache
-# cannot be updated.
+# Mock where testland fits and realland fails.
 mock_fit_by_region <- function() {
   fit <- canned_estimate_infections()
   function(..., id) {
@@ -23,11 +18,6 @@ mock_fit_by_region <- function() {
     }
     fit
   }
-}
-
-mock_fit <- function() {
-  fit <- canned_estimate_infections()
-  function(...) fit
 }
 
 run_regional_epinow <- function(...) {
