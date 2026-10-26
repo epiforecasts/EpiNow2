@@ -40,6 +40,14 @@
 namespace epinow2 {
 namespace internal {
 
+/**
+ * Check that len is a valid output length for the convolution.
+ *
+ * @param n Length of x.
+ * @param D Length of y.
+ * @param len Requested output length.
+ * @throws std::domain_error if len < n or len > n + D - 1.
+ */
 inline void check_convolve_len(int n, int D, int len) {
   if (n + D - 1 < len) {
     throw std::domain_error(
@@ -50,7 +58,16 @@ inline void check_convolve_len(int n, int D, int len) {
   }
 }
 
-// z_{d+1:d+m} += w_d x_{1:m} for each lag d, with w_d = y_{D - d}.
+/**
+ * Forward pass of the convolution on doubles.
+ *
+ * Computes z_{d+1:d+m} += w_d x_{1:m} for each lag d, with w_d = y_{D - d}.
+ *
+ * @param x Input vector of length n.
+ * @param y Reversed PMF of length D.
+ * @param len Output length, n <= len <= n + D - 1.
+ * @return Vector z of length len.
+ */
 inline Eigen::VectorXd convolve_forward(const Eigen::VectorXd& x,
                                         const Eigen::VectorXd& y, int len) {
   const int n = x.size();
@@ -66,7 +83,18 @@ inline Eigen::VectorXd convolve_forward(const Eigen::VectorXd& x,
   return z;
 }
 
-// xbar_{1:m} += w_d zbar_{d+1:d+m}; wbar_d += zbar_{d+1:d+m}^T x_{1:m}.
+/**
+ * Reverse pass of the convolution on doubles.
+ *
+ * Accumulates xbar_{1:m} += w_d zbar_{d+1:d+m} and
+ * wbar_d += zbar_{d+1:d+m}^T x_{1:m}, writing wbar_d to ybar_{D - d}.
+ *
+ * @param x Input vector of length n.
+ * @param y Reversed PMF of length D.
+ * @param zbar Adjoint of the output, of length len.
+ * @param xbar Adjoint of x, of length n, accumulated into. May be null.
+ * @param ybar Adjoint of y, of length D, accumulated into. May be null.
+ */
 inline void convolve_reverse(const Eigen::VectorXd& x,
                              const Eigen::VectorXd& y,
                              const Eigen::VectorXd& zbar,
