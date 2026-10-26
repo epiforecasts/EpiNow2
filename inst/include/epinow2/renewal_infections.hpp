@@ -60,17 +60,49 @@
 namespace epinow2 {
 namespace internal {
 
-// Forward values kept for the reverse pass. flag bits: 1 depletion,
-// 2 S = pop - C (not the floor), 4 fmax(0, 1 - e) passes 1 - e through.
+/**
+ * Forward values kept for the reverse pass.
+ *
+ * Each member has one entry per time step, except I, which also holds the
+ * seeds. The entries of flag are bit sets, with 1 for depletion,
+ * 2 for S = pop - C (not the floor) and 4 for fmax(0, 1 - e) passing
+ * 1 - e through.
+ *
+ * @tparam Vec Vector type, either Eigen::VectorXd or an arena vector.
+ */
 template <typename Vec>
 struct renewal_state {
   Vec I, lambda, S, e, a, flag;
 };
 
+/**
+ * Whether susceptible depletion applies at a time step.
+ *
+ * @param use_pop Population adjustment (0 none, 1 after nht, 2 all).
+ * @param s Zero-based time step after the seeds.
+ * @param nht Number of time steps before the adjustment starts when
+ *   use_pop = 1.
+ * @return True if depletion applies.
+ */
 inline bool renewal_depletes(int use_pop, int s, int nht) {
   return (use_pop == 1 && s + 1 > nht) || use_pop == 2;
 }
 
+/**
+ * Forward pass of the renewal equation on doubles.
+ *
+ * Fills st with the infections and the values needed by renewal_reverse().
+ *
+ * @param seed Seeding infections.
+ * @param R Reproduction numbers.
+ * @param g Reversed generation time PMF.
+ * @param pop Initial susceptible population.
+ * @param use_pop Population adjustment (0 none, 1 after nht, 2 all).
+ * @param pop_floor Minimum susceptible population.
+ * @param nht Number of time steps before the adjustment starts when
+ *   use_pop = 1.
+ * @param st State to fill.
+ */
 template <typename State>
 inline void renewal_forward(const Eigen::VectorXd& seed,
                             const Eigen::VectorXd& R,
@@ -118,6 +150,19 @@ inline void renewal_forward(const Eigen::VectorXd& seed,
   }
 }
 
+/**
+ * Reverse pass of the renewal equation on doubles.
+ *
+ * @param st State filled by renewal_forward().
+ * @param R Reproduction numbers.
+ * @param g Reversed generation time PMF.
+ * @param use_pop Population adjustment (0 none, 1 after nht, 2 all).
+ * @param Ibar_in Adjoint of the infections, seeds included.
+ * @param seedbar Set to the adjoint of the seeds.
+ * @param Rbar Adjoint of R, accumulated into.
+ * @param gbar Adjoint of g, accumulated into.
+ * @param popbar Adjoint of pop, accumulated into.
+ */
 template <typename State>
 inline void renewal_reverse(const State& st, const Eigen::VectorXd& R,
                             const Eigen::VectorXd& g, int use_pop,

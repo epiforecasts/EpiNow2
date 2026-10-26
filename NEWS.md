@@ -6,10 +6,12 @@
 
 ## Model changes
 
+- Rewrote the Stan `update_Rt()` function from small helpers that centre log Rt through its intercept, making it 1.3 to 1.9 times faster without changing results.
 - `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient, about 3-4 times faster. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
 - The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient, which makes its gradient about 2 times faster.
 - `R_to_r()` is now implemented in C++ with a gradient from the implicit function theorem, which makes its gradient about 6 times faster.
 - The growth rate used to initialise infections is now solved to a tolerance of 1e-8 rather than 1e-3, so that it is consistent with its gradient. This changes results very slightly.
+- Simplified the Stan code that combines delays in `get_delay_rev_pmf()`, with new property tests for the delay functions. Results and speed are unchanged.
 
 ## Package changes
 
@@ -18,6 +20,7 @@
 - Adapted the internal nonparametric-delay handling to `distspec`'s revised representation of estimated (Dirichlet-backed) distributions, which now hold their Dirichlet prior in `$pmf` rather than a separate `$estimated`/`$alpha` and a cached mean PMF. Behaviour for estimated nonparametric delays is unchanged.
 - `gt_opts()`, `delay_opts()` and `trunc_opts()` gain a `default_cdf_max` argument: the CDF level to keep an unconstrained fixed distribution up to (default `0.999`, where `1` leaves it unbounded), following `distspec`'s `cdf_max` (EpiNow2 now requires `distspec` >= 0.2.0). The default can be set globally with `options(EpiNow2.cdf_max = ...)`. The previous `default_cdf_cutoff` argument (the tail probability to drop) is deprecated; a value `x` is equivalent to `default_cdf_max = 1 - x`.
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
+- `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
 - The README commits-since badge now tracks the latest release automatically.
 
 ## Bug fixes
@@ -25,6 +28,7 @@
 - A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
 - A bug was fixed where `estimate_infections()` could emit a spurious "the largest R-hat is NA" convergence warning caused by deterministic delay PMFs being monitored; these are no longer monitored.
 - A bug was fixed where `estimate_secondary()` emitted the same spurious "the largest R-hat is NA" convergence warning from a deterministic delay PMF being monitored; it is no longer monitored.
+- A bug was fixed where `estimate_truncation()` could emit spurious "the largest R-hat is NA" and low effective sample size warnings, either from the same deterministic delay PMF as above, or from fully-reported reconstructed observations being constant when the noise term was fixed rather than estimated; neither is now monitored.
 - A bug was fixed where `get_predictions()` on an `estimate_truncation()` result assigned reconstructed observations to the wrong datasets and dates.
 - A bug was fixed where the prior on the initial reproduction number was applied with an incorrect Jacobian, shifting it upwards by a factor of `exp(sdlog^2)`. A `LogNormal(mean = 2, sd = 1)` prior was applied as though it had a mean of 2.5.
 - A bug was fixed where the mean reproduction number over the observation window was left uninitialised, so chains started from a value drawn across the whole of `exp(-2)` to `exp(2)` rather than from the user's Rt prior.
@@ -36,6 +40,7 @@
 
 - The prior choice guide vignette now draws more samples in its `estimate_secondary()` examples to avoid low tail effective sample size warnings in the rendered output.
 - Clarified the Stan documentation for delay-related vectors and their lookup index arrays, naming them explicitly as ragged data structures and linking to the Stan User's Guide section on the topic.
+- Removed stray `# nolint` comments that were rendered as visible text in the `growth_to_R()`, `R_to_growth()`, `example_incubation_period`, `example_reporting_delay` and `example_truncated` documentation, moving the line-length exclusion outside the roxygen block instead.
 
 ## Internal
 
