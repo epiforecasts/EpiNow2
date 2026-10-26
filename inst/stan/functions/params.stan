@@ -118,7 +118,7 @@ void params_lp(vector params, array[] int prior_dist,
     } else if (prior_dist[id] == 2) {
       params[id] ~ normal(p1, p2);
     } else {
-      reject("dist must be <= 2");
+      reject("dist must be 0, 1 or 2; found dist = ", prior_dist[id]);
     }
     params_id += 2;
   }
