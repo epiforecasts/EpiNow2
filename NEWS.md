@@ -6,7 +6,7 @@
 
 ## Model changes
 
-- Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior. Suggested by @bob-carpenter.
+- Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior.
 
 ## Package changes
 
