@@ -416,12 +416,10 @@ process_region <- function(out, target_region, timing,
                            complete_logger = "EpiNow2.epinow") {
 
   # Skip processing for failed runs (which have an error field)
-  # Use .subset2 to bypass S3 method dispatch
-  if (!is.null(.subset2(out, "error"))) {
+  if (!is.null(out[["error"]])) {
     return(out)
   }
 
-  # Use names() and [[ to avoid triggering $.epinow deprecation warnings
   if ("estimates" %in% names(out) && !return_output) {
     out[["estimates"]][["samples"]] <- NULL
   }

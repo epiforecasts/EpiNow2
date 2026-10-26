@@ -367,11 +367,8 @@ test_that("summary with type='parameters' returns all dates by default", {
   expect_equal(unique(summ_filtered$date), target)
 })
 
-# Deprecation tests -------------------------------------------------------
-
-test_that("summary.estimate_infections with type = 'samples' errors", {
-  out <- default_fit
-  expect_error(summary(out, type = "samples"), "get_samples")
+test_that("summary rejects the removed type = 'samples'", {
+  expect_error(summary(default_fit, type = "samples"), "type")
 })
 
 test_that("get_parameters works as expected for estimate_infections", {
@@ -421,27 +418,6 @@ test_that("get_parameters works as expected with fixed parameters", {
   # Check that PMF is approximately correct (discretised LogNormal)
   expected_pmf <- as.vector(discretise(fixed_delay)[[1]])
   expect_equal(as.vector(delay_returned[[1]]), expected_pmf)
-})
-
-test_that("$samples accessor errors", {
-  out <- default_fit
-  expect_error(out$samples, "get_samples")
-})
-
-test_that("$summarised accessor errors", {
-  out <- default_fit
-  expect_error(out$summarised, "summary")
-})
-
-test_that("[[ accessor handles deprecated elements", {
-  out <- default_fit
-  expect_error(out[["samples"]], "get_samples")
-  expect_error(out[["summarised"]], "summary")
-
-  # Test non-deprecated elements work without error
-  expect_no_error(out[["fit"]])
-  expect_no_error(out[["args"]])
-  expect_no_error(out[["observations"]])
 })
 
 test_that("$ accessor works for non-deprecated elements", {

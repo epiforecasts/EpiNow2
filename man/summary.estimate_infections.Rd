@@ -20,9 +20,7 @@
 "snapshot" but also supports "parameters". "snapshot" returns a summary at
 a given date (by default the latest date informed by data). "parameters"
 returns summarised parameter estimates that can be further filtered using
-\code{params} to show just the parameters of interest and date.
-
-Note: \code{type = "samples"} is deprecated. Use \code{\link[=get_samples]{get_samples()}} instead.}
+\code{params} to show just the parameters of interest and date.}
 
 \item{target_date}{Date, defaults to maximum found in the data if not
 specified.}
