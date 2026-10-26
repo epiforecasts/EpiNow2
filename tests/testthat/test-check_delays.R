@@ -30,7 +30,7 @@ test_that("check_stan_delay errors for bad 'dist' specifications", {
   )
 })
 
-test_that("check_generation_time errors if a nonparametric PMF starts above 0", {
+test_that("check_generation_time errors if the PMF starts above 0", {
   expect_error(
     EpiNow2:::check_generation_time(NonParametric(c(0.5, 0.5))),
     "zero as first element"

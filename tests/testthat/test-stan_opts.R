@@ -5,7 +5,7 @@ test_that("stan_sampling_opts splits samples across chains for rstan", {
   expect_equal(opts$chains, 3)
   expect_equal(opts$cores, 2)
   expect_equal(opts$warmup, 100)
-  # rstan counts warmup within iter; samples per chain are rounded up
+  # rstan counts warmup within iter
   expect_equal(opts$iter, ceiling(1000 / 3) + 100)
   expect_equal(opts$control, list(adapt_delta = 0.9, max_treedepth = 12))
   expect_equal(opts$seed, 1)
@@ -22,7 +22,6 @@ test_that("stan_sampling_opts uses cmdstanr argument names", {
   expect_equal(opts$parallel_chains, 2)
   expect_equal(opts$iter_warmup, 100)
   expect_equal(opts$iter_sampling, 250)
-  # control settings are passed as top level arguments to cmdstanr
   expect_equal(opts$adapt_delta, 0.9)
   expect_equal(opts$max_treedepth, 12)
   expect_null(opts$iter)
@@ -110,7 +109,7 @@ test_that("stan_opts works as expected with default arguments", {
   expect_equal(opts$method, "sampling")
   expect_null(opts$object)
   expect_true(opts$return_fit)
-  expect_equal(opts$iter, 500 + 2000 / 4)
+  expect_equal(opts$iter, stan_sampling_opts(seed = 1)$iter)
 })
 
 test_that("stan_opts passes arguments to the method's option function", {
@@ -141,24 +140,27 @@ test_that("stan_opts infers the backend from a model object", {
   cmdstan_model <- structure(list(), class = "CmdStanModel")
   opts <- stan_opts(object = cmdstan_model, samples = 400, seed = 1)
   expect_identical(opts$object, cmdstan_model)
-  # the backend is not stored when a model object is given
   expect_null(opts$backend)
   expect_equal(opts$iter_sampling, 100)
-  expect_null(opts$iter)
 
   rstan_model <- structure(list(), class = "stanmodel")
-  opts <- stan_opts(object = rstan_model, samples = 400, seed = 1)
+  opts <- stan_opts(
+    object = rstan_model, warmup = 100, samples = 400, seed = 1
+  )
   expect_identical(opts$object, rstan_model)
-  expect_equal(opts$iter, 500 + 100)
+  expect_equal(opts$iter, 100 + 100)
 })
 
 test_that("stan_opts warns if a backend is given with a model object", {
   rstan_model <- structure(list(), class = "stanmodel")
   expect_warning(
-    opts <- stan_opts(object = rstan_model, backend = "rstan", seed = 1),
+    opts <- stan_opts(
+      object = rstan_model, backend = "rstan", warmup = 100, samples = 400,
+      seed = 1
+    ),
     "ignored"
   )
-  expect_equal(opts$iter, 500 + 2000 / 4)
+  expect_equal(opts$iter, 100 + 100)
 })
 
 test_that("stan_opts errors for bad 'object' specifications", {

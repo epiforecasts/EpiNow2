@@ -49,10 +49,8 @@ test_that("unconstrained distributions are bounded at the default CDF level", {
     "Constraining with default CDF level 0.9"
   )
   expect_equal(attr(delay, "cdf_max"), 0.9)
-  # the maximum is the smallest integer delay with at least 90% of the mass
-  expect_equal(max(delay), ceiling(qlnorm(0.9, get_parameters(dist)$meanlog,
-    get_parameters(dist)$sdlog
-  )))
+  pars <- get_parameters(dist)
+  expect_equal(max(delay), ceiling(qlnorm(0.9, pars$meanlog, pars$sdlog)))
   withr::local_options(EpiNow2.cdf_max = 0.5)
   delay <- suppressMessages(delay_opts(dist))
   expect_equal(attr(delay, "cdf_max"), 0.5)
