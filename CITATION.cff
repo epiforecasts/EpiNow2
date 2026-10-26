@@ -92,6 +92,28 @@ references:
   doi: 10.32614/R.manuals
   version: '>= 3.5.0'
 - type: software
+  title: distspec
+  abstract: 'distspec: Probability Distributions with Certain or Uncertain Parameters'
+  notes: Depends
+  url: https://epiforecasts.io/distspec/
+  repository: https://CRAN.R-project.org/package=distspec
+  authors:
+  - family-names: Funk
+    given-names: Sebastian
+    email: sebastian.funk@lshtm.ac.uk
+    orcid: https://orcid.org/0000-0002-2842-3406
+  - family-names: Azam
+    given-names: James M.
+    email: james.azam@lshtm.ac.uk
+    orcid: https://orcid.org/0000-0001-5782-7330
+  - family-names: Abbott
+    given-names: Sam
+    email: sam.abbott@lshtm.ac.uk
+    orcid: https://orcid.org/0000-0001-8057-8037
+  year: '2026'
+  doi: 10.32614/CRAN.package.distspec
+  version: '>= 0.2.0'
+- type: software
   title: checkmate
   abstract: 'checkmate: Fast and Versatile Argument Checks'
   notes: Imports
