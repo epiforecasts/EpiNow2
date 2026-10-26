@@ -12,10 +12,10 @@
  * the root of
  *   f(r; R, p) = R sum_k p_k exp(-r k) - 1.
  *
- * Forward. Newton's method on doubles, as in the Stan version it replaces:
- * start at r = fmax((R - 1) / (R m), -1), with m = sum_k k p_k the mean
- * generation time, and take steps f / f_r until a step is no larger than
- * abs_tol in absolute value or 100 steps have been taken. The value
+ * Forward. Newton's method on doubles. Start at
+ * r = fmax((R - 1) / (R m), -1), with m = sum_k k p_k the mean generation
+ * time, and take steps f / f_r until a step is no larger than abs_tol in
+ * absolute value or 100 steps have been taken. The value
  * returned is r after the last step. f is convex and decreasing in r, so
  * from the first step on Newton approaches the root from one side and
  * converges quadratically; the cap only guards against pathological inputs.
@@ -30,14 +30,9 @@
  * f_r = -R S1. So rbar is passed back as Rbar += rbar S0 / (R S1) and
  * gt_rev_pmfbar[G - 1 - k] += rbar exp(-r k) / S1.
  *
- * The Stan version differentiated through the Newton steps, which gives the
- * derivative of the last iterate rather than of the root. The two agree to
- * within the solver tolerance. The implicit function theorem gradient is
- * exact at the returned value and does not record the steps on the tape.
- *
- * When all the generation time mass is at zero (G = 1, for example) f_r is
- * zero, the Newton step is not finite and the value is NaN, as in the Stan
- * version. The gradient is then not finite either.
+ * This is the gradient of the root, which does not require recording the
+ * Newton steps on the autodiff tape. It agrees with the gradient through
+ * the steps to within the solver tolerance.
  *
  * Either of R and gt_rev_pmf may be var or double; only the gradients of
  * var inputs are computed. As with convolve_with_rev_pmf(), the function
@@ -51,8 +46,18 @@
 namespace epinow2 {
 namespace internal {
 
-// Sums S0 = sum_k p_k exp(-r k) and S1 = sum_k k p_k exp(-r k), with
-// p_k = g[G - 1 - k]. If e is given, exp(-r k) is stored in e[G - 1 - k].
+/**
+ * Sums used by the Newton step and the gradient.
+ *
+ * Computes S0 = sum_k p_k exp(-r k) and S1 = sum_k k p_k exp(-r k), with
+ * p_k = g[G - 1 - k].
+ *
+ * @param r Growth rate.
+ * @param g Reversed generation time PMF.
+ * @param s0 Set to S0.
+ * @param s1 Set to S1.
+ * @param e If not null, set to exp(-r k) in e[G - 1 - k].
+ */
 inline void R_to_r_sums(double r, const Eigen::VectorXd& g, double& s0,
                         double& s1, Eigen::VectorXd* e = nullptr) {
   const int G = g.size();
@@ -69,8 +74,17 @@ inline void R_to_r_sums(double r, const Eigen::VectorXd& g, double& s0,
   }
 }
 
+/** Maximum number of Newton steps taken by R_to_r_newton(). */
 constexpr int R_to_r_max_steps = 100;
 
+/**
+ * Solve for the growth rate by Newton's method on doubles.
+ *
+ * @param R Reproduction number.
+ * @param g Reversed generation time PMF.
+ * @param abs_tol Stop once a step is no larger than this in absolute value.
+ * @return The growth rate after the last step.
+ */
 inline double R_to_r_newton(double R, const Eigen::VectorXd& g,
                             double abs_tol) {
   const int G = g.size();
