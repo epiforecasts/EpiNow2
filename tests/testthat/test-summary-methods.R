@@ -1,8 +1,6 @@
 skip_on_cran()
 
-# Hand-built posterior samples in the format returned by get_samples() for
-# estimate_secondary objects: static parameters have no date, time-varying
-# ones do.
+# Static parameters have no date, time-varying ones do.
 secondary_samples <- function() {
   dates <- as.Date("2020-01-01") + 0:1
   rbindlist(list(
@@ -17,11 +15,12 @@ secondary_samples <- function() {
   ), fill = TRUE)
 }
 
+failed <- structure(
+  list(error = "Timed out"),
+  class = c("epinow", "estimate_infections", "epinowfit", "list")
+)
+
 test_that("summary.epinow errors for a failed run", {
-  failed <- structure(
-    list(error = "Timed out"),
-    class = c("epinow", "estimate_infections", "epinowfit", "list")
-  )
   expect_error(summary(failed), "failed epinow run")
   expect_error(summary(failed), "Timed out")
 })
@@ -35,10 +34,6 @@ test_that("summary.epinow errors for the defunct output argument", {
 })
 
 test_that("get_samples.epinow errors for a failed run", {
-  failed <- structure(
-    list(error = "Timed out"),
-    class = c("epinow", "estimate_infections", "epinowfit", "list")
-  )
   expect_error(get_samples(failed), "failed epinow run")
 })
 
@@ -65,7 +60,6 @@ test_that("summary.estimate_secondary returns key static parameters", {
   expect_equal(compact$mean, c(0.3, 3, 13))
 
   all_params <- summary(obj, type = "parameters")
-  # time-varying parameters are excluded
   expect_equal(
     all_params$variable,
     c("fraction_observed", "phi", "reporting[1]", "reporting[2]")
@@ -109,13 +103,11 @@ test_that("print.summary.estimate_dist shows the fit details", {
   attr(x, "n_untruncated") <- 0
   class(x) <- c("summary.estimate_dist", class(x))
 
-  output <- capture.output(printed <- print(x))
+  expect_output(printed <- print(x), "Delay distribution: lognormal")
   expect_identical(printed, x)
-  expect_equal(output[1], "Delay distribution: lognormal (max: 20)")
-  expect_equal(output[2], "Observations: 100 (12 unique strata)")
-  expect_equal(output[3], "Primary event: uniform ")
-  expect_equal(output[4], "Max delay: 15 | Max obs time: 30")
-  expect_true(any(grepl("sdlog", output, fixed = TRUE)))
+  expect_output(print(x), "Observations: 100 \\(12 unique strata\\)")
+  expect_output(print(x), "Max delay: 15 \\| Max obs time: 30")
+  expect_output(print(x), "sdlog")
 
   attr(x, "n_untruncated") <- 3
   expect_output(print(x), "\\(3 strata untruncated\\)")

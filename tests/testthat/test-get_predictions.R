@@ -1,7 +1,5 @@
 skip_on_cran()
 
-# Two dates of three samples each. The last observed date is 2020-01-02, so
-# the second date is one day ahead of it.
 obs_dates <- as.Date("2020-01-01") + 0:1
 prediction_samples <- function(variable = "reported_cases") {
   data.table(
