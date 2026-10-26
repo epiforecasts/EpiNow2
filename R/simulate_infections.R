@@ -352,7 +352,7 @@ forecast_infections <- function(estimates,
   assert_integerish(batch_size, lower = 2)
   assert_logical(verbose)
   ## extract samples from given stan fit object (rstan or cmdstanr backend)
-  draws <- extract_samples(estimates$fit,
+  draws <- extract_stan_samples(estimates$fit,
     pars = c(
       "noise", "eta", "lp__", "infections",
       "reports", "imputed_reports", "r",
