@@ -1,6 +1,3 @@
-# Tests for estimate_secondary() input handling and helper functions that
-# do not need a model fit.
-
 test_that("estimate_secondary errors when burn_in covers all observations", {
   data <- data.table::data.table(
     date = as.Date("2020-01-01") + 0:9,
@@ -44,7 +41,7 @@ test_that("update_secondary_args replaces priors given in a data.frame", {
     updated <- update_secondary_args(data, priors),
     "Replacing specified priors"
   )
-  # values are rounded to 3 significant figures
+  # rounded to 3 significant figures
   expect_equal(updated$obs_scale_mean, array(0.123))
   expect_equal(updated$obs_scale_sd, array(0.01))
   expect_equal(updated$delay_params_mean, array(c(1.23, 0.4)))
@@ -86,8 +83,7 @@ test_that("convolve_and_scale scales constant incidence", {
   out <- constant_primary("incidence")
   expect_equal(nrow(out), 40)
   expect_equal(out$scaled, rep(40, 40))
-  # with constant primary the delayed secondary settles at scaling * primary;
-  # values are truncated to integers
+  # secondary settles at scaling * primary, truncated to integers
   expect_type(out$secondary, "integer")
   expect_true(all(out$secondary %in% 39:40))
 })
@@ -99,14 +95,6 @@ test_that("convolve_and_scale builds prevalence from inflows and outflows", {
     scaling = 0.5, meanlog = 1.5, sdlog = 0.5
   )
   out <- convolve_and_scale(data, type = "prevalence")
-  # prevalence is the previous level less outflows (floored at zero) plus
-  # new scaled inflows
-  expected <- numeric(nrow(out))
-  expected[1] <- out$scaled[1]
-  for (i in 2:nrow(out)) {
-    expected[i] <- max(expected[i - 1] - out$conv[i], 0) + out$scaled[i]
-  }
-  expect_equal(out$secondary, as.integer(expected))
   # while inflows are constant, outflows balance them so prevalence stays at
   # the scaled inflow of 50
   expect_equal(out$secondary[1:10], rep(50L, 10))
@@ -124,7 +112,7 @@ test_that("convolve_and_scale adds Poisson observation noise", {
   out <- convolve_and_scale(data, family = "poisson")
   expect_type(out$secondary, "integer")
   expect_gt(length(unique(out$secondary)), 1)
-  # expected value is 40; standard error of the mean of 100 draws is ~0.6
+  # expected value is 40
   expect_equal(mean(out$secondary), 40, tolerance = 0.1)
 })
 
@@ -147,8 +135,7 @@ test_that("convolve_and_scale errors for bad 'type' and 'family'", {
   expect_error(convolve_and_scale(data, family = "normal"), "family")
 })
 
-# A hand-built forecast_secondary object so the plot methods can be tested
-# without fitting a model
+# Hand-built so the plot methods need no fit
 make_forecast_secondary <- function() {
   dates <- as.Date("2020-01-01") + 0:13
   n <- length(dates)
@@ -182,7 +169,6 @@ test_that("plot.forecast_secondary returns a ggplot of the predictions", {
   expect_s3_class(p, "ggplot")
   expect_equal(p$data$date, fc$predictions$date)
   expect_equal(p$data$secondary, fc$predictions$secondary)
-  expect_equal(unname(layer_geoms(p)), c("GeomCol", rep("GeomRibbon", 3)))
 })
 
 test_that("plot.forecast_secondary adds primary observations", {

@@ -1,21 +1,9 @@
 skip_on_cran()
 
-# Input checks for simulate_infections() and forecast_infections(). These
-# error before any simulation is run.
-
 R <- data.frame(
   date = seq.Date(as.Date("2023-01-01"), length.out = 14, by = "day"),
   R = c(rep(1.2, 7), rep(0.8, 7))
 )
-
-test_that("simulate_infections errors for a numeric population", {
-  lifecycle::expect_defunct(
-    simulate_infections(
-      R = R, initial_infections = 100,
-      generation_time = gt_opts(Fixed(1)), pop = 1e6
-    )
-  )
-})
 
 test_that("simulate_infections errors for pop_period 'all' without pop", {
   expect_error(

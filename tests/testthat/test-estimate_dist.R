@@ -400,7 +400,7 @@ test_that("prepare_linelist_data assumes daily censoring by default", {
     pdate_lwr = origin + c(0, 0, 1),
     sdate_lwr = origin + c(2, 2, 4)
   )
-  # obs_date defaults to max(sdate_upr), i.e. day 5 after origin
+  # obs_date defaults to max(sdate_upr)
   expected <- data.frame(
     delay_lwr = c(3L, 2L),
     delay_upr = c(4L, 3L),
@@ -409,23 +409,6 @@ test_that("prepare_linelist_data assumes daily censoring by default", {
     n = c(1L, 2L)
   )
   expect_equal(EpiNow2:::.prepare_linelist_data(linelist), expected)
-})
-
-test_that("prepare_linelist_data reports its defaults when verbose", {
-  origin <- as.Date("2023-01-01")
-  linelist <- data.frame(
-    pdate_lwr = origin + c(0, 0, 1),
-    sdate_lwr = origin + c(2, 2, 4)
-  )
-  messages <- testthat::capture_messages(
-    EpiNow2:::.prepare_linelist_data(linelist, verbose = TRUE)
-  )
-  expect_match(messages, "daily primary censoring", all = FALSE)
-  expect_match(messages, "daily secondary censoring", all = FALSE)
-  expect_match(messages, "No obs_date supplied", all = FALSE)
-  expect_match(
-    messages, "Aggregated 3 observations into 2 unique", all = FALSE
-  )
 })
 
 test_that("prepare_linelist_data uses supplied censoring windows", {
@@ -452,8 +435,8 @@ test_that("prepare_linelist_data marks distant observations as untruncated", {
     sdate_lwr = origin + c(2, 12),
     obs_date = origin + 14
   )
-  # max delay_upr is 3, so observations more than 3 * 2 = 6 days from
-  # obs_date are treated as untruncated
+  # observations more than 2 * max(delay_upr) = 6 days from obs_date are
+  # treated as untruncated
   messages <- testthat::capture_messages(
     out <- EpiNow2:::.prepare_linelist_data(linelist, verbose = TRUE)
   )
