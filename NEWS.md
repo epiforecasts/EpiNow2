@@ -38,6 +38,7 @@
 ## Internal
 
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
+- Reimplemented the Stan function that accumulates modelled reports onto later dates (used for missing or batch-reported data) to take a running total via `cumulative_sum` rather than loop over time points, adding each report to the next. This uses only a handful of operations on the whole time series instead of one per accumulated time point, which matters for data reported at a fixed low frequency such as weekly.
 - Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
 
 # EpiNow2 1.9.0
