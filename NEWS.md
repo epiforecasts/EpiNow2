@@ -6,6 +6,12 @@
 
 ## Model changes
 
+- Rewrote the Stan `update_Rt()` function from small helpers that centre log Rt through its intercept.
+- `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
+- The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient.
+- `R_to_r()` is now implemented in C++ with a gradient from the implicit function theorem.
+- Simplified the Stan code that combines delays in `get_delay_rev_pmf()`, with new property tests for the delay functions.
+
 ## Package changes
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.

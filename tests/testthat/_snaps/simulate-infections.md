@@ -36,3 +36,22 @@
     13: infections 2023-01-13 124.2359
     14: infections 2023-01-14 117.7702
 
+# simulate_infections works with susceptible depletion
+
+          variable       date    value
+            <char>     <Date>    <num>
+     1: infections 2023-01-01 202.5777
+     2: infections 2023-01-02 212.7747
+     3: infections 2023-01-03 223.4218
+     4: infections 2023-01-04 234.5593
+     5: infections 2023-01-05 246.2112
+     6: infections 2023-01-06 258.3988
+     7: infections 2023-01-07 271.1417
+     8: infections 2023-01-08 190.1932
+     9: infections 2023-01-09 183.7196
+    10: infections 2023-01-10 175.3680
+    11: infections 2023-01-11 166.7132
+    12: infections 2023-01-12 158.1817
+    13: infections 2023-01-13 149.9223
+    14: infections 2023-01-14 141.9868
+
