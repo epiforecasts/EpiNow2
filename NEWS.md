@@ -11,6 +11,7 @@
 - The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient.
 - `R_to_r()` is now implemented in C++ with a gradient from the implicit function theorem.
 - Simplified the Stan code that combines delays in `get_delay_rev_pmf()`, with new property tests for the delay functions.
+- Updated the vendored primarycensored Stan functions, which now use primarycensored's C++ uniform primary log CDF for lognormal, gamma and Weibull delays. Its header is vendored into `inst/include` and included by `epinow2_stan_header()`. Estimated delay and generation time distributions are about twice as fast.
 
 ## Package changes
 
