@@ -2,32 +2,18 @@
 #define PRIMARYCENSORED_UNIFORM_LCDF_HPP
 
 /**
- * Uniform primary censored log CDFs at integer delays with a reverse-mode
- * adjoint, for lognormal, gamma and Weibull delays.
+ * C++ versions, with closed-form gradients, of these primarycensored Stan
+ * functions for lognormal, gamma and Weibull delays with a uniform primary:
+ *   primarycensored_uniform_lcdf(),
+ *   primarycensored_uniform_lcdf_vectorized(). Their Stan
+ * bodies, in inst/stan/functions/primarycensored_analytical_cdf.stan of the
+ * primarycensored package, are the reference. Values match the Stan code.
  *
- * Implements the Stan function
- *   primarycensored_uniform_lcdf_vectorized(start, n, dist_id, params,
- *                                           pwindow)
- * declared in inst/stan/functions/primarycensored_uniform_lcdf.stan, where
- * its Stan body is the reference and the fallback.
- *
- * Forward. For each integer t from max(start - w, 0) to n, with w =
- * pwindow, compute the two uniform primary terms
- *   [log(t F_T(t)), log M(t)],
- * where M(t) = int_0^t s f_T(s) ds is the partial expectation, exactly as
- * primarycensored_uniform_terms() does in Stan. For each d from start to n,
- * with q = max(d - w, 0), combine them as
- * primarycensored_uniform_lcdf_from_terms() does:
- *   log A = log_sum_exp(log(d F_T(d)), log M(q)),
- *   log B = log_sum_exp(log(q F_T(q)), log M(d)),
- *   lcdf  = log_diff_exp(log A, log B) - log w,
- * returning -inf when A and B both underflow and 0 when rounding puts lcdf
- * above 0.
- *
- * Reverse. A - B = G(d) - G(q), with G(t) = t F_T(t) - M(t) = E[(t - T)^+].
- * Writing T = T(theta, U) for a base variable U that does not depend on the
- * parameters gives dG/dtheta = -E[dT/dtheta 1{T < t}], so
- *   d lcdf / dtheta = (dG/dtheta(d) - dG/dtheta(q)) / (A - B).
+ * With G(t) = t F_T(t) - M(t) = E[(t - T)^+], where M is the partial
+ * expectation, the censored CDF is (G(d) - G(q)) / pwindow with
+ * q = max(d - pwindow, 0). Writing T = T(theta, U) for a base variable U
+ * gives dG/dtheta = -E[dT/dtheta 1{T < t}], so
+ *   d lcdf / dtheta = (dG/dtheta(d) - dG/dtheta(q)) / (G(d) - G(q)).
  * Lognormal (mu, sigma), z = (log t - mu) / sigma:
  *   dG/dmu = -M,  dG/dsigma = -sigma M + t phi(z).
  * Gamma (k, beta), y = beta t, h = y^k e^{-y} / Gamma(k + 1),
@@ -38,14 +24,15 @@
  * Weibull (k, lambda), x = (t / lambda)^k, a = 1 + 1 / k:
  *   dG/dlambda = -M / lambda,
  *   dG/dk = lambda Gamma(a) (P_a(a, x) + P(a, x) psi(a)) / k^2.
- * The gradient of an element that is -inf or clamped to 0 is 0, as in
- * Stan. Only params can be var, so the whole vector is one autodiff node
- * whose reverse pass is two dot products.
+ * Each function is one autodiff node.
  *
- * P_a uses Eigen's igamma_der_a (Eigen 3.4 or later, in the unsupported
- * SpecialFunctions module), which is accurate to about 1e-15. With an older
- * Eigen, or when PRIMARYCENSORED_STAN_DPDA is defined, Stan Math's
- * grad_reg_lower_inc_gamma() is used instead.
+ * The functions are put in stan::math. For var arguments argument-dependent
+ * lookup also finds them, so they are used even if the Stan bodies are
+ * compiled in alongside this header.
+ *
+ * P_a uses Eigen's igamma_der_a when Eigen is 3.4 or later (the #if below).
+ * Otherwise, or if PRIMARYCENSORED_STAN_DPDA is defined, it is found by
+ * nested autodiff (see dP_da()).
  */
 
 #include <stan/math.hpp>
@@ -54,6 +41,7 @@
 #include <limits>
 #include <ostream>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #if !defined(PRIMARYCENSORED_STAN_DPDA) && \
@@ -68,48 +56,59 @@ namespace internal {
 constexpr double neg_inf = -std::numeric_limits<double>::infinity();
 
 /**
+ * Log CDF of a unit rate gamma from log(x), as gamma_lcdf_logx() in Stan.
+ *
+ * Sums the lower series below x = (a + 1) / 2 and calls gamma_lcdf()
+ * elsewhere. The shape may be a var, which the dP/da fallback uses.
+ *
+ * @param log_x Log of the argument.
+ * @param a Shape, positive and finite.
+ * @return log P(a, exp(log_x)).
+ */
+template <typename T>
+inline T gamma_lcdf_logx(double log_x, const T& a) {
+  const double a_val = stan::math::value_of(a);
+  if (!(a_val > 0) || std::isinf(a_val)) {
+    throw std::domain_error(
+        "gamma_lcdf_logx: shape must be positive finite");
+  }
+  const double x = std::exp(log_x);
+  if (!(x < 0.5 * (a_val + 1))) {
+    return stan::math::gamma_lcdf(x, a, 1.0);
+  }
+  T term = 1;
+  T total = 1;
+  T n = a;
+  while (term > 1e-16 * total) {
+    n += 1;
+    term *= x / n;
+    total += term;
+  }
+  return a * log_x - x - stan::math::lgamma(a + 1) + stan::math::log(total);
+}
+
+/**
  * Derivative of the regularised lower incomplete gamma with respect to a.
  *
+ * Uses Eigen's igamma_der_a where available. Otherwise it differentiates
+ * gamma_lcdf_logx() with nested autodiff, as Stan's autodiff through the
+ * Stan code does. Stan Math's grad_reg_lower_inc_gamma() is not used, as it
+ * is badly wrong for large shapes (for example a = 50).
+ *
  * @param a Shape.
- * @param x Argument.
+ * @param x Argument, positive.
  * @return dP(a, x) / da.
  */
 inline double dP_da(double a, double x) {
 #ifdef PRIMARYCENSORED_EIGEN_DPDA
   return Eigen::internal::igamma_der_a_impl<double>::run(a, x);
 #else
-  return stan::math::grad_reg_lower_inc_gamma(a, x);
+  stan::math::nested_rev_autodiff nested;
+  stan::math::var a_v = a;
+  stan::math::var log_P = gamma_lcdf_logx(std::log(x), a_v);
+  log_P.grad();
+  return std::exp(log_P.val()) * a_v.adj();
 #endif
-}
-
-/**
- * Log CDF of a unit rate gamma from log(x), as gamma_lcdf_logx() in Stan.
- *
- * Sums the lower series below x = (a + 1) / 2 and calls gamma_lcdf()
- * elsewhere.
- *
- * @param log_x Log of the argument.
- * @param a Shape, positive and finite.
- * @return log P(a, exp(log_x)).
- */
-inline double gamma_lcdf_logx(double log_x, double a) {
-  if (!(a > 0) || std::isinf(a)) {
-    throw std::domain_error(
-        "gamma_lcdf_logx: shape must be positive finite");
-  }
-  const double x = std::exp(log_x);
-  if (!(x < 0.5 * (a + 1))) {
-    return stan::math::gamma_lcdf(x, a, 1.0);
-  }
-  double term = 1;
-  double total = 1;
-  double n = a;
-  while (term > 1e-16 * total) {
-    n += 1;
-    term *= x / n;
-    total += term;
-  }
-  return a * log_x - x - stan::math::lgamma(a + 1) + std::log(total);
 }
 
 /**
@@ -203,11 +202,12 @@ inline Node weibull_node(double t, double k, double lambda, bool grad) {
   if (t <= 0) {
     return nd;
   }
-  const double x = std::pow(t / lambda, k);
+  // As pow(t * inv(scale), shape) in Stan, so the values match exactly
+  const double x = std::pow(t * (1 / lambda), k);
   const double a = 1 + 1 / k;
   const double log_P_a = stan::math::gamma_lcdf(x, a, 1.0);
   nd.log_tF = std::log(t) + stan::math::weibull_lcdf(t, k, lambda);
-  nd.log_M = std::log(lambda) + log_P_a + stan::math::lgamma(a);
+  nd.log_M = std::log(lambda) + (log_P_a + stan::math::lgamma(a));
   if (grad) {
     const double lg = lambda * stan::math::tgamma(a);
     const double P_a = std::exp(log_P_a);
@@ -259,6 +259,180 @@ inline void scaled_dG(int dist_id, const Node& nd, double sigma,
   }
 }
 
+/**
+ * A log CDF (or log PMF) value and its gradient with respect to the two
+ * delay parameters.
+ */
+struct Point {
+  double val = neg_inf;
+  double g1 = 0;
+  double g2 = 0;
+};
+
+/**
+ * Combine the nodes at d and q into the log CDF at d, as
+ * primarycensored_uniform_lcdf_from_terms() does in Stan.
+ *
+ * @param dist_id Delay distribution.
+ * @param nd Node at d.
+ * @param nq Node at q = max(d - pwindow, 0).
+ * @param q_pos Whether q > 0 (the node at q contributes to the gradient).
+ * @param sigma Second parameter (the lognormal scale).
+ * @param log_w log(pwindow).
+ * @param grad Whether to compute the gradient.
+ * @return The log CDF at d. Its gradient is 0 where it is -inf or clamped
+ * to 0, as in Stan.
+ */
+inline Point combine(int dist_id, const Node& nd, const Node& nq, bool q_pos,
+                     double sigma, double log_w, bool grad) {
+  Point pt;
+  const double log_A = stan::math::log_sum_exp(nd.log_tF, nq.log_M);
+  const double log_B = stan::math::log_sum_exp(nq.log_tF, nd.log_M);
+  if (log_A == neg_inf && log_B == neg_inf) {
+    return pt;
+  }
+  const double log_den = stan::math::log_diff_exp(log_A, log_B);
+  const double log_cdf = log_den - log_w;
+  if (log_cdf > 0) {
+    pt.val = 0;
+    return pt;
+  }
+  pt.val = log_cdf;
+  if (grad && std::isfinite(log_den)) {
+    double d1, d2, q1 = 0, q2 = 0;
+    scaled_dG(dist_id, nd, sigma, log_den, d1, d2);
+    if (q_pos) {
+      scaled_dG(dist_id, nq, sigma, log_den, q1, q2);
+    }
+    pt.g1 = d1 - q1;
+    pt.g2 = d2 - q2;
+  }
+  return pt;
+}
+
+/**
+ * Log CDF at a single delay d, with q = max(d - pwindow, 0).
+ *
+ * @param dist_id Delay distribution.
+ * @param d Delay.
+ * @param pwindow Primary event window.
+ * @param p1 First parameter.
+ * @param p2 Second parameter.
+ * @param grad Whether to compute the gradient.
+ * @return The log CDF at d.
+ */
+inline Point lcdf_at(int dist_id, double d, double pwindow, double p1,
+                     double p2, bool grad) {
+  const double q = std::max(d - pwindow, 0.0);
+  const Node nd = node(dist_id, d, p1, p2, grad);
+  const Node nq = node(dist_id, q, p1, p2, grad);
+  return combine(dist_id, nd, nq, q > 0, p2, std::log(pwindow), grad);
+}
+
+/**
+ * Log CDFs at the integer delays start to n, with the nodes shared between
+ * d and q. Elements before start are NaN, as are all of them if start > n.
+ *
+ * @param start First delay.
+ * @param n Last delay.
+ * @param dist_id Delay distribution.
+ * @param pw Primary event window, a positive integer.
+ * @param p1 First parameter.
+ * @param p2 Second parameter.
+ * @param grad Whether to compute the gradient.
+ * @return Vector of n points; element d - 1 is the log CDF at d.
+ */
+inline std::vector<Point> lcdf_at_integers(int start, int n, int dist_id,
+                                           int pw, double p1, double p2,
+                                           bool grad) {
+  Point nan_pt;
+  nan_pt.val = std::numeric_limits<double>::quiet_NaN();
+  std::vector<Point> out(n, nan_pt);
+  if (start > n) {
+    return out;
+  }
+  const double log_w = std::log(static_cast<double>(pw));
+  const int first = std::max(start - pw, 0);
+  std::vector<Node> nodes(n - first + 1);
+  for (int t = first; t <= n; ++t) {
+    nodes[t - first] = node(dist_id, t, p1, p2, grad);
+  }
+  for (int d = start; d <= n; ++d) {
+    const int q = std::max(d - pw, 0);
+    out[d - 1] = combine(dist_id, nodes[d - first], nodes[q - first], q > 0,
+                         p2, log_w, grad);
+  }
+  return out;
+}
+
+/**
+ * Check the arguments shared by the exported functions.
+ *
+ * @param fn Function name for error messages.
+ * @param dist_id Delay distribution.
+ * @param n_params Number of parameters.
+ */
+inline void check_dist(const char* fn, int dist_id, std::size_t n_params) {
+  if (dist_id < 1 || dist_id > 3) {
+    throw std::domain_error(std::string(fn) + ": dist_id must be 1, 2 or 3");
+  }
+  if (n_params != 2) {
+    throw std::domain_error(std::string(fn) + ": params must have length 2");
+  }
+}
+
+/**
+ * Check that pwindow is a positive integer and return it as an int.
+ *
+ * @param fn Function name for error messages.
+ * @param pwindow Primary event window.
+ * @return pwindow as an int.
+ */
+inline int check_integer_pwindow(const char* fn, double pwindow) {
+  if (!(pwindow >= 1) || std::floor(pwindow) != pwindow) {
+    throw std::domain_error(std::string(fn)
+                            + ": pwindow must be a positive integer");
+  }
+  return static_cast<int>(pwindow);
+}
+
+/**
+ * Return points as a vector of T. For var parameters this is one autodiff
+ * node whose reverse pass adds the dot products of the adjoints with the
+ * stored gradients.
+ *
+ * @param pts The points.
+ * @param params The two parameters.
+ * @return The values as a vector.
+ */
+template <typename T>
+inline Eigen::Matrix<T, -1, 1> to_stan_vector(const std::vector<Point>& pts,
+                                              const std::vector<T>& params) {
+  const int n = pts.size();
+  Eigen::VectorXd val(n);
+  for (int i = 0; i < n; ++i) {
+    val(i) = pts[i].val;
+  }
+  if constexpr (!stan::is_var<T>::value) {
+    return val;
+  } else {
+    using stan::math::var;
+    stan::arena_t<Eigen::VectorXd> g1(n), g2(n);
+    for (int i = 0; i < n; ++i) {
+      g1(i) = pts[i].g1;
+      g2(i) = pts[i].g2;
+    }
+    stan::arena_t<Eigen::Matrix<var, -1, 1>> res = val.template cast<var>();
+    var p1_v = params[0];
+    var p2_v = params[1];
+    stan::math::reverse_pass_callback([res, g1, g2, p1_v, p2_v]() mutable {
+      p1_v.adj() += res.adj().dot(g1);
+      p2_v.adj() += res.adj().dot(g2);
+    });
+    return res;
+  }
+}
+
 }  // namespace internal
 
 /**
@@ -267,7 +441,7 @@ inline void scaled_dG(int dist_id, const Node& nd, double sigma,
  * The last argument is the output stream of the Stan calling convention,
  * which is not used.
  *
- * @param start First delay to compute (at least 1).
+ * @param start First delay to compute, at least 1.
  * @param n Last delay to compute, and the length of the result.
  * @param dist_id 1 (lognormal), 2 (gamma) or 3 (Weibull).
  * @param params The two delay parameters (var or double).
@@ -280,80 +454,46 @@ inline Eigen::Matrix<T, -1, 1> primarycensored_uniform_lcdf_vectorized(
     const int& start, const int& n, const int& dist_id,
     const std::vector<T>& params, const double& pwindow,
     std::ostream* /* pstream__ */) {
-  using stan::math::var;
-  constexpr bool p_var = stan::is_var<T>::value;
-  if (dist_id < 1 || dist_id > 3) {
-    throw std::domain_error(
-        "primarycensored_uniform_lcdf_vectorized: dist_id must be 1, 2 or 3");
+  constexpr const char* fn = "primarycensored_uniform_lcdf_vectorized";
+  internal::check_dist(fn, dist_id, params.size());
+  const int pw = internal::check_integer_pwindow(fn, pwindow);
+  if (start < 1 || n < start) {
+    throw std::domain_error(std::string(fn) + ": need 1 <= start <= n");
   }
-  if (params.size() != 2) {
-    throw std::domain_error(
-        "primarycensored_uniform_lcdf_vectorized: params must have length 2");
-  }
-  const double p1 = stan::math::value_of(params[0]);
-  const double p2 = stan::math::value_of(params[1]);
-  const int pw = static_cast<int>(pwindow);
-  const double log_w = std::log(pwindow);
-  const int first = std::max(start - pw, 0);
-  std::vector<internal::Node> nodes(n - first + 1);
-  for (int t = first; t <= n; ++t) {
-    nodes[t - first] = internal::node(dist_id, t, p1, p2, p_var);
-  }
-  Eigen::VectorXd val = Eigen::VectorXd::Constant(
-      n, std::numeric_limits<double>::quiet_NaN());
-  Eigen::VectorXd g1, g2;
-  if (p_var) {
-    g1 = Eigen::VectorXd::Zero(n);
-    g2 = Eigen::VectorXd::Zero(n);
-  }
-  for (int d = start; d <= n; ++d) {
-    const int q = std::max(d - pw, 0);
-    const internal::Node& nd = nodes[d - first];
-    const internal::Node& nq = nodes[q - first];
-    const double log_A = stan::math::log_sum_exp(nd.log_tF, nq.log_M);
-    const double log_B = stan::math::log_sum_exp(nq.log_tF, nd.log_M);
-    if (log_A == internal::neg_inf && log_B == internal::neg_inf) {
-      val(d - 1) = internal::neg_inf;
-      continue;
-    }
-    const double log_den = stan::math::log_diff_exp(log_A, log_B);
-    const double log_cdf = log_den - log_w;
-    if (log_cdf > 0) {
-      val(d - 1) = 0;
-      continue;
-    }
-    val(d - 1) = log_cdf;
-    if (p_var && std::isfinite(log_den)) {
-      double d1, d2;
-      internal::scaled_dG(dist_id, nd, p2, log_den, d1, d2);
-      double q1 = 0, q2 = 0;
-      if (q > 0) {
-        internal::scaled_dG(dist_id, nq, p2, log_den, q1, q2);
-      }
-      g1(d - 1) = d1 - q1;
-      g2(d - 1) = d2 - q2;
-    }
-  }
-  if constexpr (!p_var) {
-    return val;
-  } else {
-    stan::arena_t<Eigen::Matrix<var, -1, 1>> res = val.template cast<var>();
-    stan::arena_t<Eigen::VectorXd> g1_a = g1;
-    stan::arena_t<Eigen::VectorXd> g2_a = g2;
-    var p1_v = params[0];
-    var p2_v = params[1];
-    stan::math::reverse_pass_callback([res, g1_a, g2_a, p1_v, p2_v]() mutable {
-      p1_v.adj() += res.adj().dot(g1_a);
-      p2_v.adj() += res.adj().dot(g2_a);
-    });
-    return res;
-  }
+  return internal::to_stan_vector(
+      internal::lcdf_at_integers(start, n, dist_id, pw,
+                                 stan::math::value_of(params[0]),
+                                 stan::math::value_of(params[1]),
+                                 stan::is_var<T>::value),
+      params);
+}
+
+/**
+ * Uniform primary censored log CDF at a single delay.
+ *
+ * @param d Delay.
+ * @param dist_id 1 (lognormal), 2 (gamma) or 3 (Weibull).
+ * @param params The two delay parameters (var or double).
+ * @param pwindow Primary event window, positive.
+ * @return The log CDF at d.
+ */
+template <typename T, stan::require_stan_scalar_t<T>* = nullptr>
+inline T primarycensored_uniform_lcdf(const double& d, const int& dist_id,
+                                      const std::vector<T>& params,
+                                      const double& pwindow,
+                                      std::ostream* /* pstream__ */) {
+  internal::check_dist("primarycensored_uniform_lcdf", dist_id, params.size());
+  const internal::Point pt = internal::lcdf_at(
+      dist_id, d, pwindow, stan::math::value_of(params[0]),
+      stan::math::value_of(params[1]), stan::is_var<T>::value);
+  return internal::to_stan_vector(std::vector<internal::Point>{pt}, params)(0);
 }
 
 }  // namespace primarycensored
 
 namespace stan {
 namespace math {
+using ::primarycensored::primarycensored_uniform_lcdf;
 using ::primarycensored::primarycensored_uniform_lcdf_vectorized;
 }  // namespace math
 }  // namespace stan

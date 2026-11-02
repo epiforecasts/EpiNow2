@@ -424,6 +424,8 @@ vector primarycensored_uniform_terms(real t, data int dist_id,
   }
   reject("Invalid distribution identifier: ", dist_id);
 }
+real primarycensored_uniform_lcdf(data real d, data int dist_id,
+                                  array[] real params, data real pwindow);
 real primarycensored_analytical_lcdf_raw(data real d, int dist_id,
                                          array[] real params,
                                          data real pwindow,
@@ -433,7 +435,9 @@ real primarycensored_analytical_lcdf_raw(data real d, int dist_id,
   real q = dist_has_positive_support(dist_id) ? max({d - pwindow, 0.0})
                                               : d - pwindow;
 
-  if (check_for_uniform_terms(dist_id, primary_id)) {
+  if (primary_id == 1 && (dist_id == 1 || dist_id == 2 || dist_id == 3)) {
+    return primarycensored_uniform_lcdf(d | dist_id, params, pwindow);
+  } else if (check_for_uniform_terms(dist_id, primary_id)) {
     // The Beta CDF is exactly 1 once the window is above its support
     if (dist_id == 9 && q >= 1) return 0;
     return primarycensored_uniform_lcdf_from_terms(
@@ -524,6 +528,10 @@ vector primarycensored_uniform_terms_lcdf_vectorized(data int start,
   }
   return log_cdfs;
 }
+vector primarycensored_uniform_lcdf_vectorized(data int start, data int n,
+                                               data int dist_id,
+                                               array[] real params,
+                                               data real pwindow);
 vector primarycensored_analytical_lcdf_vectorized(data int start,
                                                   data int n,
                                                   data int dist_id,
@@ -693,10 +701,6 @@ vector primarycensored_ode(real t, vector y, array[] real theta,
 
   return rep_vector(exp(log_cdf + log_primary_pdf), 1);
 }
-vector primarycensored_uniform_lcdf_vectorized(data int start, data int n,
-                                               data int dist_id,
-                                               array[] real params,
-                                               data real pwindow);
 real primarycensored_log_cdf_diff(real log_cdf_upper, real log_cdf_lower) {
   if (log_cdf_upper <= log_cdf_lower) {
     return negative_infinity();
