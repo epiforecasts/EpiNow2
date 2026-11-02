@@ -20,24 +20,26 @@ funcs <- c(
   "expgrowth_lpdf"
 )
 
-# Versions of primarycensored with C++ versions of some Stan functions
-# declare those without a body and ship a header that implements them.
-# inst/include/epinow2.hpp includes the header.
-has_cpp <- "cpp" %in% names(formals(pcd_load_stan_functions))
-load_args <- list(
+# The Stan functions that have C++ versions are declared without a body, and
+# the header that implements them is copied to inst/include, where
+# inst/include/epinow2.hpp includes it. This needs a primarycensored that
+# supports `cpp = TRUE`.
+if (!"cpp" %in% names(formals(pcd_load_stan_functions))) {
+  stop(
+    "This primarycensored does not support `cpp = TRUE`. ",
+    "Install a version with C++ Stan functions.",
+    call. = FALSE
+  )
+}
+invisible(pcd_load_stan_functions(
   functions = funcs,
   dependencies = TRUE,
   write_to_file = TRUE,
-  output_file = output_file
-)
-if (has_cpp) {
-  load_args$cpp <- TRUE
-}
-invisible(do.call(pcd_load_stan_functions, load_args))
-if (has_cpp) {
-  header_files <- pcd_copy_stan_header(header_dir)
-  cat("Copied header files:", toString(header_files), "\n")
-}
+  output_file = output_file,
+  cpp = TRUE
+))
+header_files <- pcd_copy_stan_header(header_dir)
+cat("Copied header files:", toString(header_files), "\n")
 
 version <- packageVersion("primarycensored")
 all_funcs <- unique(unlist(lapply(
