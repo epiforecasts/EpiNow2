@@ -76,7 +76,7 @@ format_fit <- function(posterior_samples, horizon, shift, CrIs) {
 #' @param merge if TRUE, merge samples into a single data.table using
 #' rbindlist. If FALSE returns a list of samples by parameter.
 #'
-#' @inheritParams extract_samples
+#' @inheritParams extract_stan_samples
 #' @return A list of `<data.frame>`'s each containing the simulated trajectories
 #' of each parameter, or a single merged data.table if merge = TRUE.
 #' @importFrom rstan extract
@@ -86,7 +86,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
                                      imputed_dates, reported_inf_dates,
                                      drop_length_1 = FALSE, merge = FALSE) {
   # extract sample from stan object
-  samples <- extract_samples(stan_fit)
+  samples <- extract_stan_samples(stan_fit)
 
   ## drop initial length 1 dimensions if requested
   if (drop_length_1) {
@@ -194,7 +194,7 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
 #'   already have a variable column from extractors).
 #'
 #' @param time_varying_list Named list of time-varying parameter data.tables
-#' @param raw_samples Raw samples from extract_samples()
+#' @param raw_samples Raw samples from extract_stan_samples()
 #' @param args Model arguments containing delay and parameter specifications
 #'
 #' @return A `data.table` combining all parameters with variable column
@@ -216,7 +216,7 @@ combine_tv_and_static_params <- function(time_varying_list, raw_samples, args) {
 #' @description Internal helper that extracts Stan parameters, adds dates to
 #'   time-varying parameters, and combines into a single long-format data.table.
 #'
-#' @param raw_samples Raw samples from extract_samples()
+#' @param raw_samples Raw samples from extract_stan_samples()
 #' @param args Model arguments (from object$args)
 #' @param observations Observation data with dates
 #'

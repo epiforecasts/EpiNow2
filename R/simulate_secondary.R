@@ -151,7 +151,7 @@ simulate_secondary <- function(primary,
   ## simulate
   sim <- fit_model(stan_args, id = "simulate_secondary")
 
-  secondary <- extract_samples(sim, "sim_secondary")$sim_secondary[1, , ]
+  secondary <- extract_stan_samples(sim, "sim_secondary")$sim_secondary[1, , ]
   out <- data.table(date = all_dates$date, secondary = secondary)
 
   out[]
