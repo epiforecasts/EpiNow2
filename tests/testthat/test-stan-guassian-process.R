@@ -155,3 +155,8 @@ test_that("update_gp returns correct dimensions and values", {
   expected_result <- PHI %*% (diagSPD * eta)
   expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
 })
+
+test_that("rescale_gp_lengthscale matches the half-range of the GP", {
+  expect_equal(rescale_gp_lengthscale(21, 22), 21 / 10.5)
+  expect_equal(rescale_gp_lengthscale(21, 1), 42)
+})

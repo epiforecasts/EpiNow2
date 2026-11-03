@@ -12,6 +12,6 @@ example_reporting_delay
 }
 \description{
 An example of an reporting delay estimate. See here for details:
-https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/reporting-delay # nolint
+https://github.com/epiforecasts/EpiNow2/blob/main/data-raw/reporting-delay
 }
 \keyword{datasets}

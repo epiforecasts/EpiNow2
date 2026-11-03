@@ -9,7 +9,7 @@ combine_tv_and_static_params(time_varying_list, raw_samples, args)
 \arguments{
 \item{time_varying_list}{Named list of time-varying parameter data.tables}
 
-\item{raw_samples}{Raw samples from extract_samples()}
+\item{raw_samples}{Raw samples from extract_stan_samples()}
 
 \item{args}{Model arguments containing delay and parameter specifications}
 }

@@ -283,7 +283,7 @@ vector component_dev(
   matrix[nf, M] phi = gp_phi[p][1:nf, 1:M];
   return gp_dev(nf, nc, update_gp(
     phi, M, gp_boundary_scale[p], state_gp_alpha[p],
-    2 * state_gp_rho[p] / nf, eta, gp_kernel[p], gp_nu[p]
+    rescale_gp_lengthscale(state_gp_rho[p], nf), eta, gp_kernel[p], gp_nu[p]
   ), anchor);
 }
 
