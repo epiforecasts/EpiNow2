@@ -1,33 +1,27 @@
 skip_on_cran()
 skip_on_os("windows")
 
-test_that("rw_trajectory returns the requested length and holds beyond the free window", {
+test_that("assemble_state holds a random-walk deviation beyond the free window", {
   steps <- rep(0.1, 9)
-  traj <- rw_trajectory(
-    t = 15, n_free = 10, n_centre = 10, level = 1, steps = steps,
-    link = 0, period = 1
-  )
+  dev <- rw_dev(n_free = 10, n_centre = 10, steps = steps, period = 1)
+  traj <- assemble_state(t = 15, n_free = 10, level = 1, dev = dev, link = 0)
   expect_length(traj, 15)
   # the walk is held constant from n_free + 1 through the forecast horizon
   expect_true(all(abs(traj[11:15] - traj[10]) < 1e-9))
 })
 
-test_that("rw_trajectory keeps varying across the horizon when projected", {
+test_that("assemble_state keeps a random-walk deviation varying when projected", {
   steps <- rep(c(0.2, -0.2), length.out = 14)
-  traj <- rw_trajectory(
-    t = 15, n_free = 15, n_centre = 10, level = 1, steps = steps,
-    link = 0, period = 1
-  )
+  dev <- rw_dev(n_free = 15, n_centre = 10, steps = steps, period = 1)
+  traj <- assemble_state(t = 15, n_free = 15, level = 1, dev = dev, link = 0)
   expect_length(traj, 15)
   expect_gt(max(abs(traj[11:15] - traj[10])), 1e-6)
 })
 
-test_that("gp_trajectory returns the requested length and holds beyond the free window", {
+test_that("assemble_state holds a Gaussian process deviation beyond the free window", {
   noise <- seq(-0.2, 0.2, length.out = 10)
-  traj <- gp_trajectory(
-    t = 15, n_free = 10, n_centre = 10, level = 1, noise = noise,
-    link = 0, anchor = 1
-  )
+  dev <- gp_dev(n_free = 10, n_centre = 10, noise = noise, anchor = 1)
+  traj <- assemble_state(t = 15, n_free = 10, level = 1, dev = dev, link = 0)
   expect_length(traj, 15)
   expect_true(all(abs(traj[11:15] - traj[10]) < 1e-9))
 })

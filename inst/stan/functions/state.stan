@@ -9,13 +9,13 @@
  * and lengthscale) are themselves ordinary parameters (see params.stan).
  *
  * Build a parameter trajectory by combining a baseline (level) with a
- * stochastic deviation: a random walk (`rw_trajectory`) or an approximate
- * Gaussian process (`gp_trajectory`). Both produce a link-scale deviation and
- * share `assemble_state` to combine it with the baseline, hold the last value
- * through the forecast horizon, and return on the natural scale.
- * `get_state_trajectory` is a thin shell that dispatches to the right builder
- * for a given parameter, or returns a constant trajectory when the parameter is
- * not time-varying.
+ * stochastic deviation: a random walk (`rw_dev`) or an approximate Gaussian
+ * process (`gp_dev`), one per component (`component_dev`). Components share
+ * `assemble_state` to combine their summed deviation with the baseline, hold
+ * the last value through the forecast horizon, and return on the natural
+ * scale. `get_state_trajectory` is a thin shell that dispatches to the right
+ * components for a given parameter, or returns a constant trajectory when the
+ * parameter is not time-varying.
  *
  * Three windows describe a trajectory:
  *  - `t`: total length (observation window + forecast horizon);
@@ -37,8 +37,8 @@
 /**
  * Assemble a trajectory from a baseline and a link-scale deviation
  *
- * Shared by `rw_trajectory` and `gp_trajectory`: adds the deviation `dev`
- * (length `n_free`, on the link scale) to the baseline over the free window,
+ * Shared by every state's trajectory: adds the deviation `dev` (length
+ * `n_free`, on the link scale) to the baseline over the free window,
  * holds the last value constant through the remaining forecast horizon, and
  * returns on the natural scale (applying the inverse link).
  *
@@ -136,31 +136,6 @@ vector rw_dev_knots(int n_free, int n_centre, vector steps,
 }
 
 /**
- * Build a single-component random-walk trajectory
- *
- * Combines the random-walk deviation with the baseline via `assemble_state`.
- * Retained for the single-component path; composed trajectories sum the
- * component deviations before a single `assemble_state` call.
- *
- * @param t Total trajectory length
- * @param n_free Window over which the walk varies (holds its last value after)
- * @param n_centre Leading window used to centre the walk for identifiability
- * @param level Baseline parameter value on the natural scale
- * @param steps Random walk steps (one per period block, less one)
- * @param link Link function (0 = log)
- * @param period Number of time points between random walk steps
- * @return A vector of length t with the parameter trajectory (natural scale)
- *
- * @ingroup estimates_smoothing
- */
-vector rw_trajectory(int t, int n_free, int n_centre, real level, vector steps,
-                     int link, int period) {
-  return assemble_state(
-    t, n_free, level, rw_dev(n_free, n_centre, steps, period), link
-  );
-}
-
-/**
  * Build a Gaussian process deviation for a time-varying parameter
  *
  * For the `mean` anchor (`anchor = 0`) the GP is stationary (mean-reverting
@@ -188,31 +163,6 @@ vector gp_dev(int n_free, int n_centre, vector noise, int anchor) {
     dev -= mean(dev[1:n_centre]); // centre over the observation window
   }
   return dev;
-}
-
-/**
- * Build a single-component Gaussian process trajectory
- *
- * Combines the GP deviation with the baseline via `assemble_state`. Retained for
- * the single-component path; composed trajectories sum the component deviations
- * before a single `assemble_state` call.
- *
- * @param t Total trajectory length
- * @param n_free Window over which the GP varies (holds its last value after)
- * @param n_centre Leading window used to centre an init-anchored GP
- * @param level Baseline parameter value on the natural scale
- * @param noise Gaussian process noise (length n_free)
- * @param link Link function (0 = log)
- * @param anchor 0 = mean (stationary), 1 = init (non-stationary)
- * @return A vector of length t with the parameter trajectory (natural scale)
- *
- * @ingroup estimates_smoothing
- */
-vector gp_trajectory(int t, int n_free, int n_centre, real level, vector noise,
-                     int link, int anchor) {
-  return assemble_state(
-    t, n_free, level, gp_dev(n_free, n_centre, noise, anchor), link
-  );
 }
 
 /**
