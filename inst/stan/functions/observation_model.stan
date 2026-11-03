@@ -114,8 +114,7 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  * returned so the negative binomial behaves like a Poisson.
  *
  * @param reporting_overdispersion Real value for reporting overdispersion.
- * @param model_type Integer indicating the model type (0 for Poisson, >0 for
- * Negative Binomial).
+ * @param model_type Integer indicating the model type.
  *
  * @return The negative binomial overdispersion `phi`.
  *
@@ -136,8 +135,7 @@ real reporting_phi(real reporting_overdispersion, int model_type) {
  * @param reports Vector of expected reports.
  * @param reporting_overdispersion Vector of reporting overdispersion, one per
  * report.
- * @param model_type Integer indicating the model type (0 for Poisson, >0 for
- * Negative Binomial).
+ * @param model_type Integer indicating the model type.
  * @param weight Real value for weighting the log density contribution.
  *
  * @ingroup observation_model
@@ -197,8 +195,7 @@ vector accumulate_reports(vector reports, array[] int accumulate) {
  * @param reports Vector of expected reports.
  * @param reporting_overdispersion Vector of reporting overdispersion, one per
  * report.
- * @param model_type Integer indicating the model type (0 for Poisson, >0 for
- * Negative Binomial).
+ * @param model_type Integer indicating the model type.
  * @param weight Real value for weighting the log likelihood contribution.
  *
  * @return A vector of log likelihoods for each time point.
@@ -266,8 +263,7 @@ int neg_binomial_2_safe_rng(real mu, real phi) {
  * @param reports Vector of expected reports.
  * @param reporting_overdispersion Vector of reporting overdispersion, one per
  * report.
- * @param model_type Integer indicating the model type (0 for Poisson, >0 for
- * Negative Binomial).
+ * @param model_type Integer indicating the model type.
  *
  * @return An array of integer sampled reports.
  *
