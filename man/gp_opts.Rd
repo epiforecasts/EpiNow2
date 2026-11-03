@@ -57,8 +57,10 @@ kernel. They are only used if \code{kernel} is set to "periodic".}
 A \verb{<gp_opts>} object of settings defining the Gaussian process
 }
 \description{
-Defines a list specifying the structure of the approximate Gaussian
-process. Custom settings can be supplied which override the defaults.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+Gaussian process settings are now supplied directly as arguments of \code{\link[=GP]{GP()}}.
+This function is retained only for backwards compatibility and will be
+removed in a future release.
 }
 \examples{
 # default settings
