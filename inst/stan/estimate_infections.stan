@@ -221,10 +221,13 @@ model {
         param_id_alpha, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
-      real rescaled_rho = 2 * get_param(
-        param_id_rho, params_fixed_lookup, params_variable_lookup,
-        params_value, params
-      ) / noise_terms;
+      real rescaled_rho = rescale_gp_lengthscale(
+        get_param(
+          param_id_rho, params_fixed_lookup, params_variable_lookup,
+          params_value, params
+        ),
+        noise_terms
+      );
       gaussian_process_lp(eta, alpha, rescaled_rho, L, M, gp_type, nu);
     }
   }
