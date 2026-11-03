@@ -18,6 +18,7 @@
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
 - The README commits-since badge now tracks the latest release automatically.
+- The approximate Gaussian process settings can now be chosen from any lengthscale prior with fixed parameters and an analytic CDF, such as `Weibull()`, using the truncation-aware `quantile()` and `cdf()` from `distspec` (EpiNow2 now requires `distspec` >= 0.3.0).
 
 ## Bug fixes
 
