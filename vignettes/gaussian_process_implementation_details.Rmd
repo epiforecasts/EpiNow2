@@ -88,6 +88,14 @@ where $L$ is a positive number termed boundary condition, and $\beta_{j}$ are re
 \beta_j \sim \mathrm{Normal}(0, 1)
 \end{equation}
 
+with one exception: the lowest-frequency weight, $\beta_1$, is centred on the spectral-density scale instead,
+
+\begin{equation}
+\beta_1 \sim \mathrm{Normal}\!\left(0, \left(S_k(\sqrt{\lambda_1})\right)^{\frac{1}{2}}\right)
+\end{equation}
+
+because it would otherwise be strongly correlated with $\alpha$ in the posterior, only their product being identified by the data. For the periodic kernel, which pairs each cosine weight with a sine weight at the same frequency, the sine weight sharing $\beta_1$'s fundamental frequency is centred in the same way and for the same reason.
+
 The function $S_k(x)$ is the spectral density relating to a particular covariance function $k$.
 In the case of the Matérn kernel of order $\nu$ this is given by
 
