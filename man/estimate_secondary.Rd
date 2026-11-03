@@ -23,7 +23,7 @@ estimate_secondary(
 \arguments{
 \item{data}{A \verb{<data.frame>} containing the \code{date} of report and both
 \code{primary} and \code{secondary} reports. \code{primary} and \code{secondary} must be
-non-negative numeric and \code{date} must be in date format with no missing
+non-negative numeric, and \code{date} must be in date format with no missing
 (\code{NA}) entries; data that does not meet these requirements is rejected
 with an informative error before model fitting starts. Optionally this
 can also have a logical \code{accumulate} column which indicates whether data

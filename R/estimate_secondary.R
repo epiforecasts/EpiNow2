@@ -28,7 +28,7 @@
 #'
 #' @param data A `<data.frame>` containing the `date` of report and both
 #' `primary` and `secondary` reports. `primary` and `secondary` must be
-#' non-negative numeric and `date` must be in date format with no missing
+#' non-negative numeric, and `date` must be in date format with no missing
 #' (`NA`) entries; data that does not meet these requirements is rejected
 #' with an informative error before model fitting starts. Optionally this
 #' can also have a logical `accumulate` column which indicates whether data

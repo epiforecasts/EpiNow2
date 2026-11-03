@@ -18,7 +18,7 @@
 #' estimate Rt for Covid-19 in a country from the ECDC data source.
 #'
 #' @param data A `<data.frame>` of disease reports (confirm) by date (date).
-#' `confirm` must be non-negative numeric and `date` must be in date format
+#' `confirm` must be non-negative numeric, and `date` must be in date format
 #' with no missing (`NA`) entries; data that does not meet these requirements
 #' is rejected with an informative error before model fitting starts.
 #' Optionally, `data` can also have a logical `accumulate` column which
