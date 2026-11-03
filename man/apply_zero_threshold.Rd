@@ -9,7 +9,7 @@ apply_zero_threshold(data, threshold = Inf, obs_column = "confirm")
 }
 \arguments{
 \item{data}{A \verb{<data.frame>} of disease reports (confirm) by date (date).
-\code{confirm} must be non-negative numeric and \code{date} must be in date format
+\code{confirm} must be non-negative numeric, and \code{date} must be in date format
 with no missing (\code{NA}) entries; data that does not meet these requirements
 is rejected with an informative error before model fitting starts.
 Optionally, \code{data} can also have a logical \code{accumulate} column which
