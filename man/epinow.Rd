@@ -42,10 +42,9 @@ estimates will represent the prior distributions.}
 
 \item{generation_time}{A call to \code{\link[=gt_opts]{gt_opts()}} (or its alias
 \code{\link[=generation_time_opts]{generation_time_opts()}}) defining the generation time distribution used.
-For backwards compatibility a list of summary parameters can also be passed.
-Passing anything else, such as a bare \verb{<dist_spec>} rather than the result
-of a call to \code{\link[=gt_opts]{gt_opts()}}, is rejected with an error before model fitting
-starts.}
+This must be the result of a call to \code{\link[=gt_opts]{gt_opts()}}; passing anything else,
+such as a bare \verb{<dist_spec>}, is rejected with an error before model
+fitting starts.}
 
 \item{delays}{A call to \code{\link[=delay_opts]{delay_opts()}} defining delay distributions and
 options. See the documentation of \code{\link[=delay_opts]{delay_opts()}} and the examples below for

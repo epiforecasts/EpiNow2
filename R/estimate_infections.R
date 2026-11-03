@@ -32,10 +32,9 @@
 #'
 #' @param generation_time A call to [gt_opts()] (or its alias
 #' [generation_time_opts()]) defining the generation time distribution used.
-#' For backwards compatibility a list of summary parameters can also be passed.
-#' Passing anything else, such as a bare `<dist_spec>` rather than the result
-#' of a call to [gt_opts()], is rejected with an error before model fitting
-#' starts.
+#' This must be the result of a call to [gt_opts()]; passing anything else,
+#' such as a bare `<dist_spec>`, is rejected with an error before model
+#' fitting starts.
 #'
 #' @param delays A call to [delay_opts()] defining delay distributions and
 #' options. See the documentation of [delay_opts()] and the examples below for
