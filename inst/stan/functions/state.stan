@@ -37,7 +37,7 @@
 /**
  * Assemble a trajectory from a baseline and a link-scale deviation
  *
- * Shared by every state's trajectory: adds the deviation `dev` (length
+ * Shared by every state trajectory: adds the deviation `dev` (length
  * `n_free`, on the link scale) to the baseline over the free window,
  * holds the last value constant through the remaining forecast horizon, and
  * returns on the natural scale (applying the inverse link).
