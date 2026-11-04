@@ -77,8 +77,8 @@ test_that("simulate_infections uses the prevalence reporting kernel", {
   expect_equal(nrow(reported), nrow(infections))
   expect_true(all(reported$value >= 0))
   expect_true(all(reported$value == round(reported$value)))
-  # same infections and RNG seed, but a different reporting kernel, so
-  # the two types of observation should not coincide
+  # same infections and RNG seed, but a different reporting kernel: the
+  # two types of observation should not coincide
   expect_false(identical(
     reported$value,
     sim_incidence[sim_incidence$variable == "reported_cases", ]$value
