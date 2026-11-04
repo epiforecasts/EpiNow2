@@ -153,6 +153,9 @@ int check_for_analytical(int dist_id, int primary_id) {
   }
   return 0; // No analytical solution for other combinations
 }
+int check_for_cpp_uniform(int dist_id) {
+  return dist_id == 1 || dist_id == 2 || dist_id == 3;
+}
 real primarycensored_uniform_lcdf_from_terms(vector terms_d, vector terms_q,
                                              data real pwindow) {
   real log_A = log_sum_exp(terms_d[1], terms_q[2]);
@@ -435,7 +438,7 @@ real primarycensored_analytical_lcdf_raw(data real d, int dist_id,
   real q = dist_has_positive_support(dist_id) ? max({d - pwindow, 0.0})
                                               : d - pwindow;
 
-  if (primary_id == 1 && (dist_id == 1 || dist_id == 2 || dist_id == 3)) {
+  if (primary_id == 1 && check_for_cpp_uniform(dist_id)) {
     return primarycensored_uniform_lcdf(d | dist_id, params, pwindow);
   } else if (check_for_uniform_terms(dist_id, primary_id)) {
     // The Beta CDF is exactly 1 once the window is above its support
@@ -537,7 +540,7 @@ vector primarycensored_analytical_lcdf_vectorized(data int start,
                                                   data int dist_id,
                                                   array[] real params,
                                                   data real pwindow) {
-  if (dist_id == 1 || dist_id == 2 || dist_id == 3) {
+  if (check_for_cpp_uniform(dist_id)) {
     return primarycensored_uniform_lcdf_vectorized(
       start, n, dist_id, params, pwindow
     );
