@@ -9,6 +9,8 @@
 
 ## Model changes
 
+- Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
+
 ## Package changes
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
@@ -20,6 +22,7 @@
 - Added tests for summarising, formatting and reading back fitted and regional results.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
 - The README commits-since badge now tracks the latest release automatically.
+- Renamed the Stan convolution index helpers to `xlen_conv_indices()` and `len_conv_indices()`, and the prior distribution error now names the allowed values.
 
 ## Bug fixes
 
