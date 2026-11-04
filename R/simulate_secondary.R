@@ -45,6 +45,7 @@ simulate_secondary <- function(primary,
   assert_class(delays, "delay_opts")
   assert_class(truncation, "trunc_opts")
   assert_class(obs, "obs_opts")
+  check_secondary_obs_opts(obs)
 
   ## create primary values for all dates modelled
   all_dates <- data.table(

@@ -167,6 +167,7 @@ estimate_secondary <- function(data,
   assert_class(delays, "delay_opts")
   assert_class(truncation, "trunc_opts")
   assert_class(obs, "obs_opts")
+  check_secondary_obs_opts(obs)
   assert_numeric(burn_in, lower = 0)
   assert_numeric(CrIs, lower = 0, upper = 1)
   assert_data_frame(priors, null.ok = TRUE)
