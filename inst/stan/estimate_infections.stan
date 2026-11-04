@@ -66,6 +66,8 @@ parameters {
   // standard deviation of breakpoint effect
   array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd;
   vector[bp_n] bp_effects;                   // Rt breakpoint effects
+  // standard normal noise for stochastic infections
+  vector[estimate_r && infection_process ? ot_h : 0] infection_eta;
   // delay parameters
   vector<lower = delay_params_lower>[delay_params_length] delay_params;
   // raw gamma values for estimated nonparametric delay PMFs;
@@ -137,9 +139,14 @@ transformed parameters {
         param_id_pop, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
+      real infection_overdispersion = get_param(
+        param_id_infection_overdispersion, params_fixed_lookup,
+        params_variable_lookup, params_value, params
+      );
       infections = generate_infections(
         R, seeding_time, gt_rev_pmf, initial_infections, pop, use_pop, pop_floor,
-        future_time, obs_scale, fraction_observed, 1
+        future_time, obs_scale, fraction_observed, 1, infection_eta,
+        infection_process, infection_overdispersion
       );
     }
   } else {
@@ -243,6 +250,11 @@ model {
         cases, initial_infections_guess
       );
     }
+    if (infection_process) {
+      profile("infections lp") {
+        infection_eta ~ std_normal();
+      }
+    }
   }
 
   profile("init lp") {
@@ -303,13 +315,15 @@ generated quantities {
         gt_rev_pmf_for_growth = gt_rev_pmf;
       }
   
-      // estimate growth from infections
+      // estimate growth from infections (including any stochastic infection
+      // noise)
       r = calculate_growth(
         infections, seeding_time, gt_rev_pmf_for_growth, growth_method
         );
 
       // Calculate adjusted Rt when population adjustment is enabled
-      // R_adj = infections / infectiousness (back-calculated from adjusted infections)
+      // R_adj = infections / infectiousness (back-calculated from adjusted
+      // infections, including any stochastic infection noise)
       if (estimate_r > 0 && use_pop > 0) {
         R_adj = calculate_Rt(infections, seeding_time, gt_rev_pmf, 0);
       }

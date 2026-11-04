@@ -2,6 +2,9 @@ array[n, 1] real initial_infections; // initial logged infections
 int initial_as_scale; // whether to interpret initial infections as scaling
 
 matrix[n, t - seeding_time] R; // reproduction number
+int<lower = 0, upper = 2> infection_process; // infection process model (0 = deterministic, 1 = poisson, 2 = negbin)
+int<lower = 0> n_infection_eta; // number of supplied infection noise terms
+matrix[n, n_infection_eta] infection_eta; // supplied infection noise terms
 int use_pop; // use population size (0 = no; 1 = forecasts; 2 = all)
 real<lower = 0> pop_floor; // Minimum susceptible population (numerical stability floor)
 

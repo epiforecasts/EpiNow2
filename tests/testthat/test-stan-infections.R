@@ -25,35 +25,35 @@ gt_rev_pmf <- get_delay_rev_pmf(
 # test generate infections
 test_that("generate_infections works as expected", {
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(1000, 10), 995, 996, rep(997, 8))
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(20), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(20), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(20, 10), 20, 22, 22, 23, 24, 25, 25, 26, 27, 28)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(100, 10), 99, 110, 112, 115, 119, 123, 126, 130, 135, 139)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(500, 4), 398, 420, 425, 426, 426, 427, 427, 427, 427, 427)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(500, 4), 398, 462, 478, 493, 508, 524, 541, 558, 575, 594)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 1, gt_rev_pmf, log(40), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1, 9)), 1, gt_rev_pmf, log(40), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(40, 8, 12, 13, rep(13, 7))
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 1, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 1, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(100, 21, 32, 35, 37, 38, 39, 40, 42, 43, 44)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 1.0, 4, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 1.0, 4, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 981, 980, 978, 976)
   )
 })
@@ -61,16 +61,113 @@ test_that("generate_infections works as expected", {
 test_that("generate_infections respects pop_floor with population adjustment", {
   # Test with higher pop_floor to verify floor behavior
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 10.0, 4, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 10.0, 4, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 981, 980, 978, 976)
   )
 
   # Test with very small population where floor matters
-  result <- generate_infections(c(1, rep(1.5, 9)), 10, gt_rev_pmf, log(100), 500, 2, 50.0, 4, 0, 0, 1)
+  result <- generate_infections(c(1, rep(1.5, 9)), 10, gt_rev_pmf, log(100), 500, 2, 50.0, 4, 0, 0, 1, numeric(0), 0, 0)
   # With pop_floor = 50, susceptible population should never go below 50
   # This allows infections to continue even when pop - cum_infections < 50
   expect_true(all(result >= 0))
   expect_true(all(is.finite(result)))
+})
+
+# lognormal moment-matched value used to check apply_infection_noise
+lognormal_infections <- function(mu, eta, od = 0) {
+  s2 <- log1p(1 / mu + od^2)
+  exp(log(mu) - s2 / 2 + sqrt(s2) * eta)
+}
+
+test_that("apply_infection_noise returns the mean when deterministic", {
+  expect_equal(apply_infection_noise(100, 1, 0, 0), 100)
+})
+
+test_that("apply_infection_noise uses a moment-matched lognormal", {
+  expect_equal(
+    apply_infection_noise(100, 1, 1, 0), lognormal_infections(100, 1),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    apply_infection_noise(100, -2, 2, 0.3),
+    lognormal_infections(100, -2, 0.3),
+    tolerance = 1e-8
+  )
+  # zero dispersion reduces to the Poisson
+  expect_equal(
+    apply_infection_noise(100, 1, 2, 0), apply_infection_noise(100, 1, 1, 0)
+  )
+})
+
+test_that("apply_infection_noise matches the Poisson and negative binomial moments", {
+  # deterministic standard normal quantiles give stable moments
+  eta <- qnorm(ppoints(1e5))
+  for (mu in c(1, 10, 1000)) {
+    for (od in c(0, 0.3)) {
+      process <- ifelse(od == 0, 1, 2)
+      draws <- vapply(
+        eta, apply_infection_noise, numeric(1),
+        expected = mu, infection_process = process, overdispersion = od
+      )
+      expect_equal(mean(draws), mu, tolerance = 0.01)
+      expect_equal(var(draws), mu + mu^2 * od^2, tolerance = 0.02)
+    }
+  }
+})
+
+test_that("apply_infection_noise keeps infections positive", {
+  for (process in 1:2) {
+    result <- apply_infection_noise(10, -10, process, 0.5)
+    expect_gt(result, 0)
+    expect_true(is.finite(result))
+  }
+  expect_equal(apply_infection_noise(0, 1, 1, 0), 0)
+})
+
+test_that("generate_infections ignores noise when deterministic", {
+  args <- list(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 1.0, 0, 0, 0, 1)
+  det <- do.call(generate_infections, c(args, list(numeric(0), 0, 0)))
+  ignored <- do.call(generate_infections, c(args, list(rep(1, 10), 0, 0.1)))
+  expect_equal(ignored, det)
+})
+
+test_that("generate_infections propagates infection noise through the renewal", {
+  args <- list(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 1.0, 0, 0, 0, 1)
+  det <- do.call(generate_infections, c(args, list(numeric(0), 0, 0)))
+  eta <- c(2, rep(0, 9))
+  stoch <- do.call(generate_infections, c(args, list(eta, 1, 0)))
+  # seeding infections are unaffected
+  expect_equal(stoch[1:10], det[1:10])
+  # the shock is applied on the first renewal step
+  expect_equal(stoch[11], lognormal_infections(det[11], 2), tolerance = 1e-8)
+  # and feeds through to later infections despite zero later noise
+  expect_true(all(stoch[12:20] > det[12:20]))
+})
+
+test_that("generate_infections stays positive with large negative noise", {
+  args <- list(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(10), 0, 0, 1.0, 0, 0, 0, 1)
+  for (process in 1:2) {
+    result <- do.call(
+      generate_infections, c(args, list(rep(-5, 10), process, 0.5))
+    )
+    expect_true(all(result > 0))
+    expect_true(all(is.finite(result)))
+  }
+})
+
+test_that("generate_infections combines infection noise with population depletion", {
+  args <- list(
+    c(1, rep(1.5, 9)), 10, gt_rev_pmf, log(100), 500, 2, 1.0, 4, 0, 0, 1
+  )
+  det <- do.call(generate_infections, c(args, list(numeric(0), 0, 0)))
+  for (process in 1:2) {
+    stoch <- do.call(
+      generate_infections, c(args, list(rep(1, 10), process, 0.2))
+    )
+    expect_true(all(stoch > 0))
+    expect_true(all(is.finite(stoch)))
+    expect_false(isTRUE(all.equal(stoch, det)))
+  }
 })
 
 # test deconvolve_infections

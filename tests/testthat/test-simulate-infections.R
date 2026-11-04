@@ -79,3 +79,40 @@ test_that("simulate_infections fails with uncertain parameters", {
     "uncertain"
   )
 })
+
+test_that("simulate_infections supports stochastic infections", {
+  deterministic <- test_simulate_infections(
+    generation_time = gt_opts(Fixed(1))
+  )
+  for (process in c("poisson", "negbin")) {
+    sim <- test_simulate_infections(
+      generation_time = gt_opts(Fixed(1)),
+      infection_process = process,
+      infection_dispersion = 0.2
+    )
+    infections <- sim[sim$variable == "infections", ]
+    expect_identical(nrow(infections), nrow(R))
+    expect_true(all(infections$value > 0))
+    expect_false(isTRUE(all.equal(
+      infections$value,
+      deterministic[deterministic$variable == "infections", ]$value
+    )))
+  }
+})
+
+test_that("simulate_infections errors for bad 'infection_dispersion' specifications", {
+  expect_error(
+    test_simulate_infections(
+      infection_process = "negbin",
+      infection_dispersion = Normal(mean = 0.1, sd = 0.05)
+    ),
+    "uncertain"
+  )
+  expect_warning(
+    test_simulate_infections(
+      infection_process = "poisson",
+      infection_dispersion = 0.2
+    ),
+    "ignored"
+  )
+})

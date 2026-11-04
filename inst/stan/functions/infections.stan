@@ -49,6 +49,49 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
 }
 
 /**
+ * Apply process noise to the expected number of new infections
+ *
+ * Draws new infections from a log-normal approximation to either a Poisson
+ * or a negative binomial distribution, using a non-centred
+ * parameterisation with `eta ~ std_normal()`. The log-normal is chosen to
+ * match the mean and variance of the target distribution. The Poisson
+ * variance is `expected` and the negative binomial variance is
+ * `expected + expected^2 * overdispersion^2`, matching the parameterisation
+ * of the reporting overdispersion. With
+ * `s2 = log(1 + variance / expected^2)` new infections are
+ * `exp(log(expected) - s2 / 2 + sqrt(s2) * eta)`, which keeps them positive.
+ *
+ * @param expected Expected number of new infections
+ * @param eta Standard normal noise term
+ * @param infection_process Process model (0 = deterministic, 1 = Poisson,
+ * 2 = negative binomial)
+ * @param overdispersion Overdispersion of the negative binomial (one over
+ * the square root of `phi`); ignored unless `infection_process` is 2
+ * @return The number of new infections. Returned unchanged if
+ * `infection_process` is 0 or `expected` is not positive.
+ *
+ * @par Example
+ * With `expected = 100`, `eta = 0` and a Poisson process,
+ * `s2 = log(1.01)` so `apply_infection_noise(100, 0, 1, 0)` returns the
+ * log-normal median `100 / sqrt(1.01)`, approximately 99.5.
+ *
+ * @ingroup infections_estimation
+ */
+real apply_infection_noise(real expected, real eta, int infection_process,
+                           real overdispersion) {
+  if (infection_process == 0 || expected <= 0) {
+    return(expected);
+  }
+  // squared coefficient of variation of the Poisson or negative binomial
+  real cv2 = inv(expected);
+  if (infection_process == 2) {
+    cv2 += square(overdispersion);
+  }
+  real s2 = log1p(cv2);
+  return(exp(log(expected) - s2 / 2 + sqrt(s2) * eta));
+}
+
+/**
  * @ingroup infections_estimation
  * @brief Generate infections using a renewal equation approach
  *
@@ -67,12 +110,20 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
  * @param obs_scale Whether to scale by fraction observed (1) or not (0)
  * @param fraction_observed Fraction of infections that are observed
  * @param initial_as_scale Whether initial infections are a scaling factor (1) or not (0)
+ * @param infection_eta Vector of standard normal noise terms, one per
+ * renewal time step (empty if infections are deterministic)
+ * @param infection_process Process model (0 = deterministic, 1 = Poisson,
+ * 2 = negative binomial), see apply_infection_noise()
+ * @param infection_overdispersion Overdispersion of the negative binomial
+ * process model
  * @return A vector of infection counts
  */
 vector generate_infections(vector R, int uot, vector gt_rev_pmf,
                            array[] real initial_infections, real pop,
                            int use_pop, real pop_floor, int ht, int obs_scale, real fraction_observed,
-                           int initial_as_scale) {
+                           int initial_as_scale, vector infection_eta,
+                           int infection_process,
+                           real infection_overdispersion) {
   // time indices and storage
   int ot = num_elements(R);
   int nht = ot - ht;
@@ -110,6 +161,12 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
       infections[s + uot] = susceptible * fmax(0, 1 - exp_adj_Rt);
     } else{
       infections[s + uot] = R[s] * infectiousness[s];
+    }
+    if (infection_process) {
+      infections[s + uot] = apply_infection_noise(
+        infections[s + uot], infection_eta[s], infection_process,
+        infection_overdispersion
+      );
     }
     if (use_pop && s < ot) {
       cum_infections[s + 1] = cum_infections[s] + infections[s + uot];

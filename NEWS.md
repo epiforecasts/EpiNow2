@@ -9,6 +9,7 @@
 
 ## Model changes
 
+- Added optional stochastic infections to the renewal model via `rt_opts(infection_process = "poisson")` or `rt_opts(infection_process = "negbin")`, which use a log-normal approximation matching the mean and variance of a Poisson or negative binomial process around the expected infections. `simulate_infections()` gains matching `infection_process` and `infection_dispersion` arguments. The default (`"deterministic"`) is unchanged.
 - Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior.
 - Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
 
