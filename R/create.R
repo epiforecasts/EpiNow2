@@ -1012,7 +1012,9 @@ np_fixed_pmf <- function(x) get_pmf(fix_parameters(x, strategy = "mean"))
 
 ##' Create delay variables for stan
 ##'
-##' @param ... Named delay distributions. The names are assigned to IDs
+##' @param ... Named delay distributions. The names are assigned to IDs. A
+##'   `NULL` entry is dropped, so its `delay_id_*` is absent from the
+##'   returned list rather than assigned an id.
 ##' @param time_points Integer, the number of time points in the data;
 ##'   determines weight associated with weighted delay priors; default: 1
 ##' @return A list of variables as expected by the stan model
@@ -1020,6 +1022,7 @@ np_fixed_pmf <- function(x) get_pmf(fix_parameters(x, strategy = "mean"))
 ##' @keywords internal
 create_stan_delays <- function(..., time_points = 1L) {
   delays <- list(...)
+  delays <- delays[!vapply(delays, is.null, logical(1))]
   delay_names <- names(delays)
 
   ## discretise

@@ -7,7 +7,9 @@
 create_stan_delays(..., time_points = 1L)
 }
 \arguments{
-\item{...}{Named delay distributions. The names are assigned to IDs}
+\item{...}{Named delay distributions. The names are assigned to IDs. A
+\code{NULL} entry is dropped, so its \verb{delay_id_*} is absent from the
+returned list rather than assigned an id.}
 
 \item{time_points}{Integer, the number of time points in the data;
 determines weight associated with weighted delay priors; default: 1}

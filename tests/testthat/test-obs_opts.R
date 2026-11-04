@@ -15,6 +15,31 @@ test_that("obs_opts returns expected default values", {
 test_that("obs_opts can be used with prevalence-type observations", {
   result <- suppressWarnings(obs_opts(type = "prevalence"))
   expect_equal(result$type, "prevalence")
+  expect_null(result$duration)
+})
+
+test_that("obs_opts accepts a duration distribution for prevalence-type
+          observations", {
+  duration <- LogNormal(mean = 5, sd = 2, max = 20)
+  result <- suppressWarnings(
+    obs_opts(type = "prevalence", duration = duration)
+  )
+  expect_equal(result$duration, duration)
+})
+
+test_that("obs_opts drops duration, with a warning, when type is not
+          prevalence", {
+  expect_warning(
+    result <- obs_opts(duration = LogNormal(mean = 5, sd = 2, max = 20)),
+    "duration"
+  )
+  expect_null(result$duration)
+})
+
+test_that("obs_opts errors if duration is not a <dist_spec>", {
+  expect_error(
+    obs_opts(type = "prevalence", duration = 5), "dist_spec"
+  )
 })
 
 test_that("obs_opts errors with an invalid type", {

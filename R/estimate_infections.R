@@ -232,8 +232,10 @@ estimate_infections <- function(data,
     generation_time = generation_time,
     reporting = delays,
     truncation = truncation,
+    duration = obs$duration,
     time_points = stan_data$t - stan_data$seeding_time - stan_data$horizon
   ))
+  stan_data$delay_id_duration <- stan_data$delay_id_duration %||% 0L
 
   # Set up default settings
   stan_args <- create_stan_args(

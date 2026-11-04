@@ -2,7 +2,7 @@
 
 ## New features
 
-- `obs_opts()` gains a `type` argument ("incidence" or "prevalence") describing how observations relate to latent infections. `estimate_infections()` can now fit prevalence-type data (e.g. hospital bed occupancy), convolving latent infections with the survival function of the reporting delay rather than its density. This requires a generative (`rt`) model: combining `type = "prevalence"` with deconvolution (`rt = NULL`) errors, since deconvolution assumes incidence-type observations.
+- `obs_opts()` gains a `type` argument ("incidence" or "prevalence") describing how observations relate to latent infections. `estimate_infections()` can now fit prevalence-type data directly, convolving latent infections with a kernel describing how long each stays in the observed state rather than the reporting delay's density. Without a `duration`, that kernel is the survival function of the reporting delay (e.g. current infections, entered at infection). `obs_opts()` also gains a `duration` argument, a `<dist_spec>` for the time spent in the state once entered; with it set, the kernel becomes the reporting delay's density convolved with the complement of `duration`'s CDF, suiting a state entered only after the delay and left later, such as hospital bed occupancy (`delays` describing the delay to admission and `duration` the length of stay). Fitting prevalence-type data requires a generative (`rt`) model: combining `type = "prevalence"` with deconvolution (`rt = NULL`) errors, since deconvolution assumes incidence-type observations.
 
 ## Breaking changes
 

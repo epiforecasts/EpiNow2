@@ -650,13 +650,23 @@ gp_opts <- function(basis_prop = NULL,
 #'   arising from infections.
 #'
 #'   - "prevalence": observations are a convolution of latent infections with
-#'   the survival function of the reporting delay, i.e. each infection keeps
-#'   contributing to the observation for as long as it remains in the
-#'   prevalent state described by that delay. An example is hospital bed
-#'   occupancy, where the delay describes the length of stay. Note that
+#'   a kernel describing how long each infection remains in the observed
+#'   state. Without `duration` set, that kernel is the survival function of
+#'   the reporting delay, so the state is entered at infection and left once
+#'   the delay elapses; an example is current infections. With `duration`
+#'   set, the state is instead entered only after the reporting delay and
+#'   left once `duration` has elapsed, and the kernel becomes the reporting
+#'   delay's density convolved with the complement of `duration`'s CDF; an
+#'   example is hospital bed occupancy, entered at admission and left at
+#'   discharge, with `delays` (in [delay_opts()]) describing the delay to
+#'   admission and `duration` the length of stay. Note that
 #'   [estimate_infections()] requires a generative (`rt`) model to fit
 #'   prevalence-type data, as the deconvolution approach used when `rt = NULL`
 #'   assumes incidence-type observations.
+#' @param duration A `<dist_spec>` specifying the time an observation spends
+#'   in the prevalent state once entered (e.g. hospital length of stay), used
+#'   only when `type = "prevalence"`; see `type` for how it enters the model.
+#'   Defaults to `NULL`. Ignored, with a warning, when `type` is "incidence".
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_inform cli_abort
 #' @return An `<obs_opts>` object of observation model settings.
@@ -671,8 +681,14 @@ gp_opts <- function(basis_prop = NULL,
 #' # Scale reported data
 #' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
 #'
-#' # Fit to prevalence data (e.g. hospital bed occupancy)
+#' # Fit to prevalence data (e.g. current infections)
 #' obs_opts(type = "prevalence")
+#'
+#' # Fit to hospital bed occupancy, given the delay to admission in `delays`
+#' # and a length of stay of around 5 days
+#' obs_opts(
+#'   type = "prevalence", duration = LogNormal(mean = 5, sd = 2, max = 20)
+#' )
 # nolint end
 obs_opts <- function(family = c("negbin", "poisson"),
                      dispersion = Normal(mean = 0, sd = 0.25),
@@ -682,7 +698,8 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      scale = Fixed(1),
                      likelihood = TRUE,
                      return_likelihood = FALSE,
-                     type = c("incidence", "prevalence")) {
+                     type = c("incidence", "prevalence"),
+                     duration = NULL) {
   family <- arg_match(family)
   type <- arg_match(type)
   if (family != "negbin") {
@@ -694,6 +711,21 @@ obs_opts <- function(family = c("negbin", "poisson"),
     }
     dispersion <- NULL
   }
+  if (!is.null(duration)) {
+    assert_class(duration, "dist_spec")
+    if (type != "prevalence") {
+      cli_warn(
+        "{.field duration} is ignored when {.field type} is
+          {.val {type}} and will be dropped."
+      )
+      duration <- NULL
+    } else {
+      duration <- apply_default_cdf_max(
+        duration, getOption("EpiNow2.cdf_max", 0.999), FALSE
+      )
+      check_stan_delay(duration)
+    }
+  }
   obs <- list(
     family = family,
     dispersion = dispersion,
@@ -703,7 +735,8 @@ obs_opts <- function(family = c("negbin", "poisson"),
     scale = scale,
     likelihood = likelihood,
     return_likelihood = return_likelihood,
-    type = type
+    type = type,
+    duration = duration
   )
 
   if (!is.null(obs$dispersion)) {

@@ -143,14 +143,28 @@ vector get_delay_rev_pmf(
  * For an "incidence"-type secondary observation (e.g. deaths from
  * infections) the kernel is the density of the delay from infection to
  * the secondary event, so that each infection contributes to the
- * secondary observation exactly once. For a "prevalence"-type
- * observation (e.g. hospital bed occupancy) the kernel is instead the
- * survival function of that delay, so that an infection keeps
- * contributing to the secondary observation for as long as it remains
- * in the prevalent state (e.g. the length of a hospital stay).
+ * secondary observation exactly once.
+ *
+ * For a "prevalence"-type observation with no `duration_id` (e.g. current
+ * infections, entered at infection and left when the delay elapses), the
+ * kernel is the survival function of the delay itself.
+ *
+ * For a "prevalence"-type observation with a `duration_id` set (e.g.
+ * hospital bed occupancy: entered at admission, left at discharge), `len`
+ * (via `delay_id`) describes only the delay to entering the state and
+ * `duration_len` (via `duration_id`) the time spent in it once entered. The
+ * kernel is then the density of the entry delay convolved with the
+ * survival function of the duration, i.e.
+ * \f$P(D_1 \le d < D_1 + D_2) = \sum_{d_1=0}^{d} f_{D_1}(d_1)
+ * S_{D_2}(d - d_1)\f$, so that an infection starts contributing to the
+ * secondary observation only after the entry delay, and keeps doing so for
+ * as long as it remains in the prevalent state.
  *
  * @param secondary_type Type of secondary observation: 0 = incidence,
  *   1 = prevalence
+ * @param duration_id Identifier of the duration distribution (0 if none)
+ * @param duration_len Length of the duration distribution's PMF, i.e.
+ *   `delay_max[duration_id] + 1`; unused if `duration_id` is 0
  * @return A vector containing the reversed kernel of length len
  *
  * @ingroup delay_handlers
@@ -160,17 +174,34 @@ vector get_secondary_rev_pmf(
   array[] int delay_types_groups, array[] int delay_max,
   vector delay_np_pmf, array[] int delay_np_pmf_groups,
   vector delay_params, array[] int delay_params_groups, array[] int delay_dist,
-  int secondary_type
+  int secondary_type, int duration_id, int duration_len
 ) {
-  vector[len] rev_pmf = get_delay_rev_pmf(
-    delay_id, len, delay_types_p, delay_types_id, delay_types_groups,
-    delay_max, delay_np_pmf, delay_np_pmf_groups, delay_params,
-    delay_params_groups, delay_dist, 0, 1, secondary_type
-  );
-  if (secondary_type) {
-    rev_pmf = 1 - rev_pmf;
+  if (!secondary_type || !duration_id) {
+    vector[len] rev_pmf = get_delay_rev_pmf(
+      delay_id, len, delay_types_p, delay_types_id, delay_types_groups,
+      delay_max, delay_np_pmf, delay_np_pmf_groups, delay_params,
+      delay_params_groups, delay_dist, 0, 1, secondary_type
+    );
+    if (secondary_type) {
+      rev_pmf = 1 - rev_pmf;
+    }
+    return rev_pmf;
   }
-  return rev_pmf;
+
+  int delay_len = len - duration_len + 1;
+  vector[delay_len] delay_pmf = get_delay_rev_pmf(
+    delay_id, delay_len, delay_types_p, delay_types_id, delay_types_groups,
+    delay_max, delay_np_pmf, delay_np_pmf_groups, delay_params,
+    delay_params_groups, delay_dist, 0, 0, 0
+  );
+  vector[duration_len] duration_surv = 1 - get_delay_rev_pmf(
+    duration_id, duration_len, delay_types_p, delay_types_id,
+    delay_types_groups, delay_max, delay_np_pmf, delay_np_pmf_groups,
+    delay_params, delay_params_groups, delay_dist, 0, 0, 1
+  );
+  return reverse(
+    convolve_with_rev_pmf(delay_pmf, reverse(duration_surv), len)
+  );
 }
 
 /**
