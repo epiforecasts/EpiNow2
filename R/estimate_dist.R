@@ -105,7 +105,7 @@
 #' Initial values for the sampler are computed via method-of-moments (MoM)
 #' from the aggregated data. Near-zero variance (e.g. identical observed
 #' delays) would otherwise give degenerate scale estimates, so scale
-#' parameters then fall back to their prior means; any non-finite candidate
+#' parameters fall back to their prior means; any non-finite candidate
 #' is replaced with a bounded default and clamped within the Stan-declared
 #' bounds.
 #'
