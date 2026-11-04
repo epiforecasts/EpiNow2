@@ -88,6 +88,14 @@ test_that("get_samples() errors for an unsupported format", {
   expect_error(get_samples(default_fit, format = "invalid"))
 })
 
+test_that("estimate_infections uses deterministic infections by default", {
+  expect_identical(default_fit$args$infection_process, 0L)
+  expect_identical(default_fit$args$param_id_infection_overdispersion, 0)
+  samples <- get_samples(default_fit)
+  expect_false("infection_overdispersion" %in% samples$variable)
+  expect_length(get_samples(default_fit, format = "list")$infection_eta, 0)
+})
+
 # Variant tests: Only run in full test mode (EPINOW2_SKIP_INTEGRATION=false)
 test_that("estimate_infections successfully returns estimates using a Matern 5/2 kernel", {
   skip_integration()
@@ -149,6 +157,33 @@ test_that("estimate_infections successfully returns estimates using the poisson 
     reported_cases, obs = obs_opts(family = "poisson")
   )
   expect_false("reporting_overdispersion" %in% names(get_parameters(out)))
+})
+
+test_that("estimate_infections successfully returns estimates using Poisson stochastic infections", {
+  skip_integration()
+  out <- test_estimate_infections(
+    reported_cases,
+    rt = rt_opts(infections = "poisson")
+  )
+  expect_identical(out$args$infection_process, 1L)
+  eta <- get_samples(out, format = "list")$infection_eta
+  expect_equal(ncol(eta), out$args$t - out$args$seeding_time)
+})
+
+test_that("estimate_infections successfully returns estimates using negative binomial stochastic infections", {
+  skip_integration()
+  out <- test_estimate_infections(
+    reported_cases,
+    rt = rt_opts(infections = "negbin", rw = 7),
+    gp = NULL
+  )
+  expect_identical(out$args$infection_process, 2L)
+  samples <- get_samples(out)
+  expect_true("infection_overdispersion" %in% samples$variable)
+  expect_true(all(samples[variable == "infection_overdispersion"]$value > 0))
+  sims <- forecast_infections(out, samples = 10)
+  expect_true(nrow(sims$samples) > 0)
+  expect_true(all(sims$samples[variable == "infections"]$value > 0))
 })
 
 test_that("estimate_infections successfully returns estimates using a fixed Rt", {

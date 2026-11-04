@@ -25,35 +25,35 @@ gt_rev_pmf <- get_delay_rev_pmf(
 # test generate infections
 test_that("generate_infections works as expected", {
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(1000, 10), 995, 996, rep(997, 8))
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(20), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(20), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(20, 10), 20, 22, 22, 23, 24, 25, 25, 26, 27, 28)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(100, 10), 99, 110, 112, 115, 119, 123, 126, 130, 135, 139)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(500, 4), 398, 420, 425, 426, 426, 427, 427, 427, 427, 427)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 4, gt_rev_pmf, log(500), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(500, 4), 398, 462, 478, 493, 508, 524, 541, 558, 575, 594)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 1, gt_rev_pmf, log(40), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1, 9)), 1, gt_rev_pmf, log(40), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(40, 8, 12, 13, rep(13, 7))
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1.1, 9)), 1, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1.1, 9)), 1, gt_rev_pmf, log(100), 0, 0, 1.0, 0, 0, 0, 1, numeric(0), 0, 0), 0),
     c(100, 21, 32, 35, 37, 38, 39, 40, 42, 43, 44)
   )
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 1.0, 4, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 1.0, 4, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 981, 980, 978, 976)
   )
 })
@@ -61,16 +61,82 @@ test_that("generate_infections works as expected", {
 test_that("generate_infections respects pop_floor with population adjustment", {
   # Test with higher pop_floor to verify floor behavior
   expect_equal(
-    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 10.0, 4, 0, 0, 1), 0),
+    round(generate_infections(c(1, rep(1, 9)), 10, gt_rev_pmf, log(1000), 100000, 2, 10.0, 4, 0, 0, 1, numeric(0), 0, 0), 0),
     c(rep(1000, 10), 989, 990, 989, 987, 985, 983, 981, 980, 978, 976)
   )
 
   # Test with very small population where floor matters
-  result <- generate_infections(c(1, rep(1.5, 9)), 10, gt_rev_pmf, log(100), 500, 2, 50.0, 4, 0, 0, 1)
+  result <- generate_infections(c(1, rep(1.5, 9)), 10, gt_rev_pmf, log(100), 500, 2, 50.0, 4, 0, 0, 1, numeric(0), 0, 0)
   # With pop_floor = 50, susceptible population should never go below 50
   # This allows infections to continue even when pop - cum_infections < 50
   expect_true(all(result >= 0))
   expect_true(all(is.finite(result)))
+})
+
+test_that("apply_infection_noise returns the mean when deterministic", {
+  expect_equal(apply_infection_noise(100, 1, 0, 0), 100)
+})
+
+test_that("apply_infection_noise uses the Poisson variance", {
+  expect_equal(apply_infection_noise(1000, 0, 1, 0), 1000)
+  expect_equal(apply_infection_noise(100, 1, 1, 0), 110, tolerance = 1e-6)
+  expect_equal(apply_infection_noise(100, -2, 1, 0), 80, tolerance = 1e-6)
+})
+
+test_that("apply_infection_noise uses the negative binomial variance", {
+  # var = mu + mu^2 * dispersion^2 = 100 + 100 = 200
+  expect_equal(
+    apply_infection_noise(100, 1, 2, 0.1), 100 + sqrt(200),
+    tolerance = 1e-6
+  )
+  # zero dispersion reduces to the Poisson
+  expect_equal(
+    apply_infection_noise(100, 1, 2, 0), apply_infection_noise(100, 1, 1, 0)
+  )
+})
+
+test_that("apply_infection_noise keeps infections positive", {
+  for (process in 1:2) {
+    result <- apply_infection_noise(10, -10, process, 0.5)
+    expect_gt(result, 0)
+    expect_true(is.finite(result))
+  }
+  expect_gt(apply_infection_noise(0, 0, 1, 0), 0)
+})
+
+test_that("generate_infections with zero noise matches deterministic infections", {
+  args <- list(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 1.0, 0, 0, 0, 1)
+  det <- do.call(generate_infections, c(args, list(numeric(0), 0, 0)))
+  for (process in 1:2) {
+    stoch <- do.call(
+      generate_infections, c(args, list(rep(0, 10), process, 0.1))
+    )
+    expect_equal(stoch, det, tolerance = 1e-6)
+  }
+})
+
+test_that("generate_infections propagates infection noise through the renewal", {
+  args <- list(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 1.0, 0, 0, 0, 1)
+  det <- do.call(generate_infections, c(args, list(numeric(0), 0, 0)))
+  eta <- c(2, rep(0, 9))
+  stoch <- do.call(generate_infections, c(args, list(eta, 1, 0)))
+  # seeding infections are unaffected
+  expect_equal(stoch[1:10], det[1:10])
+  # the shock is applied on the first renewal step
+  expect_equal(stoch[11], det[11] + 2 * sqrt(det[11]), tolerance = 1e-6)
+  # and feeds through to later infections despite zero later noise
+  expect_true(all(stoch[12:20] > det[12:20]))
+})
+
+test_that("generate_infections stays positive with large negative noise", {
+  args <- list(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(10), 0, 0, 1.0, 0, 0, 0, 1)
+  for (process in 1:2) {
+    result <- do.call(
+      generate_infections, c(args, list(rep(-5, 10), process, 0.5))
+    )
+    expect_true(all(result > 0))
+    expect_true(all(is.finite(result)))
+  }
 })
 
 # test deconvolve_infections

@@ -58,3 +58,49 @@ test_that("rt_opts handles edge cases correctly", {
   expect_equal(result$rw, 0.1)
   expect_true(result$use_breakpoints)
 })
+
+test_that("rt_opts defaults to deterministic infections", {
+  result <- rt_opts()
+  expect_identical(result$infections, "deterministic")
+  expect_null(result$dispersion)
+})
+
+test_that("rt_opts supports stochastic infections", {
+  poisson <- rt_opts(infections = "poisson")
+  expect_identical(poisson$infections, "poisson")
+  expect_null(poisson$dispersion)
+
+  negbin <- rt_opts(infections = "negbin")
+  expect_identical(negbin$infections, "negbin")
+  expect_equal(negbin$dispersion, Normal(mean = 0, sd = 0.25))
+
+  custom <- rt_opts(infections = "negbin", dispersion = Fixed(0.1))
+  expect_equal(custom$dispersion, Fixed(0.1))
+})
+
+test_that("rt_opts errors for bad 'infections' specifications", {
+  expect_error(rt_opts(infections = "invalid"), "must be one")
+  expect_error(
+    rt_opts(infections = "negbin", dispersion = 0.1),
+    "dist_spec"
+  )
+})
+
+test_that("rt_opts warns when dispersion is ignored", {
+  expect_warning(
+    result <- rt_opts(infections = "poisson", dispersion = Fixed(0.1)),
+    "ignored"
+  )
+  expect_null(result$dispersion)
+  expect_warning(
+    rt_opts(dispersion = Fixed(0.1)),
+    "ignored"
+  )
+})
+
+test_that("rt_opts warns when stochastic infections are used without Rt", {
+  expect_warning(
+    rt_opts(use_rt = FALSE, infections = "poisson"),
+    "ignored"
+  )
+})
