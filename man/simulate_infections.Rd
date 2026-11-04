@@ -18,7 +18,9 @@ simulate_infections(
   pop = Fixed(0),
   pop_period = c("forecast", "all"),
   pop_floor = 1,
-  growth_method = c("infections", "infectiousness")
+  growth_method = c("infections", "infectiousness"),
+  infection_process = c("deterministic", "poisson", "negbin"),
+  infection_dispersion = Fixed(0.1)
 )
 }
 \arguments{
@@ -107,6 +109,27 @@ shifts it by the mean generation time. This can provide better stability
 and temporal matching with Rt. Note that, due to the temporal shift the
 "infectiousness" method results in undefined (NaN) growth rates for the most
 recent time points (equal to the mean generation time).}
+
+\item{infection_process}{Character string, defaulting to
+"deterministic". Defines the process model for new infections in the
+renewal equation. "deterministic" sets new infections to their expected
+value given Rt and past infections. "poisson" and "negbin" instead treat
+new infections as stochastic, using a log-normal approximation that
+matches the mean and variance of a Poisson or negative binomial
+distribution around the expected value. The noise feeds back through the
+renewal equation into future infections. Both add one standard normal
+parameter per time point. The returned \code{R} is then the expected Rt, whilst
+growth rates (and adjusted Rt when \code{pop} is used) are calculated from the
+noisy infections. Setting \code{growth_method = "infectiousness"} gives
+smoother growth rates. Poisson noise is on the scale of the modelled
+infections, which is the scale of reported cases unless the \code{scale}
+argument of \code{\link[=obs_opts]{obs_opts()}} is used. Noise is applied after any adjustment
+for susceptible depletion and is only bounded by \code{pop_floor}. See the
+model definition vignette for details. Ignored if \code{use_rt} is \code{FALSE}.}
+
+\item{infection_dispersion}{Numeric or a fixed \verb{<dist_spec>} giving the
+overdispersion of new infections, used only if \code{infection_process} is
+"negbin". See \code{\link[=rt_opts]{rt_opts()}} for details. Defaults to \code{Fixed(0.1)}.}
 }
 \value{
 A data.table of simulated infections (variable \code{infections}) and

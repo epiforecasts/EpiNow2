@@ -32,13 +32,16 @@
 #'   R given) of `seeding_time` days is assumed to have followed exponential
 #'   growth roughly in line with the growth rate implied by the first value of
 #'   R.
+#' @param infection_dispersion Numeric or a fixed `<dist_spec>` giving the
+#'   overdispersion of new infections, used only if `infection_process` is
+#'   "negbin". See [rt_opts()] for details. Defaults to `Fixed(0.1)`.
 #' @inheritParams estimate_infections
 #' @inheritParams calc_CrIs
 #' @inheritParams rt_opts
 #' @inheritParams stan_opts
 #' @importFrom checkmate assert_numeric assert_integer
 #' @importFrom data.table data.table merge.data.table nafill rbindlist
-#' @importFrom cli cli_abort
+#' @importFrom cli cli_abort cli_warn
 #' @return A data.table of simulated infections (variable `infections`) and
 #'   reported cases (variable `reported_cases`) by date.
 #' @export
@@ -72,7 +75,11 @@ simulate_infections <- function(R,
                                 pop_period = c("forecast", "all"),
                                 pop_floor = 1.0,
                                 growth_method = c("infections",
-                                                  "infectiousness")) {
+                                                  "infectiousness"),
+                                infection_process = c(
+                                  "deterministic", "poisson", "negbin"
+                                ),
+                                infection_dispersion = Fixed(0.1)) {
   if (is.numeric(pop)) {
     deprecate_stop(
       "1.9.0",
@@ -108,6 +115,30 @@ simulate_infections <- function(R,
   assert_class(pop, "dist_spec")
   assert_number(pop_floor, lower = 0, finite = TRUE)
   growth_method <- arg_match(growth_method)
+  infection_process <- arg_match(infection_process)
+  if (infection_process == "negbin") {
+    if (is.numeric(infection_dispersion)) {
+      assert_number(infection_dispersion, lower = 0, finite = TRUE)
+      infection_dispersion <- Fixed(infection_dispersion)
+    }
+    assert_class(infection_dispersion, "dist_spec")
+    if (get_distribution(infection_dispersion) != "fixed") {
+      cli_abort(
+        c(
+          "!" = "Cannot simulate from uncertain infection dispersion.",
+          "i" = "Use fixed infection dispersion instead."
+        )
+      )
+    }
+  } else {
+    if (!missing(infection_dispersion)) {
+      cli_warn(
+        "{.field infection_dispersion} is ignored when
+          {.field infection_process} is {.val {infection_process}}."
+      )
+    }
+    infection_dispersion <- NULL
+  }
 
   ## create R for all dates modelled
   all_dates <- data.table(date = seq.Date(min(R$date), max(R$date), by = "day"))
@@ -130,7 +161,10 @@ simulate_infections <- function(R,
     R = array(R$R, dim = c(1, nrow(R))),
     use_pop = as.integer(pop != Fixed(0)) + as.integer(pop_period == "all"),
     pop_floor = pop_floor,
-    infection_process = 0L,
+    infection_process = match(
+      infection_process, c("deterministic", "poisson", "negbin")
+    ) - 1L,
+    # no noise is supplied so all of it is drawn afresh
     n_infection_eta = 0L,
     infection_eta = array(numeric(0), dim = c(1, 0)),
     growth_method = list(
@@ -203,7 +237,10 @@ simulate_infections <- function(R,
     make_param("fraction_observed", obs$scale, lower_bound = 0),
     make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("pop", pop, lower_bound = 0),
-    make_param("infection_overdispersion", NULL)
+    make_param(
+      "infection_overdispersion", infection_dispersion,
+      lower_bound = 0
+    )
   )
 
   stan_data <- c(stan_data, create_stan_params(params))
@@ -261,6 +298,11 @@ simulate_infections <- function(R,
 #' but with a modified time-varying reproduction number. This can be used to
 #' explore forecast models or past counterfactuals. Simulations can be run in
 #' parallel using [future::plan()].
+#'
+#' If the fit used stochastic infections (see the `infection_process`
+#' argument of [rt_opts()]), the posterior infection noise is reused over the
+#' fitted time window, also when a counterfactual `R` is given, and fresh
+#' noise is drawn for any time points beyond it.
 #'
 #' @param estimates The \code{estimates} element of an [epinow()] run that
 #' has been done with output = "fit", or the result of
@@ -376,6 +418,15 @@ forecast_infections <- function(estimates,
   if (is.null(samples)) {
     samples <- R_samples
   }
+  if (inherits(R, "data.frame") && !is.null(R$sample)) {
+    # ignore samples and use data.frame max instead
+    samples <- max(R$sample)
+  }
+
+  # resample all posterior draws together, including R, so that rows stay
+  # aligned before any R values are replaced
+  draws <- resample_draws(draws, samples)
+
   # extract parameters from passed stanfit object
   shift <- estimates$args$seeding_time
 
@@ -388,31 +439,22 @@ forecast_infections <- function(estimates,
       R <- as.data.table(R)
       R <- R[, .(date, sample, value)]
       draws$R <- t(matrix(R$value, ncol = length(unique(R$sample))))
-      # ignore samples and use data.frame max instead
-      samples <- max(R$sample)
     } else {
       R_mat <- matrix(rep(R, each = samples),
         ncol = length(R), byrow = FALSE
       )
-      orig_R <- draws$R[1:samples, ]
+      orig_R <- draws$R[1:samples, , drop = FALSE]
+      if (ncol(orig_R) < ncol(R_mat)) {
+        orig_R <- cbind(
+          orig_R,
+          matrix(NA_real_, nrow = samples, ncol = ncol(R_mat) - ncol(orig_R))
+        )
+      }
+      orig_R <- orig_R[, seq_len(ncol(R_mat)), drop = FALSE]
       draws$R <- R_mat
       draws$R[is.na(R_mat)] <- orig_R[is.na(R_mat)]
       draws$R <- matrix(draws$R, ncol = length(R))
     }
-  }
-
-  # sample from posterior if samples != posterior
-  posterior_sample <- dim(draws$obs_reports)[1]
-  if (posterior_sample < samples) {
-    # nolint start
-    posterior_samples <- sample(
-      seq_len(posterior_sample), samples,
-      replace = TRUE
-    )
-    R_draws <- draws$R
-    draws <- map(draws, ~ as.matrix(.[posterior_samples, ]))
-    # nolint end
-    draws$R <- R_draws
   }
 
   # Extract R dates from original fit before modifying args
@@ -449,6 +491,13 @@ forecast_infections <- function(estimates,
 
   # Extract args for passing to parallel workers
   estimates_args <- estimates$args
+  # fits made before stochastic infections was added lack these settings
+  if (is.null(estimates_args$infection_process)) {
+    estimates_args$infection_process <- 0L
+  }
+  if (is.null(estimates_args$param_id_infection_overdispersion)) {
+    estimates_args$param_id_infection_overdispersion <- 0L
+  }
 
   # Load model
   stan <- stan_opts(
@@ -556,4 +605,25 @@ forecast_infections <- function(estimates,
   format_out$observations <- estimates$observations
   class(format_out) <- c("forecast_infections", class(format_out))
   format_out
+}
+
+#' Resample posterior draws to the requested number of samples
+#'
+#' @description
+#' When more samples are requested than there are posterior draws, draws are
+#' resampled with replacement. The same rows are used for every element so
+#' that, for example, Rt trajectories stay paired with the infection noise
+#' and other parameters of the same draw.
+#'
+#' @param draws A named list of posterior draws, each with draws in rows.
+#' @param samples Integer, the number of samples required.
+#' @return `draws`, resampled if there were fewer rows than `samples`.
+#' @keywords internal
+resample_draws <- function(draws, samples) {
+  posterior_sample <- dim(draws$obs_reports)[1]
+  if (posterior_sample >= samples) {
+    return(draws)
+  }
+  rows <- sample.int(posterior_sample, samples, replace = TRUE)
+  map(draws, function(x) as.matrix(x[rows, , drop = FALSE]))
 }
