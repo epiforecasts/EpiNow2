@@ -4,7 +4,12 @@
 
 ## Breaking changes
 
+- The boundary factor and number of basis functions of the approximate Gaussian process are now chosen by default from the lengthscale prior, following Riutort-Mayol et al. (2023), rather than fixed at `boundary_scale = 1.5` and `basis_prop = 0.2`. For the periodic kernel only the number of basis functions is chosen, as it has no boundary. The previous defaults approximated the default lengthscale prior poorly, particularly at the most recent time points. `estimate_infections()` now warns when the posterior lengthscale is outside the range the approximation represents accurately. Set `basis_prop` and `boundary_scale` in `gp_opts()` to restore the previous behaviour.
+- The Ornstein-Uhlenbeck kernel (`matern_order = 1/2`) now chooses its number of basis functions from a relationship derived for that kernel, rather than reusing the Matern 3/2 relationship, which understated the number needed.
+
 ## Model changes
+
+- Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
 
 ## Package changes
 
@@ -13,11 +18,16 @@
 - Adapted the internal nonparametric-delay handling to `distspec`'s revised representation of estimated (Dirichlet-backed) distributions, which now hold their Dirichlet prior in `$pmf` rather than a separate `$estimated`/`$alpha` and a cached mean PMF. Behaviour for estimated nonparametric delays is unchanged.
 - `gt_opts()`, `delay_opts()` and `trunc_opts()` gain a `default_cdf_max` argument: the CDF level to keep an unconstrained fixed distribution up to (default `0.999`, where `1` leaves it unbounded), following `distspec`'s `cdf_max` (EpiNow2 now requires `distspec` >= 0.2.0). The default can be set globally with `options(EpiNow2.cdf_max = ...)`. The previous `default_cdf_cutoff` argument (the tail probability to drop) is deprecated; a value `x` is equivalent to `default_cdf_max = 1 - x`.
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
+- Added unit tests for the option constructors, delay checks and utility helpers.
+- Added tests for summarising, formatting and reading back fitted and regional results.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
 - The README commits-since badge now tracks the latest release automatically.
+- Renamed the Stan convolution index helpers to `xlen_conv_indices()` and `len_conv_indices()`, and the prior distribution error now names the allowed values.
 
 ## Bug fixes
 
+- A bug was fixed where the number of Gaussian process basis functions was calculated from a time series length that did not match the one used in the Stan model.
+- A bug was fixed where the Gaussian process lengthscale was rescaled by the number of time points rather than their half-range, making the lengthscale slightly shorter than specified.
 - A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
 - A bug was fixed where `estimate_infections()` could emit a spurious "the largest R-hat is NA" convergence warning caused by deterministic delay PMFs being monitored; these are no longer monitored.
 - A bug was fixed where `estimate_secondary()` emitted the same spurious "the largest R-hat is NA" convergence warning from a deterministic delay PMF being monitored; it is no longer monitored.
@@ -33,6 +43,7 @@
 
 - The prior choice guide vignette now draws more samples in its `estimate_secondary()` examples to avoid low tail effective sample size warnings in the rendered output.
 - Clarified the Stan documentation for delay-related vectors and their lookup index arrays, naming them explicitly as ragged data structures and linking to the Stan User's Guide section on the topic.
+- Added worked examples to the Stan documentation for several observation-model, convolution, PMF, reproduction-number and infection helper functions, including `accumulate_reports()`.
 - Removed stray `# nolint` comments that were rendered as visible text in the `growth_to_R()`, `R_to_growth()`, `example_incubation_period`, `example_reporting_delay` and `example_truncated` documentation, moving the line-length exclusion outside the roxygen block instead.
 
 ## Internal
@@ -40,6 +51,7 @@
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
 - Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
 - Added fast tests for `epinow()`, `regional_epinow()` and the report helpers that replace the model fit with a mock, covering saved output, error and warning handling, logging and regional summaries.
+- Added unit tests for the Stan functions that calculate secondary reports, Rt from infections, the reporting log likelihood and sampled reports.
 
 # EpiNow2 1.9.0
 
