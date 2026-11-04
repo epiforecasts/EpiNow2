@@ -73,26 +73,46 @@ test_that("generate_infections respects pop_floor with population adjustment", {
   expect_true(all(is.finite(result)))
 })
 
+# lognormal moment-matched value used to check apply_infection_noise
+lognormal_infections <- function(mu, eta, od = 0) {
+  s2 <- log1p(1 / mu + od^2)
+  exp(log(mu) - s2 / 2 + sqrt(s2) * eta)
+}
+
 test_that("apply_infection_noise returns the mean when deterministic", {
   expect_equal(apply_infection_noise(100, 1, 0, 0), 100)
 })
 
-test_that("apply_infection_noise uses the Poisson variance", {
-  expect_equal(apply_infection_noise(1000, 0, 1, 0), 1000)
-  expect_equal(apply_infection_noise(100, 1, 1, 0), 110, tolerance = 1e-6)
-  expect_equal(apply_infection_noise(100, -2, 1, 0), 80, tolerance = 1e-6)
-})
-
-test_that("apply_infection_noise uses the negative binomial variance", {
-  # var = mu + mu^2 * dispersion^2 = 100 + 100 = 200
+test_that("apply_infection_noise uses a moment-matched lognormal", {
   expect_equal(
-    apply_infection_noise(100, 1, 2, 0.1), 100 + sqrt(200),
-    tolerance = 1e-6
+    apply_infection_noise(100, 1, 1, 0), lognormal_infections(100, 1),
+    tolerance = 1e-8
+  )
+  expect_equal(
+    apply_infection_noise(100, -2, 2, 0.3),
+    lognormal_infections(100, -2, 0.3),
+    tolerance = 1e-8
   )
   # zero dispersion reduces to the Poisson
   expect_equal(
     apply_infection_noise(100, 1, 2, 0), apply_infection_noise(100, 1, 1, 0)
   )
+})
+
+test_that("apply_infection_noise matches the Poisson and negative binomial moments", {
+  # deterministic standard normal quantiles give stable moments
+  eta <- qnorm(ppoints(1e5))
+  for (mu in c(1, 10, 1000)) {
+    for (od in c(0, 0.3)) {
+      process <- ifelse(od == 0, 1, 2)
+      draws <- vapply(
+        eta, apply_infection_noise, numeric(1),
+        expected = mu, infection_process = process, overdispersion = od
+      )
+      expect_equal(mean(draws), mu, tolerance = 0.01)
+      expect_equal(var(draws), mu + mu^2 * od^2, tolerance = 0.02)
+    }
+  }
 })
 
 test_that("apply_infection_noise keeps infections positive", {
@@ -101,18 +121,14 @@ test_that("apply_infection_noise keeps infections positive", {
     expect_gt(result, 0)
     expect_true(is.finite(result))
   }
-  expect_gt(apply_infection_noise(0, 0, 1, 0), 0)
+  expect_equal(apply_infection_noise(0, 1, 1, 0), 0)
 })
 
-test_that("generate_infections with zero noise matches deterministic infections", {
+test_that("generate_infections ignores noise when deterministic", {
   args <- list(c(1, rep(1.1, 9)), 10, gt_rev_pmf, log(1000), 0, 0, 1.0, 0, 0, 0, 1)
   det <- do.call(generate_infections, c(args, list(numeric(0), 0, 0)))
-  for (process in 1:2) {
-    stoch <- do.call(
-      generate_infections, c(args, list(rep(0, 10), process, 0.1))
-    )
-    expect_equal(stoch, det, tolerance = 1e-6)
-  }
+  ignored <- do.call(generate_infections, c(args, list(rep(1, 10), 0, 0.1)))
+  expect_equal(ignored, det)
 })
 
 test_that("generate_infections propagates infection noise through the renewal", {
@@ -123,7 +139,7 @@ test_that("generate_infections propagates infection noise through the renewal", 
   # seeding infections are unaffected
   expect_equal(stoch[1:10], det[1:10])
   # the shock is applied on the first renewal step
-  expect_equal(stoch[11], det[11] + 2 * sqrt(det[11]), tolerance = 1e-6)
+  expect_equal(stoch[11], lognormal_infections(det[11], 2), tolerance = 1e-8)
   # and feeds through to later infections despite zero later noise
   expect_true(all(stoch[12:20] > det[12:20]))
 })
@@ -136,6 +152,21 @@ test_that("generate_infections stays positive with large negative noise", {
     )
     expect_true(all(result > 0))
     expect_true(all(is.finite(result)))
+  }
+})
+
+test_that("generate_infections combines infection noise with population depletion", {
+  args <- list(
+    c(1, rep(1.5, 9)), 10, gt_rev_pmf, log(100), 500, 2, 1.0, 4, 0, 0, 1
+  )
+  det <- do.call(generate_infections, c(args, list(numeric(0), 0, 0)))
+  for (process in 1:2) {
+    stoch <- do.call(
+      generate_infections, c(args, list(rep(1, 10), process, 0.2))
+    )
+    expect_true(all(stoch > 0))
+    expect_true(all(is.finite(stoch)))
+    expect_false(isTRUE(all.equal(stoch, det)))
   }
 })
 
