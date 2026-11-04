@@ -10,6 +10,12 @@
  *
  * @return A vector of reports adjusted for day of the week effects.
  *
+ * @par Example
+ * For `reports = {100, 100}`, `day_of_week = {1, 6}` and
+ * `effect = {0.8, 0.9, 1.0, 1.0, 1.0, 1.1, 1.2}` (a week's worth of
+ * relative effects, mean 1), scaling by `wl = 7` gives
+ * `{100 * 0.8 * 7, 100 * 1.1 * 7} = {560, 770}`.
+ *
  * @ingroup observation_model
  */
 vector day_of_week_effect(vector reports, array[] int day_of_week,
@@ -28,6 +34,9 @@ vector day_of_week_effect(vector reports, array[] int day_of_week,
  * @param fraction_observed Real value representing the fraction observed.
  *
  * @return A vector of scaled reports.
+ *
+ * @par Example
+ * `scale_obs({100, 200, 300}, 0.4)` returns `{40, 80, 120}`.
  *
  * @ingroup observation_model
  */
@@ -51,6 +60,13 @@ vector scale_obs(vector reports, real fraction_observed) {
  * truncate (0) the data.
  *
  * @return A vector of truncated reports.
+ *
+ * @par Example
+ * `truncate_obs({100, 100, 100, 100}, {1.0, 0.9, 0.7, 0.4}, reconstruct = 0)`
+ * multiplies each entry by the matching truncation fraction, returning
+ * `{100, 90, 70, 40}`. Calling `truncate_obs()` again on that result with
+ * `reconstruct = 1` divides by the same fractions, recovering
+ * `{100, 100, 100, 100}`.
  *
  * @ingroup observation_model
  */
@@ -119,6 +135,10 @@ void truncation_lp(array[] real truncation_mean, array[] real truncation_sd,
  *
  * @return The negative binomial overdispersion `phi`.
  *
+ * @par Example
+ * `reporting_phi(0.2, 1)` returns `1 / 0.2^2 = 25`, while
+ * `reporting_phi(0.2, 0)` ignores the overdispersion and returns `1e5`.
+ *
  * @ingroup observation_model
  */
 real reporting_phi(real reporting_overdispersion, int model_type) {
@@ -174,6 +194,12 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
  * to accumulate or not.
  *
  * @return A vector of accumulated reports.
+ *
+ * @par Example
+ * For `reports = {10, 12, 8, 15, 20}` and `accumulate = {0, 1, 0, 0}`, index 2
+ * is not separately observed, so its value is rolled forward into index 3
+ * (`8 + 12 = 20`), giving `{10, 12, 20, 15, 20}`. This models, for example, a
+ * day whose cases are only reported together with the following day's.
  *
  * @ingroup observation_model
  */
