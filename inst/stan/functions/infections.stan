@@ -51,14 +51,15 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
 /**
  * Apply process noise to the expected number of new infections
  *
- * Draws new infections from a normal approximation to either a Poisson or a
- * negative binomial distribution using a non-centred parameterisation, so
- * that `infections = expected + sqrt(variance) * eta` with
- * `eta ~ std_normal()`. The Poisson variance is `expected` and the negative
- * binomial variance is `expected + expected^2 * overdispersion^2`, matching
- * the parameterisation of the reporting overdispersion. To keep infections
- * positive the result is passed through a softplus with a sharpness of 10,
- * which leaves values above one infection effectively unchanged.
+ * Draws new infections from a log-normal approximation to either a Poisson
+ * or a negative binomial distribution, using a non-centred
+ * parameterisation with `eta ~ std_normal()`. The log-normal is chosen to
+ * match the mean and variance of the target distribution. The Poisson
+ * variance is `expected` and the negative binomial variance is
+ * `expected + expected^2 * overdispersion^2`, matching the parameterisation
+ * of the reporting overdispersion. With
+ * `s2 = log(1 + variance / expected^2)` new infections are
+ * `exp(log(expected) - s2 / 2 + sqrt(s2) * eta)`, which keeps them positive.
  *
  * @param expected Expected number of new infections
  * @param eta Standard normal noise term
@@ -66,26 +67,28 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
  * 2 = negative binomial)
  * @param overdispersion Overdispersion of the negative binomial (one over
  * the square root of `phi`); ignored unless `infection_process` is 2
- * @return The number of new infections
+ * @return The number of new infections. Returned unchanged if
+ * `infection_process` is 0 or `expected` is not positive.
  *
  * @par Example
- * With `expected = 100`, `eta = 1` and a Poisson process the variance is
- * 100 so `apply_infection_noise(100, 1, 1, 0)` returns `100 + sqrt(100) = 110`.
+ * With `expected = 100`, `eta = 0` and a Poisson process,
+ * `s2 = log(1.01)` so `apply_infection_noise(100, 0, 1, 0)` returns the
+ * log-normal median `100 / sqrt(1.01)`, approximately 99.5.
  *
  * @ingroup infections_estimation
  */
 real apply_infection_noise(real expected, real eta, int infection_process,
                            real overdispersion) {
-  if (infection_process == 0) {
+  if (infection_process == 0 || expected <= 0) {
     return(expected);
   }
-  real variance = expected;
+  // squared coefficient of variation of the Poisson or negative binomial
+  real cv2 = inv(expected);
   if (infection_process == 2) {
-    variance += square(expected * overdispersion);
+    cv2 += square(overdispersion);
   }
-  // small offset avoids an infinite gradient of the square root at zero
-  real infections = expected + sqrt(variance + 1e-8) * eta;
-  return(log1p_exp(10 * infections) / 10);
+  real s2 = log1p(cv2);
+  return(exp(log(expected) - s2 / 2 + sqrt(s2) * eta));
 }
 
 /**
