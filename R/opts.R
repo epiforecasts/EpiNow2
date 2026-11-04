@@ -641,7 +641,8 @@ gp_opts <- function(basis_prop = NULL,
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #'   be returned by the model.
 #' @param type A character string indicating how observations relate to
-#'   latent infections, only used by [estimate_infections()]. Options are:
+#'   latent infections, used by [estimate_infections()] and
+#'   [simulate_infections()]. Options are:
 #'
 #'   - "incidence" (default): observations are a convolution of latent
 #'   infections with a reporting delay, i.e. each infection contributes to the

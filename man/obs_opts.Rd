@@ -53,7 +53,8 @@ included in the model.}
 be returned by the model.}
 
 \item{type}{A character string indicating how observations relate to
-latent infections, only used by \code{\link[=estimate_infections]{estimate_infections()}}. Options are:
+latent infections, used by \code{\link[=estimate_infections]{estimate_infections()}} and
+\code{\link[=simulate_infections]{simulate_infections()}}. Options are:
 \itemize{
 \item "incidence" (default): observations are a convolution of latent
 infections with a reporting delay, i.e. each infection contributes to the

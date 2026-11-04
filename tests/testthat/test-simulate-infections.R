@@ -56,6 +56,36 @@ test_that("simulate_infections works as expected with additional parameters", {
   set.seed(Sys.time())
 })
 
+test_that("simulate_infections uses the prevalence reporting kernel", {
+  set.seed(123)
+  sim_incidence <- test_simulate_infections(
+    generation_time = gt_opts(fix_parameters(example_generation_time)),
+    delays = delay_opts(fix_parameters(example_reporting_delay)),
+    obs = obs_opts(family = "poisson", type = "incidence"),
+    seeding_time = 10
+  )
+  set.seed(123)
+  sim_prevalence <- test_simulate_infections(
+    generation_time = gt_opts(fix_parameters(example_generation_time)),
+    delays = delay_opts(fix_parameters(example_reporting_delay)),
+    obs = obs_opts(family = "poisson", type = "prevalence"),
+    seeding_time = 10
+  )
+  expect_equal(nrow(sim_prevalence), 2 * nrow(R))
+  infections <- sim_prevalence[sim_prevalence$variable == "infections", ]
+  reported <- sim_prevalence[sim_prevalence$variable == "reported_cases", ]
+  expect_equal(nrow(reported), nrow(infections))
+  expect_true(all(reported$value >= 0))
+  expect_true(all(reported$value == round(reported$value)))
+  # same infections and RNG seed, but a different reporting kernel, so
+  # the two types of observation should not coincide
+  expect_false(identical(
+    reported$value,
+    sim_incidence[sim_incidence$variable == "reported_cases", ]$value
+  ))
+  set.seed(Sys.time())
+})
+
 test_that("simulate_infections fails with uncertain parameters", {
   expect_error(
     test_simulate_infections(
