@@ -15,7 +15,7 @@ Called for its side effects.
 \description{
 Internal check that warns when \code{\link[=obs_opts]{obs_opts()}} \code{type} has been
 set to a non-default value. \code{\link[=estimate_secondary]{estimate_secondary()}} and
-\code{\link[=simulate_secondary]{simulate_secondary()}} do not read this setting: the equivalent choice is
-made with the \code{type} argument of \code{\link[=secondary_opts]{secondary_opts()}}.
+\code{\link[=simulate_secondary]{simulate_secondary()}} ignore this setting; use the \code{type} argument of
+\code{\link[=secondary_opts]{secondary_opts()}} instead.
 }
 \keyword{internal}
