@@ -20,11 +20,7 @@ funcs <- c(
   "expgrowth_lpdf"
 )
 
-# The Stan functions that have C++ versions are declared without a body.
-# primarycensored copies the header that implements them next to the Stan
-# file, so both are written to a temporary directory first. The header goes
-# to inst/include, where inst/include/epinow2.hpp includes it. This needs a
-# primarycensored with C++ Stan functions.
+# The header must be in inst/include for inst/include/epinow2.hpp to find it
 if (!exists("pcd_stan_header", envir = asNamespace("primarycensored"))) {
   stop(
     "This primarycensored has no C++ Stan functions. ",
@@ -40,7 +36,7 @@ invisible(pcd_load_stan_functions(
   write_to_file = TRUE,
   output_file = file.path(vendor_dir, basename(output_file))
 ))
-invisible(file.copy(
+stopifnot(file.copy(
   file.path(vendor_dir, basename(output_file)), output_file,
   overwrite = TRUE
 ))
@@ -48,10 +44,10 @@ header <- setdiff(list.files(vendor_dir), basename(output_file))
 if (length(header) == 0) {
   stop("primarycensored did not write a C++ header.", call. = FALSE)
 }
-invisible(file.copy(
+stopifnot(all(file.copy(
   file.path(vendor_dir, header), header_dir,
   recursive = TRUE, overwrite = TRUE
-))
+)))
 cat("Copied header files to", header_dir, ":", toString(header), "\n")
 
 version <- packageVersion("primarycensored")
