@@ -312,8 +312,8 @@ check_truncation_obs_opts <- function(obs) {
 #'
 #' @description Internal check that warns when [obs_opts()] `type` has been
 #' set to a non-default value. [estimate_secondary()] and
-#' [simulate_secondary()] do not read this setting: the equivalent choice is
-#' made with the `type` argument of [secondary_opts()].
+#' [simulate_secondary()] ignore this setting; use the `type` argument of
+#' [secondary_opts()] instead.
 #'
 #' @param obs An `<obs_opts>` object.
 #' @importFrom cli cli_warn
