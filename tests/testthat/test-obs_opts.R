@@ -20,3 +20,20 @@ test_that("obs_opts can be used with prevalence-type observations", {
 test_that("obs_opts errors with an invalid type", {
   expect_error(obs_opts(type = "cumulative"))
 })
+
+test_that("obs_opts drops dispersion for the poisson family", {
+  expect_silent(obs <- obs_opts(family = "poisson"))
+  expect_equal(obs$family, "poisson")
+  expect_null(obs$dispersion)
+  expect_warning(
+    obs <- obs_opts(family = "poisson", dispersion = Normal(0, 0.1)),
+    "dispersion"
+  )
+  expect_null(obs$dispersion)
+})
+
+test_that("obs_opts errors for bad specifications", {
+  expect_error(obs_opts(family = "binomial"), "family")
+  expect_error(obs_opts(scale = 0.5), "dist_spec")
+  expect_error(obs_opts(dispersion = 0.1), "dist_spec")
+})

@@ -34,3 +34,7 @@ test_that("secondary_opts still applies overridden low-level options", {
   secondary <- suppressWarnings(secondary_opts(cumulative = 1))
   expect_equal(secondary$cumulative, 1)
 })
+
+test_that("secondary_opts errors for bad 'type' specifications", {
+  expect_error(secondary_opts("cumulative"), "type")
+})
