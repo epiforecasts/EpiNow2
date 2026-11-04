@@ -2,12 +2,14 @@
 #define PRIMARYCENSORED_UNIFORM_LCDF_HPP
 
 /**
- * C++ versions, with closed-form gradients, of these primarycensored Stan
- * functions for lognormal, gamma and Weibull delays with a uniform primary:
- *   primarycensored_uniform_lcdf(),
- *   primarycensored_uniform_lcdf_vectorized(). Their Stan
- * bodies, in inst/stan/functions/primarycensored_analytical_cdf.stan of the
- * primarycensored package, are the reference. Values match the Stan code.
+ * C++ versions, with closed-form gradients, of the primarycensored Stan
+ * functions primarycensored_uniform_lcdf() and
+ * primarycensored_uniform_lcdf_vectorized(), for lognormal, gamma and
+ * Weibull delays with a uniform primary.
+ *
+ * Their Stan bodies, in inst/stan/functions/primarycensored_analytical_cdf.stan
+ * of the primarycensored package, are the reference. Values match the Stan
+ * code.
  *
  * With G(t) = t F_T(t) - M(t) = E[(t - T)^+], where M is the partial
  * expectation, the censored CDF is (G(d) - G(q)) / pwindow with
