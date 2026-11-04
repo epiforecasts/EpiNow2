@@ -14,7 +14,9 @@ rt_opts(
   pop = Fixed(0),
   pop_period = c("forecast", "all"),
   pop_floor = 1,
-  growth_method = c("infections", "infectiousness")
+  growth_method = c("infections", "infectiousness"),
+  infections = c("deterministic", "poisson", "negbin"),
+  dispersion = Normal(mean = 0, sd = 0.25)
 )
 }
 \arguments{
@@ -87,6 +89,24 @@ shifts it by the mean generation time. This can provide better stability
 and temporal matching with Rt. Note that, due to the temporal shift the
 "infectiousness" method results in undefined (NaN) growth rates for the most
 recent time points (equal to the mean generation time).}
+
+\item{infections}{Character string, defaulting to "deterministic".
+Defines the process model for new infections in the renewal equation.
+"deterministic" sets new infections to their expected value given Rt and
+past infections. "poisson" and "negbin" instead treat new infections as
+stochastic, using a normal approximation to a Poisson or negative binomial
+distribution around the expected value. The noise feeds back through the
+renewal equation into future infections. Both add one standard
+normal parameter per time point. See the model definition vignette for
+details. Ignored if \code{use_rt} is \code{FALSE}.}
+
+\item{dispersion}{A \verb{<dist_spec>} specifying a prior on the overdispersion
+of new infections, used only if \code{infections} is "negbin". Parameterised as
+for the \code{dispersion} argument of \code{\link[=obs_opts]{obs_opts()}}, so that the variance of new
+infections is \eqn{\mu + \mu^2 \times \textrm{dispersion}^2}. Defaults
+to a half-normal distribution with mean of 0 and standard deviation of
+0.25: \code{Normal(mean = 0, sd = 0.25)}. A lower limit of zero will be enforced
+automatically.}
 }
 \value{
 An \verb{<rt_opts>} object with settings defining the time-varying
@@ -106,6 +126,9 @@ rt_opts(prior = LogNormal(mean = 2, sd = 1))
 
 # add a weekly random walk
 rt_opts(rw = 7)
+
+# use stochastic infections with negative binomial process noise
+rt_opts(infections = "negbin")
 }
 \references{
 Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic

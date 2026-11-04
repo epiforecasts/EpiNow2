@@ -336,7 +336,7 @@ trunc_opts <- function(dist = Fixed(0),
 #' past infections. "poisson" and "negbin" instead treat new infections as
 #' stochastic, using a normal approximation to a Poisson or negative binomial
 #' distribution around the expected value. The noise feeds back through the
-#' renewal equation into future infections. Each option adds one standard
+#' renewal equation into future infections. Both add one standard
 #' normal parameter per time point. See the model definition vignette for
 #' details. Ignored if `use_rt` is `FALSE`.
 #'
