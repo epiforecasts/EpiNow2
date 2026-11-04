@@ -132,18 +132,29 @@ real pstep_lcdf(real t, vector boundaries, vector pmf) {
 real phazard_lcdf(real t, vector boundaries, vector hazards) {
   return pstep_lcdf(t | boundaries, hazards_to_pmf(hazards));
 }
+int check_uniform_terms_params(int dist_id, array[] real params) {
+  if (dist_id == 16) return params[1] > 1;
+  if (dist_id == 19 || dist_id == 22) return params[1] > 2;
+  return 1;
+}
 int check_for_uniform_terms(int dist_id, int primary_id) {
   if (primary_id != 1) return 0;
-  return dist_id == 2 || dist_id == 1 || dist_id == 3 || dist_id == 5;
+  return dist_id == 1 || dist_id == 2 || dist_id == 3 || dist_id == 4 ||
+    dist_id == 5 || dist_id == 9 || dist_id == 13 || dist_id == 16 ||
+    dist_id == 18 || dist_id == 19 || dist_id == 21 || dist_id == 22;
 }
 int check_for_analytical(int dist_id, int primary_id) {
-  // Gamma, Lognormal, Weibull and generalised gamma with a Uniform primary
+  // Delays with uniform primary terms and a Uniform primary, see
+  // check_for_uniform_terms()
   if (check_for_uniform_terms(dist_id, primary_id)) return 1;
   // Keep this primary list in sync with `primary_lcdf`; see the note above.
   if (dist_id == 26 || dist_id == 27 || dist_id == 28) {
     return primary_id == 1 || primary_id == 2;
   }
   return 0; // No analytical solution for other combinations
+}
+int check_for_cpp_uniform(int dist_id) {
+  return dist_id == 1 || dist_id == 2 || dist_id == 3;
 }
 real primarycensored_uniform_lcdf_from_terms(vector terms_d, vector terms_q,
                                              data real pwindow) {
@@ -155,7 +166,10 @@ real primarycensored_uniform_lcdf_from_terms(vector terms_d, vector terms_q,
   if (log_A == negative_infinity() && log_B == negative_infinity()) {
     return negative_infinity();
   }
-  return log_diff_exp(log_A, log_B) - log(pwindow);
+  real log_cdf = log_diff_exp(log_A, log_B) - log(pwindow);
+  // Rounding can put the upper tail a few ulp above 1. Not fmin, which
+  // would turn a NaN into 0.
+  return log_cdf > 0 ? 0 : log_cdf;
 }
 vector primarycensored_gamma_uniform_terms(real t,
                                            array[] real params) {
@@ -164,23 +178,17 @@ vector primarycensored_gamma_uniform_terms(real t,
   }
   real shape = params[1];
   real rate = params[2];
+  real log_rate = gamma_log_rate(rate);
   // log E where E = k * theta = shape / rate is the mean of the delay
-  real log_E = log(shape) - log(rate);
-  // F_T(t; k) and the recursion to F_T(t; k+1):
-  // P(k+1, y) = P(k, y) - y^k e^{-y} / Gamma(k+1), with y = rate * t
-  real log_F_T_k = gamma_lcdf(t | shape, rate);
-  real gamma_kp1_pdf_log = shape * log(rate * t) - rate * t
-                           - lgamma(shape + 1);
-  real log_F_T_kp1 = log_diff_exp(log_F_T_k, gamma_kp1_pdf_log);
-  return [log(t) + log_F_T_k, log_E + log_F_T_kp1]';
-}
-real primarycensored_gamma_uniform_lcdf(data real d, real q,
-                                        array[] real params,
-                                        data real pwindow) {
-  return primarycensored_uniform_lcdf_from_terms(
-    primarycensored_gamma_uniform_terms(d, params),
-    primarycensored_gamma_uniform_terms(q, params), pwindow
-  );
+  real log_E = log(shape) - log_rate;
+  real log_t = log(t);
+  real log_y = log_t + log_rate;
+  real log_F_T_kp1 = gamma_lcdf_logx(log_y, shape + 1);
+  real log_lead = shape * log_y - exp(log_y) - lgamma(shape + 1);
+  return [
+    log_t + log_sum_exp(log_F_T_kp1, log_lead),
+    log_E + log_F_T_kp1
+  ]';
 }
 vector primarycensored_lognormal_uniform_terms(real t,
                                                array[] real params) {
@@ -197,18 +205,14 @@ vector primarycensored_lognormal_uniform_terms(real t,
                     : log_E + lognormal_lcdf(t | mu_sigma2, sigma);
   return [log_t_F_T, log_E_tF_T]';
 }
-real primarycensored_lognormal_uniform_lcdf(data real d, real q,
-                                            array[] real params,
-                                            data real pwindow) {
-  return primarycensored_uniform_lcdf_from_terms(
-    primarycensored_lognormal_uniform_terms(d, params),
-    primarycensored_lognormal_uniform_terms(q, params), pwindow
-  );
-}
 real log_weibull_g(real t, real shape, real scale) {
   real x = pow(t * inv(scale), shape);
   real a = 1 + inv(shape);
-  return log(gamma_p(a, x)) + lgamma(a);
+  // gamma_lcdf(x | a, 1) is log(gamma_p(a, x)), but reverse-mode gamma_p()
+  // returns zero gradients for x / a > 10
+  // (https://github.com/stan-dev/math/issues/2006). gamma_lcdf() has the
+  // same value and computes its own gradients without that cutoff.
+  return gamma_lcdf(x | a, 1) + lgamma(a);
 }
 vector primarycensored_weibull_uniform_terms(real t,
                                              array[] real params) {
@@ -221,14 +225,6 @@ vector primarycensored_weibull_uniform_terms(real t,
     log(t) + weibull_lcdf(t | shape, scale),
     log(scale) + log_weibull_g(t, shape, scale)
   ]';
-}
-real primarycensored_weibull_uniform_lcdf(data real d, real q,
-                                          array[] real params,
-                                          data real pwindow) {
-  return primarycensored_uniform_lcdf_from_terms(
-    primarycensored_weibull_uniform_terms(d, params),
-    primarycensored_weibull_uniform_terms(q, params), pwindow
-  );
 }
 vector primarycensored_gengamma_uniform_terms(real t,
                                               array[] real params) {
@@ -245,29 +241,212 @@ vector primarycensored_gengamma_uniform_terms(real t,
     log_E + gengamma_lcdf(t | shape, scale, k_shift)
   ]';
 }
-real primarycensored_gengamma_uniform_lcdf(data real d, real q,
-                                           array[] real params,
-                                           data real pwindow) {
-  return primarycensored_uniform_lcdf_from_terms(
-    primarycensored_gengamma_uniform_terms(d, params),
-    primarycensored_gengamma_uniform_terms(q, params), pwindow
-  );
+vector primarycensored_exponential_uniform_terms(real t,
+                                                 array[] real params) {
+  if (t <= 0) {
+    return rep_vector(negative_infinity(), 2);
+  }
+  real rate = params[1];
+  real x = rate * t;
+  real log_x_shortfall;
+  if (x < 0.1) {
+    // x - 1 + exp(-x) = x^2 / 2 * sum_k 2 (-x)^k / (k + 2)!
+    real term = 1;
+    real series = 1;
+    for (k in 1:10) {
+      term *= -x / (k + 2);
+      series += term;
+    }
+    log_x_shortfall = 2 * log(x) - log2() + log(series);
+  } else {
+    log_x_shortfall = log_diff_exp(log(x), log1m_exp(-x));
+  }
+  return [log_x_shortfall - log(rate), negative_infinity()]';
 }
+vector primarycensored_normal_uniform_terms(real t, array[] real params) {
+  real mu = params[1];
+  real sigma = params[2];
+  real z = (t - mu) / sigma;
+  real log_g;
+  if (z < -10) {
+    // z * Phi(z) and phi(z) cancel, so use the asymptotic series
+    real y = inv(square(z));
+    real term = 1;
+    real series = 1;
+    for (k in 1:20) {
+      term *= -(2 * k + 1) * y;
+      series += term;
+    }
+    log_g = std_normal_lpdf(z) + log(y) + log(series);
+  } else {
+    // erfc has an exact autodiff derivative, unlike std_normal_lcdf
+    log_g = log(exp(std_normal_lpdf(z)) + z * 0.5 * erfc(-z / sqrt2()));
+  }
+  return [log(sigma) + log_g, negative_infinity()]';
+}
+vector primarycensored_beta_uniform_terms(real t, array[] real params) {
+  if (t <= 0) {
+    return rep_vector(negative_infinity(), 2);
+  }
+  real a = params[1];
+  real b = params[2];
+  real log_E = log(a) - log(a + b);
+  if (t >= 1) {
+    return [log(t), log_E]';
+  }
+  return [
+    log(t) + beta_lcdf(t | a, b),
+    log_E + beta_lcdf(t | a + 1, b)
+  ]';
+}
+real primarycensored_inv_gamma_lcdf(real y, real alpha, real beta) {
+  real x = beta / y;
+  // Both need about 9 sqrt(alpha) terms at worst, near x = alpha + 1
+  real max_terms = 20 * sqrt(alpha) + 200;
+  if (x > alpha + 1) {
+    // Within 1e-9 of an integer the fraction terminates, or nearly so, at
+    // i = round(alpha). Its value has then converged but its shape gradient
+    // has not, so the loop runs 50 terms past alpha before it stops.
+    int near_int = abs(alpha - round(alpha)) < 1e-9;
+    if (near_int) max_terms += alpha + 50;
+    real b = x + 1 - alpha;
+    // Modified Lentz starts c at infinity and floors |c| and |d| at 1e-300
+    // to avoid dividing by zero
+    real c = 1e300;
+    real d = inv(b);
+    real h = d;
+    int converged = 0;
+    int i = 0;
+    while (!converged) {
+      i += 1;
+      if (i > max_terms) {
+        reject("primarycensored_inv_gamma_lcdf: continued fraction did not ",
+               "converge for x = ", x, " and alpha = ", alpha);
+      }
+      real an = -i * (i - alpha);
+      b += 2;
+      d = an * d + b;
+      d = inv(abs(d) < 1e-300 ? 1e-300 : d);
+      c = b + an / c;
+      c = abs(c) < 1e-300 ? 1e-300 : c;
+      h *= d * c;
+      // An update within 1e-15 of 1 leaves h unchanged in double precision
+      converged = abs(d * c - 1) < 1e-15 && (!near_int || i > alpha + 50);
+    }
+    return (alpha - 1) * log(x) - x - lgamma(alpha) + log(x) + log(h);
+  }
+  real term = 1;
+  real series = 1;
+  int n = 0;
+  // A term below 1e-17 of the sum leaves it unchanged in double precision
+  while (term >= 1e-17 * series) {
+    n += 1;
+    if (n > max_terms) {
+      reject("primarycensored_inv_gamma_lcdf: series did not converge for ",
+             "x = ", x, " and alpha = ", alpha);
+    }
+    term *= x / (alpha + n);
+    series += term;
+  }
+  return log1m_exp(alpha * log(x) - x - lgamma(alpha + 1) + log(series));
+}
+vector primarycensored_invgamma_uniform_terms(real t, array[] real params) {
+  real alpha = params[1];
+  real beta = params[2];
+  if (t <= 0) {
+    return rep_vector(negative_infinity(), 2);
+  }
+  real log_E = log(beta) - log(alpha - 1);
+  return [
+    log(t) + primarycensored_inv_gamma_lcdf(t | alpha, beta),
+    log_E + primarycensored_inv_gamma_lcdf(t | alpha - 1, beta)
+  ]';
+}
+vector primarycensored_pareto_uniform_terms(real t, array[] real params) {
+  real y_min = params[1];
+  real alpha = params[2];
+  if (t <= y_min) {
+    return rep_vector(negative_infinity(), 2);
+  }
+  real L = log(t) - log(y_min);
+  real e = alpha - 1;
+  real log_G_over_y_min;
+  if (L * fmax(1, abs(e)) < 0.1) {
+    // sum_{n >= 2} L^n / n! * (1 + (-1)^n e^(n - 1))
+    real power = L;
+    real e_power = 1;
+    real g = 0;
+    for (n in 2:14) {
+      power *= L / n;
+      e_power *= e;
+      g += power * (1 + (n % 2 == 0 ? e_power : -e_power));
+    }
+    log_G_over_y_min = log(g);
+  } else {
+    real u = -e * L;
+    // expm1(u) / u, with a series near 0 so the derivative is finite
+    real expm1_over_u = abs(u) < 1e-4
+      ? 1 + u * (0.5 + u * (inv(6) + u * inv(24))) : expm1(u) / u;
+    log_G_over_y_min = log(expm1(L) - L * expm1_over_u);
+  }
+  return [log(y_min) + log_G_over_y_min, negative_infinity()]';
+}
+vector primarycensored_uniform_terms(real t, data int dist_id,
+                                     array[] real params) {
+  if (dist_id == 2) {
+    return primarycensored_gamma_uniform_terms(t, params);
+  } else if (dist_id == 1) {
+    return primarycensored_lognormal_uniform_terms(t, params);
+  } else if (dist_id == 3) {
+    return primarycensored_weibull_uniform_terms(t, params);
+  } else if (dist_id == 5) {
+    return primarycensored_gengamma_uniform_terms(t, params);
+  } else if (dist_id == 4) {
+    return primarycensored_exponential_uniform_terms(t, params);
+  } else if (dist_id == 18) {
+    return primarycensored_normal_uniform_terms(t, params);
+  } else if (dist_id == 16) {
+    return primarycensored_invgamma_uniform_terms(t, params);
+  } else if (dist_id == 13) {
+    // Gamma with shape nu / 2 and rate 1 / 2
+    return primarycensored_gamma_uniform_terms(t, {params[1] / 2, 0.5});
+  } else if (dist_id == 19) {
+    // Inverse gamma with shape nu / 2 and scale 1 / 2
+    return primarycensored_invgamma_uniform_terms(
+      t, {params[1] / 2, 0.5}
+    );
+  } else if (dist_id == 22) {
+    // Inverse gamma with shape nu / 2 and scale nu * s^2 / 2
+    return primarycensored_invgamma_uniform_terms(
+      t, {params[1] / 2, params[1] * square(params[2]) / 2}
+    );
+  } else if (dist_id == 21) {
+    return primarycensored_pareto_uniform_terms(t, params);
+  } else if (dist_id == 9) {
+    return primarycensored_beta_uniform_terms(t, params);
+  }
+  reject("Invalid distribution identifier: ", dist_id);
+}
+real primarycensored_uniform_lcdf(data real d, data int dist_id,
+                                  array[] real params, data real pwindow);
 real primarycensored_analytical_lcdf_raw(data real d, int dist_id,
                                          array[] real params,
                                          data real pwindow,
                                          int primary_id,
                                          array[] real primary_params) {
-  real q = max({d - pwindow, 0});
+  // Delays on the reals are not clipped at 0
+  real q = dist_has_positive_support(dist_id) ? max({d - pwindow, 0.0})
+                                              : d - pwindow;
 
-  if (dist_id == 2 && primary_id == 1) {
-    return primarycensored_gamma_uniform_lcdf(d | q, params, pwindow);
-  } else if (dist_id == 1 && primary_id == 1) {
-    return primarycensored_lognormal_uniform_lcdf(d | q, params, pwindow);
-  } else if (dist_id == 3 && primary_id == 1) {
-    return primarycensored_weibull_uniform_lcdf(d | q, params, pwindow);
-  } else if (dist_id == 5 && primary_id == 1) {
-    return primarycensored_gengamma_uniform_lcdf(d | q, params, pwindow);
+  if (primary_id == 1 && check_for_cpp_uniform(dist_id)) {
+    return primarycensored_uniform_lcdf(d | dist_id, params, pwindow);
+  } else if (check_for_uniform_terms(dist_id, primary_id)) {
+    // The Beta CDF is exactly 1 once the window is above its support
+    if (dist_id == 9 && q >= 1) return 0;
+    return primarycensored_uniform_lcdf_from_terms(
+      primarycensored_uniform_terms(d, dist_id, params),
+      primarycensored_uniform_terms(q, dist_id, params), pwindow
+    );
   } else if (dist_id == 26) {
     // params = [boundaries (K+1), pmf (K)]; length 2*K + 1.
     int K = (size(params) - 1) %/% 2;
@@ -289,6 +468,13 @@ real primarycensored_analytical_lcdf_raw(data real d, int dist_id,
   }
   return negative_infinity();
 }
+real primarycensored_analytical_cdf(data real d, int dist_id,
+                                          array[] real params,
+                                          data real pwindow, data real L,
+                                          data real D, int primary_id,
+                                          array[] real primary_params) {
+  return exp(primarycensored_analytical_lcdf(d | dist_id, params, pwindow, L, D, primary_id, primary_params));
+}
 real primarycensored_analytical_lcdf(data real d, int dist_id,
                                            array[] real params,
                                            data real pwindow, data real L,
@@ -301,8 +487,10 @@ real primarycensored_analytical_lcdf(data real d, int dist_id,
     d, dist_id, params, pwindow, primary_id, primary_params
   );
 
-  // Apply truncation normalization
-  if (!is_inf(D) || L > 0) {
+  // Apply truncation normalization. Skip when F(L) = 0 makes it a no-op
+  // (positive support, L <= 0), as in primarycensored_cdf().
+  if (!is_inf(D) || L > 0 ||
+      (!is_inf(L) && !dist_has_positive_support(dist_id))) {
     vector[2] bounds = primarycensored_truncation_bounds(
       L, D, dist_id, params, pwindow, primary_id, primary_params
     );
@@ -315,49 +503,51 @@ real primarycensored_analytical_lcdf(data real d, int dist_id,
 
   return result;
 }
-real primarycensored_analytical_cdf(data real d, int dist_id,
-                                          array[] real params,
-                                          data real pwindow, data real L,
-                                          data real D, int primary_id,
-                                          array[] real primary_params) {
-  return exp(primarycensored_analytical_lcdf(d | dist_id, params, pwindow, L, D, primary_id, primary_params));
-}
 int check_for_analytical_vectorized(int dist_id, int primary_id,
                                     data real pwindow) {
   return check_for_uniform_terms(dist_id, primary_id) &&
     pwindow >= 1 && floor(pwindow) == pwindow;
 }
-vector primarycensored_uniform_terms(real t, data int dist_id,
-                                     array[] real params) {
-  if (dist_id == 2) {
-    return primarycensored_gamma_uniform_terms(t, params);
-  } else if (dist_id == 1) {
-    return primarycensored_lognormal_uniform_terms(t, params);
-  } else if (dist_id == 3) {
-    return primarycensored_weibull_uniform_terms(t, params);
-  } else if (dist_id == 5) {
-    return primarycensored_gengamma_uniform_terms(t, params);
+vector primarycensored_uniform_terms_lcdf_vectorized(data int start,
+                                                     data int n,
+                                                     data int dist_id,
+                                                     array[] real params,
+                                                     data real pwindow) {
+  int pw = to_int(pwindow);
+  vector[n] log_cdfs;
+  int first = dist_has_positive_support(dist_id) ? max(start - pw, 0)
+                                                 : start - pw;
+  // terms[t - first + 1] holds the terms at delay t
+  array[n - first + 1] vector[2] terms;
+  for (t in first:n) {
+    terms[t - first + 1] = primarycensored_uniform_terms(t, dist_id, params);
   }
-  reject("Invalid distribution identifier: ", dist_id);
+  for (d in start:n) {
+    int q = dist_has_positive_support(dist_id) ? max(d - pw, 0) : d - pw;
+    log_cdfs[d] = (dist_id == 9 && q >= 1) ? 0
+      : primarycensored_uniform_lcdf_from_terms(
+          terms[d - first + 1], terms[q - first + 1], pwindow
+        );
+  }
+  return log_cdfs;
 }
+vector primarycensored_uniform_lcdf_vectorized(data int start, data int n,
+                                               data int dist_id,
+                                               array[] real params,
+                                               data real pwindow);
 vector primarycensored_analytical_lcdf_vectorized(data int start,
                                                   data int n,
                                                   data int dist_id,
                                                   array[] real params,
                                                   data real pwindow) {
-  int pw = to_int(pwindow);
-  vector[n] log_cdfs;
-  // terms[t + 1] holds the terms at delay t
-  array[n + 1] vector[2] terms;
-  for (t in max(start - pw, 0):n) {
-    terms[t + 1] = primarycensored_uniform_terms(t, dist_id, params);
-  }
-  for (d in start:n) {
-    log_cdfs[d] = primarycensored_uniform_lcdf_from_terms(
-      terms[d + 1], terms[max(d - pw, 0) + 1], pwindow
+  if (check_for_cpp_uniform(dist_id)) {
+    return primarycensored_uniform_lcdf_vectorized(
+      start, n, dist_id, params, pwindow
     );
   }
-  return log_cdfs;
+  return primarycensored_uniform_terms_lcdf_vectorized(
+    start, n, dist_id, params, pwindow
+  );
 }
 int dist_has_positive_support(data int dist_id) {
   if (dist_id == 1) return 1;   // Lognormal
@@ -386,6 +576,31 @@ real primary_lcdf(real p, int primary_id, array[] real primary_params,
   }
   reject("primary_lcdf: unsupported primary_id ", primary_id);
 }
+real gamma_lcdf_logx(real log_x, real a) {
+  if (!(a > 0) || is_inf(a)) {
+    reject("gamma_lcdf_logx: shape must be positive finite, found ", a);
+  }
+  real x = exp(log_x);
+  if (!(x < 0.5 * (a + 1))) {
+    return gamma_lcdf(x | a, 1);
+  }
+  // Each term is at most half the one before
+  real term = 1;
+  real total = 1;
+  real n = a;
+  while (term > 1e-16 * total) {
+    n += 1;
+    term *= x / n;
+    total += term;
+  }
+  return a * log_x - x - lgamma(a + 1) + log(total);
+}
+real gamma_log_rate(real rate) {
+  if (!(rate > 0) || is_inf(rate)) {
+    reject("Gamma rate must be positive finite, found ", rate);
+  }
+  return log(rate);
+}
 int lognormal_lcdf_underflows(real y, real mu, real sigma) {
   if (y <= 0) {
     return 1;
@@ -393,7 +608,13 @@ int lognormal_lcdf_underflows(real y, real mu, real sigma) {
   return (log(y) - mu) / sigma < -38 ? 1 : 0;
 }
 real gengamma_lcdf(real y, real shape, real scale, real k) {
-  return gamma_lcdf(pow(y / scale, shape) | k, 1);
+  if (y < 0) {
+    reject("gengamma_lcdf: y must be non-negative, found y = ", y);
+  }
+  if (y == 0) {
+    return negative_infinity();
+  }
+  return gamma_lcdf_logx(shape * (log(y) - log(scale)), k);
 }
 real dist_lcdf(real delay, array[] real params, int dist_id) {
   if (dist_has_positive_support(dist_id) && delay <= 0) {
@@ -408,11 +629,16 @@ real dist_lcdf(real delay, array[] real params, int dist_id) {
            ? negative_infinity()
            : lognormal_lcdf(delay | params[1], params[2]);
   }
-  else if (dist_id == 2) return gamma_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 2) {
+    return gamma_lcdf_logx(log(delay) + gamma_log_rate(params[2]), params[1]);
+  }
   else if (dist_id == 3) return weibull_lcdf(delay | params[1], params[2]);
   else if (dist_id == 4) return exponential_lcdf(delay | params[1]);
   else if (dist_id == 5) return gengamma_lcdf(delay | params[1], params[2], params[3]);
-  else if (dist_id == 9) return beta_lcdf(delay | params[1], params[2]);
+  else if (dist_id == 9) {
+    // The Beta has support on [0, 1], and beta_lcdf rejects delay > 1
+    return delay >= 1 ? 0 : beta_lcdf(delay | params[1], params[2]);
+  }
   else if (dist_id == 12) return cauchy_lcdf(delay | params[1], params[2]);
   else if (dist_id == 13) return chi_square_lcdf(delay | params[1]);
   else if (dist_id == 15) return gumbel_lcdf(delay | params[1], params[2]);
@@ -477,6 +703,12 @@ vector primarycensored_ode(real t, vector y, array[] real theta,
   real log_primary_pdf = primary_lpdf(d - t | primary_id, primary_params, 0, pwindow);
 
   return rep_vector(exp(log_cdf + log_primary_pdf), 1);
+}
+real primarycensored_log_cdf_diff(real log_cdf_upper, real log_cdf_lower) {
+  if (log_cdf_upper <= log_cdf_lower) {
+    return negative_infinity();
+  }
+  return log_diff_exp(log_cdf_upper, log_cdf_lower);
 }
 real primarycensored_log_normalizer(real log_cdf_D, real log_cdf_L, real L) {
   if (!is_inf(L)) {
@@ -544,7 +776,8 @@ real primarycensored_cdf(data real d, data int dist_id, array[] real params,
   }
 
   // Check if an analytical solution exists
-  if (check_for_analytical(dist_id, primary_id)) {
+  if (check_for_analytical(dist_id, primary_id) &&
+      check_uniform_terms_params(dist_id, params)) {
     // Use analytical solution
     result = primarycensored_analytical_cdf(
       d | dist_id, params, pwindow, L, D, primary_id, primary_params
@@ -603,7 +836,8 @@ real primarycensored_lcdf(data real d, data int dist_id, array[] real params,
   // Check if an analytical solution exists. The internal lower bound is 0 for
   // positive-support delays (lets the d <= L early-exit return -inf for d <= 0)
   // and -inf for distributions with support on the reals.
-  if (check_for_analytical(dist_id, primary_id)) {
+  if (check_for_analytical(dist_id, primary_id) &&
+      check_uniform_terms_params(dist_id, params)) {
     result = primarycensored_analytical_lcdf(
       d | dist_id, params, pwindow,
       dist_has_positive_support(dist_id) ? 0.0 : negative_infinity(),
@@ -697,16 +931,18 @@ real primarycensored_lpmf(data int d, data int dist_id, array[] real params,
     }
 
     real log_normalizer = primarycensored_log_normalizer(log_cdf_D, log_cdf_L, L);
-    return log_diff_exp(log_cdf_upper, log_cdf_lower) - log_normalizer;
+    return primarycensored_log_cdf_diff(log_cdf_upper, log_cdf_lower)
+           - log_normalizer;
   } else {
-    return log_diff_exp(log_cdf_upper, log_cdf_lower);
+    return primarycensored_log_cdf_diff(log_cdf_upper, log_cdf_lower);
   }
 }
 vector primarycensored_lcdf_vectorized(data int start, data int n,
                                        data int dist_id, array[] real params,
                                        data real pwindow, data int primary_id,
                                        array[] real primary_params) {
-  if (check_for_analytical_vectorized(dist_id, primary_id, pwindow)) {
+  if (check_for_analytical_vectorized(dist_id, primary_id, pwindow) &&
+      check_uniform_terms_params(dist_id, params)) {
     return primarycensored_analytical_lcdf_vectorized(
       start, n, dist_id, params, pwindow
     );
@@ -791,7 +1027,8 @@ vector primarycensored_sone_lpmf_vectorized(
       log_pmfs[d] = negative_infinity();
     } else if (d - 1 < L) {
       // L falls within interval [d-1, d), so compute mass in [L, d)
-      log_pmfs[d] = log_diff_exp(log_cdfs[d], log_cdf_L) - log_normalizer;
+      log_pmfs[d] = primarycensored_log_cdf_diff(log_cdfs[d], log_cdf_L)
+                    - log_normalizer;
     } else if (d == 1 && dist_has_positive_support(dist_id)) {
       // First interval [0, 1) with L <= 0 and positive-support delay:
       // F(0) = 0, so PMF = F(1) / normalizer
@@ -804,10 +1041,12 @@ vector primarycensored_sone_lpmf_vectorized(
         negative_infinity(), positive_infinity(),
         primary_id, primary_params
       );
-      log_pmfs[d] = log_diff_exp(log_cdfs[d], log_cdf_0) - log_normalizer;
+      log_pmfs[d] = primarycensored_log_cdf_diff(log_cdfs[d], log_cdf_0)
+                    - log_normalizer;
     } else {
       // Standard case: PMF = (F(d) - F(d-1)) / normalizer
-      log_pmfs[d] = log_diff_exp(log_cdfs[d], log_cdfs[d-1]) - log_normalizer;
+      log_pmfs[d] = primarycensored_log_cdf_diff(log_cdfs[d], log_cdfs[d-1])
+                    - log_normalizer;
     }
   }
 

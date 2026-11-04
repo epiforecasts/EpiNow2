@@ -5,6 +5,7 @@
 library(primarycensored)
 
 output_file <- "inst/stan/functions/primarycensored.stan"
+header_dir <- "inst/include"
 
 # primarycensored_ode, dist_lcdf, primary_lpdf, and
 # expgrowth_lpdf are passed by reference (e.g. to ode_rk45)
@@ -19,12 +20,35 @@ funcs <- c(
   "expgrowth_lpdf"
 )
 
+# The header must be in inst/include for inst/include/epinow2.hpp to find it
+if (!exists("pcd_stan_header", envir = asNamespace("primarycensored"))) {
+  stop(
+    "This primarycensored has no C++ Stan functions. ",
+    "Install a version that does.",
+    call. = FALSE
+  )
+}
+vendor_dir <- tempfile("primarycensored")
+dir.create(vendor_dir)
 invisible(pcd_load_stan_functions(
   functions = funcs,
   dependencies = TRUE,
   write_to_file = TRUE,
-  output_file = output_file
+  output_file = file.path(vendor_dir, basename(output_file))
 ))
+stopifnot(file.copy(
+  file.path(vendor_dir, basename(output_file)), output_file,
+  overwrite = TRUE
+))
+header <- setdiff(list.files(vendor_dir), basename(output_file))
+if (length(header) == 0) {
+  stop("primarycensored did not write a C++ header.", call. = FALSE)
+}
+stopifnot(all(file.copy(
+  file.path(vendor_dir, header), header_dir,
+  recursive = TRUE, overwrite = TRUE
+)))
+cat("Copied header files to", header_dir, ":", toString(header), "\n")
 
 version <- packageVersion("primarycensored")
 all_funcs <- unique(unlist(lapply(

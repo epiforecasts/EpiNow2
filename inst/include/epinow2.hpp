@@ -3,6 +3,8 @@
 
 // C++ Stan functions declared without a body in inst/stan/functions.
 // Must be included before the model code.
+// primarycensored.hpp is vendored by inst/dev/vendor-primarycensored.R.
+#include "primarycensored.hpp"
 #include "epinow2/convolve_with_rev_pmf.hpp"
 #include "epinow2/renewal_infections.hpp"
 #include "epinow2/R_to_r.hpp"

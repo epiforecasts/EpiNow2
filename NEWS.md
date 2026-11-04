@@ -14,6 +14,7 @@
 - The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient.
 - `R_to_r()` is now implemented in C++ with a gradient from the implicit function theorem.
 - Simplified the Stan code that combines delays in `get_delay_rev_pmf()`, with new property tests for the delay functions.
+- Updated the vendored primarycensored Stan functions, which now use primarycensored's C++ uniform primary log CDFs for lognormal, gamma and Weibull delays. The update also adds primarycensored's analytical solutions for more delay distributions and its fixes to the Weibull and gamma gradients.
 
 - Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
 

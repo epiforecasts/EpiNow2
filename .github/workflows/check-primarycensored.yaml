@@ -46,10 +46,11 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ steps.generate_token.outputs.token }}
-          commit-message: Update vendored primarycensored Stan functions
+          commit-message: Update vendored primarycensored Stan functions and header
           title: Update vendored primarycensored Stan functions
           body: |
-            The vendored primarycensored Stan functions are out of date
+            The vendored primarycensored Stan functions (and C++ header in
+            `inst/include`) are out of date
             with the latest CRAN version. This PR updates them.
 
             Please verify the changes before merging.
