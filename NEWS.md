@@ -11,6 +11,9 @@
 
 - Added optional stochastic infections to the renewal model via `rt_opts(infections = "poisson")` or `rt_opts(infections = "negbin")`, which use a normal approximation to a Poisson or negative binomial process around the expected infections. The default (`"deterministic"`) is unchanged.
 
+- Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior.
+- Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
+
 ## Package changes
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
@@ -22,6 +25,7 @@
 - Added tests for summarising, formatting and reading back fitted and regional results.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
 - The README commits-since badge now tracks the latest release automatically.
+- Renamed the Stan convolution index helpers to `xlen_conv_indices()` and `len_conv_indices()`, and the prior distribution error now names the allowed values.
 
 ## Bug fixes
 
@@ -49,6 +53,7 @@
 
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
 - Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
+- Added unit tests for the Stan functions that calculate secondary reports, Rt from infections, the reporting log likelihood and sampled reports.
 
 # EpiNow2 1.9.0
 
