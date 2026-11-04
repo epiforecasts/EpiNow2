@@ -289,7 +289,9 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
       "infections" = 0, "infectiousness" = 1
     )[[rt$growth_method]],
     infection_process = if (rt$use_rt) {
-      match(rt$infections, c("deterministic", "poisson", "negbin")) - 1L
+      match(
+        rt$infection_process, c("deterministic", "poisson", "negbin")
+      ) - 1L
     } else {
       0L
     }
