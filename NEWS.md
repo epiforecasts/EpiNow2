@@ -9,6 +9,7 @@
 
 ## Model changes
 
+- Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior.
 - Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
 
 ## Package changes
