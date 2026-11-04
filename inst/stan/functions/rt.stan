@@ -168,6 +168,15 @@ void rt_lp(array[] real initial_infections_scale, vector bp_effects,
  * @param abs_tol Absolute tolerance for the Newton solver
  * @return The estimated growth rate r
  *
+ * @par Example
+ * For a generation time with probability `{0.1, 0.3, 0.4, 0.2}` of taking 0,
+ * 1, 2 or 3 days (in practice the 0-day probability would be at or near
+ * zero, as a non-zero one is rejected when the generation time is given as
+ * a nonparametric PMF), the reversed PMF is
+ * `gt_rev_pmf = {0.2, 0.4, 0.3, 0.1}`.
+ * `R_to_r(1.5, gt_rev_pmf, 1e-6)` then returns a growth rate of
+ * approximately `0.254` per day.
+ *
  * @ingroup rt_estimation
  */
 real R_to_r(real R, vector gt_rev_pmf, data real abs_tol);
