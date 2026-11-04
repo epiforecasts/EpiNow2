@@ -373,16 +373,16 @@ test_that("create_stan_params resolves the future setting into model data", {
   expect_equal(as.integer(fixed_from$state_future_from), -3L)
 })
 
-test_that("create_stan_params rejects periodic kernel states", {
+test_that("create_stan_params emits periodic kernel state data", {
   params <- list(
-    make_param("fraction_observed", GP(mean = Normal(0.5, 0.1),
-      kernel = "periodic"
+    make_param("fraction_observed", GP(
+      mean = Normal(0.5, 0.1), kernel = "periodic", w0 = 2,
+      basis_prop = 0.2, boundary_scale = 1.5
     ), lower_bound = 0)
   )
-  expect_error(
-    create_stan_params(params, states_supported = "fraction_observed"),
-    "Periodic"
-  )
+  out <- create_stan_params(params, states_supported = "fraction_observed")
+  expect_identical(out$gp_kernel, array(1L))
+  expect_identical(out$gp_w0, array(2))
 })
 
 test_that("create_stan_params emits state data for reporting_overdispersion", {

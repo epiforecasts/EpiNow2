@@ -59,7 +59,7 @@ transformed data {
   array[n_states] int state_n_centre;  // centring window per state
   array[n_components] int comp_rw_n;     // RW steps per component (0 for GP)
   array[n_components] int comp_rw_offset;// offset into the flat RW step vector
-  array[n_components] int comp_gp_M;     // GP basis functions per component (0 for RW)
+  array[n_components] int comp_gp_M;     // GP basis coefficients per component (0 for RW; doubled for the periodic kernel's cosine/sine pairs)
   array[n_components] int comp_gp_offset;// offset into the flat GP coefficient vec
   int n_rw_steps = 0;                  // total RW steps across components
   int n_gp_coef = 0;                   // total GP coefficients across components
@@ -101,7 +101,12 @@ transformed data {
         n_rw_steps += comp_rw_n[c];
       } else {
         comp_rw_n[c] = 0;
-        comp_gp_M[c] = to_int(ceil(free_window * gp_basis_prop[comp_pos[c]]));
+        int p = comp_pos[c];
+        int M_base = to_int(ceil(free_window * gp_basis_prop[p]));
+        // the periodic kernel's basis comes in cosine/sine pairs, so it has
+        // twice as many coefficients as the same (base) number of basis
+        // functions for every other kernel
+        comp_gp_M[c] = gp_kernel[p] == 1 ? 2 * M_base : M_base;
         n_gp_coef += comp_gp_M[c];
       }
     }
@@ -129,8 +134,13 @@ transformed data {
       int c = state_comp_offset[s] + k;
       if (comp_type[c] == 1) {
         int p = comp_pos[c];
-        gp_phi[p, 1:state_n_free[s], 1:comp_gp_M[c]] =
-          setup_gp(comp_gp_M[c], gp_boundary_scale[p], state_n_free[s], 0, 1.0);
+        int periodic = gp_kernel[p] == 1;
+        // setup_gp()'s own M is the base (pre-doubling) number of basis
+        // functions; it returns 2*M columns itself for the periodic kernel
+        int M_base = periodic ? comp_gp_M[c] %/% 2 : comp_gp_M[c];
+        gp_phi[p, 1:state_n_free[s], 1:comp_gp_M[c]] = setup_gp(
+          M_base, gp_boundary_scale[p], state_n_free[s], periodic, gp_w0[p]
+        );
       }
     }
   }

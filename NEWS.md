@@ -7,6 +7,7 @@
 - `RW()` gains a `knots` argument for irregular (rather than regularly spaced) random-walk steps, given as a `<Date>` vector or integer time-step positions, e.g. `RW(knots = as.Date(c("2020-03-23", "2020-06-15")))`.
 - The back-calculation (non-mechanistic) model represents latent infections through the same interface, as a Gaussian process on the log scale anchored at an initial value, set with `backcalc_opts(prior = GP(...))`. This replaces the earlier deconvolution of smoothed, shifted reported cases.
 - Added a `plot()` method for `GP()`/`RW()` specifications that draws prior-predictive trajectories, so you can see what a prior implies before fitting.
+- `GP()`'s `basis_prop` and `boundary_scale` default to `NULL`, in which case each Gaussian process component chooses its own boundary and number of basis functions from its lengthscale prior and its own free-noise window, following Riutort-Mayol et al. (2023). A warning is given after fitting if a component's posterior lengthscale falls outside the range its chosen settings approximate accurately. The periodic kernel is now fully supported by the state interface.
 
 ## Breaking changes
 

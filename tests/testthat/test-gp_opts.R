@@ -1,7 +1,7 @@
 test_that("GP() builds correct default Gaussian process settings", {
   gp <- GP(init = LogNormal(mean = 1, sd = 1))$components[[1]]$settings
-  expect_equal(gp$basis_prop, 0.2)
-  expect_equal(gp$boundary_scale, 1.5)
+  expect_null(gp$basis_prop)
+  expect_null(gp$boundary_scale)
   expect_equal(gp$alpha, Normal(0, 0.01))
   expect_equal(gp$ls, LogNormal(mean = 21, sd = 7, max = 60))
   expect_equal(gp$kernel, "matern")

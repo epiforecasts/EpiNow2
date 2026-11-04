@@ -5,8 +5,8 @@
 \title{Approximate Gaussian Process Settings}
 \usage{
 gp_opts(
-  basis_prop = 0.2,
-  boundary_scale = 1.5,
+  basis_prop = NULL,
+  boundary_scale = NULL,
   ls = LogNormal(mean = 21, sd = 7, max = 60),
   alpha = Normal(mean = 0, sd = 0.01),
   kernel = c("matern", "se", "ou", "periodic"),
@@ -16,15 +16,13 @@ gp_opts(
 }
 \arguments{
 \item{basis_prop}{Numeric, the proportion of time points to use as basis
-functions. Defaults to 0.2. Decreasing this value results in a decrease in
-accuracy but a faster compute time (with increasing it having the first
-effect). In general smaller posterior length scales require a higher
-proportion of basis functions. See (Riutort-Mayol et al. 2020
-\url{https://arxiv.org/abs/2004.11408}) for advice on updating this default.}
+functions. Defaults to \code{NULL}, in which case the number of basis functions
+is chosen from the lengthscale prior; see \code{\link[=GP]{GP()}} for details.}
 
-\item{boundary_scale}{Numeric, defaults to 1.5. Boundary scale of the
-approximate Gaussian process. See (Riutort-Mayol et al. 2020
-\url{https://arxiv.org/abs/2004.11408}) for advice on updating this default.}
+\item{boundary_scale}{Numeric, the boundary factor of the approximate
+Gaussian process relative to the half-range of the time points. Defaults to
+\code{NULL}, in which case it is chosen from the lengthscale prior; see \code{\link[=GP]{GP()}}
+for details. Not used by the periodic kernel.}
 
 \item{ls}{A \verb{<dist_spec>} giving the prior distribution of the lengthscale
 parameter of the Gaussian process kernel on the scale of days. Defaults to
@@ -42,8 +40,7 @@ automatically to ensure positivity)}
 
 \item{kernel}{Character string, the type of kernel required. Currently
 supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
-periodic kernel, Ornstein-Uhlenbeck #' kernel ("ou"), and the periodic
-kernel ("periodic").}
+Ornstein-Uhlenbeck kernel ("ou"), and the periodic kernel ("periodic").}
 
 \item{matern_order}{Numeric, defaults to 3/2. Order of Matérn Kernel to use.
 Common choices are 1/2, 3/2, and 5/2. If \code{kernel} is set
@@ -69,6 +66,9 @@ gp_opts()
 # add a custom length scale
 gp_opts(ls = LogNormal(mean = 4, sd = 1, max = 20))
 
-# use linear kernel
+# use periodic kernel
 gp_opts(kernel = "periodic")
+
+# set the approximation manually
+gp_opts(basis_prop = 0.2, boundary_scale = 1.5)
 }

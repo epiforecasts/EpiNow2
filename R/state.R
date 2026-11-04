@@ -148,10 +148,14 @@ resolve_state_dates <- function(spec, dates) {
 }
 
 #' @rdname state
-#' @param basis_prop Numeric, the proportion of time points to use as basis
-#'   functions for the Gaussian process. Defaults to 0.2.
-#' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the
-#'   approximate Gaussian process.
+#' @param basis_prop Numeric, the proportion of the component's free-noise
+#'   window to use as basis functions. Defaults to `NULL`, in which case the
+#'   number of basis functions is chosen from the lengthscale prior and that
+#'   window (see Details).
+#' @param boundary_scale Numeric, the boundary factor of the approximate
+#'   Gaussian process relative to the half-range of the component's
+#'   free-noise window. Defaults to `NULL`, in which case it is chosen from
+#'   the lengthscale prior (see Details). Not used by the periodic kernel.
 #' @param ls A `<dist_spec>` giving the prior on the Gaussian process
 #'   lengthscale (on the scale of days). Defaults to
 #'   `LogNormal(mean = 21, sd = 7, max = 60)`.
@@ -173,6 +177,23 @@ resolve_state_dates <- function(spec, dates) {
 #'   the most recent values are least informed), or an integer giving the point,
 #'   relative to the forecast horizon, from which the state is held constant (a
 #'   negative value fixes it that many steps before the horizon starts).
+#' @details
+#' A Gaussian process component is approximated using the Hilbert space
+#' method of Riutort-Mayol et al. (2023) \doi{10.1007/s11222-022-10167-2}. Its
+#' accuracy depends on the boundary factor and number of basis functions
+#' relative to the lengthscale, applied over the component's own free-noise
+#' window (the part of its state's trajectory that is estimated rather than
+#' held fixed through the forecast horizon; see `future`). By default both
+#' are chosen from the 5% and 95% quantiles of the lengthscale prior using
+#' the relationships in Section 4.3.1 of that paper, so that lengthscales in
+#' this range are approximated accurately. The Ornstein-Uhlenbeck kernel
+#' (Matern with `matern_order = 1/2`) is not covered by the paper; its number
+#' of basis functions uses a relationship derived for it, and its boundary
+#' uses the Matern 3/2 relationship (not independently validated). The
+#' periodic kernel has no boundary, and its number of basis functions is
+#' chosen from the 5% quantile using Appendix B. After fitting, a warning is
+#' given if the posterior median lengthscale lies outside the range the
+#' approximation represents accurately.
 #' @export
 #' @examples
 #' # mean-reverting Gaussian process
@@ -183,9 +204,11 @@ resolve_state_dates <- function(spec, dates) {
 #' GP(init = Normal(mean = 5, sd = 1), kernel = "se")
 #' # project the Gaussian process into the forecast horizon
 #' GP(init = Normal(mean = 5, sd = 1), future = "project")
+#' # set the approximation manually instead of choosing it automatically
+#' GP(init = Normal(mean = 5, sd = 1), basis_prop = 0.2, boundary_scale = 1.5)
 GP <- function(mean, init,
-               basis_prop = 0.2,
-               boundary_scale = 1.5,
+               basis_prop = NULL,
+               boundary_scale = NULL,
                ls = LogNormal(mean = 21, sd = 7, max = 60),
                alpha = Normal(mean = 0, sd = 0.01),
                kernel = c("matern", "se", "ou", "periodic"),

@@ -149,14 +149,50 @@ Relevant default priors are
 
 with $\rho$ additionally constrained with an upper bound of $60$ and $\mu_{\rho}$ and $\sigma_\rho$ calculated using a mean of 21 and standard deviation of 7.
 
-Furthermore, by default we set.
+# Choosing the boundary and number of basis functions
+
+The accuracy of the approximation depends on the boundary $L$ and the number of basis functions $m$ relative to the lengthscale.
+We write $L = cS$ with $c$ the boundary factor and $S$ the half-range of the time points, and $\ell = \rho / S$ for the lengthscale relative to the half-range.
+For the Matérn 3/2 kernel, @approxGP (Section 4.3.1) show that the approximation is accurate when
 
 \begin{align}
-b &= 0.2 \\
-L &= 1.5
+c &\geq \max(1.2, 4.5 \ell) \\
+m &\geq 3.42 \frac{c}{\ell}
 \end{align}
 
-These values as well as the prior distributions of relevant parameters can all be changed by the user.
+with constants $(3.2, 1.75)$ for the squared exponential kernel and $(4.1, 2.65)$ for the Matérn 5/2 kernel.
+Longer lengthscales therefore need a wider boundary, and for a given lengthscale no number of basis functions compensates for a boundary that is too narrow.
+Shorter lengthscales need more basis functions.
+
+By default, `GP()` sets $c$ from the 95% quantile of the lengthscale prior and then $m$ from the 5% quantile, so that lengthscales across the bulk of the prior are approximated accurately.
+This 5%/95% split is a convention, not something @approxGP derive; it is not revisited by a diagnostic the way $m$ and $c$ themselves are (see below), so it is worth keeping in mind as a source of inaccuracy distinct from the $m$/$c$ relationships.
+@approxGP do not cover the Ornstein-Uhlenbeck kernel (Matérn 1/2).
+Reproducing their simulation procedure for it gives $m \geq 8.6 \frac{c}{\ell}$: Matérn 1/2 is the roughest of the four kernels covered here, so it needs more basis functions than Matérn 3/2 for the same accuracy, not fewer.
+Its boundary constant was not independently re-derived and keeps the Matérn 3/2 value ($c \geq 4.5 \ell$), which is not confirmed conservative for this kernel.
+The periodic kernel does not use a boundary, and @approxGP (Appendix B) show that it is approximated accurately when $m \geq 3.72 / \ell$.
+By default, `GP()` sets $m$ for the periodic kernel from the 5% quantile of the lengthscale prior.
+
+After fitting, `EpiNow2` applies the lengthscale diagnostic of @approxGP (Section 4.5) to each Gaussian process component.
+A warning is given if the posterior median lengthscale is shorter than the $3.42 c S / m$ days that $m$ basis functions can represent, or longer than the $c S / 4.5$ days that the boundary supports.
+For the periodic kernel only the first check applies, with $3.72 S / m$ days.
+Either can be addressed by adjusting the lengthscale prior, from which the settings are chosen, or by setting `basis_prop` and `boundary_scale` in `GP()` directly.
+
+## Checking the approximation
+
+@approxGP (Section 4.5.1) give a step-by-step procedure for checking the approximation.
+Adapted to `EpiNow2` with the Matérn 3/2 kernel, it is as follows.
+
+- Fit the model with the default settings, which are chosen from the lengthscale prior. This replaces the single initial guess of the lengthscale in the paper.
+- Check that the model has converged before reading the lengthscale diagnostic: the diagnostic reads the posterior median lengthscale, which is not meaningful from a chain that has not converged. If it has not, address that first, for example by reconsidering the prior or model specification, and refit; only once the model converges does it make sense to look at the lengthscale diagnostic at all.
+- If the posterior median lengthscale $\hat{\rho}$ is too short, refit with $m \geq 3.42 c S / \hat{\rho}$, by setting `basis_prop` to $m / t_\mathrm{GP}$.
+- If $\hat{\rho}$ is too long, refit with `boundary_scale` set to at least $4.5 \hat{\rho} / S$, and $m$ chosen as above.
+- Repeat until the diagnostic gives no warning.
+- Passing the diagnostic does not guarantee an accurate approximation. Refit with more basis functions (the paper adds 5) and check that $\hat{\rho}$ and predictive performance, for example the ELPD, are stable.
+- The approximation error is largest for the posterior standard deviation and near the boundaries. In `EpiNow2` this affects the most recent estimates, so check these in particular.
+
+For other kernels, use their constants from above.
+
+These values, as well as the prior distributions of relevant parameters, can all be changed by the user.
 
 # Modelling the reproduction number
 

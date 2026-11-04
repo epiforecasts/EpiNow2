@@ -4,13 +4,18 @@
 \alias{new_component_spec}
 \title{Construct a bare trajectory component (a shape, no baseline)}
 \usage{
-new_component_spec(type, settings = list())
+new_component_spec(type, settings = list(), future = "latest")
 }
 \arguments{
 \item{type}{Character, the component type (\code{"gp"} or \code{"rw"}).}
 
 \item{settings}{A list of the component's own settings (e.g. a \verb{<gp_opts>}
 object for \code{"gp"}, or the step standard deviation prior for \code{"rw"}).}
+
+\item{future}{What the resulting trajectory does over the forecast
+horizon, carried on the bare component so it survives even when the
+component is never combined with a baseline through
+\code{\link[=with_optional_anchor]{with_optional_anchor()}} (e.g. composed with \code{+} directly). See \code{\link[=GP]{GP()}}.}
 }
 \value{
 A \verb{<state_spec>} object with one component and no baseline.

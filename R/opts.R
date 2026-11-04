@@ -595,8 +595,7 @@ backcalc_opts <- function(prior = NULL, prior_window = 14, rt_window = 1) {
 #'
 #' @param kernel Character string, the type of kernel required. Currently
 #' supporting the Matern kernel ("matern"), squared exponential kernel ("se"),
-#' periodic kernel, Ornstein-Uhlenbeck #' kernel ("ou"), and the periodic
-#' kernel ("periodic").
+#' Ornstein-Uhlenbeck kernel ("ou"), and the periodic kernel ("periodic").
 #'
 #' @param matern_order Numeric, defaults to 3/2. Order of Matérn Kernel to use.
 #' Common choices are 1/2, 3/2, and 5/2. If `kernel` is set
@@ -604,15 +603,13 @@ backcalc_opts <- function(prior = NULL, prior_window = 14, rt_window = 1) {
 #' the kernel is set to "matern".
 #'
 #' @param basis_prop Numeric, the proportion of time points to use as basis
-#' functions. Defaults to 0.2. Decreasing this value results in a decrease in
-#' accuracy but a faster compute time (with increasing it having the first
-#' effect). In general smaller posterior length scales require a higher
-#' proportion of basis functions. See (Riutort-Mayol et al. 2020
-#' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
+#' functions. Defaults to `NULL`, in which case the number of basis functions
+#' is chosen from the lengthscale prior; see [GP()] for details.
 #'
-#' @param boundary_scale Numeric, defaults to 1.5. Boundary scale of the
-#' approximate Gaussian process. See (Riutort-Mayol et al. 2020
-#' <https://arxiv.org/abs/2004.11408>) for advice on updating this default.
+#' @param boundary_scale Numeric, the boundary factor of the approximate
+#' Gaussian process relative to the half-range of the time points. Defaults to
+#' `NULL`, in which case it is chosen from the lengthscale prior; see [GP()]
+#' for details. Not used by the periodic kernel.
 #'
 #' @param w0 Numeric, defaults to 1.0. Fundamental frequency for periodic
 #' kernel. They are only used if `kernel` is set to "periodic".
@@ -628,10 +625,13 @@ backcalc_opts <- function(prior = NULL, prior_window = 14, rt_window = 1) {
 #' # add a custom length scale
 #' gp_opts(ls = LogNormal(mean = 4, sd = 1, max = 20))
 #'
-#' # use linear kernel
+#' # use periodic kernel
 #' gp_opts(kernel = "periodic")
-gp_opts <- function(basis_prop = 0.2,
-                    boundary_scale = 1.5,
+#'
+#' # set the approximation manually
+#' gp_opts(basis_prop = 0.2, boundary_scale = 1.5)
+gp_opts <- function(basis_prop = NULL,
+                    boundary_scale = NULL,
                     ls = LogNormal(mean = 21, sd = 7, max = 60),
                     alpha = Normal(mean = 0, sd = 0.01),
                     kernel = c("matern", "se", "ou", "periodic"),
@@ -651,12 +651,17 @@ gp_opts <- function(basis_prop = 0.2,
 #'
 #' @description
 #' Internal constructor for the list of Gaussian process settings shared by
-#' [GP()] and the deprecated [gp_opts()].
+#' [GP()] and the deprecated [gp_opts()]. Validates the lengthscale prior
+#' eagerly (via [check_gp_ls_prior()]) whenever `basis_prop` or
+#' `boundary_scale` is left at `NULL`, since the approximation settings will
+#' later need to be chosen from it; the component's own free-noise window is
+#' only known once the model is fit, so the settings themselves are resolved
+#' later, in `resolve_gp_component()`.
 #' @inheritParams gp_opts
 #' @return A `<gp_opts>` object of Gaussian process settings.
 #' @keywords internal
-new_gp_settings <- function(basis_prop = 0.2,
-                            boundary_scale = 1.5,
+new_gp_settings <- function(basis_prop = NULL,
+                            boundary_scale = NULL,
                             ls = LogNormal(mean = 21, sd = 7, max = 60),
                             alpha = Normal(mean = 0, sd = 0.01),
                             kernel = c("matern", "se", "ou", "periodic"),
@@ -676,6 +681,10 @@ new_gp_settings <- function(basis_prop = 0.2,
         "i" = "Use one of `1 / 2`, `3 / 2`, or `5 / 2`" # nolint
       )
     )
+  }
+  if (is.null(basis_prop) ||
+        (is.null(boundary_scale) && kernel != "periodic")) {
+    check_gp_ls_prior(ls)
   }
 
   gp <- list(

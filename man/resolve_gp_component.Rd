@@ -4,7 +4,7 @@
 \alias{resolve_gp_component}
 \title{Resolve one Gaussian process component's state data}
 \usage{
-resolve_gp_component(comp, name, hyper_params, base_id, pos)
+resolve_gp_component(comp, name, hyper_params, base_id, pos, free)
 }
 \arguments{
 \item{comp}{The component (\verb{list(type = "gp", settings = <gp_opts>)}).}
@@ -17,11 +17,16 @@ lengthscale to.}
 \item{base_id}{The parameter id of the last existing parameter.}
 
 \item{pos}{This component's index within the GP type group.}
+
+\item{free}{The component's own free-noise window (shared by all
+components of its state), used to choose \code{basis_prop}/\code{boundary_scale}
+from the lengthscale prior when either is left at \code{NULL} on \code{\link[=GP]{GP()}}.}
 }
 \value{
 A list of this component's contribution to \code{create_state_data()}'s
 component table: \code{comp_type}, \code{comp_pos}, \code{hyper_params}, \code{gp_alpha_id},
-\code{gp_rho_id}, \code{gp_kernel}, \code{gp_nu}, \code{gp_basis_prop}, \code{gp_boundary_scale}.
+\code{gp_rho_id}, \code{gp_kernel}, \code{gp_nu}, \code{gp_basis_prop}, \code{gp_boundary_scale},
+\code{gp_w0}.
 }
 \description{
 Resolve one Gaussian process component's state data

@@ -4,7 +4,13 @@
 \alias{create_stan_params}
 \title{Create parameters for stan}
 \usage{
-create_stan_params(params, states_supported = character(0), seeding_time = 0L)
+create_stan_params(
+  params,
+  states_supported = character(0),
+  seeding_time = 0L,
+  t = NA_integer_,
+  horizon = NA_integer_
+)
 }
 \arguments{
 \item{params}{A list of \verb{<EpiNow2.params>} as created by \code{\link[=make_param]{make_param()}}}
@@ -13,6 +19,11 @@ create_stan_params(params, states_supported = character(0), seeding_time = 0L)
 calling model can consume time-varying states (created by \code{\link[=GP]{GP()}} /
 \code{\link[=RW]{RW()}}). Defaults to none, so any state specification raises an error.
 A model passes the names whose state data its stan code handles.}
+
+\item{t, horizon}{The total modelled time and forecast horizon, used to
+choose a GP component's \code{basis_prop}/\code{boundary_scale} (when left at
+\code{NULL} on \code{\link[=GP]{GP()}}) from its own free-noise window. Unused, and safe to
+leave at their defaults, when no \code{params} entry carries a state.}
 }
 \value{
 A list of variables as expected by the stan model

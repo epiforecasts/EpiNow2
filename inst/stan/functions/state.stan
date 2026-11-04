@@ -226,13 +226,16 @@ vector component_dev(
     return rw_dev(nf, nc, steps, state_rw_period);
   }
   int p = comp_pos[c];
-  int M = comp_gp_M[c];
+  int M = comp_gp_M[c]; // total eta/phi columns (the periodic kernel's are doubled)
   vector[M] eta = segment(state_gp_eta, comp_gp_offset[c] + 1, M);
   // the basis is built once in transformed data (it is data-only); here we
-  // just apply the per-iteration hyperparameters through update_gp
+  // just apply the per-iteration hyperparameters through update_gp. Its own
+  // M argument is the base (pre-doubling) basis count: it doubles it itself
+  // for the periodic kernel, matching the doubled eta/phi columns above.
+  int M_base = gp_kernel[p] == 1 ? M %/% 2 : M;
   matrix[nf, M] phi = gp_phi[p][1:nf, 1:M];
   return gp_dev(nf, nc, update_gp(
-    phi, M, gp_boundary_scale[p], state_gp_alpha[p],
+    phi, M_base, gp_boundary_scale[p], state_gp_alpha[p],
     rescale_gp_lengthscale(state_gp_rho[p], nf), eta, gp_kernel[p], gp_nu[p]
   ), anchor);
 }

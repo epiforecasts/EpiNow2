@@ -9,8 +9,8 @@
 GP(
   mean,
   init,
-  basis_prop = 0.2,
-  boundary_scale = 1.5,
+  basis_prop = NULL,
+  boundary_scale = NULL,
   ls = LogNormal(mean = 21, sd = 7, max = 60),
   alpha = Normal(mean = 0, sd = 0.01),
   kernel = c("matern", "se", "ou", "periodic"),
@@ -37,11 +37,15 @@ state fits deviations around. Supply either \code{mean} or \code{init}, not both
 on first differences, or a numeric vector giving known initial value(s).
 Supply either \code{mean} or \code{init}, not both.}
 
-\item{basis_prop}{Numeric, the proportion of time points to use as basis
-functions for the Gaussian process. Defaults to 0.2.}
+\item{basis_prop}{Numeric, the proportion of the component's free-noise
+window to use as basis functions. Defaults to \code{NULL}, in which case the
+number of basis functions is chosen from the lengthscale prior and that
+window (see Details).}
 
-\item{boundary_scale}{Numeric, defaults to 1.5. Boundary scale of the
-approximate Gaussian process.}
+\item{boundary_scale}{Numeric, the boundary factor of the approximate
+Gaussian process relative to the half-range of the component's
+free-noise window. Defaults to \code{NULL}, in which case it is chosen from
+the lengthscale prior (see Details). Not used by the periodic kernel.}
 
 \item{ls}{A \verb{<dist_spec>} giving the prior on the Gaussian process
 lengthscale (on the scale of days). Defaults to
@@ -114,6 +118,23 @@ are handled where the state is used.
 These functions define the user interface for time-varying states. Wiring
 them into the models is ongoing; passing a state specification where it is
 not yet supported raises an informative error.
+
+A Gaussian process component is approximated using the Hilbert space
+method of Riutort-Mayol et al. (2023) \doi{10.1007/s11222-022-10167-2}. Its
+accuracy depends on the boundary factor and number of basis functions
+relative to the lengthscale, applied over the component's own free-noise
+window (the part of its state's trajectory that is estimated rather than
+held fixed through the forecast horizon; see \code{future}). By default both
+are chosen from the 5\% and 95\% quantiles of the lengthscale prior using
+the relationships in Section 4.3.1 of that paper, so that lengthscales in
+this range are approximated accurately. The Ornstein-Uhlenbeck kernel
+(Matern with \code{matern_order = 1/2}) is not covered by the paper; its number
+of basis functions uses a relationship derived for it, and its boundary
+uses the Matern 3/2 relationship (not independently validated). The
+periodic kernel has no boundary, and its number of basis functions is
+chosen from the 5\% quantile using Appendix B. After fitting, a warning is
+given if the posterior median lengthscale lies outside the range the
+approximation represents accurately.
 }
 \examples{
 # mean-reverting Gaussian process
@@ -124,6 +145,8 @@ GP(init = Normal(mean = 5, sd = 1))
 GP(init = Normal(mean = 5, sd = 1), kernel = "se")
 # project the Gaussian process into the forecast horizon
 GP(init = Normal(mean = 5, sd = 1), future = "project")
+# set the approximation manually instead of choosing it automatically
+GP(init = Normal(mean = 5, sd = 1), basis_prop = 0.2, boundary_scale = 1.5)
 # random walk with an initial-value prior
 RW(init = Normal(mean = 5, sd = 1))
 # mean-reverting random walk with a custom step size prior

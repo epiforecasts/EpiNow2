@@ -311,7 +311,7 @@ create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
     # are expressed as states; time-varying observation parameters follow later
     create_stan_params(
       params, states_supported = always_trajectory_params(),
-      seeding_time = seeding_time
+      seeding_time = seeding_time, t = stan_data$t, horizon = stan_data$horizon
     )
   )
 
@@ -430,8 +430,12 @@ count_state_init_sizes <- function(stan_data) {
           stan_data, stan_data$comp_pos[cc], free, rw_period
         )
       } else {
+        p <- stan_data$comp_pos[cc]
+        ## the periodic kernel's basis comes in cosine/sine pairs, so it needs
+        ## twice the coefficients of the same (base) number of basis functions
+        periodic <- stan_data$gp_kernel[p] == 1L
         n_gp_coef <- n_gp_coef +
-          ceiling(free * stan_data$gp_basis_prop[stan_data$comp_pos[cc]])
+          ceiling(free * stan_data$gp_basis_prop[p]) * (1L + periodic)
         gp_free <- c(gp_free, free)
       }
     }
@@ -864,12 +868,18 @@ create_stan_delays <- function(..., time_points = 1L) {
 ##'   [RW()]). Defaults to none, so any state specification raises an error.
 ##'   A model passes the names whose state data its stan code handles.
 ##'
+##' @param t,horizon The total modelled time and forecast horizon, used to
+##'   choose a GP component's `basis_prop`/`boundary_scale` (when left at
+##'   `NULL` on [GP()]) from its own free-noise window. Unused, and safe to
+##'   leave at their defaults, when no `params` entry carries a state.
+##'
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom data.table fcase
 ##' @importFrom purrr transpose
 ##' @keywords internal
 create_stan_params <- function(params, states_supported = character(0),
-                               seeding_time = 0L) {
+                               seeding_time = 0L, t = NA_integer_,
+                               horizon = NA_integer_) {
   tparams <- transpose(params)
   ## set IDs of any parameters that is NULL to 0 and remove
   null_params <- vapply(tparams$dist, is.null, logical(1))
@@ -888,7 +898,7 @@ create_stan_params <- function(params, states_supported = character(0),
   state_flags <- vapply(tparams$dist, is_state_spec, logical(1))
   state_data <- create_state_data(
     params, state_flags, states_supported, seeding_time = seeding_time,
-    base_id = length(params)
+    base_id = length(params), t = t, horizon = horizon
   )
   ## a state's hyperparameters (step sd, GP magnitude and lengthscale) are
   ## appended to the parameter vector so they use the standard prior machinery
@@ -1108,6 +1118,146 @@ resolve_rw_component <- function(comp, name, hyper_params, base_id, pos,
   )
 }
 
+#' Half-range of the Gaussian process time points
+#'
+#' @param n Length of the Gaussian process (a component's own free-noise
+#'   window).
+#' @return The half-range (in days) of `n` equally spaced daily time points,
+#'   with a minimum of 0.5.
+#' @keywords internal
+gp_half_range <- function(n) {
+  max(n - 1, 1) / 2
+}
+
+#' Constants linking the lengthscale to the approximate GP settings
+#'
+#' @description
+#' Constants from Riutort-Mayol et al. (2023, Section 4.3.1)
+#' \doi{10.1007/s11222-022-10167-2}. With half-range `S`, boundary factor
+#' `c` and `m` basis functions, lengthscales `l` are approximated accurately
+#' when `m >= m_factor * c * S / l` and `c >= c_factor * l / S` (with
+#' `c >= 1.2`). The paper does not cover Matern 1/2 (equivalently, the
+#' Ornstein-Uhlenbeck kernel); its `m_factor` is not from the paper, but was
+#' found by repeating the paper's simulation procedure.
+#' The same procedure reproduced the squared exponential and Matern 3/2 and
+#' 5/2 constants to within 8-13%. Matern 1/2 is the roughest kernel, so it
+#' needs the most basis functions. Its `c_factor` was not independently
+#' validated and uses the Matern 3/2 value. The periodic kernel has no
+#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B), so
+#' its `c_factor` is `NA`.
+#'
+#' @param gp_type Integer kernel type as used in the Stan model (0: squared
+#'   exponential, 1: periodic, 2: Matern).
+#' @param nu Numeric Matern order.
+#' @return A list with elements `m_factor` and `c_factor`.
+#' @keywords internal
+gp_approx_constants <- function(gp_type, nu) {
+  if (gp_type == 1) {
+    return(list(m_factor = 3.72, c_factor = NA_real_))
+  }
+  if (gp_type == 0 || is.infinite(nu)) {
+    list(m_factor = 1.75, c_factor = 3.2)
+  } else if (nu == 5 / 2) {
+    list(m_factor = 2.65, c_factor = 4.1)
+  } else if (nu == 1 / 2) {
+    list(m_factor = 8.6, c_factor = 4.5)
+  } else {
+    list(m_factor = 3.42, c_factor = 4.5)
+  }
+}
+
+#' Quantiles of the lengthscale prior
+#'
+#' @description
+#' Quantiles of a lengthscale prior truncated to be positive and below its
+#' maximum.
+#'
+#' @param ls A `<dist_spec>` giving the lengthscale prior.
+#' @param probs Numeric vector of probabilities.
+#' @return A numeric vector of quantiles.
+#' @importFrom stats plnorm qlnorm pgamma qgamma pnorm qnorm
+#' @keywords internal
+gp_ls_quantiles <- function(ls, probs = c(0.05, 0.95)) {
+  dist_name <- check_gp_ls_prior(ls)
+  pars <- get_parameters(ls)
+  if (dist_name == "fixed") {
+    return(rep(pars$value, length(probs)))
+  }
+  fns <- switch(dist_name,
+    lognormal = list(
+      p = function(x) plnorm(x, pars$meanlog, pars$sdlog),
+      q = function(p) qlnorm(p, pars$meanlog, pars$sdlog)
+    ),
+    gamma = list(
+      p = function(x) pgamma(x, pars$shape, pars$rate),
+      q = function(p) qgamma(p, pars$shape, pars$rate)
+    ),
+    normal = list(
+      p = function(x) pnorm(x, pars$mean, pars$sd),
+      q = function(p) qnorm(p, pars$mean, pars$sd)
+    )
+  )
+  p_lower <- fns$p(0)
+  p_upper <- fns$p(max(ls))
+  fns$q(p_lower + probs * (p_upper - p_lower))
+}
+
+#' Boundary factor used when relating the lengthscale to the basis functions
+#'
+#' @param L Numeric boundary factor.
+#' @param periodic Logical, whether the kernel is periodic. The periodic
+#'   kernel has no boundary, so a factor of 1 is used.
+#' @return A numeric boundary factor.
+#' @keywords internal
+gp_boundary_factor <- function(L, periodic) {
+  if (periodic) 1 else L
+}
+
+#' Choose the boundary factor and number of basis functions
+#'
+#' @description
+#' Settings not given on [GP()] are chosen from the lengthscale prior using
+#' [gp_approx_constants()]. The boundary factor is set by the upper (95%)
+#' prior quantile, as longer lengthscales need a wider boundary. The number
+#' of basis functions is then set by the lower (5%) prior quantile, as
+#' shorter lengthscales need more basis functions. The periodic kernel has no
+#' boundary, so only the number of basis functions is chosen.
+#'
+#' @param gp A `<gp_opts>` object (a component's own GP settings).
+#' @param n Length of the Gaussian process (the component's own free-noise
+#'   window).
+#' @inheritParams gp_approx_constants
+#' @return A list with the boundary factor `L` and number of basis functions
+#'   `M`.
+#' @importFrom rlang %||%
+#' @keywords internal
+gp_basis_settings <- function(gp, n, gp_type) {
+  S <- gp_half_range(n)
+  L <- gp$boundary_scale
+  basis_prop <- gp$basis_prop
+  constants <- gp_approx_constants(gp_type, gp$matern_order)
+  periodic <- gp_type == 1
+  if (periodic) {
+    # not used by the periodic kernel
+    L <- L %||% 1.5
+  }
+  if (is.null(L) || is.null(basis_prop)) {
+    ls_quantiles <- gp_ls_quantiles(gp$ls)
+  }
+  if (is.null(L)) {
+    L <- max(1.2, constants$c_factor * ls_quantiles[2] / S)
+  }
+  if (is.null(basis_prop)) {
+    M <- ceiling(
+      constants$m_factor * gp_boundary_factor(L, periodic) * S /
+        ls_quantiles[1]
+    )
+  } else {
+    M <- ceiling(n * basis_prop)
+  }
+  list(L = L, M = max(1, M))
+}
+
 #' Resolve one Gaussian process component's state data
 #'
 #' @param comp The component (`list(type = "gp", settings = <gp_opts>)`).
@@ -1116,36 +1266,40 @@ resolve_rw_component <- function(comp, name, hyper_params, base_id, pos,
 #'   lengthscale to.
 #' @param base_id The parameter id of the last existing parameter.
 #' @param pos This component's index within the GP type group.
+#' @param free The component's own free-noise window (shared by all
+#'   components of its state), used to choose `basis_prop`/`boundary_scale`
+#'   from the lengthscale prior when either is left at `NULL` on [GP()].
 #' @return A list of this component's contribution to `create_state_data()`'s
 #'   component table: `comp_type`, `comp_pos`, `hyper_params`, `gp_alpha_id`,
-#'   `gp_rho_id`, `gp_kernel`, `gp_nu`, `gp_basis_prop`, `gp_boundary_scale`.
+#'   `gp_rho_id`, `gp_kernel`, `gp_nu`, `gp_basis_prop`, `gp_boundary_scale`,
+#'   `gp_w0`.
 #' @keywords internal
-resolve_gp_component <- function(comp, name, hyper_params, base_id, pos) {
+resolve_gp_component <- function(comp, name, hyper_params, base_id, pos,
+                                 free) {
   gp <- comp$settings
-  if (gp$kernel == "periodic") {
-    cli_abort(c(
-      "!" = "Periodic kernels are not supported for time-varying parameter
-      {.var {name}}."
-    ))
-  }
   assert_estimated(gp$alpha, "alpha", name)
   reg <- register_hyper(hyper_params, "gp_alpha", name, gp$alpha, base_id)
   hyper_params <- reg$params
   gp_alpha_id <- reg$id
   assert_estimated(gp$ls, "lengthscale", name)
   reg <- register_hyper(hyper_params, "gp_rho", name, gp$ls, base_id)
+  gp_kernel <- fcase(
+    gp$kernel == "se", 0L, gp$kernel == "periodic", 1L, default = 2L
+  )
+  basis <- gp_basis_settings(gp, free, gp_kernel)
   list(
     comp_type = 1L, comp_pos = pos, hyper_params = reg$params,
     gp_alpha_id = gp_alpha_id, gp_rho_id = reg$id,
-    gp_kernel = fcase(gp$kernel == "se", 0L, default = 2L), # matern or ou
-    gp_nu = gp$matern_order, gp_basis_prop = gp$basis_prop,
-    gp_boundary_scale = gp$boundary_scale
+    gp_kernel = gp_kernel,
+    gp_nu = gp$matern_order, gp_basis_prop = basis$M / free,
+    gp_boundary_scale = basis$L, gp_w0 = gp$w0
   )
 }
 
 create_state_data <- function(params, state_flags,
                               states_supported = character(0),
-                              seeding_time = 0L, base_id = 0L) {
+                              seeding_time = 0L, base_id = 0L,
+                              t = NA_integer_, horizon = NA_integer_) {
   empty <- list(
     n_states = 0L,
     state_param_id = array(integer(0)),
@@ -1170,6 +1324,7 @@ create_state_data <- function(params, state_flags,
     gp_boundary_scale = array(numeric(0)),
     gp_kernel = array(integer(0)),
     gp_nu = array(numeric(0)),
+    gp_w0 = array(numeric(0)),
     gp_alpha_id = array(integer(0)),
     gp_rho_id = array(integer(0)),
     hyper_params = list()
@@ -1215,6 +1370,7 @@ create_state_data <- function(params, state_flags,
   gp_rho_id <- integer(0)
   gp_basis_prop <- numeric(0)
   gp_boundary_scale <- numeric(0)
+  gp_w0 <- numeric(0)
   n_rw <- 0L
   n_gp <- 0L
 
@@ -1262,6 +1418,18 @@ create_state_data <- function(params, state_flags,
     resolved_future <- resolve_future(spec$future %||% "latest")
     future_fixed[j] <- resolved_future$fixed
     future_from[j] <- resolved_future$from
+    ## a GP component's basis settings (when not given explicitly on GP())
+    ## are chosen from its own free-noise window, mirroring the Stan
+    ## transformed-data computation (see count_state_init_sizes()); the
+    ## latent-infections state (I) spans the full seeding + observed +
+    ## horizon window, every other state spans the observed + horizon window
+    total <- if (identical(name, "I")) t else (t - seeding_time)
+    data_window <- total - horizon
+    free <- if (resolved_future$fixed == 0) {
+      total
+    } else {
+      min(total, max(1, data_window + resolved_future$from))
+    }
     if (spec$anchor == "init") {
       ## centred non-stationary state: the level is free scaffolding and the
       ## level parameter's own prior is applied to the derived initial value
@@ -1284,13 +1452,16 @@ create_state_data <- function(params, state_flags,
         rw_period <- c(rw_period, res$rw_period)
       } else {
         n_gp <- n_gp + 1L
-        res <- resolve_gp_component(comp, name, hyper_params, base_id, n_gp)
+        res <- resolve_gp_component(
+          comp, name, hyper_params, base_id, n_gp, free
+        )
         gp_alpha_id <- c(gp_alpha_id, res$gp_alpha_id)
         gp_rho_id <- c(gp_rho_id, res$gp_rho_id)
         gp_kernel <- c(gp_kernel, res$gp_kernel)
         gp_nu <- c(gp_nu, res$gp_nu)
         gp_basis_prop <- c(gp_basis_prop, res$gp_basis_prop)
         gp_boundary_scale <- c(gp_boundary_scale, res$gp_boundary_scale)
+        gp_w0 <- c(gp_w0, res$gp_w0)
       }
       comp_type <- c(comp_type, res$comp_type)
       comp_pos <- c(comp_pos, res$comp_pos)
@@ -1331,6 +1502,7 @@ create_state_data <- function(params, state_flags,
     gp_boundary_scale = array(gp_boundary_scale),
     gp_kernel = array(gp_kernel),
     gp_nu = array(gp_nu),
+    gp_w0 = array(gp_w0),
     gp_alpha_id = array(as.integer(gp_alpha_id)),
     gp_rho_id = array(as.integer(gp_rho_id)),
     hyper_params = hyper_params
