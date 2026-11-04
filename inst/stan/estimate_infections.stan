@@ -315,13 +315,15 @@ generated quantities {
         gt_rev_pmf_for_growth = gt_rev_pmf;
       }
   
-      // estimate growth from infections
+      // estimate growth from infections (including any stochastic infection
+      // noise)
       r = calculate_growth(
         infections, seeding_time, gt_rev_pmf_for_growth, growth_method
         );
 
       // Calculate adjusted Rt when population adjustment is enabled
-      // R_adj = infections / infectiousness (back-calculated from adjusted infections)
+      // R_adj = infections / infectiousness (back-calculated from adjusted
+      // infections, including any stochastic infection noise)
       if (estimate_r > 0 && use_pop > 0) {
         R_adj = calculate_Rt(infections, seeding_time, gt_rev_pmf, 0);
       }
