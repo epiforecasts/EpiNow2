@@ -288,13 +288,16 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
   */
 void gaussian_process_lp(vector eta, real alpha, real rho, real L, int M,
                          int type, real nu) {
-  vector[type == 1 ? 2 * M : M] diagSPD = gp_diag_spd(alpha, rho, L, M, type, nu);
+  // Only the fundamental-frequency spectral density is needed here, and it
+  // does not depend on M, so evaluate a single basis function rather than
+  // all M again.
+  vector[type == 1 ? 2 : 1] spd_1 = gp_diag_spd(alpha, rho, L, 1, type, nu);
   // eta[1] is centred (see update_gp()); the remaining coefficients keep
   // the non-centred std_normal() prior. For the periodic kernel eta[M + 1]
   // is centred as well, as it shares the fundamental frequency with eta[1].
-  eta[1] ~ normal(0, diagSPD[1]);
+  eta[1] ~ normal(0, spd_1[1]);
   if (type == 1) {
-    eta[M + 1] ~ normal(0, diagSPD[M + 1]);
+    eta[M + 1] ~ normal(0, spd_1[2]);
     eta[2:M] ~ std_normal();
     eta[(M + 2):num_elements(eta)] ~ std_normal();
   } else {

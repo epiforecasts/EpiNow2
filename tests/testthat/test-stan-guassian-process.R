@@ -200,6 +200,24 @@ test_that("update_gp centres both fundamental-frequency coefficients for the per
   expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
 })
 
+test_that("gp_diag_spd gives the fundamental density for any number of basis functions", {
+  # gaussian_process_lp() evaluates only the first basis function for the
+  # centred prior, so it must agree with the first element for any M.
+  alpha <- 1.3
+  rho <- 2.5
+  L <- 1.7
+  for (type in 0:2) {
+    for (nu in c(0.5, 1.5, 2.5)) {
+      full <- gp_diag_spd(alpha, rho, L, 8, type, nu)
+      single <- gp_diag_spd(alpha, rho, L, 1, type, nu)
+      expect_equal(single[1], full[1], tolerance = 1e-12)
+      if (type == 1) {
+        expect_equal(single[2], full[8 + 1], tolerance = 1e-12)
+      }
+    }
+  }
+})
+
 test_that("default GP settings approximate the exact Matern 3/2 kernel", {
   data <- list(
     t = 67, seeding_time = 0, horizon = 7, future_fixed = 0, fixed_from = 0,
