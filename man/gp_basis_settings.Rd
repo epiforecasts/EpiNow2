@@ -24,6 +24,6 @@ using \code{\link[=gp_approx_constants]{gp_approx_constants()}}. The boundary fa
 (95\%) prior quantile, as longer lengthscales need a wider boundary. The
 number of basis functions is then set by the lower (5\%) prior quantile, as
 shorter lengthscales need more basis functions. The periodic kernel has no
-boundary, so only the number of basis functions is chosen.
+boundary, and only the number of basis functions is chosen for it.
 }
 \keyword{internal}
