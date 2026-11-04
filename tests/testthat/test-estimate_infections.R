@@ -205,9 +205,7 @@ test_that("estimate_infections successfully returns estimates using negative bin
     out, R = c(rep(NA_real_, n_R), rep(1.1, 7)), samples = 10
   )
   infections <- sims$samples[variable == "infections"]
-  expect_identical(
-    uniqueN(infections$date), as.integer(out$args$t + 7)
-  )
+  expect_identical(uniqueN(infections$date), as.integer(n_R + 7))
   expect_true(all(infections$value > 0))
   expect_true(all(is.finite(infections$value)))
 })
