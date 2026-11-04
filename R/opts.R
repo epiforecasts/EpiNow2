@@ -652,12 +652,12 @@ gp_opts <- function(basis_prop = NULL,
 #'   - "prevalence": observations are a convolution of latent infections with
 #'   a kernel describing how long each infection remains in the observed
 #'   state. Without `duration` set, that kernel is the survival function of
-#'   the reporting delay, so the state is entered at infection and left once
-#'   the delay elapses; an example is current infections. With `duration`
-#'   set, the state is instead entered only after the reporting delay and
-#'   left once `duration` has elapsed, and the kernel becomes the reporting
-#'   delay's density convolved with the complement of `duration`'s CDF; an
-#'   example is hospital bed occupancy, entered at admission and left at
+#'   the reporting delay: the state is entered at infection and left once the
+#'   delay elapses, as in current infections. With `duration` set, the state
+#'   is instead entered only after the reporting delay and left once
+#'   `duration` has elapsed. The kernel then becomes the density of the
+#'   reporting delay convolved with the complement of the CDF of `duration`;
+#'   an example is hospital bed occupancy, entered at admission and left at
 #'   discharge, with `delays` (in [delay_opts()]) describing the delay to
 #'   admission and `duration` the length of stay. Note that
 #'   [estimate_infections()] requires a generative (`rt`) model to fit

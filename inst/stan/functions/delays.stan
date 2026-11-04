@@ -156,14 +156,14 @@ vector get_delay_rev_pmf(
  * kernel is then the density of the entry delay convolved with the
  * survival function of the duration, i.e.
  * \f$P(D_1 \le d < D_1 + D_2) = \sum_{d_1=0}^{d} f_{D_1}(d_1)
- * S_{D_2}(d - d_1)\f$, so that an infection starts contributing to the
- * secondary observation only after the entry delay, and keeps doing so for
- * as long as it remains in the prevalent state.
+ * S_{D_2}(d - d_1)\f$. An infection starts contributing to the secondary
+ * observation only after the entry delay, and keeps doing so for as long as
+ * it remains in the prevalent state.
  *
  * @param secondary_type Type of secondary observation: 0 = incidence,
  *   1 = prevalence
  * @param duration_id Identifier of the duration distribution (0 if none)
- * @param duration_len Length of the duration distribution's PMF, i.e.
+ * @param duration_len Length of the PMF of the duration distribution, i.e.
  *   `delay_max[duration_id] + 1`; unused if `duration_id` is 0
  * @return A vector containing the reversed kernel of length len
  *
