@@ -871,7 +871,7 @@ create_stan_delays <- function(..., time_points = 1L) {
 ##' @param t,horizon The total modelled time and forecast horizon, used to
 ##'   choose a GP component's `basis_prop`/`boundary_scale` (when left at
 ##'   `NULL` on [GP()]) from its own free-noise window. Unused, and safe to
-##'   leave at their defaults, when no `params` entry carries a state.
+##'   leave at their defaults, when no `params` entry has a state.
 ##'
 ##' @return A list of variables as expected by the stan model
 ##' @importFrom data.table fcase
