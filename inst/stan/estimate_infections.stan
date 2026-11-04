@@ -66,6 +66,8 @@ parameters {
   // standard deviation of breakpoint effect
   array[bp_n > 0 ? 1 : 0] real<lower = 0> bp_sd;
   vector[bp_n] bp_effects;                   // Rt breakpoint effects
+  // standard normal noise for stochastic infections
+  vector[estimate_r && infection_process ? ot_h : 0] infection_eta;
   // delay parameters
   vector<lower = delay_params_lower>[delay_params_length] delay_params;
   // raw gamma values for estimated nonparametric delay PMFs;
@@ -137,9 +139,14 @@ transformed parameters {
         param_id_pop, params_fixed_lookup, params_variable_lookup, params_value,
         params
       );
+      real infection_overdispersion = get_param(
+        param_id_infection_overdispersion, params_fixed_lookup,
+        params_variable_lookup, params_value, params
+      );
       infections = generate_infections(
         R, seeding_time, gt_rev_pmf, initial_infections, pop, use_pop, pop_floor,
-        future_time, obs_scale, fraction_observed, 1
+        future_time, obs_scale, fraction_observed, 1, infection_eta,
+        infection_process, infection_overdispersion
       );
     }
   } else {
@@ -244,6 +251,11 @@ model {
         initial_infections, bp_effects, bp_sd, bp_n,
         cases, initial_infections_guess
       );
+    }
+    if (infection_process) {
+      profile("infections lp") {
+        infection_eta ~ std_normal();
+      }
     }
   }
 

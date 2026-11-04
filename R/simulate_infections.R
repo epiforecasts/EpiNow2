@@ -130,6 +130,9 @@ simulate_infections <- function(R,
     R = array(R$R, dim = c(1, nrow(R))),
     use_pop = as.integer(pop != Fixed(0)) + as.integer(pop_period == "all"),
     pop_floor = pop_floor,
+    infection_process = 0L,
+    n_infection_eta = 0L,
+    infection_eta = array(numeric(0), dim = c(1, 0)),
     growth_method = list(
       "infections" = 0, "infectiousness" = 1
     )[[growth_method]]
@@ -199,7 +202,8 @@ simulate_infections <- function(R,
     make_param("R0", NULL),
     make_param("fraction_observed", obs$scale, lower_bound = 0),
     make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
-    make_param("pop", pop, lower_bound = 0)
+    make_param("pop", pop, lower_bound = 0),
+    make_param("infection_overdispersion", NULL)
   )
 
   stan_data <- c(stan_data, create_stan_params(params))
@@ -464,9 +468,10 @@ forecast_infections <- function(estimates,
 
     ## allocate empty parameters
     stan_data <- allocate_empty(
-      stan_data, c("delay_params", "params"),
+      stan_data, c("delay_params", "params", "infection_eta"),
       n = stan_data$n
     )
+    stan_data$n_infection_eta <- ncol(stan_data$infection_eta)
 
     stan_args <- create_stan_args(
       stan,

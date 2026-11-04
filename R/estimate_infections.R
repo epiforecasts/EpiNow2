@@ -188,7 +188,8 @@ estimate_infections <- function(data,
     make_param("rho", gp$ls, lower_bound = 0),
     make_param("fraction_observed", obs$scale, lower_bound = 0),
     make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
-    make_param("pop", rt$pop, lower_bound = 0)
+    make_param("pop", rt$pop, lower_bound = 0),
+    make_param("infection_overdispersion", rt$dispersion, lower_bound = 0)
   )
 
   # Define stan model parameters

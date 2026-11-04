@@ -287,7 +287,12 @@ create_rt_data <- function(rt = rt_opts(), breakpoints = NULL,
     future_time = horizon - future_rt$from,
     growth_method = list(
       "infections" = 0, "infectiousness" = 1
-    )[[rt$growth_method]]
+    )[[rt$growth_method]],
+    infection_process = if (rt$use_rt) {
+      match(rt$infections, c("deterministic", "poisson", "negbin")) - 1L
+    } else {
+      0L
+    }
   )
   rt_data
 }
@@ -790,6 +795,14 @@ create_initial_conditions <- function(stan_data, params) {
     } else {
       out$initial_infections <- array(numeric(0))
       out$R_mean <- array(numeric(0))
+    }
+
+    if (isTRUE(stan_data$infection_process > 0)) {
+      out$infection_eta <- array(rnorm(
+        stan_data$t - stan_data$seeding_time, mean = 0, sd = 0.1
+      ))
+    } else {
+      out$infection_eta <- array(numeric(0))
     }
 
     if (stan_data$bp_n > 0) {

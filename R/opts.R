@@ -330,6 +330,24 @@ trunc_opts <- function(dist = Fixed(0),
 #' "infectiousness" method results in undefined (NaN) growth rates for the most
 #' recent time points (equal to the mean generation time).
 #'
+#' @param infections Character string, defaulting to "deterministic".
+#' Defines the process model for new infections in the renewal equation.
+#' "deterministic" sets new infections to their expected value given Rt and
+#' past infections. "poisson" and "negbin" instead treat new infections as
+#' stochastic, using a normal approximation to a Poisson or negative binomial
+#' distribution around the expected value. The noise feeds back through the
+#' renewal equation into future infections. Each option adds one standard
+#' normal parameter per time point. See the model definition vignette for
+#' details. Ignored if `use_rt` is `FALSE`.
+#'
+#' @param dispersion A `<dist_spec>` specifying a prior on the overdispersion
+#' of new infections, used only if `infections` is "negbin". Parameterised as
+#' for the `dispersion` argument of [obs_opts()], so that the variance of new
+#' infections is \eqn{\mu + \mu^2 \times \textrm{dispersion}^2}. Defaults
+#' to a half-normal distribution with mean of 0 and standard deviation of
+#' 0.25: `Normal(mean = 0, sd = 0.25)`. A lower limit of zero will be enforced
+#' automatically.
+#'
 #' @references Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic
 #' growth rates more informative than reproduction numbers? Journal of the
 #' Royal Statistical Society: Series A (Statistics in Society) 185, S5–S15
@@ -351,6 +369,9 @@ trunc_opts <- function(dist = Fixed(0),
 #'
 #' # add a weekly random walk
 #' rt_opts(rw = 7)
+#'
+#' # use stochastic infections with negative binomial process noise
+#' rt_opts(infections = "negbin")
 rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     use_rt = TRUE,
                     rw = 0,
@@ -360,7 +381,21 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
                     pop = Fixed(0),
                     pop_period = c("forecast", "all"),
                     pop_floor = 1.0,
-                    growth_method = c("infections", "infectiousness")) {
+                    growth_method = c("infections", "infectiousness"),
+                    infections = c("deterministic", "poisson", "negbin"),
+                    dispersion = Normal(mean = 0, sd = 0.25)) {
+  infections <- arg_match(infections)
+  if (infections != "negbin") {
+    if (!missing(dispersion)) {
+      cli_warn(
+        "{.field dispersion} is ignored when {.field infections} is
+          {.val {infections}} and will be dropped."
+      )
+    }
+    dispersion <- NULL
+  } else {
+    assert_class(dispersion, "dist_spec")
+  }
   opts <- list(
     use_rt = use_rt,
     rw = rw,
@@ -369,7 +404,9 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     gp_on = arg_match(gp_on),
     pop_period = arg_match(pop_period),
     pop_floor = pop_floor,
-    growth_method = arg_match(growth_method)
+    growth_method = arg_match(growth_method),
+    infections = infections,
+    dispersion = dispersion
   )
   # replace default settings with those specified by user
   if (opts$rw > 0) {
@@ -407,6 +444,13 @@ rt_opts <- function(prior = LogNormal(mean = 1, sd = 1),
     cli_warn(
       c(
         "!" = "Rt {.var prior} is ignored if {.var use_rt} is FALSE."
+      )
+    )
+  }
+  if (!opts$use_rt && infections != "deterministic") {
+    cli_warn(
+      c(
+        "!" = "{.var infections} is ignored if {.var use_rt} is FALSE."
       )
     )
   }
