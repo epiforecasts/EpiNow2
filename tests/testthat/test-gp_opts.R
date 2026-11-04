@@ -1,5 +1,5 @@
-test_that("gp_opts returns correct default values", {
-  gp <- gp_opts()
+test_that("GP() builds correct default Gaussian process settings", {
+  gp <- GP(init = LogNormal(mean = 1, sd = 1))$components[[1]]$settings
   expect_null(gp$basis_prop)
   expect_null(gp$boundary_scale)
   expect_equal(gp$alpha, Normal(0, 0.01))
@@ -9,36 +9,25 @@ test_that("gp_opts returns correct default values", {
   expect_equal(gp$w0, 1.0)
 })
 
-test_that("gp_opts sets matern_order to Inf for squared exponential kernel", {
-  gp <- gp_opts(kernel = "se")
+test_that("GP() sets matern_order to Inf for squared exponential kernel", {
+  gp <- GP(init = LogNormal(mean = 1, sd = 1), kernel = "se")
+  gp <- gp$components[[1]]$settings
   expect_equal(gp$matern_order, Inf)
 })
 
-test_that("gp_opts sets matern_order to 1/2 for Ornstein-Uhlenbeck kernel", {
-  gp <- gp_opts(kernel = "ou")
+test_that("GP() sets matern_order to 1/2 for Ornstein-Uhlenbeck kernel", {
+  gp <- GP(init = LogNormal(mean = 1, sd = 1), kernel = "ou")
+  gp <- gp$components[[1]]$settings
   expect_equal(gp$matern_order, 1 / 2)
 })
 
-test_that("gp_opts warns for uncommon Matern kernel orders", {
-  expect_warning(gp_opts(matern_order = 2), "Uncommon Matern kernel order")
+test_that("GP() warns for uncommon Matern kernel orders", {
+  expect_warning(
+    GP(init = LogNormal(mean = 1, sd = 1), matern_order = 2),
+    "Uncommon Matern kernel order"
+  )
 })
 
-test_that("gp_opts warns about uncommon Matern kernel orders", {
-  expect_warning(gp_opts(matern_order = 2), "Uncommon Matern kernel order")
-})
-
-test_that("gp_opts errors for lengthscale priors it cannot choose settings from", {
-  expect_error(gp_opts(ls = Weibull(shape = 2, scale = 10)), "boundary_scale")
-  expect_silent(
-    gp_opts(
-      ls = Weibull(shape = 2, scale = 10), basis_prop = 0.2,
-      boundary_scale = 1.5
-    )
-  )
-  expect_silent(
-    gp_opts(
-      ls = Weibull(shape = 2, scale = 10), basis_prop = 0.2,
-      kernel = "periodic"
-    )
-  )
+test_that("gp_opts() is deprecated in favour of GP()", {
+  lifecycle::expect_deprecated(gp_opts())
 })

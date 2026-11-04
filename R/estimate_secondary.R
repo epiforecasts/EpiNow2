@@ -241,7 +241,7 @@ estimate_secondary <- function(data,
 
   # initial conditions (from estimate_infections)
   inits <- create_initial_conditions(
-    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0)), params
+    c(stan_data, list(estimate_r = 0, fixed = 1)), params
   )
   # fit
   stan_ <- create_stan_args(

@@ -1,8 +1,3 @@
-default_data <- list(
-  t = 30, seeding_time = 7, horizon = 7, future_fixed = 0, fixed_from = 0,
-  stationary = 0, estimate_r = 1
-)
-
 # Truncated quantiles of the default lengthscale prior
 default_ls_quantiles <- function(probs = c(0.05, 0.95)) {
   pars <- get_parameters(LogNormal(mean = 21, sd = 7))
@@ -10,116 +5,9 @@ default_ls_quantiles <- function(probs = c(0.05, 0.95)) {
   qlnorm(probs * p_max, pars$meanlog, pars$sdlog)
 }
 
-test_that("create_gp_data returns correct default values when GP is disabled", {
-  data <- default_data
-  data$stationary <- NULL
-  gp_data <- create_gp_data(NULL, data)
-  expect_equal(gp_data$fixed, 1)
-  expect_equal(gp_data$stationary, 1)
-  expect_gte(gp_data$L, 1.2)
-  expect_gte(gp_data$M, 1)
-  expect_equal(gp_data$gp_type, 2) # Default to Matern
-  expect_equal(gp_data$nu, 3 / 2)
-  expect_equal(gp_data$w0, 1.0)
-})
-
-test_that("create_gp_data sets correct gp_type and nu for different kernels", {
-  gp_data <- create_gp_data(gp_opts(kernel = "se"), default_data)
-  expect_equal(gp_data$gp_type, 0)
-  expect_equal(gp_data$nu, Inf)
-
-  gp_data <- create_gp_data(gp_opts(kernel = "periodic"), default_data)
-  expect_equal(gp_data$gp_type, 1)
-  expect_equal(gp_data$nu, 3 / 2) # Default Matern order
-  expect_equal(gp_data$w0, 1.0)
-
-  gp_data <- create_gp_data(gp_opts(kernel = "ou"), default_data)
-  expect_equal(gp_data$gp_type, 2)
-  expect_equal(gp_data$nu, 1 / 2)
-})
-
-test_that("gp_noise_terms matches the Stan noise dimensions", {
-  expect_equal(gp_noise_terms(default_data), 22)
-  expect_equal(
-    gp_noise_terms(modifyList(default_data, list(stationary = 1))), 23
-  )
-  expect_equal(
-    gp_noise_terms(
-      modifyList(default_data, list(future_fixed = 1, fixed_from = 2))
-    ),
-    17
-  )
-  expect_equal(
-    gp_noise_terms(modifyList(default_data, list(estimate_r = 0))), 30
-  )
-})
-
-test_that("create_gp_data chooses L and M from the lengthscale prior", {
-  gp_data <- create_gp_data(gp_opts(), default_data)
-  S <- (22 - 1) / 2
-  q <- default_ls_quantiles()
-  expected_L <- max(1.2, 4.5 * q[2] / S)
-  expect_equal(gp_data$L, expected_L)
-  expect_equal(gp_data$M, ceiling(3.42 * expected_L * S / q[1]))
-})
-
-test_that("create_gp_data uses kernel-specific constants", {
-  S <- (22 - 1) / 2
-  q <- default_ls_quantiles()
-  se <- create_gp_data(gp_opts(kernel = "se"), default_data)
-  expect_equal(se$L, max(1.2, 3.2 * q[2] / S))
-  expect_equal(se$M, ceiling(1.75 * se$L * S / q[1]))
-  m52 <- create_gp_data(gp_opts(matern_order = 5 / 2), default_data)
-  expect_equal(m52$L, max(1.2, 4.1 * q[2] / S))
-  expect_equal(m52$M, ceiling(2.65 * m52$L * S / q[1]))
-  # Matern 1/2 (equivalently "ou") has its own derived m_factor, not the
-  # Matern 3/2 fallback used for other orders the paper does not cover
-  ou <- create_gp_data(gp_opts(kernel = "ou"), default_data)
-  expect_equal(ou$L, max(1.2, 4.5 * q[2] / S))
-  expect_equal(ou$M, ceiling(8.6 * ou$L * S / q[1]))
-})
-
-test_that("create_gp_data enforces a minimum boundary factor of 1.2", {
-  gp_data <- create_gp_data(
-    gp_opts(ls = LogNormal(mean = 3, sd = 0.5)),
-    modifyList(default_data, list(t = 300))
-  )
-  expect_equal(gp_data$L, 1.2)
-})
-
-test_that("create_gp_data respects user-specified basis_prop and boundary_scale", {
-  gp_data <- create_gp_data(
-    gp_opts(basis_prop = 0.2, boundary_scale = 1.5), default_data
-  )
-  expect_equal(gp_data$L, 1.5)
-  expect_equal(gp_data$M, ceiling(22 * 0.2))
-
-  # a user boundary is used when choosing the number of basis functions
-  gp_data <- create_gp_data(gp_opts(boundary_scale = 3), default_data)
-  expect_equal(gp_data$L, 3)
-  expect_equal(
-    gp_data$M, ceiling(3.42 * 3 * 10.5 / default_ls_quantiles()[1])
-  )
-})
-
-test_that("create_gp_data chooses M for the periodic kernel from the prior", {
-  gp_data <- create_gp_data(gp_opts(kernel = "periodic"), default_data)
-  expect_equal(gp_data$M, ceiling(3.72 * 10.5 / default_ls_quantiles()[1]))
-  gp_data <- create_gp_data(
-    gp_opts(kernel = "periodic", basis_prop = 0.2), default_data
-  )
-  expect_equal(gp_data$M, ceiling(22 * 0.2))
-})
-
-test_that("gp_ls_range has no upper limit for the periodic kernel", {
-  stan_data <- create_gp_data(gp_opts(kernel = "periodic"), default_data)
-  expect_equal(gp_ls_range(stan_data), c(3.72 * 10.5 / stan_data$M, Inf))
-})
-
-test_that("create_gp_data correctly handles future_fixed", {
-  data <- modifyList(default_data, list(future_fixed = 1, fixed_from = 2))
-  gp_data <- create_gp_data(gp_opts(basis_prop = 0.2), data)
-  expect_equal(gp_data$M, ceiling(17 * 0.2))
+test_that("gp_half_range returns the half-range of the GP time points", {
+  expect_equal(gp_half_range(22), 10.5)
+  expect_equal(gp_half_range(1), 0.5)
 })
 
 test_that("gp_ls_quantiles returns truncated quantiles of supported priors", {
@@ -151,77 +39,172 @@ test_that("gp_ls_quantiles errors for unsupported priors", {
   )
 })
 
-test_that("check_gp_lengthscale warns when the lengthscale is outside the approximation range", {
-  stan_data <- create_gp_data(gp_opts(), default_data)
-  range <- gp_ls_range(stan_data)
-  expect_silent(check_gp_lengthscale(rep(mean(range), 10), stan_data))
-  expect_warning(
-    check_gp_lengthscale(rep(range[1] / 2, 10), stan_data),
-    "shorter"
-  )
-  expect_warning(
-    check_gp_lengthscale(rep(range[2] * 2, 10), stan_data),
-    "longer"
-  )
-})
-
-test_that("check_gp_lengthscale is silent when the GP is not used", {
-  stan_data <- create_gp_data(NULL, default_data)
-  expect_silent(check_gp_lengthscale(rep(1e-3, 10), stan_data))
-})
-
-test_that("check_gp_lengthscale warns for short periodic lengthscales", {
-  stan_data <- create_gp_data(gp_opts(kernel = "periodic"), default_data)
-  range <- gp_ls_range(stan_data)
-  expect_silent(check_gp_lengthscale(rep(range[1] * 10, 10), stan_data))
-  expect_warning(
-    check_gp_lengthscale(rep(range[1] / 2, 10), stan_data),
-    "shorter"
-  )
-})
-
-test_that("check_gp_fit checks the lengthscale column of the params samples", {
-  stan_data <- create_gp_data(gp_opts(), default_data)
-  stan_data$param_id_rho <- 2
-  stan_data$params_variable_lookup <- c(1, 3, 2)
-  ls_range <- gp_ls_range(stan_data)
-  params <- cbind(
-    rep(ls_range[1] / 4, 10), rep(ls_range[2] * 4, 10), rep(mean(ls_range), 10)
-  )
-  local_mocked_bindings(
-    extract_samples = function(...) list(params = params)
-  )
-  expect_silent(check_gp_fit(list(), stan_data))
-  params[, 3] <- ls_range[1] / 4
-  expect_warning(check_gp_fit(list(), stan_data), "shorter")
-})
-
-test_that("check_gp_fit is silent when the lengthscale is fixed", {
-  stan_data <- create_gp_data(gp_opts(), default_data)
-  stan_data$param_id_rho <- 1
-  stan_data$params_variable_lookup <- 0
-  expect_silent(check_gp_fit(list(), stan_data))
-})
-
-test_that("gp_half_range returns the half-range of the GP time points", {
-  expect_equal(gp_half_range(22), 10.5)
-  expect_equal(gp_half_range(1), 0.5)
-})
-
-test_that("check_gp_fit is silent when the lengthscale index is out of range", {
-  stan_data <- create_gp_data(gp_opts(), default_data)
-  stan_data$param_id_rho <- 1
-  stan_data$params_variable_lookup <- 3
-  local_mocked_bindings(
-    extract_samples = function(...) list(params = matrix(1, 10, 2))
-  )
-  expect_silent(check_gp_fit(list(), stan_data))
-})
-
 test_that("check_gp_ls_prior errors for unsupported priors", {
   expect_invisible(check_gp_ls_prior(Gamma(mean = 21, sd = 7)))
   expect_equal(check_gp_ls_prior(Gamma(mean = 21, sd = 7)), "gamma")
   expect_error(
     check_gp_ls_prior(Weibull(shape = 2, scale = 10)), "boundary_scale"
   )
+})
+
+test_that("gp_basis_settings chooses L and M from the lengthscale prior", {
+  gp <- new_gp_settings()
+  S <- gp_half_range(22)
+  q <- default_ls_quantiles()
+  expected_L <- max(1.2, 4.5 * q[2] / S)
+  basis <- gp_basis_settings(gp, 22, 2L)
+  expect_equal(basis$L, expected_L)
+  expect_equal(basis$M, ceiling(3.42 * expected_L * S / q[1]))
+})
+
+test_that("gp_basis_settings uses kernel-specific constants", {
+  S <- gp_half_range(22)
+  q <- default_ls_quantiles()
+
+  se <- gp_basis_settings(new_gp_settings(kernel = "se"), 22, 0L)
+  expect_equal(se$L, max(1.2, 3.2 * q[2] / S))
+  expect_equal(se$M, ceiling(1.75 * se$L * S / q[1]))
+
+  m52 <- gp_basis_settings(new_gp_settings(matern_order = 5 / 2), 22, 2L)
+  expect_equal(m52$L, max(1.2, 4.1 * q[2] / S))
+  expect_equal(m52$M, ceiling(2.65 * m52$L * S / q[1]))
+
+  # Matern 1/2 (equivalently "ou") has its own derived m_factor, not the
+  # Matern 3/2 fallback used for other orders the paper does not cover
+  ou <- gp_basis_settings(new_gp_settings(kernel = "ou"), 22, 2L)
+  expect_equal(ou$L, max(1.2, 4.5 * q[2] / S))
+  expect_equal(ou$M, ceiling(8.6 * ou$L * S / q[1]))
+})
+
+test_that("gp_basis_settings enforces a minimum boundary factor of 1.2", {
+  basis <- gp_basis_settings(
+    new_gp_settings(ls = LogNormal(mean = 3, sd = 0.5)), 300, 2L
+  )
+  expect_equal(basis$L, 1.2)
+})
+
+test_that("gp_basis_settings respects user-specified basis_prop and boundary_scale", {
+  basis <- gp_basis_settings(
+    new_gp_settings(basis_prop = 0.2, boundary_scale = 1.5), 22, 2L
+  )
+  expect_equal(basis$L, 1.5)
+  expect_equal(basis$M, ceiling(22 * 0.2))
+
+  # a user boundary is used when choosing the number of basis functions
+  S <- gp_half_range(22)
+  basis <- gp_basis_settings(new_gp_settings(boundary_scale = 3), 22, 2L)
+  expect_equal(basis$L, 3)
+  expect_equal(basis$M, ceiling(3.42 * 3 * S / default_ls_quantiles()[1]))
+})
+
+test_that("gp_basis_settings chooses M for the periodic kernel from the prior", {
+  S <- gp_half_range(22)
+  basis <- gp_basis_settings(new_gp_settings(kernel = "periodic"), 22, 1L)
+  expect_equal(basis$M, ceiling(3.72 * S / default_ls_quantiles()[1]))
+
+  basis <- gp_basis_settings(
+    new_gp_settings(kernel = "periodic", basis_prop = 0.2), 22, 1L
+  )
+  expect_equal(basis$M, ceiling(22 * 0.2))
+})
+
+test_that("gp_ls_range has no upper limit for the periodic kernel", {
+  basis <- gp_basis_settings(new_gp_settings(kernel = "periodic"), 22, 1L)
+  expect_equal(
+    gp_ls_range(1L, 3 / 2, basis$L, basis$M, 22),
+    c(3.72 * gp_half_range(22) / basis$M, Inf)
+  )
+})
+
+test_that("resolve_gp_component chooses basis settings from the free window", {
+  params <- list(
+    make_param("fraction_observed", GP(mean = Normal(0.5, 0.1)),
+      lower_bound = 0
+    )
+  )
+  out <- create_stan_params(
+    params, states_supported = "fraction_observed", t = 37, horizon = 7
+  )
+  # a non-R, non-I state's free window is t - seeding_time (0 here), held at
+  # its "latest" value through the horizon by default
+  free <- 37 - 7
+  basis <- gp_basis_settings(new_gp_settings(), free, 2L)
+  expect_equal(out$gp_basis_prop, array(basis$M / free))
+  expect_equal(out$gp_boundary_scale, array(basis$L))
+})
+
+test_that("check_gp_lengthscale warns when the lengthscale is outside the approximation range", {
+  basis <- gp_basis_settings(new_gp_settings(), 22, 2L)
+  range <- gp_ls_range(2L, 3 / 2, basis$L, basis$M, 22)
+  expect_silent(
+    check_gp_lengthscale(rep(mean(range), 10), 2L, 3 / 2, basis$L, basis$M, 22)
+  )
+  expect_warning(
+    check_gp_lengthscale(
+      rep(range[1] / 2, 10), 2L, 3 / 2, basis$L, basis$M, 22
+    ),
+    "shorter"
+  )
+  expect_warning(
+    check_gp_lengthscale(
+      rep(range[2] * 2, 10), 2L, 3 / 2, basis$L, basis$M, 22
+    ),
+    "longer"
+  )
+})
+
+test_that("check_gp_lengthscale warns for short periodic lengthscales", {
+  basis <- gp_basis_settings(new_gp_settings(kernel = "periodic"), 22, 1L)
+  range <- gp_ls_range(1L, 3 / 2, basis$L, basis$M, 22)
+  expect_silent(
+    check_gp_lengthscale(rep(range[1] * 10, 10), 1L, 3 / 2, basis$L, basis$M, 22)
+  )
+  expect_warning(
+    check_gp_lengthscale(
+      rep(range[1] / 2, 10), 1L, 3 / 2, basis$L, basis$M, 22
+    ),
+    "shorter"
+  )
+})
+
+test_that("check_gp_fit checks every GP component's own lengthscale column", {
+  params <- list(
+    make_param("fraction_observed", GP(mean = Normal(0.5, 0.1)),
+      lower_bound = 0
+    )
+  )
+  stan_data <- create_stan_params(
+    params, states_supported = "fraction_observed", t = 37, horizon = 7
+  )
+  stan_data$t <- 37
+  stan_data$seeding_time <- 0
+  stan_data$horizon <- 7
+  stan_data$param_id_I <- 0L # no latent-infections state in this test
+  stan_data$params_variable_lookup <- c(1, 2, 3) # rho is gp_rho_id[1] == 3
+  free <- 37 - 7
+  m <- ceiling(free * stan_data$gp_basis_prop[1])
+  ls_range <- gp_ls_range(
+    stan_data$gp_kernel[1], stan_data$gp_nu[1], stan_data$gp_boundary_scale[1],
+    m, free
+  )
+  params_samples <- cbind(
+    rep(ls_range[1] / 4, 10), rep(ls_range[2] * 4, 10), rep(mean(ls_range), 10)
+  )
+  local_mocked_bindings(
+    extract_stan_samples = function(...) list(params = params_samples)
+  )
+  expect_silent(check_gp_fit(list(), stan_data))
+  params_samples[, 3] <- ls_range[1] / 4
+  local_mocked_bindings(
+    extract_stan_samples = function(...) list(params = params_samples)
+  )
+  expect_warning(check_gp_fit(list(), stan_data), "shorter")
+})
+
+test_that("check_gp_fit is silent when there are no GP components", {
+  expect_silent(check_gp_fit(list(), list(n_gp_components = 0L)))
+})
+
+test_that("check_gp_fit is silent when the fit is NULL", {
+  expect_silent(check_gp_fit(NULL, list(n_gp_components = 1L)))
 })

@@ -4,6 +4,7 @@ S3method("$",epinow)
 S3method("$",estimate_infections)
 S3method("$",estimate_secondary)
 S3method("$",estimate_truncation)
+S3method("+",state_spec)
 S3method("[[",epinow)
 S3method("[[",estimate_infections)
 S3method("[[",estimate_secondary)
@@ -24,9 +25,11 @@ S3method(plot,estimate_secondary)
 S3method(plot,estimate_truncation)
 S3method(plot,forecast_infections)
 S3method(plot,forecast_secondary)
+S3method(plot,trajectory_spec)
 S3method(print,epinowfit)
 S3method(print,summary.estimate_dist)
 S3method(print,summary.estimate_truncation)
+S3method(print,trajectory_spec)
 S3method(scoringutils::as_forecast_sample,epinow)
 S3method(scoringutils::as_forecast_sample,estimate_infections)
 S3method(scoringutils::as_forecast_sample,estimate_truncation)
@@ -40,10 +43,12 @@ S3method(summary,forecast_infections)
 export(Dirichlet)
 export(Exp)
 export(Fixed)
+export(GP)
 export(Gamma)
 export(LogNormal)
 export(NonParametric)
 export(Normal)
+export(RW)
 export(R_to_growth)
 export(Weibull)
 export(add_breakpoints)
@@ -56,6 +61,7 @@ export(calc_summary_measures)
 export(calc_summary_stats)
 export(clean_nowcasts)
 export(collapse)
+export(constant)
 export(convert_to_logmean)
 export(convert_to_logsd)
 export(convolve_and_scale)
@@ -93,6 +99,7 @@ export(get_samples)
 export(gp_opts)
 export(growth_to_R)
 export(gt_opts)
+export(initial)
 export(is_constrained)
 export(make_conf)
 export(map_prob_change)
@@ -164,7 +171,6 @@ importFrom(data.table,
   dcast,
   fcase,
   fifelse,
-  frollmean,
   frollsum,
   fwrite,
   getDTthreads,
@@ -266,7 +272,6 @@ importFrom(rstan,
   summary,
   vb
 )
-importFrom(runner,mean_run)
 importFrom(scales,comma)
 importFrom(stats,
   aggregate,

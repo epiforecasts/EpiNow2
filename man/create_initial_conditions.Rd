@@ -20,11 +20,4 @@ used to sample from the prior distributions (or as close as possible) for
 parameters. Used in order to initialise each stan chain within a range of
 plausible values.
 }
-\details{
-\code{R_mean} is seeded from the initial-Rt prior carried in \code{stan_data} by
-\code{\link[=make_init_priors]{make_init_priors()}}, so chains start near the configured reproduction
-number; this is a stopgap until derived-prior parameters are initialised
-through the shared path (#1481). The distribution code follows
-\code{\link[=pack_init_prior]{pack_init_prior()}} (0: lognormal, 1: gamma, 2: normal).
-}
 \keyword{internal}
