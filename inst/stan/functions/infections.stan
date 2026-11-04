@@ -20,6 +20,13 @@
  * @param index Current time index (relative to seeding_time)
  * @return The infectiousness at the specified time point
  *
+ * @par Example
+ * With `infections = {10, 20, 30, 40, 50}`, `gt_rev_pmf = {0.2, 0.5, 0.3}`,
+ * `seeding_time = 0` and `index = 3`, the infectiousness is the weighted
+ * sum of the three most recent infections up to time 3:
+ * `update_infectiousness(infections, gt_rev_pmf, 0, 3)` returns
+ * `10 * 0.2 + 20 * 0.5 + 30 * 0.3 = 21`.
+ *
  * @ingroup infections_estimation
  */
 real update_infectiousness(vector infections, vector gt_rev_pmf,
