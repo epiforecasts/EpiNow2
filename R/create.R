@@ -428,10 +428,10 @@ gp_half_range <- function(n) {
 #' branch `matern-half-m-c-relationship`, of
 #' \url{https://github.com/sbfnk-bot/basis_functions_approach_to_GP}).
 #' The same procedure reproduced the squared exponential and Matern 3/2 and
-#' 5/2 constants to within 8-13%. Matern 1/2 is the roughest kernel, so it
+#' 5/2 constants to within 8-13%. Being the roughest kernel, Matern 1/2
 #' needs the most basis functions. Its `c_factor` was not independently
 #' validated and uses the Matern 3/2 value. The periodic kernel has no
-#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B), so
+#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B);
 #' its `c_factor` is `NA`.
 #'
 #' @param gp_type Integer kernel type as used in the Stan model (0: squared
@@ -498,7 +498,7 @@ gp_ls_quantiles <- function(ls, probs = c(0.05, 0.95)) {
 #' (95%) prior quantile, as longer lengthscales need a wider boundary. The
 #' number of basis functions is then set by the lower (5%) prior quantile, as
 #' shorter lengthscales need more basis functions. The periodic kernel has no
-#' boundary, so only the number of basis functions is chosen.
+#' boundary, and only the number of basis functions is chosen for it.
 #'
 #' @param gp A `<gp_opts>` object.
 #' @param n Length of the Gaussian process.
