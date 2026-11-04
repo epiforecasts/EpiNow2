@@ -47,13 +47,17 @@ NULL
 #' @param type Character, the component type (`"gp"` or `"rw"`).
 #' @param settings A list of the component's own settings (e.g. a `<gp_opts>`
 #'   object for `"gp"`, or the step standard deviation prior for `"rw"`).
+#' @param future What the resulting trajectory does over the forecast
+#'   horizon, carried on the bare component so it survives even when the
+#'   component is never combined with a baseline through
+#'   [with_optional_anchor()] (e.g. composed with `+` directly). See [GP()].
 #' @return A `<state_spec>` object with one component and no baseline.
 #' @keywords internal
-new_component_spec <- function(type, settings = list()) {
+new_component_spec <- function(type, settings = list(), future = "latest") {
   state <- list(
     anchor = NULL,
     prior = NULL,
-    future = "latest",
+    future = validate_future(future),
     components = list(list(type = type, settings = settings))
   )
   class(state) <- c("trajectory_spec", "state_spec", "param_spec", "list")
@@ -193,7 +197,8 @@ GP <- function(mean, init,
     settings = new_gp_settings(
       basis_prop = basis_prop, boundary_scale = boundary_scale, ls = ls,
       alpha = alpha, kernel = kernel, matern_order = matern_order, w0 = w0
-    )
+    ),
+    future = future
   )
   with_optional_anchor(bare, mean, init, future)
 }
@@ -256,7 +261,8 @@ RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1,
     period <- as.integer(period)
   }
   bare <- new_component_spec(
-    "rw", settings = list(sd = sd, period = period, knots = knots)
+    "rw", settings = list(sd = sd, period = period, knots = knots),
+    future = future
   )
   with_optional_anchor(bare, mean, init, future)
 }

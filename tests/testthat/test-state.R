@@ -272,6 +272,19 @@ test_that("+ errors when the right-hand side is not a state spec", {
   expect_error(constant(LogNormal(2, 0.2)) + 1, "time-varying state")
 })
 
+test_that("a bare component's own future is kept, not silently dropped", {
+  # matches the baseline's future: composes without error or change
+  spec <- constant(LogNormal(2, 0.2), future = "project") +
+    GP(future = "project")
+  expect_identical(spec$future, "project")
+
+  # conflicts with the baseline's future: now errors instead of ignoring it
+  expect_error(
+    constant(LogNormal(2, 0.2)) + GP(future = "project"),
+    "share a single forecast-horizon"
+  )
+})
+
 test_that("composed trajectory_spec prints without error", {
   expect_output(
     print(constant(LogNormal(2, 0.2)) + GP() + RW(period = 7)),
