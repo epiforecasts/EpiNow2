@@ -9,6 +9,8 @@
 
 ## Model changes
 
+- Added optional stochastic infections to the renewal model via `rt_opts(infections = "poisson")` or `rt_opts(infections = "negbin")`, which use a normal approximation to a Poisson or negative binomial process around the expected infections. The default (`"deterministic"`) is unchanged.
+
 ## Package changes
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.

@@ -74,6 +74,26 @@ Alternatively, generation times can be specified as coming from a given distribu
 The distribution of generation times $g$ here represents the probability that somebody who became infectious on day 0 and who infects someone else during their course of infection does so on day $\tau > 0$, assuming that infection cannot happen on day 0.
 If not given this defaults to a fixed generation time of 1, in which case $R_{t}$ represents the exponential of the daily growth rate of infections.
 
+### Stochastic infections
+
+By default new infections are deterministic given $R_t$ and past infections, as above.
+Alternatively, setting `rt_opts(infections = "poisson")` or `rt_opts(infections = "negbin")` treats new infections as stochastic.
+We use a normal approximation to a Poisson or negative binomial distribution with a non-centred parameterisation,
+
+\begin{equation}
+  I_t = \mu_t + \sqrt{\sigma^2_t} \eta_t, \quad \eta_t \sim \mathcal{N}(0, 1),
+\end{equation}
+
+where $\mu_t = R_t \lambda_t$ is the deterministic expectation from the renewal equation.
+For the Poisson approximation $\sigma^2_t = \mu_t$.
+For the negative binomial approximation $\sigma^2_t = \mu_t + \mu_t^2 / \psi$, where $\psi$ is the overdispersion of infections.
+As for the observation model (see [Observation model]), the prior is set on $1 / \sqrt{\psi}$ using the `dispersion` argument of `rt_opts()`.
+The stochastic infections are used in the infectiousness $\lambda_t$ of later time points, so the noise propagates through the renewal equation.
+To keep infections positive they are passed through a softplus function, $\log(1 + \exp(10 I_t)) / 10$, which leaves values above one infection effectively unchanged.
+Infections during the seeding period are not stochastic.
+When population depletion is used (see [Adjusting for susceptible population depletion]), the noise is applied to the depletion-adjusted expectation.
+This option adds a parameter $\eta_t$ for each time point and so increases run times.
+
 ### Time-varying reproduction number
 
 Different options are available for setting a prior for $R_t$, the instantaneous reproduction number at time $t$. The default prior is an approximate zero-mean Gaussian Process (GP) for the first differences in time on the log scale,
