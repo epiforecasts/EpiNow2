@@ -231,6 +231,7 @@ estimate_infections <- function(data,
     verbose = verbose,
     time_points = stan_data$t - stan_data$seeding_time - stan_data$horizon
   )
+  check_gp_fit(fit, stan_data)
 
   new_epinowfit(
     fit = fit,
