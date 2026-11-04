@@ -23,7 +23,7 @@ A model passes the names whose state data its stan code handles.}
 \item{t, horizon}{The total modelled time and forecast horizon, used to
 choose a GP component's \code{basis_prop}/\code{boundary_scale} (when left at
 \code{NULL} on \code{\link[=GP]{GP()}}) from its own free-noise window. Unused, and safe to
-leave at their defaults, when no \code{params} entry carries a state.}
+leave at their defaults, when no \code{params} entry has a state.}
 }
 \value{
 A list of variables as expected by the stan model
