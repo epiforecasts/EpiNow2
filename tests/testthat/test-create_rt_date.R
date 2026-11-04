@@ -132,10 +132,8 @@ test_that("create_rt_data passes pop_floor correctly", {
 test_that("create_rt_data sets the infection process", {
   expect_identical(create_rt_data()$infection_process, 0L)
   expect_identical(create_rt_data(rt = NULL)$infection_process, 0L)
-  expect_identical(
-    create_rt_data(rt_opts(infections = "poisson"))$infection_process, 1L
-  )
-  expect_identical(
-    create_rt_data(rt_opts(infections = "negbin"))$infection_process, 2L
-  )
+  rt <- rt_opts(infection_process = "poisson")
+  expect_identical(create_rt_data(rt)$infection_process, 1L)
+  rt <- rt_opts(infection_process = "negbin")
+  expect_identical(create_rt_data(rt)$infection_process, 2L)
 })

@@ -61,46 +61,50 @@ test_that("rt_opts handles edge cases correctly", {
 
 test_that("rt_opts defaults to deterministic infections", {
   result <- rt_opts()
-  expect_identical(result$infections, "deterministic")
-  expect_null(result$dispersion)
+  expect_identical(result$infection_process, "deterministic")
+  expect_null(result$infection_dispersion)
 })
 
 test_that("rt_opts supports stochastic infections", {
-  poisson <- rt_opts(infections = "poisson")
-  expect_identical(poisson$infections, "poisson")
-  expect_null(poisson$dispersion)
+  poisson <- rt_opts(infection_process = "poisson")
+  expect_identical(poisson$infection_process, "poisson")
+  expect_null(poisson$infection_dispersion)
 
-  negbin <- rt_opts(infections = "negbin")
-  expect_identical(negbin$infections, "negbin")
-  expect_equal(negbin$dispersion, Normal(mean = 0, sd = 0.25))
+  negbin <- rt_opts(infection_process = "negbin")
+  expect_identical(negbin$infection_process, "negbin")
+  expect_equal(negbin$infection_dispersion, Normal(mean = 0, sd = 0.1))
 
-  custom <- rt_opts(infections = "negbin", dispersion = Fixed(0.1))
-  expect_equal(custom$dispersion, Fixed(0.1))
+  custom <- rt_opts(
+    infection_process = "negbin", infection_dispersion = Fixed(0.1)
+  )
+  expect_equal(custom$infection_dispersion, Fixed(0.1))
 })
 
-test_that("rt_opts errors for bad 'infections' specifications", {
-  expect_error(rt_opts(infections = "invalid"), "must be one")
+test_that("rt_opts errors for bad 'infection_process' specifications", {
+  expect_error(rt_opts(infection_process = "invalid"), "must be one")
   expect_error(
-    rt_opts(infections = "negbin", dispersion = 0.1),
+    rt_opts(infection_process = "negbin", infection_dispersion = 0.1),
     "dist_spec"
   )
 })
 
-test_that("rt_opts warns when dispersion is ignored", {
+test_that("rt_opts warns when infection_dispersion is ignored", {
   expect_warning(
-    result <- rt_opts(infections = "poisson", dispersion = Fixed(0.1)),
+    result <- rt_opts(
+      infection_process = "poisson", infection_dispersion = Fixed(0.1)
+    ),
     "ignored"
   )
-  expect_null(result$dispersion)
+  expect_null(result$infection_dispersion)
   expect_warning(
-    rt_opts(dispersion = Fixed(0.1)),
+    rt_opts(infection_dispersion = Fixed(0.1)),
     "ignored"
   )
 })
 
 test_that("rt_opts warns when stochastic infections are used without Rt", {
   expect_warning(
-    rt_opts(use_rt = FALSE, infections = "poisson"),
+    rt_opts(use_rt = FALSE, infection_process = "poisson"),
     "ignored"
   )
 })

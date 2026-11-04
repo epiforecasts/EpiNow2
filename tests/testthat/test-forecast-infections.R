@@ -12,6 +12,22 @@ make_adjusted_R <- function(estimate_infections, adjusted_values) {
   c(rep(NA_real_, n_R - n_adjusted), adjusted_values)
 }
 
+test_that("resample_draws keeps rows of all draws aligned", {
+  draws <- list(
+    R = matrix(1:3, nrow = 3, ncol = 4),
+    infection_eta = matrix(1:3, nrow = 3, ncol = 4),
+    obs_reports = matrix(1:3, nrow = 3, ncol = 2),
+    empty = matrix(numeric(0), nrow = 3, ncol = 0)
+  )
+  resampled <- resample_draws(draws, samples = 10)
+  expect_identical(nrow(resampled$R), 10L)
+  expect_identical(resampled$R[, 1], resampled$infection_eta[, 1])
+  expect_identical(resampled$R[, 1], resampled$obs_reports[, 1])
+  expect_identical(dim(resampled$empty), c(10L, 0L))
+  # no resampling when there are enough posterior draws
+  expect_identical(resample_draws(draws, samples = 2), draws)
+})
+
 # Core test: basic functionality (always runs)
 test_that("forecast_infections works with default settings", {
   fixtures <- get_test_fixtures()

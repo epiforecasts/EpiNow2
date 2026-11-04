@@ -23,6 +23,21 @@ default_estimate_infections <- function(..., add_stan = list(), gt = TRUE,
   ))
 }
 
+# forecast_infections() without a new R should reuse the posterior noise and
+# so reproduce the fitted infections
+expect_forecast_reproduces_fit <- function(out) {
+  fit_inf <- get_samples(out)[
+    variable == "infections", list(fit = mean(value)), by = "date"
+  ]
+  sims <- forecast_infections(out)
+  sim_inf <- get_samples(sims)[
+    variable == "infections", list(sim = mean(value)), by = "date"
+  ]
+  compared <- merge(fit_inf, sim_inf, by = "date")
+  expect_identical(nrow(compared), nrow(fit_inf))
+  expect_equal(compared$sim, compared$fit, tolerance = 1e-6)
+}
+
 test_estimate_infections <- function(...) {
   out <- default_estimate_infections(...)
   expect_equal(names(out), c("fit", "args", "observations"))
@@ -90,7 +105,7 @@ test_that("get_samples() errors for an unsupported format", {
 
 test_that("estimate_infections uses deterministic infections by default", {
   expect_identical(default_fit$args$infection_process, 0L)
-  expect_identical(default_fit$args$param_id_infection_overdispersion, 0)
+  expect_equal(default_fit$args$param_id_infection_overdispersion, 0)
   samples <- get_samples(default_fit)
   expect_false("infection_overdispersion" %in% samples$variable)
   expect_length(get_samples(default_fit, format = "list")$infection_eta, 0)
@@ -163,27 +178,38 @@ test_that("estimate_infections successfully returns estimates using Poisson stoc
   skip_integration()
   out <- test_estimate_infections(
     reported_cases,
-    rt = rt_opts(infections = "poisson")
+    rt = rt_opts(infection_process = "poisson")
   )
   expect_identical(out$args$infection_process, 1L)
   eta <- get_samples(out, format = "list")$infection_eta
   expect_equal(ncol(eta), out$args$t - out$args$seeding_time)
+  expect_forecast_reproduces_fit(out)
 })
 
 test_that("estimate_infections successfully returns estimates using negative binomial stochastic infections", {
   skip_integration()
   out <- test_estimate_infections(
     reported_cases,
-    rt = rt_opts(infections = "negbin", rw = 7),
+    rt = rt_opts(infection_process = "negbin", rw = 7),
     gp = NULL
   )
   expect_identical(out$args$infection_process, 2L)
   samples <- get_samples(out)
   expect_true("infection_overdispersion" %in% samples$variable)
   expect_true(all(samples[variable == "infection_overdispersion"]$value > 0))
-  sims <- forecast_infections(out, samples = 10)
-  expect_true(nrow(sims$samples) > 0)
-  expect_true(all(sims$samples[variable == "infections"]$value > 0))
+  expect_forecast_reproduces_fit(out)
+
+  # an Rt trajectory longer than the fit draws fresh infection noise
+  n_R <- out$args$t - out$args$seeding_time
+  sims <- forecast_infections(
+    out, R = c(rep(NA_real_, n_R), rep(1.1, 7)), samples = 10
+  )
+  infections <- sims$samples[variable == "infections"]
+  expect_identical(
+    uniqueN(infections$date), as.integer(out$args$t + 7)
+  )
+  expect_true(all(infections$value > 0))
+  expect_true(all(is.finite(infections$value)))
 })
 
 test_that("estimate_infections successfully returns estimates using a fixed Rt", {
