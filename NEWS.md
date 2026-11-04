@@ -52,6 +52,7 @@
 - A bug was fixed where `estimate_infections()` errored while generating initial conditions when the model had no variable parameters, such as with `obs_opts(family = "poisson")` and `gp = NULL`.
 - A bug was fixed where the Stan growth rate functions no longer rejected a `seeding_time` too close to the length of the infections vector, instead silently returning a truncated or empty result, because the guard relied on Stan's implicit bounds checking of an out-of-range empty vector slice rather than an explicit check.
 - A bug was fixed where a bare `GP()`/`RW()` component's own `future` setting was silently ignored once combined with `+`, rather than being applied or checked against the baseline's.
+- A bug was fixed where the deprecated `gp = NULL` argument of `estimate_infections()`, `epinow()`, and `regional_epinow()` no longer disabled the Gaussian process, since the default Rt prior is now a Gaussian process in its own right rather than an optional add-on. `gp = NULL` once again leaves a constant value, or any random-walk/breakpoint components already on the prior, matching its previous behaviour.
 
 ## Documentation
 

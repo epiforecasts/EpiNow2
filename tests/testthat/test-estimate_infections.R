@@ -71,6 +71,29 @@ test_that("compose_deprecated_gp warns and no-ops when the prior has no GP", {
   expect_identical(res, prior)
 })
 
+test_that("compose_deprecated_gp is a silent no-op at its default", {
+  prior <- GP(init = LogNormal(mean = 1, sd = 1))
+  expect_silent(res <- compose_deprecated_gp(prior, new_gp_settings(), "rt_opts"))
+  expect_identical(res, prior)
+})
+
+test_that("compose_deprecated_gp(gp = NULL) collapses a GP-only prior to a constant", {
+  prior <- GP(init = LogNormal(mean = 1, sd = 1))
+  expect_warning(
+    res <- compose_deprecated_gp(prior, NULL, "rt_opts"), "deprecated"
+  )
+  expect_identical(res, LogNormal(mean = 1, sd = 1))
+})
+
+test_that("compose_deprecated_gp(gp = NULL) leaves other components in place", {
+  prior <- initial(LogNormal(mean = 1, sd = 1)) + GP() + RW(period = 7)
+  expect_warning(
+    res <- compose_deprecated_gp(prior, NULL, "rt_opts"), "deprecated"
+  )
+  expect_length(res$components, 1)
+  expect_identical(res$components[[1]]$type, "rw")
+})
+
 # Integration tests (MCMC-based) ------------------------------------------
 # These tests run actual MCMC sampling and are slow. Tests are divided into:
 # - Core tests: Essential tests that always run to catch critical failures

@@ -10,16 +10,21 @@ compose_deprecated_gp(prior, gp, name)
 \item{prior}{The (already-resolved) Rt or infections prior.}
 
 \item{gp}{The deprecated \code{gp} argument to \code{\link[=estimate_infections]{estimate_infections()}} (a
-\verb{<gp_opts>} object).}
+\verb{<gp_opts>} object, or \code{NULL} to disable the Gaussian process).}
 
 \item{name}{Name of the option function the prior came from (for the error
 message), e.g. \code{"rt_opts"}.}
 }
 \value{
-\code{prior}, with \code{gp}'s settings applied to its Gaussian process
-component (matching the previous \verb{gp =} behaviour). Errors if the prior's
-own GP component has already been customised through the new interface,
-since the two would otherwise silently conflict.
+\code{prior}, left unchanged if \code{gp} is still at its default (no
+customisation requested). Otherwise, with a deprecation warning: if \code{gp}
+is \code{NULL}, with the Gaussian process component removed (matching the
+previous \code{gp = NULL} behaviour), collapsing to the prior's constant
+baseline if that was its only component; otherwise, with \code{gp}'s settings
+applied to the existing Gaussian process component (matching the
+previous \verb{gp =} behaviour). Errors if that component has already been
+customised through the new interface, since the two would otherwise
+silently conflict.
 }
 \description{
 Compose the deprecated \code{gp} argument of \code{\link[=estimate_infections]{estimate_infections()}} onto a prior

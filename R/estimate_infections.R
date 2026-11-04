@@ -69,9 +69,12 @@
 #' @param gp `r lifecycle::badge("deprecated")` Applied to the renewal or
 #' back-calculation prior's Gaussian process component, matching the previous
 #' behaviour; errors if that component has already been customised through
-#' the new interface. Configure the Gaussian process through the relevant
-#' model's prior instead: `rt_opts(prior = GP(...))` for the renewal model or
-#' `backcalc_opts(prior = GP(...))` for the back-calculation model.
+#' the new interface. Set to `NULL` to disable the Gaussian process entirely,
+#' leaving a constant value or any random-walk/breakpoint components already
+#' on the prior, as on the previous interface. Configure the Gaussian process
+#' through the relevant model's prior instead: `rt_opts(prior = GP(...))` for
+#' the renewal model or `backcalc_opts(prior = GP(...))` for the
+#' back-calculation model.
 #' @inheritParams create_obs_model
 #' @inheritParams fit_model_with_nuts
 #' @importFrom data.table data.table copy merge.data.table as.data.table
@@ -128,7 +131,7 @@ estimate_infections <- function(data,
                                 truncation = trunc_opts(),
                                 rt = rt_opts(),
                                 backcalc = backcalc_opts(),
-                                gp = NULL,
+                                gp = new_gp_settings(),
                                 obs = obs_opts(),
                                 forecast = forecast_opts(),
                                 stan = stan_opts(),
@@ -205,14 +208,6 @@ estimate_infections <- function(data,
     }
     i_prior <- GP(init = LogNormal(mean = i0_guess, sd = i0_guess))
   }
-  if (!is.null(gp)) {
-    if (renewal) {
-      rt$prior <- compose_deprecated_gp(rt$prior, gp, "rt_opts")
-    } else {
-      i_prior <- compose_deprecated_gp(i_prior, gp, "backcalc_opts")
-    }
-  }
-
   # states run over one of two time frames: the latent-infections state (I)
   # spans the full seeding + observed + horizon window ("t"); every other
   # state spans the observed + horizon window after seeding ("ot_h"). A
@@ -220,10 +215,17 @@ estimate_infections <- function(data,
   # resolved against the right frame here, once the data is known.
   ot_h_dates <- model_data$date[(seeding_time + 1):nrow(model_data)]
   if (renewal) {
+    # the legacy breakpoint column composes onto the Rt prior before the
+    # deprecated gp argument is applied, so a disabled (gp = NULL) Gaussian
+    # process still leaves a pure-breakpoint/random-walk prior rather than
+    # erroring when nothing else is left to compose it onto
     rt <- resolve_legacy_breakpoints(
       rt, model_data$breakpoint[(seeding_time + 1):nrow(model_data)]
     )
+    rt$prior <- compose_deprecated_gp(rt$prior, gp, "rt_opts")
     rt$prior <- resolve_state_dates(rt$prior, ot_h_dates)
+  } else {
+    i_prior <- compose_deprecated_gp(i_prior, gp, "backcalc_opts")
   }
   i_prior <- resolve_state_dates(i_prior, model_data$date)
   obs$scale <- resolve_state_dates(obs$scale, ot_h_dates)
@@ -271,6 +273,7 @@ estimate_infections <- function(data,
 
   # Fit model
   fit <- fit_model(stan_args, id = id)
+  check_gp_fit(fit, stan_data)
 
   ret <- list(
     fit = fit,
@@ -287,15 +290,23 @@ estimate_infections <- function(data,
 #'
 #' @param prior The (already-resolved) Rt or infections prior.
 #' @param gp The deprecated `gp` argument to [estimate_infections()] (a
-#'   `<gp_opts>` object).
+#'   `<gp_opts>` object, or `NULL` to disable the Gaussian process).
 #' @param name Name of the option function the prior came from (for the error
 #'   message), e.g. `"rt_opts"`.
-#' @return `prior`, with `gp`'s settings applied to its Gaussian process
-#'   component (matching the previous `gp =` behaviour). Errors if the prior's
-#'   own GP component has already been customised through the new interface,
-#'   since the two would otherwise silently conflict.
+#' @return `prior`, left unchanged if `gp` is still at its default (no
+#'   customisation requested). Otherwise, with a deprecation warning: if `gp`
+#'   is `NULL`, with the Gaussian process component removed (matching the
+#'   previous `gp = NULL` behaviour), collapsing to the prior's constant
+#'   baseline if that was its only component; otherwise, with `gp`'s settings
+#'   applied to the existing Gaussian process component (matching the
+#'   previous `gp =` behaviour). Errors if that component has already been
+#'   customised through the new interface, since the two would otherwise
+#'   silently conflict.
 #' @keywords internal
 compose_deprecated_gp <- function(prior, gp, name) {
+  if (identical(gp, new_gp_settings())) {
+    return(prior)
+  }
   deprecate_warn(
     "1.10.0", "estimate_infections(gp)",
     details = paste(
@@ -314,6 +325,14 @@ compose_deprecated_gp <- function(prior, gp, name) {
         Gaussian process component."
       )
     )
+    return(prior)
+  }
+  if (is.null(gp)) {
+    prior$components <- prior$components[-gp_idx]
+    if (length(prior$components) == 0) {
+      # nothing left to vary the prior over time: it is a constant baseline
+      return(prior$prior)
+    }
     return(prior)
   }
   if (!identical(prior$components[[gp_idx]]$settings, new_gp_settings())) {
