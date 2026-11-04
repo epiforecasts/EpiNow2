@@ -17,7 +17,7 @@
  *
  * @ingroup convolution_functions
  */
-array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
+array[] int xlen_conv_indices(int s, int xlen, int ylen) {
   int s_minus_ylen = s - ylen;
   int start_x = max(1, s_minus_ylen + 1);
   int end_x = s;
@@ -36,7 +36,7 @@ array[] int calc_conv_indices_xlen(int s, int xlen, int ylen) {
  *
  * @ingroup convolution_functions
  */
-array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
+array[] int len_conv_indices(int s, int xlen, int ylen) {
   int s_minus_ylen = s - ylen;
   int start_x = max(1, s_minus_ylen + 1);
   int end_x = xlen;
@@ -57,6 +57,11 @@ array[] int calc_conv_indices_len(int s, int xlen, int ylen) {
  * @return A vector of length `len` containing the convolution result.
  * @throws If `len` is not of equal length to the sum of the lengths of `x` and `y`.
  *
+ * @par Example
+ * `convolve_with_rev_pmf({1, 2, 3, 4}, {0.5, 0.5}, 5)` convolves `x` with a
+ * reversed two-day uniform delay, returning
+ * `{0.5, 1.5, 2.5, 3.5, 2.0}`.
+ *
  * @ingroup convolution_functions
  */
 vector convolve_with_rev_pmf(vector x, vector y, int len) {
@@ -74,13 +79,13 @@ vector convolve_with_rev_pmf(vector x, vector y, int len) {
   vector[len] z;
 
   for (s in 1:xlen) {
-    array[4] int indices = calc_conv_indices_xlen(s, xlen, ylen);
+    array[4] int indices = xlen_conv_indices(s, xlen, ylen);
     z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
   }
 
   // runs zero times unless len > xlen
   for (s in (xlen + 1):len) {
-    array[4] int indices = calc_conv_indices_len(s, xlen, ylen);
+    array[4] int indices = len_conv_indices(s, xlen, ylen);
     z[s] = dot_product(x[indices[1]:indices[2]], y[indices[3]:indices[4]]);
   }
 
@@ -99,6 +104,11 @@ vector convolve_with_rev_pmf(vector x, vector y, int len) {
  * @param seeding_time The number of initial time steps to exclude from the
  * output.
  * @return A vector of reported cases, starting from `seeding_time + 1`.
+ *
+ * @par Example
+ * `convolve_to_report({10, 20, 30, 40, 50}, {0.2, 0.8}, 1)` convolves the
+ * infections with the reversed delay `{0.2, 0.8}` and drops the first
+ * (`seeding_time = 1`) entry, returning `{18, 28, 38, 48}`.
  *
  * @ingroup convolution_functions
  */
