@@ -71,6 +71,16 @@ test_that("accumulate_reports resets the running total at each non-accumulated p
   expect_equal(accumulate_reports(reports, accumulate), expected)
 })
 
+test_that("accumulate_reports rolls unobserved reports into the next time point", {
+  reports <- c(10, 12, 8, 15, 20)
+  accumulate <- c(0, 1, 0, 0)
+
+  expected <- c(10, 12, 20, 15, 20)
+  result <- accumulate_reports(reports, accumulate)
+
+  expect_equal(result, expected)
+})
+
 test_that("accumulate_reports handles a single time point", {
   expect_equal(accumulate_reports(c(7), integer(0)), 7)
 })
