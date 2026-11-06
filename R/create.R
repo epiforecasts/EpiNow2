@@ -463,31 +463,12 @@ gp_approx_constants <- function(gp_type, nu) {
 #' @param ls A `<dist_spec>` giving the lengthscale prior.
 #' @param probs Numeric vector of probabilities.
 #' @return A numeric vector of quantiles.
-#' @importFrom stats plnorm qlnorm pgamma qgamma pnorm qnorm
+#' @importFrom stats quantile
 #' @keywords internal
 gp_ls_quantiles <- function(ls, probs = c(0.05, 0.95)) {
-  dist_name <- check_gp_ls_prior(ls)
-  pars <- get_parameters(ls)
-  if (dist_name == "fixed") {
-    return(rep(pars$value, length(probs)))
-  }
-  fns <- switch(dist_name,
-    lognormal = list(
-      p = function(x) plnorm(x, pars$meanlog, pars$sdlog),
-      q = function(p) qlnorm(p, pars$meanlog, pars$sdlog)
-    ),
-    gamma = list(
-      p = function(x) pgamma(x, pars$shape, pars$rate),
-      q = function(p) qgamma(p, pars$shape, pars$rate)
-    ),
-    normal = list(
-      p = function(x) pnorm(x, pars$mean, pars$sd),
-      q = function(p) qnorm(p, pars$mean, pars$sd)
-    )
-  )
-  p_lower <- fns$p(0)
-  p_upper <- fns$p(max(ls))
-  fns$q(p_lower + probs * (p_upper - p_lower))
+  check_gp_ls_prior(ls)
+  p_lower <- cdf(ls, 0)
+  unname(quantile(ls, p_lower + probs * (1 - p_lower)))
 }
 
 #' Choose the boundary factor and number of basis functions
