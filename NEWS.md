@@ -9,6 +9,7 @@
 
 ## Model changes
 
+- The lowest-frequency (smoothest) coefficient of the approximate Gaussian process is now parameterised directly on the spectral-density scale, rather than as the magnitude parameter times a standard-normal deviate. This reduces the strong posterior correlation that the fully non-centred parameterisation produced between the magnitude parameter and this coefficient. For the periodic kernel, the sine coefficient at the same fundamental frequency is centred in the same way.
 - Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior.
 - Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
 
