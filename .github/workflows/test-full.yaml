@@ -12,6 +12,7 @@ on:
     paths:
       - 'src/**'  # Run if Stan code changes
       - 'inst/stan/**'  # Run if Stan code changes
+      - 'inst/include/**'  # Run if the C++ Stan functions change
       - 'R/estimate*.R'  # Run if core estimation code changes
 
 concurrency:
@@ -41,7 +42,7 @@ jobs:
         if: github.event_name == 'schedule'
         run: |
           # Check if there have been changes to relevant files in the last 7 days
-          CHANGES=$(git log --since="7 days ago" --oneline -- src/ inst/stan/ R/estimate*.R tests/ | wc -l)
+          CHANGES=$(git log --since="7 days ago" --oneline -- src/ inst/stan/ inst/include/ R/estimate*.R tests/ | wc -l)
           echo "changes=$CHANGES" >> $GITHUB_OUTPUT
           if [ "$CHANGES" -eq 0 ]; then
             echo "No code changes in the last week, skipping tests"
