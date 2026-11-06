@@ -342,12 +342,14 @@ estimate_dist <- function(data,
   )
   init_fn <- function() list(params = as.array(init_params))
 
-  fit <- fit_estimate_model(
+  # Create stan args and fit using shared infrastructure
+  stan_args <- create_stan_args(
     stan = stan, data = stan_data, init = init_fn,
     model = "estimate_dist", verbose = verbose
   )
+  fit <- fit_model(stan_args, id = "estimate_dist")
 
-  out <- new_epinowfit(
+  out <- list(
     data = data,
     args = c(
       stan_data,
@@ -357,9 +359,9 @@ estimate_dist <- function(data,
         max_value = max_value %||% max(delay_data$delay_upr)
       )
     ),
-    fit = fit,
-    class = "estimate_dist"
+    fit = fit
   )
+  class(out) <- c("estimate_dist", "epinowfit", class(out))
 
   if (verbose) {
     cli::cli_alert_success("Fitting complete")
