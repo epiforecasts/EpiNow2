@@ -21,8 +21,10 @@ Constants from Riutort-Mayol et al. (2023, Section 4.3.1)
 \code{c} and \code{m} basis functions, lengthscales \code{l} are approximated accurately
 when \code{m >= m_factor * c * S / l} and \code{c >= c_factor * l / S} (with
 \code{c >= 1.2}). The paper does not cover Matern 1/2 (equivalently, the
-Ornstein-Uhlenbeck kernel); its \code{m_factor} is not from the paper, but was
-found by repeating the paper's simulation procedure.
+Ornstein-Uhlenbeck kernel). Its \code{m_factor} is derived by repeating the
+paper's simulation procedure (see the \code{hsgp_m_c_relationship} folder,
+branch \code{matern-half-m-c-relationship}, of
+\url{https://github.com/sbfnk-bot/basis_functions_approach_to_GP}).
 The same procedure reproduced the squared exponential and Matern 3/2 and
 5/2 constants to within 8-13\%. Matern 1/2 is the roughest kernel, so it
 needs the most basis functions. Its \code{c_factor} was not independently
