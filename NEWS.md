@@ -2,35 +2,13 @@
 
 ## New features
 
-- Added an experimental interface for declaring time-varying model parameters: the `GP()` (approximate Gaussian process) and `RW()` (random walk) constructors. Each takes a prior on either the value the parameter reverts to (`mean`, a mean-reverting state) or its initial value (`init`, a state on first differences), the relevant Gaussian process settings (`ls`, `alpha`, `kernel`, `basis_prop`, and so on), and a `future` argument that sets what the parameter does over the forecast horizon: `"latest"` holds the last estimated value flat, `"project"` keeps it varying, `"estimate"` holds it from a seeding time before the end of the data, or an integer fixes it from a chosen point. `estimate_infections()` uses this interface for the reproduction number, so `rt_opts(prior = ...)` takes a `GP()` or `RW()` state.
-- Time-varying states can now be composed onto one trajectory with `+`, so a Gaussian process and a random walk (or more than one of either) can act on the same parameter together, e.g. a smooth trend plus weekly breakpoints. `constant(prior)` and `initial(prior)` give the composition its baseline (mean-reverting or first-difference); `constant(prior) + GP() + RW(period = 7)` composes a baseline with both. A single `GP(mean = ...)`/`RW(init = ...)` state is unaffected and needs no `+`.
-- `RW()` gains a `knots` argument for irregular (rather than regularly spaced) random-walk steps, given as a `<Date>` vector or integer time-step positions, e.g. `RW(knots = as.Date(c("2020-03-23", "2020-06-15")))`.
-- The back-calculation (non-mechanistic) model represents latent infections through the same interface, as a Gaussian process on the log scale anchored at an initial value, set with `backcalc_opts(prior = GP(...))`. This replaces the earlier deconvolution of smoothed, shifted reported cases.
-- Added a `plot()` method for `GP()`/`RW()` specifications that draws prior-predictive trajectories, so you can see what a prior implies before fitting.
-- `GP()`'s `basis_prop` and `boundary_scale` default to `NULL`, in which case each Gaussian process component chooses its own boundary and number of basis functions from its lengthscale prior and its own free-noise window, following Riutort-Mayol et al. (2023). A warning is given after fitting if a component's posterior lengthscale falls outside the range its chosen settings approximate accurately. The periodic kernel is now fully supported by the state interface.
-
 ## Breaking changes
 
-- The reproduction number and latent-infection Gaussian processes are now built through a single time-varying-state interface (`GP()` / `RW()`). Renewal-model estimates are unchanged, but the back-calculation (non-mechanistic) model no longer deconvolves smoothed, shifted reported cases — it now places a Gaussian process on log infections — so back-calculation results will differ from earlier versions. The previous configuration surface (`gp_opts()`, the `gp` argument, `rt_opts()`'s `gp_on`/`future`/`rw`/breakpoint options, and passing a plain distribution to `rt_opts(prior = ...)`) still runs but is deprecated in favour of `GP()` / `RW()` (see Deprecations).
-
-## Deprecations
-
-- The `rw` argument and breakpoints (`use_breakpoints` / the data `breakpoint` column) of `rt_opts()` are deprecated; specify a random-walk Rt with `rt_opts(prior = ... + RW(...))`. They are composed onto the Rt prior automatically, matching the previous behaviour, so existing code keeps working: a step interval with `RW(period = ...)`, so the previous `rw = 7` is now `RW(period = 7)`, and irregular breakpoints with `RW(knots = ...)`.
-- `gp_opts()` is deprecated; supply Gaussian process settings directly to `GP()`.
-- Passing a plain distribution to `rt_opts(prior = ...)` is deprecated; it is treated as `GP(init = ...)` (or `GP(mean = ...)` when `gp_on = "R0"`) for backward compatibility. Specify a `GP()` or `RW()` state explicitly. Support for a constant reproduction number will be added in a future release.
-- The `gp_on` argument of `rt_opts()` is deprecated; choose a mean-reverting (stationary) or first-difference Gaussian process with `rt_opts(prior = GP(mean = ...))` or `rt_opts(prior = GP(init = ...))`.
-- The `future` argument of `rt_opts()` is deprecated; set the forecast-horizon behaviour on the Rt prior, e.g. `rt_opts(prior = GP(..., future = "project"))`.
-- The `gp` argument of `estimate_infections()`, `epinow()`, and `regional_epinow()` is deprecated; configure the Gaussian process through the model prior (`rt_opts(prior = GP(...))` or `backcalc_opts(prior = GP(...))`).
-- The `prior_window` argument of `backcalc_opts()` is deprecated, and its `prior` argument now takes a `GP()` specification rather than a character string.
+- The boundary factor and number of basis functions of the approximate Gaussian process are now chosen by default from the lengthscale prior, following Riutort-Mayol et al. (2023), rather than fixed at `boundary_scale = 1.5` and `basis_prop = 0.2`. For the periodic kernel only the number of basis functions is chosen, as it has no boundary. The previous defaults approximated the default lengthscale prior poorly, particularly at the most recent time points. `estimate_infections()` now warns when the posterior lengthscale is outside the range the approximation represents accurately. Set `basis_prop` and `boundary_scale` in `gp_opts()` to restore the previous behaviour.
+- The Ornstein-Uhlenbeck kernel (`matern_order = 1/2`) now chooses its number of basis functions from a relationship derived for that kernel, rather than reusing the Matern 3/2 relationship, which understated the number needed.
 
 ## Model changes
 
-- Retired the shared "main" Gaussian process used by the back-calculation model along with its supporting machinery (the deconvolution step and the smoothed shifted-case prior). Both the renewal and back-calculation models now build their Gaussian processes through the single time-varying state implementation.
-- Rewrote the Stan `update_Rt()` function from small helpers that centre log Rt through its intercept.
-- `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
-- The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient.
-- `R_to_r()` is now implemented in C++ with a gradient from the implicit function theorem.
-- Simplified the Stan code that combines delays in `get_delay_rev_pmf()`, with new property tests for the delay functions.
 - Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior.
 - Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
 
@@ -41,7 +19,6 @@
 - Adapted the internal nonparametric-delay handling to `distspec`'s revised representation of estimated (Dirichlet-backed) distributions, which now hold their Dirichlet prior in `$pmf` rather than a separate `$estimated`/`$alpha` and a cached mean PMF. Behaviour for estimated nonparametric delays is unchanged.
 - `gt_opts()`, `delay_opts()` and `trunc_opts()` gain a `default_cdf_max` argument: the CDF level to keep an unconstrained fixed distribution up to (default `0.999`, where `1` leaves it unbounded), following `distspec`'s `cdf_max` (EpiNow2 now requires `distspec` >= 0.2.0). The default can be set globally with `options(EpiNow2.cdf_max = ...)`. The previous `default_cdf_cutoff` argument (the tail probability to drop) is deprecated; a value `x` is equivalent to `default_cdf_max = 1 - x`.
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
-- Added tests for backend dispatch, logging set up and the `as_forecast_sample()` methods that use mocks rather than model fits, and installed scoringutils in the coverage workflow.
 - Added unit tests for the option constructors, delay checks and utility helpers.
 - Added tests for summarising, formatting and reading back fitted and regional results.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
@@ -51,6 +28,7 @@
 
 ## Bug fixes
 
+- A bug was fixed where the number of Gaussian process basis functions was calculated from a time series length that did not match the one used in the Stan model.
 - A bug was fixed where the Gaussian process lengthscale was rescaled by the number of time points rather than their half-range, making the lengthscale slightly shorter than specified.
 - A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
 - A bug was fixed where `estimate_infections()` could emit a spurious "the largest R-hat is NA" convergence warning caused by deterministic delay PMFs being monitored; these are no longer monitored.
@@ -62,8 +40,6 @@
 - A bug was fixed where warnings raised while fitting `estimate_secondary()` and `estimate_truncation()` were logged once per chain, duplicating each message when all chains were fitted in a single call.
 - A bug was fixed where `estimate_infections()` errored while generating initial conditions when the model had no variable parameters, such as with `obs_opts(family = "poisson")` and `gp = NULL`.
 - A bug was fixed where the Stan growth rate functions no longer rejected a `seeding_time` too close to the length of the infections vector, instead silently returning a truncated or empty result, because the guard relied on Stan's implicit bounds checking of an out-of-range empty vector slice rather than an explicit check.
-- A bug was fixed where a bare `GP()`/`RW()` component's own `future` setting was silently ignored once combined with `+`, rather than being applied or checked against the baseline's.
-- A bug was fixed where the deprecated `gp = NULL` argument of `estimate_infections()`, `epinow()`, and `regional_epinow()` no longer disabled the Gaussian process, since the default Rt prior is now a Gaussian process in its own right rather than an optional add-on. `gp = NULL` once again leaves a constant value, or any random-walk/breakpoint components already on the prior, matching its previous behaviour.
 
 ## Documentation
 
@@ -76,7 +52,6 @@
 
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
 - Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
-- The `estimate_*()` functions now share one internal helper to build Stan arguments and fit the model, and `estimate_secondary()` and `estimate_truncation()` no longer pass placeholder values to generate initial conditions.
 - Added unit tests for the Stan functions that calculate secondary reports, Rt from infections, the reporting log likelihood and sampled reports.
 
 # EpiNow2 1.9.0
