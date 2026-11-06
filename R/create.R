@@ -431,7 +431,7 @@ gp_half_range <- function(n) {
 #' 5/2 constants to within 8-13%. Matern 1/2 is the roughest kernel, so it
 #' needs the most basis functions. Its `c_factor` was not independently
 #' validated and uses the Matern 3/2 value. The periodic kernel has no
-#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B), so
+#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B);
 #' its `c_factor` is `NA`.
 #'
 #' @param gp_type Integer kernel type as used in the Stan model (0: squared
