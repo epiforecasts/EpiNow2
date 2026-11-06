@@ -9,6 +9,11 @@
 
 ## Model changes
 
+- Rewrote the Stan `update_Rt()` function from small helpers that centre log Rt through its intercept.
+- `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
+- The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient.
+- `R_to_r()` is now implemented in C++ with a gradient from the implicit function theorem.
+- Simplified the Stan code that combines delays in `get_delay_rev_pmf()`, with new property tests for the delay functions.
 - Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior.
 - Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
 
