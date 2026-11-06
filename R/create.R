@@ -424,8 +424,8 @@ gp_half_range <- function(n) {
 #' when `m >= m_factor * c * S / l` and `c >= c_factor * l / S` (with
 #' `c >= 1.2`). The paper does not cover Matern 1/2 (equivalently, the
 #' Ornstein-Uhlenbeck kernel). Its `m_factor` is derived by repeating the
-#' paper's simulation procedure (see the `hsgp_m_c_relationship` folder,
-#' branch `matern-half-m-c-relationship`, of
+#' simulation procedure from the paper (see the `hsgp_m_c_relationship`
+#' folder, branch `matern-half-m-c-relationship`, of
 #' \url{https://github.com/sbfnk-bot/basis_functions_approach_to_GP}).
 #' The same procedure reproduced the squared exponential and Matern 3/2 and
 #' 5/2 constants to within 8-13%. Matern 1/2 is the roughest kernel, so it

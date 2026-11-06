@@ -56,8 +56,8 @@ These methods extract sample-level posterior predictions via
 observations on \code{date}, and pass the result to
 \code{\link[scoringutils:as_forecast_sample]{scoringutils::as_forecast_sample()}}.
 
-\link[scoringutils:scoringutils]{scoringutils} is an optional dependency; calling these methods without it
-installed gives an informative error.
+\pkg{scoringutils} is an optional dependency; calling these methods
+without it installed gives an informative error.
 }
 \examples{
 \dontshow{if (rlang::is_installed("scoringutils")) withAutoprint(\{ # examplesIf}
