@@ -5,7 +5,7 @@ cases <- c(0L, 3L, 12L, 40L)
 expected_reports <- c(0.5, 4, 10, 45)
 
 test_that("report_log_lik matches R densities for each model type", {
-  overdispersion <- rep(0.5, length(cases))
+  overdispersion <- 0.5
   expect_equal(
     report_log_lik(cases, expected_reports, overdispersion, 0, 1),
     dpois(cases, expected_reports, log = TRUE)
@@ -19,13 +19,10 @@ test_that("report_log_lik matches R densities for each model type", {
 })
 
 test_that("report_log_lik scales each contribution by the weight", {
-  overdispersion <- rep(0.5, length(cases))
   for (model_type in 0:1) {
-    unweighted <- report_log_lik(
-      cases, expected_reports, overdispersion, model_type, 1
-    )
+    unweighted <- report_log_lik(cases, expected_reports, 0.5, model_type, 1)
     expect_equal(
-      report_log_lik(cases, expected_reports, overdispersion, model_type, 0.25),
+      report_log_lik(cases, expected_reports, 0.5, model_type, 0.25),
       0.25 * unweighted
     )
   }
@@ -72,13 +69,12 @@ test_that("neg_binomial_2_safe_rng has negative binomial moments", {
 
 test_that("report_rng draws counts with the model variance", {
   reports <- c(0, 5, 50)
-  overdispersion <- rep(0.5, length(reports))
-  expect_length(report_rng(reports, overdispersion, 1), 3)
-  expect_equal(report_rng(reports, overdispersion, 1)[1], 0)
-  draws <- replicate(4000, report_rng(reports, overdispersion, 0))
+  expect_length(report_rng(reports, 0.5, 1), 3)
+  expect_equal(report_rng(reports, 0.5, 1)[1], 0)
+  draws <- replicate(4000, report_rng(reports, 0.5, 0))
   # Poisson model: variance equal to the mean
   expect_equal(apply(draws[2:3, ], 1, var), reports[2:3], tolerance = 0.15)
-  nb_draws <- replicate(4000, report_rng(reports, overdispersion, 1))
+  nb_draws <- replicate(4000, report_rng(reports, 0.5, 1))
   # negative binomial model: variance mu + mu^2 * overdispersion^2
   expect_equal(
     apply(nb_draws[2:3, ], 1, var), reports[2:3] + reports[2:3]^2 * 0.25,
