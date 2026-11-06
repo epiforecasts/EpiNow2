@@ -86,6 +86,18 @@ test_that("simulate_infections uses the prevalence reporting kernel", {
   set.seed(Sys.time())
 })
 
+test_that("simulate_infections works with susceptible depletion", {
+  set.seed(123)
+  sim <- test_simulate_infections(
+    generation_time = gt_opts(fix_parameters(example_generation_time)),
+    pop = Fixed(20000),
+    pop_period = "all"
+  )
+  infections <- sim[sim$variable == "infections", ]
+  expect_snapshot_output(infections)
+  set.seed(Sys.time())
+})
+
 test_that("simulate_infections fails with uncertain parameters", {
   expect_error(
     test_simulate_infections(

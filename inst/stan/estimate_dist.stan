@@ -63,10 +63,7 @@ transformed parameters {
 
 model {
   profile("priors") {
-    params_lp(
-      params, prior_dist, prior_dist_params,
-      params_lower, params_upper
-    );
+    params_lp(params, prior_dist, prior_dist_params);
   }
 
   profile("likelihood") {

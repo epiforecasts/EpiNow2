@@ -11,6 +11,14 @@
 
 ## Model changes
 
+- Rewrote the Stan `update_Rt()` function from small helpers that centre log Rt through its intercept.
+- `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
+- The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient.
+- `R_to_r()` is now implemented in C++ with a gradient from the implicit function theorem.
+- Simplified the Stan code that combines delays in `get_delay_rev_pmf()`, with new property tests for the delay functions.
+- Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior.
+- Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
+
 ## Package changes
 
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
@@ -20,10 +28,13 @@
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
 - Overriding the low-level secondary model parameters (`cumulative`, `historic`, `primary_hist_additive`, `current`, `primary_current_additive`) in `secondary_opts()` via `...` is deprecated, as there is no known use case for combinations other than those already set by `type`.
 - `estimate_secondary()` and `simulate_secondary()` now warn when `obs_opts(type = "prevalence")` is passed, as it has no effect there; use the `type` argument of `secondary_opts()` instead.
+- Added tests for backend dispatch, logging set up and the `as_forecast_sample()` methods that use mocks rather than model fits, and installed scoringutils in the coverage workflow.
 - Added unit tests for the option constructors, delay checks and utility helpers.
 - Added tests for summarising, formatting and reading back fitted and regional results.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
 - The README commits-since badge now tracks the latest release automatically.
+- The approximate Gaussian process settings can now be chosen from any lengthscale prior with fixed parameters and an analytic CDF, such as `Weibull()`, using the truncation-aware `quantile()` and `cdf()` from `distspec` (EpiNow2 now requires `distspec` >= 0.3.0).
+- Renamed the Stan convolution index helpers to `xlen_conv_indices()` and `len_conv_indices()`, and the prior distribution error now names the allowed values.
 
 ## Bug fixes
 
@@ -51,6 +62,8 @@
 
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
 - Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
+- The `estimate_*()` functions now share one internal helper to build Stan arguments and fit the model, and `estimate_secondary()` and `estimate_truncation()` no longer pass placeholder values to generate initial conditions.
+- Added unit tests for the Stan functions that calculate secondary reports, Rt from infections, the reporting log likelihood and sampled reports.
 
 # EpiNow2 1.9.0
 

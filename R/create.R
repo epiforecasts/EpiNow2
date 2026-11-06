@@ -463,31 +463,12 @@ gp_approx_constants <- function(gp_type, nu) {
 #' @param ls A `<dist_spec>` giving the lengthscale prior.
 #' @param probs Numeric vector of probabilities.
 #' @return A numeric vector of quantiles.
-#' @importFrom stats plnorm qlnorm pgamma qgamma pnorm qnorm
+#' @importFrom stats quantile
 #' @keywords internal
 gp_ls_quantiles <- function(ls, probs = c(0.05, 0.95)) {
-  dist_name <- check_gp_ls_prior(ls)
-  pars <- get_parameters(ls)
-  if (dist_name == "fixed") {
-    return(rep(pars$value, length(probs)))
-  }
-  fns <- switch(dist_name,
-    lognormal = list(
-      p = function(x) plnorm(x, pars$meanlog, pars$sdlog),
-      q = function(p) qlnorm(p, pars$meanlog, pars$sdlog)
-    ),
-    gamma = list(
-      p = function(x) pgamma(x, pars$shape, pars$rate),
-      q = function(p) qgamma(p, pars$shape, pars$rate)
-    ),
-    normal = list(
-      p = function(x) pnorm(x, pars$mean, pars$sd),
-      q = function(p) qnorm(p, pars$mean, pars$sd)
-    )
-  )
-  p_lower <- fns$p(0)
-  p_upper <- fns$p(max(ls))
-  fns$q(p_lower + probs * (p_upper - p_lower))
+  check_gp_ls_prior(ls)
+  p_lower <- cdf(ls, 0)
+  unname(quantile(ls, p_lower + probs * (1 - p_lower)))
 }
 
 #' Choose the boundary factor and number of basis functions
@@ -751,6 +732,10 @@ create_delay_inits <- function(stan_data) {
 #' number; this is a stopgap until derived-prior parameters are initialised
 #' through the shared path (#1481). The distribution code follows
 #' [pack_init_prior()] (0: lognormal, 1: gamma, 2: normal).
+#'
+#' Infection model fields (`fixed`, `estimate_r`, `bp_n` and `week_effect`)
+#' may be absent, as in the secondary and truncation models. Their
+#' components are then initialised as empty.
 #' @param stan_data A list of data as produced by [create_stan_data()].
 #' @inheritParams create_stan_params
 #' @return An initial condition generating function
@@ -763,7 +748,7 @@ create_initial_conditions <- function(stan_data, params) {
   function() {
     out <- create_delay_inits(stan_data)
 
-    if (stan_data$fixed == 0) {
+    if (isTRUE(stan_data$fixed == 0)) {
       out$eta <- array(rnorm(
         ifelse(stan_data$gp_type == 1, stan_data$M * 2, stan_data$M),
         mean = 0, sd = 0.1
@@ -771,7 +756,7 @@ create_initial_conditions <- function(stan_data, params) {
     } else {
       out$eta <- array(numeric(0))
     }
-    if (stan_data$estimate_r == 1) {
+    if (isTRUE(stan_data$estimate_r == 1)) {
       out$initial_infections <- array(rnorm(1))
       # seed R_mean from the initial-Rt prior (see @details above)
       if (stan_data$n_init_priors > 0) {
@@ -793,14 +778,14 @@ create_initial_conditions <- function(stan_data, params) {
       out$R_mean <- array(numeric(0))
     }
 
-    if (stan_data$bp_n > 0) {
+    if (isTRUE(stan_data$bp_n > 0)) {
       out$bp_sd <- array(rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
       out$bp_effects <- array(rnorm(stan_data$bp_n, 0, 0.1))
     } else {
       out$bp_sd <- array(numeric(0))
       out$bp_effects <- array(numeric(0))
     }
-    if (stan_data$week_effect > 0) {
+    if (isTRUE(stan_data$week_effect > 0)) {
       out$day_of_week_simplex <- array(
         rep(1 / stan_data$week_effect, stan_data$week_effect)
       )

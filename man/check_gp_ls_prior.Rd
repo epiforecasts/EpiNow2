@@ -10,13 +10,11 @@ check_gp_ls_prior(ls)
 \item{ls}{A \verb{<dist_spec>} giving the lengthscale prior.}
 }
 \value{
-Invisibly, the name of the prior distribution. Called for its side
-effect of erroring for unsupported priors.
+Invisibly, \code{ls}. Called for its side effect of erroring for
+unsupported priors.
 }
 \description{
-The settings can be chosen from fixed, lognormal, gamma and normal priors
-without uncertain parameters. This matches the \code{switch()} in
-\code{\link[=gp_ls_quantiles]{gp_ls_quantiles()}}, as \code{distspec} does not yet export a generic quantile
-function. Once it does, this restriction can be lifted.
+The settings can be chosen from priors with fixed parameters and an
+analytic cumulative distribution function.
 }
 \keyword{internal}
