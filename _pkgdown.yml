@@ -179,13 +179,6 @@ reference:
   - report_plots
   - report_summary
 
-- title: Time-varying parameters
-  desc: Functions to declare time-varying model parameters
-  contents:
-  - state
-  - trajectory_baseline
-  - "+.state_spec"
-
 - title: Fit Delay Distributions
   desc: Functions to fit delay distributions
   contents:
@@ -229,7 +222,6 @@ reference:
   contents:
   - run_region
   - expose_stan_fns
-  - epinow2_stan_header
   - growth_to_R
   - R_to_growth
   - update_secondary_args
@@ -237,3 +229,4 @@ reference:
 - title: Internal
   contents:
   - has_keyword("internal")
+
