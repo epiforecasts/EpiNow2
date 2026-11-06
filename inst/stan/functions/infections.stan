@@ -49,33 +49,12 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
 }
 
 /**
- * Run the renewal equation from the seeding infections.
- *
- * Implemented in C++, with a hand-written gradient, in
- * `inst/include/epinow2/renewal_infections.hpp`, which gives the maths.
- *
- * @param seed Vector of seeding infections
- * @param R Vector of reproduction numbers
- * @param gt_rev_pmf Vector of reversed generation time PMF
- * @param pop Initial susceptible population
- * @param use_pop Population adjustment mode (0=none, 1=after nht, 2=all)
- * @param pop_floor Minimum susceptible population
- * @param nht Number of time steps before the adjustment when use_pop = 1
- * @return A vector of infections, starting with the seeding infections
- *
- * @ingroup infections_estimation
- */
-vector renewal_infections(vector seed, vector R, vector gt_rev_pmf, real pop,
-                          int use_pop, data real pop_floor, int nht);
-
-/**
  * @ingroup infections_estimation
  * @brief Generate infections using a renewal equation approach
  *
  * This function implements the renewal equation to generate a time series of
  * infections based on reproduction numbers and the generation time distribution.
  * It can also account for population depletion if a population size is specified.
- * It sets the seeding infections and then calls renewal_infections().
  *
  * @param R Vector of reproduction numbers
  * @param uot Unobserved time (seeding time)
@@ -92,27 +71,92 @@ vector renewal_infections(vector seed, vector R, vector gt_rev_pmf, real pop,
  */
 vector generate_infections(vector R, int uot, vector gt_rev_pmf,
                            array[] real initial_infections, real pop,
-                           int use_pop, data real pop_floor, int ht, int obs_scale, real fraction_observed,
+                           int use_pop, real pop_floor, int ht, int obs_scale, real fraction_observed,
                            int initial_as_scale) {
+  // time indices and storage
   int ot = num_elements(R);
-  vector[uot] seed;
+  int nht = ot - ht;
+  int t = ot + uot;
+  real exp_adj_Rt;
+  vector[t] infections = rep_vector(0, t);
+  vector[ot] cum_infections;
+  vector[ot] infectiousness;
   real growth = R_to_r(R[1], gt_rev_pmf, 1e-3);
   // Initialise infections using daily growth
   if (initial_as_scale) {
-    seed[1] = exp(initial_infections[1] - growth * uot);
+    infections[1] = exp(initial_infections[1] - growth * uot);
     if (obs_scale) {
-      seed[1] = seed[1] / fraction_observed;
+      infections[1] = infections[1] / fraction_observed;
     }
   } else {
-    seed[1] = exp(initial_infections[1]);
+    infections[1] = exp(initial_infections[1]);
   }
   if (uot > 1) {
     real exp_growth = exp(growth);
     for (s in 2:uot) {
-      seed[s] = seed[s - 1] * exp_growth;
+      infections[s] = infections[s - 1] * exp_growth;
     }
   }
-  return renewal_infections(
-    seed, R, gt_rev_pmf, pop, use_pop, pop_floor, ot - ht
-  );
+  // calculate cumulative infections
+  if (use_pop) {
+    cum_infections[1] = sum(infections[1:uot]);
+  }
+  // iteratively update infections
+  for (s in 1:ot) {
+    infectiousness[s] = update_infectiousness(infections, gt_rev_pmf, uot, s);
+    if ((use_pop == 1 && s > nht) || use_pop == 2) {
+      real susceptible = fmax(pop_floor, pop - cum_infections[s]);
+      exp_adj_Rt = exp(-R[s] * infectiousness[s] / susceptible);
+      infections[s + uot] = susceptible * fmax(0, 1 - exp_adj_Rt);
+    } else{
+      infections[s + uot] = R[s] * infectiousness[s];
+    }
+    if (use_pop && s < ot) {
+      cum_infections[s + 1] = cum_infections[s] + infections[s + uot];
+    }
+  }
+  return(infections);
+}
+
+/**
+ * Backcalculate infections from cases
+ *
+ * This function estimates infections by working backwards from observed cases,
+ * applying noise to account for uncertainty in the process.
+ *
+ * @param shifted_cases Vector of shifted case counts
+ * @param noise Vector of noise values
+ * @param fixed Whether to use fixed (1) or variable (0) noise
+ * @param prior Prior type to use (0: noise only, 1: cases * noise, 2: random walk)
+ * @return A vector of infection counts
+ *
+ * @par Example
+ * With `shifted_cases = {10, 20, 30}`, no noise (`noise = {0, 0, 0}`,
+ * so `exp(noise) = 1`) and `prior = 1`, each case count is scaled by 1 and
+ * offset by the `1e-5` numerical floor:
+ * `deconvolve_infections(shifted_cases, noise, 0, 1)` returns
+ * approximately `{10, 20, 30}`.
+ *
+ * @ingroup infections_estimation
+ */
+vector deconvolve_infections(vector shifted_cases, vector noise, int fixed,
+                             int prior) {
+  int t = num_elements(shifted_cases);
+  vector[t] infections = rep_vector(1e-5, t);
+  if (!fixed) {
+    vector[t] exp_noise = exp(noise);
+    if (prior == 1) {
+      infections = infections + shifted_cases .* exp_noise;
+    } else if (prior == 0) {
+     infections = infections + exp_noise;
+    } else if (prior == 2) {
+      infections[1] = infections[1] + shifted_cases[1] * exp_noise[1];
+      for (i in 2:t) {
+        infections[i] = infections[i - 1] * exp_noise[i];
+      }
+    }
+  } else {
+    infections = infections + shifted_cases;
+  }
+  return(infections);
 }
