@@ -30,3 +30,7 @@ A \code{cmdstanr} model.
 The function has been adapted from a similar function in the epinowcast
 package (Copyright holder: epinowcast authors, under MIT License).
 }
+\details{
+Passes \code{\link[=epinow2_stan_header]{epinow2_stan_header()}} as \code{user_header} unless one is
+given in \code{...}.
+}
