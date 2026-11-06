@@ -34,7 +34,7 @@ test_that("rt_opts handles custom inputs correctly", {
 test_that("rt_opts errors when pop is passed as numeric", {
   expect_error(
     rt_opts(pop = 1000),
-    "must be a `<dist_spec>`"
+    "dist_spec"
   )
 })
 

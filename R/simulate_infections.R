@@ -73,17 +73,6 @@ simulate_infections <- function(R,
                                 pop_floor = 1.0,
                                 growth_method = c("infections",
                                                   "infectiousness")) {
-  if (is.numeric(pop)) {
-    deprecate_stop(
-      "1.9.0",
-      "simulate_infections(pop = 'must be a `<dist_spec>`')",
-      details = paste(
-        "Population size must now be specified as a distribution.",
-        "For a fixed known population, wrap the value with `Fixed()`.",
-        "For example: `simulate_infections(..., pop = Fixed(1000000))`."
-      )
-    )
-  }
   assert_class(pop, "dist_spec")
   pop_period <- arg_match(pop_period)
   if (pop_period == "all" && pop == Fixed(0)) {
