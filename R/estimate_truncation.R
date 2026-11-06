@@ -257,7 +257,9 @@ estimate_truncation <- function(data,
   fit <- fit_estimate_model(
     stan = stan,
     data = stan_data,
-    init = create_initial_conditions(stan_data, params),
+    init = create_initial_conditions(
+      c(stan_data, list(estimate_r = 0, fixed = 1, week_effect = 0)), params
+    ),
     model = "estimate_truncation",
     time_points = stan_data$t
   )

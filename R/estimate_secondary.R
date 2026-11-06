@@ -242,7 +242,9 @@ estimate_secondary <- function(data,
   fit <- fit_estimate_model(
     stan = stan,
     data = stan_data,
-    init = create_initial_conditions(stan_data, params),
+    init = create_initial_conditions(
+      c(stan_data, list(estimate_r = 0, fixed = 1)), params
+    ),
     model = "estimate_secondary",
     time_points = stan_data$t
   )
