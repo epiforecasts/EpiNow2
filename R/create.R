@@ -428,10 +428,10 @@ gp_half_range <- function(n) {
 #' branch `matern-half-m-c-relationship`, of
 #' \url{https://github.com/sbfnk-bot/basis_functions_approach_to_GP}).
 #' The same procedure reproduced the squared exponential and Matern 3/2 and
-#' 5/2 constants to within 8-13%. Matern 1/2 is the roughest kernel, so it
+#' 5/2 constants to within 8-13%. Being the roughest kernel, Matern 1/2
 #' needs the most basis functions. Its `c_factor` was not independently
 #' validated and uses the Matern 3/2 value. The periodic kernel has no
-#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B), so
+#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B);
 #' its `c_factor` is `NA`.
 #'
 #' @param gp_type Integer kernel type as used in the Stan model (0: squared
@@ -479,7 +479,7 @@ gp_ls_quantiles <- function(ls, probs = c(0.05, 0.95)) {
 #' (95%) prior quantile, as longer lengthscales need a wider boundary. The
 #' number of basis functions is then set by the lower (5%) prior quantile, as
 #' shorter lengthscales need more basis functions. The periodic kernel has no
-#' boundary, so only the number of basis functions is chosen.
+#' boundary, and only the number of basis functions is chosen for it.
 #'
 #' @param gp A `<gp_opts>` object.
 #' @param n Length of the Gaussian process.
@@ -816,6 +816,31 @@ create_initial_conditions <- function(stan_data, params) {
   }
 }
 
+#' Initialise Sampling Using the Pathfinder Algorithm
+#'
+#' @description
+#' Returns `init` unchanged unless `init_method` is "pathfinder" and sampling
+#' (rather than fixed-parameter sampling or an approximate method) is being
+#' used, in which case the pathfinder algorithm's estimate of the posterior
+#' is returned instead, for use as `init` when initialising the NUTS sampler.
+#'
+#' @inheritParams create_stan_args
+#' @param init_method A character string, either "random" or "pathfinder".
+#' @return `init`, or the pathfinder algorithm's fitted object
+#' @keywords internal
+initialise_with_pathfinder <- function(stan, data, init, init_method,
+                                       fixed_param, verbose) {
+  if (identical(init_method, "pathfinder") && !fixed_param &&
+        identical(stan$method, "sampling")) {
+    # use the pathfinder algorithm's estimate of the posterior, rather than
+    # the supplied `init`, to initialise sampling
+    init <- stan$object$pathfinder(
+      data = data, seed = stan$seed, refresh = ifelse(verbose, 50, 0)
+    )
+  }
+  init
+}
+
 #' Create a List of Stan Arguments
 #'
 #' @description
@@ -832,7 +857,9 @@ create_initial_conditions <- function(stan_data, params) {
 #'
 #' @param init Initial conditions passed to `{rstan}`. Defaults to "random"
 #' (initial values randomly drawn between -2 and 2) but can also be a
-#' function (as supplied by [create_initial_conditions()]).
+#' function (as supplied by [create_initial_conditions()]). Overridden when
+#' `stan$init_method` is "pathfinder" (see [stan_sampling_opts()]), unless
+#' `fixed_param` is `TRUE`.
 #'
 #' @param model Character, name of the model for which arguments are
 #' to be created.
@@ -874,6 +901,11 @@ create_stan_args <- function(stan = stan_opts(),
     stan$object <- epinow2_stan_model(stan$backend, model)
     stan$backend <- NULL
   }
+  init_method <- stan$init_method %||% "random"
+  stan$init_method <- NULL
+  init <- initialise_with_pathfinder(
+    stan, data, init, init_method, fixed_param, verbose
+  )
   # cmdstanr doesn't have an init = "random" argument
   if (is.character(init) && init == "random" &&
         inherits(stan$object, "CmdStanModel")) {

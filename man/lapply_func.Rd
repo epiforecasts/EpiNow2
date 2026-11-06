@@ -8,7 +8,10 @@ lapply_func(..., backend = "rstan", future.opts = list())
 }
 \arguments{
 \item{...}{Additional parameters to pass to underlying option functions,
-\code{\link[=stan_sampling_opts]{stan_sampling_opts()}} or \code{\link[=stan_vb_opts]{stan_vb_opts()}}, depending on the method}
+\code{\link[=stan_sampling_opts]{stan_sampling_opts()}} or \code{\link[=stan_vb_opts]{stan_vb_opts()}}, depending on the method. When
+\code{method} is "sampling" this includes \code{init_method}, which can be set to
+"pathfinder" to initialise sampling using the pathfinder algorithm (see
+\code{\link[=stan_sampling_opts]{stan_sampling_opts()}}).}
 
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
