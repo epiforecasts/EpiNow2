@@ -23,6 +23,7 @@
 - Added tests for summarising, formatting and reading back fitted and regional results.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
 - The README commits-since badge now tracks the latest release automatically.
+- The approximate Gaussian process settings can now be chosen from any lengthscale prior with fixed parameters and an analytic CDF, such as `Weibull()`, using the truncation-aware `quantile()` and `cdf()` from `distspec` (EpiNow2 now requires `distspec` >= 0.3.0).
 - Renamed the Stan convolution index helpers to `xlen_conv_indices()` and `len_conv_indices()`, and the prior distribution error now names the allowed values.
 
 ## Bug fixes
@@ -52,6 +53,7 @@
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
 - Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
 - Added fast tests for `epinow()`, `regional_epinow()` and the report helpers that replace the model fit with a mock, covering saved output, error and warning handling, logging and regional summaries.
+- The `estimate_*()` functions now share one internal helper to build Stan arguments and fit the model, and `estimate_secondary()` and `estimate_truncation()` no longer pass placeholder values to generate initial conditions.
 - Added unit tests for the Stan functions that calculate secondary reports, Rt from infections, the reporting log likelihood and sampled reports.
 
 # EpiNow2 1.9.0
