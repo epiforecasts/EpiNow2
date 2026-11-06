@@ -1,0 +1,7 @@
+<map id="Handlers and Helpers" name="Handlers and Helpers">
+<area shape="rect" id="Node000002" href="$group__convolution__functions.html" title="Functions for convolving time series." alt="" coords="199,5,348,31"/>
+<area shape="rect" id="Node000004" href="$group__delay__handlers.html" title="Functions for delay distribution handling." alt="" coords="219,55,328,80"/>
+<area shape="rect" id="Node000001" title="Utility functions and parameter handlers." alt="" coords="5,80,151,106"/>
+<area shape="rect" id="Node000003" href="$group__parameter__handlers.html" title="Functions for parameter management." alt="" coords="205,104,342,130"/>
+<area shape="rect" id="Node000005" href="$group__pmf__handlers.html" title="Functions for probability mass function handling." alt="" coords="221,153,326,179"/>
+</map>

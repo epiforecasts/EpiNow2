@@ -1,0 +1,158 @@
+# Case studies and use in the literature
+
+**This is a work in progress. Please consider submitting a PR to improve
+it.**
+
+## Case studies
+
+- [Estimating reporting delays and nowcasting/forecasting infections
+  with EpiNow2 using HHS COVID-19
+  hospitalizations](https://samabbott.co.uk/cste-forecasting-workshop/)
+  by Sam Abbott, Zachary Susswein, and Katie Gostic.
+- [Estimating reporting delays and nowcasting/forecasting infections
+  with
+  EpiNow2](https://github.com/epiforecasts/nowcasting.example/blob/main/inst/reports/epinow2.md)
+  by Sebastian Funk and Sam Abbott.
+- [Forecast Covid-19 reported deaths from Covid-19 reported cases (both
+  observed and forecast) for a country in the
+  ECDC](https://gist.github.com/seabbs/4f09d7609df298db7a86c31612ff9d17)
+  by Sam Abbott.
+- [Explore Covid-19 data truncation in
+  England](https://gist.github.com/seabbs/176b0c7f83eab1a7192a25b28bbd116a)
+  by Sam Abbott.
+- [Estimate the effective reproduction number of Covid-19 in last 3
+  months for a
+  country](https://gist.github.com/seabbs/163d0f195892cde685c70473e1f5e867)
+  by Sam Abbott.
+- [Nowcasting and forecasting the 2022 U.S. mpox
+  outbreak](https://github.com/kcharniga/mpox_nowcasting) by Kelly
+  Charniga, Zachary J. Madewell, Nicholas B. Masters, Jason Asher,
+  Yoshinori Nakazawa, and Ian H. Spicknall.
+
+## Public health surveillance
+
+- CDC. 2022. “Technical Report 3: Multi-National Monkeypox Outbreak,
+  United States, 2022.” Centers for Disease Control and Prevention.
+  October 3, 2022.
+  <https://archive.cdc.gov/www_cdc_gov/poxvirus/mpox/cases-data/technical-report/report-3.html>
+
+- CDC Center for Forecasting and Outbreak Analytics. “Current Epidemic
+  Trends (Based on Rt) for States.” Centers for Disease Control and
+  Prevention.
+  <https://www.cdc.gov/cfa-modeling-and-forecasting/rt-estimates/index.html>.
+  EpiNow2 used to estimate the time-varying reproduction number for
+  COVID-19, influenza, and RSV across U.S. states from emergency
+  department visit data, with estimates updated weekly.
+
+## Literature
+
+### By package authors
+
+- Abbott, Sam, Joel Hellewell, Robin N. Thompson, Katharine Sherratt,
+  Hamish P. Gibbs, Nikos I. Bosse, James D. Munday, et al. 2020.
+  “Estimating the Time-Varying Reproduction Number of SARS-CoV-2 Using
+  National and Subnational Case Counts.” Wellcome Open Research 5
+  (December): 112. <https://doi.org/10.12688/wellcomeopenres.16006.2>
+
+- Sherratt, Katharine, Sam Abbott, Sophie R. Meakin, Joel Hellewell,
+  James D. Munday, Nikos Bosse, CMMID Working Group, Mark Jit, and
+  Sebastian Funk. 2021. “Exploring Surveillance Data Biases When
+  Estimating the Reproduction Number: With Insights into Subpopulation
+  Transmission of COVID-19 in England.” Philosophical Transactions of
+  the Royal Society of London. Series B, Biological Sciences 376
+  (1829): 20200283. <https://doi.org/10.1098/rstb.2020.0283>
+
+- Bosse, Nikos I., Sam Abbott, Johannes Bracher, Habakuk Hain, Billy J.
+  Quilty, Mark Jit, Centre for the Mathematical Modelling of Infectious
+  Diseases COVID-19 Working Group, Edwin van Leeuwen, Anne Cori, and
+  Sebastian Funk. 2022. “Comparing Human and Model-Based Forecasts of
+  COVID-19 in Germany and Poland.” PLoS Computational Biology 18 (9):
+  e1010405. <https://doi.org/10.1371/journal.pcbi.1010405>
+
+- Davies, Nicholas G., Sam Abbott, Rosanna C. Barnard, Christopher I.
+  Jarvis, Adam J. Kucharski, James D. Munday, Carl A. B. Pearson, et
+  al. 2021. “Estimated Transmissibility and Impact of SARS-CoV-2 Lineage
+  B.1.1.7 in England.” Science 372 (6538).
+  <https://doi.org/10.1126/science.abg3055>.
+
+- Meakin, Sophie, Sam Abbott, Nikos Bosse, James Munday, Hugo Gruson,
+  Joel Hellewell, Katharine Sherratt, CMMID COVID-19 Working Group, and
+  Sebastian Funk. 2022. “Comparative Assessment of Methods for
+  Short-Term Forecasts of COVID-19 Hospital Admissions in England at the
+  Local Level.” BMC Medicine 20 (1): 86.
+  <https://doi.org/10.1186/s12916-022-02271-x>
+
+### By others
+
+- Hay, James A., Lee Kennedy-Shaffer, Sanjat Kanjilal, Niall J. Lennon,
+  Stacey B. Gabriel, Marc Lipsitch, and Michael J. Mina. 2021.
+  “Estimating Epidemiologic Dynamics from Cross-Sectional Viral Load
+  Distributions.” Science 373 (6552).
+  <https://doi.org/10.1126/science.abh0635>.
+
+- Binny, Rachelle N., Audrey Lustig, Shaun C. Hendy, Oliver J. Maclaren,
+  Kannan M. Ridings, Giorgia Vattiato, and Michael J. Plank. 2022.
+  “Real-time Estimation of the Effective Reproduction Number of
+  SARS-CoV-2 in Aotearoa New Zealand.” PeerJ 10: e14119.
+  <https://doi.org/10.7717/peerj.14119>.
+
+- Parker, Edyth, Catelyn Anderson, Mark Zeller, Ahmad Tibi, Jennifer L.
+  Havens, Geneviève Laroche, Mehdi Benlarbi, Ardeshir Ariana, Refugio
+  Robles-Sikisaka, Alaa Abdel Latif, Alexander Watts, Abdalla Awidi,
+  Saied A. Jaradat, Karthik Gangavarapu, Karthik Ramesh, Ezra Kurzban,
+  Nathaniel L. Matteson, Alvin X. Han, Laura D. Hughes, Michelle McGraw,
+  Emily Spencer, Laura Nicholson, Kamran Khan, Marc A. Suchard, Joel O.
+  Wertheim, Shirlee Wohl, Marceline Côté, Amid Abdelnour, Kristian G.
+  Andersen, and Issa Abu-Dayyeh. 2022. “Regional Connectivity Drove
+  Bidirectional Transmission of SARS-CoV-2 in the Middle East during
+  Travel Restrictions.” Nature Communications 13: 4784.
+  <https://doi.org/10.1038/s41467-022-32536-1>.
+
+- Ranoa, Diana Rose E., Robin L. Holland, Fadi G. Alnaji, Kelsie J.
+  Green, Leyi Wang, Richard L. Fredrickson, et al. 2022. “Mitigation of
+  SARS-CoV-2 Transmission at a Large Public University.” Nature
+  Communications 13: 3207. <https://doi.org/10.1038/s41467-022-30833-3>.
+
+- Aravamuthan, Srikanth, Juan Francisco Mandujano Reyes, Brian S.
+  Yandell, and Dörte Döpfer. 2023. “Real-time Estimation and Forecasting
+  of COVID-19 Cases and Hospitalizations in Wisconsin HERC Regions for
+  Public Health Decision Making Processes.” BMC Public Health 23: 359.
+  <https://doi.org/10.1186/s12889-023-15160-6>.
+
+- Kerr, Gaige Hunter, Hamada S. Badr, Alisson F. Barbieri, Josh M.
+  Colston, Lauren M. Gardner, Margaret N. Kosek, and Benjamin F.
+  Zaitchik. 2023. “Evolving Drivers of Brazilian SARS-CoV-2
+  Transmission: A Spatiotemporally Disaggregated Time Series Analysis of
+  Meteorology, Policy, and Human Mobility.” GeoHealth 7 (3):
+  e2022GH000727. <https://doi.org/10.1029/2022GH000727>.
+
+- Charniga, Kelly, Zachary J. Madewell, Nicholas B. Masters, Jason
+  Asher, Yoshinori Nakazawa, and Ian H. Spicknall. 2024. “Nowcasting and
+  Forecasting the 2022 U.S. Mpox Outbreak: Support for Public Health
+  Decision Making and Lessons Learned.” Epidemics 47: 100755.
+  <https://doi.org/10.1016/j.epidem.2024.100755>.
+
+- Richard, Danielle M., Zachary Susswein, Sarah Connolly, Adán Myers y
+  Gutiérrez, Roselyn Thalathara, Kelly Carey, Emily H. Koumans, Diba
+  Khan, Nina B. Masters, Nathan McIntosh, Patrick Corbett, Isaac Ghinai,
+  Rebecca Kahn, Adrienne Keen, Juliet Pulliam, Daniel Sosin, and Katelyn
+  Gostic. 2024. “Detection of Real-Time Changes in Direction of COVID-19
+  Transmission Using National- and State-Level Epidemic Trends Based on
+  Rt Estimates — United States Overall and New Mexico, April–October
+  2024.” MMWR Morbidity and Mortality Weekly Report 73 (46): 1058–1063.
+  <https://doi.org/10.15585/mmwr.mm7346a3>.
+
+- Costa, João Marcos Nacif da, Luis Gustavo Corbellini, Nicolás Céspedes
+  Cárdenas, Fernando Henrique Sauter Groff, and Gustavo Machado. 2025.
+  “Assessing Epidemiological Parameters and Dissemination
+  Characteristics of the 2000 and 2001 Foot-and-Mouth Disease Outbreaks
+  in Rio Grande do Sul, Brazil.” Ciência Rural 55: e20240540.
+  <https://doi.org/10.1590/0103-8478cr20240540>.
+
+- Pekar, Jonathan E., Yanjun Wang, Jade C. Wang, Yiyang Shao, Faten
+  Taki, Leah A. Forgione, Hemi Amin, Timothy Clabby, Kathy Johnson,
+  Lucia V. Torian, Straten L. Braunstein, Preeti Pathela, Esther
+  Omoregie, Stella Hughes, Marc A. Suchard, Tetyana I. Vasylyeva,
+  Philippe Lemey, and Joel O. Wertheim. 2025. “Transmission Dynamics of
+  the 2022 Mpox Epidemic in New York City.” Nature Medicine 31 (5):
+  1464–1473. <https://doi.org/10.1038/s41591-025-03526-9>.

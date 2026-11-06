@@ -1,0 +1,388 @@
+# Gaussian Process implementation details
+
+## Overview
+
+We make use of Gaussian Processes in several places in `EpiNow2`. For
+example, the default model for
+[`estimate_infections()`](https://epiforecasts.io/EpiNow2/dev/reference/estimate_infections.md)
+uses a Gaussian Process to model the 1st order difference on the log
+scale of the reproduction number. This vignette describes the
+implementation details of the approximate Gaussian Process used in
+`EpiNow2`.
+
+## Definition
+
+The one-dimensional Gaussian Processes ($`\mathrm{GP}_t`$) we use can be
+written as
+
+``` math
+\begin{equation}
+\mathrm{GP}(\mu(t), k(t, t'))
+\end{equation}
+```
+
+where $`\mu(t)`$ and $`k(t,t')`$ are the mean and covariance functions,
+respectively. In our case as set out above, we have
+
+``` math
+\begin{align}
+\mu(t) &\equiv 0 \\
+k(t,t') &= k(|t - t'|) = k(\Delta t)
+\end{align}
+```
+
+with the following choices available for the kernel $`k`$
+
+### Matérn 3/2 covariance kernel (the default)
+
+``` math
+\begin{equation}
+k(\Delta t) = \alpha^2 \left( 1 + \frac{\sqrt{3} \Delta t}{\rho} \right) \exp \left( - \frac{\sqrt{3} \Delta t}{\rho}\right)
+\end{equation}
+```
+
+with $`\rho>0`$ and $`\alpha > 0`$ the length scale and magnitude,
+respectively, of the kernel. Note that here and later we use a slightly
+different definition of $`\alpha`$ compared to Riutort-Mayol et
+al.^(\[1\]), where this is defined as our $`\alpha^2`$.
+
+### Squared exponential kernel
+
+``` math
+\begin{equation}
+k(\Delta t) = \alpha^2 \exp \left( - \frac{1}{2} \frac{(\Delta t^2)}{l^2} \right)
+\end{equation}
+```
+
+### Ornstein-Uhlenbeck (Matérn 1/2) kernel
+
+``` math
+\begin{equation}
+k(\Delta t) = \alpha^2 \exp{\left( - \frac{\Delta t}{2 \rho^2}  \right)}
+\end{equation}
+```
+
+### Matérn 5/2 covariance kernel
+
+``` math
+\begin{equation}
+k(\Delta t) = \alpha \left( 1 + \frac{\sqrt{5} \Delta t}{\rho} + \frac{5}{3} \left(\frac{\Delta t}{l} \right)^2 \right) \exp \left( - \frac{\sqrt{5} \Delta t}{\rho}\right)
+\end{equation}
+```
+
+## Hilbert space approximation
+
+In order to make our models computationally tractable, we approximate
+the Gaussian Process using a Hilbert space approximation to the Gaussian
+Process^(\[1\]), centred around mean zero.
+
+``` math
+\begin{equation}
+\mathrm{GP}(0, k(\Delta t)) \approx \sum_{j=1}^m \left(S_k(\sqrt{\lambda_j}) \right)^\frac{1}{2} \phi_j(t) \beta_j
+\end{equation}
+```
+
+with $`m`$ the number of basis functions to use in the approximation,
+and values of $`\lambda_j`$ given by
+
+``` math
+\begin{equation}
+\lambda_j = \left( \frac{j \pi}{2 L} \right)^2
+\end{equation}
+```
+
+where $`L`$ is a positive number termed boundary condition, and
+$`\beta_{j}`$ are regression weights with standard normal prior
+
+``` math
+\begin{equation}
+\beta_j \sim \mathrm{Normal}(0, 1)
+\end{equation}
+```
+
+The function $`S_k(x)`$ is the spectral density relating to a particular
+covariance function $`k`$. In the case of the Matérn kernel of order
+$`\nu`$ this is given by
+
+``` math
+\begin{equation}
+S_k(x) = \alpha^2 \frac{2 \sqrt{\pi} \Gamma(\nu + 1/2) (2\nu)^\nu}{\Gamma(\nu) \rho^{2 \nu}} \left( \frac{2 \nu}{\rho^2} + \omega^2 \right)^{-\left( \nu + \frac{1}{2}\right )}
+\end{equation}
+```
+
+For $`\nu = 3 / 2`$ (the default in `EpiNow2`) this simplifies to
+
+``` math
+\begin{equation}
+    S_k(\omega) =
+    \alpha^2 \frac{4 \left(\sqrt{3} / \rho \right)^3}{\left(\left(\sqrt{3} / \rho\right)^2 + \omega^2\right)^2} =
+    \left(\frac{2 \alpha \left(\sqrt{3} / \rho \right)^{\frac{3}{2}}}{\left(\sqrt{3} / \rho\right)^2 + \omega^2} \right)^2
+\end{equation}
+```
+
+For $`\nu = 1 / 2`$ it is
+
+``` math
+\begin{equation}
+S_k(\omega) = \alpha^2 \frac{2}{\rho \left(1 / \rho^2 + \omega^2\right)}
+\end{equation}
+```
+
+and for $`\nu = 5 / 2`$ it is
+
+``` math
+\begin{equation}
+S_k(\omega) =
+    \alpha^2 \frac{16 \left(\sqrt{5} / \rho \right)^5}{3 \left(\left(\sqrt{5} / \rho\right)^2 + \omega^2\right)^3}
+\end{equation}
+```
+
+In the case of a squared exponential the spectral kernel density is
+given by
+
+``` math
+\begin{equation}
+S_k(\omega) = \alpha^2 \sqrt{2\pi} \rho \exp \left( -\frac{1}{2} \rho^2 \omega^2 \right)
+\end{equation}
+```
+
+The functions $`\phi_{j}(x)`$ are the eigenfunctions of the Laplace
+operator,
+
+``` math
+\begin{equation}
+\phi_j(t) = \frac{1}{\sqrt{L}} \sin\left(\sqrt{\lambda_j} (t^* + L)\right)
+\end{equation}
+```
+
+with the time points $`t = 1, \ldots, t_\mathrm{GP}`$ rescaled linearly
+to be between -1 and 1,
+
+``` math
+\begin{equation}
+t^* = \frac{t - \frac{1}{2}(t_\mathrm{GP} + 1)}{\frac{1}{2}(t_\mathrm{GP} - 1)}
+\end{equation}
+```
+
+where $`t_\mathrm{GP}`$ is the number of time points to which the
+Gaussian process is applied. The lengthscale is rescaled in the same
+way, dividing by the half-range $`S = (t_\mathrm{GP} - 1) / 2`$.
+
+Relevant default priors are
+
+``` math
+\begin{align}
+\alpha &\sim \mathrm{HalfNormal}(0, 0.01) \\
+\rho   &\sim \mathrm{LogNormal} (\mu_\rho, \sigma_\rho)\\
+\end{align}
+```
+
+with $`\rho`$ additionally constrained with an upper bound of $`60`$ and
+$`\mu_{\rho}`$ and $`\sigma_\rho`$ calculated using a mean of 21 and
+standard deviation of 7.
+
+## Choosing the boundary and number of basis functions
+
+The accuracy of the approximation depends on the boundary $`L`$ and the
+number of basis functions $`m`$ relative to the lengthscale. We write
+$`L = cS`$ with $`c`$ the boundary factor and $`S`$ the half-range of
+the time points, and $`\ell = \rho / S`$ for the lengthscale relative to
+the half-range. For the Matérn 3/2 kernel,^(\[1\]) (Section 4.3.1) show
+that the approximation is accurate when
+
+``` math
+\begin{align}
+c &\geq \max(1.2, 4.5 \ell) \\
+m &\geq 3.42 \frac{c}{\ell}
+\end{align}
+```
+
+with constants $`(3.2, 1.75)`$ for the squared exponential kernel and
+$`(4.1, 2.65)`$ for the Matérn 5/2 kernel. Longer lengthscales therefore
+need a wider boundary, and for a given lengthscale no number of basis
+functions compensates for a boundary that is too narrow. Shorter
+lengthscales need more basis functions.
+
+By default, `EpiNow2` sets $`c`$ from the 95% quantile of the
+lengthscale prior and then $`m`$ from the 5% quantile, so that
+lengthscales across the bulk of the prior are approximated accurately.
+This 5%/95% split is a convention, not something^(\[1\]) derive; it is
+not revisited by a diagnostic the way $`m`$ and $`c`$ themselves are
+(see below), so it is worth keeping in mind as a source of inaccuracy
+distinct from the $`m`$/$`c`$ relationships.^(\[1\]) do not cover the
+Ornstein-Uhlenbeck kernel (Matérn 1/2). Reproducing their simulation
+procedure for it gives $`m \geq 8.6 \frac{c}{\ell}`$: Matérn 1/2 is the
+roughest of the four kernels covered here, so it needs more basis
+functions than Matérn 3/2 for the same accuracy, not fewer. Its boundary
+constant was not independently re-derived and keeps the Matérn 3/2 value
+($`c \geq 4.5 \ell`$), which is not confirmed conservative for this
+kernel. The periodic kernel does not use a boundary, and^(\[1\])
+(Appendix B) show that it is approximated accurately when
+$`m \geq 3.72 / \ell`$. By default, `EpiNow2` sets $`m`$ for the
+periodic kernel from the 5% quantile of the lengthscale prior.
+
+After fitting, `EpiNow2` applies the lengthscale diagnostic of^(\[1\])
+(Section 4.5). A warning is given if the posterior median lengthscale is
+shorter than the $`3.42 c S / m`$ days that $`m`$ basis functions can
+represent, or longer than the $`c S / 4.5`$ days that the boundary
+supports. For the periodic kernel only the first check applies, with
+$`3.72 S / m`$ days. Either can be addressed by adjusting the
+lengthscale prior, from which the settings are chosen, or by setting
+`basis_prop` and `boundary_scale` in
+[`gp_opts()`](https://epiforecasts.io/EpiNow2/dev/reference/gp_opts.md)
+directly.
+
+### Checking the approximation
+
+^(\[1\]) (Section 4.5.1) give a step-by-step procedure for checking the
+approximation. Adapted to `EpiNow2` with the Matérn 3/2 kernel, it is as
+follows.
+
+- Fit the model with the default settings, which are chosen from the
+  lengthscale prior. This replaces the single initial guess of the
+  lengthscale in the paper.
+- Check that the model has converged before reading the lengthscale
+  diagnostic: the diagnostic reads the posterior median lengthscale,
+  which is not meaningful from a chain that has not converged. If it has
+  not, address that first, for example by reconsidering the prior or
+  model specification, and refit; only once the model converges does it
+  make sense to look at the lengthscale diagnostic at all.
+- If the posterior median lengthscale $`\hat{\rho}`$ is too short, refit
+  with $`m \geq 3.42 c S / \hat{\rho}`$, by setting `basis_prop` to
+  $`m / t_\mathrm{GP}`$.
+- If $`\hat{\rho}`$ is too long, refit with `boundary_scale` set to at
+  least $`4.5 \hat{\rho} / S`$, and $`m`$ chosen as above.
+- Repeat until the diagnostic gives no warning.
+- Passing the diagnostic does not guarantee an accurate approximation.
+  Refit with more basis functions (the paper adds 5) and check that
+  $`\hat{\rho}`$ and predictive performance, for example the ELPD, are
+  stable.
+- The approximation error is largest for the posterior standard
+  deviation and near the boundaries. In `EpiNow2` this affects the most
+  recent estimates, so check these in particular.
+
+For other kernels, use their constants from above.
+
+## Modelling the reproduction number
+
+The default
+[`estimate_infections()`](https://epiforecasts.io/EpiNow2/dev/reference/estimate_infections.md)
+model uses [the GP to model the first-order difference of
+$`\log R_t`$](https://epiforecasts.io/EpiNow2/dev/articles/estimate_infections.html#time-varying-reproduction-number),
+with the trajectory itself built by cumulative summation of GP values
+$`\mathrm{GP}_i`$. Writing $`T_\mathrm{obs}`$ for the length of the
+observation window and $`R_1`$ for the initial reproduction number, this
+construction is
+
+``` math
+\begin{equation}
+\log R_t = \log R_1 + \sum_{i = 1}^{t - 1} \mathrm{GP}_i
+\end{equation}
+```
+
+Without further constraint this parameterisation makes inference
+difficult: a constant added to $`\log R_1`$ and subtracted from the
+cumulative sum of GP values leaves $`\log R_t`$ unchanged for all $`t`$,
+so $`R_1`$ and the long-run drift of the GP are not jointly identified
+by the data. The likelihood is flat along this direction (a ridge in the
+joint posterior), giving the sampler poor geometry and, on some random
+seeds, stuck chains and large $`\hat R`$ values.
+
+This parallels a common issue in standard regression problems, where the
+intercept and the slope can trade off against each other unless the
+predictors are centred. There, a common fix is to [centre the
+predictors](https://mc-stan.org/docs/stan-users-guide/efficiency-tuning.html#standardizing-predictors)
+so the intercept becomes the response value at the mean of the
+predictors rather than at zero, which decorrelates the intercept from
+the slope and gives the sampler a cleaner geometry; this is how, for
+example,
+[`brms`](https://paulbuerkner.com/brms/reference/brmsformula.html#parameterization-of-the-population-level-intercept)
+parameterises intercepts internally. Here the cumulative GP increments
+play the role of the slope (they determine the drift of $`\log R_t`$)
+and $`\log R_1`$ plays the role of the intercept.
+
+To apply the same fix we look for an alternative parameter that *is*
+well-identified by the data. Averaging the construction above over the
+observation window gives
+
+``` math
+\begin{equation}
+\overline{\log R} := \frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \log R_t = \log R_1 + \overline{\mathrm{GP}}
+\end{equation}
+```
+
+where
+
+``` math
+\begin{equation}
+\overline{\mathrm{GP}} = \frac{1}{T_\mathrm{obs}} \sum_{t = 1}^{T_\mathrm{obs}} \sum_{i = 1}^{t - 1} \mathrm{GP}_i = \frac{1}{T_\mathrm{obs}} \sum_{i = 1}^{T_\mathrm{obs} - 1} (T_\mathrm{obs} - i) \, \mathrm{GP}_i
+\end{equation}
+```
+
+is the empirical mean over the observation window of the cumulative sum
+of GP values. Unlike $`\log R_1`$, the mean of $`\log R_t`$ over the
+observation window is informed by the entire data series and so does not
+suffer from the ridge. We therefore sample $`\overline{\log R}`$ as the
+internal parameter, recover
+$`\log R_1 = \overline{\log R} - \overline{\mathrm{GP}}`$, and rewrite
+the construction as
+
+``` math
+\begin{equation}
+\log R_t = \overline{\log R} + \sum_{i = 1}^{t - 1} \mathrm{GP}_i - \overline{\mathrm{GP}}.
+\end{equation}
+```
+
+Centring only over the observation window (not the forecast horizon)
+ensures that the fitted historical $`R_t`$ does not shift when the
+forecast horizon is changed.
+
+The user’s prior on the initial reproduction number is then applied to
+the derived quantity
+
+``` math
+\begin{equation}
+R_1 = \exp(\overline{\log R} - \overline{\mathrm{GP}})
+\end{equation}
+```
+
+via a [change of
+variables](https://mc-stan.org/docs/stan-users-guide/reparameterization.html#changes-of-variables).
+Stan explores $`\overline{\log R}`$ on the unconstrained scale, so the
+prior placed there must carry the Jacobian of the map to $`R_1`$,
+
+``` math
+\begin{equation}
+\left| \frac{\partial R_1}{\partial \overline{\log R}} \right| = R_1,
+\end{equation}
+```
+
+contributing $`\log R_1`$ to the target log density.
+
+The internal parameter is declared as a positive real
+$`\overline{R} = \exp(\overline{\log R})`$, so Stan supplies
+$`\log \overline{R}`$ itself as the Jacobian of its own log transform.
+The correction added by hand is therefore the difference
+
+``` math
+\begin{equation}
+\log R_1 - \log \overline{R} = - \overline{\mathrm{GP}}.
+\end{equation}
+```
+
+A breakpoint random walk, when used, is centred over the observation
+window in the same way and enters $`\log R_t`$ as a further additive
+term. Its contribution to the offset between $`\log R_1`$ and
+$`\overline{\log R}`$ adds to $`-\overline{\mathrm{GP}}`$, and since it
+too is a deterministic function of the other parameters that does not
+involve $`\overline{\log R}`$, the change of variables and its Jacobian
+are unchanged.
+
+## References
+
+1\.
+
+Riutort-Mayol, G., Bürkner, P.-C., Andersen, M. R., Solin, A., &
+Vehtari, A. (2023). Practical hilbert space approximate bayesian
+gaussian processes for probabilistic programming. *Statistics and
+Computing*, *33*(1), 17. <https://doi.org/10.1007/s11222-022-10167-2>
