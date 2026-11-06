@@ -11,7 +11,7 @@ touchstone::benchmark_run(
     data = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
     delays = delay_opts(fixed_delays),
-    rt = rt_opts(prior = GP(init = Normal(mean = 2, sd = 0.2))),
+    rt = rt_opts(prior = Normal(mean = 2, sd = 0.2)),
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
@@ -45,7 +45,8 @@ touchstone::benchmark_run(
     data = reported_cases,
     generation_time = generation_time_opts(fixed_generation_time),
     delays = delay_opts(fixed_delays),
-    rt = rt_opts(prior = RW(init = Normal(mean = 2, sd = 0.2), period = 7)),
+    rt = rt_opts(prior = Normal(mean = 2, sd = 0.2), rw = 7),
+    gp = NULL,
     stan = stan_opts(
       cores = 2, samples = 500, chains = 2,
       control = list(adapt_delta = 0.95)),
