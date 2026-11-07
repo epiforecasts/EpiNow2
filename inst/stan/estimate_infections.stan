@@ -152,16 +152,20 @@ transformed parameters {
   }
 
   // convolve from latent infections to mean of observations
-  if (delay_id_reporting) {
-    int duration_max = delay_id_duration ? delay_type_max[delay_id_duration] : 0;
-    int duration_len = delay_id_duration ? duration_max + 1 : 0;
-    vector[delay_type_max[delay_id_reporting] + 1 + duration_max] reporting_rev_pmf;
+  if (delay_id_reporting || delay_id_duration) {
+    int reporting_id = delay_id_reporting ? delay_id_reporting
+                                         : delay_id_duration;
+    int duration_id = delay_id_reporting ? delay_id_duration : 0;
+    int reporting_len = delay_type_max[reporting_id] + 1;
+    int duration_max = duration_id ? delay_type_max[duration_id] : 0;
+    int duration_len = duration_id ? duration_max + 1 : 0;
+    vector[reporting_len + duration_max] reporting_rev_pmf;
     profile("delays") {
       reporting_rev_pmf = get_secondary_rev_pmf(
-        delay_id_reporting, delay_type_max[delay_id_reporting] + 1 + duration_max,
+        reporting_id, reporting_len + duration_max,
         delay_types_p, delay_types_id, delay_types_groups, delay_max,
         delay_np_pmf_use, delay_np_pmf_groups, delay_params, delay_params_groups,
-        delay_dist, secondary_type, delay_id_duration, duration_len
+        delay_dist, secondary_type, duration_id, duration_len
       );
     }
     profile("reports") {

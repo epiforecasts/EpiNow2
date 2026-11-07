@@ -86,6 +86,30 @@ test_that("simulate_infections uses the prevalence reporting kernel", {
   set.seed(Sys.time())
 })
 
+test_that("simulate_infections applies duration with immediate entry", {
+  withr::local_seed(123)
+  obs <- obs_opts(
+    family = "poisson", week_effect = FALSE,
+    type = "prevalence", duration = Fixed(3)
+  )
+  zero_delay <- test_simulate_infections(
+    generation_time = gt_opts(Fixed(1)),
+    delays = delay_opts(Fixed(0)), obs = obs, seeding_time = 5
+  )
+  create_delays <- create_stan_delays
+  local_mocked_bindings(create_stan_delays = function(...) {
+    data <- create_delays(...)
+    data$delay_id_reporting <- 0L
+    data
+  })
+  set.seed(123)
+  immediate <- test_simulate_infections(
+    generation_time = gt_opts(Fixed(1)),
+    delays = delay_opts(), obs = obs, seeding_time = 5
+  )
+  expect_equal(immediate, zero_delay)
+})
+
 test_that("simulate_infections works with susceptible depletion", {
   set.seed(123)
   sim <- test_simulate_infections(
