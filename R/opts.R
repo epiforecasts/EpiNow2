@@ -724,6 +724,7 @@ obs_opts <- function(family = c("negbin", "poisson"),
         duration, getOption("EpiNow2.cdf_max", 0.999), FALSE
       )
       check_stan_delay(duration)
+      attr(duration, "weight_prior") <- TRUE
     }
   }
   obs <- list(

@@ -24,7 +24,21 @@ test_that("obs_opts accepts a duration distribution for prevalence-type
   result <- suppressWarnings(
     obs_opts(type = "prevalence", duration = duration)
   )
+  attr(duration, "weight_prior") <- TRUE
   expect_equal(result$duration, duration)
+  data <- create_stan_delays(duration = result$duration, time_points = 10)
+  expect_equal(data$delay_id_duration, 1L)
+  expect_equal(sum(data$delay_np_pmf), 1)
+})
+
+test_that("obs_opts duration supports uncertain parameters in Stan data", {
+  obs <- obs_opts(
+    type = "prevalence",
+    duration = LogNormal(meanlog = Normal(log(5), 0.1), sdlog = 0.2, max = 20)
+  )
+  data <- create_stan_delays(duration = obs$duration, time_points = 10)
+  expect_equal(data$delay_id_duration, 1L)
+  expect_equal(as.numeric(data$delay_weight), 10)
 })
 
 test_that("obs_opts drops duration, with a warning, when type is not
