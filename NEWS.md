@@ -77,7 +77,7 @@
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
 - Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
 - Added fast tests for `epinow()`, `regional_epinow()` and the report helpers using mock model fits. These cover saved output, error and warning handling, logging and regional summaries.
-- Added fast tests for `epinow()`, `regional_epinow()` and the report helpers that replace the model fit with a mock, covering saved output, error and warning handling, logging and regional summaries.
+- Added fast tests for `epinow()`, `regional_epinow()` and the report helpers that use a mock in place of the model fit. They cover saved output, error and warning handling, logging and regional summaries.
 - The `estimate_*()` functions now share one internal helper to build Stan arguments and fit the model, and `estimate_secondary()` and `estimate_truncation()` no longer pass placeholder values to generate initial conditions.
 - Added unit tests for the Stan functions that calculate secondary reports, Rt from infections, the reporting log likelihood and sampled reports.
 
