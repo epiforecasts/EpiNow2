@@ -7,9 +7,10 @@
 gp_basis_settings(gp, n, gp_type)
 }
 \arguments{
-\item{gp}{A \verb{<gp_opts>} object.}
+\item{gp}{A \verb{<gp_opts>} object (a component's own GP settings).}
 
-\item{n}{Length of the Gaussian process.}
+\item{n}{Length of the Gaussian process (the component's own free-noise
+window).}
 
 \item{gp_type}{Integer kernel type as used in the Stan model (0: squared
 exponential, 1: periodic, 2: Matern).}
@@ -19,10 +20,10 @@ A list with the boundary factor \code{L} and number of basis functions
 \code{M}.
 }
 \description{
-Settings not given in \code{\link[=gp_opts]{gp_opts()}} are chosen from the lengthscale prior
-using \code{\link[=gp_approx_constants]{gp_approx_constants()}}. The boundary factor is set by the upper
-(95\%) prior quantile, as longer lengthscales need a wider boundary. The
-number of basis functions is then set by the lower (5\%) prior quantile, as
+Settings not given on \code{\link[=GP]{GP()}} are chosen from the lengthscale prior using
+\code{\link[=gp_approx_constants]{gp_approx_constants()}}. The boundary factor is set by the upper (95\%)
+prior quantile, as longer lengthscales need a wider boundary. The number
+of basis functions is then set by the lower (5\%) prior quantile, as
 shorter lengthscales need more basis functions. The periodic kernel has no
 boundary, so only the number of basis functions is chosen.
 }
