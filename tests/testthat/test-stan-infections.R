@@ -104,8 +104,8 @@ run_case <- function(case, x) {
   )
 }
 
-# The defining identity of each new infection, evaluated on the past
-# infections of the output itself: I_u = R_t * sum_tau g_tau I_{u - tau},
+# The renewal identity evaluated using past infections from the output:
+# I_u = R_t * sum_tau g_tau I_{u - tau},
 # or S_t * (1 - exp(-R_t * lambda_t / S_t)) with depletion, where g_tau is
 # gt_rev_pmf[G - tau] and S_t = max(pop_floor, pop - sum of past infections).
 renewal_identity <- function(inf, case, x) {
@@ -148,7 +148,8 @@ test_that("renewal_infections grows as R^t with a one-day generation time", {
 
 test_that("renewal_infections matches closed-form exponential growth", {
   # With g_1 = g_2 = 1/2, growth at rate r solves R (e^-r + e^-2r) / 2 = 1,
-  # so R = 8 / 3 doubles and R = 1 / 3 halves daily, given seeds on that path.
+  # R = 8 / 3 gives daily doubling and R = 1 / 3 daily halving, with seeds
+  # following the same trajectory.
   gt <- c(0.5, 0.5, 0)
   inf <- renewal_infections(c(1, 2), rep(8 / 3, 10), gt, 1, 0, 1, 0)
   expect_equal(inf, 2^(0:11), tolerance = 1e-12)
@@ -202,7 +203,7 @@ test_that("renewal_infections depletion behaves as expected", {
   ren <- function(pop, use_pop, nht = 0, floor = 1) {
     renewal_infections(x$seed, x$R, x$gt, pop, use_pop, floor, nht)
   }
-  # A huge population is the same as no depletion
+  # A large population approximates the result without depletion
   expect_equal(ren(1e8, 2), ren(1e8, 0), tolerance = 1e-6)
   expect_equal(ren(1e8, 1, nht = 3), ren(1e8, 0), tolerance = 1e-6)
   # use_pop = 1 matches no depletion up to nht and use_pop = 2 from nht = 0
@@ -237,10 +238,10 @@ test_that("renewal_infections uses pop_floor once the pool falls below it", {
   u <- case$uot + t
   remaining <- case$pop - cumsum(inf)[u - 1]
   floored <- remaining < case$floor
-  # The floor binds, including once more have been infected than pop
+  # The floor binds even when cumulative infections exceed pop
   expect_true(any(floored))
   expect_true(any(remaining < 0))
-  # On those days the susceptible pool is pop_floor, so infections carry on
+  # On those days the susceptible pool is pop_floor and infections continue
   G <- case$G
   lambda <- vapply(u, function(v) {
     tau <- seq_len(min(G, v) - 1)
@@ -264,7 +265,7 @@ test_that("renewal_infections gradients match the reference and finite differenc
         (2 * h)
     }, numeric(1))
   }
-  # Every combination of seed, R, gt and pop as parameters, except none
+  # Every non-empty combination of seed, R, gt and pop as parameters
   params <- expand.grid(seed = 0:1, R = 0:1, gt = 0:1, pop = 0:1)[-1, ]
   set.seed(123)
   for (case in renewal_cases) {
@@ -282,7 +283,8 @@ test_that("renewal_infections gradients match the reference and finite differenc
         data$use_cpp <- use_cpp
         suppressMessages(rstan::sampling(model, data = data, chains = 0))
       })
-      # Log-scale parameters near the data values keep each case's regime
+      # Log-scale parameters near the data values preserve the regime
+  # in each case
       upars <- c(
         if (p$seed) log(x$seed), if (p$R) log(x$R), if (p$gt) log(x$gt),
         if (p$pop) log(case$pop)

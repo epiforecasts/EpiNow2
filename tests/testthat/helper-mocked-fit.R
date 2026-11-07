@@ -15,8 +15,8 @@ mock_fit <- function() {
   function(...) fit
 }
 
-# Sends messages from logger `name` to a character vector until the calling
-# test ends. Returns a function that gives the captured lines.
+# Collects messages from logger `name` in a character vector until the
+# calling test ends. Returns a function to retrieve the captured lines.
 capture_log <- function(name, env = parent.frame()) {
   lines <- character(0)
   futile.logger::flog.appender(

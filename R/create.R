@@ -500,9 +500,9 @@ init_state_hyperparams <- function(stan_data, n_named, rho_scale) {
 #' parameters. Used in order to initialise each stan chain within a range of
 #' plausible values.
 #' @details
-#' Infection model fields (`estimate_r` and `week_effect`) may be absent,
-#' as in the secondary and truncation models. Their components are then
-#' initialised as empty.
+#' If infection model fields (`estimate_r` and `week_effect`) are absent,
+#' as in the secondary and truncation models, the corresponding components
+#' are initialised as empty.
 #' @param stan_data A list of data as produced by [create_stan_data()].
 #' @inheritParams create_stan_params
 #' @return An initial condition generating function
