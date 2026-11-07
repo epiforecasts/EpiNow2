@@ -11,7 +11,7 @@
 
 ## Model changes
 
-- Rewrote the Stan `update_Rt()` function from small helpers that centre log Rt through its intercept.
+- Rewrote the Stan `update_Rt()` function using small helpers. The centring of log Rt now happens in its intercept.
 - `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
 - The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient.
 - `R_to_r()` is now implemented in C++ with a gradient from the implicit function theorem.
@@ -28,7 +28,7 @@
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
 - Overriding the low-level secondary model parameters (`cumulative`, `historic`, `primary_hist_additive`, `current`, `primary_current_additive`) in `secondary_opts()` via `...` is deprecated, as there is no known use case for combinations other than those already set by `type`.
 - `estimate_secondary()` and `simulate_secondary()` now warn when `obs_opts(type = "prevalence")` is passed, as it has no effect there; use the `type` argument of `secondary_opts()` instead.
-- Added tests for backend dispatch, logging set up and the `as_forecast_sample()` methods that use mocks rather than model fits, and installed scoringutils in the coverage workflow.
+- Added mock-based tests for backend dispatch, logging setup and the `as_forecast_sample()` methods. The coverage workflow now installs scoringutils.
 - Added unit tests for the option constructors, delay checks and utility helpers.
 - Added tests for summarising, formatting and reading back fitted and regional results.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
