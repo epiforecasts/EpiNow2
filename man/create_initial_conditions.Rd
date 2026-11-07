@@ -21,14 +21,8 @@ parameters. Used in order to initialise each stan chain within a range of
 plausible values.
 }
 \details{
-\code{R_mean} is seeded from the initial-Rt prior carried in \code{stan_data} by
-\code{\link[=make_init_priors]{make_init_priors()}}, so chains start near the configured reproduction
-number; this is a stopgap until derived-prior parameters are initialised
-through the shared path (#1481). The distribution code follows
-\code{\link[=pack_init_prior]{pack_init_prior()}} (0: lognormal, 1: gamma, 2: normal).
-
-Infection model fields (\code{fixed}, \code{estimate_r}, \code{bp_n} and \code{week_effect})
-may be absent, as in the secondary and truncation models. Their
-components are then initialised as empty.
+Infection model fields (\code{estimate_r} and \code{week_effect}) may be absent,
+as in the secondary and truncation models. Their components are then
+initialised as empty.
 }
 \keyword{internal}
