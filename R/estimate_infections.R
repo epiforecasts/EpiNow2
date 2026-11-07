@@ -75,6 +75,7 @@
 #' @importFrom futile.logger flog.threshold flog.warn flog.debug
 #' @importFrom checkmate assert_class assert_numeric assert_logical
 #' assert_string
+#' @importFrom cli cli_abort
 #' @examples
 #' \donttest{
 #' # set number of cores to use
@@ -152,6 +153,18 @@ estimate_infections <- function(data,
     rt <- NULL
   }
 
+  if (is.null(rt) && obs$type == "prevalence") {
+    cli_abort(
+      c(
+        "!" = "{.code obs_opts(type = \"prevalence\")} is not supported when
+        {.arg rt} is {.val NULL} or {.code rt_opts(use_rt = FALSE)}.",
+        "i" = "The deconvolution approach used to estimate infections without
+        a generative Rt model assumes incidence-type observations. Supply an
+        {.fun rt_opts} object to fit prevalence-type data."
+      )
+    )
+  }
+
   # Check verbose settings and set logger to match
   if (verbose) {
     flog.threshold(futile.logger::DEBUG,
@@ -219,8 +232,10 @@ estimate_infections <- function(data,
     generation_time = generation_time,
     reporting = delays,
     truncation = truncation,
+    duration = obs$duration,
     time_points = stan_data$t - stan_data$seeding_time - stan_data$horizon
   ))
+  stan_data$delay_id_duration <- stan_data$delay_id_duration %||% 0L
 
   fit <- fit_estimate_model(
     stan = stan,

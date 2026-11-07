@@ -1,3 +1,5 @@
+// id of prevalence duration delay (0 if unset); see obs_opts(duration = )
+int<lower = 0> delay_id_duration;
 int<lower = 0> param_id_alpha; // parameter id of alpha (GP magnitude)
 int<lower = 0> param_id_rho; // parameter id of rho (GP lengthscale)
 int<lower = 0> param_id_R0; // parameter id of R0

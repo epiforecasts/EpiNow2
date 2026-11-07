@@ -215,3 +215,119 @@ test_that("get_delay_rev_pmf handles left truncation", {
   # Most mass should be in later elements
   expect_gt(sum(pmf[(left_truncate + 1):len]), 0.9)
 })
+
+# Test get_secondary_rev_pmf for incidence- and prevalence-type observations
+test_that("get_secondary_rev_pmf returns the density for incidence type", {
+  delay_id <- 1L
+  len <- 10L
+  delay_types_p <- array(1L)
+  delay_types_id <- array(1L)
+  delay_types_groups <- array(c(1L, 2L))
+  delay_max <- array(8L)
+  delay_np_pmf <- numeric(0)
+  delay_np_pmf_groups <- array(1L)
+  delay_params <- c(log(3), 0.5)
+  delay_params_groups <- array(c(1L, 3L))
+  delay_dist <- array(1L)
+
+  incidence_pmf <- get_secondary_rev_pmf(
+    delay_id, len, delay_types_p, delay_types_id,
+    delay_types_groups, delay_max, delay_np_pmf,
+    delay_np_pmf_groups, delay_params, delay_params_groups,
+    delay_dist, secondary_type = 0L, duration_id = 0L, duration_len = 0L
+  )
+
+  density_pmf <- get_delay_rev_pmf(
+    delay_id, len, delay_types_p, delay_types_id,
+    delay_types_groups, delay_max, delay_np_pmf,
+    delay_np_pmf_groups, delay_params, delay_params_groups,
+    delay_dist, 0L, 1L, 0L
+  )
+
+  expect_equal(incidence_pmf, density_pmf)
+})
+
+test_that("get_secondary_rev_pmf returns the survival function for prevalence type", {
+  delay_id <- 1L
+  len <- 10L
+  delay_types_p <- array(1L)
+  delay_types_id <- array(1L)
+  delay_types_groups <- array(c(1L, 2L))
+  delay_max <- array(8L)
+  delay_np_pmf <- numeric(0)
+  delay_np_pmf_groups <- array(1L)
+  delay_params <- c(log(3), 0.5)
+  delay_params_groups <- array(c(1L, 3L))
+  delay_dist <- array(1L)
+
+  prevalence_pmf <- get_secondary_rev_pmf(
+    delay_id, len, delay_types_p, delay_types_id,
+    delay_types_groups, delay_max, delay_np_pmf,
+    delay_np_pmf_groups, delay_params, delay_params_groups,
+    delay_dist, secondary_type = 1L, duration_id = 0L, duration_len = 0L
+  )
+
+  cdf <- get_delay_rev_pmf(
+    delay_id, len, delay_types_p, delay_types_id,
+    delay_types_groups, delay_max, delay_np_pmf,
+    delay_np_pmf_groups, delay_params, delay_params_groups,
+    delay_dist, 0L, 1L, 1L
+  )
+
+  # the survival function should be the complement of the cdf ...
+  expect_equal(prevalence_pmf, 1 - cdf)
+  # ... and monotonically non-decreasing (the vector is reversed, so delay
+  # decreases, and survival probability increases, towards the end)
+  expect_true(all(diff(prevalence_pmf) >= 0))
+})
+
+test_that("get_secondary_rev_pmf convolves the delay density with the
+          duration's survival function when duration_id is set", {
+  # delay from infection to admission: lognormal(log(3), 0.5), max 8
+  delay_types_p <- array(c(1L, 1L))
+  delay_types_id <- array(c(1L, 2L))
+  delay_types_groups <- array(c(1L, 2L, 3L))
+  delay_max <- array(c(8L, 5L))
+  delay_np_pmf <- numeric(0)
+  delay_np_pmf_groups <- array(1L)
+  # second delay: length of hospital stay, lognormal(log(2), 0.3), max 5
+  delay_params <- c(log(3), 0.5, log(2), 0.3)
+  delay_params_groups <- array(c(1L, 3L, 5L))
+  delay_dist <- array(c(1L, 1L))
+
+  delay_id <- 1L
+  duration_id <- 2L
+  delay_len <- delay_max[1] + 1
+  duration_len <- delay_max[2] + 1
+  len <- delay_len + duration_len - 1
+
+  kernel <- get_secondary_rev_pmf(
+    delay_id, len, delay_types_p, delay_types_id,
+    delay_types_groups, delay_max, delay_np_pmf,
+    delay_np_pmf_groups, delay_params, delay_params_groups,
+    delay_dist, secondary_type = 1L, duration_id = duration_id,
+    duration_len = duration_len
+  )
+
+  # hand-worked kernel: density of the admission delay convolved with the
+  # survival function of the length of stay, i.e.
+  # P(D1 <= d < D1 + D2) = sum_{d1} f_D1(d1) * S_D2(d - d1)
+  admission_density <- get_delay_rev_pmf(
+    delay_id, delay_len, delay_types_p, delay_types_id,
+    delay_types_groups, delay_max, delay_np_pmf,
+    delay_np_pmf_groups, delay_params, delay_params_groups,
+    delay_dist, 0L, 0L, 0L
+  )
+  stay_survival <- 1 - get_delay_rev_pmf(
+    duration_id, duration_len, delay_types_p, delay_types_id,
+    delay_types_groups, delay_max, delay_np_pmf,
+    delay_np_pmf_groups, delay_params, delay_params_groups,
+    delay_dist, 0L, 0L, 1L
+  )
+  expected <- rev(stats::convolve(
+    admission_density, rev(stay_survival), type = "open"
+  ))
+
+  expect_equal(kernel, expected, tolerance = 1e-6)
+  expect_true(all(kernel >= 0))
+})
