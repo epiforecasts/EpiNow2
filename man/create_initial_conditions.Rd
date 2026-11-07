@@ -21,8 +21,8 @@ parameters. Used in order to initialise each stan chain within a range of
 plausible values.
 }
 \details{
-Infection model fields (\code{estimate_r} and \code{week_effect}) may be absent,
-as in the secondary and truncation models. Their components are then
-initialised as empty.
+If infection model fields (\code{estimate_r} and \code{week_effect}) are absent,
+as in the secondary and truncation models, the corresponding components
+are initialised as empty.
 }
 \keyword{internal}
