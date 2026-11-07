@@ -328,13 +328,37 @@ check_gp_ls_prior <- function(ls) {
           "!" = "Cannot choose the approximate GP settings from this
           lengthscale prior.",
           "i" = "Set {.arg boundary_scale} and {.arg basis_prop} in
-          {.fn gp_opts}."
+          {.fn GP}."
         ),
         parent = e
       )
     }
   )
   invisible(ls)
+}
+
+#' Range of lengthscales a GP component's approximation represents accurately
+#'
+#' @param gp_type Integer kernel type as used in the Stan model (0: squared
+#'   exponential, 1: periodic, 2: Matern).
+#' @param nu Numeric Matern order.
+#' @param L Numeric boundary factor (unused by the periodic kernel).
+#' @param m Number of basis functions.
+#' @param n Length of the Gaussian process (the component's own free-noise
+#'   window).
+#' @return A numeric vector giving the shortest and longest lengthscale (in
+#'   days) that the boundary factor and number of basis functions can
+#'   approximate accurately. The longest is `Inf` for the periodic kernel,
+#'   which has no boundary.
+#' @keywords internal
+gp_ls_range <- function(gp_type, nu, L, m, n) {
+  constants <- gp_approx_constants(gp_type, nu)
+  periodic <- gp_type == 1
+  S <- gp_half_range(n)
+  c(
+    constants$m_factor * gp_boundary_factor(L, periodic) * S / m,
+    if (periodic) Inf else L * S / constants$c_factor
+  )
 }
 
 #' Check the posterior lengthscale against the approximate GP settings
@@ -353,13 +377,10 @@ check_gp_ls_prior <- function(ls) {
 #' @return Invisibly, the range from [gp_ls_range()]. Called for its side
 #'   effect of warning when the lengthscale is outside this range.
 #' @keywords internal
-check_gp_lengthscale <- function(rho, stan_data) {
-  if (isTRUE(stan_data$fixed == 1)) {
-    return(invisible(NULL))
-  }
-  ls_range <- gp_ls_range(stan_data)
+check_gp_lengthscale <- function(rho, gp_type, nu, L, m, n) {
+  ls_range <- gp_ls_range(gp_type, nu, L, m, n)
   ls_median <- median(rho)
-  S <- gp_half_range(gp_noise_terms(stan_data))
+  S <- gp_half_range(n)
   if (ls_median + 0.01 * S < ls_range[1]) {
     cli_warn(
       c(
@@ -367,8 +388,8 @@ check_gp_lengthscale <- function(rho, stan_data) {
         ({signif(ls_median, 3)} days) is shorter than the
         {signif(ls_range[1], 3)} days the approximate GP can represent
         accurately.",
-        "i" = "Increase {.arg basis_prop} in {.fn gp_opts}, or use a
-        lengthscale prior with more weight on shorter lengthscales."
+        "i" = "Increase {.arg basis_prop} in {.fn GP}, or use a lengthscale
+        prior with more weight on shorter lengthscales."
       )
     )
   }
@@ -378,7 +399,7 @@ check_gp_lengthscale <- function(rho, stan_data) {
         "!" = "The posterior median GP lengthscale
         ({signif(ls_median, 3)} days) is longer than the
         {signif(ls_range[2], 3)} days the approximate GP boundary supports.",
-        "i" = "Increase {.arg boundary_scale} in {.fn gp_opts}, or use a
+        "i" = "Increase {.arg boundary_scale} in {.fn GP}, or use a
         lengthscale prior with more weight on longer lengthscales."
       )
     )
@@ -386,25 +407,40 @@ check_gp_lengthscale <- function(rho, stan_data) {
   invisible(ls_range)
 }
 
-#' Check the approximate GP of a fitted model
+#' Check the approximate GP of every GP component of a fitted model
 #'
 #' @description
-#' Extracts the posterior lengthscale from a fitted model and passes it to
-#' [check_gp_lengthscale()].
+#' Extracts each GP component's posterior lengthscale from a fitted model and
+#' passes it to [check_gp_lengthscale()]. A model may have any number of GP
+#' components (one per `GP()` in a parameter's state, across all
+#' time-varying parameters), so each is checked in turn against its own
+#' basis settings and free-noise window.
 #'
 #' @param fit A fitted Stan model.
-#' @inheritParams gp_ls_range
-#' @return Invisibly, the result of [check_gp_lengthscale()].
+#' @param stan_data The assembled Stan data list, as returned by
+#'   [create_stan_data()].
+#' @return Invisibly `NULL`. Called for its side effect of warning for any
+#'   component whose posterior lengthscale falls outside the range its
+#'   approximation represents accurately.
 #' @keywords internal
 check_gp_fit <- function(fit, stan_data) {
-  rho_idx <- stan_data$params_variable_lookup[stan_data$param_id_rho]
-  if (is.null(fit) || isTRUE(stan_data$fixed == 1) ||
-        length(rho_idx) == 0 || is.na(rho_idx) || rho_idx == 0) {
+  n_gp <- stan_data$n_gp_components %||% 0L
+  if (is.null(fit) || n_gp == 0) {
     return(invisible(NULL))
   }
-  params <- extract_samples(fit, pars = "params")$params
-  if (rho_idx > ncol(params)) {
-    return(invisible(NULL))
+  params <- extract_stan_samples(fit, pars = "params")$params
+  gp_free <- count_state_init_sizes(stan_data)$gp_free
+  for (g in seq_len(n_gp)) {
+    rho_idx <- stan_data$params_variable_lookup[stan_data$gp_rho_id[g]]
+    if (length(rho_idx) == 0 || is.na(rho_idx) || rho_idx == 0 ||
+          rho_idx > ncol(params)) {
+      next
+    }
+    m <- ceiling(gp_free[g] * stan_data$gp_basis_prop[g])
+    check_gp_lengthscale(
+      params[, rho_idx], stan_data$gp_kernel[g], stan_data$gp_nu[g],
+      stan_data$gp_boundary_scale[g], m, gp_free[g]
+    )
   }
-  check_gp_lengthscale(params[, rho_idx], stan_data)
+  invisible(NULL)
 }
