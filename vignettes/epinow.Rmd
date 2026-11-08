@@ -28,8 +28,20 @@ This should be replaced with parameters relevant to the system that is being stu
 
 ``` r
 library("EpiNow2")
+#> Loading required package: distspec
+#> 
+#> Attaching package: 'distspec'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     Gamma, sd
 #> 
 #> Attaching package: 'EpiNow2'
+#> The following objects are masked from 'package:distspec':
+#> 
+#>     bound_dist, collapse, convert_to_logmean, convert_to_logsd,
+#>     Dirichlet, discretise, discretize, Exp, fix_parameters, Fixed,
+#>     Gamma, get_distribution, get_parameters, get_pmf, is_constrained,
+#>     LogNormal, new_dist_spec, NonParametric, Normal, Weibull
 #> The following object is masked from 'package:stats':
 #> 
 #>     Gamma
@@ -47,9 +59,12 @@ We can then run the `epinow()` function with the same arguments as `estimate_inf
 res <- epinow(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
+  rt = rt_opts(prior = GP(init = rt_prior)),
   logs = NULL
 )
+#> Returning NA: this distribution has uncertain parameters.
+#> ℹ Resolve the uncertainty first with `fix_parameters()`.
+#> This message is displayed once every 8 hours.
 plot(res)
 ```
 
@@ -81,57 +96,58 @@ region_rt <- regional_epinow(
   data = cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
+  rt = rt_opts(prior = GP(init = rt_prior)),
   logs = NULL
 )
 ## summary
 region_rt$summary$summarised_results$table
 #>      Region New infections per day Expected change in reports
 #>      <char>                 <char>                     <fctr>
-#> 1: realland    2265 (1417 -- 3779)          Likely decreasing
-#> 2: testland    2223 (1370 -- 3711)          Likely decreasing
-#>    Effective reproduction no.           Rate of growth
-#>                        <char>                   <char>
-#> 1:          0.9 (0.73 -- 1.1)   -0.028 (-0.09 -- 0.04)
-#> 2:         0.89 (0.71 -- 1.1) -0.031 (-0.092 -- 0.039)
+#> 1: realland    2249 (1315 -- 3847)          Likely decreasing
+#> 2: testland    2235 (1327 -- 3701)          Likely decreasing
+#>    Effective reproduction no.         Rate of growth
+#>                        <char>                 <char>
+#> 1:          0.89 (0.7 -- 1.1) -0.029 (-0.1 -- 0.044)
+#> 2:          0.89 (0.7 -- 1.1)  -0.03 (-0.1 -- 0.043)
 #>    Doubling/halving time (days)
 #>                          <char>
-#> 1:             -25 (17 -- -7.7)
-#> 2:             -23 (18 -- -7.5)
+#> 1:             -24 (16 -- -6.8)
+#> 2:             -23 (16 -- -6.7)
 ## plot
 region_rt$summary$plots$R
 ```
 
 ![plot of chunk regional_epinow](epinow-regional_epinow-1.png)
 
-If instead, we wanted to use the Gaussian Process for `testland` and a weekly random walk for `realland` we could specify these separately using the `opts_list()` function from the package and `modifyList()` from `R`.
+If instead, we wanted to use the Gaussian process for `testland` and a random walk for `realland` we could specify these separately using the `opts_list()` function from the package.
 
 
 ``` r
-gp <- opts_list(gp_opts(), cases)
-gp <- modifyList(gp, list(realland = NULL), keep.null = TRUE)
-rt <- opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+rt <- opts_list(
+  rt_opts(), cases,
+  realland = rt_opts(prior = RW(init = LogNormal(mean = 1, sd = 1), period = 7))
+)
 region_separate_rt <- regional_epinow(
   data = cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt, gp = gp,
+  rt = rt,
   logs = NULL
 )
 ## summary
 region_separate_rt$summary$summarised_results$table
 #>      Region New infections per day Expected change in reports
 #>      <char>                 <char>                     <fctr>
-#> 1: realland    1993 (1057 -- 3827)          Likely decreasing
-#> 2: testland      1984 (27 -- 3481)          Likely decreasing
+#> 1: realland    1975 (1047 -- 3731)          Likely decreasing
+#> 2: testland    2232 (1356 -- 3801)          Likely decreasing
 #>    Effective reproduction no.          Rate of growth
 #>                        <char>                  <char>
-#> 1:         0.85 (0.61 -- 1.2) -0.042 (-0.11 -- 0.037)
-#> 2:         0.95 (0.73 -- 1.9) -0.01 (-0.087 -- 0.042)
+#> 1:          0.85 (0.6 -- 1.2)  -0.043 (-0.11 -- 0.04)
+#> 2:         0.89 (0.71 -- 1.1) -0.03 (-0.094 -- 0.042)
 #>    Doubling/halving time (days)
 #>                          <char>
-#> 1:             -17 (19 -- -6.2)
-#> 2:             -67 (16 -- -7.9)
+#> 1:             -16 (17 -- -6.1)
+#> 2:             -23 (16 -- -7.3)
 ## plot
 region_separate_rt$summary$plots$R
 ```
