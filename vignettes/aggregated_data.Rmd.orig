@@ -151,7 +151,7 @@ ggplot(infections, aes(x = date, fill = model)) +
 When the missing days are ignored the model compares each weekly total with a single day of expected reports, so the two sets of estimates are not on the same scale.
 Accumulating compares like with like, and its estimates can be read against the daily data, shown as points.
 
-The reproduction number estimates also differ.
+The reproduction number estimates are similar in shape, since both fits use the same random walk, but the accumulating fit gives lower values in the weeks around the peak and wider intervals towards the end.
 
 ```{r compare-R}
 rts <- rbind(
