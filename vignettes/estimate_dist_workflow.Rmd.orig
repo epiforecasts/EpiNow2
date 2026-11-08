@@ -25,8 +25,8 @@ knitr::opts_chunk$set(
 This vignette is a worked example of fitting a delay distribution with `estimate_dist()`.
 We simulate doubly-interval-censored linelist data, set priors based on domain knowledge, fit the model, and check parameter recovery.
 
-For the formal model, including the censored likelihood, supported families, and default priors, see `vignette("estimate_dist")`.
-For the conceptual background to delay distributions in _EpiNow2_, including why naive discretisation is biased and how `primarycensored` corrects for it, see `vignette("delays")`.
+For the formal model, including the censored likelihood, supported families, and default priors, see the [estimate_dist article](https://epiforecasts.io/EpiNow2/articles/estimate_dist.html).
+For the conceptual background to delay distributions in _EpiNow2_, including why naive discretisation is biased and how `primarycensored` corrects for it, see the [delays article](https://epiforecasts.io/EpiNow2/articles/delays.html).
 If you use `estimate_dist()`, please cite [primarycensored](https://primarycensored.epinowcast.org/) [@primarycensored] in addition to _EpiNow2_.
 
 Common use cases include estimating the incubation period (infection to symptom onset), the reporting delay (symptom onset to case report), or the serial interval (symptom onset in infector-infectee pairs).

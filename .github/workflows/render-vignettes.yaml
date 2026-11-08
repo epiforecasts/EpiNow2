@@ -1,0 +1,91 @@
+# Re-renders every precompiled vignette (vignettes/*.Rmd.orig) in one workflow.
+on:
+  push:
+    paths:
+      - 'vignettes/*.Rmd.orig'
+    branches: [main]
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+name: render-vignettes
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        vignette:
+          - EpiNow2
+          - epinow
+          - estimate_dist_workflow
+          - estimate_infections_options
+          - estimate_infections_workflow
+          - forecasting_multiple_data_streams
+          - prior_choice_guide
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: NA
+          extra-packages: local::.
+
+      - name: Render vignette
+        run: |
+          setwd("vignettes")
+          knitr::knit(
+            "${{ matrix.vignette }}.Rmd.orig",
+            "${{ matrix.vignette }}.Rmd"
+          )
+        shell: Rscript {0}
+
+      - name: Upload rendered vignette
+        uses: actions/upload-artifact@v7
+        with:
+          name: vignette-${{ matrix.vignette }}
+          path: |
+            vignettes/${{ matrix.vignette }}.Rmd
+            vignettes/${{ matrix.vignette }}-*.png
+
+  update:
+    needs: render
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download rendered vignettes
+        uses: actions/download-artifact@v8
+        with:
+          pattern: vignette-*
+          path: rendered
+          merge-multiple: true
+
+      - name: Copy rendered vignettes into place
+        run: cp rendered/* vignettes/
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: "Automatic Vignette update"
+          title: "Update precompiled vignettes"
+          body: "This is an automated pull request to update the precompiled vignettes."
+          branch: "update-vignettes-${{ github.run_number }}"
+          labels: "documentation"
+          add-paths: |
+            vignettes
+          token: ${{ secrets.GITHUB_TOKEN }}
