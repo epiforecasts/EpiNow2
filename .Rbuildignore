@@ -36,7 +36,7 @@
 ^pkgdown$
 ^vignettes/case-studies\.Rmd$
 ^vignettes/delays.*
-^vignettes/epinow.*
+^vignettes/epinow[-.]
 ^vignettes/estimate_dist\.Rmd$
 ^vignettes/estimate_infections\.Rmd$
 ^vignettes/estimate_infections_options.*
