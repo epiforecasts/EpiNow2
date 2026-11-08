@@ -4,12 +4,22 @@
 \alias{check_gp_lengthscale}
 \title{Check the posterior lengthscale against the approximate GP settings}
 \usage{
-check_gp_lengthscale(rho, stan_data)
+check_gp_lengthscale(rho, gp_type, nu, L, m, n)
 }
 \arguments{
 \item{rho}{Numeric vector of posterior lengthscale samples (in days).}
 
-\item{stan_data}{A list of Stan data as returned by \code{\link[=create_gp_data]{create_gp_data()}}.}
+\item{gp_type}{Integer kernel type as used in the Stan model (0: squared
+exponential, 1: periodic, 2: Matern).}
+
+\item{nu}{Numeric Matern order.}
+
+\item{L}{Numeric boundary factor (unused by the periodic kernel).}
+
+\item{m}{Number of basis functions.}
+
+\item{n}{Length of the Gaussian process (the component's own free-noise
+window).}
 }
 \value{
 Invisibly, the range from \code{\link[=gp_ls_range]{gp_ls_range()}}. Called for its side
