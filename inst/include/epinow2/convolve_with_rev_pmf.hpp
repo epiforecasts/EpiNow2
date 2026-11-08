@@ -26,10 +26,10 @@
  *   wbar_d     += zbar_{d+1:d+m}^T x_{1:m},
  * and ybar_{D - d} = wbar_d.
  *
- * Both passes run on doubles in one reverse_pass_callback, so the
- * convolution is one autodiff node rather than one dot_product() node per
- * output. x and y may each be var or double. The function is put in
- * stan::math so that Stan-generated code finds it.
+ * Both passes run on doubles in one reverse_pass_callback. The convolution
+ * is then one autodiff node rather than one dot_product() node per output.
+ * x and y may each be var or double. The function is defined in
+ * stan::math, where Stan-generated code finds it.
  */
 
 #include <stan/math.hpp>
