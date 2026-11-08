@@ -43,8 +43,9 @@
  * branches follow Stan's fmax(): the second argument is taken, with its
  * gradient, when it is at least the first and not NaN.
  *
- * The forward pass and this reverse walk work on plain doubles, so the
- * whole renewal loop is one autodiff node, rather than one dot_product()
+ * The forward pass and this reverse walk work on plain doubles. The
+ * whole renewal loop is then one autodiff node, where a naive version needs
+ * one dot_product()
  * plus several scalar nodes per time step. Any of seed, R, gt_rev_pmf and
  * pop may be var or double; only the gradients of var inputs are
  * computed. As with convolve_with_rev_pmf(), the function lives in
