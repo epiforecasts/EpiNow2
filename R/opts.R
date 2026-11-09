@@ -1172,11 +1172,14 @@ forecast_opts <- function(horizon = 7, accumulate) {
 #' opts_list(rt_opts(), cases)
 #'
 #' # add a weekly random walk in realland
-#' opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+#' opts_list(
+#'   rt_opts(), cases,
+#'   realland = rt_opts(prior = GP(init = LogNormal(1, 1)) + RW(period = 7))
+#' )
 #'
 #' # add a weekly random walk externally
 #' rt <- opts_list(rt_opts(), cases)
-#' rt$realland$rw <- 7
+#' rt$realland$prior <- rt$realland$prior + RW(period = 7)
 #' rt
 opts_list <- function(opts, reported_cases, ...) {
   regions <- unique(reported_cases$region)

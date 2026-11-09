@@ -289,7 +289,7 @@ simulate_infections <- function(R,
 #' [estimate_infections()] output but contains `samples` rather than `fit`.
 #' @seealso [generation_time_opts()] [delay_opts()] [rt_opts()]
 #' [estimate_infections()] [trunc_opts()] [stan_opts()] [obs_opts()]
-#' [gp_opts()]
+#' [GP()] [RW()]
 #' @export
 #' @examples
 #' \donttest{
@@ -306,9 +306,10 @@ simulate_infections <- function(R,
 #' est <- estimate_infections(reported_cases,
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   delays = delay_opts(example_incubation_period + example_reporting_delay),
-#'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1), rw = 7),
+#'   rt = rt_opts(
+#'     prior = RW(init = LogNormal(mean = 2, sd = 0.1), period = 7)
+#'   ),
 #'   obs = obs_opts(scale = Normal(mean = 0.1, sd = 0.01)),
-#'   gp = NULL,
 #'   forecast = forecast_opts(horizon = 0),
 #'   stan = stan_opts(samples = 100, warmup = 200)
 #' )
