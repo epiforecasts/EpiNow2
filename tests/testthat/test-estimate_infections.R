@@ -85,6 +85,16 @@ test_that("compose_deprecated_gp(gp = NULL) collapses a GP-only prior to a const
   expect_identical(res, LogNormal(mean = 1, sd = 1))
 })
 
+test_that("compose_deprecated_gp(gp = NULL) errors for the back-calculation model", {
+  withr::local_options(lifecycle_verbosity = "quiet")
+  expect_error(
+    compose_deprecated_gp(
+      GP(init = LogNormal(mean = 1, sd = 1)), NULL, "backcalc_opts"
+    ),
+    "back-calculation"
+  )
+})
+
 test_that("compose_deprecated_gp(gp = NULL) leaves other components in place", {
   prior <- initial(LogNormal(mean = 1, sd = 1)) + GP() + RW(period = 7)
   expect_warning(

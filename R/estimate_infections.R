@@ -319,6 +319,18 @@ compose_deprecated_gp <- function(prior, gp, name) {
   }
   if (is.null(gp)) {
     prior$components <- prior$components[-gp_idx]
+    if (length(prior$components) == 0 && identical(name, "backcalc_opts")) {
+      cli_abort(
+        c(
+          "!" = "{.code gp = NULL} cannot be used with the back-calculation
+          model ({.code rt = NULL}).",
+          "i" = "Without a time-varying prior, latent infections would be
+          constant over time. The previous fixed mapping from reported cases
+          is no longer available; configure the Gaussian process with
+          {.code backcalc_opts(prior = GP(...))} instead."
+        )
+      )
+    }
     if (length(prior$components) == 0) {
       # nothing left to vary the prior over time: it is a constant baseline
       return(prior$prior)
