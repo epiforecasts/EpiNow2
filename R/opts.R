@@ -166,7 +166,8 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
 #' @return A `<delay_opts>` object summarising the input delay distributions.
 #' @seealso [distspec::convert_to_logmean()] [distspec::convert_to_logsd()]
 #' [bootstrapped_dist_fit()] [distspec::Distributions]
-#' `vignette("delays")` for background on delay distributions
+#' The [delays vignette](https://epiforecasts.io/EpiNow2/articles/delays.html)
+#' gives background on delay distributions.
 #' @export
 #' @examples
 #' # no delays
