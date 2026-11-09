@@ -630,7 +630,7 @@ Ask these questions:
 1. **Do I have strong domain knowledge about $R_0$?** → Consider modifying `rt_opts(prior = ...)`
 2. **Does $R_t$ change rapidly or gradually in my setting?** → Consider modifying the `ls` argument of `GP()`
 3. **Is reporting highly variable or stable?** → Consider modifying `obs_opts(dispersion = ...)` or `obs_opts(family = ...)`
-4. **Are there sudden policy changes?** → Consider using `rt_opts(rw = ...)` instead of GP
+4. **Are there sudden policy changes?** → Consider a random walk, e.g. `rt_opts(prior = RW(init = ..., knots = ...))`, instead of a GP
 5. **Is recent data truncated?** → Consider adding `trunc_opts(...)`
 
 ## Step 3: Modify one prior at a time
@@ -721,7 +721,7 @@ If you encounter convergence problems after changing priors, consider:
 
 **Problem:** Setting GP length scale to 1-2 days, expecting very flexible $R_t$.
 
-**Solution:** If you want daily flexibility, use a random walk (`rt_opts(prior = RW(period = 1))`) rather than GP with very short length scale. GPs with length scale <7 days often struggle.
+**Solution:** If you want daily flexibility, use a random walk (`rt_opts(prior = RW(init = ..., period = 1))`) rather than GP with very short length scale. GPs with length scale <7 days often struggle.
 
 ## Pitfall 5: Forgetting the max parameter
 
