@@ -134,7 +134,6 @@ Imports:
     rlang (>= 0.4.7),
     rstan (>= 2.26.0),
     rstantools (>= 2.2.0),
-    runner,
     scales,
     stats,
     truncnorm,
