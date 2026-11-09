@@ -100,9 +100,7 @@ model {
   delays_np_lp(delay_np_est_raw, delay_np_est_alpha);
 
   // priors for params (reporting_overdispersion, sigma)
-  params_lp(
-    params, prior_dist, prior_dist_params, params_lower, params_upper
-  );
+  params_lp(params, prior_dist, prior_dist_params);
 
   // log density of truncated latest data vs that observed
   if (likelihood) {

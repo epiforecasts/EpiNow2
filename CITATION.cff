@@ -112,7 +112,7 @@ references:
     orcid: https://orcid.org/0000-0001-8057-8037
   year: '2026'
   doi: 10.32614/CRAN.package.distspec
-  version: '>= 0.2.0'
+  version: '>= 0.3.0'
 - type: software
   title: checkmate
   abstract: 'checkmate: Fast and Versatile Argument Checks'

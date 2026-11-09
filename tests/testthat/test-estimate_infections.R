@@ -57,6 +57,16 @@ test_that("estimate_infections successfully returns estimates using default sett
   expect_true(nrow(default_fit$observations) > 0)
 })
 
+test_that("check_gp_fit extracts the lengthscale from a fitted model", {
+  rho <- NULL
+  local_mocked_bindings(
+    check_gp_lengthscale = function(x, stan_data) rho <<- x
+  )
+  check_gp_fit(default_fit$fit, default_fit$args)
+  expect_gt(length(rho), 0)
+  expect_true(all(rho > 0))
+})
+
 test_that("get_samples(format = 'list') returns the raw list of arrays", {
   raw_samples <- get_samples(default_fit, format = "list")
   expect_type(raw_samples, "list")

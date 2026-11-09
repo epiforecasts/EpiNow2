@@ -325,7 +325,8 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
 #' Gaussian process. Defaults to [gp_opts()]. Set to `NULL` to disable the
 #' Gaussian process.
 #' @param data A list containing the following numeric values:
-#' `t`, `seeding_time`, `horizon`.
+#' `t`, `seeding_time`, `horizon`, `future_fixed`, `fixed_from`,
+#' `stationary` and `estimate_r`.
 #' @importFrom data.table fcase
 #' @seealso [gp_opts()]
 #' @return A list of settings defining the Gaussian process
@@ -336,7 +337,11 @@ create_backcalc_data <- function(backcalc = backcalc_opts()) {
 #' data <- list(
 #'   t = 30,
 #'   seeding_time = 7,
-#'   horizon = 7
+#'   horizon = 7,
+#'   future_fixed = 0,
+#'   fixed_from = 0,
+#'   stationary = 0,
+#'   estimate_r = 1
 #' )
 #'
 #' # default gaussian process data
@@ -358,34 +363,186 @@ create_gp_data <- function(gp = gp_opts(), data) {
     fixed <- FALSE
   }
 
-  est_time <- data$t - data$seeding_time
-  if (data$future_fixed > 0) {
-    est_time <- est_time + data$fixed_from - data$horizon
-  }
-  if (data$stationary == 1) {
-    est_time <- est_time - 1
-  }
-
-  # basis functions
-  M <- ceiling(est_time * gp$basis_prop)
+  gp_type <- fcase(
+    gp$kernel == "se", 0,
+    gp$kernel == "periodic", 1,
+    gp$kernel == "matern" || gp$kernel == "ou", 2,
+    default = 2
+  )
+  basis <- gp_basis_settings(gp, gp_noise_terms(data), gp_type)
 
   # map settings to underlying gp stan requirements
   gp_data <- list(
     fixed = as.numeric(fixed),
-    M = M,
-    L = gp$boundary_scale,
-    gp_type = fcase(
-      gp$kernel == "se", 0,
-      gp$kernel == "periodic", 1,
-      gp$kernel == "matern" || gp$kernel == "ou", 2,
-      default = 2
-    ),
+    M = basis$M,
+    L = basis$L,
+    gp_type = gp_type,
     nu = gp$matern_order,
     w0 = gp$w0
   )
 
   gp_data <- c(data, gp_data)
   gp_data
+}
+
+#' Number of time points modelled by the Gaussian process
+#'
+#' @description
+#' Mirrors `setup_noise()` in the Stan model.
+#'
+#' @inheritParams create_gp_data
+#' @return An integer giving the length of the Gaussian process.
+#' @keywords internal
+gp_noise_terms <- function(data) {
+  if (data$estimate_r > 0) {
+    noise_time <- data$t - data$seeding_time - (data$stationary == 0)
+  } else {
+    noise_time <- data$t
+  }
+  if (data$future_fixed > 0) {
+    noise_time <- noise_time - data$horizon + data$fixed_from
+  }
+  noise_time
+}
+
+#' Half-range of the Gaussian process time points
+#'
+#' @param n Length of the Gaussian process.
+#' @return The half-range (in days) of `n` equally spaced daily time points,
+#'   with a minimum of 0.5.
+#' @keywords internal
+gp_half_range <- function(n) {
+  max(n - 1, 1) / 2
+}
+
+#' Constants linking the lengthscale to the approximate GP settings
+#'
+#' @description
+#' Constants from Riutort-Mayol et al. (2023, Section 4.3.1)
+#' \doi{10.1007/s11222-022-10167-2}. With half-range `S`, boundary factor
+#' `c` and `m` basis functions, lengthscales `l` are approximated accurately
+#' when `m >= m_factor * c * S / l` and `c >= c_factor * l / S` (with
+#' `c >= 1.2`). The paper does not cover Matern 1/2 (equivalently, the
+#' Ornstein-Uhlenbeck kernel). Its `m_factor` is derived by repeating the
+#' paper's simulation procedure (see the `hsgp_m_c_relationship` folder,
+#' branch `matern-half-m-c-relationship`, of
+#' \url{https://github.com/sbfnk-bot/basis_functions_approach_to_GP}).
+#' The same procedure reproduced the squared exponential and Matern 3/2 and
+#' 5/2 constants to within 8-13%. Matern 1/2 is the roughest kernel, so it
+#' needs the most basis functions. Its `c_factor` was not independently
+#' validated and uses the Matern 3/2 value. The periodic kernel has no
+#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B), so
+#' its `c_factor` is `NA`.
+#'
+#' @param gp_type Integer kernel type as used in the Stan model (0: squared
+#'   exponential, 1: periodic, 2: Matern).
+#' @param nu Numeric Matern order.
+#' @return A list with elements `m_factor` and `c_factor`.
+#' @keywords internal
+gp_approx_constants <- function(gp_type, nu) {
+  if (gp_type == 1) {
+    return(list(m_factor = 3.72, c_factor = NA_real_))
+  }
+  if (gp_type == 0 || is.infinite(nu)) {
+    list(m_factor = 1.75, c_factor = 3.2)
+  } else if (nu == 5 / 2) {
+    list(m_factor = 2.65, c_factor = 4.1)
+  } else if (nu == 1 / 2) {
+    list(m_factor = 8.6, c_factor = 4.5)
+  } else {
+    list(m_factor = 3.42, c_factor = 4.5)
+  }
+}
+
+#' Quantiles of the lengthscale prior
+#'
+#' @description
+#' Quantiles of a lengthscale prior truncated to be positive and below its
+#' maximum.
+#'
+#' @param ls A `<dist_spec>` giving the lengthscale prior.
+#' @param probs Numeric vector of probabilities.
+#' @return A numeric vector of quantiles.
+#' @importFrom stats quantile
+#' @keywords internal
+gp_ls_quantiles <- function(ls, probs = c(0.05, 0.95)) {
+  check_gp_ls_prior(ls)
+  p_lower <- cdf(ls, 0)
+  unname(quantile(ls, p_lower + probs * (1 - p_lower)))
+}
+
+#' Choose the boundary factor and number of basis functions
+#'
+#' @description
+#' Settings not given in [gp_opts()] are chosen from the lengthscale prior
+#' using [gp_approx_constants()]. The boundary factor is set by the upper
+#' (95%) prior quantile, as longer lengthscales need a wider boundary. The
+#' number of basis functions is then set by the lower (5%) prior quantile, as
+#' shorter lengthscales need more basis functions. The periodic kernel has no
+#' boundary, so only the number of basis functions is chosen.
+#'
+#' @param gp A `<gp_opts>` object.
+#' @param n Length of the Gaussian process.
+#' @inheritParams gp_approx_constants
+#' @return A list with the boundary factor `L` and number of basis functions
+#'   `M`.
+#' @importFrom rlang %||%
+#' @keywords internal
+gp_basis_settings <- function(gp, n, gp_type) {
+  S <- gp_half_range(n)
+  L <- gp$boundary_scale
+  basis_prop <- gp$basis_prop
+  constants <- gp_approx_constants(gp_type, gp$matern_order)
+  periodic <- gp_type == 1
+  if (periodic) {
+    # not used by the periodic kernel
+    L <- L %||% 1.5
+  }
+  if (is.null(L) || is.null(basis_prop)) {
+    ls_quantiles <- gp_ls_quantiles(gp$ls)
+  }
+  if (is.null(L)) {
+    L <- max(1.2, constants$c_factor * ls_quantiles[2] / S)
+  }
+  if (is.null(basis_prop)) {
+    M <- ceiling(
+      constants$m_factor * gp_boundary_factor(L, periodic) * S /
+        ls_quantiles[1]
+    )
+  } else {
+    M <- ceiling(n * basis_prop)
+  }
+  list(L = L, M = max(1, M))
+}
+
+#' Range of lengthscales the approximate GP represents accurately
+#'
+#' @param stan_data A list of Stan data as returned by [create_gp_data()].
+#' @return A numeric vector giving the shortest and longest lengthscale (in
+#'   days) that the boundary factor and number of basis functions can
+#'   approximate accurately. The longest is `Inf` for the periodic kernel,
+#'   which has no boundary.
+#' @keywords internal
+gp_ls_range <- function(stan_data) {
+  constants <- gp_approx_constants(stan_data$gp_type, stan_data$nu)
+  periodic <- stan_data$gp_type == 1
+  S <- gp_half_range(gp_noise_terms(stan_data))
+  c(
+    constants$m_factor * gp_boundary_factor(stan_data$L, periodic) * S /
+      stan_data$M,
+    if (periodic) Inf else stan_data$L * S / constants$c_factor
+  )
+}
+
+#' Boundary factor used when relating the lengthscale to the basis functions
+#'
+#' @param L Numeric boundary factor.
+#' @param periodic Logical, whether the kernel is periodic. The periodic
+#'   kernel has no boundary, so a factor of 1 is used.
+#' @return A numeric boundary factor.
+#' @keywords internal
+gp_boundary_factor <- function(L, periodic) {
+  if (periodic) 1 else L
 }
 
 #' Create Observation Model Settings
@@ -574,6 +731,10 @@ create_delay_inits <- function(stan_data) {
 #' number; this is a stopgap until derived-prior parameters are initialised
 #' through the shared path (#1481). The distribution code follows
 #' [pack_init_prior()] (0: lognormal, 1: gamma, 2: normal).
+#'
+#' Infection model fields (`fixed`, `estimate_r`, `bp_n` and `week_effect`)
+#' may be absent, as in the secondary and truncation models. Their
+#' components are then initialised as empty.
 #' @param stan_data A list of data as produced by [create_stan_data()].
 #' @inheritParams create_stan_params
 #' @return An initial condition generating function
@@ -586,7 +747,7 @@ create_initial_conditions <- function(stan_data, params) {
   function() {
     out <- create_delay_inits(stan_data)
 
-    if (stan_data$fixed == 0) {
+    if (isTRUE(stan_data$fixed == 0)) {
       out$eta <- array(rnorm(
         ifelse(stan_data$gp_type == 1, stan_data$M * 2, stan_data$M),
         mean = 0, sd = 0.1
@@ -594,7 +755,7 @@ create_initial_conditions <- function(stan_data, params) {
     } else {
       out$eta <- array(numeric(0))
     }
-    if (stan_data$estimate_r == 1) {
+    if (isTRUE(stan_data$estimate_r == 1)) {
       out$initial_infections <- array(rnorm(1))
       # seed R_mean from the initial-Rt prior (see @details above)
       if (stan_data$n_init_priors > 0) {
@@ -616,14 +777,14 @@ create_initial_conditions <- function(stan_data, params) {
       out$R_mean <- array(numeric(0))
     }
 
-    if (stan_data$bp_n > 0) {
+    if (isTRUE(stan_data$bp_n > 0)) {
       out$bp_sd <- array(rtruncnorm(1, a = 0, mean = 0, sd = 0.1))
       out$bp_effects <- array(rnorm(stan_data$bp_n, 0, 0.1))
     } else {
       out$bp_sd <- array(numeric(0))
       out$bp_effects <- array(numeric(0))
     }
-    if (stan_data$week_effect > 0) {
+    if (isTRUE(stan_data$week_effect > 0)) {
       out$day_of_week_simplex <- array(
         rep(1 / stan_data$week_effect, stan_data$week_effect)
       )
@@ -743,7 +904,7 @@ create_stan_args <- function(stan = stan_opts(),
     if (identical(model, "estimate_infections")) {
       exclude <- c(exclude, "gt_rev_pmf")
     }
-    # trunc_obs is deterministic, and worth excluding, only when noise is fixed
+    # trunc_obs is deterministic, but only worth excluding when noise is fixed
     if (identical(model, "estimate_truncation") &&
           isTRUE(data$params_variable_lookup[data$param_id_sigma] == 0)) {
       exclude <- c(exclude, "trunc_obs")

@@ -1,20 +1,6 @@
 skip_on_cran()
 skip_on_os("windows")
 
-# Test calc_conv_indices_xlen function
-test_that("calc_conv_indices_xlen calculates correct indices", {
-  expect_equal(calc_conv_indices_xlen(1, 5, 3), c(1, 1, 3, 3))
-  expect_equal(calc_conv_indices_xlen(3, 5, 3), c(1, 3, 1, 3))
-  expect_equal(calc_conv_indices_xlen(5, 5, 3), c(3, 5, 1, 3))
-})
-
-# Test calc_conv_indices_len function
-test_that("calc_conv_indices_len calculates correct indices", {
-  expect_equal(calc_conv_indices_len(6, 5, 3), c(4, 5, 1, 2))
-  expect_equal(calc_conv_indices_len(7, 5, 3), c(5, 5, 1, 1))
-  expect_equal(calc_conv_indices_len(8, 5, 3), c(6, 5, 1, 0))
-})
-
 test_that("convolve_with_rev_pmf can combine two pmfs as expected", {
   expect_equal(
     convolve_with_rev_pmf(c(0.1, 0.2, 0.7), rev(c(0.1, 0.2, 0.7)), 5),
@@ -76,6 +62,96 @@ test_that("convolve_dot_product can combine two vectors where x > y and len = x"
     convolve_with_rev_pmf(x, rev(y), 5),
     c(1, 4, 10, 16, 22)
   )
+})
+
+# Cases for comparing the C++ convolve_with_rev_pmf() with the pure Stan
+# reference: len equal to, longer than and between the lengths of x and the
+# full convolution, a short pmf, a pmf of length one and a pmf longer than x.
+convolve_cases <- list(
+  list(n = 20, D = 6, len = 20),
+  list(n = 20, D = 6, len = 25),
+  list(n = 20, D = 6, len = 22),
+  list(n = 15, D = 2, len = 16),
+  list(n = 10, D = 1, len = 10),
+  list(n = 5, D = 9, len = 5),
+  list(n = 5, D = 9, len = 13),
+  list(n = 1, D = 1, len = 1),
+  # Full PMF-by-PMF convolutions, as in get_delay_rev_pmf()
+  list(n = 4, D = 7, len = 10),
+  list(n = 7, D = 4, len = 10),
+  list(n = 1, D = 5, len = 5),
+  list(n = 5, D = 1, len = 5)
+)
+
+test_that("convolve_with_rev_pmf matches the pure Stan implementation", {
+  set.seed(123)
+  for (case in convolve_cases) {
+    x <- rexp(case$n)
+    y <- rexp(case$D)
+    expect_equal(
+      convolve_with_rev_pmf(x, y, case$len),
+      convolve_with_rev_pmf_stan(x, y, case$len),
+      tolerance = 1e-12
+    )
+  }
+})
+
+test_that("convolve_with_rev_pmf errors for bad 'len' specifications", {
+  expect_error(
+    convolve_with_rev_pmf(c(1, 2, 3), c(0.5, 0.5), 5),
+    "len is longer than x and y convolved"
+  )
+  expect_error(
+    convolve_with_rev_pmf(c(1, 2, 3), c(0.5, 0.5), 2),
+    "len is shorter than x"
+  )
+})
+
+test_that("convolve_with_rev_pmf gradients match the pure Stan implementation", {
+  skip_if_not_installed("rstan")
+  model <- stan_test_model("convolve_gradient.stan")
+
+  set.seed(123)
+  params <- list(c(1, 1), c(1, 0), c(0, 1))
+  for (case in convolve_cases) {
+    # as.array() keeps length one vectors as vectors for rstan
+    data <- c(case, list(
+      x_data = as.array(rexp(case$n)), y_data = as.array(rexp(case$D)),
+      r = as.array(rnorm(case$len))
+    ))
+    for (p in params) {
+      data$x_param <- p[1]
+      data$y_param <- p[2]
+      fits <- lapply(c(cpp = 1, stan = 0), function(use_cpp) {
+        data$use_cpp <- use_cpp
+        suppressMessages(rstan::sampling(model, data = data, chains = 0))
+      })
+      upars <- rnorm(p[1] * case$n + p[2] * case$D)
+      expect_equal(
+        rstan::log_prob(fits$cpp, upars),
+        rstan::log_prob(fits$stan, upars),
+        tolerance = 1e-10
+      )
+      expect_equal(
+        rstan::grad_log_prob(fits$cpp, upars),
+        rstan::grad_log_prob(fits$stan, upars),
+        tolerance = 1e-8
+      )
+    }
+  }
+})
+
+test_that("epinow2_cmdstan_model compiles a model using the C++ header", {
+  skip_if_not_installed("cmdstanr")
+  skip_if(
+    is.null(suppressWarnings(suppressMessages(
+      tryCatch(cmdstanr::cmdstan_path(), error = function(e) NULL)
+    ))),
+    "CmdStan is not installed"
+  )
+  model <- epinow2_cmdstan_model("estimate_truncation")
+  expect_s3_class(model, "CmdStanModel")
+  expect_true(file.exists(model$exe_file()))
 })
 
 # Test convolve_to_report function

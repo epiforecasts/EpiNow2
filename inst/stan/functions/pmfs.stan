@@ -22,19 +22,19 @@
  * @param L Left truncation point (0 for no truncation)
  * @return A vector of length n containing the discretised PMF
  *
+ * @par Example
+ * `discretised_pmf({5, 2}, 6, 2, 0)` discretises a Gamma(shape = 5,
+ * rate = 2) distribution over 6 days (0 to 5), returning the probability
+ * mass on each day, e.g. `{0.011, 0.186, 0.366, 0.271, 0.123, 0.043}`.
+ *
  * @ingroup pmf_handlers
  */
 vector discretised_pmf(
   vector params, data int n, int dist, data int L
 ) {
-  int n_params = num_elements(params);
-  array[n_params] real params_array;
-  for (i in 1:n_params) {
-    params_array[i] = params[i];
-  }
   array[0] real primary_params;
   return primarycensored_sone_pmf_vectorized(
     n - 1, L * 1.0, n * 1.0, dist,
-    params_array, 1.0, 1, primary_params
+    to_array_1d(params), 1.0, 1, primary_params
   );
 }

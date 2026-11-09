@@ -6,6 +6,7 @@ on:
     branches: main
     paths:
       - inst/stan/**
+      - inst/include/**
       - .github/workflows/stan-model-benchmark.yaml
       - inst/dev/benchmark*.R
 

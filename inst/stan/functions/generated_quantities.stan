@@ -86,6 +86,11 @@ vector calculate_growth(vector infections, int seeding_time,
  *
  * @return A vector of growth rates
  *
+ * @par Example
+ * For `infections = {100, 110, 121, 133.1}` (10% daily growth) and
+ * `seeding_time = 0`, `calculate_growth_infections(infections, 0)` returns
+ * a constant growth rate of `log(1.1) ~= 0.095` per day at every time point.
+ *
  * @ingroup rt_estimation
  */
 vector calculate_growth_infections(vector infections, int seeding_time) {

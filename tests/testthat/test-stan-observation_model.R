@@ -46,3 +46,22 @@ test_that("truncate_obs truncates reports correctly", {
 
   expect_equal(result_reconstruct, reports)
 })
+
+test_that("accumulate_reports rolls unobserved reports into the next time point", {
+  reports <- c(10, 12, 8, 15, 20)
+  accumulate <- c(0, 1, 0, 0)
+
+  expected <- c(10, 12, 20, 15, 20)
+  result <- accumulate_reports(reports, accumulate)
+
+  expect_equal(result, expected)
+})
+
+test_that("accumulate_reports returns reports unchanged when nothing accumulates", {
+  reports <- c(10, 12, 8, 15, 20)
+  accumulate <- c(0, 0, 0, 0)
+
+  result <- accumulate_reports(reports, accumulate)
+
+  expect_equal(result, reports)
+})

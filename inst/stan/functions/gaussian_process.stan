@@ -192,6 +192,22 @@ matrix setup_gp(int M, real L, int dimension, int is_periodic, real w0) {
 }
 
 /**
+  * Rescale the Gaussian process lengthscale to the basis function inputs
+  *
+  * The inputs are rescaled to [-1, 1] in `setup_gp()`, so the lengthscale is
+  * divided by the half-range of the time points.
+  *
+  * @param rho Length scale parameter (in days)
+  * @param dimension Dimension of the process
+  * @return The rescaled length scale
+  *
+  * @ingroup estimates_smoothing
+  */
+real rescale_gp_lengthscale(real rho, int dimension) {
+  return 2 * rho / max(dimension - 1, 1);
+}
+
+/**
   * Update Gaussian process using spectral densities
   *
   * @param PHI Basis functions matrix

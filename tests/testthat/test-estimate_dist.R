@@ -209,6 +209,16 @@ test_that("correctly recovers lognormal parameters with date input", {
 
   expect_true(abs(est_meanlog - true_meanlog) < 0.3)
   expect_true(abs(est_sdlog - true_sdlog) < 0.2)
+
+  summarised <- summary(result, CrIs = 0.5)
+  expect_s3_class(summarised, "summary.estimate_dist")
+  expect_equal(summarised$variable, c("meanlog", "sdlog"))
+  expect_equal(summarised$mean, c(est_meanlog, est_sdlog), tolerance = 1e-3)
+  expect_true(all(c("lower_50", "upper_50") %in% colnames(summarised)))
+  expect_equal(attr(summarised, "distribution"), "lognormal")
+  expect_equal(attr(summarised, "n_obs"), nrow(linelist))
+  expect_equal(attr(summarised, "n_untruncated"), 0)
+  expect_output(print(summarised), "Delay distribution: lognormal")
 })
 
 test_that("correctly recovers gamma parameters with date input", {
