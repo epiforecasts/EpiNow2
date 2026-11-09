@@ -220,3 +220,34 @@ test_that("forecast_infections works with R extended beyond original fit", {
   samples <- get_samples(sims)
   expect_s3_class(samples, "data.table")
 })
+
+test_that("forecast_infections fills NA in a longer or shorter R from the posterior", {
+  skip_integration()
+  fixtures <- get_test_fixtures()
+  fit <- fixtures$estimate_infections
+  fit_R <- summary(fit, type = "parameters", param = "R")$median
+  n_R <- length(fit_R)
+  forecast_R <- function(R) {
+    sims <- forecast_infections(fit, R = R)
+    sims$summarised[variable == "R"]$median
+  }
+  longer <- forecast_R(c(rep(NA_real_, n_R), rep(0.8, 5)))
+  expect_length(longer, n_R + 5)
+  expect_equal(head(longer, n_R), fit_R)
+  expect_equal(tail(longer, 5), rep(0.8, 5))
+  shorter <- forecast_R(c(rep(NA_real_, n_R - 10), rep(0.8, 5)))
+  expect_length(shorter, n_R - 5)
+  expect_equal(head(shorter, n_R - 10), head(fit_R, n_R - 10))
+  expect_equal(tail(shorter, 5), rep(0.8, 5))
+})
+
+test_that("forecast_infections works with fits lacking infection process settings", {
+  skip_integration()
+  fixtures <- get_test_fixtures()
+  fit <- fixtures$estimate_infections
+  fit$args$infection_process <- NULL
+  fit$args$param_id_infection_overdispersion <- NULL
+  sims <- forecast_infections(fit, samples = 10)
+  expect_equal(names(sims), c("samples", "summarised", "observations"))
+  expect_true(all(is.finite(sims$samples[variable == "infections"]$value)))
+})

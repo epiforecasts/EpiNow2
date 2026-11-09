@@ -336,16 +336,10 @@ trunc_opts <- function(dist = Fixed(0),
 #' value given Rt and past infections. "poisson" and "negbin" instead treat
 #' new infections as stochastic, using a log-normal approximation that
 #' matches the mean and variance of a Poisson or negative binomial
-#' distribution around the expected value. The noise feeds back through the
-#' renewal equation into future infections. Both add one standard normal
-#' parameter per time point. The returned `R` is then the expected Rt, whilst
-#' growth rates (and adjusted Rt when `pop` is used) are calculated from the
-#' noisy infections. Setting `growth_method = "infectiousness"` gives
-#' smoother growth rates. Poisson noise is on the scale of the modelled
-#' infections, which is the scale of reported cases unless the `scale`
-#' argument of [obs_opts()] is used. Noise is applied after any adjustment
-#' for susceptible depletion and is only bounded by `pop_floor`. See the
-#' model definition vignette for details. Ignored if `use_rt` is `FALSE`.
+#' distribution. The returned `R` is then the expected Rt, whilst growth
+#' rates are calculated from the noisy infections. See the model definition
+#' and stochastic infections vignettes for details. Ignored if `use_rt` is
+#' `FALSE`.
 #'
 #' @param infection_dispersion A `<dist_spec>` specifying a prior on the
 #' overdispersion of new infections, used only if `infection_process` is

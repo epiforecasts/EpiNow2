@@ -51,15 +51,12 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
 /**
  * Apply process noise to the expected number of new infections
  *
- * Draws new infections from a log-normal approximation to either a Poisson
- * or a negative binomial distribution, using a non-centred
- * parameterisation with `eta ~ std_normal()`. The log-normal is chosen to
- * match the mean and variance of the target distribution. The Poisson
- * variance is `expected` and the negative binomial variance is
- * `expected + expected^2 * overdispersion^2`, matching the parameterisation
- * of the reporting overdispersion. With
- * `s2 = log(1 + variance / expected^2)` new infections are
- * `exp(log(expected) - s2 / 2 + sqrt(s2) * eta)`, which keeps them positive.
+ * Uses a log-normal with the mean and variance of a Poisson (variance
+ * `expected`) or negative binomial (variance
+ * `expected + expected^2 * overdispersion^2`) distribution, with a
+ * non-centred parameterisation:
+ * `exp(log(expected) - s2 / 2 + sqrt(s2) * eta)` with
+ * `s2 = log(1 + variance / expected^2)` and `eta ~ std_normal()`.
  *
  * @param expected Expected number of new infections
  * @param eta Standard normal noise term
@@ -71,9 +68,8 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
  * `infection_process` is 0 or `expected` is not positive.
  *
  * @par Example
- * With `expected = 100`, `eta = 0` and a Poisson process,
- * `s2 = log(1.01)` so `apply_infection_noise(100, 0, 1, 0)` returns the
- * log-normal median `100 / sqrt(1.01)`, approximately 99.5.
+ * `apply_infection_noise(100, 0, 1, 0)` returns the log-normal median,
+ * approximately 99.5.
  *
  * @ingroup infections_estimation
  */
@@ -82,7 +78,6 @@ real apply_infection_noise(real expected, real eta, int infection_process,
   if (infection_process == 0 || expected <= 0) {
     return(expected);
   }
-  // squared coefficient of variation of the Poisson or negative binomial
   real cv2 = inv(expected);
   if (infection_process == 2) {
     cv2 += square(overdispersion);

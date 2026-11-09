@@ -164,7 +164,7 @@ simulate_infections <- function(R,
     infection_process = match(
       infection_process, c("deterministic", "poisson", "negbin")
     ) - 1L,
-    # no noise is supplied so all of it is drawn afresh
+    # simulations have no posterior noise to reuse
     n_infection_eta = 0L,
     infection_eta = array(numeric(0), dim = c(1, 0)),
     growth_method = list(
@@ -443,6 +443,8 @@ forecast_infections <- function(estimates,
       R_mat <- matrix(rep(R, each = samples),
         ncol = length(R), byrow = FALSE
       )
+      # match the width of the new R so that NA entries are filled from the
+      # posterior when R is longer or shorter than the fit
       orig_R <- draws$R[1:samples, , drop = FALSE]
       if (ncol(orig_R) < ncol(R_mat)) {
         orig_R <- cbind(
@@ -491,7 +493,7 @@ forecast_infections <- function(estimates,
 
   # Extract args for passing to parallel workers
   estimates_args <- estimates$args
-  # fits made before stochastic infections was added lack these settings
+  # fits without stochastic infections settings use deterministic infections
   if (is.null(estimates_args$infection_process)) {
     estimates_args$infection_process <- 0L
   }
@@ -609,11 +611,8 @@ forecast_infections <- function(estimates,
 
 #' Resample posterior draws to the requested number of samples
 #'
-#' @description
-#' When more samples are requested than there are posterior draws, draws are
-#' resampled with replacement. The same rows are used for every element so
-#' that, for example, Rt trajectories stay paired with the infection noise
-#' and other parameters of the same draw.
+#' @description Resample all draws with the same rows so paired draws stay
+#' aligned.
 #'
 #' @param draws A named list of posterior draws, each with draws in rows.
 #' @param samples Integer, the number of samples required.

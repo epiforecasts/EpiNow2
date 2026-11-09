@@ -15,9 +15,7 @@ resample_draws(draws, samples)
 \code{draws}, resampled if there were fewer rows than \code{samples}.
 }
 \description{
-When more samples are requested than there are posterior draws, draws are
-resampled with replacement. The same rows are used for every element so
-that, for example, Rt trajectories stay paired with the infection noise
-and other parameters of the same draw.
+Resample all draws with the same rows so paired draws stay
+aligned.
 }
 \keyword{internal}

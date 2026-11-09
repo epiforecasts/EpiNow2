@@ -116,16 +116,10 @@ renewal equation. "deterministic" sets new infections to their expected
 value given Rt and past infections. "poisson" and "negbin" instead treat
 new infections as stochastic, using a log-normal approximation that
 matches the mean and variance of a Poisson or negative binomial
-distribution around the expected value. The noise feeds back through the
-renewal equation into future infections. Both add one standard normal
-parameter per time point. The returned \code{R} is then the expected Rt, whilst
-growth rates (and adjusted Rt when \code{pop} is used) are calculated from the
-noisy infections. Setting \code{growth_method = "infectiousness"} gives
-smoother growth rates. Poisson noise is on the scale of the modelled
-infections, which is the scale of reported cases unless the \code{scale}
-argument of \code{\link[=obs_opts]{obs_opts()}} is used. Noise is applied after any adjustment
-for susceptible depletion and is only bounded by \code{pop_floor}. See the
-model definition vignette for details. Ignored if \code{use_rt} is \code{FALSE}.}
+distribution. The returned \code{R} is then the expected Rt, whilst growth
+rates are calculated from the noisy infections. See the model definition
+and stochastic infections vignettes for details. Ignored if \code{use_rt} is
+\code{FALSE}.}
 
 \item{infection_dispersion}{Numeric or a fixed \verb{<dist_spec>} giving the
 overdispersion of new infections, used only if \code{infection_process} is
