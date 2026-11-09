@@ -38,13 +38,8 @@
 ^vignettes/delays.*
 ^vignettes/epinow[-.]
 ^vignettes/estimate_dist\.Rmd$
-^vignettes/estimate_infections\.Rmd$
 ^vignettes/estimate_infections_options.*
-^vignettes/estimate_infections_workflow.*
-^vignettes/estimate_secondary\.Rmd$
-^vignettes/estimate_truncation\.Rmd$
 ^vignettes/gaussian_process_implementation_details\.Rmd$
 ^vignettes/model_features\.Rmd$
-^vignettes/model[-_]overview.*
 ^vignettes/prior_choice_guide.*
 ^vignettes/precompile\.R$
