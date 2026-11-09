@@ -58,11 +58,7 @@ For the rest of this vignette, we will use inbuilt example literature estimates 
 
 ``` r
 example_generation_time
-#> - gamma distribution
-#> Returning NA: this distribution has uncertain parameters.
-#> ℹ Resolve the uncertainty first with `fix_parameters()`.
-#> This message is displayed once every 8 hours.
-#>  (max: 14):
+#> - gamma distribution (max: 14):
 #>   shape:
 #>     - normal distribution:
 #>       mean:
@@ -160,13 +156,13 @@ knitr::kable(summary(estimates))
 
 
 
-|measure                      |estimate               |
-|:----------------------------|:----------------------|
-|New infections per day       |2249 (1339 -- 3821)    |
-|Expected change in reports   |Likely decreasing      |
-|Effective reproduction no.   |0.9 (0.71 -- 1.1)      |
-|Rate of growth               |-0.028 (-0.1 -- 0.046) |
-|Doubling/halving time (days) |-25 (15 -- -6.9)       |
+|measure                      |estimate                 |
+|:----------------------------|:------------------------|
+|New infections per day       |2244 (1391 -- 3866)      |
+|Expected change in reports   |Likely decreasing        |
+|Effective reproduction no.   |0.9 (0.73 -- 1.1)        |
+|Rate of growth               |-0.028 (-0.095 -- 0.044) |
+|Doubling/halving time (days) |-25 (16 -- -7.3)         |
 
 
 
@@ -177,20 +173,20 @@ Summarised parameter estimates can also easily be returned, either filtered for 
 head(summary(estimates, type = "parameters", params = "R"))
 #>          date variable strat     type   median     mean         sd lower_90
 #>        <Date>   <char> <int>   <char>    <num>    <num>      <num>    <num>
-#> 1: 2020-02-22        R    NA estimate 2.169167 2.172720 0.11864432 1.987965
-#> 2: 2020-02-23        R    NA estimate 2.130421 2.132017 0.10913424 1.958997
-#> 3: 2020-02-24        R    NA estimate 2.088590 2.090715 0.10220723 1.931313
-#> 4: 2020-02-25        R    NA estimate 2.046109 2.048915 0.09725662 1.895578
-#> 5: 2020-02-26        R    NA estimate 2.003582 2.006715 0.09360879 1.862800
-#> 6: 2020-02-27        R    NA estimate 1.960182 1.964203 0.09064408 1.824305
+#> 1: 2020-02-22        R    NA estimate 2.167403 2.175193 0.12228888 1.982847
+#> 2: 2020-02-23        R    NA estimate 2.129356 2.134865 0.11159932 1.959017
+#> 3: 2020-02-24        R    NA estimate 2.087280 2.093846 0.10365313 1.929210
+#> 4: 2020-02-25        R    NA estimate 2.046820 2.052245 0.09792350 1.895554
+#> 5: 2020-02-26        R    NA estimate 2.006935 2.010170 0.09377757 1.859569
+#> 6: 2020-02-27        R    NA estimate 1.964574 1.967720 0.09059003 1.823919
 #>    lower_50 lower_20 upper_20 upper_50 upper_90
 #>       <num>    <num>    <num>    <num>    <num>
-#> 1: 2.087637 2.140561 2.199090 2.251086 2.369246
-#> 2: 2.055665 2.102472 2.156778 2.200464 2.312195
-#> 3: 2.017856 2.061651 2.112966 2.157147 2.265856
-#> 4: 1.979777 2.023270 2.070614 2.110578 2.213210
-#> 5: 1.940413 1.982206 2.024463 2.068163 2.165108
-#> 6: 1.899930 1.938523 1.982610 2.021849 2.123036
+#> 1: 2.090205 2.137423 2.198625 2.252682 2.387917
+#> 2: 2.059457 2.100044 2.154826 2.207269 2.327505
+#> 3: 2.024329 2.063552 2.112832 2.159448 2.273618
+#> 4: 1.986066 2.023533 2.071433 2.114395 2.221798
+#> 5: 1.946648 1.982683 2.027775 2.067778 2.170830
+#> 6: 1.905755 1.941210 1.984663 2.022987 2.124209
 ```
 
 Reported cases can be extracted using `get_predictions()` which returns summarised estimates by default.
@@ -200,20 +196,20 @@ Reported cases can be extracted using `get_predictions()` which returns summaris
 head(get_predictions(estimates))
 #>          date median     mean        sd lower_90 lower_50 lower_20 upper_20
 #>        <Date>  <num>    <num>     <num>    <num>    <num>    <num>    <num>
-#> 1: 2020-02-22     35  35.1840  9.628525       21       29       32       37
-#> 2: 2020-02-23     52  53.2105 12.966968       34       44       49       55
-#> 3: 2020-02-24     65  65.8720 15.169399       42       55       61       69
-#> 4: 2020-02-25     73  73.6970 16.361603       49       62       69       77
-#> 5: 2020-02-26     82  83.3220 18.722702       55       70       77       86
-#> 6: 2020-02-27    119 120.9315 25.284016       81      103      113      126
+#> 1: 2020-02-22     34  35.4065  9.601529       21       29       32       38
+#> 2: 2020-02-23     52  53.0050 13.052860       33       44       49       55
+#> 3: 2020-02-24     64  64.9300 15.538559       41       54       60       68
+#> 4: 2020-02-25     71  72.4450 16.382893       47       61       67       76
+#> 5: 2020-02-26     82  83.2385 17.670193       56       71       78       86
+#> 6: 2020-02-27    119 120.7045 25.293775       82      104      113      126
 #>    upper_50 upper_90
 #>       <num>    <num>
-#> 1:       41       52
-#> 2:       61       76
-#> 3:       75       92
-#> 4:       83      102
-#> 5:       95      117
-#> 6:      137      163
+#> 1:    41.00    52.05
+#> 2:    61.00    76.00
+#> 3:    74.00    92.00
+#> 4:    82.25   101.00
+#> 5:    94.00   114.00
+#> 6:   136.00   162.05
 ```
 
 A range of plots are returned (with the single summary plot shown below). These plots can also be generated using the following `plot` method.
@@ -284,8 +280,8 @@ knitr::kable(estimates$summary$summarised_results$table)
 
 |Region   |New infections per day |Expected change in reports |Effective reproduction no. |Rate of growth          |Doubling/halving time (days) |
 |:--------|:----------------------|:--------------------------|:--------------------------|:-----------------------|:----------------------------|
-|realland |1968 (956 -- 3794)     |Likely decreasing          |0.85 (0.58 -- 1.2)         |-0.044 (-0.12 -- 0.038) |-16 (18 -- -5.7)             |
-|testland |3925 (2090 -- 7661)    |Likely decreasing          |0.84 (0.61 -- 1.2)         |-0.044 (-0.11 -- 0.042) |-16 (16 -- -6.2)             |
+|realland |1995 (1054 -- 3802)    |Likely decreasing          |0.85 (0.61 -- 1.2)         |-0.041 (-0.11 -- 0.042) |-17 (17 -- -6.1)             |
+|testland |3896 (2072 -- 7871)    |Likely decreasing          |0.84 (0.6 -- 1.2)          |-0.045 (-0.12 -- 0.041) |-16 (17 -- -6)               |
 
 
 
