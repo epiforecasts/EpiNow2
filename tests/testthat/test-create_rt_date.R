@@ -68,6 +68,13 @@ test_that("rt_opts(future) is deprecated but still sets the future time", {
   expect_equal(result$future_time, 7)
 })
 
+test_that("create_rt_data takes the future time from the Rt prior", {
+  rt <- rt_opts(prior = GP(init = LogNormal(mean = 1, sd = 0.5), future = "project"))
+  expect_equal(create_rt_data(rt, horizon = 7)$future_time, 7)
+  rt <- rt_opts(prior = GP(init = LogNormal(mean = 1, sd = 0.5), future = "estimate"))
+  expect_equal(create_rt_data(rt, delay = 3, horizon = 7)$future_time, 10)
+})
+
 test_that("create_rt_data warns when fixed population is smaller than cumulative cases", {
   data <- data.table::data.table(
     date = seq.Date(as.Date("2020-01-01"), by = "day", length.out = 10),

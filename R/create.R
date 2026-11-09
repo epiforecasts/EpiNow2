@@ -84,11 +84,14 @@ create_rt_data <- function(rt = rt_opts(), delay = 0, horizon = 0,
   if (is.null(rt)) {
     rt <- rt_opts(use_rt = FALSE)
   }
-  # define future Rt arguments
-  future_rt <- create_future_rt(
-    future = rt$future,
-    delay = delay
-  )
+  # define future Rt arguments; a time-varying prior carries its own setting
+  # (the deprecated `future` argument of rt_opts() is copied onto it)
+  future <- if (is_state_spec(rt$prior)) {
+    rt$prior$future %||% "latest"
+  } else {
+    rt$future
+  }
+  future_rt <- create_future_rt(future = future, delay = delay)
 
   # Get pop_floor value
   pop_floor_value <- rt$pop_floor
