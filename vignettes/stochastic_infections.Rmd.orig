@@ -64,7 +64,9 @@ names(fits) <- processes
 
 # Run times and diagnostics
 
-Stochastic infections add one parameter per time point, which increases run times.
+Stochastic infections add one parameter per time point.
+They also use a renewal loop written in Stan, whilst deterministic infections use a faster C++ implementation with a hand-written gradient.
+Both increase run times.
 The run times below are from a single run and will vary between machines, so the relative differences are more informative than the absolute values.
 
 ```{r diagnostics}

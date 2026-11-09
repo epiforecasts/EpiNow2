@@ -178,7 +178,8 @@ vector stochastic_renewal_infections(vector seed, vector R, vector gt_rev_pmf,
  * This function implements the renewal equation to generate a time series of
  * infections based on reproduction numbers and the generation time distribution.
  * It can also account for population depletion if a population size is specified.
- * It sets the seeding infections and then calls renewal_infections().
+ * It sets the seeding infections and then calls renewal_infections(), or
+ * stochastic_renewal_infections() if infections are stochastic.
  *
  * @param R Vector of reproduction numbers
  * @param uot Unobserved time (seeding time)
