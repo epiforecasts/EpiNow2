@@ -136,19 +136,38 @@ vector rw_dev_knots(int n_free, int n_centre, vector steps,
 }
 
 /**
+ * Number of time points a Gaussian process component is evaluated at
+ *
+ * A mean-anchored (stationary) GP is evaluated at every point of its free
+ * window. An init-anchored GP models the increments between successive
+ * points, of which there is one fewer.
+ *
+ * @param n_free Free-noise window of the component's state
+ * @param anchor 0 = mean (stationary), 1 = init (non-stationary)
+ * @return The number of GP evaluation points
+ *
+ * @ingroup estimates_smoothing
+ */
+int gp_noise_points(int n_free, int anchor) {
+  return anchor == 1 ? n_free - 1 : n_free;
+}
+
+/**
  * Build a Gaussian process deviation for a time-varying parameter
  *
  * For the `mean` anchor (`anchor = 0`) the GP is stationary (mean-reverting
  * around the baseline) and the deviation is the noise directly. For the `init`
- * anchor (`anchor = 1`) the GP models the increments, so the deviation is the
- * cumulative sum of the noise, centred over the observation window (`n_centre`)
- * for identifiability. Returns the link-scale deviation over the free window,
+ * anchor (`anchor = 1`) the GP models the `n_free - 1` increments between
+ * successive time points, so the deviation starts at zero and accumulates the
+ * noise, and is then centred over the observation window (`n_centre`) for
+ * identifiability. Returns the link-scale deviation over the free window,
  * ready to combine additively with other components before `assemble_state`.
  * GP noise is supplied directly (computed via update_gp).
  *
  * @param n_free Window over which the GP varies
  * @param n_centre Leading window used to centre an init-anchored GP
- * @param noise Gaussian process noise (length n_free)
+ * @param noise Gaussian process noise (length n_free for the `mean` anchor,
+ *   n_free - 1 for the `init` anchor; see `gp_noise_points`)
  * @param anchor 0 = mean (stationary), 1 = init (non-stationary)
  * @return A link-scale deviation of length n_free
  *
@@ -159,7 +178,8 @@ vector gp_dev(int n_free, int n_centre, vector noise, int anchor) {
   if (anchor == 0) {
     dev = noise; // stationary (mean-reverting)
   } else {
-    dev = cumulative_sum(noise); // non-stationary (GP on increments)
+    // non-stationary: the GP gives the increments, so the path starts at 0
+    dev = append_row(0, cumulative_sum(noise));
     dev -= mean(dev[1:n_centre]); // centre over the observation window
   }
   return dev;
@@ -197,7 +217,7 @@ vector gp_dev(int n_free, int n_centre, vector noise, int anchor) {
  * @param state_gp_alpha GP magnitude of each GP component
  * @param state_gp_rho GP lengthscale of each GP component
  * @param gp_phi Precomputed GP basis of each GP component (built once in
- *   transformed data from its state's free-noise window)
+ *   transformed data over its `gp_noise_points()`)
  * @return A vector of length `nf`, the component's link-scale deviation
  *
  * @ingroup estimates_smoothing
@@ -233,10 +253,14 @@ vector component_dev(
   // M argument is the base (pre-doubling) basis count: it doubles it itself
   // for the periodic kernel, matching the doubled eta/phi columns above.
   int M_base = gp_kernel[p] == 1 ? M %/% 2 : M;
-  matrix[nf, M] phi = gp_phi[p][1:nf, 1:M];
+  int ng = gp_noise_points(nf, anchor);
+  if (ng == 0) {
+    return rep_vector(0, nf);
+  }
+  matrix[ng, M] phi = gp_phi[p][1:ng, 1:M];
   return gp_dev(nf, nc, update_gp(
     phi, M_base, gp_boundary_scale[p], state_gp_alpha[p],
-    rescale_gp_lengthscale(state_gp_rho[p], nf), eta, gp_kernel[p], gp_nu[p]
+    rescale_gp_lengthscale(state_gp_rho[p], ng), eta, gp_kernel[p], gp_nu[p]
   ), anchor);
 }
 
@@ -283,7 +307,7 @@ vector component_dev(
  * @param state_gp_alpha GP magnitude of each GP component
  * @param state_gp_rho GP lengthscale of each GP component
  * @param gp_phi Precomputed GP basis of each GP component (built once in
- *   transformed data from its state's free-noise window)
+ *   transformed data over its `gp_noise_points()`)
  * @return A vector of length t with the parameter trajectory
  *
  * @ingroup estimates_smoothing

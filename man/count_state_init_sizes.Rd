@@ -11,8 +11,9 @@ count_state_init_sizes(stan_data)
 }
 \value{
 A list with \code{n_rw_steps}, \code{n_gp_coef} (total counts, used to size
-the initial \code{state_rw_steps}/\code{state_gp_eta} vectors) and \code{gp_free} (each
-GP component's own free window, used to scale the lengthscale init).
+the initial \code{state_rw_steps}/\code{state_gp_eta} vectors) and \code{gp_points}
+(the number of points each GP component is evaluated at, see
+\code{\link[=gp_noise_points]{gp_noise_points()}}).
 }
 \description{
 Time-varying states each have their own free-noise window (set by their

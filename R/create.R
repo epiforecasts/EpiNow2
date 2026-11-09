@@ -397,12 +397,13 @@ count_rw_component_steps <- function(stan_data, cp, free, rw_period) {
 #'
 #' @param stan_data The assembled Stan data list.
 #' @return A list with `n_rw_steps`, `n_gp_coef` (total counts, used to size
-#'   the initial `state_rw_steps`/`state_gp_eta` vectors) and `gp_free` (each
-#'   GP component's own free window, used to scale the lengthscale init).
+#'   the initial `state_rw_steps`/`state_gp_eta` vectors) and `gp_points`
+#'   (the number of points each GP component is evaluated at, see
+#'   [gp_noise_points()]).
 #' @keywords internal
 count_state_init_sizes <- function(stan_data) {
   n_states <- stan_data$n_states %||% 0L
-  empty <- list(n_rw_steps = 0L, n_gp_coef = 0L, gp_free = numeric(0))
+  empty <- list(n_rw_steps = 0L, n_gp_coef = 0L, gp_points = numeric(0))
   if (n_states == 0) {
     return(empty)
   }
@@ -410,7 +411,7 @@ count_state_init_sizes <- function(stan_data) {
   ot_h <- stan_data$t - stan_data$seeding_time
   n_rw_steps <- 0L
   n_gp_coef <- 0L
-  gp_free <- numeric(0)
+  gp_points <- numeric(0)
   for (s in seq_len(n_states)) {
     total <- if (stan_data$state_param_id[s] == stan_data$param_id_I) {
       stan_data$t
@@ -434,13 +435,29 @@ count_state_init_sizes <- function(stan_data) {
         ## the periodic kernel's basis comes in cosine/sine pairs, so it needs
         ## twice the coefficients of the same (base) number of basis functions
         periodic <- stan_data$gp_kernel[p] == 1L
-        n_gp_coef <- n_gp_coef +
-          ceiling(free * stan_data$gp_basis_prop[p]) * (1L + periodic)
-        gp_free <- c(gp_free, free)
+        n_gp_coef <- n_gp_coef + stan_data$gp_M[p] * (1L + periodic)
+        gp_points <- c(
+          gp_points, gp_noise_points(free, stan_data$state_anchor[s])
+        )
       }
     }
   }
-  list(n_rw_steps = n_rw_steps, n_gp_coef = n_gp_coef, gp_free = gp_free)
+  list(n_rw_steps = n_rw_steps, n_gp_coef = n_gp_coef, gp_points = gp_points)
+}
+
+#' Number of time points a Gaussian process component is evaluated at
+#'
+#' Mirrors `gp_noise_points()` in the Stan model. A mean-anchored
+#' (stationary) Gaussian process is evaluated at every point of its free
+#' window; an init-anchored one models the increments between successive
+#' points, of which there is one fewer.
+#'
+#' @param free The free-noise window of the component's state.
+#' @param anchor The state's anchor: 0 for `mean`, 1 for `init`.
+#' @return The number of Gaussian process evaluation points.
+#' @keywords internal
+gp_noise_points <- function(free, anchor) {
+  free - as.integer(anchor == 1L)
 }
 
 #' Draw initial values for each state component's own hyperparameters
@@ -563,7 +580,7 @@ create_initial_conditions <- function(stan_data, params) {
       b = stan_data$params_upper[seq_len(n_named)],
       mean = param_means, sd = param_sds
     )
-    rho_scale <- if (length(sizes$gp_free) > 0) mean(sizes$gp_free) else 1
+    rho_scale <- if (length(sizes$gp_points) > 0) mean(sizes$gp_points) else 1
     param_inits <- c(
       param_inits, init_state_hyperparams(stan_data, n_named, rho_scale)
     )
@@ -1251,16 +1268,16 @@ gp_basis_settings <- function(gp, n, gp_type) {
 #'   lengthscale to.
 #' @param base_id The parameter id of the last existing parameter.
 #' @param pos This component's index within the GP type group.
-#' @param free The component's own free-noise window (shared by all
-#'   components of its state), used to choose `basis_prop`/`boundary_scale`
-#'   from the lengthscale prior when either is left at `NULL` on [GP()].
+#' @param n_points The number of points the component is evaluated at (see
+#'   [gp_noise_points()]), used to choose `basis_prop`/`boundary_scale` from
+#'   the lengthscale prior when either is left at `NULL` on [GP()].
 #' @return A list of this component's contribution to `create_state_data()`'s
 #'   component table: `comp_type`, `comp_pos`, `hyper_params`, `gp_alpha_id`,
-#'   `gp_rho_id`, `gp_kernel`, `gp_nu`, `gp_basis_prop`, `gp_boundary_scale`,
+#'   `gp_rho_id`, `gp_kernel`, `gp_nu`, `gp_M`, `gp_boundary_scale`,
 #'   `gp_w0`.
 #' @keywords internal
 resolve_gp_component <- function(comp, name, hyper_params, base_id, pos,
-                                 free) {
+                                 n_points) {
   gp <- comp$settings
   assert_estimated(gp$alpha, "alpha", name)
   reg <- register_hyper(hyper_params, "gp_alpha", name, gp$alpha, base_id)
@@ -1271,12 +1288,19 @@ resolve_gp_component <- function(comp, name, hyper_params, base_id, pos,
   gp_kernel <- fcase(
     gp$kernel == "se", 0L, gp$kernel == "periodic", 1L, default = 2L
   )
-  basis <- gp_basis_settings(gp, free, gp_kernel)
+  if (!is.na(n_points) && n_points < 2) {
+    cli_abort(c(
+      "!" = "The Gaussian process on {.var {name}} has fewer than two time
+      points to vary over.",
+      "i" = "Check the {.arg future} setting of its prior."
+    ))
+  }
+  basis <- gp_basis_settings(gp, n_points, gp_kernel)
   list(
     comp_type = 1L, comp_pos = pos, hyper_params = reg$params,
     gp_alpha_id = gp_alpha_id, gp_rho_id = reg$id,
     gp_kernel = gp_kernel,
-    gp_nu = gp$matern_order, gp_basis_prop = basis$M / free,
+    gp_nu = gp$matern_order, gp_M = as.integer(basis$M),
     gp_boundary_scale = basis$L, gp_w0 = gp$w0
   )
 }
@@ -1305,7 +1329,7 @@ create_state_data <- function(params, state_flags,
     rw_knots_offset = array(integer(0)),
     rw_knots = array(integer(0)),
     n_gp_components = 0L,
-    gp_basis_prop = array(numeric(0)),
+    gp_M = array(integer(0)),
     gp_boundary_scale = array(numeric(0)),
     gp_kernel = array(integer(0)),
     gp_nu = array(numeric(0)),
@@ -1353,7 +1377,7 @@ create_state_data <- function(params, state_flags,
   gp_nu <- numeric(0)
   gp_alpha_id <- integer(0)
   gp_rho_id <- integer(0)
-  gp_basis_prop <- numeric(0)
+  gp_M <- integer(0)
   gp_boundary_scale <- numeric(0)
   gp_w0 <- numeric(0)
   n_rw <- 0L
@@ -1438,13 +1462,14 @@ create_state_data <- function(params, state_flags,
       } else {
         n_gp <- n_gp + 1L
         res <- resolve_gp_component(
-          comp, name, hyper_params, base_id, n_gp, free
+          comp, name, hyper_params, base_id, n_gp,
+          gp_noise_points(free, anchor[j])
         )
         gp_alpha_id <- c(gp_alpha_id, res$gp_alpha_id)
         gp_rho_id <- c(gp_rho_id, res$gp_rho_id)
         gp_kernel <- c(gp_kernel, res$gp_kernel)
         gp_nu <- c(gp_nu, res$gp_nu)
-        gp_basis_prop <- c(gp_basis_prop, res$gp_basis_prop)
+        gp_M <- c(gp_M, res$gp_M)
         gp_boundary_scale <- c(gp_boundary_scale, res$gp_boundary_scale)
         gp_w0 <- c(gp_w0, res$gp_w0)
       }
@@ -1483,7 +1508,7 @@ create_state_data <- function(params, state_flags,
     rw_knots_offset = array(as.integer(rw_knots_offset)),
     rw_knots = array(as.integer(rw_knots)),
     n_gp_components = n_gp,
-    gp_basis_prop = array(gp_basis_prop),
+    gp_M = array(gp_M),
     gp_boundary_scale = array(gp_boundary_scale),
     gp_kernel = array(gp_kernel),
     gp_nu = array(gp_nu),

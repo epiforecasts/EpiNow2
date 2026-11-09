@@ -160,3 +160,38 @@ test_that("rescale_gp_lengthscale matches the half-range of the GP", {
   expect_equal(rescale_gp_lengthscale(21, 22), 21 / 10.5)
   expect_equal(rescale_gp_lengthscale(21, 1), 42)
 })
+
+test_that("default GP settings approximate the exact Matern 3/2 kernel", {
+  # the default Rt prior on 60 observed days: 59 increments
+  n <- 59
+  gp <- new_gp_settings()
+  basis <- gp_basis_settings(gp, n, 2L)
+  PHI <- setup_gp(basis$M, basis$L, n, 0, gp$w0)
+  for (rho in gp_ls_quantiles(gp$ls)) {
+    spd <- diagSPD_Matern32(
+      1, rescale_gp_lengthscale(rho, n), basis$L, basis$M
+    )
+    approx <- PHI %*% diag(spd^2) %*% t(PHI)
+    d <- abs(outer(seq_len(n), seq_len(n), "-")) * sqrt(3) / rho
+    exact <- (1 + d) * exp(-d)
+    expect_lt(max(abs(approx - exact)), 0.05)
+  }
+})
+
+test_that("default GP settings approximate the exact periodic kernel", {
+  n <- 59
+  gp <- new_gp_settings(kernel = "periodic")
+  basis <- gp_basis_settings(gp, n, 1L)
+  PHI <- setup_gp(basis$M, basis$L, n, 1, gp$w0)
+  x <- seq_len(n)
+  x <- 2 * (x - mean(x)) / (n - 1)
+  for (rho in gp_ls_quantiles(gp$ls)) {
+    ls <- rescale_gp_lengthscale(rho, n)
+    spd <- diagSPD_Periodic(1, ls, basis$M)
+    approx <- PHI %*% diag(spd^2) %*% t(PHI)
+    # the constant (j = 0) term of the series is not modelled
+    exact <- exp(-2 * sin(gp$w0 * outer(x, x, "-") / 2)^2 / ls^2) -
+      besselI(ls^-2, 0, expon.scaled = TRUE)
+    expect_lt(max(abs(approx - exact)), 0.05)
+  }
+})

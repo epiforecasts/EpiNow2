@@ -102,18 +102,17 @@ transformed data {
       } else {
         comp_rw_n[c] = 0;
         int p = comp_pos[c];
-        int M_base = to_int(ceil(free_window * gp_basis_prop[p]));
         // the periodic kernel's basis comes in cosine/sine pairs, so it has
         // twice as many coefficients as the same (base) number of basis
         // functions for every other kernel
-        comp_gp_M[c] = gp_kernel[p] == 1 ? 2 * M_base : M_base;
+        comp_gp_M[c] = gp_kernel[p] == 1 ? 2 * gp_M[p] : gp_M[p];
         n_gp_coef += comp_gp_M[c];
       }
     }
   }
 
   // Build each GP component's basis once here: it depends only on data (its
-  // state's free-noise window and its basis size), so update_gp can apply the
+  // number of evaluation points and its basis size), so update_gp can apply the
   // per-iteration hyperparameters without rebuilding the basis every gradient
   // evaluation. The array is padded to the largest window/basis and read back
   // per component.
@@ -123,7 +122,8 @@ transformed data {
     for (k in 1:state_comp_n[s]) {
       int c = state_comp_offset[s] + k;
       if (comp_type[c] == 1) {
-        if (state_n_free[s] > max_gp_nf) max_gp_nf = state_n_free[s];
+        int ng = gp_noise_points(state_n_free[s], state_anchor[s]);
+        if (ng > max_gp_nf) max_gp_nf = ng;
         if (comp_gp_M[c] > max_gp_M) max_gp_M = comp_gp_M[c];
       }
     }
@@ -137,10 +137,12 @@ transformed data {
         int periodic = gp_kernel[p] == 1;
         // setup_gp()'s own M is the base (pre-doubling) number of basis
         // functions; it returns 2*M columns itself for the periodic kernel
-        int M_base = periodic ? comp_gp_M[c] %/% 2 : comp_gp_M[c];
-        gp_phi[p, 1:state_n_free[s], 1:comp_gp_M[c]] = setup_gp(
-          M_base, gp_boundary_scale[p], state_n_free[s], periodic, gp_w0[p]
-        );
+        int ng = gp_noise_points(state_n_free[s], state_anchor[s]);
+        if (ng > 0) {
+          gp_phi[p, 1:ng, 1:comp_gp_M[c]] = setup_gp(
+            gp_M[p], gp_boundary_scale[p], ng, periodic, gp_w0[p]
+          );
+        }
       }
     }
   }

@@ -429,17 +429,16 @@ check_gp_fit <- function(fit, stan_data) {
     return(invisible(NULL))
   }
   params <- extract_stan_samples(fit, pars = "params")$params
-  gp_free <- count_state_init_sizes(stan_data)$gp_free
+  gp_points <- count_state_init_sizes(stan_data)$gp_points
   for (g in seq_len(n_gp)) {
     rho_idx <- stan_data$params_variable_lookup[stan_data$gp_rho_id[g]]
     if (length(rho_idx) == 0 || is.na(rho_idx) || rho_idx == 0 ||
           rho_idx > ncol(params)) {
       next
     }
-    m <- ceiling(gp_free[g] * stan_data$gp_basis_prop[g])
     check_gp_lengthscale(
       params[, rho_idx], stan_data$gp_kernel[g], stan_data$gp_nu[g],
-      stan_data$gp_boundary_scale[g], m, gp_free[g]
+      stan_data$gp_boundary_scale[g], stan_data$gp_M[g], gp_points[g]
     )
   }
   invisible(NULL)

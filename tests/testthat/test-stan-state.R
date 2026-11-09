@@ -19,7 +19,7 @@ test_that("assemble_state keeps a random-walk deviation varying when projected",
 })
 
 test_that("assemble_state holds a Gaussian process deviation beyond the free window", {
-  noise <- seq(-0.2, 0.2, length.out = 10)
+  noise <- seq(-0.2, 0.2, length.out = 9)
   dev <- gp_dev(n_free = 10, n_centre = 10, noise = noise, anchor = 1)
   traj <- assemble_state(t = 15, n_free = 10, level = 1, dev = dev, link = 0)
   expect_length(traj, 15)
@@ -83,4 +83,56 @@ test_that("get_state_trajectory returns a constant trajectory when no state is a
   )
   expect_length(traj, 12)
   expect_true(all(traj == 2))
+})
+
+test_that("gp_dev with the init anchor starts at zero and accumulates the increments", {
+  noise <- c(0.1, -0.3, 0.2, 0.05, 0.4)
+  dev <- gp_dev(n_free = 6, n_centre = 4, noise = noise, anchor = 1)
+  expect_length(dev, 6)
+  expect_equal(diff(dev), noise)
+  # centred over the observation window
+  expect_equal(mean(dev[1:4]), 0)
+})
+
+test_that("gp_dev centring does not depend on the forecast horizon", {
+  noise <- c(0.1, -0.3, 0.2, 0.05, 0.4, -0.1, 0.2)
+  short <- gp_dev(n_free = 6, n_centre = 4, noise = noise[1:5], anchor = 1)
+  long <- gp_dev(n_free = 8, n_centre = 4, noise = noise, anchor = 1)
+  expect_equal(long[1:6], short)
+})
+
+test_that("gp_dev with the mean anchor returns the noise unchanged", {
+  noise <- c(0.1, -0.3, 0.2)
+  expect_equal(gp_dev(n_free = 3, n_centre = 3, noise = noise, anchor = 0), noise)
+})
+
+test_that("gp_noise_points has one fewer point for the init anchor", {
+  expect_equal(gp_noise_points(10, 0), 10)
+  expect_equal(gp_noise_points(10, 1), 9)
+})
+
+test_that("rw_dev steps every period days and is centred", {
+  steps <- c(0.5, -0.2)
+  dev <- rw_dev(n_free = 15, n_centre = 15, steps = steps, period = 7)
+  uncentred <- c(rep(0, 7), rep(0.5, 7), 0.3)
+  expect_equal(dev, uncentred - mean(uncentred))
+})
+
+test_that("rw_dev_knots steps on the knot days and is centred", {
+  steps <- c(0.5, -0.2)
+  dev <- rw_dev_knots(n_free = 8, n_centre = 6, steps = steps, knots = c(3L, 6L))
+  uncentred <- c(0, 0, 0.5, 0.5, 0.5, 0.3, 0.3, 0.3)
+  expect_equal(dev, uncentred - mean(uncentred[1:6]))
+})
+
+test_that("rw_dev_knots matches a legacy rw = 7 breakpoint vector", {
+  steps <- c(0.5, -0.2)
+  n <- 20
+  dev <- rw_dev_knots(
+    n_free = n, n_centre = n, steps = steps,
+    knots = as.integer(seq(7, n, by = 7))
+  )
+  # previous implementation: level index floor(i / rw)
+  levels <- c(0, cumsum(steps))[floor(seq_len(n) / 7) + 1]
+  expect_equal(dev, levels - mean(levels))
 })

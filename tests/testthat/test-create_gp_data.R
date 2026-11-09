@@ -133,7 +133,17 @@ test_that("resolve_gp_component chooses basis settings from the free window", {
   # its "latest" value through the horizon by default
   free <- 37 - 7
   basis <- gp_basis_settings(new_gp_settings(), free, 2L)
-  expect_equal(out$gp_basis_prop, array(basis$M / free))
+  expect_equal(out$gp_M, array(as.integer(basis$M)))
+  expect_equal(out$gp_boundary_scale, array(basis$L))
+})
+
+test_that("resolve_gp_component sizes an init-anchored GP to its increments", {
+  params <- list(make_param("R", GP(init = LogNormal(1, 0.5)), lower_bound = 0))
+  out <- create_stan_params(
+    params, states_supported = "R", t = 37, horizon = 7
+  )
+  basis <- gp_basis_settings(new_gp_settings(), 37 - 7 - 1, 2L)
+  expect_equal(out$gp_M, array(as.integer(basis$M)))
   expect_equal(out$gp_boundary_scale, array(basis$L))
 })
 
@@ -186,7 +196,7 @@ test_that("check_gp_fit checks every GP component's own lengthscale column", {
   stan_data$param_id_I <- 0L # no latent-infections state in this test
   stan_data$params_variable_lookup <- c(1, 2, 3) # rho is gp_rho_id[1] == 3
   free <- 37 - 7
-  m <- ceiling(free * stan_data$gp_basis_prop[1])
+  m <- stan_data$gp_M[1]
   ls_range <- gp_ls_range(
     stan_data$gp_kernel[1], stan_data$gp_nu[1], stan_data$gp_boundary_scale[1],
     m, free

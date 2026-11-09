@@ -2,7 +2,7 @@
 // basis sized to its own free-noise window). Pairs with the Gaussian process
 // functions in functions/gaussian_process.stan.
 int<lower = 0> n_gp_components;
-array[n_gp_components] real<lower = 0> gp_basis_prop; // basis proportion per component
+array[n_gp_components] int<lower = 1> gp_M; // number of basis functions per component (before doubling for the periodic kernel)
 array[n_gp_components] real<lower = 0> gp_boundary_scale; // boundary scale L per component
 array[n_gp_components] int<lower = 0> gp_kernel; // 0 = SE, 1 = periodic, 2 = Matern
 array[n_gp_components] real gp_nu; // Matern smoothness
