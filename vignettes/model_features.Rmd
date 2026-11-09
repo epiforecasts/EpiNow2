@@ -59,7 +59,7 @@ The package's modelling features fall into four groups.
 
 ## Infection model
 
-`estimate_infections()` reconstructs infections from a count time series (e.g. reported cases) using either a generative renewal model or non-parametric back-calculation.
+`estimate_infections()` reconstructs infections from a count time series (e.g. reported cases) using either a generative renewal model or a non-mechanistic back-calculation model.
 
 | Feature | Argument | Description | See also |
 |---|---|---|---|
@@ -134,7 +134,7 @@ For kernel mathematics and the Hilbert space spectral approximation see the [GP 
 | Feature | Argument | Description |
 |---|---|---|
 | Kernel choice | `GP(kernel = ...)` | `"matern"` (default), `"se"`, `"ou"`, or `"periodic"` |
-| Accuracy/speed tradeoff | `GP(basis_prop = ...)` | Higher values increase accuracy; lower values are faster (default 0.2) |
+| Accuracy/speed tradeoff | `GP(basis_prop = ..., boundary_scale = ...)` | Chosen from the lengthscale prior by default; set manually to trade accuracy for speed |
 
 See also: [GP implementation details](gaussian_process_implementation_details.html), [options examples](estimate_infections_options.html), [prior choice guide](prior_choice_guide.html)
 
@@ -188,7 +188,7 @@ The table below summarises the options functions, what they configure, their def
 | `delay_opts()` | Reporting delay distributions | `Fixed(0)` (no delay) | `estimate_infections()`, `estimate_secondary()` |
 | `obs_opts()` | Observation model | Negative binomial with day-of-week effect | `estimate_infections()`, `estimate_secondary()` |
 | `trunc_opts()` | Truncation distribution | `Fixed(0)` (no truncation) | `estimate_infections()` |
-| `backcalc_opts()` | Back-calculation settings | Smoothed reports as prior | `estimate_infections()` (when `rt = NULL`) |
+| `backcalc_opts()` | Back-calculation settings | Gaussian process on first differences of log infections | `estimate_infections()` (when `rt = NULL`) |
 | `secondary_opts()` | Secondary model type | Incidence | `estimate_secondary()` |
 
 See the [prior choice guide](prior_choice_guide.html) for default values and guidance.

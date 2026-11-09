@@ -76,13 +76,7 @@ In order to make our models computationally tractable, we approximate the Gaussi
 \mathrm{GP}(0, k(\Delta t)) \approx \sum_{j=1}^m \left(S_k(\sqrt{\lambda_j}) \right)^\frac{1}{2} \phi_j(t) \beta_j
 \end{equation}
 
-with $m$ the number of basis functions to use in the approximation, which we calculate from the number of time points $t_\mathrm{GP}$ to which the Gaussian Process is being applied (rounded up to give an integer value), as is recommended [@approxGP].
-
-\begin{equation}
-m = b t_\mathrm{GP}
-\end{equation}
-
-and values of $\lambda_j$ given by
+with $m$ the number of basis functions to use in the approximation, and values of $\lambda_j$ given by
 
 \begin{equation}
 \lambda_j = \left( \frac{j \pi}{2 L} \right)^2
@@ -134,11 +128,14 @@ The functions $\phi_{j}(x)$ are the eigenfunctions of the Laplace operator,
 \phi_j(t) = \frac{1}{\sqrt{L}} \sin\left(\sqrt{\lambda_j} (t^* + L)\right)
 \end{equation}
 
-with time rescaled linearly to be between -1 and 1,
+with the time points $t = 1, \ldots, t_\mathrm{GP}$ rescaled linearly to be between -1 and 1,
 
 \begin{equation}
-t^* = \frac{t - \frac{1}{2}t_\mathrm{GP}}{\frac{1}{2}t_\mathrm{GP}}
+t^* = \frac{t - \frac{1}{2}(t_\mathrm{GP} + 1)}{\frac{1}{2}(t_\mathrm{GP} - 1)}
 \end{equation}
+
+where $t_\mathrm{GP}$ is the number of time points to which the Gaussian process is applied.
+The lengthscale is rescaled in the same way, dividing by the half-range $S = (t_\mathrm{GP} - 1) / 2$.
 
 Relevant default priors are
 
@@ -191,8 +188,6 @@ Adapted to `EpiNow2` with the Matérn 3/2 kernel, it is as follows.
 - The approximation error is largest for the posterior standard deviation and near the boundaries. In `EpiNow2` this affects the most recent estimates, so check these in particular.
 
 For other kernels, use their constants from above.
-
-These values, as well as the prior distributions of relevant parameters, can all be changed by the user.
 
 # Modelling the reproduction number
 

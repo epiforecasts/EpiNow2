@@ -141,46 +141,23 @@ where $I_t$ are the adjusted infections and $\lambda_t$ is the total infectiousn
 
 ## Non-Mechanistic infection model
 
-This is an alternative model that can be used by setting `rt = NULL` that assumes less epidemiological mechanism by directly modelling infections on a log scale with a range of process models.
-By default, this uses a Gaussian Process prior for the number of new infections each day (on the log scale) although alternatively infections can be estimated using a prior based on a fixed backwards mapping of observed cases.
-In general, these model options will be more computationally efficient than the renewal process model but may be less robust due to the lack of an epidemiological process model (i.e. more dependence is placed on the assumptions of the Gaussian process prior).
-
-### Initialisation
-
-In order to initialise this model, an initial estimate $I_\mathrm{est}$ of the infection trajectory is first created by first shifting observations back in time by $t_\mathrm{seed}$ and then smoothing the observation data with a moving average of window size $z$ (default: $z=14$), allocated to the centre of the window:
-
-\begin{align}
-  I_{\mathrm{est}, t \lt T - t_\mathrm{seed}} = \frac{1}{z} \sum_{\max(-t_\mathrm{seed}, t - z/2)}^{\min(t_\mathrm{obs}, t + z/2)} I_{\mathrm{obs}, t + t_\mathrm{seed}}
-\end{align}
-
-where $T$ is the day of the last observation, $z/2$ is rounded up to the nearest integer in the limits of the sum, and $I_\mathrm{obs, t \lt 0} = 0$.
-Any date with $I_{\mathrm{est}, t} = 0$ cases following this procedure is then allocated 1 case to facilitate further processing in the model.
-
-For any times $t > T - t_\mathrm{seed}$  the number of infections is then estimated by fitting an exponential curve to the final week of data and extrapolating this until the end of the forecast horizon.
+This is an alternative model that can be used by setting `rt = NULL` that assumes less epidemiological mechanism by directly modelling infections on a log scale.
+It uses a Gaussian process prior for the first differences of the number of new infections each day on the log scale.
+In general, this model will be more computationally efficient than the renewal process model but may be less robust due to the lack of an epidemiological process model (i.e. more dependence is placed on the assumptions of the Gaussian process prior).
 
 ### Infections
 
-By default, a Gaussian Process prior is used for the number of infections, resulting in smoother estimates of the infection curve.
-In this case, as in the renewal equation model there are two alternative formulations available.
-The default uses an approximate zero-mean GP for the differences between modelled infections and the initial estimate,
-
-\begin{equation}
-  \log I_{t} - \log I_{\mathrm{est}, t} \sim \mathrm{GP}_t
-\end{equation}
-
-Alternatively, one can use is an approximate zero-mean Gaussian Process (GP) for the first differences in time on the log scale,
+The log of infections follows an approximate zero-mean Gaussian process (GP) on its first differences in time,
 
 \begin{equation}
   \log I_{t} - \log I_{t-1} \sim \mathrm{GP}_t
 \end{equation}
 
-with $\log I_{0} - \log I_{\mathrm{est}, 0} \sim \mathrm{GP}_{0}$
+with a prior on the initial number of infections $I_1$.
+By default this prior is a log-normal distribution with mean and standard deviation equal to the mean of the first week of observations, and it can be changed with `backcalc_opts(prior = GP(init = ...))`.
+The Gaussian process covers the seeding period, the observation period and, depending on its `future` setting, the forecast horizon.
 
 More details on the mathematical form of the Gaussian process approximation are given in the [Gaussian Process implementation details](gaussian_process_implementation_details.html) vignette.
-
-As for the renewal equation model, the Gaussian process can be replaced by a random walk of arbitrary length $w$.
-
-When using a fixed shift from infections to reported cases there is no process model and so $I_\mathrm{est}$ is used as the estimated infection curve (potentially scaled to take into account underreporting, see section [Delays and scaling]).
 
 ### Time-varying reproduction number
 
