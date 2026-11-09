@@ -171,6 +171,16 @@ test_that("estimate_infections successfully returns estimates using the infectio
   )
 })
 
+test_that("estimate_infections successfully returns estimates using a periodic kernel", {
+  skip_integration()
+  test_estimate_infections(
+    reported_cases,
+    rt = rt_opts(
+      prior = GP(init = LogNormal(mean = 2, sd = 0.1), kernel = "periodic")
+    )
+  )
+})
+
 test_that("estimate_infections successfully returns estimates when passed NA values", {
   skip_integration()
   reported_cases_na <- data.table::copy(reported_cases)
@@ -204,10 +214,6 @@ test_that("estimate_infections successfully returns estimates using a fixed Rt",
   test_estimate_infections(reported_cases, gp = NULL)
 })
 
-test_that("estimate_infections successfully returns estimates using only mean shifted reported cases", {
-  skip_integration()
-  test_estimate_infections(reported_cases, gp = NULL, rt = NULL)
-})
 
 test_that("estimate_infections successfully returns estimates using a single breakpoint", {
   skip_integration()
@@ -779,8 +785,7 @@ test_that("estimate_infections recovers the prior on the initial Rt", {
   fit <- suppressWarnings(estimate_infections(
     reported_cases,
     generation_time = gt_opts(example_generation_time),
-    rt = rt_opts(prior = prior),
-    gp = NULL,
+    rt = rt_opts(prior = GP(init = prior)),
     obs = obs_opts(likelihood = FALSE),
     stan = stan_opts(
       warmup = 500, samples = 4000, chains = 2, seed = 42L,
