@@ -202,7 +202,7 @@ estimate_infections <- function(data,
   } else if (!is.null(backcalc$prior)) {
     i_prior <- backcalc$prior
   } else {
-    i0_guess <- mean(head(data$confirm[!is.na(data$confirm)], 7))
+    i0_guess <- mean(utils::head(data$confirm[!is.na(data$confirm)], 7))
     if (!is.finite(i0_guess) || i0_guess <= 0) {
       i0_guess <- 1
     }
