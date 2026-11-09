@@ -386,7 +386,6 @@ warn_deprecated_rw <- function() {
 #'
 #' @return An `<rt_opts>` object with settings defining the time-varying
 #' reproduction number.
-#' @inheritParams create_future_rt
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_abort
 #' @importFrom checkmate assert_number

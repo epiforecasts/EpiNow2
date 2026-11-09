@@ -1038,29 +1038,6 @@ create_stan_params <- function(params, states_supported = character(0),
   c(ret, state_data, as.list(ids), as.list(null_ids))
 }
 
-##' Create time-varying state data for stan
-##'
-##' Builds the minimal configuration the stan model needs to layer a stochastic
-##' state on top of a parameter's level (see [create_stan_params()]). The
-##' trajectory length and centring window are derived in stan from the modelled
-##' time, so only the state structure is emitted here; each state's
-##' hyperparameters (step sd, GP magnitude and lengthscale) are returned as
-##' `hyper_params` for the caller to append to the parameter vector, and are
-##' referenced by parameter id.
-##'
-##' @param params A list of `<EpiNow2.params>` after `NULL` parameters have been
-##'   removed, so that positions match the stan parameter ids.
-##' @param state_flags Logical vector flagging which entries of `params` carry
-##'   a state specification.
-##' @param states_supported Character vector of parameter names the calling
-##'   model can consume a time-varying state for. A state on any other parameter
-##'   errors.
-##' @param base_id Integer, the number of existing parameters; hyperparameters
-##'   are assigned ids from `base_id + 1` onwards.
-##' @return A named list of stan data items describing the states, plus a
-##'   `hyper_params` list of the state hyperparameters to append to `params`.
-##' @importFrom data.table fcase
-##' @keywords internal
 #' Assert a state hyperparameter prior is estimated (non-fixed, certain)
 #'
 #' A state hyperparameter (step sd, GP magnitude or lengthscale) and the
@@ -1324,6 +1301,29 @@ resolve_gp_component <- function(comp, name, hyper_params, base_id, pos,
   )
 }
 
+#' Create time-varying state data for stan
+#'
+#' Builds the minimal configuration the stan model needs to layer a stochastic
+#' state on top of a parameter's level (see [create_stan_params()]). The
+#' trajectory length and centring window are derived in stan from the modelled
+#' time, so only the state structure is emitted here; each state's
+#' hyperparameters (step sd, GP magnitude and lengthscale) are returned as
+#' `hyper_params` for the caller to append to the parameter vector, and are
+#' referenced by parameter id.
+#'
+#' @param params A list of `<EpiNow2.params>` after `NULL` parameters have been
+#'   removed, so that positions match the stan parameter ids.
+#' @param state_flags Logical vector flagging which entries of `params` carry
+#'   a state specification.
+#' @param states_supported Character vector of parameter names the calling
+#'   model can consume a time-varying state for. A state on any other parameter
+#'   errors.
+#' @param base_id Integer, the number of existing parameters; hyperparameters
+#'   are assigned ids from `base_id + 1` onwards.
+#' @return A named list of stan data items describing the states, plus a
+#'   `hyper_params` list of the state hyperparameters to append to `params`.
+#' @importFrom data.table fcase
+#' @keywords internal
 create_state_data <- function(params, state_flags,
                               states_supported = character(0),
                               seeding_time = 0L, base_id = 0L,
