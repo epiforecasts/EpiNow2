@@ -686,6 +686,13 @@ create_stan_args <- function(stan = stan_opts(),
     }
     if (identical(model, "estimate_infections")) {
       exclude <- c(exclude, "gt_rev_pmf")
+      # the fraction observed trajectory is constant unless it is estimated
+      # or has a time-varying state attached
+      fo <- data$param_id_fraction_observed
+      if (isTRUE(data$params_variable_lookup[fo] == 0) &&
+            !isTRUE(fo %in% data$state_param_id)) {
+        exclude <- c(exclude, "fraction_observed")
+      }
     }
     # trunc_obs is deterministic, but only worth excluding when noise is fixed
     if (identical(model, "estimate_truncation") &&
