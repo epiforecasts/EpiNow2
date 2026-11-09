@@ -99,6 +99,7 @@ The returned $R_t$ is the expected reproduction number, whilst growth rates (and
 Setting `rt_opts(growth_method = "infectiousness")` gives smoother growth rates.
 `forecast_infections()` reuses the posterior noise over the fitted time window, including when a counterfactual $R_t$ is given, and draws fresh noise beyond it.
 This option adds a parameter $\eta_t$ for each time point and so increases run times.
+See the [stochastic infections](stochastic_infections.html) vignette for a comparison of the options on example data.
 
 ### Time-varying reproduction number
 
