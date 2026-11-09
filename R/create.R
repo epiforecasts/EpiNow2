@@ -138,11 +138,20 @@ create_rt_data <- function(rt = rt_opts(), delay = 0, horizon = 0,
 #'   estimated and this is a no-op).
 #' @param breakpoints The `breakpoint` column, in the same (observed +
 #'   horizon) time frame as the Rt trajectory.
-#' @return `rt`, with `rt$prior` composed with `RW(knots = ...)` when
-#'   `breakpoints` carries real breakpoints and `rt$use_breakpoints` allows
-#'   it; unchanged otherwise.
+#' The deprecated `rw` setting of [rt_opts()] is composed here too, as it needs
+#' the length of the window (see [compose_deprecated_rw()]); as before, it
+#' takes the place of any `breakpoint` column.
+#'
+#' @return `rt`, with `rt$prior` composed with `RW(knots = ...)` when `rt$rw`
+#'   is set, or when `breakpoints` carries real breakpoints and
+#'   `rt$use_breakpoints` allows it; unchanged otherwise.
 #' @keywords internal
 resolve_legacy_breakpoints <- function(rt, breakpoints) {
+  if (!is.null(rt) && isTRUE(rt$rw != 0)) {
+    rt$prior <- compose_deprecated_rw(rt$prior, rt$rw, length(breakpoints))
+    rt$rw <- 0
+    return(rt)
+  }
   if (is.null(rt) || !isTRUE(rt$use_breakpoints) || is.null(breakpoints) ||
         sum(breakpoints, na.rm = TRUE) == 0) {
     return(rt)
@@ -161,7 +170,7 @@ resolve_legacy_breakpoints <- function(rt, breakpoints) {
     return(rt)
   }
   deprecate_warn(
-    "1.10.0", "add_breakpoints()",
+    "1.10.0", I("A `breakpoint` column in the data"),
     details = paste(
       "A `breakpoint` column is now composed onto the Rt prior as",
       "`rt_opts(prior = ... + RW(knots = ...))`, matching the previous",

@@ -18,25 +18,22 @@ rt_opts(
 )
 }
 \arguments{
-\item{prior}{A \verb{<dist_spec>} giving the prior of the initial reproduction
-number, or a \verb{<state_spec>} (from \code{\link[=GP]{GP()}}/\code{\link[=RW]{RW()}}) for a time-varying
-reproduction number. Ignored if \code{use_rt} is \code{FALSE}. Defaults to
-\code{GP(init = LogNormal(mean = 1, sd = 1))}. A lower limit of 0 will be
-enforced automatically.}
+\item{prior}{A \verb{<state_spec>} (from \code{\link[=GP]{GP()}}/\code{\link[=RW]{RW()}}, or a composition of
+them with \code{+}) for the time-varying reproduction number. Ignored if
+\code{use_rt} is \code{FALSE}. Defaults to \code{GP(init = LogNormal(mean = 1, sd = 1))}.
+A lower limit of 0 will be enforced automatically. Passing a plain
+\verb{<dist_spec>} is deprecated: it is treated as \code{GP(init = prior)}.}
 
 \item{use_rt}{Logical, defaults to \code{TRUE}. Should Rt be used to generate
 infections and hence reported cases.}
 
-\item{rw}{Numeric step size of the random walk, defaults to 0. To specify a
-weekly random walk set \code{rw = 7}. For more custom break point settings
-consider passing in a \code{breakpoints} variable as outlined in the next section.}
+\item{rw}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Numeric step size of a random
+walk added to the prior, defaults to 0 (none). Use
+\code{prior = ... + RW(period = ...)} instead.}
 
-\item{use_breakpoints}{Logical, defaults to \code{TRUE}. Should break points be
-used if present as a \code{breakpoint} variable in the input data. Break points
-should be defined as 1 if present and otherwise 0. By default breakpoints
-are fit jointly with a global non-parametric effect and so represent a
-conservative estimate of break point changes (alter this by setting
-\code{gp = NULL}).}
+\item{use_breakpoints}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Logical, defaults
+to \code{TRUE}. Should break points be used if present as a \code{breakpoint} variable
+in the input data. Use \code{prior = ... + RW(knots = ...)} instead.}
 
 \item{future}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Set what the reproduction
 number does over the forecast horizon on the prior instead, e.g.

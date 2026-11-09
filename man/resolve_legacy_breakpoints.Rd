@@ -11,12 +11,15 @@ resolve_legacy_breakpoints(rt, breakpoints)
 estimated and this is a no-op).}
 
 \item{breakpoints}{The \code{breakpoint} column, in the same (observed +
-horizon) time frame as the Rt trajectory.}
+horizon) time frame as the Rt trajectory.
+The deprecated \code{rw} setting of \code{\link[=rt_opts]{rt_opts()}} is composed here too, as it needs
+the length of the window (see \code{\link[=compose_deprecated_rw]{compose_deprecated_rw()}}); as before, it
+takes the place of any \code{breakpoint} column.}
 }
 \value{
-\code{rt}, with \code{rt$prior} composed with \code{RW(knots = ...)} when
-\code{breakpoints} carries real breakpoints and \code{rt$use_breakpoints} allows
-it; unchanged otherwise.
+\code{rt}, with \code{rt$prior} composed with \code{RW(knots = ...)} when \code{rt$rw}
+is set, or when \code{breakpoints} carries real breakpoints and
+\code{rt$use_breakpoints} allows it; unchanged otherwise.
 }
 \description{
 A \code{breakpoint} column (see \code{\link[=add_breakpoints]{add_breakpoints()}}) used to drive an

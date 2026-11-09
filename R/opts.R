@@ -263,24 +263,20 @@ trunc_opts <- function(dist = Fixed(0),
 
 #' Compose the deprecated `rw` argument of [rt_opts()] onto its prior
 #'
+#' Steps are placed on days `rw`, `2 * rw`, ... of the observed and forecast
+#' window, which is where the previous implementation put them; a plain
+#' `RW(period = rw)` instead starts its first step on day `rw + 1`.
+#'
 #' @param prior The (already-resolved) Rt prior.
-#' @param rw The deprecated `rw` argument to [rt_opts()] (non-zero).
-#' @param use_rt Whether Rt is being estimated.
-#' @return `prior`, composed with `RW(period = rw)` (matching the previous
-#'   `rw =` behaviour), unless it already specifies a random walk, in which
-#'   case `rw` is ignored with a warning rather than composing a conflicting
-#'   second one.
+#' @param rw The deprecated `rw` setting of [rt_opts()] (non-zero).
+#' @param n The length of the observed and forecast window.
+#' @return `prior`, composed with `RW(knots = ...)`, unless it already
+#'   specifies a random walk, in which case `rw` is ignored with a warning
+#'   rather than composing a conflicting second one.
 #' @keywords internal
-compose_deprecated_rw <- function(prior, rw, use_rt) {
-  deprecate_warn(
-    "1.10.0", "rt_opts(rw)",
-    details = paste(
-      "Specify a random-walk Rt with",
-      "`rt_opts(prior = ... + RW(period = ...))`. The `rw` argument is now",
-      "composed automatically, matching the previous behaviour."
-    )
-  )
-  if (!isTRUE(use_rt) || !is_state_spec(prior)) {
+compose_deprecated_rw <- function(prior, rw, n) {
+  warn_deprecated_rw()
+  if (!is_state_spec(prior)) {
     return(prior)
   }
   has_rw <- any(vapply(
@@ -295,7 +291,23 @@ compose_deprecated_rw <- function(prior, rw, use_rt) {
     )
     return(prior)
   }
-  prior + RW(period = rw)
+  if (rw > n) {
+    return(prior)
+  }
+  prior + RW(knots = seq(rw, n, by = rw))
+}
+
+#' Warn that the `rw` setting of [rt_opts()] is deprecated
+#' @keywords internal
+warn_deprecated_rw <- function() {
+  deprecate_warn(
+    "1.10.0", "rt_opts(rw)",
+    details = paste(
+      "Specify a random-walk Rt with",
+      "`rt_opts(prior = ... + RW(period = ...))`. The `rw` setting is still",
+      "composed onto the prior when fitting, matching the previous behaviour."
+    )
+  )
 }
 
 #' Time-Varying Reproduction Number Options
@@ -305,25 +317,22 @@ compose_deprecated_rw <- function(prior, rw, use_rt) {
 #' reproduction number. Custom settings can be supplied which override the
 #' defaults.
 #'
-#' @param prior A `<dist_spec>` giving the prior of the initial reproduction
-#' number, or a `<state_spec>` (from [GP()]/[RW()]) for a time-varying
-#' reproduction number. Ignored if `use_rt` is `FALSE`. Defaults to
-#' `GP(init = LogNormal(mean = 1, sd = 1))`. A lower limit of 0 will be
-#' enforced automatically.
+#' @param prior A `<state_spec>` (from [GP()]/[RW()], or a composition of
+#' them with `+`) for the time-varying reproduction number. Ignored if
+#' `use_rt` is `FALSE`. Defaults to `GP(init = LogNormal(mean = 1, sd = 1))`.
+#' A lower limit of 0 will be enforced automatically. Passing a plain
+#' `<dist_spec>` is deprecated: it is treated as `GP(init = prior)`.
 #'
 #' @param use_rt Logical, defaults to `TRUE`. Should Rt be used to generate
 #' infections and hence reported cases.
 #'
-#' @param rw Numeric step size of the random walk, defaults to 0. To specify a
-#' weekly random walk set `rw = 7`. For more custom break point settings
-#' consider passing in a `breakpoints` variable as outlined in the next section.
+#' @param rw `r lifecycle::badge("deprecated")` Numeric step size of a random
+#' walk added to the prior, defaults to 0 (none). Use
+#' `prior = ... + RW(period = ...)` instead.
 #'
-#' @param use_breakpoints Logical, defaults to `TRUE`. Should break points be
-#' used if present as a `breakpoint` variable in the input data. Break points
-#' should be defined as 1 if present and otherwise 0. By default breakpoints
-#' are fit jointly with a global non-parametric effect and so represent a
-#' conservative estimate of break point changes (alter this by setting
-#' `gp = NULL`).
+#' @param use_breakpoints `r lifecycle::badge("deprecated")` Logical, defaults
+#' to `TRUE`. Should break points be used if present as a `breakpoint` variable
+#' in the input data. Use `prior = ... + RW(knots = ...)` instead.
 #'
 #' @param pop A `<dist_spec>` giving the initial susceptible population size.
 #' Used to adjust Rt estimates based on the proportion of the population that
@@ -461,11 +470,19 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
     pop_floor = pop_floor,
     growth_method = arg_match(growth_method)
   )
-  # rw is superseded by a random-walk prior (rt_opts(prior = RW(...))); compose
-  # it onto the existing prior so behaviour is preserved rather than dropped
+  # rw is composed onto the prior when fitting, once the length of the data is
+  # known (see resolve_legacy_breakpoints())
   if (rw != 0) {
-    prior <- compose_deprecated_rw(prior, rw, use_rt)
-    opts$rw <- 0
+    warn_deprecated_rw()
+  }
+  if (!missing(use_breakpoints)) {
+    deprecate_warn(
+      "1.10.0", "rt_opts(use_breakpoints)",
+      details = paste(
+        "Steps in Rt on given dates are now specified with",
+        "`rt_opts(prior = ... + RW(knots = ...))`."
+      )
+    )
   }
 
   # the Rt prior may be a constant/uncertain value (<dist_spec>) or a

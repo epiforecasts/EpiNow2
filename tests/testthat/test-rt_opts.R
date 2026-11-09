@@ -66,26 +66,39 @@ test_that("rt_opts errors when pop is passed as numeric", {
   )
 })
 
-test_that("the rw argument is deprecated but composed onto the prior", {
+test_that("the rw argument is deprecated and kept for fitting", {
+  withr::local_options(lifecycle_verbosity = "warning")
   expect_warning(result <- rt_opts(rw = 7), "deprecated")
+  expect_equal(result$rw, 7)
+  expect_identical(result$prior, rt_opts()$prior)
+})
+
+test_that("rw is composed onto the prior as steps on multiples of rw", {
+  withr::local_options(lifecycle_verbosity = "quiet")
+  result <- resolve_legacy_breakpoints(rt_opts(rw = 7), rep(0, 20))
   expect_equal(result$rw, 0)
-  # the default prior (a GP) keeps its GP component and gains a weekly RW
-  expect_s3_class(result$prior, "trajectory_spec")
+  # the default prior (a GP) keeps its GP component and gains the steps
   types <- vapply(result$prior$components, `[[`, character(1), "type")
   expect_setequal(types, c("gp", "rw"))
   rw_comp <- result$prior$components[[which(types == "rw")]]
-  expect_identical(rw_comp$settings$period, 7L)
+  expect_equal(rw_comp$settings$knots, c(7, 14))
 })
 
-test_that("the rw argument is skipped (with a warning) if prior already has a random walk", {
-  # the rw = deprecation itself is covered by the sibling test above; lifecycle
-  # only warns once per session for it, so a prior test in this file may have
-  # already exhausted that warning. This test is about the skip-and-warn
-  # behaviour when the prior already has its own random walk.
-  warnings <- testthat::capture_warnings(
-    result <- rt_opts(prior = RW(init = LogNormal(1, 1)), rw = 7)
+test_that("rw set after rt_opts() is composed when fitting", {
+  withr::local_options(lifecycle_verbosity = "quiet")
+  rt <- rt_opts()
+  rt$rw <- 7
+  result <- resolve_legacy_breakpoints(rt, rep(0, 14))
+  types <- vapply(result$prior$components, `[[`, character(1), "type")
+  expect_true("rw" %in% types)
+})
+
+test_that("rw is skipped (with a warning) if the prior already has a random walk", {
+  withr::local_options(lifecycle_verbosity = "quiet")
+  rt <- rt_opts(prior = RW(init = LogNormal(1, 1)), rw = 7)
+  expect_warning(
+    result <- resolve_legacy_breakpoints(rt, rep(0, 20)), "already specifies"
   )
-  expect_true(any(grepl("already specifies", warnings)))
   # the explicit RW's own (default) period is untouched, not overridden
   expect_length(result$prior$components, 1)
   expect_identical(result$prior$components[[1]]$settings$period, 1L)

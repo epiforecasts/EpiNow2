@@ -4,22 +4,23 @@
 \alias{compose_deprecated_rw}
 \title{Compose the deprecated \code{rw} argument of \code{\link[=rt_opts]{rt_opts()}} onto its prior}
 \usage{
-compose_deprecated_rw(prior, rw, use_rt)
+compose_deprecated_rw(prior, rw, n)
 }
 \arguments{
 \item{prior}{The (already-resolved) Rt prior.}
 
-\item{rw}{The deprecated \code{rw} argument to \code{\link[=rt_opts]{rt_opts()}} (non-zero).}
+\item{rw}{The deprecated \code{rw} setting of \code{\link[=rt_opts]{rt_opts()}} (non-zero).}
 
-\item{use_rt}{Whether Rt is being estimated.}
+\item{n}{The length of the observed and forecast window.}
 }
 \value{
-\code{prior}, composed with \code{RW(period = rw)} (matching the previous
-\verb{rw =} behaviour), unless it already specifies a random walk, in which
-case \code{rw} is ignored with a warning rather than composing a conflicting
-second one.
+\code{prior}, composed with \code{RW(knots = ...)}, unless it already
+specifies a random walk, in which case \code{rw} is ignored with a warning
+rather than composing a conflicting second one.
 }
 \description{
-Compose the deprecated \code{rw} argument of \code{\link[=rt_opts]{rt_opts()}} onto its prior
+Steps are placed on days \code{rw}, \code{2 * rw}, ... of the observed and forecast
+window, which is where the previous implementation put them; a plain
+\code{RW(period = rw)} instead starts its first step on day \code{rw + 1}.
 }
 \keyword{internal}

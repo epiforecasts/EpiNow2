@@ -18,7 +18,10 @@ test_that("resolve_legacy_breakpoints is a no-op when there are no breakpoints",
 })
 
 test_that("resolve_legacy_breakpoints respects use_breakpoints = FALSE", {
-  rt <- rt_opts(prior = GP(mean = LogNormal(1, 1)), use_breakpoints = FALSE)
+  withr::local_options(lifecycle_verbosity = "warning")
+  lifecycle::expect_deprecated(
+    rt <- rt_opts(prior = GP(mean = LogNormal(1, 1)), use_breakpoints = FALSE)
+  )
   expect_identical(resolve_legacy_breakpoints(rt, c(0, 1, 0)), rt)
 })
 
@@ -49,7 +52,6 @@ test_that("create_rt_data handles NULL rt input correctly", {
 test_that("create_rt_data handles custom rt_opts correctly", {
   custom_rt <- rt_opts(
     use_rt = FALSE,
-    use_breakpoints = FALSE,
     pop = Normal(mean = 1000000, sd = 100)
   )
 
