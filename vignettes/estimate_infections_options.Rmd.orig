@@ -216,6 +216,25 @@ get_elapsed_time(project_rt$fit)
 plot(project_rt)
 ```
 
+## Fixed reproduction number
+
+We might want to estimate a fixed reproduction number, i.e. assume that it does not change.
+A `constant()` prior with no time-varying components does this.
+
+```{r fixed}
+fixed <- estimate_infections(reported_cases,
+  generation_time = gt_opts(example_generation_time),
+  delays = delay_opts(delay),
+  rt = rt_opts(prior = constant(rt_prior))
+)
+# summarise results
+summary(fixed)
+# elapsed time (in seconds)
+get_elapsed_time(fixed$fit)
+# summary plot
+plot(fixed)
+```
+
 ## Breakpoints
 
 Instead of assuming the reproduction number varies freely, we can assume that it is constant except for steps on given dates.
