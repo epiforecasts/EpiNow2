@@ -282,8 +282,8 @@ transformed parameters {
     }
   } else {
     // back-calculation: latent infections are a Gaussian process on the log
-    // scale anchored at an initial value (I0), held at their last value through
-    // the forecast horizon
+    // scale anchored at an initial value (I0), continued at their latest
+    // growth rate through the forecast horizon
     profile("infections") {
       infections = get_state_trajectory(
         param_id_I, t,
@@ -302,6 +302,11 @@ transformed parameters {
         gp_boundary_scale, gp_kernel, gp_nu,
         state_gp_alpha, state_gp_rho, gp_phi
       );
+      for (s in 1:n_states) {
+        if (state_param_id[s] == param_id_I) {
+          infections = continue_growth(infections, state_n_free[s]);
+        }
+      }
     }
   }
 

@@ -35,6 +35,30 @@
  */
 
 /**
+ * Continue a positive trajectory at its latest growth rate
+ *
+ * Replaces the values after `n_free` (held constant by `assemble_state`)
+ * with a log-linear continuation of the last increment, so the trajectory
+ * keeps growing or declining at its latest rate over the forecast horizon.
+ *
+ * @param x Trajectory on the natural scale (positive)
+ * @param n_free Last time point at which the trajectory varies freely
+ * @return A vector of the same length as `x`
+ *
+ * @ingroup estimates_smoothing
+ */
+vector continue_growth(vector x, int n_free) {
+  int t = num_elements(x);
+  vector[t] y = x;
+  if (t > n_free && n_free > 1) {
+    real r = log(x[n_free]) - log(x[n_free - 1]);
+    y[(n_free + 1):t] =
+      x[n_free] * exp(r * linspaced_vector(t - n_free, 1, t - n_free));
+  }
+  return y;
+}
+
+/**
  * Assemble a trajectory from a baseline and a link-scale deviation
  *
  * Shared by every state trajectory: adds the deviation `dev` (length

@@ -156,6 +156,7 @@ The log of infections follows an approximate zero-mean Gaussian process (GP) on 
 with a prior on the initial number of infections $I_1$.
 By default this prior is a log-normal distribution with mean and standard deviation equal to the mean of the first week of observations, and it can be changed with `backcalc_opts(prior = GP(init = ...))`.
 The Gaussian process covers the seeding period, the observation period and, depending on its `future` setting, the forecast horizon.
+Where it does not cover the forecast horizon (the default), infections over the horizon continue at the last daily growth rate of the Gaussian process, $\log I_{T} - \log I_{T-1}$, where $T$ is its last time point.
 
 More details on the mathematical form of the Gaussian process approximation are given in the [Gaussian Process implementation details](gaussian_process_implementation_details.html) vignette.
 
