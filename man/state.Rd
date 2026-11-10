@@ -31,11 +31,11 @@ RW(
 \arguments{
 \item{mean}{A \verb{<dist_spec>} giving the prior on the (stationary) mean the
 state reverts to, or a numeric vector giving a known mean trajectory the
-state fits deviations around. Supply either \code{mean} or \code{init}, not both.}
+state fits deviations around. Supply at most one of \code{mean} or \code{init}.}
 
 \item{init}{A \verb{<dist_spec>} giving the prior on the initial value of a state
 on first differences, or a numeric vector giving known initial value(s).
-Supply either \code{mean} or \code{init}, not both.}
+Supply at most one of \code{mean} or \code{init}.}
 
 \item{basis_prop}{Numeric, the proportion of the component's free-noise
 window to use as basis functions. Defaults to \code{NULL}, in which case the
@@ -101,8 +101,10 @@ a \emph{state} (a value that evolves over time). These constructors turn a
 parameter into a state: \code{GP()} drives it with an approximate Gaussian process
 and \code{RW()} with a random walk. They wrap a \verb{<dist_spec>} giving the prior on
 the value the state reverts to (\code{mean}, a stationary / mean-reverting state)
-or on its initial value (\code{init}, a state on first differences). Exactly one
-of \code{mean} or \code{init} must be supplied.
+or on its initial value (\code{init}, a state on first differences). At most one
+of \code{mean} or \code{init} may be supplied. With neither, the result is a bare
+component that needs a baseline from elsewhere in the composition, e.g.
+\code{initial(...) + GP()}.
 
 The wrapped prior may itself be a known trajectory (e.g. a \code{NonParametric()}
 built from a data column), in which case the state fits deviations around

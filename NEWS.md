@@ -6,6 +6,7 @@
 - Time-varying parameters can combine several components with `+`, e.g. `initial(LogNormal(1, 1)) + GP() + RW(period = 7)` for a smooth trend with weekly steps. `constant()` and `initial()` set the baseline of a composition.
 - `RW()` gains a `knots` argument for steps on given dates or time points rather than at a regular interval.
 - Added a `plot()` method for `GP()` and `RW()` specifications that draws trajectories from the prior.
+
 ## Breaking changes
 
 - The back-calculation model (`rt = NULL`) now places a Gaussian process on the first differences of log infections, with a prior on the initial number of infections, instead of modelling deviations from smoothed and shifted reported cases. Over the forecast horizon infections continue at their latest growth rate, as before. Its results will differ from earlier versions, and `estimate_infections(rt = NULL, gp = NULL)`, which used a fixed mapping from reported cases, now errors.

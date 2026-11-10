@@ -7,8 +7,10 @@
 #' parameter into a state: `GP()` drives it with an approximate Gaussian process
 #' and `RW()` with a random walk. They wrap a `<dist_spec>` giving the prior on
 #' the value the state reverts to (`mean`, a stationary / mean-reverting state)
-#' or on its initial value (`init`, a state on first differences). Exactly one
-#' of `mean` or `init` must be supplied.
+#' or on its initial value (`init`, a state on first differences). At most one
+#' of `mean` or `init` may be supplied. With neither, the result is a bare
+#' component that needs a baseline from elsewhere in the composition, e.g.
+#' `initial(...) + GP()`.
 #'
 #' The wrapped prior may itself be a known trajectory (e.g. a `NonParametric()`
 #' built from a data column), in which case the state fits deviations around
@@ -27,10 +29,10 @@
 #'
 #' @param mean A `<dist_spec>` giving the prior on the (stationary) mean the
 #'   state reverts to, or a numeric vector giving a known mean trajectory the
-#'   state fits deviations around. Supply either `mean` or `init`, not both.
+#'   state fits deviations around. Supply at most one of `mean` or `init`.
 #' @param init A `<dist_spec>` giving the prior on the initial value of a state
 #'   on first differences, or a numeric vector giving known initial value(s).
-#'   Supply either `mean` or `init`, not both.
+#'   Supply at most one of `mean` or `init`.
 #' @return A `<state_spec>` object describing the time-varying state.
 #' @name state
 #' @rdname state
