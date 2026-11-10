@@ -312,12 +312,17 @@ RW <- function(mean, init, sd = Normal(mean = 0, sd = 0.1), period = 1,
 #' own hyperparameter priors) with no baseline of their own, valid only when
 #' combined with a baseline elsewhere in the sum.
 #'
+#' Used on its own, without components, a baseline holds the parameter
+#' constant over time, so
+#' `rt_opts(prior = constant(LogNormal(mean = 2, sd = 0.2)))` estimates a
+#' single reproduction number.
+#'
 #' @param prior A `<dist_spec>` giving the prior on the baseline, or a numeric
 #'   vector giving a known trajectory the components fit deviations around.
 #' @param future What the trajectory does over the forecast horizon; see
 #'   [GP()]. Shared by all components in the composition.
 #' @return A `<state_spec>` object with no components, ready to compose with
-#'   `+`.
+#'   `+` or to use on its own for a constant parameter.
 #' @seealso [GP()], [RW()]
 #' @name trajectory_baseline
 #' @rdname trajectory_baseline

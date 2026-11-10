@@ -19,7 +19,7 @@ vector giving a known trajectory the components fit deviations around.}
 }
 \value{
 A \verb{<state_spec>} object with no components, ready to compose with
-\code{+}.
+\code{+} or to use on its own for a constant parameter.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
@@ -40,6 +40,11 @@ A trajectory has exactly one baseline. It may come from \code{constant()}/
 \code{\link[=RW]{RW()}} used without \code{mean}/\code{init} are "bare" components: a shape (and its
 own hyperparameter priors) with no baseline of their own, valid only when
 combined with a baseline elsewhere in the sum.
+
+Used on its own, without components, a baseline holds the parameter
+constant over time, so
+\code{rt_opts(prior = constant(LogNormal(mean = 2, sd = 0.2)))} estimates a
+single reproduction number.
 }
 \examples{
 constant(LogNormal(mean = 2, sd = 0.2)) + GP()

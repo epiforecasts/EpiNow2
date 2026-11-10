@@ -899,6 +899,25 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret
 }
 
+#' Unwrap a baseline-only state to its baseline prior
+#'
+#' A `<state_spec>` with a baseline (from [constant()] or [initial()]) but no
+#' [GP()] or [RW()] components holds its parameter constant over time, which
+#' is the same as an ordinary parameter with the baseline prior.
+#'
+#' @param param An `<EpiNow2.param>`.
+#' @return `param`, with its `dist` replaced by the baseline prior when it is a
+#'   baseline-only state.
+#' @keywords internal
+unwrap_constant_state <- function(param) {
+  d <- param$dist
+  if (is_state_spec(d) && length(d$components) == 0 && !is.null(d$anchor) &&
+        is(d$prior, "dist_spec")) {
+    param$dist <- d$prior
+  }
+  param
+}
+
 ##' Create parameters for stan
 ##'
 ##' @param params A list of `<EpiNow2.params>` as created by [make_param()]
@@ -931,6 +950,11 @@ create_stan_params <- function(params, states_supported = character(0),
     params <- params[!null_params]
     tparams <- transpose(params)
   }
+
+  ## a baseline without time-varying components (e.g. `constant(prior)`) does
+  ## not vary over time, so it is an ordinary parameter with the baseline prior
+  params <- lapply(params, unwrap_constant_state)
+  tparams <- transpose(params)
 
   ## extract any time-varying (state) specifications. The parameter's level
   ## prior flows through the normal parameter machinery; the state is layered

@@ -302,7 +302,8 @@ compose_deprecated_gp <- function(prior, gp, name) {
     details = paste(
       "Configure the Gaussian process through the relevant model's prior",
       "instead: `rt_opts(prior = GP(...))` for the renewal model or",
-      "`backcalc_opts(prior = GP(...))` for the back-calculation model."
+      "`backcalc_opts(prior = GP(...))` for the back-calculation model.",
+      "For a constant reproduction number use `rt_opts(prior = constant(...))`."
     )
   )
   gp_idx <- which(vapply(

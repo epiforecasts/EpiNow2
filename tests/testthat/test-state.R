@@ -321,6 +321,19 @@ test_that("create_stan_params errors on a trajectory with no baseline", {
   )
 })
 
+test_that("create_stan_params treats a baseline-only state as a constant", {
+  for (prior in list(constant(LogNormal(1, 1)), initial(LogNormal(1, 1)))) {
+    params <- list(make_param("R", prior, lower_bound = 0))
+    out <- create_stan_params(params, states_supported = "R")
+    plain <- create_stan_params(
+      list(make_param("R", LogNormal(1, 1), lower_bound = 0)),
+      states_supported = "R"
+    )
+    expect_identical(out$n_states, 0L)
+    expect_identical(out, plain)
+  }
+})
+
 test_that("create_stan_params emits GP state data for fraction_observed", {
   params <- list(
     make_param("fraction_observed", GP(mean = Normal(0.5, 0.1)),
