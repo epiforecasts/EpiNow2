@@ -163,16 +163,59 @@ test_that("update_gp returns correct dimensions and values", {
   L <- 1.0
   alpha <- 1.0
   rho <- 2.0
-  eta <- rep(1, M)
+  eta <- c(2, -1, 0.5)
   PHI <- matrix(runif(15), nrow = 5) # 5 observations, 3 basis functions
   type <- 0
   nu <- 1.5 # Not used in SE case
   result <- update_gp(PHI, M, L, alpha, rho, eta, type, nu)
   expect_equal(length(result), nrow(PHI)) # Should match number of observations
-  # Check specific values for known inputs
+  # eta[1] is a centred coefficient (used directly, on the spectral-density
+  # scale) while the remaining eta are non-centred (scaled by the spectral
+  # density); see gaussian_process.stan for the rationale.
   diagSPD <- diagSPD_EQ(alpha, rho, L, M)
-  expected_result <- PHI %*% (diagSPD * eta)
+  weights <- diagSPD * eta
+  weights[1] <- eta[1]
+  expected_result <- PHI %*% weights
   expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
+})
+
+test_that("update_gp centres both fundamental-frequency coefficients for the periodic kernel", {
+  M <- 3
+  L <- 1.0
+  alpha <- 1.0
+  rho <- 2.0
+  eta <- c(2, -1, 0.5, 1.5, -0.5, 0.25)
+  PHI <- matrix(runif(30), nrow = 5) # 5 observations, 2 * M basis functions
+  type <- 1
+  nu <- 1.5 # Not used in periodic case
+  result <- update_gp(PHI, M, L, alpha, rho, eta, type, nu)
+  expect_equal(length(result), nrow(PHI))
+  # eta[1] and eta[M + 1] share the fundamental frequency (see
+  # gaussian_process.stan) so both are centred; the rest stay non-centred.
+  diagSPD <- diagSPD_Periodic(alpha, rho, M)
+  weights <- diagSPD * eta
+  weights[1] <- eta[1]
+  weights[M + 1] <- eta[M + 1]
+  expected_result <- PHI %*% weights
+  expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
+})
+
+test_that("gp_diag_spd gives the fundamental density for any number of basis functions", {
+  # gaussian_process_lp() evaluates only the first basis function for the
+  # centred prior, so it must agree with the first element for any M.
+  alpha <- 1.3
+  rho <- 2.5
+  L <- 1.7
+  for (type in 0:2) {
+    for (nu in c(0.5, 1.5, 2.5)) {
+      full <- gp_diag_spd(alpha, rho, L, 8, type, nu)
+      single <- gp_diag_spd(alpha, rho, L, 1, type, nu)
+      expect_equal(single[1], full[1], tolerance = 1e-12)
+      if (type == 1) {
+        expect_equal(single[2], full[8 + 1], tolerance = 1e-12)
+      }
+    }
+  }
 })
 
 test_that("default GP settings approximate the exact Matern 3/2 kernel", {
