@@ -9,6 +9,7 @@
 
 ## Model changes
 
+- Added optional stochastic infections to the renewal model via `rt_opts(infection_process = "poisson")` or `rt_opts(infection_process = "negbin")`, which use a log-normal approximation matching the mean and variance of a Poisson or negative binomial process around the expected infections. `simulate_infections()` gains matching `infection_process` and `infection_dispersion` arguments. The default (`"deterministic"`) is unchanged.
 - Rewrote the Stan `update_Rt()` function from small helpers that centre log Rt through its intercept.
 - `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
 - The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient.
@@ -49,6 +50,7 @@
 
 ## Documentation
 
+- Added a vignette comparing deterministic, Poisson and negative binomial infection processes in `estimate_infections()`, including their effect on estimates and run times.
 - The prior choice guide vignette now draws more samples in its `estimate_secondary()` examples to avoid low tail effective sample size warnings in the rendered output.
 - Clarified the Stan documentation for delay-related vectors and their lookup index arrays, naming them explicitly as ragged data structures and linking to the Stan User's Guide section on the topic.
 - Added worked examples to the Stan documentation for several observation-model, convolution, PMF, reproduction-number and infection helper functions, including `accumulate_reports()`.

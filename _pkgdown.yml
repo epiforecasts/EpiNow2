@@ -64,6 +64,8 @@ navbar:
         href: articles/estimate_infections_workflow.html
       - text: "Examples: estimate_infections()"
         href: articles/estimate_infections_options.html
+      - text: "Stochastic infections"
+        href: articles/stochastic_infections.html
       - text: Prior choice and specification guide
         href: articles/prior_choice_guide.html
       - text: "---"
@@ -103,6 +105,7 @@ articles:
   contents:
   - estimate_infections_workflow
   - estimate_infections_options
+  - stochastic_infections
   - prior_choice_guide
 - title: Auxiliary models
   navbar: Auxiliary models

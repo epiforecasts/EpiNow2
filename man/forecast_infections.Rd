@@ -51,6 +51,11 @@ This function simulates infections using an existing fit to observed cases
 but with a modified time-varying reproduction number. This can be used to
 explore forecast models or past counterfactuals. Simulations can be run in
 parallel using \code{\link[future:plan]{future::plan()}}.
+
+If the fit used stochastic infections (see the \code{infection_process}
+argument of \code{\link[=rt_opts]{rt_opts()}}), the posterior infection noise is reused over the
+fitted time window, also when a counterfactual \code{R} is given, and fresh
+noise is drawn for any time points beyond it.
 }
 \examples{
 \donttest{

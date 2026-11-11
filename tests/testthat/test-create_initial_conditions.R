@@ -48,6 +48,27 @@ test_that("create_initial_conditions gives an empty params when none are variabl
   expect_length(init()$params, 0)
 })
 
+test_that("create_initial_conditions seeds infection noise near zero", {
+  base <- list(
+    delay_n_p = 0, delay_np_est_length = 0, fixed = 1, estimate_r = 0,
+    bp_n = 0, week_effect = 0, n_params_variable = 0L,
+    params_lower = array(numeric(0)), params_upper = array(numeric(0)),
+    t = 20, seeding_time = 5
+  )
+  stan_data <- c(base, make_init_priors(list()))
+  init <- create_initial_conditions(
+    c(stan_data, infection_process = 0L), params = list()
+  )
+  expect_length(init()$infection_eta, 0)
+
+  init <- create_initial_conditions(
+    c(stan_data, infection_process = 1L), params = list()
+  )
+  eta <- init()$infection_eta
+  expect_length(eta, 15)
+  expect_lt(max(abs(eta)), 1)
+})
+
 test_that("create_initial_conditions handles data without infection model fields", {
   base <- list(
     delay_n_p = 0, delay_np_est_length = 0, n_params_variable = 1L,

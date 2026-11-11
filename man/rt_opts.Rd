@@ -14,7 +14,9 @@ rt_opts(
   pop = Fixed(0),
   pop_period = c("forecast", "all"),
   pop_floor = 1,
-  growth_method = c("infections", "infectiousness")
+  growth_method = c("infections", "infectiousness"),
+  infection_process = c("deterministic", "poisson", "negbin"),
+  infection_dispersion = Normal(mean = 0, sd = 0.1)
 )
 }
 \arguments{
@@ -87,6 +89,29 @@ shifts it by the mean generation time. This can provide better stability
 and temporal matching with Rt. Note that, due to the temporal shift the
 "infectiousness" method results in undefined (NaN) growth rates for the most
 recent time points (equal to the mean generation time).}
+
+\item{infection_process}{Character string, defaulting to
+"deterministic". Defines the process model for new infections in the
+renewal equation. "deterministic" sets new infections to their expected
+value given Rt and past infections. "poisson" and "negbin" instead treat
+new infections as stochastic, using a log-normal approximation that
+matches the mean and variance of a Poisson or negative binomial
+distribution. The returned \code{R} is then the expected Rt, whilst growth
+rates are calculated from the noisy infections. See the model definition
+and stochastic infections vignettes for details. Ignored if \code{use_rt} is
+\code{FALSE}.}
+
+\item{infection_dispersion}{A \verb{<dist_spec>} specifying a prior on the
+overdispersion of new infections, used only if \code{infection_process} is
+"negbin". This is the aggregate day-to-day overdispersion of new
+infections, not the dispersion of the offspring distribution (often called
+k). It is parameterised as for the \code{dispersion} argument of \code{\link[=obs_opts]{obs_opts()}},
+so that the variance of new infections is
+\eqn{\mu + \mu^2 \times \textrm{dispersion}^2}. Defaults to a
+half-normal distribution with mean of 0 and standard deviation of 0.1:
+\code{Normal(mean = 0, sd = 0.1)}. A lower limit of zero will be enforced
+automatically. The data usually say little about this parameter, so an
+informative prior is expected.}
 }
 \value{
 An \verb{<rt_opts>} object with settings defining the time-varying
@@ -106,6 +131,9 @@ rt_opts(prior = LogNormal(mean = 2, sd = 1))
 
 # add a weekly random walk
 rt_opts(rw = 7)
+
+# use stochastic infections with negative binomial process noise
+rt_opts(infection_process = "negbin")
 }
 \references{
 Parag, K. V., Thompson, R. N. & Donnelly, C. A. Are epidemic

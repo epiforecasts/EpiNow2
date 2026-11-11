@@ -57,6 +57,13 @@ generated quantities {
       params_value, params
     );
 
+    vector[n] infection_overdispersion = get_param(
+      param_id_infection_overdispersion, params_fixed_lookup,
+      params_variable_lookup, params_value, params
+    );
+    int ot = t - seeding_time;
+    int n_eta_used = min(n_infection_eta, ot);
+
     for (i in 1:n) {
       // generate infections from Rt trace
       vector[delay_type_max[delay_id_generation_time] + 1] gt_rev_pmf;
@@ -67,10 +74,18 @@ generated quantities {
         delay_params_groups, delay_dist, 1, 1, 0
       );
 
+      // reuse supplied infection noise and draw any remainder afresh
+      vector[infection_process ? ot : 0] eta;
+      if (infection_process) {
+        for (s in 1:ot) {
+          eta[s] = s <= n_eta_used ? infection_eta[i, s] : std_normal_rng();
+        }
+      }
+
       infections[i] = to_row_vector(generate_infections(
         to_vector(R[i]), seeding_time, gt_rev_pmf, initial_infections[i],
         pop[i], use_pop, pop_floor, future_time, obs_scale, fraction_observed[i],
-        initial_as_scale
+        initial_as_scale, eta, infection_process, infection_overdispersion[i]
       ));
 
       if (delay_id_reporting) {

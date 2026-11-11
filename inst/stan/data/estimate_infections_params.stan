@@ -4,6 +4,7 @@ int<lower = 0> param_id_R0; // parameter id of R0
 int<lower = 0> param_id_fraction_observed; // parameter id of fraction_observed
 int<lower = 0> param_id_reporting_overdispersion; // parameter id of reporting_overdispersion
 int<lower = 0> param_id_pop; // parameter id of pop
+int<lower = 0> param_id_infection_overdispersion; // parameter id of infection_overdispersion
 
 // Priors on the initial value of a centred-GP-wrapped trajectory, applied
 // to the derived initial value with a change of variables. Ragged layout
