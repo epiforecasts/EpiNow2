@@ -4,6 +4,9 @@
 
 ## Breaking changes
 
+- Removed the deprecation errors added in 1.9.0: the `$` and `[[` accessors for old elements of `estimate_infections()`, `estimate_secondary()`, `estimate_truncation()` and `epinow()` objects, the `output` argument of `summary.epinow()`, `type = "samples"` in `summary.estimate_infections()`, and the numeric `pop` checks in `rt_opts()` and `simulate_infections()`.
+- `estimate_delay()` now errors in favour of `estimate_dist()`, and `dist_fit()` and `bootstrapped_dist_fit()` are deprecated.
+
 - The boundary factor and number of basis functions of the approximate Gaussian process are now chosen by default from the lengthscale prior, following Riutort-Mayol et al. (2023), rather than fixed at `boundary_scale = 1.5` and `basis_prop = 0.2`. For the periodic kernel only the number of basis functions is chosen, as it has no boundary. The previous defaults approximated the default lengthscale prior poorly, particularly at the most recent time points. `estimate_infections()` now warns when the posterior lengthscale is outside the range the approximation represents accurately. Set `basis_prop` and `boundary_scale` in `gp_opts()` to restore the previous behaviour.
 - The Ornstein-Uhlenbeck kernel (`matern_order = 1/2`) now chooses its number of basis functions from a relationship derived for that kernel, rather than reusing the Matern 3/2 relationship, which understated the number needed.
 
