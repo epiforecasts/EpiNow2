@@ -678,36 +678,47 @@ create_stan_args <- function(stan = stan_opts(),
   # NA R-hat would otherwise trigger a spurious convergence warning.
   if (!fixed_param && inherits(stan_args$object, "stanmodel") &&
         is.null(stan_args$pars)) {
-    exclude <- character(0)
-    if (model %in% c(
-      "estimate_infections", "estimate_secondary", "estimate_truncation"
-    )) {
-      exclude <- c(exclude, "delay_np_pmf_use")
-    }
-    if (identical(model, "estimate_infections")) {
-      exclude <- c(exclude, "gt_rev_pmf")
-      # the fraction observed trajectory is constant unless it is estimated
-      # or has a time-varying state attached
-      fo <- data$param_id_fraction_observed
-      if (isTRUE(data$params_variable_lookup[fo] == 0) &&
-            !isTRUE(fo %in% data$state_param_id)) {
-        exclude <- c(exclude, "fraction_observed")
-      }
-    }
-    # trunc_obs is deterministic, but only worth excluding when noise is fixed
-    if (identical(model, "estimate_truncation") &&
-          isTRUE(data$params_variable_lookup[data$param_id_sigma] == 0)) {
-      exclude <- c(exclude, "trunc_obs")
-    }
-    if (isTRUE(data$week_effect == 1)) {
-      exclude <- c(exclude, "day_of_week_simplex")
-    }
+    exclude <- deterministic_stan_pars(model, data)
     if (length(exclude) > 0) {
       stan_args$pars <- exclude
       stan_args$include <- FALSE
     }
   }
   stan_args
+}
+
+#' Deterministic quantities to drop from rstan monitoring
+#'
+#' @param model Character string naming the Stan model.
+#' @param data List of Stan data.
+#' @return A character vector of parameter names.
+#' @keywords internal
+deterministic_stan_pars <- function(model, data) {
+  exclude <- character(0)
+  if (model %in% c(
+    "estimate_infections", "estimate_secondary", "estimate_truncation"
+  )) {
+    exclude <- c(exclude, "delay_np_pmf_use")
+  }
+  if (identical(model, "estimate_infections")) {
+    exclude <- c(exclude, "gt_rev_pmf")
+    # the fraction observed trajectory is constant unless it is estimated
+    # or has a time-varying state attached
+    fo <- data$param_id_fraction_observed
+    if (isTRUE(data$params_variable_lookup[fo] == 0) &&
+          !isTRUE(fo %in% data$state_param_id)) {
+      exclude <- c(exclude, "fraction_observed")
+    }
+  }
+  # trunc_obs is deterministic, but only worth excluding when noise is fixed
+  if (identical(model, "estimate_truncation") &&
+        isTRUE(data$params_variable_lookup[data$param_id_sigma] == 0)) {
+    exclude <- c(exclude, "trunc_obs")
+  }
+  if (isTRUE(data$week_effect == 1)) {
+    exclude <- c(exclude, "day_of_week_simplex")
+  }
+  exclude
 }
 
 ##' Build Stan data for estimated nonparametric delays
