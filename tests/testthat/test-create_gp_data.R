@@ -72,7 +72,7 @@ test_that("create_gp_data uses kernel-specific constants", {
   m52 <- create_gp_data(gp_opts(matern_order = 5 / 2), default_data)
   expect_equal(m52$L, max(1.2, 4.1 * q[2] / S))
   expect_equal(m52$M, ceiling(2.65 * m52$L * S / q[1]))
-  # Matern 1/2 (equivalently "ou") has its own derived m_factor, not the
+  # Matern 1/2 (equivalently "ou") uses a derived m_factor, rather than the
   # Matern 3/2 fallback used for other orders the paper does not cover
   ou <- create_gp_data(gp_opts(kernel = "ou"), default_data)
   expect_equal(ou$L, max(1.2, 4.5 * q[2] / S))

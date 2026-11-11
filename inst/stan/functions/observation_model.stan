@@ -187,7 +187,14 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
  * Accumulate reports according to a binary flag at each time point
  *
  * This function accumulates reports according to a binary flag at each time
- * point.
+ * point. Rather than looping over time points and adding each one to the
+ * next in turn, it takes a running total of reports (via `cumulative_sum`)
+ * and, for each time point, subtracts off the running total as it stood at
+ * the start of the current accumulation run. This gives the same result
+ * using only a handful of operations on the whole time series, rather than
+ * one operation per accumulated time point, which matters for data reported
+ * at a fixed low frequency such as weekly, where most time points are
+ * accumulated.
  *
  * @param reports Vector of expected reports.
  * @param accumulate Array of integers indicating, for each time point, whether
@@ -199,19 +206,28 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
  * For `reports = {10, 12, 8, 15, 20}` and `accumulate = {0, 1, 0, 0}`, index 2
  * is not separately observed, so its value is rolled forward into index 3
  * (`8 + 12 = 20`), giving `{10, 12, 20, 15, 20}`. This models, for example, a
- * day whose cases are only reported together with the following day's.
+ * day on which cases are only reported together with the following day's.
  *
  * @ingroup observation_model
  */
 vector accumulate_reports(vector reports, array[] int accumulate) {
   int ot_h = num_elements(reports); // number of reporting time points modelled
-  vector[ot_h] accumulated_reports = reports;
-  for (i in 1:(ot_h - 1)) {
-    if (accumulate[i]) { // first observation gets ignored when accumulating
-      accumulated_reports[i + 1] += accumulated_reports[i];
+  // for each time point, the index into `running_total` (below) of the
+  // running total just before the current accumulation run started
+  array[ot_h] int run_start_idx;
+  {
+    int start = 1; // 1 corresponds to a running total of 0
+    for (i in 1:ot_h) {
+      run_start_idx[i] = start;
+      if (i < ot_h && !accumulate[i]) { // first observation gets ignored when accumulating
+        start = i + 1;
+      }
     }
   }
-  return accumulated_reports;
+  vector[ot_h + 1] running_total;
+  running_total[1] = 0;
+  running_total[2:(ot_h + 1)] = cumulative_sum(reports);
+  return running_total[2:(ot_h + 1)] - running_total[run_start_idx];
 }
 
 /**
