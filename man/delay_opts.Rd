@@ -61,5 +61,6 @@ delay_opts(delay + delay)
 \seealso{
 \code{\link[distspec:convert_to_logmean]{distspec::convert_to_logmean()}} \code{\link[distspec:convert_to_logsd]{distspec::convert_to_logsd()}}
 \code{\link[=bootstrapped_dist_fit]{bootstrapped_dist_fit()}} \link[distspec:Distributions]{distspec::Distributions}
-\code{vignette("delays")} for background on delay distributions
+The \href{https://epiforecasts.io/EpiNow2/articles/delays.html}{delays vignette}
+gives background on delay distributions.
 }

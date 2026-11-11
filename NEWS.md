@@ -19,6 +19,7 @@
 
 ## Package changes
 
+- The package now builds eight vignettes: getting started, `estimate_infections_workflow`, `estimate_dist_workflow`, `forecasting_multiple_data_streams`, `model_overview`, `estimate_infections`, `estimate_secondary` and `estimate_truncation`. `.Rbuildignore` excludes the others; they remain available as articles on the pkgdown website. A single `render-vignettes` workflow now re-renders the precompiled vignettes, replacing the separate workflows.
 - `epinow()` and `regional_epinow()` now expect `target_date` to be a `<Date>` rather than a character string. Passing a character string still works but is deprecated and triggers a warning.
 - Moved the probability distribution interface (`Gamma()`, `LogNormal()`, `NonParametric()`, `discretise()`, `get_pmf()`, `convert_to_logmean()`, `convert_to_logsd()`, and related functions) to the standalone `distspec` package, which EpiNow2 now depends on. These functions are attached when EpiNow2 is loaded, so existing code continues to work unchanged. They are also re-exported from EpiNow2 (deprecated) so that the `EpiNow2::` form keeps resolving; the re-exports will be removed in a future release.
 - Adapted the internal nonparametric-delay handling to `distspec`'s revised representation of estimated (Dirichlet-backed) distributions, which now hold their Dirichlet prior in `$pmf` rather than a separate `$estimated`/`$alpha` and a cached mean PMF. Behaviour for estimated nonparametric delays is unchanged.

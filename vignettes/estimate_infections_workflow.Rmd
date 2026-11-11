@@ -16,7 +16,7 @@ vignette: >
 
 This vignette describes the typical workflow for estimating reproduction numbers and performing short-term forecasts for a disease spreading in a given setting using _EpiNow2_.
 The vignette uses the default non-stationary Gaussian process model included in the package.
-See other vignettes for a more thorough exploration of [alternative model variants](estimate_infections_options.html) and [theoretical background](estimate_infections.html).
+See other vignettes for a more thorough exploration of [alternative model variants](https://epiforecasts.io/EpiNow2/articles/estimate_infections_options.html) and [theoretical background](estimate_infections.html).
 
 # Data
 
@@ -76,7 +76,7 @@ As these will affect any results, it is worth spending some time investigating w
 
 _EpiNow2_ works with different delays that apply to different parts of the infection and observation process.
 They are defined using a common interface that involves functions that are named after the probability distributions, i.e. `LogNormal()`, `Gamma()`, etc.
-For help with this function, see its manual page (`?EpiNow2::Distributions`) or the [delays vignette](delays.html) for background on how EpiNow2 handles delay distributions.
+For help with this function, see its manual page (`?EpiNow2::Distributions`) or the [delays vignette](https://epiforecasts.io/EpiNow2/articles/delays.html) for background on how EpiNow2 handles delay distributions.
 
 In all cases, the distributions given can be *fixed* (i.e. have no uncertainty) or *variable* (i.e. have associated uncertainty).
 For example, to define a fixed gamma distribution with mean 3, standard deviation (sd) 1 and maximum value 10, you would write
@@ -315,7 +315,7 @@ plot(def)
 
 The results returned by the `estimate_infections` model depend on the values assigned to all to parameters discussed in this vignette, i.e. delays, scaling, and reproduction numbers, as well as the model variant used and its parameters.
 Any interpretation of the results will therefore need to bear these in mind, as well as any properties of the data and/or the subpopulations that it represents.
-See the [Model options](estimate_infections_options.html) vignette for an illustration of the impact of model choice.
+See the [Model options](https://epiforecasts.io/EpiNow2/articles/estimate_infections_options.html) vignette for an illustration of the impact of model choice.
 
 ## Evaluating forecasts with scoringutils
 
