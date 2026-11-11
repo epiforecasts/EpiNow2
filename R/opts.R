@@ -109,8 +109,11 @@ generation_time_opts <- gt_opts
 #' secondary reports. An example application is hospital bed usage predicted by
 #' hospital admissions.
 #'
-#' @param ... Overwrite options defined by type. See the returned values for all
-#' options that can be passed.
+#' @param ... `r lifecycle::badge("deprecated")` Overwrite the low-level
+#' options (`cumulative`, `historic`, `primary_hist_additive`, `current`,
+#' `primary_current_additive`) defined by `type`. There is no known use case
+#' for combinations of these options other than the ones set by `type`, so
+#' passing any of them is deprecated and will be removed in a future release.
 #' @importFrom rlang arg_match
 #' @seealso [estimate_secondary()]
 #' @return A `<secondary_opts>` object of binary options summarising secondary
@@ -132,6 +135,20 @@ generation_time_opts <- gt_opts
 #' secondary_opts("prevalence")
 secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
   type <- arg_match(type)
+  dots <- list(...)
+  low_level_opts <- c(
+    "cumulative", "historic", "primary_hist_additive",
+    "current", "primary_current_additive"
+  )
+  if (any(names(dots) %in% low_level_opts)) {
+    deprecate_warn(
+      "1.10.0",
+      I("secondary_opts(cumulative/historic/primary_hist_additive/current/primary_current_additive = )"), # nolint: line_length_linter
+      details = "There is no known use case for overriding these low-level
+      options other than the combinations already set by `type`. Use `type`
+      instead."
+    )
+  }
   if (type == "incidence") {
     opts <- list(
       cumulative = 0,
@@ -149,7 +166,7 @@ secondary_opts <- function(type = c("incidence", "prevalence"), ...) {
       primary_current_additive = 1
     )
   }
-  opts <- modifyList(opts, list(...))
+  opts <- modifyList(opts, dots)
   attr(opts, "class") <- c("secondary_opts", class(opts))
   opts
 }
@@ -623,6 +640,33 @@ gp_opts <- function(basis_prop = NULL,
 #'   included in the model.
 #' @param return_likelihood Logical, defaults to `FALSE`. Should the likelihood
 #'   be returned by the model.
+#' @param type A character string indicating how observations relate to
+#'   latent infections, used by [estimate_infections()] and
+#'   [simulate_infections()]. Options are:
+#'
+#'   - "incidence" (default): observations are a convolution of latent
+#'   infections with a reporting delay, i.e. each infection contributes to the
+#'   observation exactly once. An example is deaths or hospital admissions
+#'   arising from infections.
+#'
+#'   - "prevalence": observations are a convolution of latent infections with
+#'   a kernel describing how long each infection remains in the observed
+#'   state. Without `duration` set, that kernel is the survival function of
+#'   the reporting delay: the state is entered at infection and left once the
+#'   delay elapses, as in current infections. With `duration` set, the state
+#'   is instead entered only after the reporting delay and left once
+#'   `duration` has elapsed. The kernel then becomes the density of the
+#'   reporting delay convolved with the complement of the CDF of `duration`;
+#'   an example is hospital bed occupancy, entered at admission and left at
+#'   discharge, with `delays` (in [delay_opts()]) describing the delay to
+#'   admission and `duration` the length of stay. Note that
+#'   [estimate_infections()] requires a generative (`rt`) model to fit
+#'   prevalence-type data, as the deconvolution approach used when `rt = NULL`
+#'   assumes incidence-type observations.
+#' @param duration A `<dist_spec>` specifying the time an observation spends
+#'   in the prevalent state once entered (e.g. hospital length of stay), used
+#'   only when `type = "prevalence"`; see `type` for how it enters the model.
+#'   Defaults to `NULL`. Ignored, with a warning, when `type` is "incidence".
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_inform cli_abort
 #' @return An `<obs_opts>` object of observation model settings.
@@ -636,6 +680,15 @@ gp_opts <- function(basis_prop = NULL,
 #'
 #' # Scale reported data
 #' obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
+#'
+#' # Fit to prevalence data (e.g. current infections)
+#' obs_opts(type = "prevalence")
+#'
+#' # Fit to hospital bed occupancy, given the delay to admission in `delays`
+#' # and a length of stay of around 5 days
+#' obs_opts(
+#'   type = "prevalence", duration = LogNormal(mean = 5, sd = 2, max = 20)
+#' )
 # nolint end
 obs_opts <- function(family = c("negbin", "poisson"),
                      dispersion = Normal(mean = 0, sd = 0.25),
@@ -644,8 +697,11 @@ obs_opts <- function(family = c("negbin", "poisson"),
                      week_length = 7,
                      scale = Fixed(1),
                      likelihood = TRUE,
-                     return_likelihood = FALSE) {
+                     return_likelihood = FALSE,
+                     type = c("incidence", "prevalence"),
+                     duration = NULL) {
   family <- arg_match(family)
+  type <- arg_match(type)
   if (family != "negbin") {
     if (!missing(dispersion)) {
       cli_warn(
@@ -655,6 +711,22 @@ obs_opts <- function(family = c("negbin", "poisson"),
     }
     dispersion <- NULL
   }
+  if (!is.null(duration)) {
+    assert_class(duration, "dist_spec")
+    if (type != "prevalence") {
+      cli_warn(
+        "{.field duration} is ignored when {.field type} is
+          {.val {type}} and will be dropped."
+      )
+      duration <- NULL
+    } else {
+      duration <- apply_default_cdf_max(
+        duration, getOption("EpiNow2.cdf_max", 0.999), FALSE
+      )
+      check_stan_delay(duration)
+      attr(duration, "weight_prior") <- TRUE
+    }
+  }
   obs <- list(
     family = family,
     dispersion = dispersion,
@@ -663,7 +735,9 @@ obs_opts <- function(family = c("negbin", "poisson"),
     week_length = week_length,
     scale = scale,
     likelihood = likelihood,
-    return_likelihood = return_likelihood
+    return_likelihood = return_likelihood,
+    type = type,
+    duration = duration
   )
 
   if (!is.null(obs$dispersion)) {

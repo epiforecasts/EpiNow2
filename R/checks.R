@@ -290,7 +290,7 @@ check_truncation_length <- function(stan_args, time_points) {
 check_truncation_obs_opts <- function(obs) {
   defaults <- obs_opts()
   unused <- c(
-    "weight", "week_effect", "week_length", "scale"
+    "weight", "week_effect", "week_length", "scale", "type"
   )
   changed <- vapply(unused, function(field) {
     !identical(obs[[field]], defaults[[field]])
@@ -302,6 +302,31 @@ check_truncation_obs_opts <- function(obs) {
           {.fun estimate_truncation}: {.field {unused[changed]}}.",
         "i" = "Only {.field family} and {.field dispersion} are used by the
           truncation model."
+      )
+    )
+  }
+  invisible()
+}
+
+#' Check that the obs_opts type setting is unused by estimate_secondary
+#'
+#' @description Internal check that warns when [obs_opts()] `type` has been
+#' set to a non-default value. [estimate_secondary()] and
+#' [simulate_secondary()] ignore this setting; use the `type` argument of
+#' [secondary_opts()] instead.
+#'
+#' @param obs An `<obs_opts>` object.
+#' @importFrom cli cli_warn
+#' @return Called for its side effects.
+#' @keywords internal
+check_secondary_obs_opts <- function(obs) {
+  if (obs$type != "incidence") {
+    cli_warn(
+      c(
+        "!" = "{.field type} in {.fun obs_opts} is ignored by
+          {.fun estimate_secondary} and {.fun simulate_secondary}.",
+        "i" = "Use the {.field type} argument of {.fun secondary_opts}
+          instead."
       )
     )
   }

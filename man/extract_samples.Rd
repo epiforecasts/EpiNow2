@@ -20,10 +20,9 @@ List of data.tables with samples
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
-\strong{This function is deprecated.} Use \code{\link[=get_samples]{get_samples()}} on the fitted model
-object (e.g. the result of \code{\link[=estimate_infections]{estimate_infections()}}) instead, with
-\code{format = "list"} to obtain the same list of arrays that this function
-returns.
+Use \code{\link[=get_samples]{get_samples()}} on the fitted model object (e.g. the result of
+\code{\link[=estimate_infections]{estimate_infections()}}) instead, with \code{format = "list"} to obtain the
+same list of arrays that this function returns.
 
 If the \code{object} argument is a \verb{<stanfit>} object, it simply returns the
 result of \code{\link[rstan:extract]{rstan::extract()}}. If it is a \verb{<CmdStanMCMC>} it returns samples

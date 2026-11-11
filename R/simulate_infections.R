@@ -138,8 +138,10 @@ simulate_infections <- function(R,
   stan_data <- c(stan_data, create_stan_delays(
     generation_time = generation_time,
     reporting = delays,
-    truncation = truncation
+    truncation = truncation,
+    duration = obs$duration
   ))
+  stan_data$delay_id_duration <- stan_data$delay_id_duration %||% 0L
 
   if (length(stan_data$delay_params_sd) > 0 &&
         any(stan_data$delay_params_sd > 0)) {

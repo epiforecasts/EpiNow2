@@ -20,8 +20,11 @@ secondary reports. An example application is hospital bed usage predicted by
 hospital admissions.
 }}
 
-\item{...}{Overwrite options defined by type. See the returned values for all
-options that can be passed.}
+\item{...}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Overwrite the low-level
+options (\code{cumulative}, \code{historic}, \code{primary_hist_additive}, \code{current},
+\code{primary_current_additive}) defined by \code{type}. There is no known use case
+for combinations of these options other than the ones set by \code{type}, so
+passing any of them is deprecated and will be removed in a future release.}
 }
 \value{
 A \verb{<secondary_opts>} object of binary options summarising secondary

@@ -2,6 +2,8 @@
 
 ## New features
 
+- `obs_opts()` gains a `type` argument ("incidence" or "prevalence") describing how observations relate to latent infections. `estimate_infections()` can now fit prevalence-type data directly, convolving latent infections with a kernel describing how long each stays in the observed state rather than the density of the reporting delay. Without a `duration`, that kernel is the survival function of the reporting delay (e.g. current infections, entered at infection). `obs_opts()` also gains a `duration` argument, a `<dist_spec>` for the time spent in the state once entered; with it set, the kernel becomes the density of the reporting delay convolved with the complement of the CDF of `duration`, suiting a state entered only after the delay and left later, such as hospital bed occupancy (`delays` describing the delay to admission and `duration` the length of stay). Fitting prevalence-type data requires a generative (`rt`) model: combining `type = "prevalence"` with deconvolution (`rt = NULL`) errors, since deconvolution assumes incidence-type observations.
+
 ## Breaking changes
 
 - The boundary factor and number of basis functions of the approximate Gaussian process are now chosen by default from the lengthscale prior, following Riutort-Mayol et al. (2023), rather than fixed at `boundary_scale = 1.5` and `basis_prop = 0.2`. For the periodic kernel only the number of basis functions is chosen, as it has no boundary. The previous defaults approximated the default lengthscale prior poorly, particularly at the most recent time points. `estimate_infections()` now warns when the posterior lengthscale is outside the range the approximation represents accurately. Set `basis_prop` and `boundary_scale` in `gp_opts()` to restore the previous behaviour.
@@ -9,7 +11,7 @@
 
 ## Model changes
 
-- Rewrote the Stan `update_Rt()` function from small helpers that centre log Rt through its intercept.
+- Rewrote the Stan `update_Rt()` function using small helpers. The centring of log Rt now happens in its intercept.
 - `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
 - The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient.
 - `R_to_r()` is now implemented in C++ with a gradient from the implicit function theorem.
@@ -24,7 +26,9 @@
 - Adapted the internal nonparametric-delay handling to `distspec`'s revised representation of estimated (Dirichlet-backed) distributions, which now hold their Dirichlet prior in `$pmf` rather than a separate `$estimated`/`$alpha` and a cached mean PMF. Behaviour for estimated nonparametric delays is unchanged.
 - `gt_opts()`, `delay_opts()` and `trunc_opts()` gain a `default_cdf_max` argument: the CDF level to keep an unconstrained fixed distribution up to (default `0.999`, where `1` leaves it unbounded), following `distspec`'s `cdf_max` (EpiNow2 now requires `distspec` >= 0.2.0). The default can be set globally with `options(EpiNow2.cdf_max = ...)`. The previous `default_cdf_cutoff` argument (the tail probability to drop) is deprecated; a value `x` is equivalent to `default_cdf_max = 1 - x`.
 - Increased the default number of warmup iterations in `stan_sampling_opts()` from 250 to 500 to reduce intermittent non-convergence of individual chains.
-- Added tests for backend dispatch, logging set up and the `as_forecast_sample()` methods that use mocks rather than model fits, and installed scoringutils in the coverage workflow.
+- Overriding the low-level secondary model parameters (`cumulative`, `historic`, `primary_hist_additive`, `current`, `primary_current_additive`) in `secondary_opts()` via `...` is deprecated, as there is no known use case for combinations other than those already set by `type`.
+- `estimate_secondary()` and `simulate_secondary()` now warn when `obs_opts(type = "prevalence")` is passed, as it has no effect there; use the `type` argument of `secondary_opts()` instead.
+- Added mock-based tests for backend dispatch, logging setup and the `as_forecast_sample()` methods. The coverage workflow now installs scoringutils.
 - Added unit tests for the option constructors, delay checks and utility helpers.
 - Added tests for summarising, formatting and reading back fitted and regional results.
 - `get_samples()` gains a `format` argument for the model classes backed by a Stan fit (`estimate_infections`, `epinow`, `estimate_secondary`, `estimate_truncation`): `"data.table"` (the previous default) or `"list"`, the raw list of arrays that `extract_samples()` used to return. `extract_samples()` is now deprecated in favour of `get_samples(..., format = "list")` and will become internal in a future release.
