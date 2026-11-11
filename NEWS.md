@@ -34,6 +34,7 @@
 
 ## Bug fixes
 
+- A bug was fixed where `simulate_infections()` and `simulate_secondary()` silently recycled a `day_of_week_effect` whose length did not match the observation model's week length, rather than rejecting it with an error.
 - A bug was fixed where the number of Gaussian process basis functions was calculated from a time series length that did not match the one used in the Stan model.
 - A bug was fixed where the Gaussian process lengthscale was rescaled by the number of time points rather than their half-range, making the lengthscale slightly shorter than specified.
 - A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.
@@ -51,6 +52,7 @@
 
 - The prior choice guide vignette now draws more samples in its `estimate_secondary()` examples to avoid low tail effective sample size warnings in the rendered output.
 - Clarified the Stan documentation for delay-related vectors and their lookup index arrays, naming them explicitly as ragged data structures and linking to the Stan User's Guide section on the topic.
+- Documented input consistency requirements that were previously only enforced in code but not spelled out in the function documentation, and what happens when they are not met: the distribution family and finite-maximum requirements checked by `gt_opts()`, `delay_opts()` and `trunc_opts()`; the zero-first-element requirement for nonparametric generation times; the rejection of `rt_opts(pop_period = "all")` without a non-zero `pop`, and the separate warning issued when a fixed `pop` is smaller than the cumulative case count; the requirement that `opts_list()` overrides be named by region, and that unmatched names are silently unused; and the requirement that truncation snapshots in `estimate_truncation()` cover a complete, gap-free range of dates, which is not currently checked.
 - Added worked examples to the Stan documentation for several observation-model, convolution, PMF, reproduction-number and infection helper functions, including `accumulate_reports()`.
 - Removed stray `# nolint` comments that were rendered as visible text in the `growth_to_R()`, `R_to_growth()`, `example_incubation_period`, `example_reporting_delay` and `example_truncated` documentation, moving the line-length exclusion outside the roxygen block instead.
 
