@@ -57,6 +57,7 @@ export(discretize)
 export(dist_fit)
 export(epinow)
 export(epinow2_cmdstan_model)
+export(epinow2_stan_header)
 export(estimate_delay)
 export(estimate_dist)
 export(estimate_infections)
@@ -270,9 +271,6 @@ importFrom(stats,
   pgamma,
   plnorm,
   pnorm,
-  qgamma,
-  qlnorm,
-  qnorm,
   quantile,
   quasipoisson,
   rexp,
