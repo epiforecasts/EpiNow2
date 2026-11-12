@@ -93,7 +93,8 @@ example_generation_time
 
 ## Initial reproduction number
 
-Lastly we need to choose a prior for the initial value of the reproduction number. This is assumed by the model to be normally distributed and we can set the mean and the standard deviation. We decide to set the mean to 2 and the standard deviation to 1.
+Lastly we need to choose a prior for the initial value of the reproduction number. We use a log-normal distribution with mean 2 and standard deviation 1.
+The examples below place this prior on the initial value of a time-varying process, e.g. `GP(init = rt_prior)` for a Gaussian process on the first differences of the log reproduction number.
 
 ```{r initial_r}
 rt_prior <- LogNormal(mean = 2, sd = 1)
@@ -105,14 +106,14 @@ We are now ready to run the model and will in the following show a number of pos
 
 ## Default options
 
-By default the model uses a renewal equation for infections and a Gaussian Process prior for the reproduction number. 
-Putting all the data and parameters together and tweaking the Gaussian Process to have a shorter length scale prior than the default we run.
+By default the model uses a renewal equation for infections and a Gaussian Process prior for the reproduction number.
+Putting all the data and parameters together we run.
 
 ```{r default}
 def <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior)
+  rt = rt_opts(prior = GP(init = rt_prior))
 )
 # summarise results
 summary(def)
@@ -124,14 +125,13 @@ plot(def)
 
 ## Reducing the accuracy of the approximate Gaussian Process
 
-To speed up the calculation of the Gaussian Process we could decrease its accuracy, e.g. decrease the proportion of time points to use as basis functions from the default of 0.2 to 0.15.
+To speed up the calculation of the Gaussian Process we could decrease its accuracy, e.g. set the number of basis functions to 15% of the number of time points rather than choosing it from the lengthscale prior, which is the default.
 
 ```{r lower_accuracy}
 agp <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
-  gp = gp_opts(basis_prop = 0.15)
+  rt = rt_opts(prior = GP(init = rt_prior, basis_prop = 0.15))
 )
 # summarise results
 summary(agp)
@@ -144,7 +144,7 @@ plot(agp)
 ## Adjusting for future susceptible depletion
 
 We might want to adjust for future susceptible depletion.
-Here, we do so by setting the population to 1000000 and projecting the reproduction number from the latest estimate (rather than the default, which fixes the reproduction number to an earlier time point based on the given reporting delays).
+Here, we do so by setting the population to 1000000, with the reproduction number held at its latest estimate over the forecast horizon (the default).
 Note that this only affects the forecasts and is done using a crude adjustment (see the [model definition](estimate_infections.html)).
 
 ```{r susceptible_depletion}
@@ -152,8 +152,8 @@ dep <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(
-    prior = rt_prior,
-    pop = Normal(mean = 1000000, sd = 1000), future = "latest"
+    prior = GP(init = rt_prior),
+    pop = Normal(mean = 1000000, sd = 1000)
   )
 )
 # summarise results
@@ -185,7 +185,7 @@ trunc <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   truncation = trunc_opts(trunc_dist),
-  rt = rt_opts(prior = rt_prior)
+  rt = rt_opts(prior = GP(init = rt_prior))
 )
 # summarise results
 summary(trunc)
@@ -205,7 +205,7 @@ project_rt <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
   rt = rt_opts(
-    prior = rt_prior, future = "project"
+    prior = GP(init = rt_prior, future = "project")
   )
 )
 # summarise results
@@ -219,12 +219,13 @@ plot(project_rt)
 ## Fixed reproduction number
 
 We might want to estimate a fixed reproduction number, i.e. assume that it does not change.
+A `constant()` prior with no time-varying components does this.
 
 ```{r fixed}
 fixed <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  gp = NULL
+  rt = rt_opts(prior = constant(rt_prior))
 )
 # summarise results
 summary(fixed)
@@ -236,25 +237,17 @@ plot(fixed)
 
 ## Breakpoints
 
-Instead of assuming the reproduction number varies freely or is fixed, we can assume that it is fixed but with breakpoints.
-This can be done by adding a `breakpoint` column to the reported case data set.
-e.g. if we think that the reproduction number was constant but would like to allow it to change on the 16th of March 2020 we would define a new case data set using
-
-```{r bp_define}
-bp_cases <- data.table::copy(reported_cases)
-bp_cases <- bp_cases[,
- breakpoint := ifelse(date == as.Date("2020-03-16"), 1, 0)
-]
-```
-
-We then use this instead of `reported_cases` in the `estimate_infections()` function:
+Instead of assuming the reproduction number varies freely, we can assume that it is constant except for steps on given dates.
+This can be done with a random walk that only takes steps at given `knots`.
+e.g. if we think that the reproduction number was constant but would like to allow it to change on the 16th of March 2020 we would use
 
 ```{r bp}
-bkp <- estimate_infections(bp_cases,
+bkp <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior),
-  gp = NULL
+  rt = rt_opts(
+    prior = RW(init = rt_prior, knots = as.Date("2020-03-16"))
+  )
 )
 # summarise results
 summary(bkp)
@@ -267,14 +260,13 @@ plot(bkp)
 ## Weekly random walk
 
 Instead of a smooth Gaussian Process we might want the reproduction number to change step-wise, e.g. every week.
-This can be achieved using the `rw` option which defines the length of the time step in a random walk that the reproduction number is assumed to follow.
+This can be achieved using a random walk prior, whose `period` argument sets the length of the time step.
 
 ```{r weekly_rw}
 rw <- estimate_infections(reported_cases,
   generation_time = gt_opts(example_generation_time),
   delays = delay_opts(delay),
-  rt = rt_opts(prior = rt_prior, rw = 7),
-  gp = NULL
+  rt = rt_opts(prior = RW(init = rt_prior, period = 7))
 )
 # summarise results
 summary(rw)

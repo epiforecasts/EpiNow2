@@ -161,18 +161,18 @@ with constants $(3.2, 1.75)$ for the squared exponential kernel and $(4.1, 2.65)
 Longer lengthscales therefore need a wider boundary, and for a given lengthscale no number of basis functions compensates for a boundary that is too narrow.
 Shorter lengthscales need more basis functions.
 
-By default, `EpiNow2` sets $c$ from the 95% quantile of the lengthscale prior and then $m$ from the 5% quantile, so that lengthscales across the bulk of the prior are approximated accurately.
+By default, `GP()` sets $c$ from the 95% quantile of the lengthscale prior and then $m$ from the 5% quantile, so that lengthscales across the bulk of the prior are approximated accurately.
 This 5%/95% split is a convention, not something @approxGP derive; it is not revisited by a diagnostic the way $m$ and $c$ themselves are (see below), so it is worth keeping in mind as a source of inaccuracy distinct from the $m$/$c$ relationships.
 @approxGP do not cover the Ornstein-Uhlenbeck kernel (Matérn 1/2).
 Reproducing their simulation procedure for it gives $m \geq 8.6 \frac{c}{\ell}$: Matérn 1/2 is the roughest of the four kernels covered here, so it needs more basis functions than Matérn 3/2 for the same accuracy, not fewer.
 Its boundary constant was not independently re-derived and keeps the Matérn 3/2 value ($c \geq 4.5 \ell$), which is not confirmed conservative for this kernel.
 The periodic kernel does not use a boundary, and @approxGP (Appendix B) show that it is approximated accurately when $m \geq 3.72 / \ell$.
-By default, `EpiNow2` sets $m$ for the periodic kernel from the 5% quantile of the lengthscale prior.
+By default, `GP()` sets $m$ for the periodic kernel from the 5% quantile of the lengthscale prior.
 
-After fitting, `EpiNow2` applies the lengthscale diagnostic of @approxGP (Section 4.5).
+After fitting, `EpiNow2` applies the lengthscale diagnostic of @approxGP (Section 4.5) to each Gaussian process component.
 A warning is given if the posterior median lengthscale is shorter than the $3.42 c S / m$ days that $m$ basis functions can represent, or longer than the $c S / 4.5$ days that the boundary supports.
 For the periodic kernel only the first check applies, with $3.72 S / m$ days.
-Either can be addressed by adjusting the lengthscale prior, from which the settings are chosen, or by setting `basis_prop` and `boundary_scale` in `gp_opts()` directly.
+Either can be addressed by adjusting the lengthscale prior, from which the settings are chosen, or by setting `basis_prop` and `boundary_scale` in `GP()` directly.
 
 ## Checking the approximation
 

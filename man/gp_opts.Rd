@@ -17,14 +17,12 @@ gp_opts(
 \arguments{
 \item{basis_prop}{Numeric, the proportion of time points to use as basis
 functions. Defaults to \code{NULL}, in which case the number of basis functions
-is chosen from the lengthscale prior (see Details). Decreasing this value
-results in a decrease in accuracy but a faster compute time (with
-increasing it having the opposite effect).}
+is chosen from the lengthscale prior; see \code{\link[=GP]{GP()}} for details.}
 
 \item{boundary_scale}{Numeric, the boundary factor of the approximate
 Gaussian process relative to the half-range of the time points. Defaults to
-\code{NULL}, in which case it is chosen from the lengthscale prior (see Details).
-Not used by the periodic kernel.}
+\code{NULL}, in which case it is chosen from the lengthscale prior; see \code{\link[=GP]{GP()}}
+for details. Not used by the periodic kernel.}
 
 \item{ls}{A \verb{<dist_spec>} giving the prior distribution of the lengthscale
 parameter of the Gaussian process kernel on the scale of days. Defaults to
@@ -56,28 +54,10 @@ kernel. They are only used if \code{kernel} is set to "periodic".}
 A \verb{<gp_opts>} object of settings defining the Gaussian process
 }
 \description{
-Defines a list specifying the structure of the approximate Gaussian
-process. Custom settings can be supplied which override the defaults.
-}
-\details{
-The Gaussian process is approximated using the Hilbert space method of
-Riutort-Mayol et al. (2023) \doi{10.1007/s11222-022-10167-2}. Its accuracy
-depends on the boundary factor and number of basis functions relative to
-the lengthscale. Longer lengthscales need a wider boundary, and shorter
-lengthscales need more basis functions. By default both are chosen from the
-5\% and 95\% quantiles of the lengthscale prior using the relationships in
-Section 4.3.1 of that paper, so that lengthscales in this range are
-approximated accurately. The choice of these quantiles is a convention that
-covers most of the prior without relying on its extreme tails. The
-paper starts from a single initial guess at the lengthscale rather than a
-prior range. The Ornstein-Uhlenbeck kernel (Matern with
-\code{matern_order = 1/2}) is not covered by the paper. Its number of basis
-functions uses a relationship derived for it (see \code{gp_approx_constants()}).
-Its boundary uses the Matern 3/2 relationship, which was not re-derived.
-The periodic kernel has no boundary, and its number of basis functions is
-chosen from the 5\% quantile using Appendix B. After fitting, a warning is
-given if the posterior median lengthscale lies
-outside the range that the approximation represents accurately.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+Gaussian process settings are now supplied directly as arguments of \code{\link[=GP]{GP()}}.
+This function is retained only for backwards compatibility and will be
+removed in a future release.
 }
 \examples{
 # default settings

@@ -109,25 +109,6 @@ test_that("PHI_periodic returns correct dimensions and values", {
   expect_equal(result, expected_result, tolerance = 1e-8)
 })
 
-test_that("setup_noise returns correct count of noise terms", {
-  ot_h <- 10
-  t <- 10
-  horizon <- 0
-  estimate_r <- 1
-  stationary <- 1
-  future_fixed <- 0
-  fixed_from <- 0
-  result <- setup_noise(ot_h, t, horizon, estimate_r, stationary, future_fixed, fixed_from)
-  expect_equal(result, ot_h)
-  # Test with different parameters
-  result <- setup_noise(ot_h, t, horizon, estimate_r, 0, future_fixed, fixed_from)
-  expect_equal(result, ot_h - 1)
-  result <- setup_noise(ot_h, t, horizon, 0, stationary, future_fixed, fixed_from)
-  expect_equal(result, t)
-  result <- setup_noise(ot_h, t, 2, estimate_r, stationary, 1, 3)
-  expect_equal(result, ot_h - 2 + 3)
-})
-
 test_that("setup_gp returns correct dimensions and values", {
   M <- 3
   L <- 1.0
@@ -175,17 +156,20 @@ test_that("update_gp returns correct dimensions and values", {
   expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
 })
 
+test_that("rescale_gp_lengthscale matches the half-range of the GP", {
+  expect_equal(rescale_gp_lengthscale(21, 22), 21 / 10.5)
+  expect_equal(rescale_gp_lengthscale(21, 1), 42)
+})
+
 test_that("default GP settings approximate the exact Matern 3/2 kernel", {
-  data <- list(
-    t = 67, seeding_time = 0, horizon = 7, future_fixed = 0, fixed_from = 0,
-    stationary = 0, estimate_r = 1
-  )
-  gp_data <- create_gp_data(gp_opts(), data)
-  n <- gp_noise_terms(data)
-  PHI <- setup_gp(gp_data$M, gp_data$L, n, 0, gp_data$w0)
-  for (rho in gp_ls_quantiles(gp_opts()$ls)) {
+  # the default Rt prior on 60 observed days: 59 increments
+  n <- 59
+  gp <- new_gp_settings()
+  basis <- gp_basis_settings(gp, n, 2L)
+  PHI <- setup_gp(basis$M, basis$L, n, 0, gp$w0)
+  for (rho in gp_ls_quantiles(gp$ls)) {
     spd <- diagSPD_Matern32(
-      1, rescale_gp_lengthscale(rho, n), gp_data$L, gp_data$M
+      1, rescale_gp_lengthscale(rho, n), basis$L, basis$M
     )
     approx <- PHI %*% diag(spd^2) %*% t(PHI)
     d <- abs(outer(seq_len(n), seq_len(n), "-")) * sqrt(3) / rho
@@ -194,27 +178,19 @@ test_that("default GP settings approximate the exact Matern 3/2 kernel", {
   }
 })
 
-test_that("rescale_gp_lengthscale matches the half-range of the GP", {
-  expect_equal(rescale_gp_lengthscale(21, 22), 21 / 10.5)
-  expect_equal(rescale_gp_lengthscale(21, 1), 42)
-})
-
 test_that("default GP settings approximate the exact periodic kernel", {
-  data <- list(
-    t = 67, seeding_time = 0, horizon = 7, future_fixed = 0, fixed_from = 0,
-    stationary = 0, estimate_r = 1
-  )
-  gp_data <- create_gp_data(gp_opts(kernel = "periodic"), data)
-  n <- gp_noise_terms(data)
-  PHI <- setup_gp(gp_data$M, gp_data$L, n, 1, gp_data$w0)
+  n <- 59
+  gp <- new_gp_settings(kernel = "periodic")
+  basis <- gp_basis_settings(gp, n, 1L)
+  PHI <- setup_gp(basis$M, basis$L, n, 1, gp$w0)
   x <- seq_len(n)
   x <- 2 * (x - mean(x)) / (n - 1)
-  for (rho in gp_ls_quantiles(gp_opts()$ls)) {
+  for (rho in gp_ls_quantiles(gp$ls)) {
     ls <- rescale_gp_lengthscale(rho, n)
-    spd <- diagSPD_Periodic(1, ls, gp_data$M)
+    spd <- diagSPD_Periodic(1, ls, basis$M)
     approx <- PHI %*% diag(spd^2) %*% t(PHI)
     # the constant (j = 0) term of the series is not modelled
-    exact <- exp(-2 * sin(gp_data$w0 * outer(x, x, "-") / 2)^2 / ls^2) -
+    exact <- exp(-2 * sin(gp$w0 * outer(x, x, "-") / 2)^2 / ls^2) -
       besselI(ls^-2, 0, expon.scaled = TRUE)
     expect_lt(max(abs(approx - exact)), 0.05)
   }

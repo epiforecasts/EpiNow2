@@ -80,7 +80,7 @@
 #' out <- epinow(
 #'   data = reported_cases,
 #'   generation_time = gt_opts(generation_time),
-#'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1)),
+#'   rt = rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 0.1))),
 #'   delays = delay_opts(incubation_period + reporting_delay),
 #'   stan = stan_opts(samples = 100, warmup = 200)
 #' )
@@ -101,7 +101,7 @@ epinow <- function(data,
                    truncation = trunc_opts(),
                    rt = rt_opts(),
                    backcalc = backcalc_opts(),
-                   gp = gp_opts(),
+                   gp = new_gp_settings(),
                    obs = obs_opts(),
                    forecast = forecast_opts(),
                    stan = stan_opts(),
