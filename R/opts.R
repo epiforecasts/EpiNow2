@@ -531,17 +531,33 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
 #' Defines a list specifying the optional arguments for the back calculation
 #' of cases. Only used if `rt = NULL`.
 #'
-#' @param prior A `GP()` specification for the latent infections of the
-#' back-calculation model, given as a Gaussian process on the log scale (e.g.
-#' `GP(init = LogNormal(mean = 100, sd = 100))`). Defaults to `NULL`, in which
-#' case a Gaussian process anchored at a data-informed initial value is used.
+#' @param prior A character string defaulting to "reports". Defines the prior
+#' to use when deconvolving. Currently implemented options are to use smoothed
+#' mean delay shifted reported cases ("reports"), to use the estimated
+#' infections from the previous time step seeded for the first time step using
+#' mean shifted reported cases ("infections"), or no prior ("none"). Using no
+#' prior will result in poor real time performance. No prior and using
+#' infections are only supported when a Gaussian process is present . If
+#' observed data is not reliable then it a sensible first step is to explore
+#' increasing the `prior_window` wit a sensible second step being to no longer
+#' use reported cases as a prior (i.e set `prior = "none"`).
 #'
-#' @param prior_window `r lifecycle::badge("deprecated")` No longer used, as the
-#' back-calculation model no longer smooths shifted reported cases.
+#' @param prior_window Integer, defaults to 14 days. The mean centred smoothing
+#' window to apply to mean shifted reports (used as a prior during back
+#' calculation). 7 days is minimum recommended settings as this smooths day of
+#' the week effects but depending on the quality of the data and the amount of
+#' information users wish to use as a prior (higher values equalling a less
+#' informative prior).
 #'
 #' @param rt_window Integer, defaults to 1. The size of the centred rolling
 #' average to use when estimating Rt. This must be odd so that the central
 #' estimate is included.
+#'
+#' @param gp The time-varying deviation of latent infections from the prior,
+#' on the log scale: a [GP()] or [RW()] specification without `mean` or `init`,
+#' or a sum of them. It varies over the whole time series, including the
+#' forecast horizon. Defaults to `GP()`. Set to `NULL` to use the smoothed
+#' mean delay shifted reported cases as infections, whatever `prior` is.
 #' @importFrom rlang arg_match
 #' @importFrom cli cli_abort
 #'
@@ -550,29 +566,28 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
 #' @examples
 #' # default settings
 #' backcalc_opts()
-backcalc_opts <- function(prior = NULL, prior_window = 14, rt_window = 1) {
-  if (is.character(prior)) {
-    deprecate_warn(
-      "1.10.0", "backcalc_opts(prior = 'must be a GP() specification')",
-      details = "The back-calculation model now estimates latent infections as
-      a Gaussian process state. Supply a `GP()` specification (e.g.
-      `prior = GP(init = LogNormal(...))`) or leave as the default."
-    )
-    prior <- NULL
-  }
-  if (!missing(prior_window)) {
-    deprecate_warn(
-      "1.10.0", "backcalc_opts(prior_window)",
-      details = "The back-calculation model no longer smooths shifted cases, so
-      the prior smoothing window is no longer used."
-    )
-  }
-  if (!is.null(prior)) {
-    assert_class(prior, "state_spec")
+#'
+#' # a Gaussian process with a shorter lengthscale
+#' backcalc_opts(gp = GP(ls = LogNormal(mean = 7, sd = 3, max = 30)))
+backcalc_opts <- function(prior = c("reports", "none", "infections"),
+                          prior_window = 14, rt_window = 1, gp = GP()) {
+  if (!is.null(gp)) {
+    assert_class(gp, "state_spec")
+    if (!is.null(gp$anchor)) {
+      cli_abort(
+        c(
+          "!" = "{.arg gp} must not have a baseline.",
+          "i" = "Drop {.arg mean}/{.arg init} from {.fn GP}/{.fn RW}: the
+          prior on infections is set by {.arg prior}."
+        )
+      )
+    }
   }
   backcalc <- list(
-    prior = prior,
-    rt_window = as.integer(rt_window)
+    prior = arg_match(prior),
+    prior_window = prior_window,
+    rt_window = as.integer(rt_window),
+    gp = gp
   )
   if (backcalc$rt_window %% 2 == 0) {
     cli_abort(

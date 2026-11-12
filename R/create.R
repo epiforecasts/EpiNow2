@@ -13,6 +13,125 @@ get_accumulate <- function(data) {
   }
 }
 
+#' Create Delay Shifted Cases
+#'
+#'
+#' This functions creates a data frame of reported cases that has been smoothed
+#' using a centred partial rolling average (with a period set by
+#' `smoothing_window`) and shifted back in time by some delay. It is used by
+#' [estimate_infections()] to generate the mean shifted prior on which the back
+#' calculation method (see [backcalc_opts()]) is based.
+#'
+#' @details
+#' The function first shifts all the data back in time by `shift` days (thus
+#' discarding the first `shift` days of data) and then applies a centred
+#' rolling mean of length `smoothing_window` to the shifted data except for
+#' the final period. The final period (the forecast horizon plus half the
+#' smoothing window) is instead replaced by a log-linear model fit (with 1
+#' added to the data for fitting to avoid zeroes and later subtracted again),
+#' projected to the end of the forecast horizon. The initial part of the data
+#' (corresponding to the length of the smoothing window) is then removed, and
+#' any non-integer resulting values rounded up.
+#'
+#' @param smoothing_window Numeric, the rolling average smoothing window
+#' to apply. Must be odd in order to be defined as a centred average.
+#'
+#' @param shift Numeric, mean delay shift to apply.
+#'
+#' @inheritParams estimate_infections
+#' @inheritParams create_stan_data
+#' @importFrom data.table copy shift frollmean fifelse .N
+#' @importFrom stats lm
+#' @importFrom runner mean_run
+#' @return A `<data.frame>` for shifted reported cases
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#' shift <- 7
+#' horizon <- 7
+#' smoothing_window <- 14
+#' ## add NAs for horizon
+#' cases <- add_horizon(example_confirmed[1:30], horizon)
+#' ## add zeroes initially
+#' cases <- data.table::rbindlist(list(
+#'   data.table::data.table(
+#'     date = seq(
+#'       min(cases$date) - 10,
+#'       min(cases$date) - 1,
+#'       by = "days"
+#'     ),
+#'     confirm = 0, breakpoint = 0
+#'   ),
+#'   cases
+#' ))
+#' create_shifted_cases(cases, shift, smoothing_window, horizon)
+#' }
+create_shifted_cases <- function(data, shift,
+                                 smoothing_window, horizon) {
+  shifted_reported_cases <- copy(data)
+  ## turn initial NAs into zeroes
+  shifted_reported_cases[cumsum(!is.na(confirm)) == 0L, confirm := 0.0]
+  ## pad with additional zeroes
+  shifted_reported_cases <- pad_reported_cases(data, smoothing_window, 0.0)
+
+  if ("accumulate" %in% colnames(data)) {
+    shifted_reported_cases[
+      is.na(confirm) & accumulate,
+      confirm := 0
+    ]
+  }
+  shifted_reported_cases[
+    ,
+    confirm := shift(confirm,
+      n = shift,
+      type = "lead", fill = NA
+    )
+  ][
+    ,
+    confirm := mean_run(
+      confirm,
+      k = smoothing_window, lag = -floor(smoothing_window / 2)
+    )
+  ]
+
+  ## Forecast trend on reported cases using the last week of data
+  final_period <- shifted_reported_cases[!is.na(confirm)][
+    max(1, .N - smoothing_window):.N
+  ][
+    ,
+    t := seq_len(.N)
+  ]
+  lm_model <- lm(log(confirm + 1) ~ t, data = final_period)
+  ## Estimate unreported future infections using a log linear model
+  shifted_reported_cases <- shifted_reported_cases[
+    date >= min(final_period$date), t := seq_len(.N)
+  ][
+    ,
+    confirm := fifelse(
+      !is.na(t) & t >= 0,
+      exp(lm_model$coefficients[1] + lm_model$coefficients[2] * t) - 1,
+      confirm
+    )
+  ][, t := NULL]
+
+  ## Drop median generation interval initial values
+  shifted_reported_cases <- shifted_reported_cases[
+    ,
+    confirm := ceiling(confirm)
+  ]
+  shifted_reported_cases <- shifted_reported_cases[-(1:smoothing_window)]
+  if (anyNA(shifted_reported_cases$confirm)) {
+    cli_abort(
+      c(
+        "!" = "Some values are missing after prior smoothing. Consider
+        increasing the smoothing using the {.var prior_window} argument in
+        {.fn backcalc_opts}."
+      )
+    )
+  }
+  shifted_reported_cases
+}
+
 #' Construct the Required Future Rt assumption
 #'
 #' @description
@@ -199,7 +318,13 @@ resolve_legacy_breakpoints <- function(rt, breakpoints) {
 #' @keywords internal
 create_backcalc_data <- function(backcalc = backcalc_opts()) {
   list(
-    rt_half_window = as.integer((backcalc$rt_window - 1) / 2)
+    rt_half_window = as.integer((backcalc$rt_window - 1) / 2),
+    backcalc_prior = fcase(
+      backcalc$prior == "none", 0,
+      backcalc$prior == "reports", 1,
+      backcalc$prior == "infections", 2,
+      default = 0
+    )
   )
 }
 
@@ -285,6 +410,17 @@ create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
   accumulate <- get_accumulate(cases)
   imputed_times <- cases[!accumulate, lookup]
   confirmed_cases <- cases[1:(.N - forecast$horizon)]$confirm
+  if (is.null(rt) || !isTRUE(rt$use_rt)) {
+    shifted_cases <- create_shifted_cases(
+      data,
+      shift = seeding_time,
+      smoothing_window = backcalc$prior_window,
+      horizon = forecast$horizon
+    )
+    shifted_confirmed_cases <- shifted_cases$confirm
+  } else {
+    shifted_confirmed_cases <- array(numeric(0))
+  }
 
   stan_data <- list(
     cases = confirmed_cases[!is.na(confirmed_cases)],
@@ -295,6 +431,7 @@ create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
     lt = length(case_times),
     it = length(imputed_times),
     t = length(data$date),
+    shifted_cases = shifted_confirmed_cases,
     burn_in = 0,
     seeding_time = seeding_time,
     horizon = forecast$horizon
@@ -327,6 +464,11 @@ create_stan_data <- function(data, seeding_time, rt, obs, backcalc,
     )
   )
 
+  # rescale mean shifted prior for back calculation if observation scaling is
+  # used; for a time-varying scale use the level (mean) prior
+  scale_level <- if (is_state_spec(obs$scale)) obs$scale$prior else obs$scale
+  stan_data$shifted_cases <-
+    stan_data$shifted_cases / mean(scale_level)
   stan_data
 }
 

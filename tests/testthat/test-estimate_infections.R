@@ -85,13 +85,12 @@ test_that("compose_deprecated_gp(gp = NULL) collapses a GP-only prior to a const
   expect_identical(res, LogNormal(mean = 1, sd = 1))
 })
 
-test_that("compose_deprecated_gp(gp = NULL) errors for the back-calculation model", {
+test_that("compose_deprecated_gp(gp = NULL) removes the back-calculation state", {
   withr::local_options(lifecycle_verbosity = "quiet")
-  expect_error(
+  expect_null(
     compose_deprecated_gp(
-      GP(init = LogNormal(mean = 1, sd = 1)), NULL, "backcalc_opts"
-    ),
-    "back-calculation"
+      constant(Fixed(1), future = "project") + GP(), NULL, "backcalc_opts"
+    )
   )
 })
 
@@ -156,6 +155,13 @@ test_that("estimate_infections successfully returns estimates using a Matern 5/2
 test_that("estimate_infections successfully returns estimates using backcalculation", {
   skip_integration()
   test_estimate_infections(reported_cases, rt = NULL)
+})
+
+test_that("estimate_infections successfully returns estimates using the fixed back-calculation mapping", {
+  skip_integration()
+  test_estimate_infections(
+    reported_cases, rt = NULL, backcalc = backcalc_opts(gp = NULL)
+  )
 })
 
 test_that("estimate_infections successfully returns estimates using no delays", {

@@ -281,32 +281,34 @@ transformed parameters {
       );
     }
   } else {
-    // back-calculation: latent infections are a Gaussian process on the log
-    // scale anchored at an initial value (I0), continued at their latest
-    // growth rate through the forecast horizon
+    // back-calculation: latent infections are the shifted reported cases
+    // scaled by a multiplicative deviation, the infections state (a Gaussian
+    // process on the log scale around a level of one); without that state
+    // they are the shifted cases themselves
     profile("infections") {
-      infections = get_state_trajectory(
-        param_id_I, t,
-        get_param(
-          param_id_I, params_fixed_lookup, params_variable_lookup,
-          params_value, params
-        ),
-        state_param_id, state_link, state_anchor,
-        state_comp_offset, state_comp_n,
-        state_n_free, state_n_centre,
-        comp_type, comp_pos,
-        comp_rw_n, comp_rw_offset, state_rw_period,
-        rw_knots_n, rw_knots_offset, rw_knots,
-        state_rw_steps,
-        comp_gp_M, comp_gp_offset, state_gp_eta,
-        gp_boundary_scale, gp_kernel, gp_nu,
-        state_gp_alpha, state_gp_rho, gp_phi
-      );
-      for (s in 1:n_states) {
-        if (state_param_id[s] == param_id_I) {
-          infections = continue_growth(infections, state_n_free[s]);
-        }
+      vector[t] noise = rep_vector(0, t);
+      if (param_id_I > 0) {
+        noise = log(get_state_trajectory(
+          param_id_I, t,
+          get_param(
+            param_id_I, params_fixed_lookup, params_variable_lookup,
+            params_value, params
+          ),
+          state_param_id, state_link, state_anchor,
+          state_comp_offset, state_comp_n,
+          state_n_free, state_n_centre,
+          comp_type, comp_pos,
+          comp_rw_n, comp_rw_offset, state_rw_period,
+          rw_knots_n, rw_knots_offset, rw_knots,
+          state_rw_steps,
+          comp_gp_M, comp_gp_offset, state_gp_eta,
+          gp_boundary_scale, gp_kernel, gp_nu,
+          state_gp_alpha, state_gp_rho, gp_phi
+        ));
       }
+      infections = deconvolve_infections(
+        shifted_cases, noise, param_id_I == 0, backcalc_prior
+      );
     }
   }
 

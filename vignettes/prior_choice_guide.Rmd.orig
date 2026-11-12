@@ -118,7 +118,8 @@ The following tables list all priors available in `{EpiNow2}`, organised by mode
 | Length scale | Both | `GP()` | `ls` | `LogNormal(mean = 21, sd = 7, max = 60)` | Controls smoothness over time |
 | Magnitude | Both | `GP()` | `alpha` | `Normal(mean = 0, sd = 0.01)` | Controls amplitude of variations |
 | **Back-calculation** |
-| Latent infections | Non-mechanistic only | `backcalc_opts()` | `prior` | `GP(init = ...)` | Gaussian process on log-infections |
+| Prior source | Non-mechanistic only | `backcalc_opts()` | `prior` | `"reports"` | Options: "reports", "infections", "none" |
+| Deviation from prior | Non-mechanistic only | `backcalc_opts()` | `gp` | `GP()` | Gaussian process on log infections around the prior |
 | **Observation model** |
 | Overdispersion | Both | `obs_opts()` | `dispersion` | `Normal(mean = 0, sd = 0.25)` | 1/√φ parameterisation |
 | Scaling | Both | `obs_opts()` | `scale` | `Fixed(1)` | Ascertainment rate |

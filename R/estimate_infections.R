@@ -73,7 +73,7 @@
 #' leaving a constant value or any random-walk/breakpoint components already
 #' on the prior, as on the previous interface. Configure the Gaussian process
 #' through the relevant model's prior instead: `rt_opts(prior = GP(...))` for
-#' the renewal model or `backcalc_opts(prior = GP(...))` for the
+#' the renewal model or `backcalc_opts(gp = GP(...))` for the
 #' back-calculation model.
 #' @inheritParams create_obs_model
 #' @inheritParams fit_model_with_nuts
@@ -190,23 +190,15 @@ estimate_infections <- function(data,
   model_data <- pad_reported_cases(model_data, seeding_time)
 
   # The reproduction number (renewal model) and latent infections
-  # (back-calculation model) are both expressed as states: R carries the Rt
-  # prior and I a Gaussian process on log-infections. Each state's GP carries
-  # its own hyperparameters, so there are no separate alpha/rho parameters and
-  # no shared "main" GP. The infections state is taken from
-  # `backcalc_opts(prior = ...)`, defaulting to a GP anchored at a data-informed
-  # initial value (I0).
+  # (back-calculation model) are both expressed as states. Under
+  # back-calculation, infections are the smoothed and shifted reported cases
+  # scaled by the infections state, a deviation on the log scale around a
+  # level of one that varies over the whole time series.
   renewal <- isTRUE(rt$use_rt)
-  if (renewal) {
+  if (renewal || is.null(backcalc$gp)) {
     i_prior <- NULL
-  } else if (!is.null(backcalc$prior)) {
-    i_prior <- backcalc$prior
   } else {
-    i0_guess <- mean(utils::head(data$confirm[!is.na(data$confirm)], 7))
-    if (!is.finite(i0_guess) || i0_guess <= 0) {
-      i0_guess <- 1
-    }
-    i_prior <- GP(init = LogNormal(mean = i0_guess, sd = i0_guess))
+    i_prior <- constant(Fixed(1), future = "project") + backcalc$gp
   }
   # states run over one of two time frames: the latent-infections state (I)
   # spans the full seeding + observed + horizon window ("t"); every other
@@ -224,7 +216,7 @@ estimate_infections <- function(data,
     )
     rt$prior <- compose_deprecated_gp(rt$prior, gp, "rt_opts")
     rt$prior <- resolve_state_dates(rt$prior, ot_h_dates)
-  } else {
+  } else if (!is.null(i_prior)) {
     i_prior <- compose_deprecated_gp(i_prior, gp, "backcalc_opts")
   }
   i_prior <- resolve_state_dates(i_prior, model_data$date)
@@ -302,7 +294,7 @@ compose_deprecated_gp <- function(prior, gp, name) {
     details = paste(
       "Configure the Gaussian process through the relevant model's prior",
       "instead: `rt_opts(prior = GP(...))` for the renewal model or",
-      "`backcalc_opts(prior = GP(...))` for the back-calculation model.",
+      "`backcalc_opts(gp = GP(...))` for the back-calculation model.",
       "For a constant reproduction number use `rt_opts(prior = constant(...))`."
     )
   )
@@ -321,16 +313,8 @@ compose_deprecated_gp <- function(prior, gp, name) {
   if (is.null(gp)) {
     prior$components <- prior$components[-gp_idx]
     if (length(prior$components) == 0 && identical(name, "backcalc_opts")) {
-      cli_abort(
-        c(
-          "!" = "{.code gp = NULL} cannot be used with the back-calculation
-          model ({.code rt = NULL}).",
-          "i" = "Without a time-varying prior, latent infections would be
-          constant over time. The previous fixed mapping from reported cases
-          is no longer available; configure the Gaussian process with
-          {.code backcalc_opts(prior = GP(...))} instead."
-        )
-      )
+      # infections are then the shifted reported cases themselves
+      return(NULL)
     }
     if (length(prior$components) == 0) {
       # nothing left to vary the prior over time: it is a constant baseline

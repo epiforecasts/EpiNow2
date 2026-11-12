@@ -4,20 +4,41 @@
 \alias{backcalc_opts}
 \title{Back Calculation Options}
 \usage{
-backcalc_opts(prior = NULL, prior_window = 14, rt_window = 1)
+backcalc_opts(
+  prior = c("reports", "none", "infections"),
+  prior_window = 14,
+  rt_window = 1,
+  gp = GP()
+)
 }
 \arguments{
-\item{prior}{A \code{GP()} specification for the latent infections of the
-back-calculation model, given as a Gaussian process on the log scale (e.g.
-\code{GP(init = LogNormal(mean = 100, sd = 100))}). Defaults to \code{NULL}, in which
-case a Gaussian process anchored at a data-informed initial value is used.}
+\item{prior}{A character string defaulting to "reports". Defines the prior
+to use when deconvolving. Currently implemented options are to use smoothed
+mean delay shifted reported cases ("reports"), to use the estimated
+infections from the previous time step seeded for the first time step using
+mean shifted reported cases ("infections"), or no prior ("none"). Using no
+prior will result in poor real time performance. No prior and using
+infections are only supported when a Gaussian process is present . If
+observed data is not reliable then it a sensible first step is to explore
+increasing the \code{prior_window} wit a sensible second step being to no longer
+use reported cases as a prior (i.e set \code{prior = "none"}).}
 
-\item{prior_window}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} No longer used, as the
-back-calculation model no longer smooths shifted reported cases.}
+\item{prior_window}{Integer, defaults to 14 days. The mean centred smoothing
+window to apply to mean shifted reports (used as a prior during back
+calculation). 7 days is minimum recommended settings as this smooths day of
+the week effects but depending on the quality of the data and the amount of
+information users wish to use as a prior (higher values equalling a less
+informative prior).}
 
 \item{rt_window}{Integer, defaults to 1. The size of the centred rolling
 average to use when estimating Rt. This must be odd so that the central
 estimate is included.}
+
+\item{gp}{The time-varying deviation of latent infections from the prior,
+on the log scale: a \code{\link[=GP]{GP()}} or \code{\link[=RW]{RW()}} specification without \code{mean} or \code{init},
+or a sum of them. It varies over the whole time series, including the
+forecast horizon. Defaults to \code{GP()}. Set to \code{NULL} to use the smoothed
+mean delay shifted reported cases as infections, whatever \code{prior} is.}
 }
 \value{
 A \verb{<backcalc_opts>} object of back calculation settings.
@@ -29,4 +50,7 @@ of cases. Only used if \code{rt = NULL}.
 \examples{
 # default settings
 backcalc_opts()
+
+# a Gaussian process with a shorter lengthscale
+backcalc_opts(gp = GP(ls = LogNormal(mean = 7, sd = 3, max = 30)))
 }

@@ -26,15 +26,6 @@ test_that("assemble_state holds a Gaussian process deviation beyond the free win
   expect_true(all(abs(traj[11:15] - traj[10]) < 1e-9))
 })
 
-test_that("continue_growth extends a trajectory at its latest growth rate", {
-  x <- c(exp(seq(0, 0.9, by = 0.1)), rep(exp(0.9), 5))
-  y <- continue_growth(x, n_free = 10)
-  expect_equal(y[1:10], x[1:10])
-  expect_equal(log(y[11:15]), 0.9 + 0.1 * (1:5))
-  # nothing to continue without a forecast horizon
-  expect_equal(continue_growth(x[1:10], n_free = 10), x[1:10])
-})
-
 test_that("get_state_trajectory halves M for the periodic kernel's doubled coefficients", {
   nf <- 10
   m_base <- 3

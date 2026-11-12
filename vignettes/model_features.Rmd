@@ -59,12 +59,12 @@ The package's modelling features fall into four groups.
 
 ## Infection model
 
-`estimate_infections()` reconstructs infections from a count time series (e.g. reported cases) using either a generative renewal model or a non-mechanistic back-calculation model.
+`estimate_infections()` reconstructs infections from a count time series (e.g. reported cases) using either a generative renewal model or non-parametric back-calculation.
 
 | Feature | Argument | Description | See also |
 |---|---|---|---|
 | Renewal equation (default) | `rt = rt_opts(...)` | Generative model using the reproduction number and generation time | [Model definition](estimate_infections.html) |
-| Back-calculation | `rt = NULL`, `backcalc = backcalc_opts(...)` | Latent infections as a Gaussian process on the log scale | [Model definition](estimate_infections.html) |
+| Back-calculation | `rt = NULL`, `backcalc = backcalc_opts(...)` | Non-parametric deconvolution of reported cases | [Model definition](estimate_infections.html) |
 
 See also: [estimate_infections workflow](estimate_infections_workflow.html)
 
@@ -188,7 +188,7 @@ The table below summarises the options functions, what they configure, their def
 | `delay_opts()` | Reporting delay distributions | `Fixed(0)` (no delay) | `estimate_infections()`, `estimate_secondary()` |
 | `obs_opts()` | Observation model | Negative binomial with day-of-week effect | `estimate_infections()`, `estimate_secondary()` |
 | `trunc_opts()` | Truncation distribution | `Fixed(0)` (no truncation) | `estimate_infections()` |
-| `backcalc_opts()` | Back-calculation settings | Gaussian process on first differences of log infections | `estimate_infections()` (when `rt = NULL`) |
+| `backcalc_opts()` | Back-calculation settings | Smoothed reports as prior | `estimate_infections()` (when `rt = NULL`) |
 | `secondary_opts()` | Secondary model type | Incidence | `estimate_secondary()` |
 
 See the [prior choice guide](prior_choice_guide.html) for default values and guidance.

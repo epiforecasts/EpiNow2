@@ -172,6 +172,7 @@ importFrom(data.table,
   dcast,
   fcase,
   fifelse,
+  frollmean,
   frollsum,
   fwrite,
   getDTthreads,
@@ -273,6 +274,7 @@ importFrom(rstan,
   summary,
   vb
 )
+importFrom(runner,mean_run)
 importFrom(scales,comma)
 importFrom(stats,
   aggregate,
