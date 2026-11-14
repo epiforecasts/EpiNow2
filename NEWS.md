@@ -56,7 +56,7 @@
 
 ## Internal
 
-- Pinned the `stan-model-benchmark` workflow to Ubuntu 24.04, as already done for the touchstone workflow, so that the benchmark chains no longer fail on the newer `ubuntu-latest` image.
+- Pinned the `stan-model-benchmark` workflow to Ubuntu 24.04, as already done for the touchstone workflow. The benchmark chains failed on the newer `ubuntu-latest` image.
 - Removed redundant namespace qualification (`pkg::fn`) on imported functions across the package, and excluded `data-raw` from linting, so `lintr` passes cleanly.
 - Shortened verbose inline comments across the package, moving rationale worth keeping into roxygen documentation instead.
 - Added fast tests for `epinow()`, `regional_epinow()` and the report helpers that replace the model fit with a mock, covering saved output, error and warning handling, logging and regional summaries.
