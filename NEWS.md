@@ -34,6 +34,7 @@
 
 ## Bug fixes
 
+- A bug was fixed where `estimate_infections()` raised a deprecation warning for `extract_samples()` because the Gaussian process lengthscale check called it internally.
 - A bug was fixed where the number of Gaussian process basis functions was calculated from a time series length that did not match the one used in the Stan model.
 - A bug was fixed where the Gaussian process lengthscale was rescaled by the number of time points rather than their half-range, making the lengthscale slightly shorter than specified.
 - A bug was fixed where disabling the weekly reporting effect produced a spurious convergence warning from a degenerate day-of-week simplex.

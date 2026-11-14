@@ -67,6 +67,11 @@ test_that("check_gp_fit extracts the lengthscale from a fitted model", {
   expect_true(all(rho > 0))
 })
 
+test_that("check_gp_fit does not use the deprecated extract_samples()", {
+  local_mocked_bindings(check_gp_lengthscale = function(x, stan_data) NULL)
+  expect_no_warning(check_gp_fit(default_fit$fit, default_fit$args))
+})
+
 test_that("get_samples(format = 'list') returns the raw list of arrays", {
   raw_samples <- get_samples(default_fit, format = "list")
   expect_type(raw_samples, "list")

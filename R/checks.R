@@ -402,7 +402,7 @@ check_gp_fit <- function(fit, stan_data) {
         length(rho_idx) == 0 || is.na(rho_idx) || rho_idx == 0) {
     return(invisible(NULL))
   }
-  params <- extract_samples(fit, pars = "params")$params
+  params <- extract_stan_samples(fit, pars = "params")$params
   if (rho_idx > ncol(params)) {
     return(invisible(NULL))
   }
