@@ -312,7 +312,6 @@ generated quantities {
         R_case = calculate_case_Rt(gen_R, sampled_gt_rev_pmf);
       } else {
         gt_rev_pmf_for_growth = gt_rev_pmf;
-        R_case = calculate_case_Rt(R, gt_rev_pmf);
       }
 
       // estimate growth from infections
@@ -324,6 +323,12 @@ generated quantities {
       // R_adj = infections / infectiousness (back-calculated from adjusted infections)
       if (estimate_r > 0 && use_pop > 0) {
         R_adj = calculate_Rt(infections, seeding_time, gt_rev_pmf, 0);
+      }
+
+      // use the Rt reported to the user: adjusted when population
+      // adjustment is on, so R_case agrees with R under depletion
+      if (estimate_r > 0) {
+        R_case = calculate_case_Rt(use_pop > 0 ? R_adj : R, gt_rev_pmf);
       }
     }
 
