@@ -842,6 +842,8 @@ create_initial_conditions <- function(stan_data, params) {
 #' (rather than fixed-parameter sampling or an approximate method) is being
 #' used, in which case the pathfinder algorithm's estimate of the posterior
 #' is returned instead, for use as `init` when initialising the NUTS sampler.
+#' If the pathfinder algorithm fails, a warning is issued and `init` is
+#' returned.
 #'
 #' @inheritParams create_stan_args
 #' @param init_method A character string, either "random" or "pathfinder".
@@ -853,8 +855,18 @@ initialise_with_pathfinder <- function(stan, data, init, init_method,
         identical(stan$method, "sampling")) {
     # use the pathfinder algorithm's estimate of the posterior, rather than
     # the supplied `init`, to initialise sampling
-    init <- stan$object$pathfinder(
-      data = data, seed = stan$seed, refresh = ifelse(verbose, 50, 0)
+    init <- tryCatch(
+      stan$object$pathfinder(
+        data = data, seed = stan$seed, refresh = ifelse(verbose, 50, 0)
+      ),
+      error = function(e) {
+        cli_warn(c(
+          "!" = "Initialisation with the pathfinder algorithm failed.",
+          "i" = "Falling back to the supplied initial values.",
+          "x" = conditionMessage(e)
+        ))
+        init
+      }
     )
   }
   init

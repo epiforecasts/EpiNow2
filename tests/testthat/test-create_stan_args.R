@@ -59,6 +59,22 @@ test_that("create_stan_args passes stan$seed to the pathfinder call", {
   expect_identical(captured_args$seed, 123)
 })
 
+test_that("create_stan_args falls back to init with a warning if pathfinder fails", {
+  fake_model <- structure(
+    list(pathfinder = function(...) stop("all paths failed")),
+    class = "CmdStanModel"
+  )
+  stan <- list(
+    object = fake_model, method = "sampling", backend = "cmdstanr",
+    init_method = "pathfinder"
+  )
+  expect_warning(
+    args <- create_stan_args(stan = stan, data = list(a = 1), init = 5),
+    "pathfinder"
+  )
+  expect_identical(args$init, 5)
+})
+
 test_that("create_stan_args ignores init_method for non-sampling methods", {
   fake_model <- fake_pathfinder_model()
   stan <- list(
