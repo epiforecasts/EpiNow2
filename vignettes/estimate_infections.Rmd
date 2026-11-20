@@ -118,7 +118,7 @@ Alongside the instantaneous reproduction number, the model also returns the case
   R^{\text{case}}_t = \sum_{\tau = 1}^{g_\mathrm{max}} g(\tau | \theta_g) R_{t + \tau}.
 \end{equation}
 
-Because it is calculated from the jointly-estimated $R_t$ trajectory, `R_case` shares its uncertainty and is not estimated separately. It is undefined over the last $g_\mathrm{max} - 1$ days of that trajectory, as this would require $R_t$ beyond the days for which it has been estimated; the returned `R_case` series is correspondingly shorter than `R`. When population adjustment is used, `R_case` is calculated from the adjusted `R` that is returned, so the two agree under susceptible depletion.
+Because it is calculated from the jointly-estimated $R_t$ trajectory, `R_case` shares its uncertainty and is not estimated separately. It is undefined over the last $g_\mathrm{max} - 1$ days of that trajectory because it would require $R_t$ beyond the estimated days, so the returned `R_case` series is shorter than `R`. With population adjustment, `R_case` is calculated from the adjusted `R` that is returned. The two therefore agree under susceptible depletion.
 
 ### Beyond the end of the observation period
 
