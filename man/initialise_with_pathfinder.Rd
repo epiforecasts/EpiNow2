@@ -35,5 +35,7 @@ Returns \code{init} unchanged unless \code{init_method} is "pathfinder" and samp
 (rather than fixed-parameter sampling or an approximate method) is being
 used, in which case the pathfinder algorithm's estimate of the posterior
 is returned instead, for use as \code{init} when initialising the NUTS sampler.
+If the pathfinder algorithm fails, a warning is issued and \code{init} is
+returned.
 }
 \keyword{internal}
