@@ -33,7 +33,10 @@ stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 returned.}
 
 \item{...}{Additional parameters to pass to underlying option functions,
-\code{\link[=stan_sampling_opts]{stan_sampling_opts()}} or \code{\link[=stan_vb_opts]{stan_vb_opts()}}, depending on the method}
+\code{\link[=stan_sampling_opts]{stan_sampling_opts()}} or \code{\link[=stan_vb_opts]{stan_vb_opts()}}, depending on the method. When
+\code{method} is "sampling" this includes \code{init_method}, which can be set to
+"pathfinder" to initialise sampling using the pathfinder algorithm (see
+\code{\link[=stan_sampling_opts]{stan_sampling_opts()}}).}
 }
 \value{
 A \verb{<stan_opts>} object of arguments to pass to the appropriate
@@ -50,6 +53,9 @@ stan_opts(samples = 1000)
 
 # using vb
 stan_opts(method = "vb")
+
+# initialise sampling using the pathfinder algorithm
+stan_opts(backend = "cmdstanr", init_method = "pathfinder")
 }
 \seealso{
 \code{\link[=stan_sampling_opts]{stan_sampling_opts()}} \code{\link[=stan_vb_opts]{stan_vb_opts()}}
