@@ -75,9 +75,9 @@ prior range. The Ornstein-Uhlenbeck kernel (Matern with
 functions uses a relationship derived for it (see \code{gp_approx_constants()}).
 Its boundary uses the Matern 3/2 relationship, which was not re-derived.
 The periodic kernel has no boundary, and its number of basis functions is
-chosen from the 5\% quantile using Appendix B. After fitting, a warning is
-given if the posterior median lengthscale lies
-outside the range that the approximation represents accurately.
+chosen from the 5\% quantile using Appendix B. After fitting, \code{EpiNow2}
+warns if the posterior median lengthscale lies outside the range that the
+approximation represents accurately.
 }
 \examples{
 # default settings

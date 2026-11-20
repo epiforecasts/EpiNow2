@@ -29,7 +29,7 @@ The same procedure reproduced the squared exponential and Matern 3/2 and
 5/2 constants to within 8-13\%. Matern 1/2 is the roughest kernel, so it
 needs the most basis functions. Its \code{c_factor} was not independently
 validated and uses the Matern 3/2 value. The periodic kernel has no
-boundary and needs \code{m >= m_factor * S / l} basis functions (Appendix B), so
+boundary and needs \code{m >= m_factor * S / l} basis functions (Appendix B);
 its \code{c_factor} is \code{NA}.
 }
 \keyword{internal}

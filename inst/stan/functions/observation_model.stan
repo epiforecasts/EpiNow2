@@ -198,8 +198,9 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
  * @par Example
  * For `reports = {10, 12, 8, 15, 20}` and `accumulate = {0, 1, 0, 0}`, index 2
  * is not separately observed, so its value is rolled forward into index 3
- * (`8 + 12 = 20`), giving `{10, 12, 20, 15, 20}`. This models, for example, a
- * day whose cases are only reported together with the following day's.
+ * (`8 + 12 = 20`), giving `{10, 12, 20, 15, 20}`. This models, for example,
+ * cases for one day that are only reported together with cases for the
+ * following day.
  *
  * @ingroup observation_model
  */
