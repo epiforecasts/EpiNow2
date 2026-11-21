@@ -219,9 +219,13 @@ transformed parameters {
     gp_boundary_scale, gp_kernel, gp_nu,
     state_gp_alpha, state_gp_rho, gp_phi
   );
-  // trajectory of the (possibly time-varying) reporting overdispersion
-  vector[ot_h] reporting_overdispersion = get_state_trajectory(
-    param_id_reporting_overdispersion, ot_h,
+  // trajectory of the (possibly time-varying) reporting overdispersion,
+  // stored at length one when it is constant
+  vector[
+    state_length(param_id_reporting_overdispersion, ot_h, state_param_id)
+  ] reporting_overdispersion = get_state_trajectory(
+    param_id_reporting_overdispersion,
+    state_length(param_id_reporting_overdispersion, ot_h, state_param_id),
     get_param(
       param_id_reporting_overdispersion, params_fixed_lookup,
       params_variable_lookup, params_value, params
@@ -454,8 +458,8 @@ model {
   if (likelihood) {
     profile("report lp") {
       report_lp(
-        cases, case_times, obs_reports, reporting_overdispersion[1:ot],
-        model_type, obs_weight
+        cases, case_times, obs_reports, reporting_overdispersion, model_type,
+        obs_weight
       );
     }
   }
@@ -514,20 +518,20 @@ generated quantities {
         accumulate_reports(reports, accumulate);
       imputed_reports = report_rng(
         accumulated_reports[imputed_times],
-        reporting_overdispersion[imputed_times], model_type
+        at_times(reporting_overdispersion, imputed_times), model_type
       );
     } else {
       imputed_reports = report_rng(
-        reports[imputed_times], reporting_overdispersion[imputed_times],
-        model_type
+        reports[imputed_times],
+        at_times(reporting_overdispersion, imputed_times), model_type
       );
     }
 
     // log likelihood of model
     if (return_likelihood) {
       log_lik = report_log_lik(
-        cases, obs_reports[case_times], reporting_overdispersion[case_times],
-        model_type, obs_weight
+        cases, obs_reports[case_times],
+        at_times(reporting_overdispersion, case_times), model_type, obs_weight
       );
     }
   }

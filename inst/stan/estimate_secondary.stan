@@ -130,7 +130,7 @@ model {
     );
     report_lp(
       obs[(burn_in + 1):t][obs_time], obs_time, secondary[(burn_in + 1):t],
-      rep_vector(reporting_overdispersion, t - burn_in), model_type, 1
+      rep_vector(reporting_overdispersion, 1), model_type, 1
     );
   }
 }

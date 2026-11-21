@@ -136,3 +136,15 @@ test_that("rw_dev_knots matches a legacy rw = 7 breakpoint vector", {
   levels <- c(0, cumsum(steps))[floor(seq_len(n) / 7) + 1]
   expect_equal(dev, levels - mean(levels))
 })
+
+test_that("state_length stores a parameter without a state at length one", {
+  expect_identical(state_length(3L, 20L, c(1L, 3L)), 20L)
+  expect_identical(state_length(2L, 20L, c(1L, 3L)), 1L)
+  expect_identical(state_length(2L, 20L, integer(0)), 1L)
+})
+
+test_that("at_times indexes a trajectory and repeats a constant one", {
+  times <- c(2L, 4L, 5L)
+  expect_equal(at_times(c(0.1, 0.2, 0.3, 0.4, 0.5), times), c(0.2, 0.4, 0.5))
+  expect_equal(at_times(0.7, times), rep(0.7, 3))
+})

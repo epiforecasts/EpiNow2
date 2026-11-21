@@ -148,13 +148,15 @@ real reporting_phi(real reporting_overdispersion, int model_type) {
  * Update log density for reported cases
  *
  * This function updates the log density for reported cases based on the
- * specified model type.
+ * specified model type. A constant overdispersion is passed as a vector of
+ * length one and stays scalar in the density, which then evaluates its
+ * dispersion terms once rather than once per observation.
  *
  * @param cases Array of integer observed cases.
  * @param case_times Array of integer time indices for observed cases.
  * @param reports Vector of expected reports.
  * @param reporting_overdispersion Vector of reporting overdispersion, one per
- * report.
+ * report, or of length one if it is constant (see `state_length()`).
  * @param model_type Integer indicating the model type.
  * @param weight Real value for weighting the log density contribution.
  *
@@ -164,18 +166,25 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
                vector reporting_overdispersion, int model_type, real weight) {
   int n = num_elements(case_times); // number of observations
   vector[n] obs_reports = reports[case_times]; // reports at observation time
-  if (model_type) {
-    vector[n] phi = inv_square(reporting_overdispersion[case_times]);
+  if (!model_type) {
+    if (weight == 1) {
+      cases ~ poisson(obs_reports);
+    } else {
+      target += poisson_lpmf(cases | obs_reports) * weight;
+    }
+  } else if (num_elements(reporting_overdispersion) == 1) {
+    real phi = inv_square(reporting_overdispersion[1]);
     if (weight == 1) {
       cases ~ neg_binomial_2(obs_reports, phi);
     } else {
       target += neg_binomial_2_lpmf(cases | obs_reports, phi) * weight;
     }
   } else {
+    vector[n] phi = inv_square(reporting_overdispersion[case_times]);
     if (weight == 1) {
-      cases ~ poisson(obs_reports);
+      cases ~ neg_binomial_2(obs_reports, phi);
     } else {
-      target += poisson_lpmf(cases | obs_reports) * weight;
+      target += neg_binomial_2_lpmf(cases | obs_reports, phi) * weight;
     }
   }
 }

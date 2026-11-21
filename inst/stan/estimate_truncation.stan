@@ -114,7 +114,7 @@ model {
         obs[start_t[i]:(start_t[i] + n_t - 1), i],
         segment(case_times, 1, n_t),
         trunc_obs[obs_group[i]:(obs_group[i + 1] - 1)],
-        rep_vector(reporting_overdispersion, n_t), model_type, 1
+        rep_vector(reporting_overdispersion, 1), model_type, 1
       );
     }
   }

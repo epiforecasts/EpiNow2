@@ -267,6 +267,49 @@ vector component_dev(
 }
 
 /**
+ * Length at which to store the trajectory of a parameter
+ *
+ * A parameter with a state attached varies over time and needs its full
+ * trajectory; one without is constant, and storing it at length one lets
+ * functions that take it dispatch to cheaper scalar versions (see
+ * `at_times()`).
+ *
+ * @param id Target parameter id
+ * @param t Length of a time-varying trajectory
+ * @param state_param_id Target parameter id of each state
+ * @return `t` if a state is attached to the parameter, otherwise 1
+ *
+ * @ingroup estimates_smoothing
+ */
+int state_length(int id, int t, array[] int state_param_id) {
+  for (s in 1:num_elements(state_param_id)) {
+    if (state_param_id[s] == id) {
+      return t;
+    }
+  }
+  return 1;
+}
+
+/**
+ * Values of a stored trajectory at given times
+ *
+ * Reads a trajectory stored by `state_length()`: a time-varying trajectory is
+ * indexed at `times`, and a constant one (length one) is repeated.
+ *
+ * @param x Trajectory, of length one if the parameter is constant
+ * @param times Time indices to read
+ * @return A vector with one value per element of `times`
+ *
+ * @ingroup estimates_smoothing
+ */
+vector at_times(vector x, array[] int times) {
+  if (num_elements(x) == 1) {
+    return rep_vector(x[1], num_elements(times));
+  }
+  return x[times];
+}
+
+/**
  * Get the trajectory of a (possibly time-varying) parameter
  *
  * Thin dispatch over the registered states: if a state is attached to the
