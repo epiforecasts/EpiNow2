@@ -405,8 +405,7 @@ model {
   // parameter priors
   profile("param lp") {
     params_lp(
-      params, prior_dist, prior_dist_params, params_lower, params_upper,
-      params_skip_state_init_prior
+      params, prior_dist, prior_dist_params, params_skip_state_init_prior
     );
   }
 

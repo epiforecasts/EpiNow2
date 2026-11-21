@@ -94,6 +94,32 @@ void apply_prior_lp(real value, int dist,
 }
 
 /**
+ * Apply a prior to a sampled parameter
+ *
+ * Adds the log density of the chosen distribution to the target, without
+ * truncation: sampled parameters are declared with their bounds, and with
+ * fixed prior parameters the truncation would only add a constant.
+ *
+ * @param value Sampled parameter value.
+ * @param dist Prior distribution type (0: lognormal, 1: gamma, 2: normal).
+ * @param p1 First distribution parameter.
+ * @param p2 Second distribution parameter.
+ *
+ * @ingroup parameter_handlers
+ */
+void prior_lp(real value, int dist, real p1, real p2) {
+  if (dist == 0) {
+    value ~ lognormal(p1, p2);
+  } else if (dist == 1) {
+    value ~ gamma(p1, p2);
+  } else if (dist == 2) {
+    value ~ normal(p1, p2);
+  } else {
+    reject("dist must be 0, 1 or 2; found dist = ", dist);
+  }
+}
+
+/**
  * Update log density for parameter priors
  *
  * Adds the log density contributions from parameter priors to the target.
@@ -106,21 +132,11 @@ void apply_prior_lp(real value, int dist,
  */
 void params_lp(vector params, array[] int prior_dist,
               vector prior_dist_params) {
-  int params_id = 1;
-  int num_params = num_elements(params);
-  for (id in 1:num_params) {
-    real p1 = prior_dist_params[params_id];
-    real p2 = prior_dist_params[params_id + 1];
-    if (prior_dist[id] == 0) {
-      params[id] ~ lognormal(p1, p2);
-    } else if (prior_dist[id] == 1) {
-      params[id] ~ gamma(p1, p2);
-    } else if (prior_dist[id] == 2) {
-      params[id] ~ normal(p1, p2);
-    } else {
-      reject("dist must be 0, 1 or 2; found dist = ", prior_dist[id]);
-    }
-    params_id += 2;
+  for (id in 1:num_elements(params)) {
+    prior_lp(
+      params[id], prior_dist[id],
+      prior_dist_params[2 * id - 1], prior_dist_params[2 * id]
+    );
   }
 }
 
@@ -134,26 +150,19 @@ void params_lp(vector params, array[] int prior_dist,
  * @param params Vector of parameter values
  * @param prior_dist Array of prior distribution types
  * @param prior_dist_params Vector of prior distribution parameters
- * @param params_lower Vector of lower bounds for parameters
- * @param params_upper Vector of upper bounds for parameters
  * @param params_skip_state_init_prior Array, 1 to skip a parameter's prior
  *
  * @ingroup parameter_handlers
  */
 void params_lp(vector params, array[] int prior_dist,
-              vector prior_dist_params, vector params_lower,
-              vector params_upper, array[] int params_skip_state_init_prior) {
-  int params_id = 1;
-  int num_params = num_elements(params);
-  for (id in 1:num_params) {
+              vector prior_dist_params,
+              array[] int params_skip_state_init_prior) {
+  for (id in 1:num_elements(params)) {
     if (!params_skip_state_init_prior[id]) {
-      apply_prior_lp(
+      prior_lp(
         params[id], prior_dist[id],
-        prior_dist_params[params_id], prior_dist_params[params_id + 1],
-        params_lower[id], params_upper[id]
+        prior_dist_params[2 * id - 1], prior_dist_params[2 * id]
       );
     }
-    params_id += 2;
   }
 }
-
