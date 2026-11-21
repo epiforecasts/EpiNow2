@@ -3,8 +3,10 @@ skip_on_os("windows")
 
 test_that("assemble_state holds a random-walk deviation beyond the free window", {
   steps <- rep(0.1, 9)
-  dev <- rw_dev(n_free = 10, n_centre = 10, steps = steps, period = 1)
-  traj <- assemble_state(t = 15, n_free = 10, level = 1, dev = dev, link = 0)
+  dev <- rw_dev(n_free = 10, steps = steps, period = 1)
+  traj <- assemble_state(
+    t = 15, n_free = 10, level = 1, dev = dev, shift = 0, link = 0
+  )
   expect_length(traj, 15)
   # the walk is held constant from n_free + 1 through the forecast horizon
   expect_true(all(abs(traj[11:15] - traj[10]) < 1e-9))
@@ -12,16 +14,20 @@ test_that("assemble_state holds a random-walk deviation beyond the free window",
 
 test_that("assemble_state keeps a random-walk deviation varying when projected", {
   steps <- rep(c(0.2, -0.2), length.out = 14)
-  dev <- rw_dev(n_free = 15, n_centre = 10, steps = steps, period = 1)
-  traj <- assemble_state(t = 15, n_free = 15, level = 1, dev = dev, link = 0)
+  dev <- rw_dev(n_free = 15, steps = steps, period = 1)
+  traj <- assemble_state(
+    t = 15, n_free = 15, level = 1, dev = dev, shift = 0, link = 0
+  )
   expect_length(traj, 15)
   expect_gt(max(abs(traj[11:15] - traj[10])), 1e-6)
 })
 
 test_that("assemble_state holds a Gaussian process deviation beyond the free window", {
   noise <- seq(-0.2, 0.2, length.out = 9)
-  dev <- gp_dev(n_free = 10, n_centre = 10, noise = noise, anchor = 1)
-  traj <- assemble_state(t = 15, n_free = 10, level = 1, dev = dev, link = 0)
+  dev <- gp_dev(n_free = 10, noise = noise, anchor = 1)
+  traj <- assemble_state(
+    t = 15, n_free = 10, level = 1, dev = dev, shift = 0, link = 0
+  )
   expect_length(traj, 15)
   expect_true(all(abs(traj[11:15] - traj[10]) < 1e-9))
 })
@@ -40,7 +46,7 @@ test_that("get_state_trajectory halves M for the periodic kernel's doubled coeff
   phi <- PHI_periodic(nf, m_base, w0, x) # nf x (2 * m_base)
   rescaled_rho <- rescale_gp_lengthscale(rho, nf)
   expected_dev <- gp_dev(
-    n_free = nf, n_centre = nf,
+    n_free = nf,
     noise = update_gp(phi, m_base, L, alpha, rescaled_rho, eta, 1, 0),
     anchor = 0
   )
@@ -87,23 +93,44 @@ test_that("get_state_trajectory returns a constant trajectory when no state is a
 
 test_that("gp_dev with the init anchor starts at zero and accumulates the increments", {
   noise <- c(0.1, -0.3, 0.2, 0.05, 0.4)
-  dev <- gp_dev(n_free = 6, n_centre = 4, noise = noise, anchor = 1)
+  dev <- gp_dev(n_free = 6, noise = noise, anchor = 1)
   expect_length(dev, 6)
+  expect_equal(dev[1], 0)
   expect_equal(diff(dev), noise)
-  # centred over the observation window
-  expect_equal(mean(dev[1:4]), 0)
 })
 
 test_that("gp_dev centring does not depend on the forecast horizon", {
   noise <- c(0.1, -0.3, 0.2, 0.05, 0.4, -0.1, 0.2)
-  short <- gp_dev(n_free = 6, n_centre = 4, noise = noise[1:5], anchor = 1)
-  long <- gp_dev(n_free = 8, n_centre = 4, noise = noise, anchor = 1)
+  short <- gp_dev(n_free = 6, noise = noise[1:5], anchor = 1)
+  long <- gp_dev(n_free = 8, noise = noise, anchor = 1)
   expect_equal(long[1:6], short)
+  expect_equal(centring_shift(long, 4), centring_shift(short, 4))
 })
 
 test_that("gp_dev with the mean anchor returns the noise unchanged", {
   noise <- c(0.1, -0.3, 0.2)
-  expect_equal(gp_dev(n_free = 3, n_centre = 3, noise = noise, anchor = 0), noise)
+  expect_equal(gp_dev(n_free = 3, noise = noise, anchor = 0), noise)
+})
+
+test_that("centring_shift is the mean over the centring window", {
+  dev <- c(0.5, -0.1, 0.3, 2, 4)
+  expect_equal(centring_shift(dev, 3), mean(dev[1:3]))
+})
+
+test_that("component_centred centres random walks and init-anchored GPs only", {
+  expect_identical(component_centred(0L, 0L), 1L)
+  expect_identical(component_centred(0L, 1L), 1L)
+  expect_identical(component_centred(1L, 1L), 1L)
+  expect_identical(component_centred(1L, 0L), 0L)
+})
+
+test_that("assemble_state subtracts the centring shift from the baseline", {
+  dev <- c(0, 0.2, 0.5, 0.1)
+  traj <- assemble_state(
+    t = 4, n_free = 4, level = 2, dev = dev, shift = centring_shift(dev, 3),
+    link = 0
+  )
+  expect_equal(log(traj), log(2) + dev - mean(dev[1:3]))
 })
 
 test_that("gp_noise_points has one fewer point for the init anchor", {
@@ -111,30 +138,27 @@ test_that("gp_noise_points has one fewer point for the init anchor", {
   expect_equal(gp_noise_points(10, 1), 9)
 })
 
-test_that("rw_dev steps every period days and is centred", {
+test_that("rw_dev steps every period days", {
   steps <- c(0.5, -0.2)
-  dev <- rw_dev(n_free = 15, n_centre = 15, steps = steps, period = 7)
-  uncentred <- c(rep(0, 7), rep(0.5, 7), 0.3)
-  expect_equal(dev, uncentred - mean(uncentred))
+  dev <- rw_dev(n_free = 15, steps = steps, period = 7)
+  expect_equal(dev, c(rep(0, 7), rep(0.5, 7), 0.3))
 })
 
-test_that("rw_dev_knots steps on the knot days and is centred", {
+test_that("rw_dev_knots steps on the knot days", {
   steps <- c(0.5, -0.2)
-  dev <- rw_dev_knots(n_free = 8, n_centre = 6, steps = steps, knots = c(3L, 6L))
-  uncentred <- c(0, 0, 0.5, 0.5, 0.5, 0.3, 0.3, 0.3)
-  expect_equal(dev, uncentred - mean(uncentred[1:6]))
+  dev <- rw_dev_knots(n_free = 8, steps = steps, knots = c(3L, 6L))
+  expect_equal(dev, c(0, 0, 0.5, 0.5, 0.5, 0.3, 0.3, 0.3))
 })
 
 test_that("rw_dev_knots matches a legacy rw = 7 breakpoint vector", {
   steps <- c(0.5, -0.2)
   n <- 20
   dev <- rw_dev_knots(
-    n_free = n, n_centre = n, steps = steps,
-    knots = as.integer(seq(7, n, by = 7))
+    n_free = n, steps = steps, knots = as.integer(seq(7, n, by = 7))
   )
   # previous implementation: level index floor(i / rw)
   levels <- c(0, cumsum(steps))[floor(seq_len(n) / 7) + 1]
-  expect_equal(dev, levels - mean(levels))
+  expect_equal(dev, levels)
 })
 
 test_that("state_length stores a parameter without a state at length one", {
@@ -147,4 +171,46 @@ test_that("at_times indexes a trajectory and repeats a constant one", {
   times <- c(2L, 4L, 5L)
   expect_equal(at_times(c(0.1, 0.2, 0.3, 0.4, 0.5), times), c(0.2, 0.4, 0.5))
   expect_equal(at_times(0.7, times), rep(0.7, 3))
+})
+
+test_that("get_state_trajectory sums components on a zero-padded basis", {
+  # two GP components with different basis sizes share a basis array padded
+  # to the larger one, as built in transformed data
+  nf <- 10
+  ng <- nf - 1 # init anchor
+  m <- c(4L, 2L)
+  L <- 1.5
+  alpha <- c(0.3, 0.2)
+  rho <- c(2, 5)
+  eta <- c(0.5, -1, 0.3, 0.8, -0.4, 1.2)
+  phi <- lapply(m, function(mi) setup_gp(mi, L, ng, 0, 1))
+  padded <- lapply(phi, function(p) {
+    out <- matrix(0, ng, max(m))
+    out[, seq_len(ncol(p))] <- p
+    out
+  })
+  noise <- lapply(1:2, function(i) {
+    update_gp(
+      phi[[i]], m[i], L, alpha[i], rescale_gp_lengthscale(rho[i], ng),
+      eta[c(0, cumsum(m))[i] + seq_len(m[i])], 2, 1.5
+    )
+  })
+  dev <- gp_dev(nf, noise[[1]], 1) + gp_dev(nf, noise[[2]], 1)
+  expected <- 2 * exp(dev - mean(dev[1:8]))
+
+  traj <- get_state_trajectory(
+    id = 1, t = nf, level = 2,
+    state_param_id = 1L, state_link = 0L, state_anchor = 1L,
+    state_comp_offset = 0L, state_comp_n = 2L,
+    state_n_free = nf, state_n_centre = 8L,
+    comp_type = c(1L, 1L), comp_pos = 1:2,
+    comp_rw_n = c(0L, 0L), comp_rw_offset = c(0L, 0L), state_rw_period = 1L,
+    rw_knots_n = integer(0), rw_knots_offset = integer(0),
+    rw_knots = integer(0), state_rw_steps = numeric(0),
+    comp_gp_M = m, comp_gp_offset = c(0L, m[1]), state_gp_eta = eta,
+    gp_boundary_scale = c(L, L), gp_kernel = c(2L, 2L), gp_nu = c(1.5, 1.5),
+    state_gp_alpha = alpha, state_gp_rho = rho,
+    gp_phi = padded
+  )
+  expect_equal(traj, expected)
 })

@@ -128,7 +128,10 @@ transformed data {
       }
     }
   }
-  array[n_gp_components] matrix[max_gp_nf, max_gp_M] gp_phi;
+  // zero padding: component_dev() multiplies the whole padded basis
+  array[n_gp_components] matrix[max_gp_nf, max_gp_M] gp_phi = rep_array(
+    rep_matrix(0, max_gp_nf, max_gp_M), n_gp_components
+  );
   for (s in 1:n_states) {
     for (k in 1:state_comp_n[s]) {
       int c = state_comp_offset[s] + k;

@@ -165,7 +165,7 @@ Honouring the `breakpoint` column losslessly requires irregular date-anchored kn
 
 Stan (`inst/stan/functions/state.stan`, `inst/stan/data/states.stan`, `inst/stan/data/random_walk.stan`):
 
-- `assemble_state(t, n_free, level, dev, link)` combines a baseline with a link-scale deviation `dev` (length `n_free`, the window over which the state varies) and holds the last value through the forecast horizon.
+- `assemble_state(t, n_free, level, dev, shift, link)` combines a baseline with a link-scale deviation `dev` (length `n_free`, the window over which the state varies), subtracts the centring `shift` from the baseline and holds the last value through the forecast horizon. The `*_dev` functions return uncentred deviations, and `get_state_trajectory()` sums the centring shifts of the centred components (`centring_shift()`), so centring costs one scalar instead of an operation per time point.
 - Each generator is a `*_dev` function returning just the deviation vector (`rw_dev`, `gp_dev`, and `rw_dev_knots` for irregular knots), combined with the baseline through a single shared `assemble_state` call, verified byte-identical to `main`'s target density via `log_prob` (see Tests).
 - A state indexes a contiguous block of a **component table** (`state_comp_offset`, `state_comp_n`), each entry with its own `comp_type`/`comp_pos` and hyperparameter references.
   `get_state_trajectory()` loops a state's components, sums their `*_dev` deviations, and calls `assemble_state` once.

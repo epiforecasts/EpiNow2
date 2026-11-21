@@ -25,7 +25,9 @@
  *    horizon);
  *  - `n_centre`: the leading window over which an init-anchored (non-stationary)
  *    state is centred for identifiability. This is the observation window, so
- *    centring is invariant to how far the state is projected.
+ *    centring is invariant to how far the state is projected. The components
+ *    return uncentred deviations and the centring is applied to the baseline
+ *    (see `centring_shift`), which is cheaper than shifting every time point.
  *
  * Components combine additively on the link scale; the trajectory is returned on
  * the natural scale (the inverse link is applied here, e.g. `exp` for a log
@@ -38,23 +40,27 @@
  * Assemble a trajectory from a baseline and a link-scale deviation
  *
  * Shared by every state trajectory: adds the deviation `dev` (length
- * `n_free`, on the link scale) to the baseline over the free window,
- * holds the last value constant through the remaining forecast horizon, and
- * returns on the natural scale (applying the inverse link).
+ * `n_free`, on the link scale) to the baseline over the free window, less
+ * the centring `shift`, holds the last value constant through the remaining
+ * forecast horizon, and returns on the natural scale (applying the inverse
+ * link).
  *
  * @param t Total trajectory length
  * @param n_free Window over which the state varies (holds its last value after)
  * @param level Baseline parameter value on the natural scale
  * @param dev Link-scale deviation over the free window (length n_free)
+ * @param shift Link-scale centring shift subtracted from the baseline (see
+ *   `centring_shift`)
  * @param link Link function (0 = log)
  * @return A vector of length t with the parameter trajectory (natural scale)
  *
  * @ingroup estimates_smoothing
  */
-vector assemble_state(int t, int n_free, real level, vector dev, int link) {
+vector assemble_state(int t, int n_free, real level, vector dev, real shift,
+                      int link) {
   real intercept = link == 0 ? log(level) : level;
   vector[t] x;
-  x[1:n_free] = intercept + dev;
+  x[1:n_free] = (intercept - shift) + dev;
   if (t > n_free) {
     x[(n_free + 1):t] = rep_vector(x[n_free], t - n_free); // hold last value
   }
@@ -62,23 +68,56 @@ vector assemble_state(int t, int n_free, real level, vector dev, int link) {
 }
 
 /**
+ * Centring shift of a deviation over the observation window
+ *
+ * Subtracting this from the baseline centres the deviation over its leading
+ * `n_centre` points, which keeps the baseline identifiable. It is applied to
+ * the baseline as a single scalar rather than to every point of the
+ * deviation; `sum() / n` is used rather than `mean()` as `sum()` is a single
+ * autodiff node.
+ *
+ * @param dev Link-scale deviation
+ * @param n_centre Leading window to centre over
+ * @return The mean of the first `n_centre` elements of `dev`
+ *
+ * @ingroup estimates_smoothing
+ */
+real centring_shift(vector dev, int n_centre) {
+  return sum(dev[1:n_centre]) / n_centre;
+}
+
+/**
+ * Whether a component is centred over the observation window
+ *
+ * Random walks are always centred, and Gaussian processes only for the `init`
+ * anchor: a `mean`-anchored Gaussian process reverts to the baseline itself.
+ *
+ * @param type Component type (0 = RW, 1 = GP)
+ * @param anchor Anchor of the component's state (0 = mean, 1 = init)
+ * @return 1 if the component is centred, otherwise 0
+ *
+ * @ingroup estimates_smoothing
+ */
+int component_centred(int type, int anchor) {
+  return type == 0 || anchor == 1;
+}
+
+/**
  * Build a random-walk deviation for a time-varying parameter
  *
  * The walk is the cumulative sum of `steps`, expanded so each step applies to a
- * block of `period` time points, then centred over the observation window
- * (`n_centre`) so the baseline is identifiable. Returns the mean-zero link-scale
- * deviation over the free window, ready to combine additively with other
- * components before `assemble_state`.
+ * block of `period` time points. Returns the uncentred link-scale deviation
+ * over the free window, ready to combine additively with other components
+ * before `assemble_state`, which applies the centring.
  *
  * @param n_free Window over which the walk varies
- * @param n_centre Leading window used to centre the walk for identifiability
  * @param steps Random walk steps (one per period block, less one)
  * @param period Number of time points between random walk steps
  * @return A link-scale deviation of length n_free
  *
  * @ingroup estimates_smoothing
  */
-vector rw_dev(int n_free, int n_centre, vector steps, int period) {
+vector rw_dev(int n_free, vector steps, int period) {
   vector[n_free] dev = rep_vector(0, n_free);
   int n_steps = num_elements(steps);
   if (n_steps > 0) {
@@ -89,8 +128,6 @@ vector rw_dev(int n_free, int n_centre, vector steps, int period) {
     for (i in 1:n_free) {
       dev[i] = cum[(i - 1) %/% period + 1];
     }
-    // centre over the observation window for identifiability
-    dev -= mean(dev[1:n_centre]);
   }
   return dev;
 }
@@ -104,15 +141,13 @@ vector rw_dev(int n_free, int n_centre, vector steps, int period) {
  * `num_elements(knots)` equals `num_elements(steps)`.
  *
  * @param n_free Window over which the walk varies
- * @param n_centre Leading window used to centre the walk for identifiability
  * @param steps Random walk steps, one per knot
  * @param knots Ascending 1-indexed time points at which a new step starts
  * @return A link-scale deviation of length n_free
  *
  * @ingroup estimates_smoothing
  */
-vector rw_dev_knots(int n_free, int n_centre, vector steps,
-                    array[] int knots) {
+vector rw_dev_knots(int n_free, vector steps, array[] int knots) {
   vector[n_free] dev = rep_vector(0, n_free);
   int n_steps = num_elements(steps);
   if (n_steps > 0) {
@@ -129,8 +164,6 @@ vector rw_dev_knots(int n_free, int n_centre, vector steps,
       }
       dev[i] = cum[seg];
     }
-    // centre over the observation window for identifiability
-    dev -= mean(dev[1:n_centre]);
   }
   return dev;
 }
@@ -159,13 +192,11 @@ int gp_noise_points(int n_free, int anchor) {
  * around the baseline) and the deviation is the noise directly. For the `init`
  * anchor (`anchor = 1`) the GP models the `n_free - 1` increments between
  * successive time points, so the deviation starts at zero and accumulates the
- * noise, and is then centred over the observation window (`n_centre`) for
- * identifiability. Returns the link-scale deviation over the free window,
- * ready to combine additively with other components before `assemble_state`.
- * GP noise is supplied directly (computed via update_gp).
+ * noise; `assemble_state` then centres it. Returns the uncentred link-scale
+ * deviation over the free window, ready to combine additively with other
+ * components. GP noise is supplied directly (computed via update_gp).
  *
  * @param n_free Window over which the GP varies
- * @param n_centre Leading window used to centre an init-anchored GP
  * @param noise Gaussian process noise (length n_free for the `mean` anchor,
  *   n_free - 1 for the `init` anchor; see `gp_noise_points`)
  * @param anchor 0 = mean (stationary), 1 = init (non-stationary)
@@ -173,16 +204,12 @@ int gp_noise_points(int n_free, int anchor) {
  *
  * @ingroup estimates_smoothing
  */
-vector gp_dev(int n_free, int n_centre, vector noise, int anchor) {
-  vector[n_free] dev;
+vector gp_dev(int n_free, vector noise, int anchor) {
   if (anchor == 0) {
-    dev = noise; // stationary (mean-reverting)
-  } else {
-    // non-stationary: the GP gives the increments, so the path starts at 0
-    dev = append_row(0, cumulative_sum(noise));
-    dev -= mean(dev[1:n_centre]); // centre over the observation window
+    return noise; // stationary (mean-reverting)
   }
-  return dev;
+  // non-stationary: the GP gives the increments, so the path starts at 0
+  return append_row(0, cumulative_sum(noise));
 }
 
 /**
@@ -195,7 +222,6 @@ vector gp_dev(int n_free, int n_centre, vector noise, int anchor) {
  *
  * @param c Index of the component in the flat component table
  * @param nf Free-noise window of the component's state
- * @param nc Centring window of the component's state
  * @param anchor Anchor of the component's state (0 = mean, 1 = init)
  * @param comp_type Type of each component (0 = RW, 1 = GP)
  * @param comp_pos Index of each component within its type group
@@ -217,13 +243,15 @@ vector gp_dev(int n_free, int n_centre, vector noise, int anchor) {
  * @param state_gp_alpha GP magnitude of each GP component
  * @param state_gp_rho GP lengthscale of each GP component
  * @param gp_phi Precomputed GP basis of each GP component (built once in
- *   transformed data over its `gp_noise_points()`)
- * @return A vector of length `nf`, the component's link-scale deviation
+ *   transformed data over its `gp_noise_points()`, zero-padded to the largest
+ *   component)
+ * @return A vector of length `nf`, the component's uncentred link-scale
+ *   deviation
  *
  * @ingroup estimates_smoothing
  */
 vector component_dev(
-  int c, int nf, int nc, int anchor,
+  int c, int nf, int anchor,
   array[] int comp_type, array[] int comp_pos,
   array[] int comp_rw_n, array[] int comp_rw_offset, int state_rw_period,
   array[] int rw_knots_n, array[] int rw_knots_offset, array[] int rw_knots,
@@ -240,16 +268,16 @@ vector component_dev(
     if (rw_knots_n[p] > 0) {
       // knots are clipped to comp_rw_n[c] entries by transformed data
       return rw_dev_knots(
-        nf, nc, steps, segment(rw_knots, rw_knots_offset[p] + 1, comp_rw_n[c])
+        nf, steps, segment(rw_knots, rw_knots_offset[p] + 1, comp_rw_n[c])
       );
     }
-    return rw_dev(nf, nc, steps, state_rw_period);
+    return rw_dev(nf, steps, state_rw_period);
   }
   int p = comp_pos[c];
   int M = comp_gp_M[c]; // total eta/phi columns (the periodic kernel's are doubled)
   vector[M] eta = segment(state_gp_eta, comp_gp_offset[c] + 1, M);
   // the basis is built once in transformed data (it is data-only); here we
-  // just apply the per-iteration hyperparameters through update_gp. Its own
+  // just apply the per-iteration hyperparameters through gp_weights. Its own
   // M argument is the base (pre-doubling) basis count: it doubles it itself
   // for the periodic kernel, matching the doubled eta/phi columns above.
   int M_base = gp_kernel[p] == 1 ? M %/% 2 : M;
@@ -257,13 +285,17 @@ vector component_dev(
   if (ng == 0) {
     return rep_vector(0, nf);
   }
-  // pass the basis as a slice: copied into a local matrix it would be
-  // promoted to an autodiff type, making its product with the coefficients
-  // much more expensive on every gradient evaluation
-  return gp_dev(nf, nc, update_gp(
-    gp_phi[p][1:ng, 1:M], M_base, gp_boundary_scale[p], state_gp_alpha[p],
+  vector[M] weights = gp_weights(
+    M_base, gp_boundary_scale[p], state_gp_alpha[p],
     rescale_gp_lengthscale(state_gp_rho[p], ng), eta, gp_kernel[p], gp_nu[p]
-  ), anchor);
+  );
+  // gp_phi[p] is padded to the largest component. Multiplying all of it by
+  // zero-padded weights avoids copying a slice of it on every gradient
+  // evaluation; with a single GP component there is no padding.
+  vector[cols(gp_phi[p])] padded_weights = append_row(
+    weights, rep_vector(0, cols(gp_phi[p]) - M)
+  );
+  return gp_dev(nf, head(gp_phi[p] * padded_weights, ng), anchor);
 }
 
 /**
@@ -374,11 +406,15 @@ vector get_state_trajectory(
     if (state_param_id[s] == id) {
       int nf = state_n_free[s];
       int nc = state_n_centre[s];
-      vector[nf] dev = rep_vector(0, nf);
+      if (state_comp_n[s] == 0) {
+        return rep_vector(level, t);
+      }
+      vector[nf] dev; // set by the first component
+      real shift = 0;
       for (k in 1:state_comp_n[s]) {
         int c = state_comp_offset[s] + k;
-        dev += component_dev(
-          c, nf, nc, state_anchor[s],
+        vector[nf] comp = component_dev(
+          c, nf, state_anchor[s],
           comp_type, comp_pos,
           comp_rw_n, comp_rw_offset, state_rw_period,
           rw_knots_n, rw_knots_offset, rw_knots, state_rw_steps,
@@ -386,8 +422,18 @@ vector get_state_trajectory(
           gp_boundary_scale, gp_kernel, gp_nu,
           state_gp_alpha, state_gp_rho, gp_phi
         );
+        // the first component starts the sum: initialising it at zero would
+        // add an autodiff variable per time point
+        if (k == 1) {
+          dev = comp;
+        } else {
+          dev += comp;
+        }
+        if (component_centred(comp_type[c], state_anchor[s])) {
+          shift += centring_shift(comp, nc);
+        }
       }
-      return assemble_state(t, nf, level, dev, state_link[s]);
+      return assemble_state(t, nf, level, dev, shift, state_link[s]);
     }
   }
   return rep_vector(level, t);

@@ -156,6 +156,14 @@ test_that("update_gp returns correct dimensions and values", {
   expect_equal(matrix(result, ncol = 1), expected_result, tolerance = 1e-8)
 })
 
+test_that("gp_weights scales the coefficients by the spectral density", {
+  eta <- c(0.5, -1, 2)
+  expect_equal(
+    gp_weights(3, 1.2, 0.7, 2, eta, 2, 1.5),
+    diagSPD_Matern32(0.7, 2, 1.2, 3) * eta
+  )
+})
+
 test_that("rescale_gp_lengthscale matches the half-range of the GP", {
   expect_equal(rescale_gp_lengthscale(21, 22), 21 / 10.5)
   expect_equal(rescale_gp_lengthscale(21, 1), 42)
