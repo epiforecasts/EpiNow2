@@ -474,19 +474,6 @@ references:
   doi: 10.32614/CRAN.package.rstantools
   version: '>= 2.2.0'
 - type: software
-  title: runner
-  abstract: 'runner: Running Operations for Vectors'
-  notes: Imports
-  url: https://github.com/gogonzo/runner
-  repository: https://CRAN.R-project.org/package=runner
-  authors:
-  - family-names: Kałędkowski
-    given-names: Dawid
-    email: dawid.kaledkowski@gmail.com
-    orcid: https://orcid.org/0000-0001-9533-457X
-  year: '2026'
-  doi: 10.32614/CRAN.package.runner
-- type: software
   title: scales
   abstract: 'scales: Scale Functions for Visualization'
   notes: Imports

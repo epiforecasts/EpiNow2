@@ -7,7 +7,8 @@
 backcalc_opts(
   prior = c("reports", "none", "infections"),
   prior_window = 14,
-  rt_window = 1
+  rt_window = 1,
+  gp = GP()
 )
 }
 \arguments{
@@ -32,6 +33,12 @@ informative prior).}
 \item{rt_window}{Integer, defaults to 1. The size of the centred rolling
 average to use when estimating Rt. This must be odd so that the central
 estimate is included.}
+
+\item{gp}{The time-varying deviation of latent infections from the prior,
+on the log scale: a \code{\link[=GP]{GP()}} or \code{\link[=RW]{RW()}} specification without \code{mean} or \code{init},
+or a sum of them. It varies over the whole time series, including the
+forecast horizon. Defaults to \code{GP()}. Set to \code{NULL} to use the smoothed
+mean delay shifted reported cases as infections, whatever \code{prior} is.}
 }
 \value{
 A \verb{<backcalc_opts>} object of back calculation settings.
@@ -43,4 +50,7 @@ of cases. Only used if \code{rt = NULL}.
 \examples{
 # default settings
 backcalc_opts()
+
+# a Gaussian process with a shorter lengthscale
+backcalc_opts(gp = GP(ls = LogNormal(mean = 7, sd = 3, max = 30)))
 }

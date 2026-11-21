@@ -34,3 +34,20 @@ test_that("create_stan_args excludes deterministic quantities from monitoring fo
   expect_false("trunc_obs" %in% args$pars)
   expect_false(args$include)
 })
+
+test_that("create_stan_args excludes a constant fraction observed trajectory", {
+  fixed <- list(
+    param_id_fraction_observed = 2L, params_variable_lookup = c(1L, 0L),
+    state_param_id = array(1L)
+  )
+  args <- create_stan_args(model = "estimate_infections", data = fixed)
+  expect_true("fraction_observed" %in% args$pars)
+
+  estimated <- modifyList(fixed, list(params_variable_lookup = c(1L, 2L)))
+  args <- create_stan_args(model = "estimate_infections", data = estimated)
+  expect_false("fraction_observed" %in% args$pars)
+
+  with_state <- modifyList(fixed, list(state_param_id = array(c(1L, 2L))))
+  args <- create_stan_args(model = "estimate_infections", data = with_state)
+  expect_false("fraction_observed" %in% args$pars)
+})

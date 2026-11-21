@@ -2,20 +2,26 @@
 % Please edit documentation in R/checks.R
 \name{check_gp_fit}
 \alias{check_gp_fit}
-\title{Check the approximate GP of a fitted model}
+\title{Check the approximate GP of every GP component of a fitted model}
 \usage{
 check_gp_fit(fit, stan_data)
 }
 \arguments{
 \item{fit}{A fitted Stan model.}
 
-\item{stan_data}{A list of Stan data as returned by \code{\link[=create_gp_data]{create_gp_data()}}.}
+\item{stan_data}{The assembled Stan data list, as returned by
+\code{\link[=create_stan_data]{create_stan_data()}}.}
 }
 \value{
-Invisibly, the result of \code{\link[=check_gp_lengthscale]{check_gp_lengthscale()}}.
+Invisibly \code{NULL}. Called for its side effect of warning for any
+component whose posterior lengthscale falls outside the range its
+approximation represents accurately.
 }
 \description{
-Extracts the posterior lengthscale from a fitted model and passes it to
-\code{\link[=check_gp_lengthscale]{check_gp_lengthscale()}}.
+Extracts each GP component's posterior lengthscale from a fitted model and
+passes it to \code{\link[=check_gp_lengthscale]{check_gp_lengthscale()}}. A model may have any number of GP
+components (one per \code{GP()} in a parameter's state, across all
+time-varying parameters), so each is checked in turn against its own
+basis settings and free-noise window.
 }
 \keyword{internal}

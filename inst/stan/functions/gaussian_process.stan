@@ -148,28 +148,6 @@ matrix PHI_periodic(int N, int M, real w0, vector x) {
 }
 
 /**
-  * Setup Gaussian process noise dimensions
-  *
-  * @param ot_h Observation time horizon
-  * @param t Total time points
-  * @param horizon Forecast horizon
-  * @param estimate_r Indicator if estimating r
-  * @param stationary Indicator if stationary
-  * @param future_fixed Indicator if future is fixed
-  * @param fixed_from Fixed point from
-  * @return Number of noise terms
-  *
-  * @ingroup estimates_smoothing
-  */
-int setup_noise(int ot_h, int t, int horizon, int estimate_r,
-                int stationary, int future_fixed, int fixed_from) {
-  int noise_time = estimate_r > 0 ? (stationary > 0 ? ot_h : ot_h - 1) : t;
-  int noise_terms =
-    future_fixed > 0 ? (noise_time - horizon + fixed_from) : noise_time;
-  return noise_terms;
-}
-
-/**
   * Setup approximate Gaussian process
   *
   * @param M Number of basis functions
@@ -208,20 +186,23 @@ real rescale_gp_lengthscale(real rho, int dimension) {
 }
 
 /**
-  * Update Gaussian process using spectral densities
+  * Weights of the Gaussian process basis functions
   *
-  * @param PHI Basis functions matrix
+  * Scales the basis coefficients by the square root of the spectral density
+  * of the kernel, so that multiplying the basis functions by the result
+  * gives the Gaussian process (see `update_gp`).
+  *
   * @param M Number of basis functions
   * @param L Length of the interval
   * @param alpha Scaling parameter
   * @param rho Length scale parameter
-  * @param eta Vector of noise terms
+  * @param eta Vector of basis coefficients
   * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern)
   * @param nu Smoothness parameter for Matern kernel
-  * @return A vector of updated noise terms
+  * @return A vector of basis function weights
   */
-vector update_gp(matrix PHI, int M, real L, real alpha,
-                 real rho, vector eta, int type, real nu) {
+vector gp_weights(int M, real L, real alpha, real rho, vector eta, int type,
+                  real nu) {
   vector[type == 1 ? 2 * M : M] diagSPD;    // spectral density
 
   // GP in noise - spectral densities
@@ -240,17 +221,24 @@ vector update_gp(matrix PHI, int M, real L, real alpha,
       reject("nu must be one of 0.5, 1.5, or 2.5; found nu=", nu);
     }
   }
-  return PHI * (diagSPD .* eta);
+  return diagSPD .* eta;
 }
 
 /**
-  * Priors for Gaussian process (excluding length scale)
+  * Update Gaussian process using spectral densities
   *
+  * @param PHI Basis functions matrix
+  * @param M Number of basis functions
+  * @param L Length of the interval
+  * @param alpha Scaling parameter
+  * @param rho Length scale parameter
   * @param eta Vector of noise terms
-  *
-  * @ingroup estimates_smoothing
+  * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern)
+  * @param nu Smoothness parameter for Matern kernel
+  * @return A vector of updated noise terms
   */
-void gaussian_process_lp(vector eta) {
-  eta ~ std_normal();
+vector update_gp(matrix PHI, int M, real L, real alpha,
+                 real rho, vector eta, int type, real nu) {
+  return PHI * gp_weights(M, L, alpha, rho, eta, type, nu);
 }
 

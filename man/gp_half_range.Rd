@@ -7,7 +7,8 @@
 gp_half_range(n)
 }
 \arguments{
-\item{n}{Length of the Gaussian process.}
+\item{n}{Length of the Gaussian process (a component's own free-noise
+window).}
 }
 \value{
 The half-range (in days) of \code{n} equally spaced daily time points,
