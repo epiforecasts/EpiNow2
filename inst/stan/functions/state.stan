@@ -257,9 +257,11 @@ vector component_dev(
   if (ng == 0) {
     return rep_vector(0, nf);
   }
-  matrix[ng, M] phi = gp_phi[p][1:ng, 1:M];
+  // pass the basis as a slice: copied into a local matrix it would be
+  // promoted to an autodiff type, making its product with the coefficients
+  // much more expensive on every gradient evaluation
   return gp_dev(nf, nc, update_gp(
-    phi, M_base, gp_boundary_scale[p], state_gp_alpha[p],
+    gp_phi[p][1:ng, 1:M], M_base, gp_boundary_scale[p], state_gp_alpha[p],
     rescale_gp_lengthscale(state_gp_rho[p], ng), eta, gp_kernel[p], gp_nu[p]
   ), anchor);
 }
