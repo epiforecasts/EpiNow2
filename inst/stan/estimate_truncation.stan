@@ -56,10 +56,13 @@ parameters {
   // raw gamma values for estimated nonparametric delay PMFs;
   // normalised within each ragged segment to give a Dirichlet draw
   vector<lower = 0>[delay_np_est_length] delay_np_est_raw;
-  vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
+  vector[n_params_variable] params_raw;
 }
 
 transformed parameters {
+  vector[n_params_variable] params = params_to_bounds(
+    params_raw, params_lower, params_upper, params_loc, params_scale
+  );
   // combined fixed + estimated nonparametric delay PMF
   vector[delay_np_pmf_length] delay_np_pmf_use = combine_np_pmf(
     delay_np_pmf, delay_n_np_est, delay_np_est_groups,
@@ -100,7 +103,9 @@ model {
   delays_np_lp(delay_np_est_raw, delay_np_est_alpha);
 
   // priors for params (reporting_overdispersion, sigma)
-  params_lp(params, prior_dist, prior_dist_params);
+  params_lp(
+    params, prior_dist, prior_dist_params, params_lower, params_upper
+  );
 
   // log density of truncated latest data vs that observed
   if (likelihood) {

@@ -16,6 +16,7 @@
 - Simplified the Stan code that combines delays in `get_delay_rev_pmf()`, with new property tests for the delay functions.
 - Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior.
 - Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
+- Variable parameters in the `params` vector (such as `pop`, the observation scale or the dispersion) are now sampled on a scale standardised by their prior and then mapped to their bounds, so tight priors on bounded parameters no longer slow down warmup. The posterior is unchanged.
 
 ## Package changes
 

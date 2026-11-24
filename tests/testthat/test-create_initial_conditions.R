@@ -37,7 +37,7 @@ test_that("create_initial_conditions gives an empty R_mean when Rt is not estima
   expect_length(init()$R_mean, 0)
 })
 
-test_that("create_initial_conditions gives an empty params when none are variable", {
+test_that("create_initial_conditions gives an empty params_raw when none are variable", {
   base <- list(
     delay_n_p = 0, delay_np_est_length = 0, fixed = 1, estimate_r = 0,
     bp_n = 0, week_effect = 0, n_params_variable = 0L,
@@ -45,7 +45,7 @@ test_that("create_initial_conditions gives an empty params when none are variabl
   )
   stan_data <- c(base, make_init_priors(list()))
   init <- create_initial_conditions(stan_data, params = list())
-  expect_length(init()$params, 0)
+  expect_length(init()$params_raw, 0)
 })
 
 test_that("create_initial_conditions handles data without infection model fields", {

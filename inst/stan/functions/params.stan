@@ -94,18 +94,58 @@ void apply_prior_lp(real value, int dist,
 }
 
 /**
+ * Map unbounded parameters to their bounds
+ *
+ * Each element is sampled as `raw`, centred and scaled by the link-scale
+ * location and scale of its prior, so that the sampler sees parameters of
+ * order one however tight the prior is. The link is the logit for two finite
+ * bounds, the log distance from the bound for one, and the identity for none.
+ *
+ * @param raw Vector of unbounded parameters
+ * @param lb Vector of lower bounds
+ * @param ub Vector of upper bounds
+ * @param loc Vector of prior locations on the link scale
+ * @param scale Vector of prior scales on the link scale
+ * @return Vector of parameter values within their bounds
+ *
+ * @ingroup parameter_handlers
+ */
+vector params_to_bounds(vector raw, vector lb, vector ub, vector loc,
+                        vector scale) {
+  int n = num_elements(raw);
+  vector[n] out;
+  for (id in 1:n) {
+    real u = loc[id] + scale[id] * raw[id];
+    if (!is_inf(lb[id]) && !is_inf(ub[id])) {
+      out[id] = lb[id] + (ub[id] - lb[id]) * inv_logit(u);
+    } else if (!is_inf(lb[id])) {
+      out[id] = lb[id] + exp(u);
+    } else if (!is_inf(ub[id])) {
+      out[id] = ub[id] - exp(u);
+    } else {
+      out[id] = u;
+    }
+  }
+  return out;
+}
+
+/**
  * Update log density for parameter priors
  *
- * Adds the log density contributions from parameter priors to the target.
+ * Adds the log density contributions from parameter priors to the target,
+ * along with the log Jacobian of the mapping in `params_to_bounds()` (up to a
+ * constant).
  *
  * @param params Vector of parameter values
  * @param prior_dist Array of prior distribution types (0: lognormal, 1: gamma, 2: normal)
  * @param prior_dist_params Vector of prior distribution parameters
+ * @param lb Vector of lower bounds
+ * @param ub Vector of upper bounds
  *
  * @ingroup parameter_handlers
  */
 void params_lp(vector params, array[] int prior_dist,
-              vector prior_dist_params) {
+               vector prior_dist_params, vector lb, vector ub) {
   int params_id = 1;
   int num_params = num_elements(params);
   for (id in 1:num_params) {
@@ -119,6 +159,12 @@ void params_lp(vector params, array[] int prior_dist,
       params[id] ~ normal(p1, p2);
     } else {
       reject("dist must be 0, 1 or 2; found dist = ", prior_dist[id]);
+    }
+    if (!is_inf(lb[id])) {
+      target += log(params[id] - lb[id]);
+    }
+    if (!is_inf(ub[id])) {
+      target += log(ub[id] - params[id]);
     }
     params_id += 2;
   }
