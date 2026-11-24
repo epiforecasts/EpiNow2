@@ -254,7 +254,7 @@ plot(agp)
 We might want to adjust for future susceptible depletion.
 Here, we do so by setting the population to 1000000 and projecting the reproduction number from the latest estimate (rather than the default, which fixes the reproduction number to an earlier time point based on the given reporting delays).
 Note that this only affects the forecasts and is done using a crude adjustment (see the [model definition](estimate_infections.html)).
-The sampler may report a few divergent transitions or a low tail effective sample size for this example, because a tight prior on the population is difficult to explore (see [#1637](https://github.com/epiforecasts/EpiNow2/issues/1637)).
+The sampler may report a few divergent transitions or a low tail effective sample size for this example, because a tight prior on the population is hard to explore (see [#1637](https://github.com/epiforecasts/EpiNow2/issues/1637)).
 
 
 ``` r
