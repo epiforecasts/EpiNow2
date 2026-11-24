@@ -1085,12 +1085,9 @@ create_stan_delays <- function(..., time_points = 1L) {
 
 #' Prior location and scale on the link scale of a bounded parameter
 #'
-#' The Stan models sample each parameter as a unit-scale variable that is
-#' shifted and scaled by these values and then mapped to its bounds (logit for
-#' two finite bounds, log distance from the bound for one, identity for none).
-#' The scale uses the delta method at the prior mean. Where the mean is not
-#' strictly inside the bounds or the standard deviation is not positive, the
-#' location is 0 and the scale 1.
+#' Uses the delta method at the prior mean. Where the mean is not strictly
+#' inside the bounds or the standard deviation is not positive, the location is
+#' 0 and the scale 1.
 #'
 #' @param mean,sd Vectors of prior means and standard deviations.
 #' @param lower,upper Vectors of bounds.
@@ -1115,7 +1112,7 @@ prior_link_scale <- function(mean, sd, lower, upper) {
   )
 }
 
-#' Map a bounded parameter to the scale its bounds are mapped from
+#' Map a bounded parameter to its link scale
 #'
 #' @param x Vector of parameter values within `lower` and `upper`.
 #' @inheritParams prior_link_scale
@@ -1205,7 +1202,6 @@ create_stan_params <- function(params) {
     prior_dist_params <- numeric(0)
   }
 
-  ## location and scale of each prior on the scale the bounds are mapped from
   prior_link <- prior_link_scale(
     vapply(tparams$dist[!fixed], mean, numeric(1)),
     vapply(tparams$dist[!fixed], sd, numeric(1)),

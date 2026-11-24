@@ -2,7 +2,6 @@ int<lower = 0> n_params_variable; // number of parameters
 int<lower = 0> n_params_fixed; // number of parameters
 vector[n_params_variable] params_lower; // lower bounds of the priors
 vector[n_params_variable] params_upper; // upper bounds of the priors
-// location and scale of the priors on the scale the bounds are mapped from
 vector[n_params_variable] params_loc;
 vector<lower = 0>[n_params_variable] params_scale;
 

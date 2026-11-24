@@ -96,10 +96,8 @@ void apply_prior_lp(real value, int dist,
 /**
  * Map unbounded parameters to their bounds
  *
- * Each element is sampled as `raw`, centred and scaled by the link-scale
- * location and scale of its prior, so that the sampler sees parameters of
- * order one however tight the prior is. The link is the logit for two finite
- * bounds, the log distance from the bound for one, and the identity for none.
+ * The link is the logit for two finite bounds, the log distance from the bound
+ * for one, and the identity for none.
  *
  * @param raw Vector of unbounded parameters
  * @param lb Vector of lower bounds
@@ -133,8 +131,7 @@ vector params_to_bounds(vector raw, vector lb, vector ub, vector loc,
  * Update log density for parameter priors
  *
  * Adds the log density contributions from parameter priors to the target,
- * along with the log Jacobian of the mapping in `params_to_bounds()` (up to a
- * constant).
+ * along with the log Jacobian of `params_to_bounds()`.
  *
  * @param params Vector of parameter values
  * @param prior_dist Array of prior distribution types (0: lognormal, 1: gamma, 2: normal)

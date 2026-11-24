@@ -236,8 +236,8 @@ model {
   // parameter priors
   profile("param lp") {
     params_lp(
-    params, prior_dist, prior_dist_params, params_lower, params_upper
-  );
+      params, prior_dist, prior_dist_params, params_lower, params_upper
+    );
   }
 
   if (estimate_r) {
