@@ -1098,17 +1098,17 @@ prior_link_scale <- function(mean, sd, lower, upper) {
   up <- is.finite(upper)
   d_lo <- ifelse(lo, mean - lower, NA_real_)
   d_up <- ifelse(up, upper - mean, NA_real_)
-  scale <- fcase(
+  link_sd <- fcase(
     lo & up, sd * (upper - lower) / (d_lo * d_up),
     lo, sd / d_lo,
     up, sd / d_up,
     default = sd
   )
   loc <- params_link(mean, lower, upper)
-  ok <- is.finite(loc) & is.finite(scale) & scale > 0
+  ok <- is.finite(loc) & is.finite(link_sd) & link_sd > 0
   list(
     loc = ifelse(ok, loc, 0),
-    scale = ifelse(ok, scale, 1)
+    scale = ifelse(ok, link_sd, 1)
   )
 }
 
