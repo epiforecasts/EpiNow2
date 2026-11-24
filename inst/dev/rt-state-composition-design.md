@@ -14,12 +14,12 @@ A parameter given a state constructor (e.g. `GP(mean = LogNormal(2, 0.2))`) beco
 `is_state_spec()` tells the two apart.
 In Stan, `get_state_trajectory()` builds the actual value-over-time vector for a parameter, whichever of the above it is.
 
-`get_state_trajectory()` dispatches on a single scalar `state_type`: a state is exactly one GP *or* one RW, never both.
+A state can combine any number of GP and RW components; `get_state_trajectory()` sums them (see Composing components).
 
 ## Composing components
 
 The released model, `main`, already combines a random walk (breakpoints) *and* a Gaussian process on the same Rt trajectory: its `update_Rt` builds `logR = log(R0) + bp + gp`, adding both terms when both are present, and this is the default when a weekly random walk is requested with the GP left on.
-The single-`state_type` design above cannot express this: a state is one component, not several.
+A state with a single component cannot express this.
 This section designs composition, so a state can be built from any number of GP/RW components, generalised to any parameter (not just Rt).
 
 Every time-varying quantity is one shape:
@@ -32,7 +32,7 @@ value[t] = inv_link( level + Σ components[t] )
   Either a fixed number or a sampled parameter with a prior.
   Always present; it is not itself a component.
 - **components** — a (possibly empty) list of mean-zero deviations that vary over time.
-  Each is centred to average zero, so the level owns the mean and the components own the departures.
+  Random walks, and Gaussian processes on an `init`-anchored state, are centred over the observation window, so the level owns the mean and the components own the departures. A `mean`-anchored Gaussian process is stationary and reverts to the level by itself, so it is not centred.
   Centring composes: a sum of mean-zero vectors is mean-zero, so the level stays identified regardless of how many components sit on top.
 - **inv_link** — determined by the parameter (log for Rt and the observation scale, etc.), not chosen by the user.
 
@@ -166,7 +166,7 @@ Honouring the `breakpoint` column losslessly requires irregular date-anchored kn
 Stan (`inst/stan/functions/state.stan`, `inst/stan/data/states.stan`, `inst/stan/data/random_walk.stan`):
 
 - `assemble_state(t, n_free, level, dev, shift, link)` combines a baseline with a link-scale deviation `dev` (length `n_free`, the window over which the state varies), subtracts the centring `shift` from the baseline and holds the last value through the forecast horizon. The `*_dev` functions return uncentred deviations, and `get_state_trajectory()` sums the centring shifts of the centred components (`centring_shift()`), so centring costs one scalar instead of an operation per time point.
-- Each generator is a `*_dev` function returning just the deviation vector (`rw_dev`, `gp_dev`, and `rw_dev_knots` for irregular knots), combined with the baseline through a single shared `assemble_state` call, verified byte-identical to `main`'s target density via `log_prob` (see Tests).
+- Each generator is a `*_dev` function returning just the deviation vector (`rw_dev`, `gp_dev`, and `rw_dev_knots` for irregular knots), combined with the baseline through a single shared `assemble_state` call.
 - A state indexes a contiguous block of a **component table** (`state_comp_offset`, `state_comp_n`), each entry with its own `comp_type`/`comp_pos` and hyperparameter references.
   `get_state_trajectory()` loops a state's components, sums their `*_dev` deviations, and calls `assemble_state` once.
 - The level, link, anchor, free window and future behaviour stay at the state level (shared across a state's components).
@@ -182,7 +182,7 @@ R (`R/state.R`, `R/create.R`, `R/opts.R`):
 
 Tests:
 
-- A `log_prob` byte-identity check holds Δlp = 0 for single-component GP and RW against `main`'s target density (catches parameter-packing bugs).
+- Unit tests of the exposed Stan state functions (`test-stan-state.R`), including `assemble_state()`, `centring_shift()` and a two-component GP trajectory.
 - Composite tests (RW + GP on one trajectory) and an irregular-knots test.
 
 ## Future directions

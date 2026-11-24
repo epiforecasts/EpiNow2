@@ -23,11 +23,12 @@
  *    value constant from `n_free + 1` to `t`. Set by the `future` setting
  *    ("latest" fixes at the observation end, "project" extends over the whole
  *    horizon);
- *  - `n_centre`: the leading window over which an init-anchored (non-stationary)
- *    state is centred for identifiability. This is the observation window, so
- *    centring is invariant to how far the state is projected. The components
- *    return uncentred deviations and the centring is applied to the baseline
- *    (see `centring_shift`), which is cheaper than shifting every time point.
+ *  - `n_centre`: the leading window over which centred components (see
+ *    `component_centred`) are centred for identifiability. This is the
+ *    observation window, so centring is invariant to how far the state is
+ *    projected. The components return uncentred deviations and the centring
+ *    is applied to the baseline (see `centring_shift`), which is cheaper than
+ *    shifting every time point.
  *
  * Components combine additively on the link scale; the trajectory is returned on
  * the natural scale (the inverse link is applied here, e.g. `exp` for a log
@@ -363,7 +364,8 @@ vector at_times(vector x, array[] int times) {
  * @param state_comp_n Number of components of each state
  * @param state_n_free Free-noise window of each state (holds its last value
  *   through the remaining forecast horizon)
- * @param state_n_centre Leading window used to centre an init-anchored state
+ * @param state_n_centre Leading window over which centred components are
+ *   centred
  * @param comp_type Type of each component (0 = RW, 1 = GP)
  * @param comp_pos Index of each component within its type group
  * @param comp_rw_n Number of random walk steps of each component
@@ -384,7 +386,8 @@ vector at_times(vector x, array[] int times) {
  * @param state_gp_alpha GP magnitude of each GP component
  * @param state_gp_rho GP lengthscale of each GP component
  * @param gp_phi Precomputed GP basis of each GP component (built once in
- *   transformed data over its `gp_noise_points()`)
+ *   transformed data over its `gp_noise_points()`, zero-padded to the largest
+ *   component)
  * @return A vector of length t with the parameter trajectory
  *
  * @ingroup estimates_smoothing

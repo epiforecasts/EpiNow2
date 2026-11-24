@@ -75,7 +75,7 @@ transformed data {
       if (free_window > total) free_window = total;
     }
     state_n_free[s] = free_window;
-    // centre init-anchored states over the observation window (never beyond it)
+    // centre over the observation window (never beyond it)
     state_n_centre[s] =
       data_window < free_window ? data_window : free_window;
     // size each of the state's components against its (shared) free window
