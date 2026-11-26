@@ -219,3 +219,61 @@ test_that("default GP settings approximate the exact periodic kernel", {
     expect_lt(max(abs(approx - exact)), 0.05)
   }
 })
+
+test_that("gp_spd matches the kernel-specific spectral densities", {
+  M <- 4
+  L <- 1.5
+  expect_equal(gp_spd(M, L, 0.1, 0.5, 0, 1.5), diagSPD_EQ(0.1, 0.5, L, M))
+  expect_equal(gp_spd(M, L, 0.1, 0.5, 1, 1.5), diagSPD_Periodic(0.1, 0.5, M))
+  expect_equal(
+    gp_spd(M, L, 0.1, 0.5, 2, 0.5), diagSPD_Matern12(0.1, 0.5, L, M)
+  )
+  expect_equal(
+    gp_spd(M, L, 0.1, 0.5, 2, 1.5), diagSPD_Matern32(0.1, 0.5, L, M)
+  )
+  expect_equal(
+    gp_spd(M, L, 0.1, 0.5, 2, 2.5), diagSPD_Matern52(0.1, 0.5, L, M)
+  )
+  expect_error(gp_spd(M, L, 0.1, 0.5, 2, 1))
+})
+
+test_that("gp_trend_centring moves from non-centred to centred with the scale", {
+  expect_equal(gp_trend_centring(0, 0.5), 0)
+  expect_equal(gp_trend_centring(0.5, 0.5), 0.5)
+  expect_gt(gp_trend_centring(50, 0.5), 0.999)
+  expect_equal(gp_trend_raw_sd(0, 0.5), 1)
+  expect_equal(gp_trend_raw_sd(0.5, 0.5), 1)
+  expect_equal(gp_trend_raw_sd(2, 0.5), 4^gp_trend_centring(2, 0.5))
+})
+
+test_that("gp_eta_with_trend sets the trend and keeps the rest of eta", {
+  w <- c(0.3, -0.2, 0.1, 0.05)
+  eta <- c(0.5, -1, 2, 0.1)
+  raw <- 0.7
+  sigma <- 0.5
+  scale <- sqrt(sum(w^2))
+  c <- gp_trend_centring(scale, sigma)
+  out <- gp_eta_with_trend(eta, w, raw, sigma)
+  expect_equal(sum(w * out), sigma^c * scale^(1 - c) * raw)
+  # only the component along w changes
+  change <- out - eta
+  expect_equal(change - sum(change * w) / sum(w^2) * w, rep(0, 4))
+  # no trend loadings leave eta unchanged
+  expect_equal(gp_eta_with_trend(eta, rep(0, 4), raw, sigma), eta)
+})
+
+test_that("gp_eta_with_trend keeps the standard normal prior on eta", {
+  set.seed(123)
+  n <- 4000
+  sigma <- 0.5
+  # trend scales below, near and above sigma, so partly and mostly centred
+  for (k in c(0.1, 1, 6)) {
+    w <- k * c(0.3, -0.2, 0.1, 0.05) / sqrt(0.1425)
+    raw_sd <- gp_trend_raw_sd(sqrt(sum(w^2)), sigma)
+    draws <- t(vapply(seq_len(n), function(i) {
+      gp_eta_with_trend(rnorm(4), w, rnorm(1, sd = raw_sd), sigma)
+    }, numeric(4)))
+    expect_lt(max(abs(colMeans(draws))), 0.06)
+    expect_lt(max(abs(cov(draws) - diag(4))), 0.1)
+  }
+})

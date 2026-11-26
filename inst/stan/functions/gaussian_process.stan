@@ -208,6 +208,35 @@ real rescale_gp_lengthscale(real rho, int dimension) {
 }
 
 /**
+  * Spectral densities of the Gaussian process basis functions
+  *
+  * @param M Number of basis functions
+  * @param L Length of the interval
+  * @param alpha Scaling parameter
+  * @param rho Length scale parameter
+  * @param type Type of kernel (0: SE, 1: Periodic, 2: Matern)
+  * @param nu Smoothness parameter for Matern kernel
+  * @return A vector of spectral densities, of length 2 * M for the periodic
+  *   kernel and M otherwise
+  *
+  * @ingroup estimates_smoothing
+  */
+vector gp_spd(int M, real L, real alpha, real rho, int type, real nu) {
+  if (type == 0) {
+    return diagSPD_EQ(alpha, rho, L, M);
+  } else if (type == 1) {
+    return diagSPD_Periodic(alpha, rho, M);
+  } else if (nu == 0.5) {
+    return diagSPD_Matern12(alpha, rho, L, M);
+  } else if (nu == 1.5) {
+    return diagSPD_Matern32(alpha, rho, L, M);
+  } else if (nu == 2.5) {
+    return diagSPD_Matern52(alpha, rho, L, M);
+  }
+  reject("nu must be one of 0.5, 1.5, or 2.5; found nu=", nu);
+}
+
+/**
   * Update Gaussian process using spectral densities
   *
   * @param PHI Basis functions matrix
@@ -222,25 +251,71 @@ real rescale_gp_lengthscale(real rho, int dimension) {
   */
 vector update_gp(matrix PHI, int M, real L, real alpha,
                  real rho, vector eta, int type, real nu) {
-  vector[type == 1 ? 2 * M : M] diagSPD;    // spectral density
+  return PHI * (gp_spd(M, L, alpha, rho, type, nu) .* eta);
+}
 
-  // GP in noise - spectral densities
-  if (type == 0) {
-    diagSPD = diagSPD_EQ(alpha, rho, L, M);
-  } else if (type == 1) {
-    diagSPD = diagSPD_Periodic(alpha, rho, M);
-  } else if (type == 2) {
-    if (nu == 0.5) {
-      diagSPD = diagSPD_Matern12(alpha, rho, L, M);
-    } else if (nu == 1.5) {
-      diagSPD = diagSPD_Matern32(alpha, rho, L, M);
-    } else if (nu == 2.5) {
-      diagSPD = diagSPD_Matern52(alpha, rho, L, M);
-    } else {
-      reject("nu must be one of 0.5, 1.5, or 2.5; found nu=", nu);
-    }
+/**
+  * Degree of centring of the Gaussian process trend
+  *
+  * The trend is the sum of the GP increments over the observation window.
+  * Its prior sd is `scale`, which grows with the GP magnitude. The data pin
+  * the trend down to roughly `sigma`. Sampling it centred is efficient when
+  * `scale` is large relative to `sigma`, and non-centred when it is small,
+  * which is where a centred parameterisation would form a funnel.
+  *
+  * @param scale Prior sd of the trend
+  * @param sigma Expected posterior sd of the trend
+  * @return The degree of centring, between 0 (non-centred) and 1 (centred)
+  *
+  * @ingroup estimates_smoothing
+  */
+real gp_trend_centring(real scale, real sigma) {
+  return square(scale) / (square(scale) + square(sigma));
+}
+
+/**
+  * Prior sd of the raw Gaussian process trend parameter
+  *
+  * With degree of centring `c`, the trend is
+  * `sigma^c * scale^(1 - c) * raw` and `raw` has sd `(scale / sigma)^c`, so
+  * the trend has sd `scale` whatever `c` is.
+  *
+  * @param scale Prior sd of the trend
+  * @param sigma Expected posterior sd of the trend
+  * @return The prior sd of the raw trend parameter
+  *
+  * @ingroup estimates_smoothing
+  */
+real gp_trend_raw_sd(real scale, real sigma) {
+  return pow(scale / sigma, gp_trend_centring(scale, sigma));
+}
+
+/**
+  * Set the trend of the Gaussian process noise terms
+  *
+  * Replaces the component of `eta` along `w` so that `dot(w, eta)`, the
+  * trend, comes from `raw` instead. With `eta` standard normal and `raw`
+  * normal with sd [gp_trend_raw_sd()], the result is standard normal, so the
+  * Gaussian process prior is unchanged.
+  *
+  * @param eta Vector of noise terms
+  * @param w Trend loadings: basis column sums over the observation window
+  *   times the spectral densities
+  * @param raw Raw trend parameter
+  * @param sigma Expected posterior sd of the trend
+  * @return Noise terms with the trend set from `raw`
+  *
+  * @ingroup estimates_smoothing
+  */
+vector gp_eta_with_trend(vector eta, vector w, real raw, real sigma) {
+  real ww = dot_self(w);
+  if (ww == 0) {
+    return eta;
   }
-  return PHI * (diagSPD .* eta);
+  real scale = sqrt(ww);
+  real c = gp_trend_centring(scale, sigma);
+  real trend = pow(sigma, c) * pow(scale, 1 - c) * raw;
+  return eta + (trend - dot_product(w, eta)) / ww * w;
 }
 
 /**
