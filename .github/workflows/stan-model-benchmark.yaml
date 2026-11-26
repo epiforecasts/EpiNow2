@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   stan-model-benchmark:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
