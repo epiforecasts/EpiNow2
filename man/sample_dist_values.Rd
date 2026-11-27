@@ -19,7 +19,7 @@ A numeric vector of length \code{n}.
 \description{
 Internal helper that draws \code{n} values from the distribution
 represented by a \verb{<dist_spec>}, resolving any uncertainty in its parameters
-first. The distribution is truncated below at \code{lower}, as the model
-truncates parameter priors at their lower bound.
+first. The distribution is truncated below at \code{lower} and above at its
+own maximum, as the model truncates parameter priors at their bounds.
 }
 \keyword{internal}

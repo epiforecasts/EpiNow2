@@ -518,4 +518,8 @@ test_that("sample_dist_values draws from the prior truncated at its lower bound"
     sample_dist_values(LogNormal(meanlog = 0, sdlog = 1), 5, lower = 0) > 0,
     rep(TRUE, 5)
   )
+  capped <- sample_dist_values(
+    LogNormal(mean = 1, sd = 0.5, max = 3), 4000, lower = 0
+  )
+  expect_true(all(capped > 0 & capped <= 3))
 })

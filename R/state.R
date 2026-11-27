@@ -562,8 +562,8 @@ print.trajectory_spec <- function(x, ...) {
 #'
 #' @description Internal helper that draws `n` values from the distribution
 #'   represented by a `<dist_spec>`, resolving any uncertainty in its parameters
-#'   first. The distribution is truncated below at `lower`, as the model
-#'   truncates parameter priors at their lower bound.
+#'   first. The distribution is truncated below at `lower` and above at its
+#'   own maximum, as the model truncates parameter priors at their bounds.
 #' @param d A `<dist_spec>`.
 #' @param n Number of values to draw.
 #' @param lower Lower truncation point.
@@ -574,10 +574,11 @@ sample_dist_values <- function(d, n, lower = -Inf) {
   d <- fix_parameters(d, strategy = "sample")
   dist_family <- get_distribution(d)
   p <- get_parameters(d)
+  upper <- max(d)
   if (dist_family == "fixed") {
-    return(pmax(rep(p$value, n), lower))
+    return(pmin(pmax(rep(p$value, n), lower), upper))
   }
-  # inverse-CDF draws from the distribution truncated at lower
+  # inverse-CDF draws from the distribution truncated to [lower, upper]
   cdf <- switch(dist_family,
     lognormal = function(x) plnorm(x, p$meanlog, p$sdlog),
     normal = function(x) pnorm(x, p$mean, p$sd),
@@ -591,7 +592,7 @@ sample_dist_values <- function(d, n, lower = -Inf) {
     normal = function(u) qnorm(u, p$mean, p$sd),
     gamma = function(u) qgamma(u, shape = p$shape, rate = p$rate)
   )
-  quantile_fn(runif(n, cdf(lower), 1))
+  quantile_fn(runif(n, cdf(lower), cdf(upper)))
 }
 
 #' Gaussian process kernel covariance for prior-predictive state plots
