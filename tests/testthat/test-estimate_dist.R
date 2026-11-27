@@ -490,7 +490,8 @@ test_that("prepare_linelist_data errors for bad column types", {
   linelist$sdate_lwr <- origin + 3:4
   expect_error(
     EpiNow2:::.prepare_linelist_data(cbind(linelist, n = c(1, 0))),
-    "n"
+    "Assertion on 'n' failed: Element 2 is not >= 1",
+    fixed = TRUE
   )
 })
 
