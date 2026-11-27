@@ -353,7 +353,8 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Acoderabbitai">coderabbitai</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AHenrikBengtsson">HenrikBengtsson</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Abob-carpenter">bob-carpenter</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Aepiforecasts-workflows">epiforecasts-workflows</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3AjackUKHSA">jackUKHSA</a>,
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+author%3Amark-burdon">mark-burdon</a>
 
 ### Issue Contributors
 
@@ -363,8 +364,7 @@ specification. Contributions of any kind are welcome!
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Antorresd">ntorresd</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Amicahwiesner67">micahwiesner67</a>,
 <a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3Apaigemiller">paigemiller</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3AWardBrian">WardBrian</a>,
-<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3AjackUKHSA">jackUKHSA</a>
+<a href="https://github.com/epiforecasts/EpiNow2/issues?q=is%3Aissue+commenter%3AWardBrian">WardBrian</a>
 
 <!-- markdownlint-enable -->
 
