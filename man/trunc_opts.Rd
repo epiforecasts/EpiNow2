@@ -17,7 +17,10 @@ the truncation. It can be specified using the probability distributions
 interface in \code{distspec} (See \code{?distspec::Distributions}) or estimated using
 \code{\link[=estimate_truncation]{estimate_truncation()}}, which returns a \code{dist} object, suited
 for use here out-of-box. Default is a fixed distribution with maximum 0, i.e.
-no truncation.}
+no truncation. As for \code{\link[=delay_opts]{delay_opts()}}, \code{dist} must be a \verb{<dist_spec>} with a
+supported distribution family and a finite maximum (see
+\code{\link[=check_stan_delay]{check_stan_delay()}}); \code{dist} not meeting these requirements is rejected
+with an error.}
 
 \item{default_cdf_max}{Numeric; default CDF level to keep the distribution up
 to if an unconstrained distribution is passed as \code{dist}. If \code{dist} is

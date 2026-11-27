@@ -18,9 +18,11 @@
 #'   `seeding_time`
 #' @param day_of_week_effect either `NULL` (no day of the week effect) or a
 #'   numerical vector of length specified in [obs_opts()] as `week_length`
-#'   (default: 7) if `week_effect` is set to TRUE. Each element of the vector
-#'   gives the weight given to reporting on this day (normalised to 1).
-#'   The default is `NULL`.
+#'   (default: 7) if `week_effect` is set to TRUE, and of length 1 otherwise.
+#'   Each element of the vector gives the weight given to reporting on this
+#'   day (normalised to 1). The default is `NULL`. Supplying a vector of any
+#'   other length is rejected with an error, as the vector would otherwise be
+#'   silently recycled to the wrong length.
 #' @param seeding_time Integer; the number of days before the first time point
 #'   of `R`; default is `NULL`, in which case it is set to the maximum of the
 #'   generation time. The minimum is 1 , i.e. the first reproduction number
@@ -210,6 +212,7 @@ simulate_infections <- function(R,
   stan_data <- c(stan_data, make_init_priors())
 
   ## day of week effect
+  check_day_of_week_effect(day_of_week_effect, stan_data$week_effect)
   if (is.null(day_of_week_effect)) {
     day_of_week_effect <- rep(1, stan_data$week_effect)
   }
