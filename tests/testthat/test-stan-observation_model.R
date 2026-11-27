@@ -47,6 +47,40 @@ test_that("truncate_obs truncates reports correctly", {
   expect_equal(result_reconstruct, reports)
 })
 
+test_that("accumulate_reports leaves reports unchanged when never flagged", {
+  reports <- c(1, 2, 3, 4, 5)
+  accumulate <- c(0, 0, 0, 0)
+
+  expect_equal(accumulate_reports(reports, accumulate), reports)
+})
+
+test_that("accumulate_reports preserves small reports after large runs", {
+  reports <- c(1e16, 1, 2, 3, 1e16, 4)
+  accumulate <- c(0, 1, 0, 0, 0)
+
+  expect_equal(
+    accumulate_reports(reports, accumulate),
+    c(1e16, 1, 3, 3, 1e16, 4)
+  )
+})
+
+test_that("accumulate_reports sums reports over a single accumulation run", {
+  reports <- c(1, 2, 3, 4, 5)
+  accumulate <- c(1, 1, 1, 1)
+
+  expect_equal(accumulate_reports(reports, accumulate), cumsum(reports))
+})
+
+test_that("accumulate_reports resets the running total at each non-accumulated point", {
+  # matches the weekly accumulation example in inst/dev/accumulation.md:
+  # two separate runs of accumulation, each ending in an observed total
+  reports <- c(1, 2, 3, 4, 5)
+  accumulate <- c(1, 0, 1, 1)
+
+  expected <- c(1, 1 + 2, 3, 3 + 4, 3 + 4 + 5)
+  expect_equal(accumulate_reports(reports, accumulate), expected)
+})
+
 test_that("accumulate_reports rolls unobserved reports into the next time point", {
   reports <- c(10, 12, 8, 15, 20)
   accumulate <- c(0, 1, 0, 0)
@@ -57,11 +91,6 @@ test_that("accumulate_reports rolls unobserved reports into the next time point"
   expect_equal(result, expected)
 })
 
-test_that("accumulate_reports returns reports unchanged when nothing accumulates", {
-  reports <- c(10, 12, 8, 15, 20)
-  accumulate <- c(0, 0, 0, 0)
-
-  result <- accumulate_reports(reports, accumulate)
-
-  expect_equal(result, reports)
+test_that("accumulate_reports handles a single time point", {
+  expect_equal(accumulate_reports(c(7), integer(0)), 7)
 })

@@ -187,7 +187,8 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
  * Accumulate reports according to a binary flag at each time point
  *
  * This function accumulates reports according to a binary flag at each time
- * point.
+ * point. Applying `cumulative_sum` separately to each accumulation run prevents
+ * small reports being lost after an earlier run with a large total.
  *
  * @param reports Vector of expected reports.
  * @param accumulate Array of integers indicating, for each time point, whether
@@ -199,19 +200,23 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
  * For `reports = {10, 12, 8, 15, 20}` and `accumulate = {0, 1, 0, 0}`, index 2
  * is not separately observed, so its value is rolled forward into index 3
  * (`8 + 12 = 20`), giving `{10, 12, 20, 15, 20}`. This models, for example, a
- * day whose cases are only reported together with the following day's.
+ * day on which cases are only reported together with the following day's.
  *
  * @ingroup observation_model
  */
 vector accumulate_reports(vector reports, array[] int accumulate) {
   int ot_h = num_elements(reports); // number of reporting time points modelled
-  vector[ot_h] accumulated_reports = reports;
-  for (i in 1:(ot_h - 1)) {
-    if (accumulate[i]) { // first observation gets ignored when accumulating
-      accumulated_reports[i + 1] += accumulated_reports[i];
+  vector[ot_h] accumulated = reports;
+  int start = 1;
+  for (i in 1:ot_h) {
+    if (i == ot_h || !accumulate[i]) {
+      if (i > start) {
+        accumulated[start:i] = cumulative_sum(reports[start:i]);
+      }
+      start = i + 1;
     }
   }
-  return accumulated_reports;
+  return accumulated;
 }
 
 /**

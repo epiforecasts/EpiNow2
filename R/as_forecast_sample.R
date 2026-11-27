@@ -12,8 +12,8 @@
 #' observations on `date`, and pass the result to
 #' [scoringutils::as_forecast_sample()].
 #'
-#' [scoringutils] is an optional dependency; calling these methods without it
-#' installed gives an informative error.
+#' \pkg{scoringutils} is an optional dependency; calling these methods
+#' without it installed gives an informative error.
 #'
 #' @param data Output of [epinow()], [estimate_infections()],
 #'   [forecast_secondary()], or [estimate_truncation()].
