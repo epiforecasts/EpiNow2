@@ -193,7 +193,7 @@ test_that("check_gp_fit checks the lengthscale column of the params samples", {
     rep(ls_range[1] / 4, 10), rep(ls_range[2] * 4, 10), rep(mean(ls_range), 10)
   )
   local_mocked_bindings(
-    extract_samples = function(...) list(params = params)
+    extract_stan_samples = function(...) list(params = params)
   )
   expect_silent(check_gp_fit(list(), stan_data))
   params[, 3] <- ls_range[1] / 4
@@ -217,7 +217,7 @@ test_that("check_gp_fit is silent when the lengthscale index is out of range", {
   stan_data$param_id_rho <- 1
   stan_data$params_variable_lookup <- 3
   local_mocked_bindings(
-    extract_samples = function(...) list(params = matrix(1, 10, 2))
+    extract_stan_samples = function(...) list(params = matrix(1, 10, 2))
   )
   expect_silent(check_gp_fit(list(), stan_data))
 })
