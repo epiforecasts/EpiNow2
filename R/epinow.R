@@ -118,7 +118,8 @@ epinow <- function(data,
   assert_logical(return_output)
   stopifnot(
     "target_folder is not a directory" =
-      !is.null(target_folder) || isDirectory(target_folder)
+      is.null(target_folder) || !file.exists(target_folder) ||
+        dir.exists(target_folder)
   )
   if (!missing(target_date)) {
     if (is.character(target_date)) {
