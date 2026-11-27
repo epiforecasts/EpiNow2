@@ -15,6 +15,7 @@ stan_sampling_opts(
   future = FALSE,
   max_execution_time = Inf,
   backend = c("rstan", "cmdstanr"),
+  init_method = c("random", "pathfinder"),
   ...
 )
 }
@@ -55,6 +56,13 @@ estimation will fail with an informative error.}
 \item{backend}{Character string indicating the backend to use for fitting
 stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 
+\item{init_method}{A character string, defaulting to "random". Determines
+how sampling is initialised. The default "random" initialises each chain
+from a random point (or the values supplied by \code{init} when calling
+\code{\link[=create_stan_args]{create_stan_args()}}). Setting this to "pathfinder" instead runs the
+pathfinder algorithm first, using its estimate of the posterior to
+initialise sampling; this requires the "cmdstanr" backend.}
+
 \item{...}{Additional parameters to pass to \code{\link[rstan:sampling]{rstan::sampling()}} or
 \code{\link[cmdstanr:sample]{cmdstanr::sample()}}.}
 }
@@ -69,4 +77,7 @@ defaults.
 }
 \examples{
 stan_sampling_opts(samples = 2000)
+
+# initialise sampling using the pathfinder algorithm
+stan_sampling_opts(backend = "cmdstanr", init_method = "pathfinder")
 }

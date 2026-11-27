@@ -22,7 +22,9 @@ settings if desired.}
 
 \item{init}{Initial conditions passed to \code{{rstan}}. Defaults to "random"
 (initial values randomly drawn between -2 and 2) but can also be a
-function (as supplied by \code{\link[=create_initial_conditions]{create_initial_conditions()}}).}
+function (as supplied by \code{\link[=create_initial_conditions]{create_initial_conditions()}}). Overridden when
+\code{stan$init_method} is "pathfinder" (see \code{\link[=stan_sampling_opts]{stan_sampling_opts()}}), unless
+\code{fixed_param} is \code{TRUE}.}
 
 \item{model}{Character, name of the model for which arguments are
 to be created.}
