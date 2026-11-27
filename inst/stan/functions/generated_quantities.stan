@@ -67,7 +67,7 @@ vector calculate_Rt(vector infections, int seeding_time,
  * @param gt_rev_pmf Vector of reversed generation time PMF
  * @return A vector of case reproduction numbers, one for each time at which
  * it can be calculated; this is shorter than `R` by
- * `num_elements(gt_rev_pmf)` elements (or empty if `R` is not longer
+ * `num_elements(gt_rev_pmf) - 1` elements (or empty if `R` is shorter
  * than `gt_rev_pmf`)
  *
  * @ingroup rt_estimation
@@ -76,10 +76,10 @@ vector calculate_case_Rt(vector R, vector gt_rev_pmf) {
   int t = num_elements(R);
   int gt_len = num_elements(gt_rev_pmf);
   vector[gt_len] gt_pmf = reverse(gt_rev_pmf);
-  int n = max(t - gt_len, 0);
+  int n = max(t - gt_len + 1, 0);
   vector[n] case_R;
   for (s in 1:n) {
-    case_R[s] = dot_product(gt_pmf, R[(s + 1):(s + gt_len)]);
+    case_R[s] = dot_product(gt_pmf, R[s:(s + gt_len - 1)]);
   }
   return(case_R);
 }

@@ -41,11 +41,11 @@ transformed data {
       delay_types_groups, delay_max, delay_np_pmf_groups
     );
   }
-  // maximum generation time, i.e. the length of its (reversed) PMF
+  // length of the generation time PMF, including zero lag
   int gt_max = delay_type_max[delay_id_generation_time] + 1;
   // length of the case reproduction number, which is undefined over the
-  // last gt_max time points because this requires Rt beyond ot_h
-  int ot_case = max(ot_h - gt_max, 0);
+  // last gt_max - 1 time points because this requires Rt beyond ot_h
+  int ot_case = max(ot_h - gt_max + 1, 0);
 
   // initial infections scaling (on the log scale)
   real initial_infections_guess;
