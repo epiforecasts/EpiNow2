@@ -74,6 +74,33 @@ Alternatively, generation times can be specified as coming from a given distribu
 The distribution of generation times $g$ here represents the probability that somebody who became infectious on day 0 and who infects someone else during their course of infection does so on day $\tau > 0$, assuming that infection cannot happen on day 0.
 If not given this defaults to a fixed generation time of 1, in which case $R_{t}$ represents the exponential of the daily growth rate of infections.
 
+### Stochastic infections
+
+By default new infections are deterministic given $R_t$ and past infections, as above.
+Alternatively, setting `rt_opts(infection_process = "poisson")` or `rt_opts(infection_process = "negbin")` treats new infections as stochastic.
+We use a log-normal approximation that matches the mean and variance of a Poisson or negative binomial distribution, with a non-centred parameterisation,
+
+\begin{equation}
+  I_t = \exp\left(\log \mu_t - \frac{s^2_t}{2} + s_t \eta_t\right), \quad s^2_t = \log\left(1 + \frac{\sigma^2_t}{\mu_t^2}\right), \quad \eta_t \sim \mathcal{N}(0, 1),
+\end{equation}
+
+where $\mu_t = R_t \lambda_t$ is the deterministic expectation from the renewal equation and $\sigma^2_t$ is the target variance.
+This keeps infections positive whilst matching the target mean and variance.
+For the Poisson approximation $\sigma^2_t = \mu_t$.
+For the negative binomial approximation $\sigma^2_t = \mu_t + \mu_t^2 / \psi$, where $\psi$ is the size (inverse overdispersion) of new infections.
+As for the observation model (see [Observation model]), the prior is set on $1 / \sqrt{\psi}$ using the `infection_dispersion` argument of `rt_opts()`.
+This is the aggregate day-to-day overdispersion of new infections rather than the dispersion of the offspring distribution, and the data usually say little about it, so an informative prior is expected.
+Poisson noise is on the scale of the modelled infections, which is the scale of reported cases unless observations are scaled (see [Delays and scaling]).
+
+The stochastic infections are used in the infectiousness $\lambda_t$ of later time points, so the noise propagates through the renewal equation.
+Infections during the seeding period are not stochastic.
+When population depletion is used (see [Adjusting for susceptible population depletion]), the noise is applied to the depletion-adjusted expectation and is only bounded by $N_{\text{floor}}$.
+The returned $R_t$ is the expected reproduction number, whilst growth rates (and adjusted $R_t$ when population depletion is used) are calculated from the noisy infections.
+Setting `rt_opts(growth_method = "infectiousness")` gives smoother growth rates.
+`forecast_infections()` reuses the posterior noise over the fitted time window, including when a counterfactual $R_t$ is given, and draws fresh noise beyond it.
+This option adds a parameter $\eta_t$ for each time point and uses a renewal loop written in Stan rather than the C++ implementation used for deterministic infections, so it increases run times.
+See the [stochastic infections](stochastic_infections.html) vignette for a comparison of the options on example data.
+
 ### Time-varying reproduction number
 
 Different options are available for setting a prior for $R_t$, the instantaneous reproduction number at time $t$. The default prior is an approximate zero-mean Gaussian Process (GP) for the first differences in time on the log scale,

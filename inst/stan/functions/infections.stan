@@ -49,6 +49,44 @@ real update_infectiousness(vector infections, vector gt_rev_pmf,
 }
 
 /**
+ * Apply process noise to the expected number of new infections
+ *
+ * Uses a log-normal with the mean and variance of a Poisson (variance
+ * `expected`) or negative binomial (variance
+ * `expected + expected^2 * overdispersion^2`) distribution, with a
+ * non-centred parameterisation:
+ * `exp(log(expected) - s2 / 2 + sqrt(s2) * eta)` with
+ * `s2 = log(1 + variance / expected^2)` and `eta ~ std_normal()`.
+ *
+ * @param expected Expected number of new infections
+ * @param eta Standard normal noise term
+ * @param infection_process Process model (0 = deterministic, 1 = Poisson,
+ * 2 = negative binomial)
+ * @param overdispersion Overdispersion of the negative binomial (one over
+ * the square root of `phi`); ignored unless `infection_process` is 2
+ * @return The number of new infections. Returned unchanged if
+ * `infection_process` is 0 or `expected` is not positive.
+ *
+ * @par Example
+ * `apply_infection_noise(100, 0, 1, 0)` returns the log-normal median,
+ * approximately 99.5.
+ *
+ * @ingroup infections_estimation
+ */
+real apply_infection_noise(real expected, real eta, int infection_process,
+                           real overdispersion) {
+  if (infection_process == 0 || expected <= 0) {
+    return(expected);
+  }
+  real cv2 = inv(expected);
+  if (infection_process == 2) {
+    cv2 += square(overdispersion);
+  }
+  real s2 = log1p(cv2);
+  return(exp(log(expected) - s2 / 2 + sqrt(s2) * eta));
+}
+
+/**
  * Run the renewal equation from the seeding infections.
  *
  * Implemented in C++, with a hand-written gradient, in
@@ -69,13 +107,74 @@ vector renewal_infections(vector seed, vector R, vector gt_rev_pmf, real pop,
                           int use_pop, data real pop_floor, int nht);
 
 /**
+ * Run the renewal equation with stochastic infections.
+ *
+ * As renewal_infections() but with process noise applied to new infections
+ * at each step by apply_infection_noise(), so that the noise feeds into
+ * later infectiousness and cumulative infections. Written in Stan rather
+ * than C++ so it relies on automatic differentiation.
+ *
+ * @param seed Vector of seeding infections
+ * @param R Vector of reproduction numbers
+ * @param gt_rev_pmf Vector of reversed generation time PMF
+ * @param pop Initial susceptible population
+ * @param use_pop Population adjustment mode (0=none, 1=after nht, 2=all)
+ * @param pop_floor Minimum susceptible population
+ * @param nht Number of time steps before the adjustment when use_pop = 1
+ * @param infection_eta Vector of standard normal noise terms, one per step
+ * @param infection_process Process model (1 = Poisson, 2 = negative
+ * binomial), see apply_infection_noise()
+ * @param infection_overdispersion Overdispersion of the negative binomial
+ * process model
+ * @return A vector of infections, starting with the seeding infections
+ *
+ * @ingroup infections_estimation
+ */
+vector stochastic_renewal_infections(vector seed, vector R, vector gt_rev_pmf,
+                                     real pop, int use_pop,
+                                     data real pop_floor, int nht,
+                                     vector infection_eta,
+                                     int infection_process,
+                                     real infection_overdispersion) {
+  int uot = num_elements(seed);
+  int ot = num_elements(R);
+  vector[uot + ot] infections = rep_vector(0, uot + ot);
+  real cum_infections = 0;
+  infections[1:uot] = seed;
+  if (use_pop) {
+    cum_infections = sum(seed);
+  }
+  for (s in 1:ot) {
+    real infectiousness = update_infectiousness(
+      infections, gt_rev_pmf, uot, s
+    );
+    real expected;
+    if ((use_pop == 1 && s > nht) || use_pop == 2) {
+      real susceptible = fmax(pop_floor, pop - cum_infections);
+      expected = susceptible *
+        fmax(0, 1 - exp(-R[s] * infectiousness / susceptible));
+    } else {
+      expected = R[s] * infectiousness;
+    }
+    infections[s + uot] = apply_infection_noise(
+      expected, infection_eta[s], infection_process, infection_overdispersion
+    );
+    if (use_pop) {
+      cum_infections += infections[s + uot];
+    }
+  }
+  return infections;
+}
+
+/**
  * @ingroup infections_estimation
  * @brief Generate infections using a renewal equation approach
  *
  * This function implements the renewal equation to generate a time series of
  * infections based on reproduction numbers and the generation time distribution.
  * It can also account for population depletion if a population size is specified.
- * It sets the seeding infections and then calls renewal_infections().
+ * It sets the seeding infections and then calls renewal_infections(), or
+ * stochastic_renewal_infections() if infections are stochastic.
  *
  * @param R Vector of reproduction numbers
  * @param uot Unobserved time (seeding time)
@@ -88,12 +187,20 @@ vector renewal_infections(vector seed, vector R, vector gt_rev_pmf, real pop,
  * @param obs_scale Whether to scale by fraction observed (1) or not (0)
  * @param fraction_observed Fraction of infections that are observed
  * @param initial_as_scale Whether initial infections are a scaling factor (1) or not (0)
+ * @param infection_eta Vector of standard normal noise terms, one per
+ * renewal time step (empty if infections are deterministic)
+ * @param infection_process Process model (0 = deterministic, 1 = Poisson,
+ * 2 = negative binomial), see apply_infection_noise()
+ * @param infection_overdispersion Overdispersion of the negative binomial
+ * process model
  * @return A vector of infection counts
  */
 vector generate_infections(vector R, int uot, vector gt_rev_pmf,
                            array[] real initial_infections, real pop,
                            int use_pop, data real pop_floor, int ht, int obs_scale, real fraction_observed,
-                           int initial_as_scale) {
+                           int initial_as_scale, vector infection_eta,
+                           int infection_process,
+                           real infection_overdispersion) {
   int ot = num_elements(R);
   vector[uot] seed;
   real growth = R_to_r(R[1], gt_rev_pmf, 1e-3);
@@ -111,6 +218,12 @@ vector generate_infections(vector R, int uot, vector gt_rev_pmf,
     for (s in 2:uot) {
       seed[s] = seed[s - 1] * exp_growth;
     }
+  }
+  if (infection_process) {
+    return stochastic_renewal_infections(
+      seed, R, gt_rev_pmf, pop, use_pop, pop_floor, ot - ht, infection_eta,
+      infection_process, infection_overdispersion
+    );
   }
   return renewal_infections(
     seed, R, gt_rev_pmf, pop, use_pop, pop_floor, ot - ht

@@ -1,0 +1,155 @@
+---
+title: "Stochastic infections: impact on estimates and run times"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Stochastic infections: impact on estimates and run times}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6.5,
+  fig.height = 6.5,
+  fig.path = "stochastic_infections-"
+)
+```
+
+By default the renewal model in `estimate_infections()` treats new infections as deterministic given $R_t$ and past infections.
+The `infection_process` argument of `rt_opts()` can instead make new infections stochastic, using a log-normal approximation to a Poisson (`"poisson"`) or negative binomial (`"negbin"`) process.
+Here we fit the same data with each option and compare the estimates and run times.
+For the model definition see the [model definition](estimate_infections.html) vignette.
+
+# Set up
+
+```{r packages}
+library("EpiNow2")
+library("data.table")
+library("ggplot2")
+options(mc.cores = 4)
+```
+
+We use the first 60 days of the example data, with the example generation time and delays used in the [estimate_infections() examples](estimate_infections_options.html) vignette.
+
+```{r data}
+reported_cases <- example_confirmed[1:60]
+delay <- example_incubation_period + LogNormal(mean = 2, sd = 1, max = 10)
+```
+
+# Fitting the models
+
+We fit the model with each infection process, keeping everything else the same.
+For the negative binomial process we use the default prior on the overdispersion of new infections, `Normal(mean = 0, sd = 0.1)`.
+
+```{r fit, message = FALSE, warning = FALSE}
+processes <- c("deterministic", "poisson", "negbin")
+fits <- lapply(processes, function(process) {
+  estimate_infections(reported_cases,
+    generation_time = gt_opts(example_generation_time),
+    delays = delay_opts(delay),
+    rt = rt_opts(
+      prior = LogNormal(mean = 2, sd = 1),
+      infection_process = process
+    ),
+    stan = stan_opts(seed = 123)
+  )
+})
+names(fits) <- processes
+```
+
+# Run times and diagnostics
+
+Stochastic infections add one parameter per time point.
+They also use a renewal loop written in Stan, whilst deterministic infections use a faster C++ implementation with a hand-written gradient.
+Both increase run times.
+The run times below are from a single run and will vary between machines, so the relative differences are more informative than the absolute values.
+
+```{r diagnostics}
+diagnostics <- rbindlist(lapply(processes, function(process) {
+  fit <- fits[[process]]$fit
+  data.table(
+    process = process,
+    max_chain_time = max(rowSums(rstan::get_elapsed_time(fit))),
+    divergent = rstan::get_num_divergent(fit),
+    max_treedepth = rstan::get_num_max_treedepth(fit)
+  )
+}))
+diagnostics[, relative_time := max_chain_time / max_chain_time[1]]
+diagnostics
+```
+
+# Estimates
+
+We compare the estimated reproduction number and infections.
+
+```{r estimates}
+estimates <- rbindlist(lapply(processes, function(process) {
+  summary(
+    fits[[process]], type = "parameters", params = c("R", "infections")
+  )[, process := process]
+}))
+estimates[, process := factor(process, levels = processes)]
+```
+
+```{r plot-estimates, fig.height = 6}
+ggplot(estimates, aes(x = date, fill = process, col = process)) +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.2, col = NA) +
+  geom_line(aes(y = median)) +
+  facet_wrap(~variable, ncol = 1, scales = "free_y") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  labs(
+    x = "Date", y = NULL,
+    fill = "Infection process", col = "Infection process"
+  )
+```
+
+The width of the 90% credible intervals summarises how much extra uncertainty each option adds.
+
+```{r widths}
+estimates[,
+  .(mean_90_width = mean(upper_90 - lower_90)),
+  by = .(variable, process)
+]
+```
+
+For the negative binomial process we can also look at the estimated overdispersion of new infections, and compare it to its prior.
+
+```{r overdispersion}
+summary(
+  fits[["negbin"]], type = "parameters", params = "infection_overdispersion"
+)
+```
+
+# Summary
+
+```{r summary-text, include = FALSE}
+rel <- round(diagnostics$relative_time, 1)
+widths <- estimates[,
+  .(width = mean(upper_90 - lower_90)),
+  by = .(variable, process)
+]
+width_ratio <- function(var, proc) {
+  round(
+    widths[variable == var & process == proc]$width /
+      widths[variable == var & process == "deterministic"]$width,
+    2
+  )
+}
+```
+
+The deterministic model was the fastest.
+The Poisson process took `r rel[2]` times and the negative binomial process `r rel[3]` times as long in this run.
+Relative to the deterministic model, the 90% credible intervals were `r width_ratio("infections", "poisson")` times as wide for infections with the Poisson process and `r width_ratio("infections", "negbin")` times as wide with the negative binomial process.
+For $R_t$ the ratios were `r width_ratio("R", "poisson")` and `r width_ratio("R", "negbin")`.
+With case counts in the hundreds to thousands, Poisson noise is small relative to expected infections and so changes the estimates little.
+The negative binomial process allows more day-to-day variation, which passes through the renewal equation into later infections.
+Here the posterior for its overdispersion is close to the prior, so the data say little about it and an informative prior is advised.
+The returned $R_t$ is the expected reproduction number, so it is smoother than the noisy infections.
+Growth rates are calculated from the noisy infections, and `rt_opts(growth_method = "infectiousness")` gives smoother growth rates.
+Divergent transitions varied between runs for all three options, so check sampler diagnostics whichever option is used.

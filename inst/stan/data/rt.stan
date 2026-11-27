@@ -3,6 +3,7 @@ int bp_n; // no of breakpoints (0 = no breakpoints)
 array[t - seeding_time] int breakpoints; // when do breakpoints occur
 int future_fixed; // is underlying future Rt assumed to be fixed
 int fixed_from; // Reference date for when Rt estimation should be fixed
+int<lower = 0, upper = 2> infection_process; // infection process model (0 = deterministic, 1 = poisson, 2 = negbin)
 int use_pop; // use population size (0 = no; 1 = forecasts; 2 = all)
 real<lower = 0> pop_floor; // Minimum susceptible population (numerical stability floor)
 int<lower = 0> delay_id_generation_time; // id of generation time
