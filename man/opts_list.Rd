@@ -13,10 +13,11 @@ opts_list(opts, reported_cases, ...)
 indicating the target regions.}
 
 \item{...}{Optional override for region defaults, named by region (e.g.
-\code{realland = rt_opts(rw = 7)}). See the examples for use case. Names that do
-not match a region present in \code{reported_cases$region} are not rejected;
-the corresponding override is silently unused since \code{\link[=regional_epinow]{regional_epinow()}}
-only ever looks up settings for regions actually present in the data.}
+\code{realland = rt_opts(prior = GP(init = LogNormal(1, 1)) + RW(period = 7))}).
+See the examples for use case. Names that do not match a region present in
+\code{reported_cases$region} are not rejected; the corresponding override is
+silently unused since \code{\link[=regional_epinow]{regional_epinow()}} only ever looks up settings for
+regions actually present in the data.}
 }
 \value{
 A named list of options per region which can be passed to the \verb{_opt}
@@ -41,11 +42,14 @@ cases <- data.table::rbindlist(list(
 opts_list(rt_opts(), cases)
 
 # add a weekly random walk in realland
-opts_list(rt_opts(), cases, realland = rt_opts(rw = 7))
+opts_list(
+  rt_opts(), cases,
+  realland = rt_opts(prior = GP(init = LogNormal(1, 1)) + RW(period = 7))
+)
 
 # add a weekly random walk externally
 rt <- opts_list(rt_opts(), cases)
-rt$realland$rw <- 7
+rt$realland$prior <- rt$realland$prior + RW(period = 7)
 rt
 }
 \seealso{

@@ -2,13 +2,20 @@
 
 ## New features
 
+- Added `GP()` (approximate Gaussian process) and `RW()` (random walk) constructors for time-varying parameters. Each takes a prior on either the value the parameter reverts to (`mean`) or its initial value (`init`, for a process on first differences), and a `future` argument that sets its behaviour over the forecast horizon. `rt_opts(prior = ...)` takes these, and the new `gp` argument of `backcalc_opts()` takes them without `mean` or `init` to set the deviation of back-calculated infections from smoothed and shifted reported cases.
+- Time-varying parameters can combine several components with `+`, e.g. `initial(LogNormal(1, 1)) + GP() + RW(period = 7)` for a smooth trend with weekly steps. `constant()` and `initial()` set the baseline of a composition.
+- `RW()` gains a `knots` argument for steps on given dates or time points rather than at a regular interval.
+- Added a `plot()` method for `GP()` and `RW()` specifications that draws trajectories from the prior.
+
 ## Breaking changes
 
-- The boundary factor and number of basis functions of the approximate Gaussian process are now chosen by default from the lengthscale prior, following Riutort-Mayol et al. (2023), rather than fixed at `boundary_scale = 1.5` and `basis_prop = 0.2`. For the periodic kernel only the number of basis functions is chosen, as it has no boundary. The previous defaults approximated the default lengthscale prior poorly, particularly at the most recent time points. `estimate_infections()` now warns when the posterior lengthscale is outside the range the approximation represents accurately. Set `basis_prop` and `boundary_scale` in `gp_opts()` to restore the previous behaviour.
+- Deprecated `gp_opts()` and the `gp` argument of `estimate_infections()`, `epinow()` and `regional_epinow()` in favour of arguments to `GP()`; the `gp_on`, `future`, `rw` and `use_breakpoints` arguments of `rt_opts()` and the `breakpoint` data column in favour of `GP()`/`RW()` priors. Passing a plain distribution to `rt_opts(prior = ...)` is also deprecated and is treated as `GP(init = ...)`. Existing calls keep fitting the same model with a warning, except that with `gp_on = "R0"` the prior now applies to the level the Gaussian process reverts to rather than to the initial reproduction number. The Gaussian process hyperparameters in the output are now named per parameter (e.g. `R_gp_alpha` and `R_gp_rho` rather than `alpha` and `rho`), and the random-walk step sizes (`breakpoints`) and `R0` are no longer returned. A constant reproduction number, previously `gp = NULL`, is now set with `rt_opts(prior = constant(...))`.
+- The boundary factor and number of basis functions of the approximate Gaussian process are now chosen by default from the lengthscale prior, following Riutort-Mayol et al. (2023), rather than fixed at `boundary_scale = 1.5` and `basis_prop = 0.2`. For the periodic kernel only the number of basis functions is chosen, as it has no boundary. The previous defaults approximated the default lengthscale prior poorly, particularly at the most recent time points. `estimate_infections()` now warns when the posterior lengthscale is outside the range the approximation represents accurately. Set `basis_prop` and `boundary_scale` in `GP()` to restore the previous behaviour.
 - The Ornstein-Uhlenbeck kernel (`matern_order = 1/2`) now chooses its number of basis functions from a relationship derived for that kernel, rather than reusing the Matern 3/2 relationship, which understated the number needed.
 
 ## Model changes
 
+- The reproduction number and the back-calculation model now build their Gaussian processes and random walks through shared Stan code, with the number of basis functions and boundary chosen separately for each Gaussian process. The renewal model is unchanged.
 - Rewrote the Stan `update_Rt()` function from small helpers that centre log Rt through its intercept.
 - `convolve_with_rev_pmf()` is now implemented in C++ with a hand-written gradient. Models compiled from `inst/stan` outside the package need the header from the new `epinow2_stan_header()`. `expose_stan_fns()` now includes this header and allows undefined Stan functions.
 - The renewal loop in `generate_infections()` is now `renewal_infections()`, implemented in C++ with a hand-written gradient.

@@ -196,9 +196,8 @@ simulate_infections <- function(R,
   }
 
   params <- list(
-    make_param("alpha", NULL),
-    make_param("rho", NULL),
-    make_param("R0", NULL),
+    make_param("R", NULL),
+    make_param("I", NULL),
     make_param("fraction_observed", obs$scale, lower_bound = 0),
     make_param("reporting_overdispersion", obs$dispersion, lower_bound = 0),
     make_param("pop", pop, lower_bound = 0)
@@ -208,8 +207,6 @@ simulate_infections <- function(R,
 
   ## set empty params matrix - variable parameters not supported here
   stan_data$params <- array(dim = c(1, 0))
-
-  stan_data <- c(stan_data, make_init_priors())
 
   ## day of week effect
   check_day_of_week_effect(day_of_week_effect, stan_data$week_effect)
@@ -295,7 +292,7 @@ simulate_infections <- function(R,
 #' [estimate_infections()] output but contains `samples` rather than `fit`.
 #' @seealso [generation_time_opts()] [delay_opts()] [rt_opts()]
 #' [estimate_infections()] [trunc_opts()] [stan_opts()] [obs_opts()]
-#' [gp_opts()]
+#' [GP()] [RW()]
 #' @export
 #' @examples
 #' \donttest{
@@ -312,9 +309,10 @@ simulate_infections <- function(R,
 #' est <- estimate_infections(reported_cases,
 #'   generation_time = generation_time_opts(example_generation_time),
 #'   delays = delay_opts(example_incubation_period + example_reporting_delay),
-#'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1), rw = 7),
+#'   rt = rt_opts(
+#'     prior = RW(init = LogNormal(mean = 2, sd = 0.1), period = 7)
+#'   ),
 #'   obs = obs_opts(scale = Normal(mean = 0.1, sd = 0.01)),
-#'   gp = NULL,
 #'   forecast = forecast_opts(horizon = 0),
 #'   stan = stan_opts(samples = 100, warmup = 200)
 #' )
@@ -357,7 +355,7 @@ forecast_infections <- function(estimates,
   ## extract samples from given stan fit object (rstan or cmdstanr backend)
   draws <- extract_stan_samples(estimates$fit,
     pars = c(
-      "noise", "eta", "lp__", "infections",
+      "lp__", "infections",
       "reports", "imputed_reports", "r",
       "gt_mean", "gt_var"
     ),

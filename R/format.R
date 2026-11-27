@@ -123,17 +123,6 @@ format_simulation_output <- function(stan_fit, data, reported_dates,
         samples,
         reported_dates
       )
-      if (data$bp_n > 0) {
-        out$breakpoints <- extract_latent_state(
-          "bp_effects",
-          samples,
-          1:data$bp_n
-        )
-        out$breakpoints <- out$breakpoints[
-          ,
-          strat := date
-        ][, c("time", "date") := NULL]
-      }
     } else {
       out$R <- extract_latent_state(
         "gen_R",
@@ -268,16 +257,6 @@ format_samples_with_dates <- function(raw_samples, args, observations) {
   # Trim infections to reported dates
   if (!is.null(infections)) {
     out$infections <- infections[date >= min(reported_dates)]
-  }
-
-  # Breakpoints (if present in model)
-  if (args$bp_n > 0) {
-    breakpoints <- extract_latent_state("bp_effects", raw_samples, 1:args$bp_n)
-    if (!is.null(breakpoints)) {
-      out$breakpoints <- breakpoints[, strat := date][
-        , c("time", "date") := NULL
-      ]
-    }
   }
 
   # Growth rate

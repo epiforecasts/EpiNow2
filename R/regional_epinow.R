@@ -78,7 +78,7 @@
 #'   data = cases,
 #'   generation_time = gt_opts(example_generation_time),
 #'   delays = delay_opts(example_incubation_period + example_reporting_delay),
-#'   rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
+#'   rt = rt_opts(prior = GP(init = LogNormal(mean = 2, sd = 0.2))),
 #'   stan = stan_opts(
 #'     samples = 100, warmup = 200
 #'   ),
@@ -92,7 +92,7 @@ regional_epinow <- function(data,
                             truncation = trunc_opts(),
                             rt = rt_opts(),
                             backcalc = backcalc_opts(),
-                            gp = gp_opts(),
+                            gp = new_gp_settings(),
                             obs = obs_opts(),
                             forecast = forecast_opts(),
                             stan = stan_opts(),

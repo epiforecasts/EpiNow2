@@ -67,9 +67,10 @@ reported_cases <- example_confirmed[1:40]
 est <- estimate_infections(reported_cases,
   generation_time = generation_time_opts(example_generation_time),
   delays = delay_opts(example_incubation_period + example_reporting_delay),
-  rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.1), rw = 7),
+  rt = rt_opts(
+    prior = RW(init = LogNormal(mean = 2, sd = 0.1), period = 7)
+  ),
   obs = obs_opts(scale = Normal(mean = 0.1, sd = 0.01)),
-  gp = NULL,
   forecast = forecast_opts(horizon = 0),
   stan = stan_opts(samples = 100, warmup = 200)
 )
@@ -86,5 +87,5 @@ options(old_opts)
 \seealso{
 \code{\link[=generation_time_opts]{generation_time_opts()}} \code{\link[=delay_opts]{delay_opts()}} \code{\link[=rt_opts]{rt_opts()}}
 \code{\link[=estimate_infections]{estimate_infections()}} \code{\link[=trunc_opts]{trunc_opts()}} \code{\link[=stan_opts]{stan_opts()}} \code{\link[=obs_opts]{obs_opts()}}
-\code{\link[=gp_opts]{gp_opts()}}
+\code{\link[=GP]{GP()}} \code{\link[=RW]{RW()}}
 }

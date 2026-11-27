@@ -178,7 +178,8 @@ with $\log I_{0} - \log I_{\mathrm{est}, 0} \sim \mathrm{GP}_{0}$
 
 More details on the mathematical form of the Gaussian process approximation are given in the [Gaussian Process implementation details](gaussian_process_implementation_details.html) vignette.
 
-As for the renewal equation model, the Gaussian process can be replaced by a random walk of arbitrary length $w$.
+The prior and the process model are set with `backcalc_opts()`: `prior = "infections"` selects the second formulation, and `gp` takes a `GP()` or `RW()` specification, so, as for the renewal equation model, the Gaussian process can be replaced by a random walk of arbitrary length $w$.
+The process covers the seeding period, the observation period and the forecast horizon.
 
 When using a fixed shift from infections to reported cases there is no process model and so $I_\mathrm{est}$ is used as the estimated infection curve (potentially scaled to take into account underreporting, see section [Delays and scaling]).
 

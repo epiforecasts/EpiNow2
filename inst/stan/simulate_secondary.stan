@@ -93,8 +93,10 @@ generated quantities {
       }
 
       // simulate secondary reports
+      int n_sim = all_dates ? t : horizon;
       sim_secondary[i] = report_rng(
-        tail(secondary, all_dates ? t : horizon), reporting_overdispersion[i], model_type
+        tail(secondary, n_sim),
+        rep_vector(reporting_overdispersion[i], n_sim), model_type
       );
     }
   }
