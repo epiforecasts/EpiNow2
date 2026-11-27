@@ -187,8 +187,8 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
  * Accumulate reports according to a binary flag at each time point
  *
  * This function accumulates reports according to a binary flag at each time
- * point. It applies `cumulative_sum` separately to each accumulation run,
- * so that small reports are not lost when an earlier run has a large total.
+ * point. Applying `cumulative_sum` separately to each accumulation run prevents
+ * small reports being lost after an earlier run with a large total.
  *
  * @param reports Vector of expected reports.
  * @param accumulate Array of integers indicating, for each time point, whether
