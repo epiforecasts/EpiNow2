@@ -789,32 +789,23 @@ create_initial_conditions <- function(stan_data, params) {
         rep(1 / stan_data$week_effect, stan_data$week_effect)
       )
     }
-    tparams <- transpose(params)
-    null <- vapply(tparams$dist, is.null, logical(1))
-    fixed <- vapply(
-      tparams$dist[!null], get_distribution, character(1)
-    ) == "fixed"
-    param_means <- vapply(
-      tparams$dist[!null][!fixed],
-      mean,
-      ignore_uncertainty = FALSE,
-      FUN.VALUE = numeric(1)
-    )
-    param_sds <- vapply(
-      tparams$dist[!null][!fixed],
-      sd,
-      ignore_uncertainty = FALSE,
-      FUN.VALUE = numeric(1)
-    )
     if (stan_data$n_params_variable > 0) {
-      out$params <- array(rtruncnorm(
+      tparams <- transpose(params)
+      present <- !vapply(tparams$dist, is.null, logical(1))
+      dists <- tparams$dist[present]
+      variable <- vapply(dists, get_distribution, character(1)) != "fixed"
+      dists <- dists[variable]
+      draws <- rtruncnorm(
         stan_data$n_params_variable,
-        a = stan_data$params_lower,
-        b = stan_data$params_upper,
-        mean = param_means, sd = param_sds
-      ))
+        a = stan_data$params_lower, b = stan_data$params_upper,
+        mean = vapply(dists, mean, numeric(1), ignore_uncertainty = FALSE),
+        sd = vapply(dists, sd, numeric(1), ignore_uncertainty = FALSE)
+      )
+      out$params_raw <- array((params_link(
+        draws, stan_data$params_lower, stan_data$params_upper
+      ) - stan_data$params_loc) / stan_data$params_scale)
     } else {
-      out$params <- array(numeric(0))
+      out$params_raw <- array(numeric(0))
     }
     out
   }
@@ -1109,6 +1100,52 @@ create_stan_delays <- function(..., time_points = 1L) {
   ret
 }
 
+#' Prior location and scale on the link scale of a bounded parameter
+#'
+#' Uses the delta method at the prior mean. Where the mean is not strictly
+#' inside the bounds or the standard deviation is not positive, the location is
+#' 0 and the scale 1.
+#'
+#' @param mean,sd Vectors of prior means and standard deviations.
+#' @param lower,upper Vectors of bounds.
+#' @return A list with elements `loc` and `scale`.
+#' @keywords internal
+prior_link_scale <- function(mean, sd, lower, upper) {
+  lo <- is.finite(lower)
+  up <- is.finite(upper)
+  d_lo <- ifelse(lo, mean - lower, NA_real_)
+  d_up <- ifelse(up, upper - mean, NA_real_)
+  link_sd <- fcase(
+    lo & up, sd * (upper - lower) / (d_lo * d_up),
+    lo, sd / d_lo,
+    up, sd / d_up,
+    default = sd
+  )
+  loc <- params_link(mean, lower, upper)
+  ok <- is.finite(loc) & is.finite(link_sd) & link_sd > 0
+  list(
+    loc = ifelse(ok, loc, 0),
+    scale = ifelse(ok, link_sd, 1)
+  )
+}
+
+#' Map a bounded parameter to its link scale
+#'
+#' @param x Vector of parameter values within `lower` and `upper`.
+#' @inheritParams prior_link_scale
+#' @return A vector of the same length as `x`.
+#' @keywords internal
+params_link <- function(x, lower, upper) {
+  lo <- is.finite(lower)
+  up <- is.finite(upper)
+  fcase(
+    lo & up, qlogis((x - lower) / (upper - lower)),
+    lo, log(x - lower),
+    up, log(upper - x),
+    default = x
+  )
+}
+
 ##' Create parameters for stan
 ##'
 ##' @param params A list of `<EpiNow2.params>` as created by [make_param()]
@@ -1182,12 +1219,20 @@ create_stan_params <- function(params) {
     prior_dist_params <- numeric(0)
   }
 
+  prior_link <- prior_link_scale(
+    vapply(tparams$dist[!fixed], mean, numeric(1)),
+    vapply(tparams$dist[!fixed], sd, numeric(1)),
+    params_lower, params_upper
+  )
+
   ## extract distributions and parameters
   ret <- list(
     n_params_variable = length(params) - sum(fixed),
     n_params_fixed = sum(fixed),
     params_lower = array(params_lower),
     params_upper = array(params_upper),
+    params_loc = array(prior_link$loc),
+    params_scale = array(prior_link$scale),
     params_fixed_lookup = array(params_fixed_lookup),
     params_variable_lookup = array(params_variable_lookup),
     params_value = array(vapply(

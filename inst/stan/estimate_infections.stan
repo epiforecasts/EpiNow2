@@ -55,7 +55,7 @@ transformed data {
 }
 
 parameters {
-  vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
+  vector[n_params_variable] params_raw;
   // gaussian process
   vector[fixed ? 0 : gp_type == 1 ? 2*M : M] eta;  // unconstrained noise
   // Mean Rt over the observation window for the centred GP parameterisation;
@@ -75,6 +75,9 @@ parameters {
 }
 
 transformed parameters {
+  vector[n_params_variable] params = params_to_bounds(
+    params_raw, params_lower, params_upper, params_loc, params_scale
+  );
   // combined fixed + estimated nonparametric delay PMF
   vector[delay_np_pmf_length] delay_np_pmf_use = combine_np_pmf(
     delay_np_pmf, delay_n_np_est, delay_np_est_groups,
@@ -232,7 +235,9 @@ model {
 
   // parameter priors
   profile("param lp") {
-    params_lp(params, prior_dist, prior_dist_params);
+    params_lp(
+      params, prior_dist, prior_dist_params, params_lower, params_upper
+    );
   }
 
   if (estimate_r) {

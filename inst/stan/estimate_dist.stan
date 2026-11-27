@@ -42,11 +42,13 @@ data {
 }
 
 parameters {
-  vector<lower=params_lower,
-         upper=params_upper>[n_params_variable] params;
+  vector[n_params_variable] params_raw;
 }
 
 transformed parameters {
+  vector[n_params_variable] params = params_to_bounds(
+    params_raw, params_lower, params_upper, params_loc, params_scale
+  );
   // Expose delay parameters under a descriptive name
   array[n_params_fixed + n_params_variable] real
     delay_params;
@@ -63,7 +65,9 @@ transformed parameters {
 
 model {
   profile("priors") {
-    params_lp(params, prior_dist, prior_dist_params);
+    params_lp(
+      params, prior_dist, prior_dist_params, params_lower, params_upper
+    );
   }
 
   profile("likelihood") {

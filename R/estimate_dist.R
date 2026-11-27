@@ -340,7 +340,10 @@ estimate_dist <- function(data,
   init_params <- pmin(
     init_params, stan_data$params_upper - 0.01
   )
-  init_fn <- function() list(params = as.array(init_params))
+  init_raw <- (params_link(
+    init_params, stan_data$params_lower, stan_data$params_upper
+  ) - stan_data$params_loc) / stan_data$params_scale
+  init_fn <- function() list(params_raw = as.array(init_raw))
 
   fit <- fit_estimate_model(
     stan = stan, data = stan_data, init = init_fn,
