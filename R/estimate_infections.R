@@ -195,7 +195,7 @@ estimate_infections <- function(data,
   model_data <- add_breakpoints(model_data)
 
   # Determine seeding time
-  seeding_time <- get_seeding_time(delays, generation_time, rt)
+  seeding_time <- get_seeding_time(delays, generation_time, rt, obs)
 
   # Add initial zeroes
   model_data <- pad_reported_cases(model_data, seeding_time)

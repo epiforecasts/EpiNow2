@@ -214,13 +214,25 @@ get_regions_with_most_reports <- function(data,
 ##' Estimate seeding time from delays and generation time
 ##'
 ##' The seeding time is set to the mean of the specified delays, constrained
-##' to be at least the maximum generation time
+##' to be at least the maximum generation time. For prevalence, it also
+##' covers the support of the observation kernel.
 ##' @inheritParams estimate_infections
 ##' @return An integer seeding time
 ##' @keywords internal
-get_seeding_time <- function(delays, generation_time, rt = rt_opts()) {
+get_seeding_time <- function(delays, generation_time, rt = rt_opts(),
+                             obs = obs_opts()) {
   # Estimate the mean delay -----------------------------------------------
   seeding_time <- sum(mean(delays, ignore_uncertainty = TRUE))
+  if (obs$type == "prevalence") {
+    kernel_max <- function(x) {
+      x <- collapse(discretise(x, strict = FALSE))
+      sum(max(discretise(fix_parameters(x))))
+    }
+    seeding_time <- kernel_max(delays)
+    if (!is.null(obs$duration)) {
+      seeding_time <- seeding_time + kernel_max(obs$duration)
+    }
+  }
   if (!is.null(rt)) {
     ## make sure we have at least max(generation_time) seeding time
     seeding_time <- max(seeding_time, sum(max(generation_time)))
