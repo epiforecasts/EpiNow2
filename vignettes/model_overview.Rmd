@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 EpiNow2 provides several estimation models that can be combined for end-to-end epidemiological inference and forecasting.
 This vignette gives an overview of how these models connect.
-For a reference of what each model can do see the [model features](model_features.html) vignette.
+For a reference of what each model can do see the [model features](https://epiforecasts.io/EpiNow2/articles/model_features.html) vignette.
 
 # Architecture
 
@@ -38,7 +38,7 @@ knitr::include_graphics(
 Data flows from top to bottom.
 Solid arrows show direct dependencies; dashed arrows show optional connections.
 Green boxes are options functions that configure the estimation models.
-See the [model features](model_features.html) vignette for what each function and option does.
+See the [model features](https://epiforecasts.io/EpiNow2/articles/model_features.html) vignette for what each function and option does.
 
 # Relationship between models
 
@@ -62,22 +62,22 @@ Estimated primary observations from `estimate_infections()` are used as input to
 **Start here**
 
 - [Getting started](EpiNow2.html) — quick introduction and basic usage
-- [Model features](model_features.html) — feature reference for arguments and options
+- [Model features](https://epiforecasts.io/EpiNow2/articles/model_features.html) — feature reference for arguments and options
 
 **Model definitions** (mathematical detail)
 
 - [Infection model](estimate_infections.html) — `estimate_infections()`
-    - [Gaussian process implementation](gaussian_process_implementation_details.html) — shared component used inside the renewal and back-calculation models
+    - [Gaussian process implementation](https://epiforecasts.io/EpiNow2/articles/gaussian_process_implementation_details.html) — shared component used inside the renewal and back-calculation models
 - [Secondary model](estimate_secondary.html) — `estimate_secondary()`
 - [Truncation model](estimate_truncation.html) — `estimate_truncation()`
-- [Distribution model](estimate_dist.html) — `estimate_dist()`
-    - [Understanding delay distributions](delays.html) — conceptual background on delays in _EpiNow2_
+- [Distribution model](https://epiforecasts.io/EpiNow2/articles/estimate_dist.html) — `estimate_dist()`
+    - [Understanding delay distributions](https://epiforecasts.io/EpiNow2/articles/delays.html) — conceptual background on delays in _EpiNow2_
 
 **Estimating the reproduction number**
 
 - [Workflow](estimate_infections_workflow.html) — end-to-end estimation and forecasting
-- [Configuration examples](estimate_infections_options.html) — different model configurations with results
-- [Prior choice guide](prior_choice_guide.html) — default priors and how to modify them
+- [Configuration examples](https://epiforecasts.io/EpiNow2/articles/estimate_infections_options.html) — different model configurations with results
+- [Prior choice guide](https://epiforecasts.io/EpiNow2/articles/prior_choice_guide.html) — default priors and how to modify them
 
 **Auxiliary models**
 
@@ -86,8 +86,8 @@ Estimated primary observations from `estimate_infections()` are used as input to
 
 **Production use**
 
-- [epinow() and regional_epinow()](epinow.html) — wrappers for production runs
+- [epinow() and regional_epinow()](https://epiforecasts.io/EpiNow2/articles/epinow.html) — wrappers for production runs
 
 **Case studies**
 
-- [External case studies](case-studies.html) — applications in the literature
+- [External case studies](https://epiforecasts.io/EpiNow2/articles/case-studies.html) — applications in the literature

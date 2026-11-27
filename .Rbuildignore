@@ -34,3 +34,12 @@
 ^docs-book
 ^revdep
 ^pkgdown$
+^vignettes/case-studies\.Rmd$
+^vignettes/delays.*
+^vignettes/epinow[-.]
+^vignettes/estimate_dist\.Rmd$
+^vignettes/estimate_infections_options.*
+^vignettes/gaussian_process_implementation_details\.Rmd$
+^vignettes/model_features\.Rmd$
+^vignettes/prior_choice_guide.*
+^vignettes/precompile\.R$

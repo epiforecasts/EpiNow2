@@ -28,7 +28,7 @@ library(EpiNow2)
 
 Distributions can be supplied in two ways. First, one can supply delay data to `estimate_delay()`, where a subsampled bootstrapped lognormal will be fit to account for uncertainty in the observed data without being biased by changes in incidence (see `?EpiNow2::estimate_delay()`).
 
-Second, one can specify predetermined delays with uncertainty using the distribution functions such as `Gamma` or `LogNormal`. An arbitrary number of delay distributions are supported in `dist_spec()` with a common use case being an incubation period followed by a reporting delay. For more information on specifying distributions see `?EpiNow2::Distributions` or the [delays vignette](delays.html).
+Second, one can specify predetermined delays with uncertainty using the distribution functions such as `Gamma` or `LogNormal`. An arbitrary number of delay distributions are supported in `dist_spec()` with a common use case being an incubation period followed by a reporting delay. For more information on specifying distributions see `?EpiNow2::Distributions` or the [delays vignette](https://epiforecasts.io/EpiNow2/articles/delays.html).
 
 For example if data on the delay between onset and infection was available we could fit a distribution to it, using `estimate_delay()`, with appropriate uncertainty as follows (note this is a synthetic example),
 
@@ -145,7 +145,7 @@ The default model uses a Gaussian process to estimate time-varying transmission,
 - Use variational inference for fast but unreliable approximate results (`stan = stan_opts(method = "vb")`).
 - Reduce the accuracy of the Gaussian process approximation (see `?gp_opts`).
 
-For examples of different model configurations, see the [estimate_infections_options](estimate_infections_options.html) vignette.
+For examples of different model configurations, see the [estimate_infections_options](https://epiforecasts.io/EpiNow2/articles/estimate_infections_options.html) vignette.
 
 Both summary measures and posterior samples are returned for all parameters in an easily explored format which can be accessed using `summary`. The default is to return a summary table of estimates for key parameters at the latest date partially supported by data. 
 
