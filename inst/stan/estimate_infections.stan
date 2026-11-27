@@ -149,10 +149,24 @@ transformed data {
       }
     }
   }
+  // An init-anchored state's level is scaffolding: its prior, including any
+  // upper truncation, applies to the derived initial value, so the level
+  // itself is not bounded above.
+  vector[n_params_variable] params_declared_upper = params_upper;
+  for (s in 1:n_states) {
+    if (state_anchor[s]) {
+      int vpos = params_variable_lookup[state_param_id[s]];
+      if (vpos > 0) {
+        params_declared_upper[vpos] = positive_infinity();
+      }
+    }
+  }
 }
 
 parameters {
-  vector<lower = params_lower, upper = params_upper>[n_params_variable] params;
+  vector<lower = params_lower, upper = params_declared_upper>[
+    n_params_variable
+  ] params;
   array[estimate_r] real initial_infections;    // seed infections
   // delay parameters
   vector<lower = delay_params_lower>[delay_params_length] delay_params;

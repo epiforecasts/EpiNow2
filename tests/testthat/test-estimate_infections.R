@@ -803,3 +803,31 @@ test_that("estimate_infections recovers the prior on the initial Rt", {
   expect_equal(mean(log_R1), unname(pars$meanlog), tolerance = 0.05)
   expect_equal(sd(log_R1), unname(pars$sdlog), tolerance = 0.1)
 })
+
+test_that("an init-anchored level is not bounded by the initial-value prior", {
+  captured <- NULL
+  local_mocked_bindings(fit_estimate_model = function(data, init, ...) {
+    captured <<- list(data = data, init = init)
+    stop("captured")
+  })
+  prior <- GP(init = LogNormal(mean = 1, sd = 0.5, max = 3))
+  expect_error(
+    estimate_infections(
+      reported_cases,
+      generation_time = gt_opts(example_generation_time),
+      rt = rt_opts(prior = prior), verbose = FALSE
+    ),
+    "captured"
+  )
+  data <- captured$data
+  anchored <- data$state_param_id[data$state_anchor == 1]
+  vpos <- data$params_variable_lookup[anchored]
+  expect_equal(data$params_upper[vpos], 3)
+
+  model <- stanmodels$estimate_infections
+  fit <- suppressMessages(rstan::sampling(model, data = data, chains = 0))
+  init <- captured$init()
+  # a window-mean level above the prior's maximum is a valid parameter value
+  init$params[vpos] <- 5
+  expect_no_error(rstan::unconstrain_pars(fit, init))
+})
