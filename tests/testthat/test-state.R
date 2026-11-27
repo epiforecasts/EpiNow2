@@ -551,3 +551,21 @@ test_that("plot.trajectory_spec centres only the random walks of a mean anchor",
   # a mean-anchored random walk is centred on the level
   expect_lt(max(abs(draw_means(RW(mean = Fixed(1))))), 1e-10)
 })
+
+test_that("+ keeps a bare component's future whichever side it is on", {
+  left <- GP(future = "project") + RW(period = 7)
+  right <- RW(period = 7) + GP(future = "project")
+  expect_identical(left$future, "project")
+  expect_identical(right$future, "project")
+  expect_identical(
+    (left + initial(LogNormal(1, 1), future = "project"))$future, "project"
+  )
+  expect_identical(
+    (right + initial(LogNormal(1, 1), future = "project"))$future, "project"
+  )
+  expect_error(
+    GP(future = "project") + RW(period = 7, future = "latest") +
+      GP(future = "estimate"),
+    "share a single forecast-horizon setting"
+  )
+})

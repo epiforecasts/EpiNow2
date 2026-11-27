@@ -413,8 +413,26 @@ new_trajectory_spec <- function(prior, anchor, future = "latest") {
   ## a state's components share one free-noise/forecast window (see GP()'s
   ## `future`), so a component's own non-default `future` must agree with the
   ## baseline's rather than being silently dropped
-  if (!identical(other$future, "latest") &&
-        !identical(other$future, base$future)) {
+  future <- base$future
+  if (!has_baseline(base)) {
+    ## two bare components: keep whichever non-default `future` is set, so
+    ## the result does not depend on the order of the operands
+    set <- Filter(
+      function(f) !identical(f, "latest"), list(e1$future, e2$future)
+    )
+    if (length(unique(set)) > 1) {
+      cli_abort(
+        c(
+          "!" = "Components of one trajectory share a single
+          forecast-horizon setting.",
+          "i" = "These components set different {.arg future} values; set
+          {.arg future} on one of them only, or on the baseline."
+        )
+      )
+    }
+    future <- if (length(set) > 0) set[[1]] else "latest"
+  } else if (!identical(other$future, "latest") &&
+               !identical(other$future, base$future)) {
     cli_abort(
       c(
         "!" = "Components of one trajectory share a single forecast-horizon
@@ -429,7 +447,7 @@ new_trajectory_spec <- function(prior, anchor, future = "latest") {
   state <- list(
     anchor = base$anchor,
     prior = base$prior,
-    future = base$future,
+    future = future,
     components = c(e1$components, e2$components)
   )
   class(state) <- c("trajectory_spec", "state_spec", "param_spec", "list")
