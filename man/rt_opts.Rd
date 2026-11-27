@@ -19,8 +19,9 @@ rt_opts(
 }
 \arguments{
 \item{prior}{A \verb{<state_spec>} (from \code{\link[=GP]{GP()}}/\code{\link[=RW]{RW()}}, or a composition of
-them with \code{+}) for the time-varying reproduction number. Ignored if
-\code{use_rt} is \code{FALSE}. Defaults to \code{GP(init = LogNormal(mean = 1, sd = 1))}.
+them with \code{+}) for the time-varying reproduction number, or \code{\link[=constant]{constant()}}
+for a constant one. Ignored if \code{use_rt} is \code{FALSE}. Defaults to
+\code{GP(init = LogNormal(mean = 1, sd = 1))}.
 A lower limit of 0 will be enforced automatically. Passing a plain
 \verb{<dist_spec>} is deprecated: it is treated as \code{GP(init = prior)}.}
 

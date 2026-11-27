@@ -329,8 +329,9 @@ warn_deprecated_rw <- function() {
 #' defaults.
 #'
 #' @param prior A `<state_spec>` (from [GP()]/[RW()], or a composition of
-#' them with `+`) for the time-varying reproduction number. Ignored if
-#' `use_rt` is `FALSE`. Defaults to `GP(init = LogNormal(mean = 1, sd = 1))`.
+#' them with `+`) for the time-varying reproduction number, or [constant()]
+#' for a constant one. Ignored if `use_rt` is `FALSE`. Defaults to
+#' `GP(init = LogNormal(mean = 1, sd = 1))`.
 #' A lower limit of 0 will be enforced automatically. Passing a plain
 #' `<dist_spec>` is deprecated: it is treated as `GP(init = prior)`.
 #'
@@ -454,8 +455,8 @@ rt_opts <- function(prior = GP(init = LogNormal(mean = 1, sd = 1)),
       details = paste(
         "A plain distribution is treated as a Gaussian-process Rt for backward",
         "compatibility. Request one explicitly with",
-        "`rt_opts(prior = GP(init = ...))` (or `GP(mean = ...)` or `RW(...)`).",
-        "A constant Rt will be supported in a future release."
+        "`rt_opts(prior = GP(init = ...))` (or `GP(mean = ...)` or `RW(...)`),",
+        "or a constant Rt with `rt_opts(prior = constant(...))`."
       )
     )
     prior <- if (gp_anchor == "mean") GP(mean = prior) else GP(init = prior)
