@@ -142,6 +142,19 @@ test_that("check_reports_valid errors for bad 'secondary' specifications", {
   test_col_specs(secondary_col_dt, model = "estimate_secondary")
 })
 
+test_that("check_secondary_obs_opts warns when type is non-default", {
+  expect_warning(
+    check_secondary_obs_opts(obs_opts(type = "prevalence")),
+    "ignored by"
+  )
+  expect_no_warning(
+    check_secondary_obs_opts(obs_opts())
+  )
+  expect_no_warning(
+    check_secondary_obs_opts(obs_opts(family = "poisson"))
+  )
+})
+
 test_that("check_simulation_input passes for valid input", {
   good <- data.frame(
     date = seq.Date(as.Date("2023-01-01"), length.out = 3, by = "day"),

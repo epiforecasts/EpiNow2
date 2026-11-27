@@ -56,6 +56,60 @@ test_that("simulate_infections works as expected with additional parameters", {
   set.seed(Sys.time())
 })
 
+test_that("simulate_infections uses the prevalence reporting kernel", {
+  set.seed(123)
+  sim_incidence <- test_simulate_infections(
+    generation_time = gt_opts(fix_parameters(example_generation_time)),
+    delays = delay_opts(fix_parameters(example_reporting_delay)),
+    obs = obs_opts(family = "poisson", type = "incidence"),
+    seeding_time = 10
+  )
+  set.seed(123)
+  sim_prevalence <- test_simulate_infections(
+    generation_time = gt_opts(fix_parameters(example_generation_time)),
+    delays = delay_opts(fix_parameters(example_reporting_delay)),
+    obs = obs_opts(family = "poisson", type = "prevalence"),
+    seeding_time = 10
+  )
+  expect_equal(nrow(sim_prevalence), 2 * nrow(R))
+  infections <- sim_prevalence[sim_prevalence$variable == "infections", ]
+  reported <- sim_prevalence[sim_prevalence$variable == "reported_cases", ]
+  expect_equal(nrow(reported), nrow(infections))
+  expect_true(all(reported$value >= 0))
+  expect_true(all(reported$value == round(reported$value)))
+  # same infections and RNG seed, but a different reporting kernel: the
+  # two types of observation should not coincide
+  expect_false(identical(
+    reported$value,
+    sim_incidence[sim_incidence$variable == "reported_cases", ]$value
+  ))
+  set.seed(Sys.time())
+})
+
+test_that("simulate_infections applies duration with immediate entry", {
+  withr::local_seed(123)
+  obs <- obs_opts(
+    family = "poisson", week_effect = FALSE,
+    type = "prevalence", duration = Fixed(3)
+  )
+  zero_delay <- test_simulate_infections(
+    generation_time = gt_opts(Fixed(1)),
+    delays = delay_opts(Fixed(0)), obs = obs, seeding_time = 5
+  )
+  create_delays <- create_stan_delays
+  local_mocked_bindings(create_stan_delays = function(...) {
+    data <- create_delays(...)
+    data$delay_id_reporting <- 0L
+    data
+  })
+  set.seed(123)
+  immediate <- test_simulate_infections(
+    generation_time = gt_opts(Fixed(1)),
+    delays = delay_opts(), obs = obs, seeding_time = 5
+  )
+  expect_equal(immediate, zero_delay)
+})
+
 test_that("simulate_infections works with susceptible depletion", {
   set.seed(123)
   sim <- test_simulate_infections(

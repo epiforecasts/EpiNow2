@@ -292,10 +292,9 @@ extract_stan_samples <- function(stan_fit, pars = NULL, include = TRUE) {
 #' Extract all samples from a stan fit
 #'
 #' @description `r lifecycle::badge("deprecated")`
-#' **This function is deprecated.** Use [get_samples()] on the fitted model
-#' object (e.g. the result of [estimate_infections()]) instead, with
-#' `format = "list"` to obtain the same list of arrays that this function
-#' returns.
+#' Use [get_samples()] on the fitted model object (e.g. the result of
+#' [estimate_infections()]) instead, with `format = "list"` to obtain the
+#' same list of arrays that this function returns.
 #'
 #' If the `object` argument is a `<stanfit>` object, it simply returns the
 #' result of [rstan::extract()]. If it is a `<CmdStanMCMC>` it returns samples

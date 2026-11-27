@@ -3,17 +3,23 @@ dates <- seq(as.Date("2020-03-15"), by = "days", length.out = 15)
 
 test_that("create_obs_model works with default settings", {
   obs <- create_obs_model(dates = dates)
-  expect_equal(length(obs), 7)
+  expect_equal(length(obs), 8)
   expect_equal(names(obs), c(
     "model_type", "week_effect", "obs_weight", "obs_scale",
-    "likelihood", "return_likelihood", "day_of_week"
+    "likelihood", "return_likelihood", "secondary_type", "day_of_week"
   ))
   expect_equal(obs$model_type, 1)
   expect_equal(obs$week_effect, 7)
   expect_equal(obs$obs_scale, 0)
   expect_equal(obs$likelihood, 1)
   expect_equal(obs$return_likelihood, 0)
+  expect_equal(obs$secondary_type, 0)
   expect_equal(obs$day_of_week, c(7, 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7))
+})
+
+test_that("create_obs_model can be used with prevalence-type observations", {
+  obs <- create_obs_model(dates = dates, obs = obs_opts(type = "prevalence"))
+  expect_equal(obs$secondary_type, 1)
 })
 
 test_that("create_obs_model can be used with a Poisson model", {

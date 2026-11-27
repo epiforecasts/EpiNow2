@@ -431,8 +431,8 @@ gp_half_range <- function(n) {
 #' 5/2 constants to within 8-13%. Matern 1/2 is the roughest kernel, so it
 #' needs the most basis functions. Its `c_factor` was not independently
 #' validated and uses the Matern 3/2 value. The periodic kernel has no
-#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B), so
-#' its `c_factor` is `NA`.
+#' boundary and needs `m >= m_factor * S / l` basis functions (Appendix B),
+#' with `c_factor` set to `NA`.
 #'
 #' @param gp_type Integer kernel type as used in the Stan model (0: squared
 #'   exponential, 1: periodic, 2: Matern).
@@ -582,7 +582,8 @@ create_obs_model <- function(obs = obs_opts(), dates) {
     obs_weight = obs$weight,
     obs_scale = as.integer(obs$scale != Fixed(1)),
     likelihood = as.numeric(obs$likelihood),
-    return_likelihood = as.numeric(obs$return_likelihood)
+    return_likelihood = as.numeric(obs$return_likelihood),
+    secondary_type = as.numeric(obs$type == "prevalence")
   )
 
   opts$day_of_week <- add_day_of_week(dates, opts$week_effect)
@@ -996,7 +997,9 @@ np_fixed_pmf <- function(x) get_pmf(fix_parameters(x, strategy = "mean"))
 
 ##' Create delay variables for stan
 ##'
-##' @param ... Named delay distributions. The names are assigned to IDs
+##' @param ... Named delay distributions. The names are assigned to IDs. A
+##'   `NULL` entry is dropped, so its `delay_id_*` is absent from the
+##'   returned list rather than assigned an id.
 ##' @param time_points Integer, the number of time points in the data;
 ##'   determines weight associated with weighted delay priors; default: 1
 ##' @return A list of variables as expected by the stan model
@@ -1004,6 +1007,7 @@ np_fixed_pmf <- function(x) get_pmf(fix_parameters(x, strategy = "mean"))
 ##' @keywords internal
 create_stan_delays <- function(..., time_points = 1L) {
   delays <- list(...)
+  delays <- delays[!vapply(delays, is.null, logical(1))]
   delay_names <- names(delays)
 
   ## discretise

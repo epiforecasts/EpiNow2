@@ -12,7 +12,9 @@ obs_opts(
   week_length = 7,
   scale = Fixed(1),
   likelihood = TRUE,
-  return_likelihood = FALSE
+  return_likelihood = FALSE,
+  type = c("incidence", "prevalence"),
+  duration = NULL
 )
 }
 \arguments{
@@ -50,6 +52,35 @@ included in the model.}
 
 \item{return_likelihood}{Logical, defaults to \code{FALSE}. Should the likelihood
 be returned by the model.}
+
+\item{type}{A character string indicating how observations relate to
+latent infections, used by \code{\link[=estimate_infections]{estimate_infections()}} and
+\code{\link[=simulate_infections]{simulate_infections()}}. Options are:
+\itemize{
+\item "incidence" (default): observations are a convolution of latent
+infections with a reporting delay, i.e. each infection contributes to the
+observation exactly once. An example is deaths or hospital admissions
+arising from infections.
+\item "prevalence": observations are a convolution of latent infections with
+a kernel describing how long each infection remains in the observed
+state. Without \code{duration} set, that kernel is the survival function of
+the reporting delay: the state is entered at infection and left once the
+delay elapses, as in current infections. With \code{duration} set, the state
+is instead entered only after the reporting delay and left once
+\code{duration} has elapsed. The kernel then becomes the density of the
+reporting delay convolved with the complement of the CDF of \code{duration};
+an example is hospital bed occupancy, entered at admission and left at
+discharge, with \code{delays} (in \code{\link[=delay_opts]{delay_opts()}}) describing the delay to
+admission and \code{duration} the length of stay. Note that
+\code{\link[=estimate_infections]{estimate_infections()}} requires a generative (\code{rt}) model to fit
+prevalence-type data, as the deconvolution approach used when \code{rt = NULL}
+assumes incidence-type observations.
+}}
+
+\item{duration}{A \verb{<dist_spec>} specifying the time an observation spends
+in the prevalent state once entered (e.g. hospital length of stay), used
+only when \code{type = "prevalence"}; see \code{type} for how it enters the model.
+Defaults to \code{NULL}. Ignored, with a warning, when \code{type} is "incidence".}
 }
 \value{
 An \verb{<obs_opts>} object of observation model settings.
@@ -67,4 +98,13 @@ obs_opts(week_effect = FALSE)
 
 # Scale reported data
 obs_opts(scale = Normal(mean = 0.2, sd = 0.02))
+
+# Fit to prevalence data (e.g. current infections)
+obs_opts(type = "prevalence")
+
+# Fit to hospital bed occupancy, given the delay to admission in `delays`
+# and a length of stay of around 5 days
+obs_opts(
+  type = "prevalence", duration = LogNormal(mean = 5, sd = 2, max = 20)
+)
 }

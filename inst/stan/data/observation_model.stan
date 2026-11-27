@@ -5,5 +5,7 @@ int obs_scale; // logical controlling scaling of observations
 real obs_weight; // weight given to observation in log density
 int likelihood; // Should the likelihood be included in the model
 int return_likelihood; // Should the likehood be returned by the model
+// type of secondary observation: 0 = incidence, 1 = prevalence
+int<lower = 0, upper = 1> secondary_type;
 int<lower = 0> delay_id_truncation; // id of truncation delay
 int<lower = 0> delay_id_reporting; // id of reporting delay
