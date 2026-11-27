@@ -128,3 +128,13 @@ test_that("simulate_infections errors for bad 'infection_dispersion' specificati
     "ignored"
   )
 })
+
+test_that("simulate_infections fails with a mismatched day_of_week_effect", {
+  expect_error(
+    test_simulate_infections(
+      generation_time = gt_opts(Fixed(1)),
+      day_of_week_effect = c(2, 1, 1)
+    ),
+    "length"
+  )
+})
