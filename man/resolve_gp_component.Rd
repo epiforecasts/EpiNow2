@@ -4,7 +4,15 @@
 \alias{resolve_gp_component}
 \title{Resolve one Gaussian process component's state data}
 \usage{
-resolve_gp_component(comp, name, hyper_params, base_id, pos, n_points)
+resolve_gp_component(
+  comp,
+  name,
+  hyper_params,
+  base_id,
+  pos,
+  n_points,
+  tag = "gp"
+)
 }
 \arguments{
 \item{comp}{The component (\verb{list(type = "gp", settings = <gp_opts>)}).}
@@ -21,6 +29,9 @@ lengthscale to.}
 \item{n_points}{The number of points the component is evaluated at (see
 \code{\link[=gp_noise_points]{gp_noise_points()}}), used to choose \code{basis_prop}/\code{boundary_scale} from
 the lengthscale prior when either is left at \code{NULL} on \code{\link[=GP]{GP()}}.}
+
+\item{tag}{Names this component's hyperparameters: \code{"gp"} for a state's
+first Gaussian process, \code{"gp2"}, \code{"gp3"}, ... for later ones.}
 }
 \value{
 A list of this component's contribution to \code{create_state_data()}'s

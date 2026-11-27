@@ -51,3 +51,23 @@ test_that("create_stan_params warns about uncertain parameters", {
     make_param("test", Normal(mean = 0, sd = Normal(1, 1)))
   )), "cannot have uncertain parameters")
 })
+
+test_that("create_stan_params gives components of the same type unique names", {
+  prior <- initial(LogNormal(mean = 1, sd = 1)) + GP() +
+    GP(kernel = "periodic", ls = LogNormal(mean = 7, sd = 2, max = 30)) +
+    RW(knots = 10L) + RW()
+  params <- list(
+    make_param("R", prior, lower_bound = 0), make_param("I", NULL)
+  )
+  sd <- create_stan_params(
+    params, states_supported = c("R", "I"), seeding_time = 7, t = 60,
+    horizon = 7
+  )
+  ids <- unlist(sd[grepl("^param_id_", names(sd))])
+  expect_false(anyDuplicated(names(ids)) > 0)
+  expect_false(anyDuplicated(ids[ids > 0]) > 0)
+  expect_true(all(c(
+    "param_id_R_gp_alpha", "param_id_R_gp2_alpha", "param_id_R_gp_rho",
+    "param_id_R_gp2_rho", "param_id_R_rw_sd", "param_id_R_rw2_sd"
+  ) %in% names(ids)))
+})

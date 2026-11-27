@@ -1272,6 +1272,8 @@ register_hyper <- function(existing, suffix, name, dist, base_id) {
 #' @param pos This component's index within the random-walk type group.
 #' @param rw_knots_offset This component's offset into the flat `rw_knots`
 #'   vector (the current length of that vector before this component).
+#' @param tag Names this component's hyperparameters: `"rw"` for a state's
+#'   first random walk, `"rw2"`, `"rw3"`, ... for later ones.
 #' @return A list of this component's contribution to `create_state_data()`'s
 #'   component table: `comp_type`, `comp_pos`, `rw_sd_id`, `hyper_params`,
 #'   `rw_knots_n`, `rw_knots_offset`, `rw_knots` (integer(0) unless
@@ -1279,10 +1281,12 @@ register_hyper <- function(existing, suffix, name, dist, base_id) {
 #'   excluded from the shared-period check).
 #' @keywords internal
 resolve_rw_component <- function(comp, name, hyper_params, base_id, pos,
-                                 rw_knots_offset) {
+                                 rw_knots_offset, tag = "rw") {
   step_sd <- comp$settings$sd
   assert_estimated(step_sd, "step sd", name)
-  reg <- register_hyper(hyper_params, "rw_sd", name, step_sd, base_id)
+  reg <- register_hyper(
+    hyper_params, paste0(tag, "_sd"), name, step_sd, base_id
+  )
   comp_knots <- comp$settings$knots
   out <- list(
     comp_type = 0L, comp_pos = pos, rw_sd_id = reg$id,
@@ -1444,20 +1448,26 @@ gp_basis_settings <- function(gp, n, gp_type) {
 #' @param n_points The number of points the component is evaluated at (see
 #'   [gp_noise_points()]), used to choose `basis_prop`/`boundary_scale` from
 #'   the lengthscale prior when either is left at `NULL` on [GP()].
+#' @param tag Names this component's hyperparameters: `"gp"` for a state's
+#'   first Gaussian process, `"gp2"`, `"gp3"`, ... for later ones.
 #' @return A list of this component's contribution to `create_state_data()`'s
 #'   component table: `comp_type`, `comp_pos`, `hyper_params`, `gp_alpha_id`,
 #'   `gp_rho_id`, `gp_kernel`, `gp_nu`, `gp_M`, `gp_boundary_scale`,
 #'   `gp_w0`.
 #' @keywords internal
 resolve_gp_component <- function(comp, name, hyper_params, base_id, pos,
-                                 n_points) {
+                                 n_points, tag = "gp") {
   gp <- comp$settings
   assert_estimated(gp$alpha, "alpha", name)
-  reg <- register_hyper(hyper_params, "gp_alpha", name, gp$alpha, base_id)
+  reg <- register_hyper(
+    hyper_params, paste0(tag, "_alpha"), name, gp$alpha, base_id
+  )
   hyper_params <- reg$params
   gp_alpha_id <- reg$id
   assert_estimated(gp$ls, "lengthscale", name)
-  reg <- register_hyper(hyper_params, "gp_rho", name, gp$ls, base_id)
+  reg <- register_hyper(
+    hyper_params, paste0(tag, "_rho"), name, gp$ls, base_id
+  )
   gp_kernel <- fcase(
     gp$kernel == "se", 0L, gp$kernel == "periodic", 1L, default = 2L
   )
@@ -1644,11 +1654,17 @@ create_state_data <- function(params, state_flags,
     }
     comp_offset[j] <- length(comp_type)
     comp_n[j] <- length(spec$components)
+    ## a state's later components of the same type get numbered
+    ## hyperparameter names, so every parameter name stays unique
+    type_count <- c(rw = 0L, gp = 0L)
     for (comp in spec$components) {
+      type_count[comp$type] <- type_count[comp$type] + 1L
+      k <- type_count[[comp$type]]
+      tag <- if (k == 1L) comp$type else paste0(comp$type, k)
       if (comp$type == "rw") {
         n_rw <- n_rw + 1L
         res <- resolve_rw_component(
-          comp, name, hyper_params, base_id, n_rw, length(rw_knots)
+          comp, name, hyper_params, base_id, n_rw, length(rw_knots), tag
         )
         rw_sd_id <- c(rw_sd_id, res$rw_sd_id)
         rw_knots_n <- c(rw_knots_n, res$rw_knots_n)
@@ -1659,7 +1675,7 @@ create_state_data <- function(params, state_flags,
         n_gp <- n_gp + 1L
         res <- resolve_gp_component(
           comp, name, hyper_params, base_id, n_gp,
-          gp_noise_points(free, anchor[j])
+          gp_noise_points(free, anchor[j]), tag
         )
         gp_alpha_id <- c(gp_alpha_id, res$gp_alpha_id)
         gp_rho_id <- c(gp_rho_id, res$gp_rho_id)

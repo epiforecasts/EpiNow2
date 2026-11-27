@@ -4,7 +4,15 @@
 \alias{resolve_rw_component}
 \title{Resolve one random-walk component's state data}
 \usage{
-resolve_rw_component(comp, name, hyper_params, base_id, pos, rw_knots_offset)
+resolve_rw_component(
+  comp,
+  name,
+  hyper_params,
+  base_id,
+  pos,
+  rw_knots_offset,
+  tag = "rw"
+)
 }
 \arguments{
 \item{comp}{The component (\code{list(type = "rw", settings = list(...))}).}
@@ -19,6 +27,9 @@ resolve_rw_component(comp, name, hyper_params, base_id, pos, rw_knots_offset)
 
 \item{rw_knots_offset}{This component's offset into the flat \code{rw_knots}
 vector (the current length of that vector before this component).}
+
+\item{tag}{Names this component's hyperparameters: \code{"rw"} for a state's
+first random walk, \code{"rw2"}, \code{"rw3"}, ... for later ones.}
 }
 \value{
 A list of this component's contribution to \code{create_state_data()}'s
