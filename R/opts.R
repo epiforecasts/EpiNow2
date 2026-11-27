@@ -1183,10 +1183,11 @@ forecast_opts <- function(horizon = 7, accumulate) {
 #' indicating the target regions.
 #'
 #' @param ... Optional override for region defaults, named by region (e.g.
-#' `realland = rt_opts(rw = 7)`). See the examples for use case. Names that do
-#' not match a region present in `reported_cases$region` are not rejected;
-#' the corresponding override is silently unused since [regional_epinow()]
-#' only ever looks up settings for regions actually present in the data.
+#' `realland = rt_opts(prior = GP(init = LogNormal(1, 1)) + RW(period = 7))`).
+#' See the examples for use case. Names that do not match a region present in
+#' `reported_cases$region` are not rejected; the corresponding override is
+#' silently unused since [regional_epinow()] only ever looks up settings for
+#' regions actually present in the data.
 #'
 #' @importFrom purrr list_assign
 #'
