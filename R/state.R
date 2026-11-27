@@ -668,8 +668,22 @@ plot.trajectory_spec <- function(x, n = 50L, samples = 50L, ...) {
   sample_component_dev <- function(comp) {
     if (comp$type == "rw") {
       step_sd <- sample_dist_values(comp$settings$sd, 1, lower = 0)
-      steps <- rnorm(n - 1, 0, step_sd)
-      c(0, cumsum(steps))
+      ## segment of each time point: the walk steps once per `period` block,
+      ## or at each knot, as in the Stan rw_dev() and rw_dev_knots()
+      rw_knots <- comp$settings$knots
+      if (is.null(rw_knots)) {
+        segment <- (seq_len(n) - 1L) %/% (comp$settings$period %||% 1L)
+      } else {
+        if (inherits(rw_knots, "Date")) {
+          cli_abort(
+            "Cannot plot a random walk with {.cls Date} knots; give the knots
+            as time-step positions."
+          )
+        }
+        rw_knots <- rw_knots[rw_knots >= 1 & rw_knots <= n]
+        segment <- findInterval(seq_len(n), sort(rw_knots))
+      }
+      c(0, cumsum(rnorm(max(segment), 0, step_sd)))[segment + 1L]
     } else {
       alpha <- sample_dist_values(comp$settings$alpha, 1, lower = 0)
       rho <- sample_dist_values(comp$settings$ls, 1, lower = 1e-3)

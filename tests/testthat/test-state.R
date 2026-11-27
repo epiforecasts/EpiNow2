@@ -523,3 +523,19 @@ test_that("sample_dist_values draws from the prior truncated at its lower bound"
   )
   expect_true(all(capped > 0 & capped <= 3))
 })
+
+test_that("plot.trajectory_spec steps a random walk per period or at knots", {
+  set.seed(1)
+  weekly <- plot(
+    RW(init = LogNormal(mean = 1, sd = 0.5), period = 7), n = 21, samples = 1
+  )$data$value
+  expect_length(unique(weekly[1:7]), 1)
+  expect_length(unique(weekly[8:14]), 1)
+  expect_length(unique(weekly), 3)
+  knotted <- plot(
+    RW(init = LogNormal(mean = 1, sd = 0.5), knots = 10L), n = 21, samples = 1
+  )$data$value
+  expect_length(unique(knotted[1:9]), 1)
+  expect_length(unique(knotted[10:21]), 1)
+  expect_length(unique(knotted), 2)
+})
