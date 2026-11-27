@@ -67,3 +67,18 @@ test_that("create_initial_conditions handles data without infection model fields
   expect_length(without$bp_effects, 0)
   expect_null(without$day_of_week_simplex)
 })
+
+test_that("create_initial_conditions initialises the GP trend only when it is sampled", {
+  base <- list(
+    delay_n_p = 0, delay_np_est_length = 0, fixed = 0, estimate_r = 0,
+    bp_n = 0, week_effect = 0, n_params_variable = 1L, gp_type = 2, M = 5,
+    params_lower = array(0), params_upper = array(10)
+  )
+  params <- list(
+    make_param("alpha", Normal(mean = 0, sd = 0.5, max = 10), lower_bound = 0)
+  )
+  with_trend <- create_initial_conditions(c(base, gp_trend = 1L), params)()
+  expect_length(with_trend$gp_trend_raw, 1)
+  without <- create_initial_conditions(c(base, gp_trend = 0L), params)()
+  expect_length(without$gp_trend_raw, 0)
+})

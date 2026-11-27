@@ -16,6 +16,7 @@
 - Simplified the Stan code that combines delays in `get_delay_rev_pmf()`, with new property tests for the delay functions.
 - Parameter priors, the breakpoint standard deviation prior and the `sigma` prior in `dist_fit()` are no longer renormalised for truncation at their bounds, which does not change the posterior.
 - Delay parameter priors are now weighted in a single statement and delay weights must be at least one. The posterior is unchanged.
+- The net change in log Rt over the observation window under the default non-stationary Gaussian process is now sampled separately, centred when the data inform it and non-centred when they do not. The model is unchanged. Chains with many divergent transitions are now much rarer and sampling needs fewer steps per iteration.
 
 ## Package changes
 

@@ -229,3 +229,30 @@ test_that("check_gp_ls_prior errors for unsupported priors", {
     check_gp_ls_prior(NonParametric(c(0.5, 0.5))), "boundary_scale"
   )
 })
+
+test_that("create_gp_data samples the trend of a non-stationary GP only", {
+  expect_equal(create_gp_data(gp_opts(), default_data)$gp_trend, 1L)
+  expect_equal(create_gp_data(gp_opts(), default_data)$gp_trend_sd, 0.5)
+  expect_equal(create_gp_data(gp_opts(kernel = "se"), default_data)$gp_trend, 1L)
+  expect_equal(
+    create_gp_data(gp_opts(kernel = "periodic"), default_data)$gp_trend, 0L
+  )
+  expect_equal(create_gp_data(NULL, default_data)$gp_trend, 0L)
+  expect_equal(
+    create_gp_data(
+      gp_opts(), modifyList(default_data, list(stationary = 1))
+    )$gp_trend,
+    0L
+  )
+  expect_equal(
+    create_gp_data(
+      gp_opts(), modifyList(default_data, list(estimate_r = 0))
+    )$gp_trend,
+    0L
+  )
+  # a single observed day has no increments to sum
+  expect_equal(
+    create_gp_data(gp_opts(), modifyList(default_data, list(t = 15)))$gp_trend,
+    0L
+  )
+})

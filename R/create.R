@@ -371,6 +371,14 @@ create_gp_data <- function(gp = gp_opts(), data) {
   )
   basis <- gp_basis_settings(gp, gp_noise_terms(data), gp_type)
 
+  # The net change of a non-stationary GP over the observation window (its
+  # trend) is sampled separately, partially centred, because the data pin it
+  # down tightly and a non-centred trend then makes the posterior curvature
+  # scale with the GP magnitude.
+  observed <- data$t - data$seeding_time - data$horizon
+  gp_trend <- !fixed && gp_type != 1 && isTRUE(data$stationary == 0) &&
+    isTRUE(data$estimate_r == 1) && observed > 1
+
   # map settings to underlying gp stan requirements
   gp_data <- list(
     fixed = as.numeric(fixed),
@@ -378,7 +386,11 @@ create_gp_data <- function(gp = gp_opts(), data) {
     L = basis$L,
     gp_type = gp_type,
     nu = gp$matern_order,
-    w0 = gp$w0
+    w0 = gp$w0,
+    gp_trend = as.integer(gp_trend),
+    # expected posterior sd of the trend, on the log scale; above it the
+    # trend is sampled mostly centred, below it mostly non-centred
+    gp_trend_sd = 0.5
   )
 
   gp_data <- c(data, gp_data)
@@ -755,6 +767,9 @@ create_initial_conditions <- function(stan_data, params) {
     } else {
       out$eta <- array(numeric(0))
     }
+    out$gp_trend_raw <- array(
+      rnorm(as.integer(isTRUE(stan_data$gp_trend == 1)), sd = 0.1)
+    )
     if (isTRUE(stan_data$estimate_r == 1)) {
       out$initial_infections <- array(rnorm(1))
       # seed R_mean from the initial-Rt prior (see @details above)
