@@ -505,3 +505,17 @@ test_that("plot.state_spec returns a ggplot of prior draws", {
 test_that("plot.state_spec errors for a known trajectory", {
   expect_error(plot(GP(mean = c(1, 2, 3))), "known")
 })
+
+test_that("sample_dist_values draws from the prior truncated at its lower bound", {
+  set.seed(1)
+  draws <- sample_dist_values(Normal(mean = 0, sd = 0.1), 4000, lower = 0)
+  expect_true(all(draws > 0))
+  # half-normal mean is sd * sqrt(2 / pi)
+  expect_equal(mean(draws), 0.1 * sqrt(2 / pi), tolerance = 0.05)
+  level <- sample_dist_values(Normal(mean = 0.5, sd = 1), 4000, lower = 0)
+  expect_true(all(level > 0))
+  expect_equal(
+    sample_dist_values(LogNormal(meanlog = 0, sdlog = 1), 5, lower = 0) > 0,
+    rep(TRUE, 5)
+  )
+})

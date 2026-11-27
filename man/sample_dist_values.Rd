@@ -11,7 +11,7 @@ sample_dist_values(d, n, lower = -Inf)
 
 \item{n}{Number of values to draw.}
 
-\item{lower}{Lower bound to enforce on the drawn values.}
+\item{lower}{Lower truncation point.}
 }
 \value{
 A numeric vector of length \code{n}.
@@ -19,6 +19,7 @@ A numeric vector of length \code{n}.
 \description{
 Internal helper that draws \code{n} values from the distribution
 represented by a \verb{<dist_spec>}, resolving any uncertainty in its parameters
-first. Values are constrained to be at least \code{lower}.
+first. The distribution is truncated below at \code{lower}, as the model
+truncates parameter priors at their lower bound.
 }
 \keyword{internal}

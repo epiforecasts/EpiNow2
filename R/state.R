@@ -562,27 +562,36 @@ print.trajectory_spec <- function(x, ...) {
 #'
 #' @description Internal helper that draws `n` values from the distribution
 #'   represented by a `<dist_spec>`, resolving any uncertainty in its parameters
-#'   first. Values are constrained to be at least `lower`.
+#'   first. The distribution is truncated below at `lower`, as the model
+#'   truncates parameter priors at their lower bound.
 #' @param d A `<dist_spec>`.
 #' @param n Number of values to draw.
-#' @param lower Lower bound to enforce on the drawn values.
+#' @param lower Lower truncation point.
 #' @return A numeric vector of length `n`.
-#' @importFrom stats rlnorm rnorm rgamma
+#' @importFrom stats plnorm qlnorm pnorm qnorm pgamma qgamma runif
 #' @keywords internal
 sample_dist_values <- function(d, n, lower = -Inf) {
   d <- fix_parameters(d, strategy = "sample")
   dist_family <- get_distribution(d)
   p <- get_parameters(d)
-  vals <- switch(dist_family,
-    lognormal = rlnorm(n, p$meanlog, p$sdlog),
-    normal = rnorm(n, p$mean, p$sd),
-    gamma = rgamma(n, shape = p$shape, rate = p$rate),
-    fixed = rep(p$value, n),
+  if (dist_family == "fixed") {
+    return(pmax(rep(p$value, n), lower))
+  }
+  # inverse-CDF draws from the distribution truncated at lower
+  cdf <- switch(dist_family,
+    lognormal = function(x) plnorm(x, p$meanlog, p$sdlog),
+    normal = function(x) pnorm(x, p$mean, p$sd),
+    gamma = function(x) pgamma(x, shape = p$shape, rate = p$rate),
     cli_abort(
       "Cannot sample from a {.val {dist_family}} prior for a state plot."
     )
   )
-  pmax(vals, lower)
+  quantile_fn <- switch(dist_family,
+    lognormal = function(u) qlnorm(u, p$meanlog, p$sdlog),
+    normal = function(u) qnorm(u, p$mean, p$sd),
+    gamma = function(u) qgamma(u, shape = p$shape, rate = p$rate)
+  )
+  quantile_fn(runif(n, cdf(lower), 1))
 }
 
 #' Gaussian process kernel covariance for prior-predictive state plots
