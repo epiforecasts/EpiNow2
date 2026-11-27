@@ -6,6 +6,7 @@ on:
     branches: main
     paths:
       - inst/stan/**
+      - inst/include/**
       - .github/workflows/stan-model-benchmark.yaml
       - inst/dev/benchmark*.R
 
@@ -15,7 +16,7 @@ concurrency:
 
 jobs:
   stan-model-benchmark:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:

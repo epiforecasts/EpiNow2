@@ -9,10 +9,24 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
     "rt.stan", "infections.stan", "delays.stan", "generated_quantities.stan"
   )
   if (!(tolower(Sys.info()[["sysname"]]) %in% "windows")) {
+    # Also expose the pure Stan reference for the C++ functions
+    references <- c(
+      "convolve_reference.stan", "renewal_reference.stan", "rt_reference.stan"
+    )
+    stan_fn_dir <- file.path(tempdir(), "epinow2-stan-functions")
+    dir.create(stan_fn_dir, showWarnings = FALSE)
+    file.copy(
+      c(
+        file.path(
+          system.file("stan/functions", package = "EpiNow2"), files
+        ),
+        test_path("stan", references)
+      ),
+      stan_fn_dir,
+      overwrite = TRUE
+    )
     suppressMessages(
-      expose_stan_fns(files,
-        target_dir = system.file("stan/functions", package = "EpiNow2")
-      )
+      expose_stan_fns(c(files, references), target_dir = stan_fn_dir)
     )
   }
 }
@@ -60,58 +74,21 @@ full_tests <- function() {
   isTRUE(as.logical(Sys.getenv("EPINOW2_FULL_TESTS", "false")))
 }
 
-# Shared test fixtures -----------------------------------------------------
-# Run regional_epinow() once and reuse output for all downstream tests.
-# This avoids running MCMC multiple times while testing the full pipeline.
-
-#' Get shared test fixtures
+#' Compile a test Stan model with the package C++ header
 #'
-#' Runs regional_epinow() once (lazily) and caches the result.
-#' This runs regardless of integration test settings to provide fixtures
-#' for downstream tests. Note: code here won't be captured by coverage
-#' tools since it's outside test_that() blocks.
-#'
-#' @return List with regional_epinow output and extracted estimate_infections
-#'   objects
-get_test_fixtures <- local({
-  fixtures <- NULL
-  function() {
-    if (is.null(fixtures)) {
-      futile.logger::flog.threshold("FATAL")
-
-      # Create test data with 2 regions
-      cases <- EpiNow2::example_confirmed[1:30]
-      cases <- data.table::rbindlist(list(
-        data.table::copy(cases)[, region := "testland"],
-        data.table::copy(cases)[, region := "realland"]
-      ))
-
-      # Run regional_epinow once with estimate_infections output
-      suppressWarnings(suppressMessages({
-        regional_out <- regional_epinow(
-          data = cases,
-          generation_time = gt_opts(example_generation_time),
-          delays = delay_opts(example_incubation_period + example_reporting_delay),
-          rt = rt_opts(prior = LogNormal(mean = 2, sd = 0.2)),
-          stan = stan_opts(
-            samples = 25, warmup = 25,
-            chains = 2, cores = 1,
-            control = list(adapt_delta = 0.8)
-          ),
-          output = c(
-            "regions", "summary", "samples", "plots", "timing",
-            "estimate_infections"
-          ),
-          verbose = FALSE
-        )
-      }))
-
-      fixtures <<- list(
-        regional = regional_out,
-        estimate_infections = regional_out$regional$testland,
-        estimate_infections_alt = regional_out$regional$realland
-      )
-    }
-    fixtures
-  }
-})
+#' @param file Name of a model in `tests/testthat/stan`.
+#' @return An rstan `stanmodel`.
+stan_test_model <- function(file) {
+  stanc_ret <- rstan::stanc(
+    test_path("stan", file),
+    allow_undefined = TRUE,
+    isystem = c(system.file("stan", package = "EpiNow2"), test_path("stan"))
+  )
+  code <- strsplit(stanc_ret$cppcode, "\n", fixed = TRUE)[[1]]
+  at <- match("#include <stan/model/model_header.hpp>", trimws(code))
+  stanc_ret$cppcode <- paste(
+    append(code, paste0("#include \"", epinow2_stan_header(), "\""), at),
+    collapse = "\n"
+  )
+  suppressMessages(suppressWarnings(rstan::stan_model(stanc_ret = stanc_ret)))
+}

@@ -239,29 +239,20 @@ estimate_secondary <- function(data,
     priors = priors, verbose = verbose
   )
 
-  # initial conditions (from estimate_infections)
-  inits <- create_initial_conditions(
-    c(stan_data, list(estimate_r = 0, fixed = 1, bp_n = 0)), params
+  fit <- fit_estimate_model(
+    stan = stan,
+    data = stan_data,
+    init = create_initial_conditions(stan_data, params),
+    model = "estimate_secondary",
+    time_points = stan_data$t
   )
-  # fit
-  stan_ <- create_stan_args(
-    stan = stan, data = stan_data, init = inits, model = "estimate_secondary"
-  )
 
-  # Warn if truncation distribution is longer than observed time
-  check_truncation_length(stan_, time_points = stan_data$t)
-
-  fit <- fit_model(stan_, id = "estimate_secondary")
-
-  # Create standardized S3 return structure
-  ret <- list(
+  new_epinowfit(
     fit = fit,
     args = stan_data,
-    observations = reports
+    observations = reports,
+    class = "estimate_secondary"
   )
-
-  class(ret) <- c("estimate_secondary", "epinowfit", class(ret))
-  ret
 }
 
 #' Update estimate_secondary default priors

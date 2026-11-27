@@ -164,6 +164,26 @@ test_that("get_delay_rev_pmf works with non-parametric delay", {
   expect_equal(pmf[3:6], rev(delay_np_pmf), tolerance = 1e-10)
 })
 
+test_that("get_delay_rev_pmf convolves several non-parametric delays", {
+  pmfs <- list(c(0.1, 0.3, 0.4, 0.2), 1, c(0.5, 0.25, 0.25))
+  conv <- function(a, b) {
+    vapply(seq_len(length(a) + length(b) - 1), function(k) {
+      i <- seq_along(a)
+      j <- k - i + 1
+      keep <- j >= 1 & j <= length(b)
+      sum(a[i[keep]] * b[j[keep]])
+    }, numeric(1))
+  }
+  expected <- Reduce(conv, pmfs)
+  pmf <- get_delay_rev_pmf(
+    1L, length(expected), array(c(0L, 0L, 0L)), array(1:3),
+    array(c(1L, 4L)), array(0L), unlist(pmfs),
+    array(cumsum(c(1L, lengths(pmfs)))), numeric(0), array(1L),
+    array(1L), 0L, 0L, 0L
+  )
+  expect_equal(pmf, expected, tolerance = 1e-12)
+})
+
 # Test get_delay_rev_pmf with left truncation
 test_that("get_delay_rev_pmf handles left truncation", {
   delay_id <- 1L

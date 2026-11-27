@@ -138,6 +138,10 @@ test_that("gp_ls_quantiles returns truncated quantiles of supported priors", {
     gp_ls_quantiles(Normal(mean = 21, sd = 7)),
     qnorm(p0 + c(0.05, 0.95) * (1 - p0), 21, 7)
   )
+  expect_equal(
+    gp_ls_quantiles(Weibull(shape = 2, scale = 10)),
+    qweibull(c(0.05, 0.95), shape = 2, scale = 10)
+  )
 })
 
 test_that("gp_ls_quantiles errors for unsupported priors", {
@@ -146,7 +150,7 @@ test_that("gp_ls_quantiles errors for unsupported priors", {
     "boundary_scale"
   )
   expect_error(
-    gp_ls_quantiles(Weibull(shape = 2, scale = 10)),
+    gp_ls_quantiles(NonParametric(c(0.5, 0.5))),
     "boundary_scale"
   )
 })
@@ -220,8 +224,8 @@ test_that("check_gp_fit is silent when the lengthscale index is out of range", {
 
 test_that("check_gp_ls_prior errors for unsupported priors", {
   expect_invisible(check_gp_ls_prior(Gamma(mean = 21, sd = 7)))
-  expect_equal(check_gp_ls_prior(Gamma(mean = 21, sd = 7)), "gamma")
+  expect_silent(check_gp_ls_prior(Weibull(shape = 2, scale = 10)))
   expect_error(
-    check_gp_ls_prior(Weibull(shape = 2, scale = 10)), "boundary_scale"
+    check_gp_ls_prior(NonParametric(c(0.5, 0.5))), "boundary_scale"
   )
 })

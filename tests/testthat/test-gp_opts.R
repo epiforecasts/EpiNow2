@@ -28,7 +28,8 @@ test_that("gp_opts warns about uncommon Matern kernel orders", {
 })
 
 test_that("gp_opts errors for lengthscale priors it cannot choose settings from", {
-  expect_error(gp_opts(ls = Weibull(shape = 2, scale = 10)), "boundary_scale")
+  expect_error(gp_opts(ls = NonParametric(c(0.5, 0.5))), "boundary_scale")
+  expect_silent(gp_opts(ls = Weibull(shape = 2, scale = 10)))
   expect_silent(
     gp_opts(
       ls = Weibull(shape = 2, scale = 10), basis_prop = 0.2,

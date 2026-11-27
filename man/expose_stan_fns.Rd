@@ -22,3 +22,6 @@ his function exposes internal stan functions in R from a user
 supplied list of target files. Allows for testing of stan functions in R and
 potentially user use in R code.
 }
+\details{
+Adds \code{\link[=epinow2_stan_header]{epinow2_stan_header()}} to any \code{includes} given in \code{...}.
+}
