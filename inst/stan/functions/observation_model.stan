@@ -187,14 +187,8 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
  * Accumulate reports according to a binary flag at each time point
  *
  * This function accumulates reports according to a binary flag at each time
- * point. Rather than looping over time points and adding each one to the
- * next in turn, it takes a running total of reports (via `cumulative_sum`)
- * and, for each time point, subtracts off the running total as it stood at
- * the start of the current accumulation run. This gives the same result
- * using only a handful of operations on the whole time series, rather than
- * one operation per accumulated time point, which matters for data reported
- * at a fixed low frequency such as weekly, where most time points are
- * accumulated.
+ * point. It applies `cumulative_sum` separately to each accumulation run,
+ * so that small reports are not lost when an earlier run has a large total.
  *
  * @param reports Vector of expected reports.
  * @param accumulate Array of integers indicating, for each time point, whether
@@ -212,22 +206,17 @@ void report_lp(array[] int cases, array[] int case_times, vector reports,
  */
 vector accumulate_reports(vector reports, array[] int accumulate) {
   int ot_h = num_elements(reports); // number of reporting time points modelled
-  // for each time point, the index into `running_total` (below) of the
-  // running total just before the current accumulation run started
-  array[ot_h] int run_start_idx;
-  {
-    int start = 1; // 1 corresponds to a running total of 0
-    for (i in 1:ot_h) {
-      run_start_idx[i] = start;
-      if (i < ot_h && !accumulate[i]) { // first observation gets ignored when accumulating
-        start = i + 1;
+  vector[ot_h] accumulated = reports;
+  int start = 1;
+  for (i in 1:ot_h) {
+    if (i == ot_h || !accumulate[i]) {
+      if (i > start) {
+        accumulated[start:i] = cumulative_sum(reports[start:i]);
       }
+      start = i + 1;
     }
   }
-  vector[ot_h + 1] running_total;
-  running_total[1] = 0;
-  running_total[2:(ot_h + 1)] = cumulative_sum(reports);
-  return running_total[2:(ot_h + 1)] - running_total[run_start_idx];
+  return accumulated;
 }
 
 /**
