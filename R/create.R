@@ -789,7 +789,24 @@ create_initial_conditions <- function(stan_data, params) {
         rep(1 / stan_data$week_effect, stan_data$week_effect)
       )
     }
-    out$params_raw <- array(rnorm(stan_data$n_params_variable))
+    if (stan_data$n_params_variable > 0) {
+      tparams <- transpose(params)
+      present <- !vapply(tparams$dist, is.null, logical(1))
+      dists <- tparams$dist[present]
+      variable <- vapply(dists, get_distribution, character(1)) != "fixed"
+      dists <- dists[variable]
+      draws <- rtruncnorm(
+        stan_data$n_params_variable,
+        a = stan_data$params_lower, b = stan_data$params_upper,
+        mean = vapply(dists, mean, numeric(1), ignore_uncertainty = FALSE),
+        sd = vapply(dists, sd, numeric(1), ignore_uncertainty = FALSE)
+      )
+      out$params_raw <- array((params_link(
+        draws, stan_data$params_lower, stan_data$params_upper
+      ) - stan_data$params_loc) / stan_data$params_scale)
+    } else {
+      out$params_raw <- array(numeric(0))
+    }
     out
   }
 }
