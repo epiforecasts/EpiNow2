@@ -63,7 +63,8 @@ test_that("forecast_infections errors for bad 'R' specifications", {
   )
   expect_error(
     forecast_infections(est, R = data.frame(date = Sys.Date(), R = 1)),
-    "value"
+    "is missing elements {'value'}",
+    fixed = TRUE
   )
   expect_error(
     forecast_infections(est, R = data.frame(date = Sys.Date(), value = -1)),
