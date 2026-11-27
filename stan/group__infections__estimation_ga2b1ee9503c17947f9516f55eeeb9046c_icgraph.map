@@ -1,0 +1,9 @@
+<map id="update_infectiousness" name="update_infectiousness">
+<area shape="rect" id="Node000001" title=" " alt="" coords="389,31,540,56"/>
+<area shape="rect" id="Node000002" href="$group__rt__estimation.html#ga07d04705ba5398e382a44148fdd9e40a" title=" " alt="" coords="173,5,341,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="373,35,341,31,342,26,374,30"/>
+<area shape="rect" id="Node000004" href="$group__rt__estimation.html#ga2d17e8b4b2a9d69dd576396d14b218e9" title=" " alt="" coords="210,55,304,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="374,57,304,65,304,60,373,51"/>
+<area shape="rect" id="Node000003" href="$group__rt__estimation.html#ga9bfab4c9541ada333f8674240c185ae8" title=" " alt="" coords="5,5,125,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="157,21,125,21,125,16,157,16"/>
+</map>

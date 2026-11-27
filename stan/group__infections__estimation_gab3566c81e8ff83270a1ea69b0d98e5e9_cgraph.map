@@ -1,0 +1,7 @@
+<map id="generate_infections" name="generate_infections">
+<area shape="rect" id="Node000001" title="Generate infections using a renewal equation approach." alt="" coords="5,31,140,56"/>
+<area shape="rect" id="Node000002" href="$group__rt__estimation.html#gace81d5047ef401eaeaf9dc6d7e8fdd2d" title=" " alt="" coords="223,5,282,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,31,207,22,207,27,141,37"/>
+<area shape="rect" id="Node000003" href="$group__infections__estimation.html#gad4f456109355cf3bc40738b486aa2b7b" title=" " alt="" coords="188,55,317,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="141,50,173,54,172,59,140,55"/>
+</map>

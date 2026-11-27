@@ -1,0 +1,11 @@
+<map id="update_Rt" name="update_Rt">
+<area shape="rect" id="Node000001" title="Update a vector of effective reproduction numbers (Rt) based on an intercept, breakpoints (i...." alt="" coords="5,55,86,80"/>
+<area shape="rect" id="Node000002" href="$group__rt__estimation.html#ga8ace04b4d72427b36a46b58b88e10a6c" title="Uncentred log Rt level of each breakpoint segment." alt="" coords="156,5,256,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="85,53,147,34,148,39,87,58"/>
+<area shape="rect" id="Node000003" href="$group__rt__estimation.html#gaf85438a44850d31f8371d2b86300d9a9" title="Log Rt intercept that centres the paths over the centring window." alt="" coords="134,55,279,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="86,65,118,65,118,70,86,70"/>
+<area shape="rect" id="Node000004" href="$group__rt__estimation.html#gaa4d2cd380b93fab36b0fb8c18cad082c" title="Uncentred Gaussian process contribution to log Rt." alt="" coords="161,104,252,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="87,77,148,96,147,101,85,82"/>
+<area shape="rect" id="Node000005" href="$group__rt__estimation.html#gabf12d0d233a18c62dd0682deaff4b4fd" title="Extend a vector to length t by repeating its last value." alt="" coords="327,104,422,130"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="252,114,311,114,311,120,252,120"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="reporting_phi" name="reporting_phi">
+<area shape="rect" id="Node000001" title=" " alt="" coords="152,55,247,80"/>
+<area shape="rect" id="Node000002" href="$group__observation__model.html#ga70a2addd1ea5297f8ff37a61d0aeff20" title=" " alt="" coords="5,5,104,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,52,94,34,96,29,146,47"/>
+<area shape="rect" id="Node000003" href="$group__observation__model.html#gaaa66fa28087bbe303b52a45d612ee5d7" title=" " alt="" coords="19,55,90,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="136,70,91,70,91,65,136,65"/>
+<area shape="rect" id="Node000004" href="$group__observation__model.html#gae8d97fd5325a329baf4ba2eb44c1204f" title=" " alt="" coords="15,104,94,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="146,88,96,106,94,101,144,83"/>
+</map>

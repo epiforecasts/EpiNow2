@@ -1,0 +1,13 @@
+<map id="matern_indices" name="matern_indices">
+<area shape="rect" id="Node000001" title=" " alt="" coords="316,55,425,80"/>
+<area shape="rect" id="Node000002" href="$group__estimates__smoothing.html#gaba328da750fac44cab0ca4e9a0b41274" title=" " alt="" coords="135,5,268,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="309,52,247,34,249,29,310,47"/>
+<area shape="rect" id="Node000004" href="$group__estimates__smoothing.html#gae443d4d2b3b752c07ed835b83ecd0e86" title=" " alt="" coords="135,55,268,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="300,70,268,70,268,65,300,65"/>
+<area shape="rect" id="Node000005" href="$group__estimates__smoothing.html#gadd4a066ad1281db47c82a5096af8099a" title=" " alt="" coords="135,104,268,130"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="310,88,249,106,247,101,309,83"/>
+<area shape="rect" id="Node000003" href="$gaussian__process_8stan.html#ad9b875c5e1cdd69a0b54e94dac84aee7" title=" " alt="" coords="5,55,87,80"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="145,39,88,57,86,52,143,34"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="119,70,87,70,87,65,119,65"/>
+<area shape="poly" id="edge6_Node000005_Node000003" title=" " alt="" coords="143,101,86,83,88,78,145,96"/>
+</map>

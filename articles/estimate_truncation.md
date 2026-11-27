@@ -1,0 +1,88 @@
+# Model definition: estimate_truncation()
+
+This model deals with the problem of *nowcasting*, or adjusting for
+right-truncation in reported count data. This occurs when the quantity
+being observed, for example cases, hospitalisations or deaths, is
+reported with a delay, resulting in an underestimation of recent counts.
+The
+[`estimate_truncation()`](https://epiforecasts.io/EpiNow2/reference/estimate_truncation.md)
+model infers parameters of the underlying delay distribution from
+multiple snapshots of past data. This can be thought of as a Bayesian
+form of the chain-ladder nowcasting approach implemented in the
+[baselinenowcast](https://baselinenowcast.epinowcast.org/) package, with
+the added benefit of joint uncertainty quantification and delay
+estimation. For settings requiring time-varying delays or more detailed
+reporting structure, see the
+[epinowcast](https://package.epinowcast.org) package.
+
+Both
+[`estimate_truncation()`](https://epiforecasts.io/EpiNow2/reference/estimate_truncation.md)
+and
+[`estimate_dist()`](https://epiforecasts.io/EpiNow2/reference/estimate_dist.md)
+return a delay distribution that downstream functions such as
+[`estimate_infections()`](https://epiforecasts.io/EpiNow2/reference/estimate_infections.md),
+[`estimate_secondary()`](https://epiforecasts.io/EpiNow2/reference/estimate_secondary.md),
+or a further call to
+[`estimate_truncation()`](https://epiforecasts.io/EpiNow2/reference/estimate_truncation.md)
+can consume. The main difference is the data they expect:
+[`estimate_truncation()`](https://epiforecasts.io/EpiNow2/reference/estimate_truncation.md)
+takes successive snapshots of the same aggregate counts (a reporting
+triangle), while
+[`estimate_dist()`](https://epiforecasts.io/EpiNow2/reference/estimate_dist.md)
+takes individual-level (linelist) data with primary and secondary event
+dates. Because it works from aggregate counts rather than individual
+records,
+[`estimate_truncation()`](https://epiforecasts.io/EpiNow2/reference/estimate_truncation.md)
+also fits an observation model for the counts on top of the delay,
+whereas
+[`estimate_dist()`](https://epiforecasts.io/EpiNow2/reference/estimate_dist.md)
+estimates the delay distribution alone. As a rough decision rule, use
+[`estimate_dist()`](https://epiforecasts.io/EpiNow2/reference/estimate_dist.md)
+when you have a linelist and
+[`estimate_truncation()`](https://epiforecasts.io/EpiNow2/reference/estimate_truncation.md)
+when you have repeated snapshots of aggregate counts.
+
+## Model
+
+Given snapshots $`C^{i}_{t}`$ reflecting reported counts for time $`t`$
+where $`i=1\ldots S`$ is in order of recency (earliest snapshots first)
+and $`S`$ is the number of past snapshots used for estimation, we infer
+the parameters $`\boldsymbol{\theta}`$ of a discrete truncation
+distribution with cumulative mass function
+$`Z(\tau | \boldsymbol{\theta})`$. The truncation distribution can be
+any family supported by `dist_spec` (e.g. log-normal, gamma).
+
+The model assumes that final counts $`D_{t}`$ are related to observed
+snapshots via the truncation distribution such that
+
+``` math
+\begin{equation}
+C^{i < S}_{t} \sim F\left(Z(T_i - t | \boldsymbol{\theta}) \cdot D(t) + \sigma\right)
+\end{equation}
+```
+
+where $`T_i`$ is the date of the final observation in snapshot $`i`$,
+$`Z(\tau)`$ is defined to be zero for negative values of $`\tau`$,
+$`\sigma`$ is an additive noise term (controlled via the `noise`
+argument), and $`F`$ is the observation model (Poisson or negative
+binomial, controlled via
+[`obs_opts()`](https://epiforecasts.io/EpiNow2/reference/obs_opts.md)).
+
+The final counts $`D_{t}`$ are estimated from the most recent snapshot
+as
+
+``` math
+\begin{equation}
+D_t = \frac{C^{S}_{t}}{Z(T_S - t | \boldsymbol{\theta})}
+\end{equation}
+```
+
+### Priors
+
+``` math
+\begin{align}
+\boldsymbol{\theta} &\sim \text{as specified by } \texttt{trunc\_opts()} \\
+\varphi &\sim \text{as specified by } \texttt{obs\_opts()} \quad \text{(negative binomial only)} \\
+\sigma &\sim \text{as specified by } \texttt{noise}
+\end{align}
+```
