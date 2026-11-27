@@ -2,6 +2,8 @@
 
 ## New features
 
+- Added a vignette on modelling temporally aggregated data, showing how to use `fill_missing()` to prepare weekly data for `estimate_infections()` with accumulation.
+
 ## Breaking changes
 
 - The boundary factor and number of basis functions of the approximate Gaussian process are now chosen by default from the lengthscale prior, following Riutort-Mayol et al. (2023), rather than fixed at `boundary_scale = 1.5` and `basis_prop = 0.2`. For the periodic kernel only the number of basis functions is chosen, as it has no boundary. The previous defaults approximated the default lengthscale prior poorly, particularly at the most recent time points. `estimate_infections()` now warns when the posterior lengthscale is outside the range the approximation represents accurately. Set `basis_prop` and `boundary_scale` in `gp_opts()` to restore the previous behaviour.

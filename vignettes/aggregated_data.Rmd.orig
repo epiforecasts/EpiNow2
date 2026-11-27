@@ -1,0 +1,175 @@
+---
+title: "Modelling temporally aggregated data"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Modelling temporally aggregated data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6.5,
+  fig.height = 4,
+  fig.path = "aggregated_data-"
+)
+```
+
+Surveillance data are often reported less frequently than daily, for example as weekly totals.
+_EpiNow2_ models infections and reports on a daily scale, so the model needs to tell such data apart from daily data that happen to have missing days.
+This vignette shows how to prepare weekly data with `fill_missing()`, how the model then accumulates its daily expected reports to match the data, and what goes wrong if the data are treated as if they were daily.
+The same approach applies to other reporting intervals, including irregular ones.
+The model options used here are described in the [examples vignette](estimate_infections_options.html) and the data format in the [workflow vignette](estimate_infections_workflow.html).
+
+# Set up
+
+```{r packages}
+library("EpiNow2")
+library("data.table")
+library("ggplot2")
+```
+
+```{r cores}
+options(mc.cores = 4)
+```
+
+# Data
+
+We start from the daily example data in the package and sum it into weekly totals.
+Each total is recorded on the last day of its week, which is how many weekly data sets are labelled.
+
+```{r data}
+daily <- example_confirmed[1:84]
+weekly <- copy(daily)
+weekly[, confirm := frollsum(confirm, 7)]
+weekly <- weekly[seq(7, nrow(weekly), by = 7)]
+weekly
+```
+
+The data now have one row per week, with six days missing between consecutive observations.
+The model can interpret the missing days in three ways.
+
+- The missing days are treated as not observed (`missing_dates = "ignore"`, the default).
+  The model then compares each weekly total with a single day of expected reports.
+- The missing days are treated as zero (`missing_dates = "zero"`).
+  For aggregated data this is incorrect, as it implies that nothing was reported on six days out of seven.
+- The missing days are accumulated (`missing_dates = "accumulate"`).
+  The model adds up its expected reports over each week and compares the sum with the weekly total.
+
+Only the last option matches how the data were generated.
+
+# Preparing the data
+
+`fill_missing()` adds the dates that are missing between observations and an `accumulate` column, which is `TRUE` for days whose expected reports are added to the next observation.
+The first weekly total is the sum of the seven days up to and including its date, so we set `initial_accumulate = 7` to add those days at the start.
+If it is not set and all gaps in the data are the same, `fill_missing()` detects this and reports it with a message.
+
+```{r fill}
+weekly_acc <- fill_missing(
+  weekly,
+  missing_dates = "accumulate",
+  initial_accumulate = 7
+)
+head(weekly_acc, 10)
+```
+
+Days with `accumulate = TRUE` have `NA` observations and do not enter the likelihood themselves.
+The weekly total on the last day of each week does, and is compared with the model's expected reports summed over that week.
+
+For comparison we also prepare the data so that the missing days are ignored, which is what happens when no `accumulate` column is supplied.
+
+```{r ignore}
+weekly_ignore <- fill_missing(weekly, missing_dates = "ignore")
+```
+
+# Estimation
+
+Both fits use the same delays, generation time and prior on the initial reproduction number, and a random walk with weekly steps for the reproduction number because the data cannot inform changes on a finer scale.
+The Stan settings are short to keep the run time of this vignette low and should be increased for real analyses.
+
+```{r settings}
+delay <- example_incubation_period + LogNormal(mean = 2, sd = 1, max = 10)
+rt <- rt_opts(prior = LogNormal(mean = 2, sd = 1), rw = 7)
+```
+
+Weekly data have no day-of-week pattern, so we switch off the day-of-week effect in the observation model.
+
+```{r fit-accumulate}
+fit_acc <- estimate_infections(
+  weekly_acc,
+  generation_time = gt_opts(example_generation_time),
+  delays = delay_opts(delay),
+  rt = rt,
+  gp = NULL,
+  obs = obs_opts(week_effect = FALSE),
+  forecast = forecast_opts(horizon = 0),
+  stan = stan_opts(samples = 500, warmup = 500, chains = 4, control = list(adapt_delta = 0.9))
+)
+```
+
+```{r fit-ignore}
+fit_ignore <- estimate_infections(
+  weekly_ignore,
+  generation_time = gt_opts(example_generation_time),
+  delays = delay_opts(delay),
+  rt = rt,
+  gp = NULL,
+  obs = obs_opts(week_effect = FALSE),
+  forecast = forecast_opts(horizon = 0),
+  stan = stan_opts(samples = 500, warmup = 500, chains = 4, control = list(adapt_delta = 0.9))
+)
+```
+
+# Comparing the results
+
+The infections estimated by the accumulating fit are on the scale of the daily data that the weekly totals were made from. We can check this by plotting them against the daily series.
+
+```{r compare-infections}
+infections <- rbind(
+  summary(fit_acc, type = "parameters", params = "infections")[
+    , model := "accumulate"
+  ],
+  summary(fit_ignore, type = "parameters", params = "infections")[
+    , model := "ignore"
+  ]
+)
+ggplot(infections, aes(x = date, fill = model)) +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3) +
+  geom_line(aes(y = median, colour = model)) +
+  geom_point(
+    data = daily, aes(x = date, y = confirm), inherit.aes = FALSE, size = 0.8
+  ) +
+  theme_minimal() +
+  labs(x = "Date", y = "Infections", colour = "Missing dates", fill = "Missing dates")
+```
+
+When the missing days are ignored, the model compares each weekly total with a single day of expected reports, and the two sets of estimates are on different scales.
+Accumulating compares like with like, and its estimates can be read against the daily data, shown as points.
+
+The reproduction number estimates are similar in shape because both fits use the same random walk, but the accumulating fit gives lower values in the weeks around the peak and wider intervals towards the end.
+
+```{r compare-R}
+rts <- rbind(
+  summary(fit_acc, type = "parameters", params = "R")[, model := "accumulate"],
+  summary(fit_ignore, type = "parameters", params = "R")[, model := "ignore"]
+)
+ggplot(rts, aes(x = date, fill = model)) +
+  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), alpha = 0.3) +
+  geom_line(aes(y = median, colour = model)) +
+  geom_hline(yintercept = 1, linetype = 2) +
+  theme_minimal() +
+  labs(x = "Date", y = "R", colour = "Missing dates", fill = "Missing dates")
+```
+
+# Other reporting patterns
+
+The same mechanism handles data reported at irregular intervals, for example every few days. `fill_missing(missing_dates = "accumulate")` marks every unreported day, and the model accumulates across the gaps.
+In that case `initial_accumulate` should be set to the number of days that the first observation covers.
+Observations that are present but `NA` can be accumulated in the same way with `missing_obs = "accumulate"`.
+
+Estimates from `summary()` and `plot()` are on the daily scale of the model. Weekly estimates can be obtained by summing the daily estimates, for example from `get_samples()`.
