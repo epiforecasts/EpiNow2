@@ -661,10 +661,10 @@ plot.trajectory_spec <- function(x, n = 50L, samples = 50L, ...) {
   init <- x$anchor == "init"
   level <- sample_dist_values(x$prior, samples, lower = 0)
 
-  ## sample each component's link-scale deviation and sum them, exactly as
-  ## the Stan trajectory does; centring/anchoring is then applied once to the
-  ## combined deviation (this reduces to the prior single-component draw when
-  ## there is exactly one component)
+  ## sample each component's link-scale deviation and sum them, as the Stan
+  ## trajectory does, then anchor: an init anchor pins the first value, and a
+  ## mean anchor centres the random walks only, since a mean-anchored
+  ## Gaussian process is stationary around the level (component_centred())
   sample_component_dev <- function(comp) {
     if (comp$type == "rw") {
       step_sd <- sample_dist_values(comp$settings$sd, 1, lower = 0)
@@ -696,11 +696,16 @@ plot.trajectory_spec <- function(x, n = 50L, samples = 50L, ...) {
   }
 
   traj <- lapply(seq_len(samples), function(s) {
-    dev <- Reduce(`+`, lapply(x$components, sample_component_dev))
+    devs <- lapply(x$components, sample_component_dev)
+    dev <- Reduce(`+`, devs)
     if (init) {
       log_traj <- log(level[s]) + (dev - dev[1])
     } else {
-      log_traj <- log(level[s]) + (dev - mean(dev))
+      is_rw <- vapply(
+        x$components, function(comp) comp$type == "rw", logical(1)
+      )
+      rw_dev <- Reduce(`+`, devs[is_rw], 0)
+      log_traj <- log(level[s]) + dev - mean(rw_dev)
     }
     data.table(sample = s, time = seq_len(n), value = exp(log_traj))
   })

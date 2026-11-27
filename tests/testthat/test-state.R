@@ -539,3 +539,15 @@ test_that("plot.trajectory_spec steps a random walk per period or at knots", {
   expect_length(unique(knotted[10:21]), 1)
   expect_length(unique(knotted), 2)
 })
+
+test_that("plot.trajectory_spec centres only the random walks of a mean anchor", {
+  set.seed(1)
+  draw_means <- function(spec) {
+    traj <- plot(spec, n = 30, samples = 50)$data
+    traj[, .(m = mean(log(value))), by = sample]$m
+  }
+  # a mean-anchored GP is stationary around the level, not centred on it
+  expect_gt(sd(draw_means(GP(mean = Fixed(1)))), 1e-4)
+  # a mean-anchored random walk is centred on the level
+  expect_lt(max(abs(draw_means(RW(mean = Fixed(1))))), 1e-10)
+})
