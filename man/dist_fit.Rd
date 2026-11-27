@@ -40,8 +40,12 @@ stan models. Supported arguments are "rstan" (default) or "cmdstanr".}
 A stan fit of an interval censored distribution
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Fits an integer adjusted exponential, gamma or lognormal distribution using
 stan.
+
+\strong{This function is deprecated.} Please use \code{\link[=estimate_dist]{estimate_dist()}} instead,
+which provides better handling of censoring and truncation.
 }
 \examples{
 \donttest{

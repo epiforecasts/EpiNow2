@@ -776,10 +776,6 @@ calc_summary_measures <- function(samples,
 #'
 #' @param object An `<epinow>` object as produced by [epinow()].
 #'
-#' @param output `r lifecycle::badge("deprecated")` Use the `type` argument
-#' instead. Previously supported "estimates", "forecast", and
-#' "estimated_reported_cases".
-#'
 #' @inheritParams summary.estimate_infections
 #'
 #' @importFrom rlang arg_match
@@ -793,7 +789,6 @@ calc_summary_measures <- function(samples,
 #' @return Returns a `<data.frame>` of summary output
 #' @export
 summary.epinow <- function(object,
-                           output = NULL,
                            type = c("snapshot", "parameters"),
                            target_date = NULL, params = NULL,
                            CrIs = c(0.2, 0.5, 0.9),
@@ -804,20 +799,6 @@ summary.epinow <- function(object,
       "Cannot summarise a failed epinow run.",
       "i" = "The run failed with error: {object$error}"
     ))
-  }
-
-  # Handle deprecated output argument
-  if (!is.null(output)) {
-    deprecate_stop(
-      "1.9.0",
-      "summary.epinow(output)",
-      "summary.epinow(type)",
-      details = paste(
-        "The epinow object now inherits from estimate_infections.",
-        "Use type = 'snapshot' or type = 'parameters'.",
-        "For predictions, use get_predictions()."
-      )
-    )
   }
 
   # Forward to estimate_infections summary
@@ -837,8 +818,6 @@ summary.epinow <- function(object,
 #' returns summarised parameter estimates that can be further filtered using
 #' `params` to show just the parameters of interest and date.
 #'
-#' Note: `type = "samples"` is deprecated. Use [get_samples()] instead.
-#'
 #' @inheritParams setup_target_folder
 #'
 #' @param params A character vector of parameters to filter for.
@@ -855,15 +834,6 @@ summary.estimate_infections <- function(object,
                                         type = c("snapshot", "parameters"),
                                         target_date = NULL, params = NULL,
                                         CrIs = c(0.2, 0.5, 0.9), ...) {
-  # Handle deprecated type = "samples" before arg_match
-  if (length(type) == 1 && type == "samples") {
-    deprecate_stop(
-      "1.9.0",
-      "summary.estimate_infections(type = 'samples')",
-      "get_samples()"
-    )
-  }
-
   create_infection_summary(object, type, target_date, params, CrIs, ...)
 }
 

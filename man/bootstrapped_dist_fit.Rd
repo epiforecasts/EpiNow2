@@ -42,12 +42,16 @@ printed.}
 A \verb{<dist_spec>} object summarising the bootstrapped distribution
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Fits an integer adjusted distribution to a subsampled bootstrap of data and
 then integrates the posterior samples into a single set of summary
 statistics. Can be used to generate a robust reporting delay that accounts
 for the fact the underlying delay likely varies over time or that the size
 of the available reporting delay sample may not be representative of the
 current case load.
+
+\strong{This function is deprecated.} Please use \code{\link[=estimate_dist]{estimate_dist()}} instead,
+which provides better handling of censoring and truncation.
 }
 \examples{
 \donttest{
