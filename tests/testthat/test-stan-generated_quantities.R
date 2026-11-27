@@ -58,6 +58,28 @@ test_that("calculate_growth_infness works as expected", {
   expect_error(calculate_growth_infness(1:7, 7, gt_rev_pmf))
 })
 
+test_that("calculate_case_Rt works as expected", {
+  skip_on_cran()
+  gt_rev_pmf <- rev(c(0, 0.3, 0.7))
+
+  # a constant Rt implies an equal case Rt everywhere it can be calculated
+  expect_equal(calculate_case_Rt(rep(2, 7), gt_rev_pmf), rep(2, 5))
+
+  # forward weighted average of Rt by the generation time distribution; the
+  # vector is shortened rather than padded where this would require Rt
+  # beyond the given series
+  expect_equal(
+    calculate_case_Rt(1:7, gt_rev_pmf), c(2.7, 3.7, 4.7, 5.7, 6.7)
+  )
+
+  expect_equal(calculate_case_Rt(1:5, rev(c(0, 1))), 2:5)
+
+  # empty when Rt is shorter than the generation time PMF
+  expect_equal(calculate_case_Rt(1:2, gt_rev_pmf), numeric(0))
+  expect_equal(calculate_case_Rt(1:3, gt_rev_pmf), 2.7)
+  expect_equal(calculate_case_Rt(1:4, gt_rev_pmf), c(2.7, 3.7))
+})
+
 test_that("calculate_growth selects the right method", {
   skip_on_cran()
 
